@@ -1,0 +1,315 @@
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type='number'] {
+    -moz-appearance: textfield;
+}
+
+body {
+    padding: 0;
+    margin: 0;
+    color: #17202a;
+    background-color: white;
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-size: 14px !important;
+}
+
+.ag-theme-alpine {
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-size: 14px !important;
+}
+
+.el-tabs__header.is-top {
+    margin-bottom: 0;
+}
+
+.el-tabs__item.is-left {
+    text-align: left !important;
+}
+
+.el-tabs__header.is-left {
+    width: 150px !important;
+    margin-right: 0px !important;
+}
+
+.el-tabs__content {
+    padding: 10px !important;
+}
+
+#top-bar {
+    /* height: 100px; */
+    background-color: #ebedef;
+    box-sizing: border-box;
+    border-bottom: 1px solid #aeb6bf;
+}
+
+#main-content {
+    height: calc(100% - 100px);
+    margin: 0 !important;
+    padding: 5px;
+    overflow: auto;
+}
+
+.el-message {
+    margin-top: 58px;
+}
+
+
+input,
+textarea {
+    font-family: Arial, Helvetica, sans-serif !important;
+}
+
+.header-toggle {
+    background: #99a9bf;
+    padding: 5px 15px;
+    margin-bottom: 5px;
+}
+
+#asset .el-tabs__header.is-top {
+    height: 41px;
+    box-sizing: border-box;
+}
+
+#asset .el-tabs__content {
+    height: calc(100% - 41px);
+    box-sizing: border-box;
+    overflow: auto;
+}
+
+#job #tests .el-tabs__header.is-top {
+    height: 41px;
+    box-sizing: border-box;
+}
+
+#job #tests div.el-tabs__item.is-top.is-active {
+    background-color: #012596;
+    color: #fff;
+}
+
+#job #tests .el-tabs__content {
+    height: calc(100% - 41px);
+    box-sizing: border-box;
+    overflow: auto;
+}
+
+#job #job__health-index .el-tabs__content {
+    height: calc(100% - 41px);
+    box-sizing: border-box;
+    overflow: auto;
+}
+
+.btn-action {
+    width: 200px !important;
+}
+
+.btn-action i {
+    margin-right: 5px !important;
+}
+
+.winding-col {
+    width: 90px;
+}
+
+.assessment-col {
+    width: 100px;
+}
+
+.asset-type-col, .insulation-type-col {
+    width: 200px;
+}
+
+.condition-indicator-col {
+    width: 160px;
+}
+
+.score-col {
+    width: 80px;
+}
+
+.phase-col,
+.no-col,
+.action-col {
+    width: 40px;
+}
+
+#tests .col-phase {
+    height: 30px;
+    display: flex;
+    justify-content: center;
+}
+
+#tests .phase {
+    width: 100px;
+    margin: 0 5px;
+    display: inline-block;
+    text-align: center;
+    vertical-align: top;
+    line-height: 30px;
+}
+
+#tests .rectangle {
+    display: inline-block;
+    height: 30px;
+    width: 5px;
+}
+
+#tests .red {
+    background-color: #FF0000;
+}
+
+#tests .yellow {
+    background-color: #f0f000;
+}
+
+#tests .blue {
+    background-color: #0000cd;
+}
+
+table.table-strip-input-data {
+    border-spacing: 0;
+    width: 100%;
+    /* border: 1px solid #ddd; */
+    border-collapse: collapse;
+}
+
+table.table-strip-input-data th,
+table.table-strip-input-data td {
+    padding: 1px 10px;
+    height: 30px;
+}
+
+table.table-strip-input-data tbody,
+table.table-strip-input-data td,
+table.table-strip-input-data tfoot,
+table.table-strip-input-data th,
+table.table-strip-input-data thead,
+table.table-strip-input-data tr {
+    border-color: inherit;
+    border-style: solid;
+    border-width: 0;
+    text-align: left;
+}
+
+table.table-strip-input-data > thead {
+    background-color: #dbdbdb;
+}
+
+table.table-strip-input-data > thead > tr > th {
+    border: thin solid #fff;
+    text-align: center;
+}
+
+table.table-strip-input-data > tbody > tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+div.el-input-group__append {
+    text-align: center;
+    width: 20px;
+}
+::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #808080;
+    border-radius: 8px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
+}
+
+/* input.el-input__inner {
+    outline: 0;
+    border-width: 0 0 1px;
+    border-radius: 0;
+} */
+
+#job .w-100px {
+    width: 100px;
+}
+#job .good {
+    background-color: #00CC00;
+}
+#job .fair {
+    background-color: #FFFF00;
+}
+#job .poor {
+    background-color: #FFC000;
+}
+#job .bad {
+    background-color: #FF0000;
+}
+
+.pass{
+    color: #00CC00;
+}
+
+.fail{
+    color: #FF0000;
+}
+
+.assessment input.el-input__inner{
+    padding-left: 1.5rem !important;
+}
+
+.icon-status {
+    float: left;
+    margin-left: 0.5rem;
+    margin-top: -20px;
+    position: relative;
+    z-index: 2;
+}
+
+.Good input {
+    background: #00CC00;
+}
+
+.Fair input {
+    background: #FFFF00;
+}
+
+.Poor input {
+    background: #FFC000;
+}
+
+.Bad input {
+    background: #FF0000;
+}
+
+.colorTableRed {
+    display: inline-block;
+    width: 5px;
+    background-color: #FF0000;
+    margin-left: 5px;
+}
+.colorTableYellow {
+    display: inline-block;
+    width: 5px;
+    background-color: #f0f000;
+    margin-left: 5px;
+}
+.colorTableBlue {
+    display: inline-block;
+    width: 5px;
+    background-color: #0000cd;
+    margin-left: 5px;
+}
+
+.table-mini-input-data tbody,
+.table-mini-input-data td,
+.table-mini-input-data tfoot,
+.table-mini-input-data th,
+.table-mini-input-data thead,
+.table-mini-input-data tr {
+    border-bottom: thin solid #ddd;
+}

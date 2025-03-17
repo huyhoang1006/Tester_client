@@ -1,0 +1,206 @@
+.mgr-0 {
+    margin-right: 0px !important;
+}
+
+.mgr-5 {
+    margin-right: 5px !important;
+}
+
+.mgr-10 {
+    margin-right: 10px !important;
+}
+
+.mgr-15 {
+    margin-right: 15px !important;
+}
+
+.mgr-20 {
+    margin-right: 20px !important;
+}
+
+.mgl-0 {
+    margin-left: 0px !important;
+}
+
+.mgl-5 {
+    margin-left: 5px !important;
+}
+
+.mgl-10 {
+    margin-left: 10px !important;
+}
+
+.mgl-15 {
+    margin-left: 15px !important;
+}
+
+.mgl-20 {
+    margin-left: 20px !important;
+}
+
+.mgt-0 {
+    margin-top: 0px !important;
+}
+
+.mgt-5 {
+    margin-top: 5px !important;
+}
+
+.mgt-10 {
+    margin-top: 10px !important;
+}
+
+.mgt-15 {
+    margin-top: 15px !important;
+}
+
+.mgt-20 {
+    margin-top: 20px !important;
+}
+
+.mgb-0 {
+    margin-bottom: 0px !important;
+}
+
+.mgb-5 {
+    margin-bottom: 5px !important;
+}
+
+.mgb-10 {
+    margin-bottom: 10px !important;
+}
+
+.mgb-15 {
+    margin-bottom: 15px !important;
+}
+
+.mgb-20 {
+    margin-bottom: 20px !important;
+}
+
+.mgy-5 {
+    margin-bottom: 5px !important;
+    margin-top: 5px !important;
+}
+
+.mgy-10 {
+    margin-bottom: 10px !important;
+    margin-top: 10px !important;
+}
+
+.mgy-15 {
+    margin-bottom: 15px !important;
+    margin-top: 15px !important;
+}
+
+.mgy-20 {
+    margin-bottom: 20px !important;
+    margin-top: 20px !important;
+}
+
+.pdx-5 {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.pdx-10 {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.pdx-15 {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.pdr-0 {
+    padding-right: 0px !important;
+}
+
+.pdr-5 {
+    padding-right: 5px !important;
+}
+
+.pdr-10 {
+    padding-right: 10px !important;
+}
+
+.pdr-15 {
+    padding-right: 15px !important;
+}
+
+.pdl-0 {
+    padding-left: 0px !important;
+}
+
+.pdl-5 {
+    padding-left: 5px !important;
+}
+
+.pdl-10 {
+    padding-left: 10px !important;
+}
+
+.pdl-15 {
+    padding-left: 15px !important;
+}
+
+.float-right {
+    float: right;
+}
+
+.float-left {
+    float: left;
+}
+
+.display-block {
+    display: block;
+}
+
+.display-inline-block {
+    display: inline-block;
+}
+
+.display-flex {
+    display: flex;
+}
+
+.pointer {
+    cursor: pointer;
+}
+
+.w-50 {
+    width: 50%;
+}
+
+.w-100 {
+    width: 100%;
+}
+
+.h-50 {
+    height: 50%;
+}
+
+.h-100 {
+    height: 100%;
+}
+
+.bolder {
+    font-weight: bolder;
+}
+
+.align-left {
+    text-align: left;
+}
+
+.align-center {
+    text-align: center;
+}
+
+.align-right {
+    text-align: right;
+}
+
+.inline-block {
+    display: inline-block;
+}

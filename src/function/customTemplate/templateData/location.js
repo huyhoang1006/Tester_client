@@ -1,0 +1,38 @@
+
+
+const dataLoction = {
+    id: '',
+    user_id: '',
+    name: '',
+    region: '',
+    division: '',
+    area: '',
+    plant: '',
+    address: '',
+    city: '',
+    state_province: '',
+    postal_code: '',
+    country: '',
+    geo_coordinates: '',
+    location_system_code: '',
+    person_name: '',
+    person_phone_no1: '',
+    person_phone_no2: '',
+    person_fax_no: '',
+    person_email: '',
+    comment: '',
+    company_company: '',
+    company_department: '',
+    company_address: '',
+    company_city: '',
+    company_state_province: '',
+    company_postal_code: '',
+    company_country: '',
+    company_phone_no: '',
+    company_fax_no: '',
+    company_email: '',
+    mode : 'location',
+    refId : '',
+    owner_id : ''
+}
+export default dataLoction

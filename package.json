@@ -5,39 +5,54 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "electron:build": "vue-cli-service electron:build",
+    "electron:serve": "vue-cli-service electron:serve",
+    "postinstall": "electron-builder install-app-deps",
+    "postuninstall": "electron-builder install-app-deps"
   },
+  "main": "background.js",
   "dependencies": {
+    "@electron/remote": "^2.1.2",
+    "ag-grid-community": "^28.2.1",
+    "ag-grid-vue": "^28.2.1",
+    "axios": "^0.27.2",
     "core-js": "^3.8.3",
-    "vue": "^2.6.14"
+    "csv": "^6.3.11",
+    "docx": "^7.8.2",
+    "edge": "^7.10.1",
+    "element-ui": "^2.15.8",
+    "exceljs": "^4.3.0",
+    "file-icons-js": "github:websemantics/file-icons-js",
+    "puppeteer": "^14.0.0",
+    "require-context": "^1.1.0",
+    "sqlite3": "^5.0.8",
+    "uuid": "^8.3.2",
+    "vue": "^2.6.14",
+    "vue-class-component": "^7.2.6",
+    "vue-loading-overlay": "^3.4.2",
+    "vue-plotly": "^1.1.0",
+    "vue-property-decorator": "^9.1.2",
+    "vue-router": "^3.6.5",
+    "vuex": "^3.6.2"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",
     "@babel/eslint-parser": "^7.12.16",
     "@vue/cli-plugin-babel": "~5.0.0",
     "@vue/cli-plugin-eslint": "~5.0.0",
+    "@vue/cli-plugin-router": "^5.0.8",
+    "@vue/cli-plugin-vuex": "^5.0.8",
     "@vue/cli-service": "~5.0.0",
+    "electron": "^13.0.0",
+    "electron-builder": "^23.0.3",
+    "electron-devtools-installer": "^3.1.0",
     "eslint": "^7.32.0",
     "eslint-plugin-vue": "^8.0.3",
+    "node-sass": "^7.0.1",
+    "sass": "^1.84.0",
+    "sass-loader": "^12.6.0",
+    "vue-cli-plugin-electron-builder": "~2.1.1",
     "vue-template-compiler": "^2.6.14"
-  },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/essential",
-      "eslint:recommended"
-    ],
-    "parserOptions": {
-      "parser": "@babel/eslint-parser"
-    },
-    "rules": {}
-  },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not dead"
-  ]
+  }
 }

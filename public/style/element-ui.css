@@ -1,0 +1,35 @@
+
+.el-form-item--mini.el-form-item {
+    margin-bottom: 5px !important;
+}
+
+.el-divider--horizontal{
+    margin: 5px 0 !important;
+}
+
+.el-divider{
+    background-color: #17202A !important;
+}
+
+.el-select{
+    /* width: 100% !important; */
+}
+
+.el-select-dropdown__item{
+    height: 26px !important;
+    line-height: 26px !important;
+}
+
+.el-input-group__append, .el-input-group__prepend{
+    padding: 0px 5px !important;
+}
+
+.select-in-input.el-select--mini input.el-input__inner{
+    width: 80px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.select-in-input.el-select--mini span.el-input__suffix {
+    width: 40px;
+}
