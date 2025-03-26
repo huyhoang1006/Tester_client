@@ -91,7 +91,7 @@
                     <div ref="content" class="content">
                         <div class="title-content"></div>
                         <div class="content-content">
-                            <Tabs v-model="activeTab" :tabs="tabs" @close-tab="removeTab" />
+                            <Tabs :side="'server'" v-model="activeTab" :tabs="tabs" @close-tab="removeTab" />
                         </div>
                     </div>
                     <div @mousedown="startResizeContentServer" ref="resizerContentServer" class="resizer"></div>
@@ -459,8 +459,6 @@ import * as surgeApi from '@/api/surge/surge'
 import * as powerApi from '@/api/power/power'
 import * as assetApi from '@/api/asset'
 
-import LocationView from '@/views/LocationView/index.vue'
-
 import * as fileUploadApi from '@/api/fileUpload'
 import * as attachmentApi from '@/api/attachment'
 
@@ -488,32 +486,13 @@ export default {
         pageAlign,
         spinner,
         contextMenu,
-        LocationView,
         Tabs
     },
     data() {
         return {
-            activeTab: 'tab1',
-            tabs: [
-                { name: 'tab1', label: 'Tab 1' },
-                { name: 'tab2', label: 'Tab 2' },
-                { name: 'tab3', label: 'Tab 3' },
-                { name: 'tab4', label: 'Tab 4' },
-                { name: 'tab5', label: 'Tab 5' },
-                { name: 'tab6', label: 'Tab 6' },
-                { name: 'tab7', label: 'Tab 7' },
-                { name: 'tab8', label: 'Tab 8' },
-                { name: 'tab9', label: 'Tab 9' },
-                { name: 'tab10', label: 'Tab 10' },
-                { name: 'tab11', label: 'Tab 11' },
-                { name: 'tab12', label: 'Tab 12' },
-                { name: 'tab13', label: 'Tab 13' },
-                { name: 'tab14', label: 'Tab 14' },
-                { name: 'tab15', label: 'Tab 15' },
-                { name: 'tab16', label: 'Tab 16' },
-                { name: 'tab17', label: 'Tab 17' },
-                { name: 'tab18', label: 'Tab 18' }
-            ],
+            activeTab: {},
+            tabs: [],
+            rightClickNode : null,
             selectedNodes : [],
             assetPropertySign : false,
             jobPropertySign : false,
@@ -521,10 +500,7 @@ export default {
             jobPropertySignClient : false,
             pathMapServer : [],
             pathMapClient : [],
-            showTabContentServer : [{
-                id : 1,
-                name : 'hoang'
-            }],
+            showTabContentServer : [],
             hideTabContentServer : [],
             showTabContentClient : [],
             hideTabContentClient : [],
@@ -640,10 +616,10 @@ export default {
     },
     methods: {
         removeTab(index) {
-            this.tabs.splice(index, 1);
-            if (this.tabs.length) {
-                this.activeTab = this.tabs[0].name;
+            if(this.activeTab.id == this.tabs[index].id) {
+                this.activeTab = {}
             }
+            this.tabs.splice(index, 1);
         },
         hideLogBar(sign) {
             this.logSign = false
@@ -926,13 +902,13 @@ export default {
         async showProperties() {
             this.propertiesSign = true
             const content = this.$refs.content;
-            content.style.width = `calc(80% - 5px)`;
+            content.style.width = `calc(75% - 5px)`;
         },
 
         async showPropertiesClient() {
             this.propertiesSignClient = true
             const content = this.$refs.contentClient;
-            content.style.width = `calc(80% - 5px)`;
+            content.style.width = `calc(75% - 5px)`;
         },
 
         serverSwap(serverSign) {
@@ -1369,8 +1345,24 @@ export default {
             return rowData
         },
 
-        async showData() {
-
+        async showData(node) {
+            // Tạo bản sao của node để đảm bảo reactivity
+            const newNode = { ...node };
+            if (this.tabs.some(item => item.id === newNode.id)) {
+                // Nếu tab đã tồn tại, active nó
+                this.activeTab = newNode;
+            } else {
+                const newTabs = [...this.tabs]; // Tạo mảng mới
+                if (this.activeTab?.id) {
+                    const index = newTabs.findIndex(item => item.id === this.activeTab.id);
+                    newTabs.splice(index + 1, 0, newNode);
+                } else {
+                    newTabs.push(newNode);
+                }
+                // Gán lại để trigger reactivity
+                this.tabs = newTabs;
+                this.activeTab = newNode;
+            }
         },
 
         async resetAllServer() {
@@ -1545,7 +1537,7 @@ export default {
 }
 
 .content {
-    width: calc(80% - 5px);
+    width: calc(75% - 5px);
     background-color: white;
     font-size: 12px; /* Cỡ chữ cho nội dung */
     box-sizing: border-box;
@@ -1655,12 +1647,14 @@ export default {
     box-sizing: border-box;
     border: 1px #dad7d7 solid;
     border-bottom: none;
-    overflow-y: hidden;
+    overflow-y: scroll;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     background-color: #E2E8F0;
 }
 
-.content-properties:hover {
-    overflow-y: auto
+.content-properties::-webkit-scrollbar {
+    display: none;
 }
 
 .content-properties-header {

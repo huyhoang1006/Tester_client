@@ -1,10 +1,26 @@
 <template>
     <li>
         <span @contextmenu.prevent="openContextMenu($event, node)" :class="{ selected: selectedNodes.some(n => n.id === node.id) }" class="folder" @click="toggle">
-            <div v-if="dataType.includes(node.mode)"><i class="fas fa-location-dot"></i> {{ node.name }}</div>
-            <div v-if="assetType.includes(node.asset)"><i class="fa-solid fa-gears"></i> {{ node.serial_no }}</div>
-            <div v-if="node.type == 'job'"><i class="fa-solid fa-toolbox"></i> {{ node.name }}</div>
-            <div v-if="node.type == 'test'"><i class="fa-solid fa-clipboard-check"></i> {{ node.name }}</div>
+            <div v-if="dataOwnerType.includes(node.mode)" class="icon-wrapper">
+                <icon size="16px" folderType="location" badgeColor="146EBE"></icon>
+                <span class="node-name">{{ node.name }}</span>
+            </div>
+            <div v-if="dataType.includes(node.mode)" class="icon-wrapper">
+                <icon size="16px" folderType="owner" badgeColor="146EBE"></icon>
+                <span class="node-name">{{ node.name }}</span>
+            </div>
+            <div v-if="assetType.includes(node.asset)" class="icon-wrapper">
+                <icon size="16px" folderType="asset" badgeColor="146EBE"></icon>
+                <span class="node-name">{{ node.serial_no }} </span>
+            </div>
+            <div v-if="node.type == 'job'" class="icon-wrapper">
+                <icon size="16px" folderType="job" badgeColor="FF0000"></icon>
+                <span class="node-name">{{ node.name }}</span>
+            </div>
+            <div v-if="node.type == 'test'" class="icon-wrapper">
+                <icon size="16px" folderType="test" badgeColor="008001"></icon>
+                <span class="node-name">{{ node.name }}</span>
+            </div>
         </span>
         
         <spinner style="margin-left: 20px;" v-if="isLoading"></spinner>
@@ -29,6 +45,7 @@
 /* eslint-disable */
 import Vue from "vue"
 import spinner from '@/views/Common/Spinner.vue'
+import icon from '@/views/Common/Icon.vue'
 
 export default {
     props: ["node", "selectedNodes"],
@@ -37,6 +54,7 @@ export default {
     },
     components: {
         spinner,
+        icon
     },
     data() {
         return {
@@ -44,7 +62,8 @@ export default {
             contextMenuVisible: false,
             contextMenuX: 0,
             contextMenuY: 0,
-            dataType : ["OWNER1", "OWNER2", "OWNER3", "OWNER4", "OWNER5", "location", "voltage", "feeder"],
+            dataType : ["OWNER1", "OWNER2", "OWNER3", "OWNER4", "OWNER5"],
+            dataOwnerType : ["location", "voltage", "feeder"],
             assetType : ["Transformer", "Circuit breaker", "Current transformer", "Disconnector", "Surge arrester", "Power cable", "Voltage transformer"]
         }
     },
@@ -148,6 +167,12 @@ ul {
 }
 .fade-enter, .fade-leave-to {
     opacity: 0;
+}
+
+.icon-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 /* Keyframes cho menu */

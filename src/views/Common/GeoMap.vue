@@ -1,6 +1,13 @@
 <template>
-    <div>
-        <l-map :zoom="zoom" :center="center" :attribution-control="false" style="height: 300px; width: 100%;" @click="onMapClick">
+    <div style="height: 300px; width: 100%; position: relative;">
+        <l-map
+            ref="map" 
+            :zoom="zoom" 
+            :center="center" 
+            :attribution-control="false" 
+            style="height: 100%; width: 100%;"
+            @click="onMapClick"
+        >
             <l-tile-layer
                 :url="url"
                 :attribution="attribution"
@@ -39,6 +46,8 @@ const redIcon = new L.Icon({
 
 export default {
     name : "geoMap",
+    mounted() {
+    },
     props: {
         locationGeo : {
             type : Object,
@@ -52,7 +61,18 @@ export default {
         LMap,
         LTileLayer,
         LMarker,
-        LPopup
+        LPopup,
+    },
+    mounted() {
+        this.$nextTick(() => {
+            let attributionLinks = document.querySelectorAll('.leaflet-control-attribution a[href*="leaflet"]');
+            attributionLinks.forEach(link => {
+                link.href = '';
+                link.title = 'AT Energy';
+                link.innerHTML = '<img style="width : 15px; height:15px;" src="/img/favicon.png"> AT Energy';
+            });
+            console.log("A")
+        })
     },
     data () {
         return {
@@ -60,7 +80,7 @@ export default {
             zoom: 8,
             center: [21, 106],
             latLng: null,
-            attribution: '&copy; <a href="https://automationandtesting.vn/" target="_blank">Open ATDigitalTester Map</a> contributors',
+            attribution: '&copy; <a>Open ATDigitalTester Map</a> contributors',
             popupText: '',
             clickedLatLng: null,
             redIcon,
@@ -71,13 +91,6 @@ export default {
             this.clickedLatLng = e.latlng;
         },
         async loadMap(data, sign) {
-            let attributionLinks = document.querySelectorAll('.leaflet-control-attribution a[href*="leaflet"]');
-            attributionLinks.forEach(link => {
-                link.href = 'https://automationandtesting.vn/';
-                link.title = 'AT Energy';
-                link.innerHTML = '<img style="width : 15px; height:15px;" src="/img/favicon.png"> AT Energy';
-            });
-
             if(sign == true) {
                 if(data != undefined) {
                     this.center = [data.x, data.y, data.z]
@@ -105,13 +118,19 @@ export default {
         },
         async customLocationClick() {
             this.popupText = 'Geo coordinate at (' + this.clickedLatLng.lat + ',' + this.clickedLatLng.lng + ')'
+        },
+        async reloadMap() {
+            if (this.$refs.map) {
+                let map = this.$refs.map.mapObject;
+                map.invalidateSize();
+            }
         }
     }
 }
 </script>
 <style>
 .leaflet-control-attribution a[href*="leaflet"] {
-  display: none;
+  display: none !important;
 }
 .custom-attribution {
   font-size: 14px;

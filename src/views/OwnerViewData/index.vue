@@ -1,15 +1,18 @@
 <template>
     <div id="location">
         <el-row style="height: fit-content; width: fit-content;">
-            <div class="col-content">
+            <el-col class="col-content">
                 <el-form ref="ruleForm" :rules="rules" :model="properties" :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Properties</span>
-                    <el-divider class="thick-divider"></el-divider>
+                    <el-divider></el-divider>
                     <el-form-item label="Name" prop="name">
                         <el-input :disabled="checkSide(this.sideData)" v-model="properties.name"></el-input>
                     </el-form-item>
                     <el-form-item label="Type" prop="mode">
                         <el-input v-model="properties.mode" disabled></el-input>
+                    </el-form-item>
+                    <el-form-item label="Full name">
+                        <el-input :disabled="checkSide(this.sideData)" v-model="properties.full_name"></el-input>
                     </el-form-item>
                     <el-form-item label="Address">
                         <el-input :disabled="checkSide(this.sideData)" v-model="properties.address"></el-input>
@@ -17,13 +20,19 @@
                     <el-form-item label="City">
                         <el-input :disabled="checkSide(this.sideData)" v-model="properties.city"></el-input>
                     </el-form-item>
+                    <el-form-item label="Tax code">
+                        <el-input :disabled="checkSide(this.sideData)" v-model="properties.tax_code"></el-input>
+                    </el-form-item>
                     <el-form-item label="Country">
                         <el-select :disabled="checkSide(this.sideData)" style="width: 100%;" filterable v-model="properties.country">
                             <el-option v-for="item in countryData" :key="item" :label="item" :value="item"> </el-option>
                         </el-select>
                     </el-form-item>
-                    <el-form-item label="Location system code">
-                        <el-input :disabled="checkSide(this.sideData)" v-model="properties.location_system_code"></el-input>
+                    <el-form-item label="Phone number">
+                        <el-input :disabled="checkSide(this.sideData)" v-model="properties.phone_no"></el-input>
+                    </el-form-item>
+                    <el-form-item label="Email">
+                        <el-input :disabled="checkSide(this.sideData)" v-model="properties.email"></el-input>
                     </el-form-item>
                     <el-form-item  label="Geo position x">
                         <el-select style="width: 75%;" @change="changeValueGeo" v-model="properties.x_position">
@@ -77,68 +86,43 @@
                         <geo-map ref='geoMap' :locationGeo='{}'></geo-map>
                     </Transition>
                 </el-form>
-            </div>
-            <div class="col-content mgt-20">
+            </el-col>
+            <el-col class="col-content mgt-20 mgb-20">
                 <el-form :disabled="checkSide(this.sideData)" :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Contact person</span>
                     <el-divider></el-divider>
                     <el-form-item label="Name">
-                        <el-input v-model="properties.person_name"></el-input>
+                        <el-input v-model="properties.name_person"></el-input>
                     </el-form-item>
                     <el-form-item label="Phone no.1">
-                        <el-input type="number" v-model="properties.person_phone_no1"></el-input>
+                        <el-input type="number" v-model="properties.phone1"></el-input>
                     </el-form-item>
                     <el-form-item label="Phone no.2">
-                        <el-input type="number" v-model="properties.person_phone_no2"></el-input>
+                        <el-input type="number" v-model="properties.phone2"></el-input>
                     </el-form-item>
                     <el-form-item label="Fax no">
-                        <el-input type="number" v-model="properties.person_fax_no"></el-input>
+                        <el-input type="number" v-model="properties.fax_contact"></el-input>
                     </el-form-item>
                     <el-form-item label="Email">
-                        <el-input v-model="properties.person_email"></el-input>
+                        <el-input v-model="properties.email_contact"></el-input>
                     </el-form-item>
                     <el-form-item label="Department">
-                        <el-input v-model="properties.person_department"></el-input>
+                        <el-input v-model="properties.department"></el-input>
                     </el-form-item>
                     <el-form-item label="Position">
-                        <el-input v-model="properties.person_position"></el-input>
+                        <el-input v-model="properties.position"></el-input>
                     </el-form-item>
                 </el-form>
-            </div>
-            <div class="col-content mgt-20">
-                <el-form :disabled="true" :label-width="labelWidth" size="mini" label-position="left">
+            </el-col>
+            <el-col class="col-content">
+                <el-form :disabled="checkSide(this.sideData)" :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Comment </span>
                     <el-divider></el-divider>
                     <el-input type="textarea" rows="5" v-model="properties.comment"></el-input>
                     <Attachment :dataParent="this.properties" :deleteList="deleteList" :attachment_="this.attachmentData" :fileUrl="this.fileUrl" title="location" height="120px" @data-attachment = "getDataAttachment"></Attachment>
                 </el-form>
-            </div>
+            </el-col>
         </el-row>
-        <el-dialog
-            :visible.sync="signAddGeo"
-            :title="titleGeo"
-            width="35%"
-            align-center
-            :before-close="handleCloseGeo"
-            :modal="false"
-        >
-            <el-form :label-width="labelWidth" size="mini" label-position="left">
-                <el-form-item label="Geographic coordinate x">
-                    <el-input type="number" v-model="geoChosen.x"></el-input>
-                </el-form-item>
-                <el-form-item label="Geographic coordinate y">
-                    <el-input type="number" v-model="geoChosen.y"></el-input>
-                </el-form-item>
-                <el-form-item label="Geographic coordinate z">
-                    <el-input type="number" v-model="geoChosen.z"></el-input>
-                </el-form-item>
-            </el-form>
-            <span slot="footer" class="dialog-footer">
-                <el-button type="danger" @click="handleCloseGeo()" size="small">Cancel</el-button>
-                <el-button type="primary" @click="handleConfirmGeo()" size="small">Confirm</el-button>
-            </span>
-
-        </el-dialog>
     </div>
 </template>
 
@@ -146,26 +130,20 @@
 /* eslint-disable */
 import mixin from './mixin'
 import Attachment from '@/views/Common/Attachment.vue'
-import namePlate from '@/views/Common/NamePlate.vue'
 import * as fileAPI from '@/api/fileAPI/fileUpload.js'
 import * as attachmentAPI from '@/api/attachmentAPI/attachmentAPI.js'
 import {country} from '../ConstantAsset/index'
+import * as ownerAPI from '@/api/owner/owner.js'
 import geoMap from '@/views/Common/GeoMap.vue'
+
 
 export default {
     components: { 
         Attachment,
-        namePlate,
         geoMap
     },
-    name: 'LocationViewData',
+    name: 'OwnerView',
     mixins: [mixin],
-    async mounted() {
-        await this.loadData(this.ownerData)
-        this.$nextTick(() => {
-            this.loadMapForView()
-        })
-    },
     props : {
         ownerData : {
             type : Object,
@@ -187,8 +165,6 @@ export default {
             signAddGeo : false,
             titleGeo : 'Add coordinate',
             message : "",
-            attachmentDataImage : {},
-            fileUrlImage : '-1',
             mode: this.$constant.ADD,
             location_id: null,
             saved: false,
@@ -201,16 +177,96 @@ export default {
                 "Power Plant", "Cement Plant", "Steel Plant", "Contract number"],
             countryData : country.default,
             voltageList : ['500 kV', '220 kV', '110 kV', '35 kV', '26 kV', '22 kV', '21 kV', '15.75 kV', '13.8 kV', '10 kV', '6.6 kV', '0.4 kV'],
-            deleteList : [],
-            deleteImage : {}
+            deleteList : []
         }
+    },
+    async mounted() {
+        await this.loadData(this.ownerData)
+        this.$nextTick(() => {
+            this.loadMapForView()
+        })
     },
     methods: {
         getDataAttachment(rowData) {
             this.attachmentData = rowData
         },
-        getDataNamePlate(rowData) {
-            this.attachmentDataImage = rowData
+        async loadData(tab) {
+            if(tab != undefined) {
+                this.properties = JSON.parse(JSON.stringify(tab))
+                if(this.properties.positionPoints == undefined) {
+                    this.properties.positionPoints = {
+                        x : [],
+                        y : [],
+                        z : []
+                    }
+                }
+                this.attachmentData = []
+                this.attachmentDataImage = {}
+                this.fileUrlImage = '-1',
+                // this.dataLoadAttachment = await attachmentAPI.getDataAttachment(this.properties.id)
+                // if(this.dataLoadAttachment.length != 0) {
+                //     this.attachmentData = JSON.parse(this.dataLoadAttachment[0].name).map(element => ({name : element.path}))
+                // }
+                // this.fileUrl = new Array(this.attachmentData.length)
+                this.fileUrl = new Array(this.attachmentData.length)
+                this.fileUrl.fill(-1)
+                this.deleteList = []
+                this.deleteImage = {}
+            }
+        },
+        async saveData() {
+            this.$refs.ruleForm.validate(async (valid) => {
+                if(valid) {
+                    console.log("A")
+                    try {
+
+                        let addListData = this.attachmentData.filter(element => element.upload == 'new')
+                        let deleteListData = this.deleteList.map(element => element.name)
+                        let data = []
+                        for(let i in this.attachmentData) {
+                            data.push({
+                                path : this.attachmentData[i].name
+                            })
+                        }
+                        if(this.dataLoadAttachment.length != 0) {
+                            this.dataLoadAttachment[0].name = JSON.stringify(data)
+                        } 
+                        else {
+                            this.dataLoadAttachment.push( 
+                                {
+                                    id : this.$uuid.newUuid(),
+                                    id_foreign : this.properties.id,
+                                    name : JSON.stringify(data),
+                                    path : null,
+                                    type : 'owner'
+                                }
+                            )
+                        }
+                        let rs = await fileAPI.updateFile(deleteListData, addListData, this.properties.name, this.properties.id)
+                        if(rs == true) {
+                            let rt = await attachmentAPI.upload(this.dataLoadAttachment)
+                            if(rt == true) {
+                                let rx = await ownerAPI.updateOwner(this.properties)
+                                this.$message.success("Update successful")
+                                this.$emit('update-data', this.properties)
+                            } else {
+                                let rx = await ownerAPI.updateOwner(this.properties)
+                                this.$message.success("Update successful without attachment")
+                                this.$emit('update-data', this.properties)
+                            }
+                        } else {
+                            let rx = await ownerAPI.updateOwner(this.properties)
+                            this.$message.success("Update successful without attachment")
+                            this.$emit('update-data', this.properties)
+                        }
+                    } catch(e) {
+                        this.$message.error("Update failed")
+                    }
+                } else {
+                    console.log('error submit!!')
+                    return false
+                }
+            })
         },
         checkSide(data) {
             if(data == 'server') {
@@ -218,67 +274,6 @@ export default {
             } else {
                 return false
             }
-        },
-        async loadData(tab) {
-            try {
-                if(tab != undefined) {
-                    this.properties = JSON.parse(JSON.stringify(tab))
-                    if(this.properties.positionPoints != undefined) {
-                        this.properties.positionPoints = {
-                            x : [],
-                            y : [],
-                            z : []
-                        }
-                    }
-                    this.attachmentData = []
-                    this.attachmentDataImage = {}
-                    this.fileUrlImage = '-1',
-                    // this.dataLoadAttachment = await attachmentAPI.getDataAttachment(this.properties.id)
-                    // if(this.dataLoadAttachment.length != 0) {
-                    //     this.attachmentData = JSON.parse(this.dataLoadAttachment[0].name).filter(element => element.sign != 'nameplate').map(element => ({name : element.path}))
-                    //     if(this.attachmentData.length == 0) {
-                    //         this.attachmentData = []
-                    //     }
-                    //     let attachmentDataImageTemp = JSON.parse(this.dataLoadAttachment[0].name).filter(element => element.sign == 'nameplate')
-                    //     if(attachmentDataImageTemp.length == 0) {
-                    //         this.attachmentDataImage = {}
-                    //     } else {
-                    //         this.attachmentDataImage.name = attachmentDataImageTemp[0].path
-                    //         try {
-                    //             if(this.attachmentDataImage.name != undefined) {
-                    //                 let base64String = await fileAPI.download(this.attachmentDataImage.name, this.properties.name, this.properties.id)
-                    //                 if (base64String.startsWith('/9j/')) {
-                    //                     let imageFormat = 'jpeg';
-                    //                     this.fileUrlImage = `data:image/${imageFormat};base64,${base64String}`;
-                    //                 } else if (base64String.startsWith('iVBORw0KGgo')) {
-                    //                     let imageFormat = 'png';
-                    //                     this.fileUrlImage = `data:image/${imageFormat};base64,${base64String}`;
-                    //                 } else if (base64String.startsWith('R0lGODlh')) {
-                    //                     let imageFormat = 'gif';
-                    //                     this.fileUrlImage = `data:image/${imageFormat};base64,${base64String}`;
-                    //                 } else if (base64String.startsWith('UklGR')) {
-                    //                     let imageFormat = 'webp';
-                    //                     this.fileUrlImage = `data:image/${imageFormat};base64,${base64String}`;
-                    //                 } else {
-                    //                     this.$message.error('Unsupported image nameplate format');
-                    //                 }
-                    //             }
-                    //         } catch(e) {
-                    //             this.$message.error("Download nameplate error!")
-                    //         }
-                    //     }
-                    // }
-                    this.fileUrl = new Array(this.attachmentData.length)
-                    this.fileUrl.fill(-1)
-                    this.deleteList = []
-                    this.deleteImage = {}
-                }
-            } catch(e) {
-                console.log(e)
-                this.$message.error("Cannot load location data")
-            }
-        },
-        async saveData() {
         },
         async changeValueGeo(index) {
             this.indexGeo = index
@@ -294,14 +289,6 @@ export default {
                     },
                     true
                 )
-            } catch(e) {
-                console.log(e)
-                this.$message.error('Cannot load location in map')
-            }
-        },
-        async loadMapFirst() {
-            try {
-                await this.$refs.geoMap.loadMap(undefined, false)
             } catch(e) {
                 console.log(e)
                 this.$message.error('Cannot load location in map')
@@ -409,7 +396,7 @@ export default {
 
 <style lang="scss" scoped>
 #location {
-    width: fit-content;
+    width: 100%
 }
 
 .col-content {
@@ -428,19 +415,8 @@ export default {
     position: relative;
     float: right;
 }
-.option-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
 .bolder {
     font-weight: bold;
     font-size: 0.75vw;
-}
-
-.icons {
-  display: flex;
-  gap: 8px; /* Khoảng cách giữa các icon */
 }
 </style>

@@ -1,24 +1,5 @@
 <template>
     <div id="location">
-        <el-row id="top-bar">
-            <el-col :span="24">
-                <el-button @click="backToManage" style="box-sizing: border-box; border-right: 1px solid #aeb6bf">
-                    <i class="fa-solid fa-circle-arrow-left display-block fa-2x"></i>
-                    <div class="mgt-10">Manage</div>
-                </el-button>
-                <el-button @click="saveLocation('ruleForm')">
-                    <i class="fa-solid fa-floppy-disk display-block fa-2x"></i>
-                    <div class="mgt-10">Save Location</div>
-                </el-button>
-                <el-button @click="$router.go(-1)" style="box-sizing: border-box">
-                    <i class="fa-solid fa-ban display-block fa-2x"></i>
-                    <div class="mgt-10">Cancel</div>
-                </el-button>
-                <el-button style="float: right; text-align: right; width: fit-content; cursor: default">
-                    <img src="@/assets/images/logo.png" style="max-height: 40px" />
-                </el-button>
-            </el-col>
-        </el-row>
         <el-row style="height: fit-content;" :gutter="20" id="main-content">
             <el-col :span="8" class="col-content">
                 <el-form v-if="(mode == 'edit' && (properties.mode == 'location' || properties.mode == 'feeder') || mode == 'add' || mode=='feederAdd')" ref="ruleForm" :rules="rules" 

@@ -206,7 +206,7 @@ export default {
             this.closeContextMenu();
         },
         show() {
-            this.$emit("show-data")
+            this.$emit("show-data", this.selectedNode)
             this.closeContextMenu()
         },
         edit() {

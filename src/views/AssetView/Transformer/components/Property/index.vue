@@ -1,109 +1,58 @@
 <template>
-    <div id="properties">
-        <el-row :gutter="20" class="content">
-            <el-col :span="8" class="col-content">
-                <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
-                    <span class="bolder">Properties</span>
-                    <el-divider></el-divider>
-                    <el-form-item label="Asset">
-                        <el-select :disabled="disabled" style="width: 100%" :default-first-option="true" v-model="propertiesData.asset" placeholder="Select asset type">
-                            <el-option label="Transformer" value="Transformer"> </el-option>
-                        </el-select>
-                    </el-form-item>
-                    <el-form-item label="Asset type">
-                        <el-select style="width: 100%" v-model="propertiesData.asset_type" placeholder="Select asset type">
-                            <el-option label="Two-winding" value="Two-winding"> </el-option>
-                            <el-option label="Three-winding" value="Three-winding"> </el-option>
-                            <el-option label="Auto w/ tert" value="Auto w/ tert"> </el-option>
-                            <el-option label="Auto w/o tert" value="Auto w/o tert"> </el-option>
-                        </el-select>
-                    </el-form-item>
-                    <el-form-item label="Serial no.">
-                        <el-input v-model="propertiesData.serial_no"></el-input>
-                    </el-form-item>
-                    <el-form-item label="Manufacturer">
-                        <el-select @change="createNew(propertiesData.manufacturer)" style="width: 100%;" filterable v-model="propertiesData.manufacturer">
-                            <el-option v-for="item in manufacturerList" :label="item" :key="item" :value=item> </el-option>
-                            <el-option v-for="item in manufacturerListAll" :key="item" :value=item> {{ item }} <i @click="deleteManu(item)" style="float: right; cursor: pointer;" class="fa-solid fa-trash"></i> <i @click="editManu(item)" style="float: right; margin-right: 10px; cursor: pointer;" class="fa-solid fa-pen-to-square"></i> </el-option>
-                            <el-option style="border-radius: 12px; background-color:#012596; margin: 10px; color: white;" value="Create new"><i class="fa-solid fa-square-plus" style="margin-right: 10px;"></i>&lt; Create new ></el-option>
-                        </el-select>
-                    </el-form-item>
-                    <el-form-item label="Manufacturer type">
-                        <el-input v-model="propertiesData.manufacturer_type"></el-input>
-                    </el-form-item>
-                    <el-form-item label="Manufacturing year">
-                        <el-input v-model="propertiesData.manufacturing_year"></el-input>
-                    </el-form-item>
-                    <el-form-item label="Country of origin">
-                        <el-select style="width: 100%;" filterable v-model="propertiesData.asset_system_code">
-                            <el-option v-for="item in countryData" :key="item" :label="item" :value="item"> </el-option>
-                        </el-select>
-                    </el-form-item>
-                    <el-form-item label="Apparatus ID">
-                        <el-input v-model="propertiesData.apparatus_id"></el-input>
-                    </el-form-item>
-                    <el-form-item label="Feeder">
-                        <el-input v-model="propertiesData.feeder"></el-input>
-                    </el-form-item>
-                    <!-- <el-form-item label="Date of warehouse receipt">
-                        <el-date-picker
-                            v-model="propertiesData.date_of_warehouse_receipt"
-                            style="width: 100%"
-                            format="MM/dd/yyyy"
-                            value-format="MM/dd/yyyy"
-                            type="date"
-                            placeholder="Pick a day">
-                        </el-date-picker>
-                    </el-form-item>
-                    <el-form-item label="Date of warehouse delivery">
-                        <el-date-picker
-                            v-model="propertiesData.date_of_warehouse_delivery"
-                            style="width: 100%"
-                            format="MM/dd/yyyy"
-                            value-format="MM/dd/yyyy"
-                            type="date"
-                            placeholder="Pick a day">
-                        </el-date-picker>
-                    </el-form-item>
-                    <el-form-item label="Progress">
-                        <el-input v-model="propertiesData.progress"></el-input>
-                    </el-form-item>
-                    <el-form-item label="Standard">
-                        <el-input v-model="propertiesData.standard"></el-input>
-                    </el-form-item>
-                    <el-form-item label="Thermal Meter">
-                        <el-input v-model="propertiesData.thermal_meter"></el-input>
-                    </el-form-item>
-                    <el-form-item label="Date of delivery">
-                        <el-date-picker
-                            v-model="propertiesData.date_of_delivery"
-                            style="width: 100%"
-                            format="MM/dd/yyyy"
-                            value-format="MM/dd/yyyy"
-                            type="date"
-                            placeholder="Pick a day">
-                        </el-date-picker>
-                    </el-form-item>
-                    <el-form-item label="Date of Production order note">
-                        <el-date-picker
-                            v-model="propertiesData.date_of_production_order"
-                            style="width: 100%"
-                            format="MM/dd/yyyy"
-                            value-format="MM/dd/yyyy"
-                            type="date"
-                            placeholder="Pick a day">
-                        </el-date-picker>
-                    </el-form-item> -->
-                </el-form>
-            </el-col>
-            <el-col :span="8" class="col-content">
-                <el-form :label-width="labelWidth" size="mini" label-position="left">
-                    <span class="bolder">Comment</span>
-                    <el-divider></el-divider>
-                    <el-input type="textarea" :rows="14" v-model="propertiesData.comment"></el-input>
-                </el-form>
-            </el-col>
-        </el-row>
+    <div class="mgt-20 property">
+        <div class="col-content">
+            <el-form :disabled="checkSide(this.signMode)" :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
+                <span class="bolder">Properties</span>
+                <el-divider></el-divider>
+                <el-form-item label="Asset">
+                    <el-select :disabled="disabled" style="width: 100%" :default-first-option="true" v-model="propertiesData.asset" placeholder="Select asset type">
+                        <el-option label="Transformer" value="Transformer"> </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="Asset type">
+                    <el-select style="width: 100%" v-model="propertiesData.asset_type" placeholder="Select asset type">
+                        <el-option label="Two-winding" value="Two-winding"> </el-option>
+                        <el-option label="Three-winding" value="Three-winding"> </el-option>
+                        <el-option label="Auto w/ tert" value="Auto w/ tert"> </el-option>
+                        <el-option label="Auto w/o tert" value="Auto w/o tert"> </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="Serial no.">
+                    <el-input v-model="propertiesData.serial_no"></el-input>
+                </el-form-item>
+                <el-form-item label="Manufacturer">
+                    <el-select @change="createNew(propertiesData.manufacturer)" style="width: 100%;" filterable v-model="propertiesData.manufacturer">
+                        <el-option v-for="item in manufacturerList" :label="item" :key="item" :value=item> </el-option>
+                        <el-option v-for="item in manufacturerListAll" :key="item" :value=item> {{ item }} <i @click="deleteManu(item)" style="float: right; cursor: pointer;" class="fa-solid fa-trash"></i> <i @click="editManu(item)" style="float: right; margin-right: 10px; cursor: pointer;" class="fa-solid fa-pen-to-square"></i> </el-option>
+                        <el-option style="border-radius: 12px; background-color:#012596; margin: 10px; color: white;" value="Create new"><i class="fa-solid fa-square-plus" style="margin-right: 10px;"></i>&lt; Create new ></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="Manufacturer type">
+                    <el-input v-model="propertiesData.manufacturer_type"></el-input>
+                </el-form-item>
+                <el-form-item label="Manufacturing year">
+                    <el-input v-model="propertiesData.manufacturing_year"></el-input>
+                </el-form-item>
+                <el-form-item label="Country of origin">
+                    <el-select style="width: 100%;" filterable v-model="propertiesData.asset_system_code">
+                        <el-option v-for="item in countryData" :key="item" :label="item" :value="item"> </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="Apparatus ID">
+                    <el-input v-model="propertiesData.apparatus_id"></el-input>
+                </el-form-item>
+                <el-form-item label="Feeder">
+                    <el-input v-model="propertiesData.feeder"></el-input>
+                </el-form-item>
+            </el-form>
+        </div>
+        <div class="col-content">
+            <el-form :disabled="checkSide(this.signMode)" :label-width="labelWidth" size="mini" label-position="left">
+                <span class="bolder">Comment</span>
+                <el-divider></el-divider>
+                <el-input type="textarea" :rows="12" v-model="propertiesData.comment"></el-input>
+            </el-form>
+        </div>
     </div>
 </template>
 
@@ -152,6 +101,9 @@ export default {
         },
         update : {
             require : true
+        },
+        signMode : {
+            required : true
         }
     },
     data() {
@@ -277,9 +229,26 @@ export default {
             this.itemUpdate = item
             this.sign ='past'
             this.$emit('editManu', item)
-        }
+        },
+        checkSide(data) {
+            if(data == 'server') {
+                return true
+            } else {
+                return false
+            }
+        },
     }
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.col-content {
+    width: 50%;
+    box-sizing: border-box;
+}
+.property {
+    width: 100%;
+    display: flex;
+    gap: 20px
+}
+</style>

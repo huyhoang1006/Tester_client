@@ -1,65 +1,44 @@
 <template>
-    <div id="asset">
-        <div style="position: fixed; width: 100%; top: 38px; z-index: 1">
-            <el-row id="top-bar">
-                <el-col :span="24">
-                    <el-button @click="backToManage" style="box-sizing: border-box; border-right: 1px solid #aeb6bf">
-                        <i class="fa-solid fa-circle-arrow-left display-block fa-2x"></i>
-                        <div class="mgt-10">Manage</div>
-                    </el-button>
-                    <el-button @click="saveAsset">
-                        <i class="fa-solid fa-floppy-disk display-block fa-2x"></i>
-                        <div class="mgt-10">Save Asset</div>
-                    </el-button>
-                    <el-button @click="onCancel" style="box-sizing: border-box">
-                        <i class="fa-solid fa-ban display-block fa-2x"></i>
-                        <div class="mgt-10">Cancel</div>
-                    </el-button>
-                    <el-button style="float: right; text-align: right; width: fit-content; cursor: default">
-                        <img src="@/assets/images/logo.png" style="max-height: 40px" />
-                    </el-button>
-                </el-col>
-            </el-row>
+    <div>
+        <div style="width: calc(100% - 20px)">
+            <el-button @click="switchData('Transformer')" size="mini" style="width: calc(50% / 3);" type="primary">Transformer</el-button>
+            <el-button @click="switchData('Bushings')" size="mini" style="width: calc(50% / 3 - 10px);" type="primary">Bushings</el-button>
+            <el-button @click="switchData('Tap changer')" size="mini" style="width: calc(50% / 3 - 10px);" type="primary">Tap changer</el-button>
         </div>
-        <div style="margin-top: 100px;">
-            <el-row :gutter="20" id="main-content" style="padding: 0; z-index: 0;">
-                <el-tabs type="card" class="w-100 h-100">
-                    <!-- Transformer -->
-                    <el-tab-pane :label="properties.asset">
-                        <!-- Properties -->
-                        <property @setUpdate="setUpdate" :updateNew='updateNew' :update="update" @editManu="editManu" :title="title" @createAdd="updateShowAdd" :manufact="manufacturerCustom" @reloadManu="reloadManu()" :data="properties" :disabled="disabled"></property>
+        <div>
+            <div v-if="this.switch == 'Transformer'">
+                <!-- Properties -->
+                <property :signMode="signMode" @setUpdate="setUpdate" :updateNew='updateNew' :update="update" @editManu="editManu" :title="title" @createAdd="updateShowAdd" :manufact="manufacturerCustom" @reloadManu="reloadManu()" :data="properties" :disabled="disabled"></property>
 
-                        <!-- Winding configuration -->
-                        <winding-configuration :data="winding_configuration" :properties="properties"></winding-configuration>
+                <!-- Winding configuration -->
+                <!-- <winding-configuration :data="winding_configuration" :properties="properties"></winding-configuration> -->
 
-                        <!-- Ratings -->
-                        <rating :data="ratings" :properties="properties"></rating>
+                <!-- Ratings -->
+                <!-- <rating :data="ratings" :properties="properties"></rating> -->
 
-                        <!-- Impedances -->
-                        <impedance :data="impedances" :properties="properties" :tap-changers="tapChangers"></impedance>
+                <!-- Impedances -->
+                <!-- <impedance :data="impedances" :properties="properties" :tap-changers="tapChangers"></impedance> -->
 
-                        <!-- Others -->
-                        <other :data="others" :properties="properties"></other>
+                <!-- Others -->
+                <!-- <other :data="others" :properties="properties"></other> -->
+            </div>
+            <div v-else-if="this.switch == 'Bushings'">
+                
+            </div>
+            <div v-else>
+                
+            </div>
 
-                    </el-tab-pane>
-
-                    <!-- Bushings -->
-                    <el-tab-pane label="Bushings">
-                        <bushing
-                            :asset_type="properties.asset_type"
-                            :asset_phase="winding_configuration.phases"
-                            :asset_winding_config="winding_configuration.vector_group"
-                            :asset_bushings_config="bushings_config"
-                            @input-bushing="onInputBushing">
-                        </bushing>
-                    </el-tab-pane>
-
-                    <!-- Tab changers -->
-                    <el-tab-pane label="Tap changers">
-                        <tap-changer :properties="properties" :data="tapChangers"></tap-changer>
-                    </el-tab-pane>
-                </el-tabs>
-            </el-row>
+            <!-- Bushings -->
+                <!-- <bushing
+                    :asset_type="properties.asset_type"
+                    :asset_phase="winding_configuration.phases"
+                    :asset_winding_config="winding_configuration.vector_group"
+                    :asset_bushings_config="bushings_config"
+                    @input-bushing="onInputBushing">
+                </bushing> -->
+            <!-- Tab changers -->
+                <!-- <tap-changer :properties="properties" :data="tapChangers"></tap-changer> -->
         </div>
         <manufacturerAdd :dataProperties="dataProperties" :showAdd.sync="showAdd" @backSign="backSign()" @backSignUpdate="backSignUpdate" :title="title" :modeManu="modeManu"></manufacturerAdd>
 
@@ -67,6 +46,7 @@
 </template>
 
 <script>
+/* eslint-disable */
 import WindingConfiguration from './components/WindingConfiguration'
 import Bushing from './components/Bushing'
 import TapChanger from './components/TapChanger'
@@ -79,6 +59,16 @@ import manufacturerAdd from '@/views/Common/ManufacturerAdd.vue'
 
 export default {
     name: 'AssetView',
+    props : {
+        ownerData : {
+            type : Object,
+            required : true
+        },
+        sideData : {
+            type : String,
+            required : true
+        }
+    },
     components: {
         WindingConfiguration,
         Bushing,
@@ -92,6 +82,7 @@ export default {
     mixins: [mixin],
     data() {
         return {
+            signMode : this.sideData,
             mode: this.$constant.ADD,
             asset_id: null,
             saved: false,
@@ -102,24 +93,21 @@ export default {
             modeManu : 'insert',
             dataProperties : {},
             updateNew : '',
-            update : false
+            update : false,
+            switch : 'Transformer'
         }
     },
 
     async beforeMount() {
-        let rs = await window.electronAPI.getManufacturerByType(this.title)
-        if(rs.success) {
-            this.manufacturerCustom = rs.data.map(e => e.name)
-        }
+        // let rs = await window.electronAPI.getManufacturerByType(this.title)
+        // if(rs.success) {
+        //     this.manufacturerCustom = rs.data.map(e => e.name)
+        // }
     },
 
-    mounted() {},
     methods: {
         onInputBushing(bushings_config_arr) {
             this.bushings_config = bushings_config_arr
-        },
-        onCancel() {
-            this.$router.go(-1)
         },
         updateShowAdd(sign) {
             this.showAdd = sign
@@ -159,6 +147,9 @@ export default {
                 this.manufacturerCustom = rs.data.map(e => e.name)
             }
         },
+        async switchData(data) {
+            this.switch = data
+        }
     }
 }
 </script>
