@@ -21,6 +21,10 @@
                 <icon size="16px" folderType="test" badgeColor="008001"></icon>
                 <span class="node-name">{{ node.name }}</span>
             </div>
+            <div v-else class="icon-wrapper">
+                <icon size="14px" folderType="building" badgeColor="008001"></icon>
+                <span class="node-name">{{ node.name }}</span>
+            </div>
         </span>
         
         <spinner style="margin-left: 20px;" v-if="isLoading"></spinner>
@@ -173,6 +177,10 @@ ul {
     display: flex;
     align-items: center;
     gap: 10px;
+}
+
+.node-name {
+    font-weight: 600;
 }
 
 /* Keyframes cho menu */

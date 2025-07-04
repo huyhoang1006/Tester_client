@@ -26,23 +26,31 @@
             <div ref="sidebarClient" v-show="clientSlide" class="sidebar">
                 <div class="title-temp">
                     <div ref="tabContainer" class="tab-container">
-                        <div ref="locationRoot" @click="showLocationRoot" class="location">
+                        <div @contextmenu.prevent="showContext" ref="locationRoot" @click="showLocationRoot" class="location">
                             Location
                         </div>
-                        <div ref="ownerRoot" @click="showOwnerRoot" class="tab">
+                        <div ref="ownerRoot" class="tab">
                             Owner
                         </div>
                     </div>
+                    <contextMenu @show-addSubs="showAddSubs" ref="contextSubstation"></contextMenu>
                 </div>
-                <div v-show="showOwner" class="child-nav">
+                <div class="child-nav">
                     <ul>
-                        <TreeNode v-for="item in ownerList" :key="item.id" :node="item" @fetch-children="fetchChildren"></TreeNode>
+                        <TreeNode 
+                            v-for="item in organisationClientList" 
+                            :key="item.id" 
+                            :node="item" 
+                            :selectedNodes.sync="selectedNodes"
+                            @fetch-children="fetchChildren" 
+                            @show-properties="showPropertiesData"
+                            @update-selection="updateSelection"
+                            @clear-selection="clearSelection"
+                            @open-context-menu="openContextMenu"
+                        >
+                        </TreeNode>
                     </ul>
-                </div>
-                <div v-show="!showOwner" class="child-nav">
-                    <ul>
-                        <TreeNode v-for="item in locationList" :key="item.id" :node="item" @fetch-children="fetchChildren"></TreeNode>
-                    </ul>
+                    <contextMenu @show-data="showData" ref="contextMenu"></contextMenu>
                 </div>
             </div>
             <div ref="sidebarServer" v-show="!clientSlide" class="sidebar">
@@ -290,47 +298,47 @@
                             <div class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Name</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.name }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word"> {{ propertiesClient.name || '&nbsp;' }} </div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Region</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.region }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.region || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Plant</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.plant }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.plant || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Address</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.address }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.address || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">City</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.city }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.city || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">State/Province</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.state_province }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.state_province || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Postal code</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.postal_code }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.postal_code || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Country</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.country }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.country || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Geo coordinates</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word"></div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.geo_coordinates || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Phone number</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.phone_no }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.phone_no || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Email</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.email }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.email || '&nbsp;' }}</div>
                                 </div>
                             </div>
                             <div v-if="assetPropertySignClient" class="content-properties-header">
@@ -340,35 +348,35 @@
                             <div v-if="assetPropertySignClient" class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Asset</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.asset }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.asset || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Asset type</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.asset_type }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.asset_type || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Serial number</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.serial_no }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.serial_no || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Manufacturer</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.manufacturer }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.manufacturer || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Manufacturer type</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.manufacturer_type }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.manufacturer_type || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Manufacturing year</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.manufacturing_year }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.manufacturing_year || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Country</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.country }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.country || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Apparatus id</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.apparatus_id }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.apparatus_id || '&nbsp;' }}</div>
                                 </div>
                             </div>
                             <div v-if="jobPropertySignClient" class="content-properties-header">
@@ -437,6 +445,18 @@
                 </div>
             </div>
         </div>
+        <el-dialog
+            title="Add Substation"
+            :visible.sync="signSubs" 
+            width="1000px"
+            @close="handleSubsCancel"
+        >
+            <Substation ref="substation"></Substation>
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" type="danger" @click="handleSubsCancel" >Cancel</el-button>
+                <el-button size="small" type="primary" @click="handleSubsConfirm">Save</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 <script>
@@ -478,6 +498,8 @@ import * as testDisconnectorApi from '@/api/disconnector/testDisconnector'
 import * as testSurgeApi from '@/api/surge/testSurge'
 import * as testPowerApi from '@/api/power/testPower'
 
+import Substation from '../LocationInsert/locationLevelView.vue'
+
 export default {
     name: 'TreeNavigation',
     components : {
@@ -486,10 +508,13 @@ export default {
         pageAlign,
         spinner,
         contextMenu,
-        Tabs
+        Tabs,
+        Substation
     },
     data() {
         return {
+            organisationClientList : [],
+            signSubs : false,
             activeTab: {},
             tabs: [],
             rightClickNode : null,
@@ -573,7 +598,6 @@ export default {
             logSignClient : false,
             propertiesSign : true,
             propertiesSignClient : true,
-            showOwner : true,
             clientSlide : true,
             pageLocationSync : {
                 first : 1,
@@ -737,39 +761,65 @@ export default {
                 ownerRoot.style.color = "rgba(0, 0, 0, 0.5)"; // Chữ bị làm mờ nhưng border vẫn giữ nguyên
             }
 
-            this.$nextTick(() => {
-                this.showOwner = false
-            })
-        },
-
-        showOwnerRoot() {
-            const locationRoot = this.$refs.locationRoot;
-            const ownerRoot = this.$refs.ownerRoot;
-            if (ownerRoot) {
-                ownerRoot.style.borderBottom = "2px #aba7a7 solid"; // Thêm viền màu đen dày 2px
-                ownerRoot.style.color = "rgba(0, 0, 0, 1)"; // Chữ rõ nét
-            }
-            if (locationRoot) {
-                locationRoot.style.borderBottom = "2px #e6e4e4 solid";
-                locationRoot.style.color = "rgba(0, 0, 0, 0.5)"; // Chữ bị làm mờ nhưng border vẫn giữ nguyên
-            }
-
-            this.$nextTick(() => {
-                this.showOwner = true
+            this.$nextTick(async () => {
+                try {
+                    let rs = await window.electronAPI.getParentOrganizationByMrid(this.$constant.ROOT)
+                    if(rs.success) {
+                        this.organisationClientList = [rs.data] || []
+                    } else {
+                        this.$message.error("Không tìm thấy dữ liệu gốc")
+                    }
+                }catch (error) {
+                    this.$message.error("Lỗi khi lấy dữ liệu gốc")
+                    console.error("Lỗi khi lấy dữ liệu:", error)
+                }                
             })
         },
 
         async fetchChildren(node) {
             if (!node.children) {
                 try {
-                    let newId = uuid.newUuid()
-                    const data = [{
-                        id : newId,
-                        name : newId,
-                    }]
-                    Vue.set(node, "children", data); // Đảm bảo Vue reactive
+                    let newRows = [];
+                    if(node.asset != undefined) {
+                    } else {
+                        const clickedRow = node;
+                        const [organisationReturn, substationReturn] = await Promise.all([
+                            window.electronAPI.getParentOrganizationByParentMrid(clickedRow.mrid),
+                            window.electronAPI.getSubstationsInOrganisationForUser(clickedRow.mrid, this.$store.state.user.user_id)
+                        ]);
+                        if(organisationReturn.success) {
+                            organisationReturn.data.forEach(row => {
+                                row.parentId = clickedRow.mrid;
+                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                row.parentName = parentName
+                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr.push({
+                                    id : clickedRow.mrid,
+                                    parent : clickedRow.name
+                                })
+                            });
+                            newRows.push(...organisationReturn.data);
+                        }
+
+                        if(substationReturn.success) {
+                            substationReturn.data.forEach(row => {
+                                row.parentId = clickedRow.mrid;
+                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                row.parentName = parentName
+                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr.push({
+                                    id : clickedRow.mrid,
+                                    parent : clickedRow.name
+                                })
+                            });
+                            newRows.push(...substationReturn.data);
+                        }
+
+                        console.log("Organisation Return:", organisationReturn, substationReturn);
+                    }
+                    Vue.set(node, "children", newRows); // Đảm bảo Vue reactive
                 } catch (error) {
-                    console.error("Lỗi khi lấy dữ liệu:", error);
+                    console.error("Error fetching children:", error);
                 }
             }
         },
@@ -1129,6 +1179,30 @@ export default {
             this.$refs.contextMenu.openContextMenu(event, node);
         },
 
+        async showContext(event) {
+            this.$refs.contextSubstation.openContextMenuSubstation(event);
+        },
+
+        async handleSubsCancel() {
+            this.signSubs = false
+        },
+
+        async handleSubsConfirm() {
+            try {
+                const subs = this.$refs.substation
+                if(subs) {
+                    const sign = await subs.saveSubstation()
+                    if(sign) {
+                        this.$message.success("Substation saved successfully")
+                        this.signSubs = false
+                    }
+                }
+            } catch (error) {
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
+        },
+
         async downloadFromServer() {
 
         },
@@ -1363,6 +1437,10 @@ export default {
                 this.tabs = newTabs;
                 this.activeTab = newNode;
             }
+        },
+
+        showAddSubs() {
+            this.signSubs = true
         },
 
         async resetAllServer() {
@@ -1764,7 +1842,7 @@ export default {
     top: 50%;  /* Căn giữa theo chiều dọc */
     right: 0;  /* Đẩy sát mép phải */
     transform: translateY(-50%); /* Căn giữa theo chiều dọc */
-    width: 1vh !important; /* Độ rộng */
+    width: 1.2vh !important; /* Độ rộng */
     height: 10vh; /* Độ cao */
     background: #D9D9D9;
     clip-path: polygon(100% 0%, 100% 100%, 0% 80%, 0% 20%);

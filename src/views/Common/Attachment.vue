@@ -2,20 +2,24 @@
     <div>
         <br/>
         <br/>
-        <span class="bolder">Attachments
+        <span style="font-weight: bold; font-size: 12px;">Attachments
             <span class="last-right-parent">
-                <i @click="downloadItem(rowCurrent)" class="fa fa-download mgr-10 pointer"></i>
+                <i @click="downloadItem()" class="fa fa-download mgr-10 pointer"></i>
                 <i @click="openFile()" class="fa-solid fa-folder-open mgr-10 pointer"></i>
                 <i @click="upload()" class="fa-solid fa-plus mgr-10 pointer"></i>
                 <i @click="deleteItem(rowCurrent)" class="fa-solid fa-trash mgr-10 pointer"></i>
             </span>
         </span>
         <el-divider></el-divider>
-        <div class="border-main color-main" :style="{height: height, overflow: 'auto'}">
+        <div class="border-main color-main" :style="{height: height, overflow: 'auto', fontSize: '12px'}">
             <table class="table-attachment">
                 <tr class="tr-hover" v-for="(item, index) in rowData" :key="index">
-                    <td @dblclick="openFile()" @click="selectRow(index)" ref="table">
-                        <i class="fa-solid fa-file"></i> {{ item.path.split("/")[item.path.split("/").length - 1] }} 
+                    <td 
+                        @click="onTdClick(index)" 
+                        @dblclick="onTdDblClick" 
+                        ref="table"
+                    >
+                        <i class="fa-regular fa-folder-open main-icon"></i> {{ item.path.split(/[/\\]/).pop() }} 
                     </td>
                 </tr>
             </table>
@@ -24,8 +28,8 @@
 </template>
 
 <script>
-import loader from "@/utils/preload"
 import { mapState } from 'vuex'
+
 export default {
     name: 'attachments',
     props: {
@@ -38,9 +42,9 @@ export default {
             attachment : "",
             rowCurrent : "",
             rowData : [],
+            clickTimer: null,
+            clickDelay: 250, // ms
         }
-    },
-    beforeMount() {
     },
     watch : {
         rowData : {
@@ -64,38 +68,52 @@ export default {
     methods: {
         deleteItem(row) {
             if(row !== '') {
-                this.$confirm('This will permanently delete the file. Continue?', 'Warning', {
+                this.$confirm('This will delete the file. Continue?', 'Warning', {
                     confirmButtonText: 'OK',
                     cancelButtonText: 'Cancel',
                     type: 'warning'
                 })
                 .then(async () => {
-                    if(row !== '') {
-                        loader.loaderContainerStart()
-                        const rs = await window.electronAPI.deleteAttachmentpath(this.rowData[row].path)
-                        if (rs.success) {
+                    try {
+                        if(row !== '') {
+                            this.rowData.splice(row, 1)
                             this.$message({
                                 type: 'success',
                                 message: 'Delete attachment completed'
                             })
-                            this.rowData.splice(row, 1)
-                            loader.loaderEnd()
-                        } else {
-                            this.$message.error("Delete attachment cannot completed")
                         }
-                        loader.loaderEnd()
+                        this.rowCurrent = ""
+                    } catch (error) {
+                        this.$message.error("Some error occurred when deleting attachment")
                     }
-                    this.rowCurrent = ""
                 })
             }
         },
+        // Sửa logic click/dblclick
+        onTdClick(index) {
+            if (this.clickTimer) {
+                clearTimeout(this.clickTimer)
+                this.clickTimer = null
+            }
+            this.clickTimer = setTimeout(() => {
+                this.selectRow(index)
+                this.clickTimer = null
+            }, this.clickDelay)
+        },
+        onTdDblClick() {
+            if (this.clickTimer) {
+                clearTimeout(this.clickTimer)
+                this.clickTimer = null
+            }
+            this.openFile()
+        },
         selectRow(x) {
+            let ref = this.$refs['table'][x]
+            let myDivObjBgColor = window.getComputedStyle(ref).backgroundColor;
             this.$refs['table'].forEach((element) => {
                 element.style.backgroundColor = 'rgba(0, 0, 0, 0)',
                 element.style.color = 'black'
             })
-            let ref = this.$refs['table'][x]
-            let myDivObjBgColor = window.getComputedStyle(ref).backgroundColor;
             if(myDivObjBgColor.toString() === 'rgba(0, 0, 0, 0)') {
                 ref.style.backgroundColor = '#012596',
                 ref.style.color = 'white'
@@ -107,20 +125,27 @@ export default {
             }
         },
         async upload() {
-            loader.loaderContainerStart()
-            const rs = await window.electronAPI.getAttachmentpath()
-            loader.loaderEnd()
-            if (rs.success) {
-                this.$message({
-                    type: 'success',
-                    message: 'Attachment completed'
-                })
-                var row = {
-                    path : rs.path
+            try {
+                const rs = await window.electronAPI.getAttachmentpath()
+                if (rs.success) {
+                    if(this.rowData.map(e => e.path.split(/[/\\]/).pop()).includes(rs.path.split(/[/\\]/).pop())) {
+                        this.$message.error("Name file exists, please choose another file")
+                        return
+                    }
+                    var row = {
+                        path : rs.path
+                    }
+                    this.rowData.push(row)
+                    this.$message({
+                        type: 'success',
+                        message: 'Attachment completed'
+                    })
+                } else {
+                    this.$message.error("Attachment cannot completed")
                 }
-                this.rowData.push(row)
-            } else {
-                this.$message.error("Attachment cannot completed")
+            } catch (error) {
+                console.log(error)
+                this.$message.error("Some error occurred when uploading attachment")
             }
         },
         async openFile() {
@@ -211,5 +236,12 @@ export default {
     background-color: white;
     color: black;
     cursor: pointer;
+}
+
+.main-icon {
+    font-size: v-bind(size);
+    color: #ffc107;
+    position: relative;
+    z-index: 1;
 }
 </style>

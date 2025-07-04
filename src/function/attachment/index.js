@@ -1,112 +1,69 @@
 import { v4 as newUuid } from 'uuid'
-import { NIL as EMPTY } from 'uuid'
 import db from '../datacontext/index'
-import fs from 'fs'
-import * as upath from 'upath';
 
-
-export const downloadFile = async (src, dest) => {
+export const getAttachmentByForeignIdAndType = async (id_foreign, type) => {
     return new Promise((resolve, reject) => {
-        fs.readFile(src,(err, inputD) => {
-            if(err) {
-                reject({
-                    success: false,
-                    message: 'Can not read file',
-                })
-            }
-            else {
-                fs.writeFile(dest, inputD, (err, writeD) => {
-                    if(err) {
-                        reject({
-                            success: false,
-                            message: 'Can not write file',
-                        })
-                    }
-                    else {
-                        resolve({
-                            success: true,
-                            message: '',
-                        })
-                    }
-                } )
-            }
+        db.get("SELECT * FROM attachment where id_foreign=? and type=?", [id_foreign, type], (err, row) => {
+            if (err)  return reject({success: false, err : err, message: 'Get all attachments failed'})
+            if (!row) return resolve({ success: false, data: null, message: 'Attachment not found' })
+            return resolve({success: true, data: row, message: 'Get all attachments completed'})
         })
     })
 }
 
-export const uploadF = async (src, dest, fs) => {
+export const getAttachmentById = async (id) => {
     return new Promise((resolve, reject) => {
-        fs.readFile(src,(err, inputD) => {
-            if(err) {
-                reject({
-                    success: false,
-                    message: '',
-                    path: ""
-                })
+        db.get("SELECT * FROM attachment where id=?", [id], (err, row) => {
+            if (err) return reject({success: false, err : err, message: 'Get attachment by id failed'})
+            if (!row) return resolve({ success: false, data: null, message: 'Attachment not found' })
+            return resolve({success: true, data: row, message: 'Get attachment by id completed'})
+        })
+    })
+}
+
+export const updateAttachmentById = async (id, attachment) => {
+    return new Promise((resolve, reject) => {
+        db.run(
+            `UPDATE attachment
+             SET path = ?, name = ?, type = ?, id_foreign = ?
+             WHERE id = ?`,
+            [attachment.path, attachment.name, attachment.type, attachment.id_foreign, id],
+            function (err) {
+                if (err) return reject({ success: false, err, message: 'Update attachment failed' })
+                return resolve({ success: true, data : attachment, message: 'Update attachment completed' })
             }
-            else {
-                fs.writeFile(dest, inputD, (err, writeD) => {
-                    if(err) {
-                        reject({
-                            success: false,
-                            message: '',
-                            path: ""
-                        })
-                    }
-                    else {
-                        resolve({
-                            success: true,
-                            message: '',
-                            path: upath.toUnix(dest)
-                        })
-                    }
-                } )
+        )
+    })
+}
+
+export const uploadAttachment = async (attachment) => {
+    return new Promise((resolve, reject) => {
+        db.run(
+            `INSERT INTO attachment(id, id_foreign, type, name)
+             VALUES (?, ?, ?, ?)
+             ON CONFLICT(id) DO UPDATE SET
+               id_foreign = excluded.id_foreign,
+               type = excluded.type,
+               name = excluded.name`,
+            [
+                attachment.id || newUuid(),
+                attachment.id_foreign,
+                attachment.type,
+                JSON.stringify(attachment.name)
+            ],
+            function (err) {
+                if (err) return reject({ success: false, err, message: 'Upload attachment failed' })
+                return resolve({ success: true, data: attachment, message: 'Upload attachment completed' })
             }
-        })
+        )
     })
 }
 
-export const getAllAttachment = async (id_foreign, type) => {
+export const deleteAttachmentById = (id) => {
     return new Promise((resolve, reject) => {
-        db.all("SELECT * FROM attachment where id_foreign=? and type=?", [id_foreign, type], (err, row) => {
-            if (err) reject(err)
-            resolve(row)
-        })
-    })
-}
-
-export const updateAttachment = async (id, info) => {
-    return new Promise((resolve, reject) => {
-        db.run('UPDATE attachment' +
-        ' SET name = ?' +
-        ' WHERE id_foreign = ?',
-        [
-            JSON.stringify(info), id,
-        ], function (err) {
-            if (err) reject(err)
-            resolve(true)
-        })
-    })
-}
-
-export const uploadAttachment = async (id_foreign, type, info) => {
-    return new Promise((resolve, reject) => {
-        db.run('INSERT INTO attachment(id, id_foreign, type, name)' +
-        ' VALUES(?, ?, ?, ?)',
-        [
-            newUuid(), id_foreign , type, JSON.stringify(info)
-        ], function (err) {
-            if (err) reject(err)
-            resolve(true)
-        }) 
-    });
-}
-
-export const deleteAttachment = (id_foreign) => {
-    return new Promise((resolve, reject) => {
-        db.all("DELETE FROM attachment WHERE id_foreign = ?", [id_foreign], (err, row) => {
-            if (err) reject(err)
-            resolve(row)
+        db.run("DELETE FROM attachment WHERE id = ?", [id], (err) => {
+            if (err) return reject({ success: false, err, message: 'Delete attachment failed' })
+            return resolve({ success: true, data: id, message: 'Delete attachment completed' })
         })
     })
 }

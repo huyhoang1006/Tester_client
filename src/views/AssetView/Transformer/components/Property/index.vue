@@ -1,7 +1,7 @@
 <template>
     <div class="mgt-20 property">
         <div class="col-content">
-            <el-form :disabled="checkSide(this.signMode)" :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
+            <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                 <span class="bolder">Properties</span>
                 <el-divider></el-divider>
                 <el-form-item label="Asset">
@@ -47,7 +47,7 @@
             </el-form>
         </div>
         <div class="col-content">
-            <el-form :disabled="checkSide(this.signMode)" :label-width="labelWidth" size="mini" label-position="left">
+            <el-form :label-width="labelWidth" size="mini" label-position="left">
                 <span class="bolder">Comment</span>
                 <el-divider></el-divider>
                 <el-input type="textarea" :rows="12" v-model="propertiesData.comment"></el-input>

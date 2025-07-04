@@ -24,9 +24,12 @@ import * as powerCableJobFunc from './powerCable/job'
 import * as locationUploadFunc from './customTemplate/location/location'
 import * as updateManuFunc from './manufacturer/index'
 import * as ownerFunc from './organisation/index'
+import * as entityFunc from './entity/index'
+import * as cimFunc from './cim/index'
 
 export { userFunc, locationFunc, assetFunc, jobFunc, importHavec1pha1capFunc, importHavec3pha1capFunc, importHavec3pha2capFunc, uploadFunc}
 export {circuitFunc, jobAssetFunc, jobCircuitFunc, attachmentFunc, conditionFunc}
 export {currentTransFunc, currentTransJobFunc, voltageTransFunc, voltageTransJobFunc, disconnectorFunc, disconnectorJobFunc}
 export {surgeArresterFunc, surgeArresterJobFunc, powerCableFunc, powerCableJobFunc}
 export {locationUploadFunc, updateManuFunc, ownerFunc}
+export { entityFunc, cimFunc }
