@@ -8,7 +8,6 @@ module.exports = {
         win: {
           target: ["nsis"],
           icon: "icon/icon.ico",
-          requestedExecutionLevel: "requireAdministrator"
         },
         nsis: {
           guid : "ATDigitalTester",
@@ -19,12 +18,13 @@ module.exports = {
           license : "build/license.txt",
           shortcutName  : "ATDigital Tester",
           oneClick: false,
-          perMachine : true,
+          perMachine : false,
           createDesktopShortcut : true,
           allowToChangeInstallationDirectory : true,
           installerIcon: "icon/icon.ico",
           uninstallerIcon: "icon/icon.ico",
-          uninstallDisplayName: "ATDigital Tester uninstaller"
+          uninstallDisplayName: "ATDigital Tester uninstaller",
+          allowElevation: false,
         }
       }
     }

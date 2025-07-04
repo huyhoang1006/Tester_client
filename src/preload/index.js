@@ -3,7 +3,6 @@ import * as transformerPreload from "./transformerPreload"
 import * as fmecaPreload from "./fmecaPreload"
 import * as conditionPreload from "./conditionPreload"
 import * as circuitPreload from "./circuitPreload"
-import * as attachmentPreload from "./attachmentPreload"
 import * as currentTransPreload from "./currentTransPreload"
 import * as voltageTransPreload from "./voltageTransPreload"
 import * as disconnectorPreload from "./disconnectorPreload"
@@ -13,6 +12,9 @@ import * as uploadCustomPreload from './uploadCustomPreload'
 import * as manufacturerPreload from './manufacturerPreload'
 import * as ownerPreload from './ownerPreload'
 
+import * as entityPreload from './entity/index'
+import * as cimPreload from './cim/index'
 
-export {userPreload, transformerPreload, fmecaPreload, conditionPreload, circuitPreload, attachmentPreload, currentTransPreload, voltageTransPreload}
+export {userPreload, transformerPreload, fmecaPreload, conditionPreload, circuitPreload, currentTransPreload, voltageTransPreload}
 export {disconnectorPreload, surgeArresterPreload, powerCablePreload, uploadCustomPreload, manufacturerPreload, ownerPreload}
+export {entityPreload, cimPreload}

@@ -2,14 +2,10 @@ import * as updateManu from './updateDatabase/updateManu'
 import * as updatOwner from './updateDatabase/updateOwner'
 import * as updateLocation from './updateDatabase/updateLocationRef'
 import * as updateTestType from './updateDatabase/updateTestType'
+import * as rootOrganisationFunc from './organisationRoot/index'
 import {insertOwner, getOwnerByName} from '@/function/organisation/index'
 import { NIL as EMPTY } from 'uuid'
-import path from 'path'
-import sqlite3 from 'sqlite3'
-const nameDB = 'database.db'
-const pathDB = path.join(__dirname, `/../database/${nameDB}`)
-const db = new sqlite3.Database(pathDB);
-db.run("PRAGMA foreign_keys=ON");
+import db from '@/function/datacontext/index'
 
 export const updateManufacturer = async () => {
     var row = await updateManu.getAllNameDatabase(db)
@@ -116,6 +112,23 @@ export const updateLocationTable = async () => {
     if(rt.success) {
         console.log(rt.success)
     }
+}
+
+export const createRootOrganisation = async () => {
+    try {
+        var check = await rootOrganisationFunc.createOrganisationRoot(db)
+        if(check.success) {
+            console.log('Create root organisation completed')
+        } else {
+            console.log('Create root organisation failed')
+        }
+    } catch (err) {
+        console.error('Error creating root organisation:', err)
+    }
+}
+
+export const active = async () => {
+    await createRootOrganisation()
 }
 
 export {updateManu}

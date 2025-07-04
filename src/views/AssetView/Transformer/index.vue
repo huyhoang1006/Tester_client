@@ -11,16 +11,16 @@
                 <property :signMode="signMode" @setUpdate="setUpdate" :updateNew='updateNew' :update="update" @editManu="editManu" :title="title" @createAdd="updateShowAdd" :manufact="manufacturerCustom" @reloadManu="reloadManu()" :data="properties" :disabled="disabled"></property>
 
                 <!-- Winding configuration -->
-                <!-- <winding-configuration :data="winding_configuration" :properties="properties"></winding-configuration> -->
+                <winding-configuration :data="winding_configuration" :properties="properties"></winding-configuration>
 
                 <!-- Ratings -->
-                <!-- <rating :data="ratings" :properties="properties"></rating> -->
+                <rating :data="ratings" :properties="properties"></rating>
 
                 <!-- Impedances -->
-                <!-- <impedance :data="impedances" :properties="properties" :tap-changers="tapChangers"></impedance> -->
+                <impedance :data="impedances" :properties="properties" :tap-changers="tapChangers"></impedance>
 
                 <!-- Others -->
-                <!-- <other :data="others" :properties="properties"></other> -->
+                <other :data="others" :properties="properties"></other>
             </div>
             <div v-else-if="this.switch == 'Bushings'">
                 

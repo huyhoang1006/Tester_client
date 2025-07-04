@@ -12,12 +12,12 @@ export default {
         folderType: {
             type: String,
             default: 'location',
-            validator: (value) => ['location', 'asset', 'job', 'test', 'owner'].includes(value)
+            validator: (value) => ['location', 'asset', 'job', 'test', 'owner', 'building'].includes(value)
         },
         size: {
             type: String,
             default: '20px',
-            validator: (value) => ['16px', '20px', '24px', '32px'].includes(value)
+            validator: (value) => ['14px', '16px', '20px', '24px', '32px'].includes(value)
         },
         badgeColor: {
             type: String,
@@ -31,7 +31,8 @@ export default {
                 asset: 'fa-solid fa-gear',
                 job: 'fa-solid fa-toolbox',
                 test: 'fa-solid fa-file-lines',
-                owner: 'fa-solid fa-location-crosshairs'
+                owner: 'fa-solid fa-location-crosshairs',
+                building: 'fa-solid fa-building'
             }
             return icons[this.folderType] || 'fa-solid fa-location-dot'
         },

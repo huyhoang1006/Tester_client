@@ -16,6 +16,8 @@ import * as ipcJobPower from "./powerCable/jobPower"
 import * as ipcJobTransformer from "./transformer/jobTransformer"
 import * as ipcUpdateManu from './manufacturer/manufacturer'
 import * as ipcOwner from './owner/owner'
+import * as ipcCim from './cim/index.js'
+
 export {ipcCircuit, ipcJobCircuit, ipcAttachment, ipcTransformer, ipcCurrentTrans, ipcVoltageTrans, ipcDisconnector, ipcSurgeArrester}
 export {ipcPowerCable, ipcUploadCustom, ipcJobCurrent, ipcJobVoltage, ipcJobDisconnector, ipcJobSurge, ipcJobPower, ipcJobTransformer}
-export {ipcUpdateManu, ipcOwner}
+export {ipcUpdateManu, ipcOwner, ipcCim}

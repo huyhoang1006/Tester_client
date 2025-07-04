@@ -13,4 +13,5 @@ export default {
     FAIR : 'Fair',
     POOR : 'Poor',
     BAD : 'Bad',
+    ROOT : '00000000-0000-0000-0000-000000000000'
 }

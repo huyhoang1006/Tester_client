@@ -16,6 +16,7 @@ import {currentTransJobFunc, voltageTransJobFunc, disconnectorJobFunc, surgeArre
 import {ipcCircuit, ipcJobCircuit, ipcAttachment, ipcTransformer, ipcCurrentTrans, ipcVoltageTrans, ipcDisconnector, ipcSurgeArrester, ipcPowerCable} from '@/ipcmain'
 import { ipcJobCurrent, ipcJobVoltage, ipcJobDisconnector, ipcJobSurge, ipcJobPower, ipcJobTransformer } from '@/ipcmain'
 import { ipcUploadCustom, ipcUpdateManu, ipcOwner } from '@/ipcmain'
+import { ipcCim } from '@/ipcmain'
 let win;
 
 const nameDB = 'database.db'
@@ -27,7 +28,7 @@ db.run("PRAGMA foreign_keys=ON");
 
 
 
-const isDevelopment = process.env.NODE_ENV !== 'production'
+const isDevelopment = process.env.NODE_ENV !== 'development'
 
 // const {dialog} = require('@electron/remote')
 // Scheme must be registered before the app is ready
@@ -913,6 +914,7 @@ app.on('ready', async () => {
     await updateModule.updateOwnerTable()
     await updateModule.updateLocationTable()
     await updateModule.insertTestType()
+    await updateModule.active()
     
     ipcMain.handle('login', async function (event, user) {
         const _user = await userFunc.getUser(user)
@@ -1173,12 +1175,6 @@ app.on('ready', async () => {
     ipcJobCircuit.saveTestCircuit()
     ipcJobCircuit.getTestCircuitByJobId()
     
-
-    ipcAttachment.openFile()
-    ipcAttachment.downloadFile()
-    ipcAttachment.readFileData()
-    ipcAttachment.downloadFileData()
-    ipcAttachment.getAttachmentpath()
     ipcTransformer.exportEtrc()
 
     //current Trans
@@ -1296,6 +1292,12 @@ app.on('ready', async () => {
 
     //owner
     ipcOwner.active()
+
+    //attachment
+    ipcAttachment.active()
+
+    //cim
+    ipcCim.active()
 
     ipcMain.handle('importHavec3pha1cap', async function (event, locationId) {
         const rs = await dialog.showOpenDialog({
