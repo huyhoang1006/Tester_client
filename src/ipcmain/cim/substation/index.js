@@ -34,6 +34,10 @@ export const getSubstationsInOrganisationForUser = () => {
         try {
             const rs = await cimFunc.substationFunc.getSubstationsInOrganisationForUser(mrid, userId)
             if (rs.success === true) {
+                rs.data = rs.data.map(item => ({
+                    ...item,
+                    mode: 'substation'
+                }));
                 return {
                     success: true,
                     message: "Success",

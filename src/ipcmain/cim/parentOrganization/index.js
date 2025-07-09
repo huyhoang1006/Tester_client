@@ -7,6 +7,7 @@ export const getParentOrganizationByMrid = () => {
         try {
             const rs = await cimFunc.parentOrganizationFunc.getParentOrganizationById(mrid)
             if (rs.success === true) {
+                rs.data.mode = 'organisation';
                 return {
                     success: true,
                     message: "Success",
@@ -34,6 +35,10 @@ export const getParentOrganizationByParentMrid = () => {
         try {
             const rs = await cimFunc.parentOrganizationFunc.getParentOrganizationByParentId(mrid)
             if (rs.success === true) {
+                rs.data = rs.data.map(item => ({
+                    ...item,
+                    mode: 'organisation'
+                }));
                 return {
                     success: true,
                     message: "Success",

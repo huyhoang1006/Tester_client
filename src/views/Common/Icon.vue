@@ -12,7 +12,7 @@ export default {
         folderType: {
             type: String,
             default: 'location',
-            validator: (value) => ['location', 'asset', 'job', 'test', 'owner', 'building'].includes(value)
+            validator: (value) => ['location', 'asset', 'job', 'test', 'owner', 'building', 'voltageLevel', 'bay'].includes(value)
         },
         size: {
             type: String,
@@ -32,7 +32,9 @@ export default {
                 job: 'fa-solid fa-toolbox',
                 test: 'fa-solid fa-file-lines',
                 owner: 'fa-solid fa-location-crosshairs',
-                building: 'fa-solid fa-building'
+                building: 'fa-solid fa-building',
+                voltageLevel: 'fa-solid fa-bolt-lightning',
+                bay: 'fa-solid fa-bolt'
             }
             return icons[this.folderType] || 'fa-solid fa-location-dot'
         },

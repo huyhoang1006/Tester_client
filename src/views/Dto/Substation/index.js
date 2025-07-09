@@ -31,17 +31,22 @@ class SubstationDto {
         this.personId = ''
         this.telephoneNumberId = ''
         this.attachmentId = ''
-        this.townDetail = ''
         this.streetDetailId = ''
         this.streetAddressId = ''
-        this.organisationRoleId = ''
         this.userId = ''
+        this.userName = ''
         this.personId = ''
         this.personRoleId = ''
         this.userIdentifiedObjectId = ''
         this.personSubstationId = ''
         this.organisationLocationId = ''
+        this.organisationPersonId = ''
+        this.organisationPsrId = ''
         this.organisationId = ''
+        this.psrTypeId = ''
+        this.electronicAddressId = ''
+        this.townDetailId = ''
+        this.configurationEvent = []
     }
 }
 

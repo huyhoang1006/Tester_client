@@ -22,9 +22,8 @@ export const insertPerson = async (person) => {
                             mobile_phone,
                             prefix,
                             special_need,
-                            suffix,
-                            roles
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            suffix
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         ON CONFLICT(mrid) DO UPDATE SET
                             electronic_address = excluded.electronic_address,
                             first_name = excluded.first_name,
@@ -34,8 +33,7 @@ export const insertPerson = async (person) => {
                             mobile_phone = excluded.mobile_phone,
                             prefix = excluded.prefix,
                             special_need = excluded.special_need,
-                            suffix = excluded.suffix,
-                            roles = excluded.roles`,
+                            suffix = excluded.suffix`,
                         [
                             person.mrid,
                             person.electronic_address,
@@ -47,7 +45,6 @@ export const insertPerson = async (person) => {
                             person.prefix,
                             person.special_need,
                             person.suffix,
-                            person.roles
                         ],
                         function (err) {
                             if (err) {
@@ -85,9 +82,8 @@ export const insertPersonTransaction = async (person, dbsql) => {
                         mobile_phone,
                         prefix,
                         special_need,
-                        suffix,
-                        roles
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        suffix
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ON CONFLICT(mrid) DO UPDATE SET
                         electronic_address = excluded.electronic_address,
                         first_name = excluded.first_name,
@@ -97,8 +93,7 @@ export const insertPersonTransaction = async (person, dbsql) => {
                         mobile_phone = excluded.mobile_phone,
                         prefix = excluded.prefix,
                         special_need = excluded.special_need,
-                        suffix = excluded.suffix,
-                        roles = excluded.roles`,
+                        suffix = excluded.suffix`,
                     [
                         person.mrid,
                         person.electronic_address,
@@ -110,7 +105,6 @@ export const insertPersonTransaction = async (person, dbsql) => {
                         person.prefix,
                         person.special_need,
                         person.suffix,
-                        person.roles
                     ],
                     function (err) {
                         if (err) {
@@ -148,6 +142,42 @@ export const getPersonById = async (mrid) => {
         return { success: false, err, message: 'Get person failed' }
     }
 }
+
+export const getPersonByOrganisationId = async (organisationId) => {
+    return new Promise((resolve, reject) => {
+        const query = `
+            SELECT p.*
+            FROM person p
+            JOIN organisation_person po ON p.mrid = po.person_id
+            WHERE po.organisation_id = ?
+        `;
+
+        db.all(query, [organisationId], (err, rows) => {
+            if (err) {
+                return reject({
+                    success: false,
+                    err,
+                    message: 'Get persons by organisation id failed'
+                });
+            }
+
+            if (!rows || rows.length === 0) {
+                return resolve({
+                    success: false,
+                    data: [],
+                    message: 'No persons found for this organisation'
+                });
+            }
+
+            return resolve({
+                success: true,
+                data: rows,
+                message: 'Get persons by organisation id completed'
+            });
+        });
+    });
+};
+
 
 // Xóa Person theo mrid (gồm cả identified_object)
 export const deletePersonById = async (mrid) => {
@@ -202,7 +232,6 @@ export const updatePersonById = async (mrid, person) => {
                             prefix = ?,
                             special_need = ?,
                             suffix = ?,
-                            roles = ?
                         WHERE mrid = ?`,
                         [
                             person.electronic_address,
@@ -214,7 +243,6 @@ export const updatePersonById = async (mrid, person) => {
                             person.prefix,
                             person.special_need,
                             person.suffix,
-                            person.roles,
                             mrid
                         ],
                         function (err) {
@@ -254,7 +282,6 @@ export const updatePersonByIdTransaction = async (mrid, person, dbsql) => {
                         prefix = ?,
                         special_need = ?,
                         suffix = ?,
-                        roles = ?
                     WHERE mrid = ?`,
                     [
                         person.electronic_address,
@@ -266,7 +293,6 @@ export const updatePersonByIdTransaction = async (mrid, person, dbsql) => {
                         person.prefix,
                         person.special_need,
                         person.suffix,
-                        person.roles,
                         mrid
                     ],
                     function (err) {

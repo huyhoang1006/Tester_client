@@ -46,11 +46,11 @@
                             @show-properties="showPropertiesData"
                             @update-selection="updateSelection"
                             @clear-selection="clearSelection"
-                            @open-context-menu="openContextMenu"
+                            @open-context-menu="openContextMenuClient"
                         >
                         </TreeNode>
                     </ul>
-                    <contextMenu @show-data="showData" ref="contextMenu"></contextMenu>
+                    <contextMenu @delete-data="deleteDataClient" @show-addSubsInTree="showAddSubsInTree" @show-addOrganisation="showAddOrganisation" @show-data="showDataClient" ref="contextMenuClient"></contextMenu>
                 </div>
             </div>
             <div ref="sidebarServer" v-show="!clientSlide" class="sidebar">
@@ -99,7 +99,7 @@
                     <div ref="content" class="content">
                         <div class="title-content"></div>
                         <div class="content-content">
-                            <Tabs :side="'server'" v-model="activeTab" :tabs="tabs" @close-tab="removeTab" />
+                            <Tabs :side="'server'" ref="serverTabs" v-model="activeTab" :tabs="tabs" @close-tab="removeTab" />
                         </div>
                     </div>
                     <div @mousedown="startResizeContentServer" ref="resizerContentServer" class="resizer"></div>
@@ -265,7 +265,7 @@
                     </div>
                 </div>
                 <div ref="logBar" v-if="logSign" class="log-bar">
-                    <LogBar @hideLogBar="hideLogBar"></LogBar>
+                    <LogBar :logData="logDataServer" @hideLogBar="hideLogBar"></LogBar>
                 </div>
             </div>
             <div ref="contextDataClient" v-show="clientSlide" class="context-data">
@@ -273,9 +273,7 @@
                     <div ref="contentClient" class="content">
                         <div class="title-content"></div>
                         <div class="content-content">
-                            <div v-for="(index, item) in showTabContentClient" :key="index">
-                                {{ item }}
-                            </div>
+                            <Tabs :side="'client'" ref="clientTabs" v-model="activeTabClient" :tabs="tabsClient" @close-tab="removeTabClient" />
                         </div>
                     </div>
                     <div @mousedown="startResizeContentClient" ref="resizerContentClient" class="resizer"></div>
@@ -441,7 +439,7 @@
                     </div>
                 </div>
                 <div ref="logBarClient" v-if="logSignClient" class="log-bar">
-                    <LogBar @hideLogBar="hideLogBarClient"></LogBar>
+                    <LogBar @reloadLog="reloadLogClient" :logData="logDataClient" @hideLogBar="hideLogBarClient"></LogBar>
                 </div>
             </div>
         </div>
@@ -451,10 +449,23 @@
             width="1000px"
             @close="handleSubsCancel"
         >
-            <Substation ref="substation"></Substation>
+            <Substation :parentOrganization="parentOrganization" :personList="personList" :locationList="locationList" :organisationId="organisationId" ref="substation"></Substation>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleSubsCancel" >Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleSubsConfirm">Save</el-button>
+            </span>
+        </el-dialog>
+
+        <el-dialog
+            title="Add Organisation"
+            :visible.sync="signOrg" 
+            width="1000px"
+            @close="handleOrgCancel"
+        >
+            <Organisation :parent="parentOrganization" ref="organisation"></Organisation>
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" type="danger" @click="handleOrgCancel" >Cancel</el-button>
+                <el-button size="small" type="primary" @click="handleOrgConfirm">Save</el-button>
             </span>
         </el-dialog>
     </div>
@@ -464,7 +475,6 @@
 import LogBar from '@/components/LogBar'
 import TreeNode from '@/views/Common/TreeNode.vue'
 import Vue from "vue";
-import uuid from '@/utils/uuid';
 import pageAlign from '@/views/PageAlign/pageAlign.vue'
 import * as ownerAPI from '@/api/owner/owner.js'
 import * as locationApi from '@/api/location'
@@ -478,9 +488,6 @@ import * as voltageApi from '@/api/voltage/voltage'
 import * as surgeApi from '@/api/surge/surge'
 import * as powerApi from '@/api/power/power'
 import * as assetApi from '@/api/asset'
-
-import * as fileUploadApi from '@/api/fileUpload'
-import * as attachmentApi from '@/api/attachment'
 
 import * as jobApi from '@/api/job'
 import * as jobCircuitApi from '@/api/circuit/jobCircuit'
@@ -499,6 +506,8 @@ import * as testSurgeApi from '@/api/surge/testSurge'
 import * as testPowerApi from '@/api/power/testPower'
 
 import Substation from '../LocationInsert/locationLevelView.vue'
+import Organisation from '@/views/Organisation/index.vue'
+import mixin from './mixin'
 
 export default {
     name: 'TreeNavigation',
@@ -509,14 +518,23 @@ export default {
         spinner,
         contextMenu,
         Tabs,
-        Substation
+        Substation,
+        Organisation
     },
     data() {
         return {
+            parentOrganization : null,
+            logDataServer : [],
+            logDataClient : [],
+            organisationId : '0000000-0000-0000-0000-000000000000',
             organisationClientList : [],
             signSubs : false,
+            signOrg : false,
             activeTab: {},
+            activeTabClient: {},
+            indexTabData: null,
             tabs: [],
+            tabsClient: [],
             rightClickNode : null,
             selectedNodes : [],
             assetPropertySign : false,
@@ -525,9 +543,7 @@ export default {
             jobPropertySignClient : false,
             pathMapServer : [],
             pathMapClient : [],
-            showTabContentServer : [],
             hideTabContentServer : [],
-            showTabContentClient : [],
             hideTabContentClient : [],
             currentTabServer : '',
             properties : {
@@ -632,18 +648,50 @@ export default {
             ownerServerList : [],
             ownerList : [],
             locationList : [],
+            personList : [],
             AssetType : ["Transformer", "Circuit breaker", "Current transformer", "Voltage transformer", "Disconnector", "Power cable", "Surge arrester"],
             LocationType : ["location", "voltage", "feeder"]
         }
     },
-    beforeMount() {
+    mixins: [mixin],
+    async beforeMount() {
+        try {
+            const data = await window.electronAPI.getAllConfigurationEvents()
+            if(data && data.success) {
+                this.logDataClient = data.data;
+            }
+        } catch (error) {
+            console.error("Error fetching server log data:", error);
+            this.$message.error("Failed to fetch log data.");
+        }
     },
     methods: {
+        async reloadLogClient(doneCallback) {
+            try {
+            const data = await window.electronAPI.getAllConfigurationEvents()
+            if(data && data.success) {
+                this.logDataClient = data.data;
+                await new Promise(resolve => setTimeout(resolve, 500));
+                this.$message.success("Log data reloaded successfully.");
+            }
+            } catch (error) {
+                console.error("Error fetching server log data:", error);
+                this.$message.error("Failed to fetch log data.");
+            } finally {
+                if (typeof doneCallback === 'function') doneCallback();
+            }
+        },
         removeTab(index) {
             if(this.activeTab.id == this.tabs[index].id) {
                 this.activeTab = {}
             }
             this.tabs.splice(index, 1);
+        },
+        removeTabClient(index) {
+            if(this.activeTabClient.mrid == this.tabsClient[index].mrid) {
+                this.activeTabClient = {}
+            }
+            this.tabsClient.splice(index, 1);
         },
         hideLogBar(sign) {
             this.logSign = false
@@ -767,12 +815,12 @@ export default {
                     if(rs.success) {
                         this.organisationClientList = [rs.data] || []
                     } else {
-                        this.$message.error("Không tìm thấy dữ liệu gốc")
+                        this.$message.error("Cannot load root organisation")
                     }
                 }catch (error) {
-                    this.$message.error("Lỗi khi lấy dữ liệu gốc")
-                    console.error("Lỗi khi lấy dữ liệu:", error)
-                }                
+                    this.$message.error("Error fetching root data")
+                    console.error("Error fetching data:", error)
+                }
             })
         },
 
@@ -814,8 +862,6 @@ export default {
                             });
                             newRows.push(...substationReturn.data);
                         }
-
-                        console.log("Organisation Return:", organisationReturn, substationReturn);
                     }
                     Vue.set(node, "children", newRows); // Đảm bảo Vue reactive
                 } catch (error) {
@@ -1179,22 +1225,65 @@ export default {
             this.$refs.contextMenu.openContextMenu(event, node);
         },
 
+        async openContextMenuClient(event, node) {
+            this.$refs.contextMenuClient.openContextMenu(event, node);
+        },
+
         async showContext(event) {
-            this.$refs.contextSubstation.openContextMenuSubstation(event);
+            this.$refs.contextSubstation.openContextMenuSubstation(event, this.$constant.ROOT);
         },
 
         async handleSubsCancel() {
             this.signSubs = false
         },
 
+        async handleOrgCancel() {
+            this.signOrg = false
+        },
+
         async handleSubsConfirm() {
             try {
                 const subs = this.$refs.substation
                 if(subs) {
-                    const sign = await subs.saveSubstation()
-                    if(sign) {
+                    const {success, data} = await subs.saveSubstation()
+                    if(success) {
                         this.$message.success("Substation saved successfully")
                         this.signSubs = false
+                        let newRows = []
+                        if(this.organisationClientList && this.organisationClientList.length > 0) {
+                            const newRow = {
+                                id: data.substation.mrid,
+                                name: data.substation.name,
+                                parentId: this.parentOrganization.mrid,
+                                parentName: this.parentOrganization.name,
+                                parentArr: this.parentOrganization.parentArr || [],
+                                mode: 'substation',
+                            }
+                            newRows.push(newRow);
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            if (node) {
+                                const children = Array.isArray(node.children) ? node.children : [];
+                                Vue.set(node, "children", [...children, ...newRows]);
+                            } else {
+                                this.$message.error("Parent node not found in tree");
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
+        },
+
+        async handleOrgConfirm() {
+            try {
+                const org = this.$refs.organisation
+                if(org) {
+                    const {success, data} =await org.saveOrganisation()
+                    if(success) {
+                        this.$message.success("Organisation saved successfully")
+                        this.signOrg = false
                     }
                 }
             } catch (error) {
@@ -1439,8 +1528,144 @@ export default {
             }
         },
 
-        showAddSubs() {
-            this.signSubs = true
+        async showDataClient(node) {
+            try {
+                // Tạo bản sao của node để đảm bảo reactivity
+                const newNode = { ...node };
+                const index = this.tabsClient.findIndex(item => item.mrid === newNode.mrid);
+                if (index !== -1) {
+                    // Nếu tab đã tồn tại, active nó
+                    this.activeTabClient = newNode;
+                    this.$refs.clientTabs.selectTab(this.activeTabClient, index);
+                } else {
+                    const newTabs = [...this.tabsClient]; // Tạo mảng mới
+                    if (this.activeTabClient?.mrid) {
+                        const index = newTabs.findIndex(item => item.mrid === this.activeTabClient.mrid);
+                        newTabs.splice(index + 1, 0, newNode);
+                    } else {
+                        newTabs.push(newNode);
+                    }
+                    // Gán lại để trigger reactivity
+                    this.tabsClient = newTabs;
+                    this.activeTabClient = newNode;
+                    this.$refs.clientTabs.selectTab(this.activeTabClient, newTabs.length - 1);
+                    this.$refs.clientTabs.loadData(newNode, newTabs.length - 1);
+                }
+            } catch (error) {
+                this.$message.error("Some error occur when loading data")
+                console.error(error)
+            }
+        },
+
+        async deleteDataClient(node) {
+            try {
+                const entity = await window.electronAPI.getSubstationEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
+                if (!entity.success) {
+                    this.$message.error("Entity not found");
+                    return;
+                }
+                const deleteSign = await window.electronAPI.deleteSubstationEntityByMrid(entity.data);
+                if (!deleteSign.success) {
+                    this.$message.error("Delete data failed");
+                    return;
+                }
+
+                this.$message.success("Delete data successfully");
+            } catch (error) {
+                this.$message.error("Some error occur when deleting data");
+                console.error(error);
+            }
+        },
+
+        async showAddSubs(organisationId) {
+            try {
+                const [dataLocation, dataPerson, parentOrganization] = await Promise.all([
+                    window.electronAPI.getLocationByOrganisationId(organisationId),
+                    window.electronAPI.getPersonByOrganisationId(organisationId),
+                    window.electronAPI.getParentOrganizationByMrid(organisationId)
+                ]);
+                if(dataLocation.success) {
+                    this.locationList = dataLocation.data
+                } else {
+                    this.locationList = []
+                }
+
+                if(dataPerson.success) {
+                    this.personList = dataPerson.data
+                } else {
+                    this.personList = []
+                }
+
+                if(parentOrganization.success) {
+                    this.parentOrganization = parentOrganization.data
+                } else {
+                    this.parentOrganization = null
+                }
+                
+                this.organisationId = organisationId
+                this.signSubs = true
+                this.$nextTick(() => {
+                    const substation = this.$refs.substation;
+                    if (substation) {
+                        substation.resetForm();
+                    }
+                });
+            } catch (error) {
+                this.parentOrganization = null
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
+
+        },
+
+        async showAddSubsInTree(node) {
+            try {
+                this.parentOrganization = node
+                const [dataLocation, dataPerson] = await Promise.all([
+                    window.electronAPI.getLocationByOrganisationId(node.mrid),
+                    window.electronAPI.getPersonByOrganisationId(node.mrid),
+                ]);
+                if(dataLocation.success) {
+                    this.locationList = dataLocation.data
+                } else {
+                    this.locationList = []
+                }
+
+                if(dataPerson.success) {
+                    this.personList = dataPerson.data
+                } else {
+                    this.personList = []
+                }
+                this.organisationId = node.mrid
+                this.signSubs = true
+                this.$nextTick(() => {
+                    const substation = this.$refs.substation;
+                    if (substation) {
+                        substation.resetForm();
+                    }
+                });
+            } catch (error) {
+                this.parentOrganization = null
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
+        },
+
+        async showAddOrganisation(node) {
+            try {
+                this.parentOrganization = node
+                this.signOrg = true
+                this.$nextTick(() => {
+                    const organisation = this.$refs.organisation;
+                    if (organisation) {
+                        organisation.resetForm();
+                    }
+                });
+            } catch (error) {
+                this.parentOrganization = null
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
         },
 
         async resetAllServer() {
@@ -1540,7 +1765,19 @@ export default {
         },
 
         async resetAllClient() {
+        },
+
+        findNodeById(mrid, nodes) {
+            for (const node of nodes) {
+                if (node.mrid === mrid) return node;
+                if (node.children) {
+                    const result = this.findNodeById(mrid, node.children);
+                    if (result) return result;
+                }
+            }
+            return null;
         }
+ 
     }
 }
 </script>

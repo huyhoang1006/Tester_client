@@ -49,6 +49,26 @@ export const insertPersonSubstationTransaction = async (personSubstation, dbsql)
     })
 }
 
+export const getPersonSubstationByPersonId = async (personId) => {
+    return new Promise((resolve, reject) => {
+        db.all("SELECT * FROM person_substation WHERE person_id = ?", [personId], (err, rows) => {
+            if (err) return reject({ success: false, err, message: 'Get personSubstation by personId failed' })
+            if (rows.length === 0) return resolve({ success: false, data: null, message: 'PersonSubstation not found' })
+            return resolve({ success: true, data: rows, message: 'Get personSubstation by personId completed' })
+        })
+    })
+}
+
+export const getPersonSubstationBySubstationId = async (substationId) => {
+    return new Promise((resolve, reject) => {
+        db.get("SELECT * FROM person_substation WHERE substation_id = ?", [substationId], (err, row) => {
+            if (err) return reject({ success: false, err, message: 'Get personSubstation by substationId failed' })
+            if (!row) return resolve({ success: false, data: null, message: 'PersonSubstation not found' })
+            return resolve({ success: true, data: row, message: 'Get personSubstation by substationId completed' })
+        })
+    })
+}
+
 // Lấy PersonSubstation theo mrid
 export const getPersonSubstationById = async (mrid) => {
     return new Promise((resolve, reject) => {

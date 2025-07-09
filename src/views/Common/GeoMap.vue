@@ -71,7 +71,6 @@ export default {
                 link.title = 'AT Energy';
                 link.innerHTML = '<img style="width : 15px; height:15px;" src="/img/favicon.png"> AT Energy';
             });
-            console.log("A")
         })
     },
     data () {

@@ -44,7 +44,6 @@ export default {
             }
         },
         async saveLocationOwner() {
-            console.log("A")
             var signOwner = true
             var ownerId = ''
             var locationOwnerId = ''

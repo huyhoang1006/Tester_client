@@ -7,27 +7,27 @@
             <div class="tabs-header-data" ref="tabsHeader" @scroll="checkScroll">
                 <div
                     v-for="(tab, index) in tabs"
-                    :key="tab.id"
+                    :key="tab.mrid"
                     @click="selectTab(tab, index)"
-                    @mouseover="hoveredTab = tab.id"
+                    @mouseover="hoveredTab = tab.mrid"
                     @mouseleave="hoveredTab = null"
                     class="tab-item"
-                    :class="{active: activeTab.id === tab.id}"
+                    :class="{active: activeTab.mrid === tab.mrid}"
                     ref="tabItems">
                     <i style="color: #FDD835;" class="fa-solid fa-folder-open mgr-10 mgl-10"></i>
-                    <span v-if="dataTypeOwner.includes(tab.mode)" class="tab-label">{{ tab.name }}</span>
-                    <span v-if="dataType.includes(tab.mode)" class="tab-label">{{ tab.name }}</span>
-                    <span v-if="assetType.includes(tab.asset)" class="tab-label">{{ tab.serial_no }}</span>
-                    <span v-if="tab.type == 'job'" class="tab-label">{{ tab.name }}</span>
-                    <span v-if="tab.type == 'test'" class="tab-label">{{ tab.name }}</span>
-                    <span class="close-icon mgr-10 mgl-10" :class="{visible: hoveredTab === tab.id || activeTab.id === tab.id}" @click.stop="closeTab(index)">✖</span>
+                    <span v-if="tab.mode == 'organisation'" class="tab-label">{{ tab.name }}</span>
+                    <span v-else-if="tab.mode == 'substation'" class="tab-label">{{ tab.name }}</span>
+                    <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.serial_no }}</span>
+                    <span v-else-if="tab.mode == 'job'" class="tab-label">{{ tab.name }}</span>
+                    <span v-else-if="tab.mode == 'test'" class="tab-label">{{ tab.name }}</span>
+                    <span class="close-icon mgr-10 mgl-10" :class="{visible: hoveredTab === tab.mrid || activeTab.mrid === tab.mrid}" @click.stop="closeTab(index)">✖</span>
                 </div>
             </div>
             <div class="scroll-btn right" @click="scrollRight"><i class="fa-solid fa-angle-right"></i></div>
         </div>
         <div class="tabs-content">
-            <div class="mgr-20 mgt-20 mgb-20 mgl-20" v-for="(item) in tabs" :key="item.id">
-                <component v-show="activeTab.id === item.id" ref="componentLoadData" :sideData="sideSign" :is="checkTab(item)" :ownerData="item"></component>
+            <div class="mgr-20 mgt-20 mgb-20 mgl-20" v-for="(item) in tabs" :key="item.mrid">
+                <component mode="update" @reload="loadData" v-show="activeTab.mrid === item.mrid" ref="componentLoadData" :sideData="sideSign" :is="checkTab(item)" :organisationId="item.parrentId"></component>
             </div>
         </div>
     </div>
@@ -39,12 +39,16 @@
 import LocationViewData from '@/views/LocationInsert/locationLevelView.vue'
 import OwnerView from '@/views/OwnerViewData/index.vue'
 import Transformer from '@/views/AssetView/Transformer'
+import OrganisationView from '@/views/Organisation/index.vue'
+import * as subsMapper from '@/views/Mapping/Substation/index'
+
 export default {
     name : "Tabs",
     components: {
         LocationViewData,
         OwnerView,
-        Transformer
+        Transformer,
+        OrganisationView
     },
     model: {
         prop: 'value',
@@ -56,50 +60,88 @@ export default {
         side : {
             type: String,
             required: true
-        }
+        },
     },
     data() {
         return {
             activeTab: this.value,
+            tabsData : [],
+            indexTab: null,
             sideSign : this.side,
             hoveredTab: null,
             canScrollLeft: false,
             canScrollRight: false,
-            dataType : ["location", "voltage", "feeder"],
-            dataTypeOwner : ["OWNER1", "OWNER2", "OWNER3", "OWNER4", "OWNER5"],
-            assetType : ["Transformer", "Circuit breaker", "Current transformer", "Disconnector", "Surge arrester", "Power cable", "Voltage transformer"]
-        }
-    },
-    watch: {
-        value: {
-            handler(newVal) {
-                if (newVal && (!this.activeTab || newVal.id !== this.activeTab.id)) {
-                    this.activeTab = { ...newVal }; // Tạo object mới
-                }
-            },
-            deep: true, // Theo dõi thay đổi sâu trong object
-            immediate: true // Chạy ngay khi mounted
-        },
-        tabs(newVal) {
-            this.checkScroll()
-            const customTabs = this.$refs.customTabs
-            if(customTabs && this.tabs.length == 0) {
-                customTabs.style.borderBottom = "none";
-            }
         }
     },
     methods: {
-        async selectTab(tab, index) {
-            this.activeTab = tab
-            this.$emit('input', tab)
-            this.$nextTick(() => {
-                if(this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
-                    this.$refs.componentLoadData[index].loadMapForView()
+        async loadData(tab, index) {
+            try {
+                if(index == null) {
+                    index = this.tabs.findIndex(t => t.mrid === tab.mrid);
+                    if(index === -1) {
+                        this.$message.error("Tab not found");
+                        return;
+                    }
                 }
-            })
+                if(tab.mode === 'substation') {
+                    const [dataLocation, dataPerson, dataEntity] = await Promise.all([
+                        window.electronAPI.getLocationByOrganisationId(tab.parentId),
+                        window.electronAPI.getPersonByOrganisationId(tab.parentId),
+                        window.electronAPI.getSubstationEntityByMrid(tab.mrid, this.$store.state.user.user_id, tab.parentId)
+                    ]);
+                    const data = {
+                        locationList: [],
+                        personList: [],
+                        dto: null,
+                        substation : tab
+                    }
+                    if(dataLocation.success) {
+                        data.locationList = dataLocation.data
+                    } else {
+                        data.locationList = []
+                    }
+                    
+                    if(dataPerson.success) {
+                        data.personList = dataPerson.data
+                    } else {
+                        data.personList = []
+                    }
+
+                    if(dataEntity.success) {
+                        const dto = subsMapper.mapEntityToDto(dataEntity.data)
+                        data.dto = dto
+                    } else {
+                        this.$message.error("Failed to load substation data");
+                        return
+                    }
+                    this.$refs.componentLoadData[index].loadData(data)
+                } else {
+                    //
+                }
+            } catch (error) {
+                console.error("Error loading data:", error);
+            }
+        },
+        
+        async selectTab(tab, index) {
+            try {
+                this.indexTab = index
+                this.activeTab = tab
+                this.$emit('input', tab)
+                this.$nextTick(() => {
+                    if(this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                        this.$refs.componentLoadData[index].loadMapForView()
+                    }
+                })
+            } catch (error) {
+                console.error("Error selecting tab:", error);
+            }
         },
         closeTab(index) {
             this.$emit('close-tab', index)
+            if(this.indexTab === index) {
+                this.indexTab = null; // Reset indexTab nếu tab hiện tại bị đóng
+            }
         },
         checkScroll() {
             this.$nextTick(() => {
@@ -129,22 +171,23 @@ export default {
             });
         },
         checkTab(tab) {
-            if(this.dataType.includes(tab.mode)) {
+            if(tab.mode == 'substation') {
                 return 'LocationViewData'
-            } else if (this.dataTypeOwner.includes(tab.mode)) {
-                return 'OwnerView'
-            } else {
-                if(tab.asset != undefined) {
-                    if(tab.asset == 'Transformer') {
-                        return 'Transformer'
-                    } else if(tab.asset == 'Circuit breaker') {
-                        return 'CircuitBreaker'
-                    } else {
-                        return 'Transformer'
+            } else if(tab.mode == 'organisation') {
+                return 'OrganisationView'
+            }
+        },
+        saveCtrlS() {
+            try {
+                if(this.indexTab !== null) {
+                    if(this.$refs.componentLoadData && this.$refs.componentLoadData[this.indexTab]) {
+                        this.$refs.componentLoadData[this.indexTab].saveCtrS()
                     }
                 } else {
-                    return 'LocationViewData'
+                    this.$message.error("Please select a tab to save data.")
                 }
+            } catch (error) {
+                console.error("Error saving data:", error);
             }
         }
     }

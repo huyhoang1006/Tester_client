@@ -217,7 +217,6 @@ export default {
         async saveData() {
             this.$refs.ruleForm.validate(async (valid) => {
                 if(valid) {
-                    console.log("A")
                     try {
 
                         let addListData = this.attachmentData.filter(element => element.upload == 'new')

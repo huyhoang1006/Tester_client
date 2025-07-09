@@ -7,13 +7,14 @@ import EletronicAddress from "@/views/Cim/ElectronicAddress"
 import TelephoneNumber from "@/views/Cim/TelephoneNumber"
 import Person from "@/views/Cim/Person"
 import PersonRole from "@/views/Cim/PersonRole"
-import UserIdentifiedObject from "../UserIdentifiedObject"
 import User from "../User"
 import PersonSubstation from "../PersonSubstation"
 import Attachment from "../Attachment"
 import UserIdentifiedObject from "../UserIdentifiedObject"
 import OrganisationLocation from "../OrganisationLocation"
 import PsrType from "@/views/Cim/PsrType"
+import OrganisationPerson from "../OrganisationPerson"
+import OrganisationPsr from "../OrganisationPsr"
 
 class SubstationEntity {
     constructor() {
@@ -36,7 +37,10 @@ class SubstationEntity {
         this.userIdentifiedObject = new UserIdentifiedObject
         this.personSubstation = new PersonSubstation
         this.organisationLocation = new OrganisationLocation
+        this.organisationPerson = new OrganisationPerson
         this.psrType = new PsrType
+        this.organisationPsr = new OrganisationPsr
+        this.configurationEvent = []
     }
 }
 export default SubstationEntity

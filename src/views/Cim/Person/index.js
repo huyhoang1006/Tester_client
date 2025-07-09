@@ -12,7 +12,6 @@ class Person extends IdentifiedObject {
         this.prefix = null
         this.special_need = null
         this.suffix = null
-        this.roles = null
     }
 }
 export default Person

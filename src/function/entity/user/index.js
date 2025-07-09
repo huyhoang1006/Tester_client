@@ -10,21 +10,21 @@ export const insertUser = async (user) => {
                 permission,
                 username,
                 token,
-                group
+                group_user
             ) VALUES (?, ?, ?, ?, ?, ?)
             ON CONFLICT(user_id) DO UPDATE SET
                 role = excluded.role,
                 permission = excluded.permission,
                 username = excluded.username,
                 token = excluded.token,
-                group = excluded.group`,
+                group_user = excluded.group_user`,
             [
                 user.user_id,
                 user.role,
                 user.permission,
                 user.username,
                 user.token,
-                user.group
+                user.group_user
             ],
             function (err) {
                 if (err) return reject({ success: false, err, message: 'Insert user failed' })
@@ -43,21 +43,21 @@ export const insertUserTransaction = async (user, dbsql) => {
                 permission,
                 username,
                 token,
-                group
+                group_user
             ) VALUES (?, ?, ?, ?, ?, ?)
             ON CONFLICT(user_id) DO UPDATE SET
                 role = excluded.role,
                 permission = excluded.permission,
                 username = excluded.username,
                 token = excluded.token,
-                group = excluded.group`,
+                group_user = excluded.group_user`,
             [
                 user.user_id,
                 user.role,
                 user.permission,
                 user.username,
                 user.token,
-                user.group
+                user.group_user
             ],
             function (err) {
                 if (err) return reject({ success: false, err, message: 'Insert user failed' })
@@ -87,14 +87,14 @@ export const updateUserById = async (user_id, user) => {
                 permission = ?,
                 username = ?,
                 token = ?,
-                group = ?
+                group_user = ?
             WHERE user_id = ?`,
             [
                 user.role,
                 user.permission,
                 user.username,
                 user.token,
-                user.group,
+                user.group_user,
                 user_id
             ],
             function (err) {
