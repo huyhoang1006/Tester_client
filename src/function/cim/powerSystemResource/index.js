@@ -191,3 +191,18 @@ export const deletePowerSystemResourceById = async (mrid) => {
 export const deletePowerSystemResourceByIdTransaction = async (mrid, dbsql) => {
     return identifiedObjectFunc.deleteIdentifiedObjectByIdTransaction(mrid, dbsql)
 }
+
+export const getPowerSystemResourceByLocationIdTransaction = async (locationId, dbsql) => {
+    try {
+        return new Promise((resolve, reject) => {
+            dbsql.all("SELECT * FROM power_system_resource WHERE location = ?", [locationId], (err, rows) => {
+                if (err) return reject({ success: false, err, message: 'Get powerSystemResource failed' })
+                if (!rows || rows.length === 0) return resolve({ success: false, data: null, message: 'PowerSystemResource not found' })
+                const data = rows.map(row => ({ ...row }))
+                return resolve({ success: true, data: data, message: 'Get powerSystemResource completed' })
+            })
+        })
+    } catch (err) {
+        return { success: false, err, message: 'Get powerSystemResource failed' }
+    }
+}

@@ -10,6 +10,28 @@ export const getTownDetailById = async (mrid) => {
     })
 }
 
+export const getTownDetailByLocationId = async (locationId) => {
+    return new Promise((resolve, reject) => {
+        const query = `
+            SELECT td.* 
+            FROM location l
+            JOIN street_address sa ON l.main_address = sa.mrid
+            JOIN town_detail td ON sa.town_detail = td.mrid
+            WHERE l.mrid = ?
+        `;
+
+        db.get(query, [locationId], (err, row) => {
+            if (err) {
+                return reject({ success: false, err: err, message: 'Get town detail by location id failed' });
+            }
+            if (!row) {
+                return resolve({ success: false, data: null, message: 'Town detail not found' });
+            }
+            return resolve({ success: true, data: row, message: 'Get town detail by location id completed' });
+        });
+    });
+};
+
 export const insertTownDetail = async (townDetail) => {
     return new Promise((resolve, reject) => {
         db.run(

@@ -20,11 +20,22 @@ const ownerAPI = ownerPreload.ownerPreload()
 const attachmentAPI = entityPreload.attachmentPreload.attachmentPreload()
 const parentOrganizationAPI = cimPreload.parentOrganizationPreload.parentOrganizationPreload()
 const substationAPI = cimPreload.substationPreload.substationPreload()
-
+const locationAPI = cimPreload.locationPreload.locationPreload()
+const streetAddressAPI = cimPreload.streetAddressPreload.streetAddressPreload()
+const streetDetailAPI = cimPreload.streetDetailPreload.streetDetailPreload()
+const townDetailAPI = cimPreload.townDetailPreload.townDetailPreload()
+const electronicAddressAPI = cimPreload.electronicAddressPreload.electronicAddressPreload()
+const personAPI = cimPreload.personPreload.personPreload()
+const personRoleAPI = cimPreload.personRolePreload.personRolePreload()
+const telephoneNumberAPI = cimPreload.telephoneNumberPreload.telephoneNumberPreload()
+const configurationEventAPI = cimPreload.configurationEventPreload.configurationEventPreload()
+const substationEntityAPI = entityPreload.substationPreload.substationEntityPreload()
+const parentOrganizationEntityAPI = entityPreload.parentOrganizationPreload.parentOrganizationEntityPreload()
 
 const ipcMain = Object.assign(userAPI, transformerAPI, fmecaAPI, conditionAPI, circuitAPI, attachmentAPI, 
     currentTransAPI, voltageTransAPI, disconnectorAPI, surgeArresterAPI, powerCablePreAPI, uploadCustomAPI,
-    manufacturerAPI, ownerAPI, parentOrganizationAPI, substationAPI)
+    manufacturerAPI, ownerAPI, parentOrganizationAPI, substationAPI, locationAPI, streetAddressAPI, streetDetailAPI, townDetailAPI,
+    electronicAddressAPI, personAPI, personRoleAPI, telephoneNumberAPI, configurationEventAPI, substationEntityAPI, parentOrganizationEntityAPI)
 contextBridge.exposeInMainWorld('electronAPI', 
     ipcMain 
 )

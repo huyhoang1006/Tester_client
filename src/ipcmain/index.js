@@ -1,6 +1,5 @@
 import * as ipcCircuit from './cirCuitBreaker/circuitBreaker'
 import * as ipcJobCircuit from './cirCuitBreaker/jobCircuit'
-import * as ipcAttachment from './attachment'
 import * as ipcTransformer from './transformer'
 import * as ipcCurrentTrans from './currentTransformer/currentTrans'
 import * as ipcVoltageTrans from './voltageTransformer/voltageTrans'
@@ -17,7 +16,8 @@ import * as ipcJobTransformer from "./transformer/jobTransformer"
 import * as ipcUpdateManu from './manufacturer/manufacturer'
 import * as ipcOwner from './owner/owner'
 import * as ipcCim from './cim/index.js'
+import * as ipcEntity from './entity/index.js'
 
-export {ipcCircuit, ipcJobCircuit, ipcAttachment, ipcTransformer, ipcCurrentTrans, ipcVoltageTrans, ipcDisconnector, ipcSurgeArrester}
+export {ipcCircuit, ipcJobCircuit, ipcTransformer, ipcCurrentTrans, ipcVoltageTrans, ipcDisconnector, ipcSurgeArrester}
 export {ipcPowerCable, ipcUploadCustom, ipcJobCurrent, ipcJobVoltage, ipcJobDisconnector, ipcJobSurge, ipcJobPower, ipcJobTransformer}
-export {ipcUpdateManu, ipcOwner, ipcCim}
+export {ipcUpdateManu, ipcOwner, ipcCim, ipcEntity}

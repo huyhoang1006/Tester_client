@@ -14,6 +14,7 @@ export const insertTelephoneNumber = async (telephoneNumber) => {
     return new Promise((resolve, reject) => {
         db.run(
             `INSERT INTO telephone_number(
+                mrid,
                 area_code,
                 city_code,
                 country_code,
@@ -23,15 +24,17 @@ export const insertTelephoneNumber = async (telephoneNumber) => {
                 itu_phone,
                 local_number
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(itu_phone) DO UPDATE SET
+            ON CONFLICT(mrid) DO UPDATE SET
                 area_code = excluded.area_code,
                 city_code = excluded.city_code,
                 country_code = excluded.country_code,
                 dial_out = excluded.dial_out,
                 extension = excluded.extension,
                 international_prefix = excluded.international_prefix,
+                itu_phone = excluded.itu_phone,
                 local_number = excluded.local_number`,
             [
+                telephoneNumber.mrid,
                 telephoneNumber.area_code,
                 telephoneNumber.city_code,
                 telephoneNumber.country_code,
@@ -53,6 +56,7 @@ export const insertTelephoneNumberTransaction = async (telephoneNumber, dbsql) =
     return new Promise((resolve, reject) => {
         dbsql.run(
             `INSERT INTO telephone_number(
+                mrid,
                 area_code,
                 city_code,
                 country_code,
@@ -61,26 +65,18 @@ export const insertTelephoneNumberTransaction = async (telephoneNumber, dbsql) =
                 international_prefix,
                 itu_phone,
                 local_number
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(itu_phone) DO UPDATE SET
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(mrid) DO UPDATE SET
                 area_code = excluded.area_code,
                 city_code = excluded.city_code,
                 country_code = excluded.country_code,
                 dial_out = excluded.dial_out,
                 extension = excluded.extension,
                 international_prefix = excluded.international_prefix,
-                itu_phone,
-                local_number
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(itu_phone) DO UPDATE SET
-                area_code = excluded.area_code,
-                city_code = excluded.city_code,
-                country_code = excluded.country_code,
-                dial_out = excluded.dial_out,
-                extension = excluded.extension,
-                international_prefix = excluded.international_prefix,
+                itu_phone = excluded.itu_phone,
                 local_number = excluded.local_number`,
             [
+                telephoneNumber.mrid,
                 telephoneNumber.area_code,
                 telephoneNumber.city_code,
                 telephoneNumber.country_code,

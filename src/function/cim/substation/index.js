@@ -72,16 +72,14 @@ export const getSubstationsInOrganisationForUser = async (organisationId, userId
             const query = `
                 SELECT 
                     s.*, 
-                    psr.location AS location_id,
-                    io.name AS location_name
+                    io.name AS name
                 FROM substation s
                 JOIN power_system_resource psr ON s.mrid = psr.mrid
-                JOIN location l ON psr.location = l.mrid
-                JOIN identified_object io ON l.mrid = io.mrid
-                JOIN organisation_location ol ON l.mrid = ol.location_id
+                JOIN organisation_psr opsr ON psr.mrid = opsr.psr_id
                 JOIN user_identified_object uio ON s.mrid = uio.identified_object_id
-                WHERE ol.organisation_id = ?
-                  AND uio.user_id = ?
+                JOIN identified_object io ON s.mrid = io.mrid
+                WHERE opsr.organisation_id = ?
+                AND uio.user_id = ?
             `;
 
             db.all(query, [organisationId, userId], (err, rows) => {

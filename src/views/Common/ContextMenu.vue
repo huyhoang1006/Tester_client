@@ -12,8 +12,35 @@
                 </li>
             </ul>
             <ul v-else>
-                <li>
+                <li v-if="this.selectedNode && this.selectedNode.mode == 'organisation'" @click="addOrganisation">
+                    <i class="fa-solid fa-plus"></i> Add organisation
+                </li>
+                <li v-if="this.selectedNode && this.selectedNode.mode == 'organisation'" @click="addSubsInTree">
                     <i class="fa-solid fa-plus"></i> Add substation
+                </li>
+                <li v-if="this.selectedNode && this.selectedNode.mode == 'substation'" @click="addVoltageLevel">
+                    <i class="fa-solid fa-plus"></i> Add voltage level
+                </li>
+                <li v-if="this.selectedNode && this.selectedNode.mode == 'voltageLevel'" @click="addBay">
+                    <i class="fa-solid fa-plus"></i> Add bay
+                </li>
+                <li class="has-submenu" v-if="this.selectedNode && (this.selectedNode.mode == 'bay' || this.selectedNode.mode == 'substation' || this.selectedNode.mode == 'organisation')" @click="addAsset">
+                    <i class="fa-solid fa-plus"></i> Add asset
+                    <ul class="submenu">
+                        <li><i class="fa-solid fa-bolt"></i> Add transformer</li>
+                        <li><i class="fa-solid fa-plug"></i> Add Breaker</li>
+                        <li><i class="fa-solid fa-ruler"></i> Add CT</li>
+                        <li><i class="fa-solid fa-bolt-lightning"></i> Add VT</li>
+                        <li><i class="fa-solid fa-shield-halved"></i> Add Surge Arrester</li>
+                        <li><i class="fa-solid fa-route"></i> Add Power Cable</li>
+                        <li><i class="fa-solid fa-plug-circle-xmark"></i> Add Disconnector</li>
+                    </ul>
+                </li>
+                <li v-if="this.selectedNode && this.selectedNode.mode == 'asset'">
+                    <i class="fa-solid fa-plus"></i> Add job
+                </li>
+                <li v-if="this.selectedNode && this.selectedNode.mode == 'job'">
+                    <i class="fa-solid fa-plus"></i> Add test
                 </li>
                 <li @click="show">
                     <i class="fa-solid fa-eye"></i> Show
@@ -26,9 +53,6 @@
                 </li>
                 <li @click="deleteNode">
                     <i class="fas fa-trash-alt"></i> Delete
-                </li>
-                <li @click="addChild">
-                    <i class="fas fa-plus-circle"></i> Add child
                 </li>
                 <li @click="duplicate">
                     <i class="fa-solid fa-copy"></i> Duplicate
@@ -47,7 +71,8 @@ export default {
             visible: false,
             position: { x: 0, y: 0 },
             selectedNode: null, // Lưu trữ node đang mở menu
-            sign : ''
+            sign : '',
+            organisationId: '00000000-0000-0000-0000-000000000000' // Mặc định là ID của tổ chức
         };
     },
     methods: {
@@ -62,10 +87,11 @@ export default {
             document.addEventListener("click", this.closeContextMenu);
         },
 
-        openContextMenuSubstation(event) {
+        openContextMenuSubstation(event, organisationId) {
             event.preventDefault();
             this.position = { x: event.clientX, y: event.clientY };
             this.sign = 'onlysubs'
+            this.organisationId = organisationId
             this.visible = true;
             // Đóng menu khi click ra ngoài
             document.addEventListener("click", this.closeContextMenu);
@@ -78,6 +104,7 @@ export default {
             document.removeEventListener("click", this.closeContextMenu);
         },
         deleteNode() {
+            this.$emit("delete-data", this.selectedNode)
             this.closeContextMenu();
         },
         addChild() {
@@ -94,7 +121,28 @@ export default {
             this.closeContextMenu();
         },
         addSubs() {
-            this.$emit("show-addSubs")
+            this.$emit("show-addSubs", this.organisationId)
+            this.closeContextMenu()
+        },
+        addSubsInTree() {
+            console.log("tree", this.selectedNode)
+            this.$emit("show-addSubsInTree", this.selectedNode)
+            this.closeContextMenu()
+        },
+        addOrganisation() {
+            this.$emit("show-addOrganisation", this.selectedNode)
+            this.closeContextMenu()
+        },
+        addVoltageLevel() {
+            this.$emit("show-addVoltageLevel", this.selectedNode.id)
+            this.closeContextMenu()
+        },
+        addBay() {
+            this.$emit("show-addBay", this.selectedNode.id)
+            this.closeContextMenu()
+        },
+        addAsset() {
+            this.$emit("show-addAsset", this.selectedNode.id)
             this.closeContextMenu()
         }
     }
@@ -153,5 +201,28 @@ export default {
         transform: scale(1);
         opacity: 1;
     }
+}
+
+/* Định dạng submenu */
+.has-submenu {
+    position: relative;
+}
+
+.has-submenu > .submenu {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 100%;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    min-width: 160px;
+    z-index: 1001;
+    padding: 8px 0;
+    white-space: nowrap;
+}
+
+.has-submenu:hover > .submenu {
+    display: block;
 }
 </style>

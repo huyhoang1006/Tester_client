@@ -23,7 +23,7 @@
                 <div @click.stop="handleDropdown">
                     <el-dropdown ref="dropdown" @command="handleCommand" trigger="click">
                         <el-button style="padding: 0; margin: 0; border: none; background-color: inherit;">
-                            <i style="font-size: 1.2vw; color: white;" class="far fa-user-circle"></i>
+                            <i style="font-size: 20px; color: white;" class="far fa-user-circle"></i>
                         </el-button>
                         <el-dropdown-menu slot="dropdown">
                             <template v-if="user">
@@ -40,13 +40,13 @@
                     </el-dropdown>
                 </div>
                 <div style="height: 100%;" @click="minimizeApp">
-                    <i style="font-size: 1.2vw; color: white;" class="far fa-minus-square"></i>
+                    <i style="font-size: 20px; color: white;" class="far fa-minus-square"></i>
                 </div>
                 <div @click="maximizeApp">
-                    <i style="font-size: 1.2vw; color: white;" class="fa-solid fa-window-restore"></i>
+                    <i style="font-size: 20px; color: white;" class="fa-solid fa-window-restore"></i>
                 </div>
                 <div class="close-icon" @click="closeApp">
-                    <i style="font-size: 1.2vw; color: white;" class="fa-solid fa-xmark "></i>
+                    <i style="font-size: 20px; color: white;" class="fa-solid fa-xmark "></i>
                 </div>
             </div>
         </div>

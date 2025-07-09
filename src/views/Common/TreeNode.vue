@@ -1,23 +1,27 @@
 <template>
     <li>
         <span @contextmenu.prevent="openContextMenu($event, node)" :class="{ selected: selectedNodes.some(n => n.id === node.id) }" class="folder" @click="toggle">
-            <div v-if="dataOwnerType.includes(node.mode)" class="icon-wrapper">
+            <div v-if="node.mode == 'substation'" class="icon-wrapper">
                 <icon size="16px" folderType="location" badgeColor="146EBE"></icon>
                 <span class="node-name">{{ node.name }}</span>
             </div>
-            <div v-if="dataType.includes(node.mode)" class="icon-wrapper">
+            <div v-else-if="node.mode == 'voltageLevel'" class="icon-wrapper">
                 <icon size="16px" folderType="owner" badgeColor="146EBE"></icon>
                 <span class="node-name">{{ node.name }}</span>
             </div>
-            <div v-if="assetType.includes(node.asset)" class="icon-wrapper">
+            <div v-else-if="node.mode == 'bay'" class="icon-wrapper">
+                <icon size="16px" folderType="feeder" badgeColor="146EBE"></icon>
+                <span class="node-name">{{ node.name }}</span>
+            </div>
+            <div v-else-if="node.mode == 'asset'" class="icon-wrapper">
                 <icon size="16px" folderType="asset" badgeColor="146EBE"></icon>
                 <span class="node-name">{{ node.serial_no }} </span>
             </div>
-            <div v-if="node.type == 'job'" class="icon-wrapper">
+            <div v-else-if="node.mode == 'job'" class="icon-wrapper">
                 <icon size="16px" folderType="job" badgeColor="FF0000"></icon>
                 <span class="node-name">{{ node.name }}</span>
             </div>
-            <div v-if="node.type == 'test'" class="icon-wrapper">
+            <div v-else-if="node.mode == 'test'" class="icon-wrapper">
                 <icon size="16px" folderType="test" badgeColor="008001"></icon>
                 <span class="node-name">{{ node.name }}</span>
             </div>

@@ -29,7 +29,9 @@
                         <el-form-item label="Location">
                         </el-form-item>
                         <el-form-item label="Location name" class="custom-label">
-                            <el-input v-model="properties.locationName"></el-input>
+                            <el-select @change="changeLocationName" style="width: 100%;" filterable allow-create v-model="locationTemp">
+                                <el-option v-for="(item, index) in locationListData" :key="index" :label="item.name" :value="item.mrid"> </el-option>
+                            </el-select>
                         </el-form-item>
                         <el-form-item label="Street" class="custom-label">
                             <el-input v-model="properties.street"></el-input>
@@ -111,7 +113,9 @@
                         <span class="bolder">Contact person</span>
                         <el-divider></el-divider>
                         <el-form-item label="Name">
-                            <el-input v-model="properties.personName"></el-input>
+                            <el-select @change="changePersonName" style="width: 100%;" filterable allow-create v-model="personTemp">
+                                <el-option v-for="(item, index) in personListData" :key="index" :label="item.name" :value="item.mrid"> </el-option>
+                            </el-select>
                         </el-form-item>
                         <el-form-item label="Phone number">
                             <el-input type="number" v-model="properties.phoneNumber"></el-input>
@@ -185,6 +189,26 @@ export default {
     name: 'LocationViewData',
     mixins: [mixin],
     props : {
+        organisationId: {
+            type: String,
+            default: '00000000-0000-0000-0000-000000000000'
+        },
+        locationList: {
+            type: Array,
+            default: () => []
+        },
+        personList: {
+            type: Array,
+            default: () => []
+        },
+        dataMapping: {
+            type: Object,
+            default: () => ({})
+        },
+        mode: {
+            type: String,
+            default: "add"
+        },
     },
     data() {
         return {
@@ -202,7 +226,6 @@ export default {
             indexGeo : '',
             signAddGeo : false,
             titleGeo : 'Add coordinate',
-            mode: this.$constant.ADD,
             saved: false,
             labelWidth: `150px`,
             countryData : country.default,

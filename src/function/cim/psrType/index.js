@@ -69,7 +69,7 @@ export const getPsrTypeById = async (mrid) => {
         }
         return new Promise((resolve, reject) => {
             db.get("SELECT * FROM psr_type WHERE mrid = ?", [mrid], (err, row) => {
-                if (err) return reject
+                if (err) return reject({ success: false, err, message: 'Get psrType failed' })
                 if (!row) return resolve({ success: false, data: null, message: 'PsrType not found' })
                 const data = { ...identifiedResult.data, ...row }
                 return resolve({ success: true, data : data, message: 'Get psrType completed' })

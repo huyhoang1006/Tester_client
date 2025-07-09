@@ -31,7 +31,7 @@ export const downloadFile = async (src, dest) => {
     })
 }
 
-export const uploadF = async (src, dest, fs) => {
+export const uploadF = async (src, dest) => {
     return new Promise((resolve, reject) => {
         fs.readFile(src,(err, inputD) => {
             if(err) {

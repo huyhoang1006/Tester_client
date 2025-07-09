@@ -13,10 +13,10 @@ import { parse } from 'csv-parse'
 import { userFunc, locationFunc, assetFunc, jobFunc, importHavec1pha1capFunc, importHavec3pha1capFunc, importHavec3pha2capFunc } from '@/function'
 import {circuitFunc, jobAssetFunc, jobCircuitFunc, currentTransFunc, voltageTransFunc, disconnectorFunc, surgeArresterFunc, powerCableFunc} from "@/function"
 import {currentTransJobFunc, voltageTransJobFunc, disconnectorJobFunc, surgeArresterJobFunc, powerCableJobFunc} from '@/function'
-import {ipcCircuit, ipcJobCircuit, ipcAttachment, ipcTransformer, ipcCurrentTrans, ipcVoltageTrans, ipcDisconnector, ipcSurgeArrester, ipcPowerCable} from '@/ipcmain'
+import {ipcCircuit, ipcJobCircuit, ipcTransformer, ipcCurrentTrans, ipcVoltageTrans, ipcDisconnector, ipcSurgeArrester, ipcPowerCable} from '@/ipcmain'
 import { ipcJobCurrent, ipcJobVoltage, ipcJobDisconnector, ipcJobSurge, ipcJobPower, ipcJobTransformer } from '@/ipcmain'
 import { ipcUploadCustom, ipcUpdateManu, ipcOwner } from '@/ipcmain'
-import { ipcCim } from '@/ipcmain'
+import { ipcCim, ipcEntity } from '@/ipcmain'
 let win;
 
 const nameDB = 'database.db'
@@ -1293,11 +1293,11 @@ app.on('ready', async () => {
     //owner
     ipcOwner.active()
 
-    //attachment
-    ipcAttachment.active()
-
     //cim
     ipcCim.active()
+
+    //entity
+    ipcEntity.active()
 
     ipcMain.handle('importHavec3pha1cap', async function (event, locationId) {
         const rs = await dialog.showOpenDialog({
@@ -1597,30 +1597,30 @@ app.on('ready', async () => {
         }
     })
 
-    ipcMain.handle('insertLocation', async function (event, userId, location) {
-        try {
-            const check = await locationFunc.checkLocationExist(location)
-            if (check) {
-                return {
-                    success: false,
-                    message: "Name already exists"
-                }
-            }
-            else {
-                await locationFunc.insertLocation(userId, location)
-                return {
-                    success: true,
-                    message: "Success"
-                }
-            }
-        } catch (error) {
-            console.log(error)
-            return {
-                success: false,
-                message: error
-            }
-        }
-    })
+    // ipcMain.handle('insertLocation', async function (event, userId, location) {
+    //     try {
+    //         const check = await locationFunc.checkLocationExist(location)
+    //         if (check) {
+    //             return {
+    //                 success: false,
+    //                 message: "Name already exists"
+    //             }
+    //         }
+    //         else {
+    //             await locationFunc.insertLocation(userId, location)
+    //             return {
+    //                 success: true,
+    //                 message: "Success"
+    //             }
+    //         }
+    //     } catch (error) {
+    //         console.log(error)
+    //         return {
+    //             success: false,
+    //             message: error
+    //         }
+    //     }
+    // })
 
     ipcMain.handle('updateLocation', async function (event, location) {
         try {

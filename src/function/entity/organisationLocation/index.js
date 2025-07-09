@@ -60,6 +60,16 @@ export const getOrganisationLocationById = async (mrid) => {
     })
 }
 
+export const getOrganisationLocationByOrganisationIdAndLocationId = async (organisation_id, location_id) => {
+    return new Promise((resolve, reject) => {
+        db.get("SELECT * FROM organisation_location WHERE organisation_id = ? AND location_id = ?", [organisation_id, location_id], (err, row) => {
+            if (err) return reject({ success: false, err, message: 'Get organisationLocation failed' })
+            if (!row) return resolve({ success: false, data: null, message: 'OrganisationLocation not found' })
+            return resolve({ success: true, data: row, message: 'Get organisationLocation completed' })
+        })
+    })
+}
+
 // Cập nhật OrganisationLocation theo mrid
 export const updateOrganisationLocationById = async (mrid, organisationLocation) => {
     return new Promise((resolve, reject) => {

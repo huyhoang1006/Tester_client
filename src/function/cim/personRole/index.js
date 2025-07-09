@@ -100,6 +100,26 @@ export const getPersonRoleById = async (mrid) => {
     }
 }
 
+// Lấy PersonRole theo personId
+export const getPersonRoleByPersonId = async (personId) => {
+    return new Promise((resolve, reject) => {
+        db.get("SELECT * FROM person_role WHERE person = ?", [personId], async (err, row) => {
+            if (err) return reject({ success: false, err, message: 'Get personRole failed' })
+            if (!row) return resolve({ success: false, data: null, message: 'PersonRole not found' })
+            try {
+                const identifiedResult = await identifiedObjectFunc.getIdentifiedObjectById(row.mrid)
+                if (!identifiedResult.success) {
+                    return resolve({ success: false, data: null, message: 'Identified object not found' })
+                }
+                const data = { ...identifiedResult.data, ...row }
+                return resolve({ success: true, data:data, message: 'Get personRole completed' })
+            } catch (e) {
+                return reject({ success: false, err: e, message: 'Get identified object failed' })
+            }
+        })
+    })
+}
+
 // Cập nhật PersonRole (gồm cả identified_object)
 export const updatePersonRole = async (mrid, personRole) => {
     return new Promise((resolve, reject) => {

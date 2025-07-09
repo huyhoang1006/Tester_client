@@ -81,6 +81,16 @@ export const getUserIdentifiedObjectByIdentifiedObjectId = async (identified_obj
     })
 }
 
+export const getUserIdentifiedObjectByUserIdAndIdentifiedObjectId = async (userId, identifiedObjectId) => {
+    return new Promise((resolve, reject) => {
+        db.get("SELECT * FROM user_identified_object WHERE user_id=? and identified_object_id=?", [userId, identifiedObjectId], (err, row) => {
+            if (err) return reject({ success: false, err: err, message: 'Get user identified object by id failed' })
+            if (!row) return resolve({ success: false, data: null, message: 'user identified object not found' })
+            return resolve({ success: true, data: row, message: 'Get user identified object by id completed' })
+        })
+    })
+}
+
 // Cập nhật UserIdentifiedObject theo mrid
 export const updateUserIdentifiedObjectById = async (mrid, userIdentifiedObject) => {
     return new Promise((resolve, reject) => {

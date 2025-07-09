@@ -19,13 +19,15 @@ export const insertOrganisation = async (organisation) => {
                             phone,
                             postal_address,
                             street_address,
+                            tax_code,
                             parent_organisation
-                        ) VALUES (?, ?, ?, ?, ?, ?)
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?)
                         ON CONFLICT(mrid) DO UPDATE SET
                             electronic_address = excluded.electronic_address,
                             phone = excluded.phone,
                             postal_address = excluded.postal_address,
                             street_address = excluded.street_address,
+                            tax_code = excluded.tax_code,
                             parent_organisation = excluded.parent_organisation`,
                         [
                             organisation.mrid,
@@ -33,6 +35,7 @@ export const insertOrganisation = async (organisation) => {
                             organisation.phone,
                             organisation.postal_address,
                             organisation.street_address,
+                            organisation.tax_code,
                             organisation.parent_organisation
                         ],
                         function (err) {
@@ -70,13 +73,15 @@ export const insertOrganisationTransaction = async (organisation, dbsql) => {
                         phone,
                         postal_address,
                         street_address,
+                        tax_code,
                         parent_organisation
-                    ) VALUES (?, ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
                     ON CONFLICT(mrid) DO UPDATE SET
                         electronic_address = excluded.electronic_address,
                         phone = excluded.phone,
                         postal_address = excluded.postal_address,
                         street_address = excluded.street_address,
+                        tax_code = excluded.tax_code,
                         parent_organisation = excluded.parent_organisation`,
                     [
                         organisation.mrid,
@@ -84,6 +89,7 @@ export const insertOrganisationTransaction = async (organisation, dbsql) => {
                         organisation.phone,
                         organisation.postal_address,
                         organisation.street_address,
+                        organisation.tax_code,
                         organisation.parent_organisation
                     ],
                     function (err) {
@@ -139,6 +145,7 @@ export const updateOrganisationById = async (mrid, organisation) => {
                             phone = ?,
                             postal_address = ?,
                             street_address = ?,
+                            tax_code = ?,
                             parent_organisation = ?
                         WHERE mrid = ?`,
                         [
@@ -146,6 +153,7 @@ export const updateOrganisationById = async (mrid, organisation) => {
                             organisation.phone,
                             organisation.postal_address,
                             organisation.street_address,
+                            organisation.tax_code,
                             organisation.parent_organisation,
                             mrid
                         ],
@@ -181,6 +189,7 @@ export const updateOrganisationByIdTransaction = async (mrid, organisation, dbsq
                         phone = ?,
                         postal_address = ?,
                         street_address = ?,
+                        tax_code = ?,
                         parent_organisation = ?
                     WHERE mrid = ?`,
                     [
@@ -188,6 +197,7 @@ export const updateOrganisationByIdTransaction = async (mrid, organisation, dbsq
                         organisation.phone,
                         organisation.postal_address,
                         organisation.street_address,
+                        organisation.tax_code,
                         organisation.parent_organisation,
                         mrid
                     ],

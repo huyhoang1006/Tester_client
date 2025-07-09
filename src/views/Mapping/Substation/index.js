@@ -1,6 +1,9 @@
+/* eslint-disable */
 import SubstationEntity from '@/views/Entity/Substation/index'
-import SubstationDto from '@/views/Dto/Substation/index'
+// import SubstationDto from '@/views/Dto/Substation/index'
 import PositionPoint from '@/views/Cim/PositionPoint'
+import ConfigurationEvent from '@/views/Cim/ConfigurationEvent'
+import SubstationDto from '@/views/Dto/Substation'
 
 export function mapDtoToEntity(dto) {
     const entity = new SubstationEntity()
@@ -10,10 +13,12 @@ export function mapDtoToEntity(dto) {
     entity.substation.generation = dto.generation || null
     entity.substation.industry = dto.industry || null
     entity.substation.description = dto.comment || null
-    entity.substation.subsId = dto.subsId || null
+    entity.substation.mrid = dto.subsId || null
 
     // PSR Type
     entity.psrType.name = dto.type || null
+    entity.psrType.mrid = dto.psrTypeId || null
+    entity.substation.psr_type_id = dto.psrTypeId || null
 
     // TownDetail
     entity.townDetail.mrid = dto.townDetailId || null
@@ -29,7 +34,7 @@ export function mapDtoToEntity(dto) {
 
     // StreetAddress
     entity.streetAddress.street_detail = dto.streetDetailId || null
-    entity.streetAddress.town_detail = dto.townDetail || null
+    entity.streetAddress.town_detail = dto.townDetailId || null
     entity.streetAddress.mrid = dto.streetAddressId || null
 
     //location
@@ -44,7 +49,7 @@ export function mapDtoToEntity(dto) {
 
     //telephoneNumber
     entity.telephoneNumber.mrid = dto.telephoneNumberId || null
-    entity.telephoneNumber.itu_phone = dto.telephoneNumber || null
+    entity.telephoneNumber.itu_phone = dto.phoneNumber || null
 
     // person
     entity.person.mrid = dto.personId || null
@@ -63,19 +68,21 @@ export function mapDtoToEntity(dto) {
     entity.attachment = dto.attachment || null
 
     //position
-    if(this.positionPoints.x.length !== 0) {
-        this.positionPoints.x.forEach((element, index) => {
+    if(dto.positionPoints.x.length !== 0) {
+        dto.positionPoints.x.forEach((element, index) => {
             const positionPoint = new PositionPoint
+            positionPoint.location = dto.locationId || null
             positionPoint.mrid = element.id || null
             positionPoint.x_position = element.coor || null
-            positionPoint.y_position = this.positionPoints.y[index].coor || null
-            positionPoint.z_position = this.positionPoints.z[index].coor || null
+            positionPoint.y_position = dto.positionPoints.y[index].coor || null
+            positionPoint.z_position = dto.positionPoints.z[index].coor || null
             entity.positionPoint.push(positionPoint)
         });
     }
 
     //user
     entity.user.user_id = dto.userId || null
+    entity.user.username = dto.userName || null
 
     //userIdentifiedObject
     entity.userIdentifiedObject.mrid = dto.userIdentifiedObjectId || null
@@ -92,66 +99,80 @@ export function mapDtoToEntity(dto) {
     entity.organisationLocation.organisation_id = dto.organisationId || null
     entity.organisationLocation.location_id = dto.locationId || null
 
+    //organisationPerson
+    entity.organisationPerson.mrid = dto.organisationPersonId || null
+    entity.organisationPerson.organisation_id = dto.organisationId || null
+    entity.organisationPerson.person_id = dto.personId || null
+
+    //organisationPsr
+    entity.organisationPsr.mrid = dto.organisationPsrId || null
+    entity.organisationPsr.organisation_id = dto.organisationId || null
+    entity.organisationPsr.psr_id = dto.subsId || null
+    
+    //configurationEvent
+    if (Array.isArray(dto.configurationEvent) && dto.configurationEvent.length > 0) {
+        entity.configurationEvent = dto.configurationEvent
+    }
+
     return entity
 }
 
 export function mapEntityToDto(entity) {
-    const dto = {}
+    const dto = new SubstationDto()
 
-    // Map các trường đơn giản
-    dto.name = entity.substation.name || null
-    dto.type = entity.substation.type || null
-    dto.generation = entity.substation.generation || null
-    dto.industry = entity.substation.industry || null
-    dto.comment = entity.substation.description || null
-    dto.subsId = entity.substation.subsId || null
+    // substation
+    dto.name = entity.substation.name || ''
+    dto.generation = entity.substation.generation || ''
+    dto.industry = entity.substation.industry || ''
+    dto.comment = entity.substation.description || ''
+    dto.subsId = entity.substation.mrid || ''
 
     // StreetAddress
-    dto.streetDetailId = entity.streetAddress.street_detail || null
-    dto.townDetail = entity.streetAddress.town_detail || null
-    dto.streetAddressId = entity.streetAddress.mrid || null
+    dto.streetAddressId = entity.streetAddress.mrid || ""
 
     // TownDetail
-    dto.townDetailId = entity.townDetail.mrid || null
-    dto.city = entity.townDetail.city || null
-    dto.state_or_province = entity.townDetail.state_or_province || null
-    dto.country = entity.townDetail.country || null
-    dto.district_or_town = entity.townDetail.district_or_town || null
-    dto.ward_or_commune = entity.townDetail.ward_or_commune || null
+    dto.townDetailId = entity.townDetail.mrid || ""
+    dto.city = entity.townDetail.city || ""
+    dto.state_or_province = entity.townDetail.state_or_province || ""
+    dto.country = entity.townDetail.country || ""
+    dto.district_or_town = entity.townDetail.district_or_town || ""
+    dto.ward_or_commune = entity.townDetail.ward_or_commune || ""
 
     // StreetDetail
-    dto.street = entity.streetDetail.address_general || null
+    dto.streetDetailId = entity.streetDetail.mrid || ""
+    dto.street = entity.streetDetail.address_general || ""
     // mrid đã map ở trên
 
     // Location
-    dto.locationId = entity.location.mrid || null
-    dto.locationName = entity.location.name || null
+    dto.locationId = entity.location.mrid || ""
+    dto.locationName = entity.location.name || ""
     // main_address đã map ở trên
 
     // electronicAddress
-    dto.electronicAddressId = entity.electronicAddress.mrid || null
-    dto.email = entity.electronicAddress.email || null
-    dto.fax = entity.electronicAddress.fax || null
+    dto.electronicAddressId = entity.electronicAddress.mrid || ""
+    dto.email = entity.electronicAddress.email || ""
+    dto.fax = entity.electronicAddress.fax || ""
 
     // telephoneNumber
-    dto.telephoneNumberId = entity.telephoneNumber.mrid || null
-    dto.telephoneNumber = entity.telephoneNumber.itu_phone || null
+    dto.telephoneNumberId = entity.telephoneNumber.mrid || ""
+    dto.phoneNumber = entity.telephoneNumber.itu_phone || ""
+
+    //psrType
+    dto.psrTypeId = entity.psrType.mrid || ""
+    dto.type = entity.psrType.name || ""
 
     // person
-    dto.personId = entity.person.mrid || null
-    dto.personName = entity.person.name || null
-    dto.electronicAddressId = entity.person.electronic_address || null
-    dto.telephoneNumberId = entity.person.mobile_phone || null
-    dto.personRoleId = entity.person.roles || null
+    dto.personId = entity.person.mrid || ""
+    dto.personName = entity.person.name || ""
 
     // personRole
-    dto.personRoleId = entity.personRole.mrid || null
-    dto.department = entity.personRole.department || null
-    dto.position = entity.personRole.position || null
+    dto.personRoleId = entity.personRole.mrid || ""
+    dto.department = entity.personRole.department || ""
+    dto.position = entity.personRole.position || ""
 
     // attachment
-    dto.attachmentId = entity.attachment.id || null
-    dto.attachment = entity.attachment || null
+    dto.attachmentId = entity.attachment.id || ""
+    dto.attachment = entity.attachment || ""
 
     // positionPoints (nếu có)
     // Tùy vào cấu trúc thực tế, bạn có thể map lại thành mảng x, y, z như ban đầu
@@ -166,17 +187,23 @@ export function mapEntityToDto(entity) {
     }
 
     // user
-    dto.userId = entity.user.user_id || null
+    dto.userId = entity.user.user_id || ""
 
     // userIdentifiedObject
-    dto.userIdentifiedObjectId = entity.userIdentifiedObject.mrid || null
+    dto.userIdentifiedObjectId = entity.userIdentifiedObject.mrid || ""
 
     // personSubstation
-    dto.personSubstationId = entity.personSubstation.mrid || null
+    dto.personSubstationId = entity.personSubstation.mrid || ""
 
     // organisationLocation
-    dto.organisationLocationId = entity.organisationLocation.mrid || null
-    dto.organisationId = entity.organisationLocation.organisation_id || null
+    dto.organisationLocationId = entity.organisationLocation.mrid || ""
+    dto.organisationId = entity.organisationLocation.organisation_id || ""
+
+    // organisationPerson
+    dto.organisationPersonId = entity.organisationPerson.mrid || ""
+
+    // organisationPsr
+    dto.organisationPsrId = entity.organisationPsr.mrid || ""
 
     return dto
 }

@@ -57,6 +57,7 @@ export const insertEquipmentContainerTransaction = async (equipmentContainer, db
                 )
             })
             .catch(err => {
+                console.error('Insert EquipmentContainer failed:', err)
                 return reject({ success: false, err, message: 'Insert EquipmentContainer transaction failed' })
             })
     })

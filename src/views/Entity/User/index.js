@@ -5,7 +5,7 @@ class User {
         this.permission = null
         this.username = null
         this.token = null
-        this.group = null
+        this.group_user = null
     }
 }
 export default User

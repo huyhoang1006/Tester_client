@@ -24,6 +24,38 @@ export const getLocationById = async (mrid) => {
     }
 }
 
+export const getLocationByOrganisationId = async (organisationId) => {
+    try {
+        return new Promise((resolve, reject) => {
+            const query = `
+                SELECT 
+                    l.*, 
+                    io.name AS name,
+                    io.description AS description,
+                    io.alias_name AS alias_name
+                FROM location l
+                JOIN identified_object io ON l.mrid = io.mrid
+                JOIN organisation_location lo ON l.mrid = lo.location_id
+                WHERE lo.organisation_id = ?
+            `;
+            
+            db.all(query, [organisationId], (err, rows) => {
+                if (err) {
+                    return reject({ success: false, err: err, message: 'Query failed' });
+                }
+
+                if (!rows || rows.length === 0) {
+                    return resolve({ success: false, data: [], message: 'No locations found for this organisation' });
+                }
+                return resolve({ success: true, data: rows, message: 'Get locations by organisationId completed' });
+            });
+        });
+    } catch (err) {
+        return { success: false, err: err, message: 'Unexpected error' };
+    }
+};
+
+
 export const insertLocation = async (location) => {
     return new Promise((resolve, reject) => {
         db.serialize(() => {
@@ -232,7 +264,7 @@ export const deleteLocationById = async (mrid) => {
     })
 }
 
-export const deleteIdentifiedObjectByIdTransaction = async (mrid, dbsql) => {
+export const deleteLocationByIdTransaction = async (mrid, dbsql) => {
     // Tái sử dụng hàm deleteIdentifiedObjectById đã có sẵn
     return IdentifiedObjectFunc.deleteIdentifiedObjectById(mrid, dbsql)
 }

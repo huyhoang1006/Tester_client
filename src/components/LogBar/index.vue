@@ -12,6 +12,7 @@
                 <div style="width: 50%; height: 100%; box-sizing: border-box; display: flex; align-items: center; align-items: center; direction: rtl; gap: 10px;">
                     <i style="font-size: 15px; margin-right: 5px;" @click="hideLog" class="fa-solid fa-square-caret-down"></i>
                     <i style="font-size: 15px;" class="fa-solid fa-square-caret-up"></i>
+                    <i :class="['fa-solid', 'fa-rotate-right', { spin: isLoadingReload }]" style="font-size: 15px;" @click="reloadLog"></i>
                 </div>
             </div>
         </div>
@@ -26,12 +27,15 @@
             </div>
             <div class="content-log">
                 <div v-for="(item, index) in logData" :key="index" class="content">
-                    <div class="icon"></div>
-                    <div class="header-icon">Date & Time</div>
-                    <div class="header-icon">Category</div>
-                    <div class="header-icon">User</div>
-                    <div class="header-icon">Object</div>
-                    <div class="header-message">Message</div>
+                    <div v-if="item.type === 'INSERT'" class="icon"><i style="color: green; background-color: white;" class="fa-solid fa-square-check"></i></div>
+                    <div v-else-if="item.type === 'UPDATE'" class="icon"><i style="background-color: white; color: yellow;" class="fa-solid fa-triangle-exclamation"></i></div>
+                    <div v-else-if="item.type === 'ERROR'" class="icon"><i style="background-color: white; color: red;" class="fa-solid fa-bug"></i></div>
+                    <div v-else class="icon"></div>
+                    <div class="header-icon" >{{ item.effective_date_time }}</div>
+                    <div class="header-icon">{{ item.type }}</div>
+                    <div class="header-icon">{{ item.user_name }}</div>
+                    <div class="header-icon">{{ item.name }}</div>
+                    <div class="header-message">{{ item.description }}</div>
                 </div>
             </div>
         </div>
@@ -40,14 +44,26 @@
 <script>
 export default {
     name : 'LogBar',
+    props: {
+        logData: {
+            type: Array,
+            default: () => []
+        }
+    },
     data() {
         return {
-            logData : [1, 2, 3, 4, 5, 6]
+            isLoadingReload: false,
         }
     },
     methods: {
         hideLog() {
             this.$emit("hideLogBar", false);
+        },
+        reloadLog() {
+            this.isLoadingReload = true;
+            this.$emit("reloadLog", () => {
+                this.isLoadingReload = false;
+            });
         }
     }
 }
@@ -136,6 +152,9 @@ export default {
     align-items: center;
     padding-left: 5px;
     box-sizing: border-box;
+    white-space: nowrap;         /* Không xuống dòng */
+    overflow: hidden;            /* Ẩn phần vượt quá khung */
+    text-overflow: ellipsis;
 }
 .header-message {
     width: 55%;
@@ -146,5 +165,14 @@ export default {
     align-items: center;
     padding-left: 5px;
     box-sizing: border-box;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 </style>
