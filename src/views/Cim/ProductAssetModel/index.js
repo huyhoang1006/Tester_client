@@ -14,7 +14,6 @@ class ProductAssetModel extends IdentifiedObject {
         this.style_number = null; // Style number of the product asset model
         this.weight_total = null; // Type of the product asset model (e.g., electrical, mechanical)
         this.manufacturer = null; // Manufacturer of the product asset model
-        this.country_of_origin = null
     }
 }
 

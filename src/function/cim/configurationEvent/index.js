@@ -15,8 +15,8 @@ export const insertConfigurationEvent = async (event) => {
                     db.run(
                         `INSERT INTO configuration_event(
                             mrid, effective_date_time, remark, power_system_resource, changed_location, changed_asset,
-                            changed_organisation_role, changed_person_role, changed_person, changed_attachment, modified_by, user_name
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            changed_organisation_role, changed_organisation, changed_person_role, changed_person, changed_attachment, modified_by, user_name
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         ON CONFLICT(mrid) DO UPDATE SET
                             effective_date_time = excluded.effective_date_time,
                             remark = excluded.remark,
@@ -24,11 +24,12 @@ export const insertConfigurationEvent = async (event) => {
                             changed_location = excluded.changed_location,
                             changed_asset = excluded.changed_asset,
                             changed_organisation_role = excluded.changed_organisation_role,
+                            changed_organisation = excluded.changed_organisation,
                             changed_person_role = excluded.changed_person_role,
                             changed_person = excluded.changed_person,
                             changed_attachment = excluded.changed_attachment,
                             modified_by = excluded.modified_by,
-                            user_name = excluded.user_name`, // <-- thêm dấu phẩy ở đây
+                            user_name = excluded.user_name`,
                         [
                             event.mrid,
                             event.effective_date_time,
@@ -37,6 +38,7 @@ export const insertConfigurationEvent = async (event) => {
                             event.changed_location,
                             event.changed_asset,
                             event.changed_organisation_role,
+                            event.changed_organisation,
                             event.changed_person_role,
                             event.changed_person,
                             event.changed_attachment,
@@ -72,8 +74,8 @@ export const insertConfigurationEventTransaction = async (event, dbsql) => {
                 dbsql.run(
                     `INSERT INTO configuration_event(
                         mrid, effective_date_time, remark, power_system_resource, changed_location, changed_asset,
-                        changed_organisation_role, changed_person_role, changed_person, changed_attachment, modified_by, user_name
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        changed_organisation_role, changed_organisation, changed_person_role, changed_person, changed_attachment, modified_by, user_name
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ON CONFLICT(mrid) DO UPDATE SET
                         effective_date_time = excluded.effective_date_time,
                         remark = excluded.remark,
@@ -81,6 +83,7 @@ export const insertConfigurationEventTransaction = async (event, dbsql) => {
                         changed_location = excluded.changed_location,
                         changed_asset = excluded.changed_asset,
                         changed_organisation_role = excluded.changed_organisation_role,
+                        changed_organisation = excluded.changed_organisation,
                         changed_person_role = excluded.changed_person_role,
                         changed_person = excluded.changed_person,
                         changed_attachment = excluded.changed_attachment,
@@ -94,6 +97,7 @@ export const insertConfigurationEventTransaction = async (event, dbsql) => {
                         event.changed_location,
                         event.changed_asset,
                         event.changed_organisation_role,
+                        event.changed_organisation,
                         event.changed_person_role,
                         event.changed_person,
                         event.changed_attachment,
@@ -102,6 +106,7 @@ export const insertConfigurationEventTransaction = async (event, dbsql) => {
                     ],
                     function (err) {
                         if (err) {
+                            console.error('Error inserting configuration event:', err);
                             return reject({ success: false, err, message: 'Insert configuration event failed' })
                         }
                         return resolve({ success: true, data: event, message: 'Insert configuration event completed' })
@@ -131,6 +136,7 @@ export const insertConfigurationEventArrayTransaction = async (eventArray, dbsql
 
         return { success: true, inserted: insertedCount, message: 'Inserted configuration events successfully' };
     } catch (err) {
+        console.error('Error inserting configuration event array:', err);
         return { success: false, err, message: 'Insert configuration event array failed' };
     }
 };
@@ -216,6 +222,7 @@ export const updateConfigurationEventById = async (mrid, event) => {
                             changed_location = ?,
                             changed_asset = ?,
                             changed_organisation_role = ?,
+                            changed_organisation = ?,
                             changed_person_role = ?,
                             changed_person = ?,
                             changed_attachment = ?,
@@ -229,6 +236,7 @@ export const updateConfigurationEventById = async (mrid, event) => {
                             event.changed_location,
                             event.changed_asset,
                             event.changed_organisation_role,
+                            event.changed_organisation,
                             event.changed_person_role,
                             event.changed_person,
                             event.changed_attachment,
@@ -270,6 +278,7 @@ export const updateConfigurationEventByIdTransaction = async (mrid, event, dbsql
                         changed_location = ?,
                         changed_asset = ?,
                         changed_organisation_role = ?,
+                        changed_organisation = ?,
                         changed_person_role = ?,
                         changed_person = ?,
                         changed_attachment = ?,
@@ -283,6 +292,7 @@ export const updateConfigurationEventByIdTransaction = async (mrid, event, dbsql
                         event.changed_location,
                         event.changed_asset,
                         event.changed_organisation_role,
+                        event.changed_organisation,
                         event.changed_person_role,
                         event.changed_person,
                         event.changed_attachment,

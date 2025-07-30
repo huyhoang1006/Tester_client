@@ -206,3 +206,28 @@ export const getPowerSystemResourceByLocationIdTransaction = async (locationId, 
         return { success: false, err, message: 'Get powerSystemResource failed' }
     }
 }
+
+export const getLocationByPowerSystemResourceId = async (psrId) => {
+    try {
+        return new Promise((resolve, reject) => {
+            const sql = `
+                SELECT l.*
+                FROM power_system_resource psr
+                JOIN location l ON psr.location = l.mrid
+                WHERE psr.mrid = ?
+            `;
+
+            db.get(sql, [psrId], (err, row) => {
+                if (err) {
+                    return reject({ success: false, err, message: 'Get location failed' });
+                }
+                if (!row) {
+                    return resolve({ success: false, data: null, message: 'Location not found' });
+                }
+                return resolve({ success: true, data: row, message: 'Get location completed' });
+            });
+        });
+    } catch (err) {
+        return { success: false, err, message: 'Get location failed' };
+    }
+};

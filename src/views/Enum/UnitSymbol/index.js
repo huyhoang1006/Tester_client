@@ -24,8 +24,8 @@ export const UnitSymbol = {
     d: 'd',
     dB: 'dB',
     dBm: 'dBm',
-    deg: 'deg',
-    degC: 'degC',
+    deg: '°',
+    degC: '°C',
     F: 'F',
     FPerm: 'FPerm',
     ft3: 'ft3',
@@ -140,4 +140,5 @@ export const UnitSymbol = {
     WPers: 'WPers',
     WPersr: 'WPersr',
     WPerW: 'WPerW',
+    percent : '%',
 }

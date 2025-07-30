@@ -14,6 +14,7 @@ export function mapDtoToEntity(dto) {
     entity.substation.industry = dto.industry || null
     entity.substation.description = dto.comment || null
     entity.substation.mrid = dto.subsId || null
+    entity.substation.location = dto.locationId || null
 
     // PSR Type
     entity.psrType.name = dto.type || null
@@ -62,6 +63,7 @@ export function mapDtoToEntity(dto) {
     entity.personRole.mrid = dto.personRoleId || null
     entity.personRole.department = dto.department || null
     entity.personRole.position = dto.position || null
+    entity.personRole.person = dto.personId || null
 
     // Map attachment
     entity.attachment.id = dto.attachmentId || null
@@ -118,6 +120,7 @@ export function mapDtoToEntity(dto) {
 }
 
 export function mapEntityToDto(entity) {
+    console.log('entity', entity)
     const dto = new SubstationDto()
 
     // substation

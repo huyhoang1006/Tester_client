@@ -9,6 +9,12 @@ import * as ipcPersonRole from './personRole/index.js'
 import * as ipcElectronicAddress from './electronicAddress/index.js'
 import * as ipcTelephoneNumber from './telephoneNumber/index.js'
 import * as ipcConfigurationEvent from './configurationEvent/index.js'
+import * as ipcPositionPoint from './positionPoint/index.js'
+import * as ipcVoltageLevel from './voltageLevel/index.js'
+import * as ipcBay from './bay/index.js'
+import * as ipcVoltage from './voltage/index.js'
+import * as ipcBaseVoltage from './baseVoltage/index.js'
+import * as ipcPowerSystemResource from './powerSystemResource/index.js'
 
 export const active = () => {
     ipcParentOrganization.active()
@@ -22,4 +28,10 @@ export const active = () => {
     ipcElectronicAddress.active()
     ipcTelephoneNumber.active()
     ipcConfigurationEvent.active()
+    ipcPositionPoint.active()
+    ipcVoltageLevel.active()
+    ipcBay.active()
+    ipcVoltage.active()
+    ipcBaseVoltage.active()
+    ipcPowerSystemResource.active()
 }

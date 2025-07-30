@@ -120,7 +120,7 @@ export const updateParentOrganizationByMrid = () => {
 export const deleteParentOrganizationByMrid = () => {
     ipcMain.handle('deleteParentOrganizationByMrid', async function (event, mrid) {
         try {
-            const rs = await cimFunc.parentOrganizationFunc.deleteParentOrganisationById(mrid)
+            const rs = await cimFunc.parentOrganizationFunc.deleteParentOrganizationById(mrid)
             if (rs.success == true) {
                 return {
                     success: true,

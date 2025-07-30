@@ -9,6 +9,9 @@ import * as organisationPersonFunc from './organisationPerson/index'
 import * as organisationPsrFunc from './organisationPsr/index'
 import * as geoMapFunc from './geoMap/index'
 import * as parentOrganizationEntityFunc from './parentOrganisation/index'
+import * as voltageLevelEntityFunc from './voltage/index'
+import * as bayEntityFunc from './bay/index'
 
 export { attachmentFunc, fileFunc, organisationLocationFunc, personSubstationFunc, 
-    userFunc, userIdentifiedObjectFunc, substationEntityFunc, organisationPersonFunc, organisationPsrFunc, geoMapFunc, parentOrganizationEntityFunc }
+    userFunc, userIdentifiedObjectFunc, substationEntityFunc, organisationPersonFunc, 
+    organisationPsrFunc, geoMapFunc, parentOrganizationEntityFunc, voltageLevelEntityFunc, bayEntityFunc }

@@ -66,9 +66,10 @@ textarea {
 }
 
 .header-toggle {
-    background: #99a9bf;
+    background: #012596;
     padding: 5px 15px;
     margin-bottom: 5px;
+    color: white;
 }
 
 #asset .el-tabs__header.is-top {

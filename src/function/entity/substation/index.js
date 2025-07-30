@@ -13,7 +13,7 @@ import { insertPersonRoleTransaction, getPersonRoleByPersonId, deletePersonRoleB
 import { insertUserTransaction, getUserById } from '@/function/entity/user'
 import { insertUserIdentifiedObjectTransaction, getUserIdentifiedObjectByUserIdAndIdentifiedObjectId } from '@/function/entity/userIdentifiedObject'
 import { insertPersonSubstationTransaction, getPersonSubstationBySubstationId  } from '@/function/entity/personSubstation'
-import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction } from '@/function/entity/attachment'
+import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, deleteDirectory } from '@/function/entity/attachment'
 import { insertOrganisationLocationTransaction, getOrganisationLocationByOrganisationIdAndLocationId } from '@/function/entity/organisationLocation'
 import { insertPositionPointArrayTransaction, getPositionPointByLocationId } from '@/function/cim/positionPoint'
 import { insertPsrTypeTransaction, getPsrTypeById, deletePsrTypeByIdTransaction } from '@/function/cim/psrType'
@@ -85,7 +85,7 @@ export const insertSubstationEntity = async (entity) => {
                             if (entity.organisationLocation.mrid) await insertOrganisationLocationTransaction(entity.organisationLocation, db);
                             if (entity.organisationPsr.mrid) await insertOrganisationPsrTransaction(entity.organisationPsr, db);
                             if (entity.organisationPerson.mrid) await insertOrganisationPersonTransaction(entity.organisationPerson, db);
-                            if (Array.isArray(entity.positionPoint) && entity.positionPoint.length > 0) await insertPositionPointArrayTransaction(entity.positionPoint, db);
+                            if (Array.isArray(entity.positionPoint) && entity.positionPoint.length > 0) await insertPositionPointArrayTransaction(entity.positionPoint, entity.location.mrid, db);
                             if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
                                 const pathData = JSON.parse(entity.attachment.path);
                                 const newPath = []
@@ -131,7 +131,7 @@ export const insertSubstationEntity = async (entity) => {
                             if (entity.organisationLocation.mrid) await insertOrganisationLocationTransaction(entity.organisationLocation, db);
                             if (entity.organisationPsr.mrid) await insertOrganisationPsrTransaction(entity.organisationPsr, db);
                             if (entity.organisationPerson.mrid) await insertOrganisationPersonTransaction(entity.organisationPerson, db);
-                            if (Array.isArray(entity.positionPoint) && entity.positionPoint.length > 0) await insertPositionPointArrayTransaction(entity.positionPoint, db);
+                            if (Array.isArray(entity.positionPoint) && entity.positionPoint.length > 0) await insertPositionPointArrayTransaction(entity.positionPoint, entity.location.mrid, db);
                             if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
                                 const pathData = JSON.parse(entity.attachment.path);
                                 const newPath = []
@@ -158,11 +158,11 @@ export const insertSubstationEntity = async (entity) => {
             }
             return result;
         } catch (err) {
-            console.error('Insert SubstationEntity failed:', err);
             if(entity.attachment && entity.attachment.path && entity.attachment.path.length > 0) {
                 try {
                     restoreFiles(null, null, entity.substation.mrid);
                 } catch(err) {
+                    console.log('Error restoring files:', err);
                     console.error('Restore files failed:', err);
                     result.error = err.message;
                     result.message = 'Insert SubstationEntity failed and rollback executed';
@@ -184,6 +184,7 @@ export const insertSubstationEntity = async (entity) => {
                 }
                     
             }
+            console.error(err);
             result.error = err.message;
             result.message = 'Insert SubstationEntity failed and rollback executed';
             const configEvent = new ConfigurationEvent();
@@ -224,7 +225,7 @@ export const getSubstationEntityById = async (id, user_id, organisation_id) => {
                     entity.location = dataLocation.data;
                 }
 
-                const dataStreetAddress = await getStreetAddressById(entity.location.street_address_id);
+                const dataStreetAddress = await getStreetAddressById(entity.location.main_address);
                 if(dataStreetAddress.success) {
                     entity.streetAddress = dataStreetAddress.data;
                 }
@@ -316,74 +317,74 @@ export const deleteSubstationEntityById = async (data) => {
     try {
         if(data.substation == null || data.substation.mrid == null || data.substation.mrid === '') {
             return { success: false, error: new Error('Invalid ID') };
-        } else {
-            backupAllFilesInDir(null, null, data.mrid);
-            if(data.attachment && data.attachment.id) {
-                const pathData = JSON.parse(data.attachment.path || '[]')
-                if (Array.isArray(pathData) && pathData.length > 0) {
-                    syncFilesWithDeletion(pathData, null, data.mrid);
+        } else {  
+            try {
+                await runSQL('BEGIN TRANSACTION');
+                if(data.attachment && data.attachment.id) {
+                    const pathData = JSON.parse(data.attachment.path || '[]')
+                    if (Array.isArray(pathData) && pathData.length > 0) {
+                        syncFilesWithDeletion(pathData, null, data.mrid);
+                    }
                 }
-            }
-            console.log('Deleting attachment ...');
-            if( data.attachment.id) {
-                await deleteAttachmentByIdTransaction(data.attachment.id, db);
-            }
-            console.log('Deleting substation ...');
-            if(data.substation && data.substation.mrid) {
-                await deleteSubstationByIdTransaction(data.substation.mrid, db);
-            }
-            console.log('Deleting psrType ...');
-            if(data.psrType && data.psrType.mrid) {
-                await deletePsrTypeByIdTransaction(data.psrType.mrid, db);
-            }
-            console.log('Deleting location ...');
-            if(data.location && data.location.mrid) {
-                const powerSystemResource = await getPowerSystemResourceByLocationIdTransaction(data.location.mrid, db);
-                if(powerSystemResource.success) {
-                    if(powerSystemResource.data.length - 1 <= 0) {
-                        await deleteLocationByIdTransaction(data.location.mrid, db);
-                        if(data.streetAddress && data.streetAddress.mrid) {
-                            await deleteStreetAddressByIdTransaction(data.streetAddress.mrid, db);
-                        }
-                        if(data.streetDetail && data.streetDetail.mrid) {
-                            await deleteStreetDetailByIdTransaction(data.streetDetail.mrid, db);
-                        }
-                        if(data.townDetail && data.townDetail.mrid) {
-                            await deleteTownDetailByIdTransaction(data.townDetail.mrid, db);
+                if( data.attachment.id) {
+                    await deleteAttachmentByIdTransaction(data.attachment.id, db);
+                }
+                if(data.substation && data.substation.mrid) {
+                    await deleteSubstationByIdTransaction(data.substation.mrid, db);
+                }
+                if(data.psrType && data.psrType.mrid) {
+                    await deletePsrTypeByIdTransaction(data.psrType.mrid, db);
+                }
+                if(data.location && data.location.mrid) {
+                    const powerSystemResource = await getPowerSystemResourceByLocationIdTransaction(data.location.mrid, db);
+                    if(powerSystemResource.success) {
+                        if(powerSystemResource.data.length - 1 <= 0) {
+                            await deleteLocationByIdTransaction(data.location.mrid, db);
+                            if(data.streetAddress && data.streetAddress.mrid) {
+                                await deleteStreetAddressByIdTransaction(data.streetAddress.mrid, db);
+                            }
+                            if(data.streetDetail && data.streetDetail.mrid) {
+                                await deleteStreetDetailByIdTransaction(data.streetDetail.mrid, db);
+                            }
+                            if(data.townDetail && data.townDetail.mrid) {
+                                await deleteTownDetailByIdTransaction(data.townDetail.mrid, db);
+                            }
                         }
                     }
                 }
-            }
-            console.log('Deleting personRole ...');
-            if(data.personRole && data.personRole.mrid) {
-                await deletePersonRoleByIdTransaction(data.personRole.mrid, db);
-            }
-            if(data.person && data.person.mrid) {
-                await deletePersonByIdTransaction(data.person.mrid, db);
-            }
-
-            if(data.electronicAddress && data.electronicAddress.mrid) {
-                await deleteElectronicAddressByIdTransaction(data.electronicAddress.mrid, db);
-            }
-
-            if(data.telephoneNumber && data.telephoneNumber.mrid) {
-                await deleteTelephoneNumberByIdTransaction(data.telephoneNumber.mrid, db);
-            }
-            if(data.attachment && data.attachment.id) {
-                restoreFiles(null, null, data.substation.mrid);
-            }
-            return { success: true, message: 'Substation entity deleted successfully' };
-        }
-
-    } catch (error) {
-        if(data.attachment && data.attachment.id) {
-            try {
-                restoreFiles(null, null, data.substation.mrid);
+                if(data.personRole && data.personRole.mrid) {
+                    await deletePersonRoleByIdTransaction(data.personRole.mrid, db);
+                }
+                if(data.person && data.person.mrid) {
+                    await deletePersonByIdTransaction(data.person.mrid, db);
+                }
+                if(data.electronicAddress && data.electronicAddress.mrid) {
+                    await deleteElectronicAddressByIdTransaction(data.electronicAddress.mrid, db);
+                }
+                if(data.telephoneNumber && data.telephoneNumber.mrid) {
+                    await deleteTelephoneNumberByIdTransaction(data.telephoneNumber.mrid, db);
+                }
+                await runSQL('COMMIT');
+                if(data.attachment && data.attachment.id) {
+                    deleteDirectory(null, data.substation.mrid);
+                }
+                return { success: true, message: 'Substation entity deleted successfully' };
             } catch (err) {
-                console.error('Restore files failed:', err);
+                await runSQL('ROLLBACK');
+                reject({ success: false, err, message: 'Substation entity deleted failed' });
             }
         }
+    } catch (error) {
         console.error('Error deleting substation entity:', error);
         return { success: false, error, message: 'Error deleting substation entity' };
     }
 }
+
+const runSQL = (sql, params = []) => {
+    return new Promise((resolve, reject) => {
+        db.run(sql, params, function (err) {
+            if (err) reject(err);
+            else resolve();
+        });
+    });
+};

@@ -1,105 +1,27 @@
 /* eslint-disable */
+import TransformerDto from "@/views/Dto/Transformer"
+import TapChangersDto from "@/views/Dto/TapChanger"
+import uuid from "@/utils/uuid"
+import * as transformerMapping from "@/views/Mapping/Transformer"
+import OldPowerTransformerInfo from "@/views/Cim/OldPowerTransformerInfo"
+import OldTransformerEndInfo from "@/views/Cim/OldTransformerEndInfo"
 export default {
     data() {
         return {
-            properties: {
-                id: '',
-                asset: "",
-                asset_type: '',
-                serial_no: '',
-                manufacturer: '',
-                manufacturer_type: '',
-                manufacturing_year: '',
-                asset_system_code: '',
-                apparatus_id: '',
-                feeder: '',
-                date_of_warehouse_receipt: '',
-                date_of_delivery: '',
-                date_of_production_order: '',
-                date_of_warehouse_delivery: '',
-                progress: '',
-                standard: '',
-                thermal_meter: '',
-                comment: '',
-                type_disable : ''
-            },
-            winding_configuration: {
-                phases: '1',
-                vector_group: {
-                    prim: '',
-                    sec: {
-                        I: '',
-                        Value: ''
-                    },
-                    tert: {
-                        I: '',
-                        Value: '',
-                        accessibility: ''
-                    }
-                },
-                vector_group_custom: '',
-                unsupported_vector_group: ''
-            },
-            ratings: {
-                rated_frequency: '50',
-                rated_frequency_custom: '50',
-                voltage_ratings: [],
-                voltage_regulation: [],
-                power_ratings: [],
-                current_ratings: [],
-                short_circuit: {
-                    ka: {
-                        value: '',
-                        unit: 'kA'
-                    },
-                    s: ''
-                }
-            },
-            impedances: {
-                ref_temp: 75,
-                prim_sec: [],
-                prim_tert: [],
-                sec_tert: [],
-                zero_sequence_impedance: {
-                    base_power: {
-                        value: '',
-                        unit: 'MVA'
-                    },
-                    base_voltage: {
-                        value: '',
-                        unit: 'kV'
-                    },
-                    zero_percent: ''
-                }
-            },
-            others: {
-                category: '',
-                status: '',
-                tank_type: '',
-                insulation_medium: '',
-                oil_type: '',
-                insulation: {
-                    key: 'Weight',
-                    weight: '',
-                    volume: ''
-                },
-                total_weight: '',
-                winding: {
-                    prim: 'Copper',
-                    sec: 'Copper',
-                    tert: 'Copper'
-                }
-            },
-            tapChangers: {
-                id: '',
-                mode: '',
-                serial_no: '',
-                manufacturer: '',
-                manufacturer_type: '',
-                winding: '',
-                tap_scheme: '',
-                no_of_taps: '0',
-                voltage_table: []
+            transformerDto: {
+                properties: new TransformerDto().properties,
+                winding_configuration: new TransformerDto().winding_configuration,
+                ratings: new TransformerDto().ratings,
+                impedances: new TransformerDto().impedances,
+                others: new TransformerDto().others,
+                tap_changers: new TapChangersDto(),
+                productAssetModelId: '',
+                lifecycleDateId: '',
+                assetPsrId: '',
+                psrId: '',
+                oldPowerTransformerInfoId: '',
+                oldTransformerEndInfo: [],
+                shortCircuitTestTransformerEndInfo: [],
             },
             bushings_config: {
                 id: null,
@@ -414,138 +336,6 @@ export default {
         }
     },
     async beforeMount() {
-        if(this.sideData != 'server') {
-            this.mode = this.$route.query.mode
-            if (this.mode === this.$constant.EDIT || this.mode === this.$constant.DUP) {
-                this.asset_id = this.$route.query.asset_id
-
-                const rs = await window.electronAPI.getAssetById(this.asset_id)
-                if (rs.success) {
-                    const data = rs.data
-                    const dataAsset = data.asset
-                    if (this.mode === this.$constant.DUP) {
-                        dataAsset.id = ''
-                        dataAsset.serial_no = ''
-                    }
-
-                    this.properties = {
-                        id: dataAsset.id,
-                        asset: dataAsset.asset,
-                        asset_type: dataAsset.asset_type,
-                        serial_no: dataAsset.serial_no,
-                        manufacturer: dataAsset.manufacturer,
-                        manufacturer_type: dataAsset.manufacturer_type,
-                        manufacturing_year: dataAsset.manufacturing_year,
-                        asset_system_code: dataAsset.asset_system_code,
-                        apparatus_id: dataAsset.apparatus_id,
-                        feeder: dataAsset.feeder,
-                        date_of_warehouse_receipt: dataAsset.date_of_warehouse_receipt,
-                        date_of_delivery: dataAsset.date_of_delivery,
-                        date_of_production_order: dataAsset.date_of_production_order,
-                        date_of_warehouse_delivery: dataAsset.date_of_warehouse_delivery,
-                        progress: dataAsset.progress,
-                        standard: dataAsset.standard,
-                        thermal_meter: dataAsset.thermal_meter,
-                        comment: dataAsset.comment,
-                        type_disable : dataAsset.type_disable
-                    }
-
-                    this.disabled = true
-
-                    this.winding_configuration = {
-                        phases: dataAsset.phases,
-                        vector_group: JSON.parse(dataAsset.vector_group),
-                        vector_group_custom: dataAsset.vector_group_custom,
-                        unsupported_vector_group: dataAsset.unsupported_vector_group
-                    }
-
-                    this.ratings = {
-                        rated_frequency: ['16.7', '50', '60'].includes(dataAsset.rated_frequency) ? dataAsset.rated_frequency : 'Custom',
-                        rated_frequency_custom: ['16.7', '50', '60'].includes(dataAsset.rated_frequency) ? null : dataAsset.rated_frequency,
-                        voltage_ratings: JSON.parse(dataAsset.voltage_ratings),
-                        voltage_regulation: JSON.parse(dataAsset.voltage_regulation),
-                        power_ratings: JSON.parse(dataAsset.power_ratings),
-                        current_ratings: JSON.parse(dataAsset.current_ratings),
-                        short_circuit: {
-                            ka: JSON.parse(dataAsset.max_short_circuit_current_ka),
-                            s: dataAsset.max_short_circuit_current_s
-                        }
-                    }
-
-                    this.impedances = {
-                        ref_temp: dataAsset.ref_temp,
-                        prim_sec: JSON.parse(dataAsset.prim_sec),
-                        prim_tert: JSON.parse(dataAsset.prim_tert),
-                        sec_tert: JSON.parse(dataAsset.sec_tert),
-                        zero_sequence_impedance: {
-                            base_power: JSON.parse(dataAsset.base_power),
-                            base_voltage: JSON.parse(dataAsset.base_voltage),
-                            zero_percent: dataAsset.zero_percent
-                        }
-                    }
-
-                    this.others = {
-                        category: dataAsset.category,
-                        status: dataAsset.status,
-                        tank_type: dataAsset.tank_type,
-                        insulation_medium: dataAsset.insulation_medium,
-                        oil_type: dataAsset.oil_type,
-                        insulation: {
-                            key: dataAsset.insulation_weight != null ? 'Weight' : 'Volume',
-                            weight: dataAsset.insulation_weight,
-                            volume: dataAsset.insulation_volume
-                        },
-                        total_weight: dataAsset.total_weight,
-                        winding: JSON.parse(dataAsset.winding)
-                    }
-
-                    const dataTapChanger = data.tap_changer
-                    if (this.mode === this.$constant.DUP) {
-                        dataTapChanger.id = ''
-                    }
-                    this.tapChangers = {
-                        id: dataTapChanger.id,
-                        mode: dataTapChanger.mode,
-                        _mode: dataTapChanger._mode,
-                        serial_no: dataTapChanger.serial_no,
-                        manufacturer: dataTapChanger.manufacturer,
-                        manufacturer_type: dataTapChanger.manufacturer_type,
-                        winding: dataTapChanger.winding,
-                        _winding: dataTapChanger._winding,
-                        tap_scheme: dataTapChanger.tap_scheme,
-                        no_of_taps: dataTapChanger.no_of_taps,
-                        voltage_table: JSON.parse(dataTapChanger.voltage_table)
-                    }
-                    const dataBushings = data.bushings
-                    if (this.mode === this.$constant.DUP) {
-                        dataBushings.id = ''
-                    }
-                    this.bushings_config = {
-                        id: dataBushings.id,
-                        asset_type: this.getAssetType(JSON.parse(dataBushings.asset_type)),
-                        serial_no: JSON.parse(dataBushings.serial_no),
-                        manufacturer: JSON.parse(dataBushings.manufacturer),
-                        manufacturer_type: JSON.parse(dataBushings.manufacturer_type),
-                        manufacturer_year: JSON.parse(dataBushings.manufacturer_year),
-                        insull_level: JSON.parse(dataBushings.insull_level),
-                        voltage_gr: JSON.parse(dataBushings.voltage_gr),
-                        max_sys_voltage: JSON.parse(dataBushings.max_sys_voltage),
-                        rate_current: JSON.parse(dataBushings.rate_current),
-                        df_c1: JSON.parse(dataBushings.df_c1),
-                        cap_c1: JSON.parse(dataBushings.cap_c1),
-                        df_c2: JSON.parse(dataBushings.df_c2),
-                        cap_c2: JSON.parse(dataBushings.cap_c2),
-                        insulation_type: JSON.parse(dataBushings.insulation_type)
-                    }
-                } else {
-                    this.$message.error(rs.message)
-                }
-            } else {
-                this.mappingProperty()
-            }
-        } else {
-
-        }
     },
     methods: {
         getAssetType(data) {
@@ -590,71 +380,363 @@ export default {
                 return data
             }
         },
-        mappingProperty() {
-            this.properties.asset =  this.$route.query.dataProperty.asset
-            this.properties.asset_type =  this.$route.query.dataProperty.asset_id
-            this.properties.serial_no = this.$route.query.dataProperty.serial_no
-            this.properties.manufacturer =  this.$route.query.dataProperty.manufacturer
-            this.properties.manufacturer_type =  this.$route.query.dataProperty.manufacturer_type
-            this.properties.manufacturing_year =  this.$route.query.dataProperty.manufacturer_year
-            this.properties.asset_system_code =  this.$route.query.dataProperty.asset_system_code
-            this.properties.apparatus_id =  this.$route.query.dataProperty.apparatus_id
-            this.properties.feeder = this.$route.query.dataProperty.feeder
+
+        onChangeAssetType(value) {
+            this.transformerDto.winding_configuration = new TransformerDto().winding_configuration
+            for (let [index, item] of this.transformerDto.ratings.voltage_ratings.entries()) {
+                if(item.winding === this.$constant.TERT) {
+                    if(value !== this.$constant.THREE_WINDING) {
+                        this.transformerDto.ratings.voltage_ratings.splice(index, 1)
+                    }
+                }
+            }
+            for (let [index, item] of this.transformerDto.ratings.current_ratings.entries()) {
+                if(value !== this.$constant.THREE_WINDING) {
+                    console.log("check")
+                    if(item.tert !== undefined) {
+                        this.transformerDto.ratings.current_ratings[index].tert.mrid = ''
+                        this.transformerDto.ratings.current_ratings[index].tert.value = ''
+                        this.transformerDto.ratings.current_ratings[index].tert.unit = 'A'
+                    }
+                }
+            }
+
+            if(value === this.$constant.TWO_WINDING || value === this.$constant.WITHOUT_TERT) {
+                this.transformerDto.impedances.prim_tert = []
+                this.transformerDto.impedances.sec_tert = []
+            }
+
+            if(value === this.$constant.THREE_WINDING || value === this.$constant.TWO_WINDING) {
+                this.transformerDto.impedances.zero_sequence_impedance.zero_percent.prim.mrid = ''
+                this.transformerDto.impedances.zero_sequence_impedance.zero_percent.prim.value = ''
+                this.transformerDto.impedances.zero_sequence_impedance.zero_percent.prim.unit = '%'
+                this.transformerDto.impedances.zero_sequence_impedance.zero_percent.sec.mrid = ''
+                this.transformerDto.impedances.zero_sequence_impedance.zero_percent.sec.value = ''
+                this.transformerDto.impedances.zero_sequence_impedance.zero_percent.sec.unit = '%'
+            } else {
+                this.transformerDto.impedances.zero_sequence_impedance.zero_percent.zero.mrid = ''
+                this.transformerDto.impedances.zero_sequence_impedance.zero_percent.zero.value = ''
+                this.transformerDto.impedances.zero_sequence_impedance.zero_percent.zero.unit = '%'
+            }
+
+            if(value === this.$constant.TWO_WINDING || value === this.$constant.WITHOUT_TERT) {
+                this.transformerDto.others.winding.tert = ''
+            }
         },
+
         async saveAsset() {
-            if (this.mode === this.$constant.ADD || this.mode === this.$constant.DUP) {
-                await this.insertAsset()
-            } else {
-                await this.updateAsset()
-            }
-        },
-        async insertAsset() {
-            const properties = this.properties
-            const winding_configuration = this.winding_configuration
-            const ratings = this.ratings
-            const impedances = this.impedances
-            const others = this.others
-            const asset = {
-                properties,
-                winding_configuration,
-                ratings,
-                impedances,
-                others
-            }
-            const locationId = this.selectedLocation[0].id
-            const rs = await window.electronAPI.insertAsset(locationId, asset, this.tapChangers, this.bushings_config)
-            if (rs.success) {
+            try {
+                if(this.transformerDto.properties.type && this.transformerDto.properties.kind) {
+                    console.log(this.transformerDto)
+                    const data = JSON.parse(JSON.stringify(this.checkTransformerDto(this.transformerDto)));
+                    const entity = transformerMapping.transformerDtoToEntity(data);
+                    console.log(entity)
+                    return true;
+                    
+                } else {
+                    this.$message({
+                        type: 'warning',
+                        message: "Please select the type and kind of Asset before saving."
+                    });
+                    return false;
+                }
+            } catch (error) {
+                console.error("Error saving asset:", error);
                 this.$message({
-                    type: 'success',
-                    message: 'Insert completed'
-                })
-                this.$router.push({name: 'manage'})
-            } else {
-                this.$message.error(rs.message)
+                    type: 'error',
+                    message: "An error occurred while saving the asset."
+                });
             }
         },
-        async updateAsset() {
-            const properties = this.properties
-            const winding_configuration = this.winding_configuration
-            const ratings = this.ratings
-            const impedances = this.impedances
-            const others = this.others
-            const asset = {
-                properties,
-                winding_configuration,
-                ratings,
-                impedances,
-                others
-            }
-            const rs = await window.electronAPI.updateAsset(asset, this.tapChangers, this.bushings_config)
-            if (rs.success) {
-                this.$message({
-                    type: 'success',
-                    message: 'Update completed'
-                })
-            } else {
-                this.$message.error(rs.message)
+
+        checkTransformerDto(data) {
+            this.checkPsrId()
+            this.checkOldTransformerEndInfo(data)
+            this.checkAsset(data)
+            this.checkLifecycleDate(data)
+            this.checkAssetInfo(data)
+            this.checkProductAssetModel(data)
+            this.checkVoltageRating(data)
+            this.checkPowerRating(data)
+            this.checkCurrentRating(data)
+            this.checkShortCircuitRatings(data)
+            this.checkRatedFrequency(data)
+            this.checkRefTemperature(data)
+            this.checkShortCircuitTest(data)
+            this.checkZeroImpedance(data)
+            this.checkOther(data)
+            return data;
+        },
+        checkPsrId() {
+            if(this.parent.mrid !== null && this.parent.mrid !== '') {
+                this.transformerDto.psrId = this.parent.mrid
             }
         },
+
+        checkOldTransformerEndInfo(data) {
+            if(data.oldTransformerEndInfo.length === 0) {
+                if(data.properties.type === this.$constant.THREE_WINDING || data.properties.type === this.$constant.WITH_TERT) {
+                    for (let i = 1; i <= 3; i++) {
+                        const transformerEndInfo = new OldTransformerEndInfo();
+                        transformerEndInfo.mrid = uuid.newUuid();
+                        transformerEndInfo.end_number = i
+                        data.oldTransformerEndInfo.push(transformerEndInfo);
+                    }
+                } else {
+                    for (let i = 1; i < 2; i++) {
+                        const transformerEndInfo = new OldTransformerEndInfo();
+                        transformerEndInfo.mrid = uuid.newUuid();
+                        transformerEndInfo.end_number = i
+                        data.oldTransformerEndInfo.push(transformerEndInfo);
+                    }
+                }
+            } else {
+                if(data.properties.type === this.$constant.THREE_WINDING || data.properties.type !== this.$constant.WITH_TERT) {
+                    if(data.oldTransformerEndInfo.length < 3) {
+                        const transformerEndInfo = new OldTransformerEndInfo();
+                        transformerEndInfo.mrid = uuid.newUuid();
+                        transformerEndInfo.end_number = 3
+                        data.oldTransformerEndInfo.push(transformerEndInfo);
+                    }
+                } else {
+                    if(data.oldTransformerEndInfo.length > 2) {
+                        for(let i = 1; i<= data.oldTransformerEndInfo.length; i++) {
+                            if(data.oldTransformerEndInfo[i-1].end_number === 3) {
+                                data.oldTransformerEndInfo.splice(i-1, 1);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        },
+
+        checkAsset(data) {
+            if(data.properties.mrid === null || data.properties.mrid === '') {
+                data.properties.mrid = uuid.newUuid()
+            }
+        },
+
+        checkLifecycleDate(data) {
+            if(data.lifecycleDateId === null || data.lifecycleDateId === '') {
+                data.lifecycleDateId = uuid.newUuid()
+            }
+        },
+
+        checkAssetInfo(data) {
+            if(data.oldPowerTransformerInfoId === null || data.oldPowerTransformerInfoId === '') {
+                data.oldPowerTransformerInfoId = uuid.newUuid()
+            }
+        },
+
+        checkProductAssetModel(data) {
+            if(data.productAssetModelId === null || data.productAssetModelId === '') {
+                data.productAssetModelId = uuid.newUuid()
+            }
+        },
+
+        checkVoltageRating(data) {
+            for(let item of data.ratings.voltage_ratings) {
+                if(item.mrid === null || item.mrid === '') {
+                    item.mrid = uuid.newUuid()
+                }
+                for (const key in item) {
+                    if (item.hasOwnProperty(key)) {
+                        if(typeof item[key] === 'object' && item[key] !== null) {
+                            if(item[key].mrid === null || item[key].mrid === '') {
+                                item[key].mrid = uuid.newUuid()
+                            }
+                        }
+                    }
+                }
+            }
+        },
+
+        checkPowerRating(data) {
+            for(let item of data.ratings.power_ratings) {
+                if(item.mrid === null || item.mrid === '') {
+                    item.mrid = uuid.newUuid()
+                }
+                for (const key in item) {
+                    if (item.hasOwnProperty(key)) {
+                        if(typeof item[key] === 'object' && item[key] !== null) {
+                            if(item[key].mrid === null || item[key].mrid === '') {
+                                item[key].mrid = uuid.newUuid()
+                            }
+                        }
+                    }
+                }
+            }
+        },
+
+        checkCurrentRating(data) {
+            for(let item of data.ratings.current_ratings) {
+                if(data.properties.type === this.$constant.WITHOUT_TERT || data.properties.type === this.$constant.TWO_WINDING) {
+                    if(item.mrid === null || item.mrid === '') {
+                        item.mrid = uuid.newUuid()
+                    }
+                    for (const key in item) {
+                        if (item.hasOwnProperty(key) && key !== 'tert') {
+                            if(typeof item[key] === 'object' && item[key] !== null) {
+                                if(item[key].mrid === null || item[key].mrid === '') {
+                                    item[key].mrid = uuid.newUuid()
+                                }
+                                if(item[key].data.mrid === null || item[key].data.mrid === '') {
+                                    item[key].data.mrid = uuid.newUuid()
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    if(item.mrid === null || item.mrid === '') {
+                        item.mrid = uuid.newUuid()
+                    }
+                    for (const key in item) {
+                        if (item.hasOwnProperty(key)) {
+                            if(typeof item[key] === 'object' && item[key] !== null) {
+                                if(item[key].mrid === null || item[key].mrid === '') {
+                                    item[key].mrid = uuid.newUuid()
+                                }
+                                if(item[key].data.mrid === null || item[key].data.mrid === '') {
+                                    item[key].data.mrid = uuid.newUuid()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+
+        checkShortCircuitRatings(data) {
+            if(data.ratings.short_circuit.mrid === null || data.ratings.short_circuit.mrid === '') {
+                data.ratings.short_circuit.mrid = uuid.newUuid()
+                if(data.ratings.short_circuit.ka.mrid === null || data.ratings.short_circuit.ka.mrid === '') {
+                    data.ratings.short_circuit.ka.mrid = uuid.newUuid()
+                }
+                if(data.ratings.short_circuit.s.mrid === null || data.ratings.short_circuit.s.mrid === '') {
+                    data.ratings.short_circuit.s.mrid = uuid.newUuid()
+                }
+            }
+        },
+
+        checkRatedFrequency(data) {
+            if(data.ratings.rated_frequency.mrid === null || data.ratings.rated_frequency.mrid === '') {
+                data.ratings.rated_frequency.mrid = uuid.newUuid()
+            }
+        },
+
+        checkRefTemperature(data) {
+            if(data.impedances.ref_temp.mrid === null || data.impedances.ref_temp.mrid === '') {
+                data.impedances.ref_temp.mrid = uuid.newUuid()
+            }
+        },
+
+        checkShortCircuitTest(data) {
+            for(let item of data.impedances.prim_sec) {
+                if(item.mrid === null || item.mrid === '') {
+                    item.mrid = uuid.newUuid()
+                }
+                for (const key in item) {
+                    if (item.hasOwnProperty(key)) {
+                        if(typeof item[key] === 'object' && item[key] !== null) {
+                            if(item[key].mrid === null || item[key].mrid === '') {
+                                item[key].mrid = uuid.newUuid()
+                                if(item[key].data && (item[key].data.mrid === null || item[key].data.mrid === '')) {
+                                    item[key].data.mrid = uuid.newUuid()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            for(let item of data.impedances.prim_tert) {
+                if(item.mrid === null || item.mrid === '') {
+                    item.mrid = uuid.newUuid()
+                }
+                for (const key in item) {
+                    if (item.hasOwnProperty(key)) {
+                        if(typeof item[key] === 'object' && item[key] !== null) {
+                            if(item[key].mrid === null || item[key].mrid === '') {
+                                item[key].mrid = uuid.newUuid()
+                                if(item[key].data && (item[key].data.mrid === null || item[key].data.mrid === '')) {
+                                    item[key].data.mrid = uuid.newUuid()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            for(let item of data.impedances.sec_tert) {
+                if(item.mrid === null || item.mrid === '') {
+                    item.mrid = uuid.newUuid()
+                }
+                for (const key in item) {
+                    if (item.hasOwnProperty(key)) {
+                        if(typeof item[key] === 'object' && item[key] !== null) {
+                            if(item[key].mrid === null || item[key].mrid === '') {
+                                item[key].mrid = uuid.newUuid()
+                                if(item[key].data && (item[key].data.mrid === null || item[key].data.mrid === '')) {
+                                    item[key].data.mrid = uuid.newUuid()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+
+        checkZeroImpedance(data) {
+            if(data.impedances.zero_sequence_impedance.mrid === null || data.impedances.zero_sequence_impedance.mrid === '') {
+                data.impedances.zero_sequence_impedance.mrid = uuid.newUuid()
+                if(data.impedances.zero_sequence_impedance.base_power.mrid === null || data.impedances.zero_sequence_impedance.base_power.mrid === '') {
+                    data.impedances.zero_sequence_impedance.base_power.mrid = uuid.newUuid()
+                    if(data.impedances.zero_sequence_impedance.base_power.data.mrid === null || data.impedances.zero_sequence_impedance.base_power.data.mrid === '') {
+                        data.impedances.zero_sequence_impedance.base_power.data.mrid = uuid.newUuid()
+                    }
+                }
+                if(data.impedances.zero_sequence_impedance.base_voltage.mrid === null || data.impedances.zero_sequence_impedance.base_voltage.mrid === '') {
+                    data.impedances.zero_sequence_impedance.base_voltage.mrid = uuid.newUuid()
+                    if(data.impedances.zero_sequence_impedance.base_voltage.data.mrid === null || data.impedances.zero_sequence_impedance.base_voltage.data.mrid === '') {
+                        data.impedances.zero_sequence_impedance.base_voltage.data.mrid = uuid.newUuid()
+                    }
+                }
+                if(data.impedances.zero_sequence_impedance.zero_percent.prim.mrid === null || data.impedances.zero_sequence_impedance.zero_percent.prim.mrid === '') {
+                    data.impedances.zero_sequence_impedance.zero_percent.prim.mrid = uuid.newUuid()
+                    if(data.impedances.zero_sequence_impedance.zero_percent.prim.data.mrid === null || data.impedances.zero_sequence_impedance.zero_percent.prim.data.mrid === '') {
+                        data.impedances.zero_sequence_impedance.zero_percent.prim.data.mrid = uuid.newUuid()
+                    }
+                }
+                if(data.impedances.zero_sequence_impedance.zero_percent.sec.mrid === null || data.impedances.zero_sequence_impedance.zero_percent.sec.mrid === '') {
+                    data.impedances.zero_sequence_impedance.zero_percent.sec.mrid = uuid.newUuid()
+                    if(data.impedances.zero_sequence_impedance.zero_percent.sec.data.mrid === null || data.impedances.zero_sequence_impedance.zero_percent.sec.data.mrid === '') {
+                        data.impedances.zero_sequence_impedance.zero_percent.sec.data.mrid = uuid.newUuid()
+                    }
+                }
+                if(data.impedances.zero_sequence_impedance.zero_percent.zero.mrid === null || data.impedances.zero_sequence_impedance.zero_percent.zero.mrid === '') {
+                    data.impedances.zero_sequence_impedance.zero_percent.zero.mrid = uuid.newUuid()
+                    if(data.impedances.zero_sequence_impedance.zero_percent.zero.data.mrid === null || data.impedances.zero_sequence_impedance.zero_percent.zero.data.mrid === '') {
+                        data.impedances.zero_sequence_impedance.zero_percent.zero.data.mrid = uuid.newUuid()
+                    }
+                }
+            }
+        },
+
+        checkOther(data) {
+            if(data.others.mrid === null || data.others.mrid === '') {
+                data.others.mrid = uuid.newUuid()
+            }
+            if(data.others.insulation.weight.mrid === null || data.others.insulation.weight.mrid === '') {
+                data.others.insulation.weight.mrid = uuid.newUuid()
+            }
+            if(data.others.insulation.volume.mrid === null || data.others.insulation.volume.mrid === '') {
+                data.others.insulation.volume.mrid = uuid.newUuid()
+            }
+            if(data.others.total_weight.mrid === null || data.others.total_weight.mrid === '') {
+                data.others.total_weight.mrid = uuid.newUuid()
+            }
+        },
+
     }
 }

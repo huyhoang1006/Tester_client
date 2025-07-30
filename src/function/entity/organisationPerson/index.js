@@ -33,9 +33,7 @@ export const insertOrganisationPersonTransaction = async (organisationPerson, db
                 organisation_id,
                 person_id
             ) VALUES (?, ?, ?)
-            ON CONFLICT(mrid) DO UPDATE SET
-                organisation_id = excluded.organisation_id,
-                person_id = excluded.person_id`,
+            ON CONFLICT(organisation_id, person_id) DO NOTHING`,
             [
                 organisationPerson.mrid,
                 organisationPerson.organisation_id,

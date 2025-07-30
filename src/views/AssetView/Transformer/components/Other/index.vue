@@ -67,9 +67,6 @@
                                 <el-option label="Other" value="Other"></el-option>
                             </el-select>
                         </el-form-item>
-                        <el-form-item label="Oil Type">
-                            <el-input v-model="othersData.oil_type"></el-input>
-                        </el-form-item>
                         <el-form-item label="Insulation">
                             <el-radio-group v-model="othersData.insulation.key" class="w-100">
                                 <el-row :gutter="0" class="mgb-5">
@@ -77,8 +74,8 @@
                                         <el-radio label="Weight" value="Weight" style="line-height: 28px"> Weight </el-radio>
                                     </el-col>
                                     <el-col :span="16">
-                                        <el-input v-model="othersData.insulation.weight">
-                                            <template slot="append">kg</template>
+                                        <el-input v-model="othersData.insulation.weight.value">
+                                            <template slot="append">{{ othersData.insulation.weight.unit }}</template>
                                         </el-input>
                                     </el-col>
                                 </el-row>
@@ -87,16 +84,16 @@
                                         <el-radio label="Volume" value="Volume" style="line-height: 28px"> Volume </el-radio>
                                     </el-col>
                                     <el-col :span="16">
-                                        <el-input v-model="othersData.insulation.volume">
-                                            <template slot="append">l</template>
+                                        <el-input v-model="othersData.insulation.volume.value">
+                                            <template slot="append">{{ othersData.insulation.volume.unit }}</template>
                                         </el-input>
                                     </el-col>
                                 </el-row>
                             </el-radio-group>
                         </el-form-item>
                         <el-form-item label="Total weight">
-                            <el-input v-model="othersData.total_weight">
-                                <template slot="append">kg</template>
+                            <el-input v-model="othersData.total_weight.value">
+                                <template slot="append">{{ othersData.total_weight.unit }}</template>
                             </el-input>
                         </el-form-item>
                         <table class="table-strip-input-data" style="width: 300px">
@@ -125,7 +122,7 @@
                                         </el-select>
                                     </td>
                                 </tr>
-                                <tr v-if="properties.asset_type === $constant.THREE_WINDING || properties.asset_type === $constant.WITH_TERT">
+                                <tr v-if="properties.type === $constant.THREE_WINDING || properties.type === $constant.WITH_TERT">
                                     <td>Tert</td>
                                     <td>
                                         <el-select v-model="othersData.winding.tert" size="mini">
@@ -144,6 +141,8 @@
 </template>
 
 <script>
+/* eslint-disable */
+import { UnitSymbol } from '@/views/Enum/UnitSymbol'
 export default {
     name: 'Other',
     props: {
@@ -152,17 +151,29 @@ export default {
             required: true,
             default() {
                 return {
+                    mrid: '',
                     category: '',
                     status: '',
                     tank_type: '',
                     insulation_medium: '',
-                    oil_type: '',
                     insulation: {
                         key: 'Weight',
-                        weight: '',
-                        volume: ''
+                        weight: {
+                            mrid: '',
+                            value: '',
+                            unit: UnitSymbol.kg
+                        },
+                        volume: {
+                            mrid: '',
+                            value: '',
+                            unit: UnitSymbol.l
+                        }
                     },
-                    total_weight: '',
+                    total_weight: {
+                        mrid: '',
+                        value: '',
+                        unit: UnitSymbol.kg
+                    },
                     winding: {
                         prim: 'Copper',
                         sec: 'Copper',
@@ -176,19 +187,15 @@ export default {
             required: true,
             default() {
                 return {
-                    id: '',
-                    asset: 'Transformer',
-                    asset_type: 'Two-winding',
+                    mrid: '',
+                    kind: 'Transformer',
+                    type: '',
                     serial_no: '',
                     manufacturer: '',
                     manufacturer_type: '',
                     manufacturing_year: '',
-                    asset_system_code: '',
+                    country_of_origin: '',
                     apparatus_id: '',
-                    feeder: '',
-                    date_of_warehouse_receipt: '',
-                    date_of_delivery: '',
-                    date_of_production_order: '',
                     comment: ''
                 }
             }
@@ -197,7 +204,7 @@ export default {
     data() {
         return {
             openOthers: true,
-            labelWidth: `${200}px`
+            labelWidth: `${150}px`
         }
     },
     computed: {

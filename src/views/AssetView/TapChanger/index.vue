@@ -1,8 +1,8 @@
 <template>
     <div id="tap-changers" class="mgy-5">
-        <el-row :gutter="20" class="content">
+        <el-row :gutter="20" class="content" style="margin-top: 20px;">
             <!-- oltc -->
-            <el-col :span="8" class="col-content">
+            <el-col :span="12" class="col-content">
                 <el-row>
                     <el-radio v-model="tapChangersData.mode" label="oltc" @change="onChangeTapChanger">OLTC</el-radio>
                 </el-row>
@@ -128,7 +128,7 @@
             </el-col>
 
             <!-- detc -->
-            <el-col :span="8" class="col-content">
+            <el-col :span="12" class="col-content">
                 <el-row>
                     <el-radio v-model="tapChangersData.mode" label="detc" @change="onChangeTapChanger">DETC</el-radio>
                 </el-row>
@@ -270,7 +270,7 @@
 </template>
 
 <script>
-import CalculateTapchanger from '../CalculateTapchanger'
+import CalculateTapchanger from './CalculateTapchanger/index.vue'
 
 export default {
     name: 'TapChanger',
@@ -377,7 +377,7 @@ export default {
                     this.tapChangersData.voltage_table.splice(this.tapChangersData.no_of_taps, this.tapChangersData.voltage_table.length - this.tapChangersData.no_of_taps)
                 } else {
                     if(this.tapChangersData.tap_scheme === '1...33' || this.tapChangersData.tap_scheme === '1...N' || this.tapChangersData.tap_scheme === 'Free') {
-                        for(let i= this.tapChangersData.voltage_table.length; i < this.tapChangersData.no_of_taps; i ++) {
+                        for(let i= this.tapChangersData.voltage_table.length + 1; i <= this.tapChangersData.no_of_taps; i ++) {
                             const id = this.$uuid.newUuid()
                             this.tapChangersData.voltage_table.push({
                                 id,
@@ -393,6 +393,9 @@ export default {
                                 tap: this.tapChangersData.no_of_taps - i,
                                 voltage: 0
                             })
+                        }
+                        for(let i= 0; i < this.tapChangersData.no_of_taps; i ++) {
+                            this.tapChangersData.voltage_table[i].tap = this.tapChangersData.no_of_taps - i
                         }
                     }
                 }

@@ -33,9 +33,7 @@ export const insertOrganisationLocationTransaction = async (organisationLocation
                 organisation_id,
                 location_id
             ) VALUES (?, ?, ?)
-            ON CONFLICT(mrid) DO UPDATE SET
-                organisation_id = excluded.organisation_id,
-                location_id = excluded.location_id`,
+            ON CONFLICT(organisation_id, location_id) DO NOTHING`,
             [
                 organisationLocation.mrid,
                 organisationLocation.organisation_id,

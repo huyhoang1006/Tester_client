@@ -11,7 +11,7 @@ export default {
             event.preventDefault()
             this.saveCtrS()
         }
-    },
+        },
         saveCtrS() {
             if(this.clientSlide) {
                 if(this.$refs.clientTabs) {

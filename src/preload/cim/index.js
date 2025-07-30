@@ -9,5 +9,12 @@ import * as telephoneNumberPreload from './telephoneNumber/index'
 import * as personPreload from './person/index'
 import * as personRolePreload from './personRole/index'
 import * as configurationEventPreload from './configurationEvent/index'
+import * as positionPointPreload from './positionPoint/index'
+import * as voltageLevelPreload from './voltageLevel/index'
+import * as bayPreload from './bay/index'
+import * as powerSystemResourcePreload from './PowerSystemResource/index'
 
-export { parentOrganizationPreload, substationPreload, locationPreload, streetAddressPreload, streetDetailPreload, townDetailPreload, electronicAddressPreload, telephoneNumberPreload, personPreload, personRolePreload, configurationEventPreload }
+export { parentOrganizationPreload, substationPreload, locationPreload, 
+    streetAddressPreload, streetDetailPreload, townDetailPreload, electronicAddressPreload, 
+    telephoneNumberPreload, personPreload, personRolePreload, configurationEventPreload, 
+    positionPointPreload, voltageLevelPreload, bayPreload, powerSystemResourcePreload }

@@ -6,11 +6,11 @@
                 <span class="node-name">{{ node.name }}</span>
             </div>
             <div v-else-if="node.mode == 'voltageLevel'" class="icon-wrapper">
-                <icon size="16px" folderType="owner" badgeColor="146EBE"></icon>
+                <icon size="16px" folderType="voltageLevel" badgeColor="146EBE"></icon>
                 <span class="node-name">{{ node.name }}</span>
             </div>
             <div v-else-if="node.mode == 'bay'" class="icon-wrapper">
-                <icon size="16px" folderType="feeder" badgeColor="146EBE"></icon>
+                <icon size="16px" folderType="bay" badgeColor="146EBE"></icon>
                 <span class="node-name">{{ node.name }}</span>
             </div>
             <div v-else-if="node.mode == 'asset'" class="icon-wrapper">

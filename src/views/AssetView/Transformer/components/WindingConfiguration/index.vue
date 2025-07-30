@@ -12,7 +12,7 @@
 
         <div class="content-toggle" v-if="openWindingConfiguration">
             <el-row :gutter="20" class="content">
-                <el-col :span="8" class="col-content">
+                <el-col :span="12">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Phases">
                             <el-radio-group @change="onChangePhase" v-model="windingConfigurationData.phases">
@@ -21,11 +21,11 @@
                             </el-radio-group>
                         </el-form-item>
                         <el-form-item label="Vector group">
-                            <div style="font-weight: bold; text-transform: uppercase">{{ vectorGroup }} &nbsp;</div>
-                            <el-input size="mini" v-model="windingConfigurationData.vector_group_custom"></el-input>
-                            <el-button style="width: 100%" @click="openDialog = true"> Select winding configuration </el-button>
-                            <div>Unsupported vector group</div>
-                            <el-input size="mini" v-model="windingConfigurationData.unsupported_vector_group"></el-input>
+                            <div v-if="vectorGroup !== null && vectorGroup !== '' && vectorGroup !== undefined" style="font-weight: bold; font-size: 12px; text-transform: uppercase">{{ vectorGroup }}</div>
+                            <el-input size="mini" v-model="windingConfigurationData.vector_group_custom" placeholder="Enter custom vector group"></el-input>
+                            <el-button type="primary" style="width: 100%; margin-top: 10px" @click="onOpenVectorGroup"> Select winding configuration </el-button>
+                            <div style="color: black; font-size: 12px;">Unsupported vector group</div>
+                            <el-input size="mini" v-model="windingConfigurationData.unsupported_vector_group" placeholder="Enter unsupported vector group"></el-input>
                         </el-form-item>
                     </el-form>
                 </el-col>
@@ -33,8 +33,9 @@
         </div>
 
         <vector-group
+            ref="vectorGroup"
             :openDialog="openDialog"
-            :asset_type="properties.asset_type"
+            :asset_type="properties.type"
             :asset_phase="windingConfigurationData.phases"
             :asset_winding_config="windingConfigurationData.vector_group"
             @close-dialog="onCloseDialog"
@@ -44,84 +45,88 @@
 </template>
 
 <script>
-import VectorGroup from '../VectorGroup'
+/* eslint-disable */
+import VectorGroup from '../VectorGroup/index.vue'
+import { WindingConnection } from '@/views/Enum/WindingConnection'
+import { PhaseCode } from '@/views/Enum/PhaseCode'
+import { Accessible } from '@/views/Enum/Accessible'
 
 const MapData = [
     {
-        label: 'L (Phase A)',
-        value: 'La'
+        label: 'I (Phase A)',
+        value: WindingConnection.I + PhaseCode.A
     },
     {
-        label: 'L (Phase B)',
-        value: 'Lb'
+        label: 'I (Phase B)',
+        value: WindingConnection.I + PhaseCode.B
     },
     {
-        label: 'L (Phase C)',
-        value: 'Lc'
+        label: 'I (Phase C)',
+        value: WindingConnection.I + PhaseCode.C
     },
     {
-        label: 'L (Phase A-B)',
-        value: 'Lab'
+        label: 'I (Phase A-B)',
+        value: WindingConnection.I + PhaseCode.AB
     },
     {
-        label: 'L (Phase B-C)',
-        value: 'Lbc'
+        label: 'I (Phase B-C)',
+        value: WindingConnection.I + PhaseCode.BC
     },
     {
-        label: 'L (Phase C-A)',
-        value: 'Lca'
+        label: 'I (Phase A-C)',
+        value: WindingConnection.I + PhaseCode.AC
     },
     {
         label: 'I (Spare I)',
-        value: 'Ispare'
+        value: WindingConnection.I + 'Spare I'
     },
     {
-        value: 'I',
-        label: 'I'
+        value: WindingConnection.I,
+        label: WindingConnection.I
     },
     {
-        value: 'D',
-        label: 'D'
+        value: WindingConnection.D,
+        label: WindingConnection.D
     },
     {
-        value: 'Y',
-        label: 'Y'
+        value: WindingConnection.Y,
+        label: WindingConnection.Y
     },
     {
-        value: 'YN',
-        label: 'YN'
+        value: WindingConnection.Yn,
+        label: WindingConnection.Yn
     },
     {
-        value: 'Z',
-        label: 'Z'
+        value: WindingConnection.Z,
+        label: WindingConnection.Z
     },
     {
-        value: 'ZN',
-        label: 'ZN'
+        value: WindingConnection.Zn,
+        label: WindingConnection.Zn
     },
     {
-        value: '4accessible',
-        label: '4 accessible'
+        value: Accessible['4Accessible'],
+        label: Accessible['4Accessible']
     },
     {
-        value: '3accessible',
-        label: '3 accessible'
+        value: Accessible['3Accessible'],
+        label: Accessible['3Accessible']
     },
     {
-        value: '2accessible',
-        label: '2 accessible'
+        value: Accessible['2Accessible'],
+        label: Accessible['2Accessible']
     },
     {
-        value: '1accessible',
-        label: '1 accessible'
+        value: Accessible['1Accessible'],
+        label: Accessible['1Accessible']
     },
     {
-        value: '1buried',
-        label: 'Buried'
+        value: Accessible['Buried'],
+        label: Accessible['Buried']
     },
     {
-        value: '1buriedgrounding',
-        label: 'Buried /w grounding'
+        value: Accessible['BuriedWGrounding'],
+        label: Accessible['BuriedWGrounding']
     }
 ]
 
@@ -136,17 +141,18 @@ export default {
             required: true,
             default() {
                 return {
-                    phases: '1',
+                    vector_group_data: '',
+                    phases: '',
                     vector_group: {
                         prim: '',
                         sec: {
-                            I: '',
-                            Value: ''
+                            i: '',
+                            value: ''
                         },
                         tert: {
-                            I: '',
-                            Value: '',
-                            accessibility: ''
+                            i: '',
+                            value: '',
+                            accessible: ''
                         }
                     },
                     vector_group_custom: '',
@@ -159,19 +165,15 @@ export default {
             required: true,
             default() {
                 return {
-                    id: '',
-                    asset: 'Transformer',
-                    asset_type: 'Two-winding',
+                    mrid: '',
+                    kind: 'Transformer',
+                    type: 'Two-winding',
                     serial_no: '',
                     manufacturer: '',
                     manufacturer_type: '',
                     manufacturing_year: '',
-                    asset_system_code: '',
+                    country_of_origin: '',
                     apparatus_id: '',
-                    feeder: '',
-                    date_of_warehouse_receipt: '',
-                    date_of_delivery: '',
-                    date_of_production_order: '',
                     comment: ''
                 }
             }
@@ -181,7 +183,7 @@ export default {
         return {
             openWindingConfiguration: true,
             openDialog: false,
-            labelWidth: `${200}px`
+            labelWidth: `${150}px`
         }
     },
     computed: {
@@ -191,42 +193,49 @@ export default {
         vectorGroup: function () {
             function mapEvery(data, mapData) {
                 let temp = data
-                mapData.every(element => {
-                    if(element.value == data) {
+                for (let element of mapData) {
+                    if (element.value === data) {
                         temp = element.label
-                        return false
+                        break
                     }
-                })
+                }
                 return temp
             }
-
-            return (
-                '' +
-                mapEvery(this.windingConfigurationData.vector_group.prim, MapData) +
-                mapEvery(this.windingConfigurationData.vector_group.sec.I, MapData) +
-                mapEvery(this.windingConfigurationData.vector_group.sec.Value, MapData) +
-                mapEvery(this.windingConfigurationData.vector_group.tert.I, MapData) +
-                mapEvery(this.windingConfigurationData.vector_group.tert.Value, MapData) +
-                mapEvery(this.windingConfigurationData.vector_group.tert.accessibility, MapData)
-            )
+            this.windingConfigurationData.vector_group_data = mapEvery(this.windingConfigurationData.vector_group.prim, MapData) +
+                mapEvery(this.windingConfigurationData.vector_group.sec.i, MapData) +
+                mapEvery(this.windingConfigurationData.vector_group.sec.value, MapData) +
+                mapEvery(this.windingConfigurationData.vector_group.tert.i, MapData) +
+                mapEvery(this.windingConfigurationData.vector_group.tert.value, MapData) +
+                mapEvery(this.windingConfigurationData.vector_group.tert.accessible, MapData)
+            return this.windingConfigurationData.vector_group_data
         }
     },
-
-    mounted() {},
     methods: {
         onChangePhase() {
             this.windingConfigurationData.vector_group = {
                 prim: '',
                 sec: {
-                    I: '',
-                    Value: ''
+                    i: '',
+                    value: ''
                 },
                 tert: {
-                    I: '',
-                    Value: '',
-                    accessibility: ''
+                    i: '',
+                    value: '',
+                    accessible: ''
                 }
             }
+        },
+        onOpenVectorGroup() {
+            if((this.properties.type === "" || this.properties.type === undefined) || (this.windingConfigurationData.phases === "" || this.windingConfigurationData.phases === undefined)) {
+                this.$message.error('Please select transformer type and phases')
+                return
+            }
+            this.openDialog = true
+            this.$nextTick(() => {
+                if(this.$refs.vectorGroup) {
+                    this.$refs.vectorGroup.loadData()
+                }
+            })
         },
         onCloseDialog(winding_config_arr) {
             this.windingConfigurationData.vector_group = winding_config_arr

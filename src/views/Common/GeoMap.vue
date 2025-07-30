@@ -4,7 +4,9 @@
             ref="map" 
             :zoom="zoom" 
             :center="center" 
-            :attribution-control="false" 
+            :attribution-control="false"
+            :max-bounds="vietnamBounds"
+            :max-bounds-viscosity="1.0"
             style="height: 100%; width: 100%;"
             @click="onMapClick"
         >
@@ -83,6 +85,10 @@ export default {
             popupText: '',
             clickedLatLng: null,
             redIcon,
+            vietnamBounds: [
+                [8.18, 102.14],    // Southwest: gần Cà Mau
+                [23.39, 109.46],   // Northeast: gần biên giới phía Bắc và Đông
+            ],
         };
     },
     methods: {

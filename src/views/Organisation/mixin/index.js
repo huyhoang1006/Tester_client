@@ -13,8 +13,13 @@ export default {
         }
     },
     methods: {
-        saveCtrS() {
-            this.saveOrganisation()
+        async saveCtrS() {
+            const data = await this.saveOrganisation()
+            if(data.success) {
+                this.$message.success("Organisation saved successfully")
+            } else {
+                this.$message.error("Failed to save organisation")
+            }
         },
 
         resetForm() {
@@ -22,16 +27,31 @@ export default {
             this.attachmentData = []
         },
 
+        loadData(data) {
+            this.properties = data
+            if(data.attachment && data.attachment.path) {
+                this.attachmentData = JSON.parse(data.attachment.path)
+            } else {
+                this.attachmentData = []
+            }
+        },
+
         async saveOrganisation() {
             if(this.properties.name === '') {
                 this.$message.error("Name is required")
+                return
             } else {
                 try {
-                    this.properties.organisationId = uuid.newUuid()
-                    this.properties.parentId = this.parent ? this.parent.mrid : null
+                    if(this.properties.organisationId === null || this.properties.organisationId === '') {
+                        this.properties.organisationId = uuid.newUuid()
+                    }
+                    if(this.properties.parentId === null || this.properties.parentId === '') {
+                        this.properties.parentId = this.parent ? this.parent.mrid : null
+                    }
                     const dto = JSON.parse(JSON.stringify(this.properties))
                     const dtoData = this.checkOrganisation(dto)
                     const data = orgMapper.OrgDtoToOrgEntity(dtoData)
+                    console.log("Organisation data to save:", data)
                     const result = await window.electronAPI.insertParentOrganizationEntity(data)
                     if(result.success) {
                         return {
@@ -47,6 +67,7 @@ export default {
                     }
 
                 } catch (err) {
+                    console.error('Error saving organisation:', err)
                     return {success : false}
                 }
                 
@@ -122,29 +143,12 @@ export default {
         },
 
         checkConfigurationEvent(dto) {
-            if(dto.attachmentId !== null && dto.attachmentId !== '') {
-                const configEventAttachment = new ConfigurationEvent()
-                configEventAttachment.mrid = uuid.newUuid()
-                configEventAttachment.name = 'Change Attachment'
-                configEventAttachment.effective_date_time = new Date().toISOString()
-                configEventAttachment.changed_attachment = dto.attachmentId
-                configEventAttachment.user_name = this.$store.state.user.name
-                configEventAttachment.modified_by = this.$store.state.user.user_id
-                if(this.mode === this.$constant.ADD) {
-                    configEventAttachment.type = "INSERT"
-                } else if(this.mode === this.$constant.EDIT) {
-                    configEventAttachment.type = "UPDATE"
-                }
-                configEventAttachment.description = `Attachment changed of ${dto.name}`
-                dto.configurationEvent.push(configEventAttachment)
-            }
-
             if(dto.organisationId !== null && dto.organisationId !== '') {
                 const configEventAttachment = new ConfigurationEvent()
                 configEventAttachment.mrid = uuid.newUuid()
                 configEventAttachment.name = 'Change organisation'
                 configEventAttachment.effective_date_time = new Date().toISOString()
-                configEventAttachment.changed_attachment = dto.organisationId
+                configEventAttachment.changed_organisation = dto.organisationId
                 configEventAttachment.user_name = this.$store.state.user.name
                 configEventAttachment.modified_by = this.$store.state.user.user_id
                 if(this.mode === this.$constant.ADD) {
@@ -170,7 +174,7 @@ export default {
                     dto.attachment.name = null
                     dto.attachment.path = JSON.stringify(this.attachmentData)
                     dto.attachment.type = 'organisation'
-                    dto.attachment.id_foreign = this.properties.orgId
+                    dto.attachment.id_foreign = this.properties.organisationId
                 }
             } 
         },

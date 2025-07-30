@@ -20,7 +20,6 @@ export const insertSubstationEntity = () => {
                 }
             }
         } catch (error) {
-            console.log(error)
             return {
                 error: error,
                 success: false,
@@ -48,7 +47,6 @@ export const getSubstationEntityByMrid = () => {
                 }
             }
         } catch (error) {
-            console.log(error)
             return {
                 error: error,
                 success: false,
@@ -62,6 +60,7 @@ export const deleteSubstationEntityByMrid = () => {
     ipcMain.handle('deleteSubstationEntityByMrid', async function (event, data) {
         try {
             const rs = await entityFunc.substationEntityFunc.deleteSubstationEntityById(data)
+            console.log("Delete substation entity", rs)
             if (rs.success == true) {
                 return {
                     success: true,
@@ -76,7 +75,6 @@ export const deleteSubstationEntityByMrid = () => {
                 }
             }
         } catch (error) {
-            console.log(error)
             return {
                 error: error,
                 success: false,

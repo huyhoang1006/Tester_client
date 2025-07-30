@@ -1,5 +1,5 @@
 <template>
-    <el-dialog title="Edit Vector Group" :visible="openDialog" width="800px" @close="handleCancel" style="z-index: 2;">
+    <el-dialog title="Edit Vector Group" :visible="openDialog" width="800px" @close="handleCancel" :modal="false" style="z-index: 2;">
         <span>
             Vector group: <b style="text-transform: uppercase">{{ vectorGroup }}</b>
         </span>
@@ -11,7 +11,7 @@
                     <br />
                     <div>Primary (Prim)</div>
                     <br />
-                    <el-select size="small" @change="winding_config.sec.I = ''" v-model="winding_config.prim" class="m-2" placeholder="Select">
+                    <el-select size="small" @change="changePrim" v-model="winding_config.prim" class="m-2" placeholder="Select">
                         <el-option v-for="item in handlePrimArray()" :key="item.value" :label="item.label" :value="item.value" />
                     </el-select>
                 </div>
@@ -22,17 +22,17 @@
                     <br />
                     <div>Secondary I (Sec I)</div>
                     <br />
-                    <el-select size="small" @change="winding_config.sec.Value = ''" v-model="winding_config.sec.I" class="m-2" placeholder="Select">
+                    <el-select size="small" @change="changeSecI" v-model="winding_config.sec.i" class="m-2" placeholder="Select">
                         <el-option v-for="item in handleSecIArray()" :key="item.value" :label="item.label" :value="item.value" />
                     </el-select>
                 </div>
 
                 <!-- secondary value -->
-                <div v-if="this.winding_config.sec.I !== ''">
+                <div v-if="this.winding_config.sec.i !== ''">
                     <br />
                     <div>Secondary value (Sec value)</div>
                     <br />
-                    <el-select size="small" v-model="winding_config.sec.Value" class="m-2" placeholder="Select">
+                    <el-select size="small" v-model="winding_config.sec.value" class="m-2" placeholder="Select">
                         <el-option v-for="item in handleSecValueArray()" :key="item.value" :label="item.label" :value="item.value" />
                     </el-select>
                 </div>
@@ -43,27 +43,27 @@
                     <br />
                     <div>Tertiary I (Tert I)</div>
                     <br />
-                    <el-select size="small" @change="winding_config.tert.Value = ''" v-model="winding_config.tert.I" class="m-2" placeholder="Select">
+                    <el-select size="small" @change="changeTertI" v-model="winding_config.tert.i" class="m-2" placeholder="Select">
                         <el-option v-for="item in handleTertIArray()" :key="item.value" :label="item.label" :value="item.value" />
                     </el-select>
                 </div>
 
                 <!-- tert value -->
-                <div v-if="(this.asset_type === 'Three-winding' || this.asset_type === 'Auto w/ tert') && this.winding_config.tert.I !== ''">
+                <div v-if="(this.asset_type === 'Three-winding' || this.asset_type === 'Auto w/ tert') && this.winding_config.tert.i !== ''">
                     <br />
                     <div>Tertiary value (Tert Value)</div>
                     <br />
-                    <el-select size="small" @change="winding_config.tert.Accessible = ''" v-model="winding_config.tert.Value" class="m-2" placeholder="Select">
+                    <el-select size="small" @change="winding_config.tert.accessible = ''" v-model="winding_config.tert.value" class="m-2" placeholder="Select">
                         <el-option v-for="item in handleTertValueArray()" :key="item.value" :label="item.label" :value="item.value" />
                     </el-select>
                 </div>
 
                 <!-- tert assessibility -->
-                <div v-if="this.winding_config.tert.I === 'D' && this.winding_config.tert.Value !== ''">
+                <div v-if="this.winding_config.tert.i === 'D' && this.winding_config.tert.value !== ''">
                     <br />
-                    <div>Tertiary Assessibility (Tert Assessibility)</div>
+                    <div>Tertiary Accessibility</div>
                     <br />
-                    <el-select size="small" v-model="winding_config.tert.accessibility" class="m-2" placeholder="Select">
+                    <el-select size="small" v-model="winding_config.tert.accessible" class="m-2" placeholder="Select">
                         <el-option v-for="item in handleTertAssessibleArray()" :key="item.value" :label="item.label" :value="item.value" />
                     </el-select>
                 </div>
@@ -79,122 +79,124 @@
 
 <script>
 /* eslint-disable */
+import { WindingConnection } from '@/views/Enum/WindingConnection'
+import { PhaseCode } from '@/views/Enum/PhaseCode'
+import { Accessible } from '@/views/Enum/Accessible'
 
 const MapData = [
     {
-        label: 'L (Phase A)',
-        value: 'La'
+        label: 'I (Phase A)',
+        value: WindingConnection.I + PhaseCode.A
     },
     {
-        label: 'L (Phase B)',
-        value: 'Lb'
+        label: 'I (Phase B)',
+        value: WindingConnection.I + PhaseCode.B
     },
     {
-        label: 'L (Phase C)',
-        value: 'Lc'
+        label: 'I (Phase C)',
+        value: WindingConnection.I + PhaseCode.C
     },
     {
-        label: 'L (Phase A-B)',
-        value: 'Lab'
+        label: 'I (Phase A-B)',
+        value: WindingConnection.I + PhaseCode.AB
     },
     {
-        label: 'L (Phase B-C)',
-        value: 'Lbc'
+        label: 'I (Phase B-C)',
+        value: WindingConnection.I + PhaseCode.BC
     },
     {
-        label: 'L (Phase C-A)',
-        value: 'Lca'
+        label: 'I (Phase A-C)',
+        value: WindingConnection.I + PhaseCode.AC
     },
     {
         label: 'I (Spare I)',
-        value: 'Ispare'
+        value: WindingConnection.I + 'Spare I'
     },
     {
-        value: 'I',
-        label: 'I'
+        value: WindingConnection.I,
+        label: WindingConnection.I
     },
     {
-        value: 'D',
-        label: 'D'
+        value: WindingConnection.D,
+        label: WindingConnection.D
     },
     {
-        value: 'Y',
-        label: 'Y'
+        value: WindingConnection.Y,
+        label: WindingConnection.Y
     },
     {
-        value: 'YN',
-        label: 'YN'
+        value: WindingConnection.Yn,
+        label: WindingConnection.Yn
     },
     {
-        value: 'Z',
-        label: 'Z'
+        value: WindingConnection.Z,
+        label: WindingConnection.Z
     },
     {
-        value: 'ZN',
-        label: 'ZN'
+        value: WindingConnection.Zn,
+        label: WindingConnection.Zn
     },
     {
-        value: '_4accessible',
-        label: '4 accessible'
+        value: Accessible['4Accessible'],
+        label: Accessible['4Accessible']
     },
     {
-        value: '_3accessible',
-        label: '3 accessible'
+        value: Accessible['3Accessible'],
+        label: Accessible['3Accessible']
     },
     {
-        value: '_2accessible',
-        label: '2 accessible'
+        value: Accessible['2Accessible'],
+        label: Accessible['2Accessible']
     },
     {
-        value: '_1accessible',
-        label: '1 accessible'
+        value: Accessible['1Accessible'],
+        label: Accessible['1Accessible']
     },
     {
-        value: '_1buried',
-        label: 'Buried'
+        value: Accessible['Buried'],
+        label: Accessible['Buried']
     },
     {
-        value: '_1buriedgrounding',
-        label: 'Buried /w grounding'
+        value: Accessible['BuriedWGrounding'],
+        label: Accessible['BuriedWGrounding']
     }
 ]
 
-
 const two_winding_1phase_prim = [
     {
-        label: 'L (Phase A)',
-        value: 'La'
+        label: 'I (Phase A)',
+        value: WindingConnection.I + PhaseCode.A
     },
     {
-        label: 'L (Phase B)',
-        value: 'Lb'
+        label: 'I (Phase B)',
+        value: WindingConnection.I + PhaseCode.B,
     },
     {
-        label: 'L (Phase C)',
-        value: 'Lc'
+        label: 'I (Phase C)',
+        value: WindingConnection.I + PhaseCode.C
     },
     {
-        label: 'L (Phase A-B)',
-        value: 'Lab'
+        label: 'I (Phase A-B)',
+        value: WindingConnection.I + PhaseCode.AB
     },
     {
-        label: 'L (Phase B-C)',
-        value: 'Lbc'
+        label: 'I (Phase B-C)',
+        value: WindingConnection.I + PhaseCode.BC
     },
     {
-        label: 'L (Phase C-A)',
-        value: 'Lca'
+        label: 'I (Phase A-C)',
+        value: WindingConnection.I + PhaseCode.AC
     },
     {
         label: 'I (Spare I)',
-        value: 'Ispare'
+        value: WindingConnection.I + 'Spare I'
     }
 ]
 
 const two_winding_1phase_secondary_i = [
     {
-        value: 'I',
-        label: 'I'
+        value: WindingConnection.I,
+        label: WindingConnection.I
     }
 ]
 
@@ -211,39 +213,39 @@ const two_winding_1phase_secondary_value = [
 
 const two_winding_3phase_prim = [
     {
-        value: 'D',
-        label: 'D'
+        value: WindingConnection.D,
+        label: WindingConnection.D
     },
     {
-        value: 'Y',
-        label: 'Y'
+        value: WindingConnection.Y,
+        label: WindingConnection.Y
     },
     {
-        value: 'YN',
-        label: 'YN'
+        value: WindingConnection.Yn,
+        label: WindingConnection.Yn
     }
 ]
 
 const two_winding_3phase_secondary_i = [
     {
-        value: 'D',
-        label: 'D'
+        value: WindingConnection.D,
+        label: WindingConnection.D
     },
     {
-        value: 'Y',
-        label: 'Y'
+        value: WindingConnection.Y,
+        label: WindingConnection.Y
     },
     {
-        value: 'YN',
-        label: 'YN'
+        value: WindingConnection.Yn,
+        label: WindingConnection.Yn
     },
     {
-        value: 'Z',
-        label: 'Z'
+        value: WindingConnection.Z,
+        label: WindingConnection.Z
     },
     {
-        value: 'ZN',
-        label: 'ZN'
+        value: WindingConnection.Zn,
+        label: WindingConnection.Zn
     }
 ]
 
@@ -303,28 +305,28 @@ const two_winding_3phase_secondary_value_odd = [
 
 const accessibility = [
     {
-        value: '_4accessible',
-        label: '4 accessible'
+        value: Accessible['4Accessible'],
+        label: Accessible['4Accessible']
     },
     {
-        value: '_3accessible',
-        label: '3 accessible'
+        value: Accessible['3Accessible'],
+        label: Accessible['3Accessible']
     },
     {
-        value: '_2accessible',
-        label: '2 accessible'
+        value: Accessible['2Accessible'],
+        label: Accessible['2Accessible']
     },
     {
-        value: '_1accessible',
-        label: '1 accessible'
+        value: Accessible['1Accessible'],
+        label: Accessible['1Accessible']
     },
     {
-        value: '_1buried',
-        label: 'Buried'
+        value: Accessible['Buried'],
+        label: Accessible['Buried']
     },
     {
-        value: '_1buriedgrounding',
-        label: 'Buried /w grounding'
+        value: Accessible['BuriedWGrounding'],
+        label: Accessible['BuriedWGrounding']
     }
 ]
 
@@ -348,6 +350,7 @@ export default {
                 for(let index in mapData) {
                     if(mapData[index].value == data) {
                         temp = mapData[index].label
+                        break
                     }
                 }
                 return temp
@@ -356,11 +359,11 @@ export default {
             return (
                 '' +
                 mapEvery(this.winding_config.prim, MapData) +
-                mapEvery(this.winding_config.sec.I, MapData) +
-                mapEvery(this.winding_config.sec.Value, MapData) +
-                mapEvery(this.winding_config.tert.I, MapData) +
-                mapEvery(this.winding_config.tert.Value, MapData) +
-                mapEvery(this.winding_config.tert.accessibility, MapData)
+                mapEvery(this.winding_config.sec.i, MapData) +
+                mapEvery(this.winding_config.sec.value, MapData) +
+                mapEvery(this.winding_config.tert.i, MapData) +
+                mapEvery(this.winding_config.tert.value, MapData) +
+                mapEvery(this.winding_config.tert.accessible, MapData)
             )
         }
     },
@@ -371,6 +374,10 @@ export default {
 
         handleCancel() {
             this.$emit('cancel-dialog', false)
+        },
+
+        loadData() {
+            this.winding_config = JSON.parse(JSON.stringify(this.asset_winding_config))
         },
 
         handlePrimArray() {
@@ -396,16 +403,16 @@ export default {
             if ((this.asset_type === 'Two-winding' && this.asset_phase === '1')) {
                 return two_winding_1phase_secondary_i
             } else if (this.asset_type === 'Two-winding' && this.asset_phase === '3') {
-                if (this.winding_config.prim === 'YN') {
-                    return two_winding_3phase_secondary_i.filter((item) => item.value === 'D' || item.value === 'Y' || item.value === 'YN')
+                if (this.winding_config.prim === WindingConnection.Yn) {
+                    return two_winding_3phase_secondary_i.filter((item) => item.value === WindingConnection.D || item.value === WindingConnection.Y || item.value === WindingConnection.Yn)
                 } else {
                     return two_winding_3phase_secondary_i
                 }
             } else if (this.asset_type === 'Three-winding' && this.asset_phase === '1') {
                 return two_winding_1phase_secondary_i
             } else {
-                if (this.winding_config.prim === 'YN') {
-                    return two_winding_3phase_secondary_i.filter((item) => item.value === 'D' || item.value === 'Y' || item.value === 'YN')
+                if (this.winding_config.prim === WindingConnection.Yn) {
+                    return two_winding_3phase_secondary_i.filter((item) => item.value === WindingConnection.D || item.value === WindingConnection.Y || item.value === WindingConnection.Yn)
                 } else {
                     return two_winding_3phase_secondary_i
                 }
@@ -417,19 +424,19 @@ export default {
                 return two_winding_1phase_secondary_value
             } else if ((this.asset_type === 'Two-winding' || this.asset_type === 'Three-winding') && this.asset_phase === '3') {
                 if (
-                    this.winding_config.prim === 'D' &&
-                    (this.winding_config.sec.I === 'D' || this.winding_config.sec.I === 'Z' || this.winding_config.sec.I === 'ZN')
+                    this.winding_config.prim === WindingConnection.D &&
+                    (this.winding_config.sec.i === WindingConnection.D || this.winding_config.sec.i === WindingConnection.Z || this.winding_config.sec.i === WindingConnection.Zn)
                 ) {
                     return two_winding_3phase_secondary_value_even
-                } else if (this.winding_config.prim === 'D') {
+                } else if (this.winding_config.prim === WindingConnection.D) {
                     return two_winding_3phase_secondary_value_odd
-                } else if (this.winding_config.prim === 'Y' && this.winding_config.sec.I === 'D') {
+                } else if (this.winding_config.prim === WindingConnection.Y && this.winding_config.sec.i === WindingConnection.D) {
                     return two_winding_3phase_secondary_value_odd
-                } else if (this.winding_config.prim === 'Y' && (this.winding_config.sec.I === 'Y' || this.winding_config.sec.I === 'YN')) {
+                } else if (this.winding_config.prim === WindingConnection.Y && (this.winding_config.sec.i === WindingConnection.Y || this.winding_config.sec.i === WindingConnection.Yn)) {
                     return two_winding_1phase_secondary_value
-                } else if (this.winding_config.prim === 'Y' && (this.winding_config.sec.I === 'Z' || this.winding_config.sec.I === 'ZN')) {
+                } else if (this.winding_config.prim === WindingConnection.Y && (this.winding_config.sec.i === WindingConnection.Z || this.winding_config.sec.i === WindingConnection.Zn)) {
                     return two_winding_3phase_secondary_value_odd.filter((item) => item.value !== '3' && item.value !== '9')
-                } else if (this.winding_config.prim === 'YN' && this.winding_config.sec.I === 'D') {
+                } else if (this.winding_config.prim === WindingConnection.Yn && this.winding_config.sec.i === WindingConnection.D) {
                     return two_winding_3phase_secondary_value_odd
                 } else {
                     return two_winding_1phase_secondary_value
@@ -441,8 +448,8 @@ export default {
             if ((this.asset_type === 'Two-winding' && this.asset_phase === '1') || (this.asset_type === 'Auto w/ tert' && this.asset_phase === '1')) {
                 return two_winding_1phase_secondary_i
             } else if (this.asset_type === 'Two-winding' && this.asset_phase === '3') {
-                if (this.winding_config.prim === 'YN') {
-                    return two_winding_3phase_secondary_i.filter((item) => item.value === 'D' || item.value === 'Y' || item.value === 'YN')
+                if (this.winding_config.prim === WindingConnection.Yn) {
+                    return two_winding_3phase_secondary_i.filter((item) => item.value === WindingConnection.D || item.value === WindingConnection.Y || item.value === WindingConnection.Yn)
                 } else {
                     return two_winding_3phase_secondary_i
                 }
@@ -450,12 +457,12 @@ export default {
                 return two_winding_1phase_secondary_i
             } else if (this.asset_type === 'Auto w/ tert' && this.asset_phase === '3') {
                 if(this.winding_config.prim === 'YyNa') {
-                    return two_winding_3phase_secondary_i.filter((item) => !item.value.includes('Z'))
+                    return two_winding_3phase_secondary_i.filter((item) => !item.value.includes(WindingConnection.Z))
                 }
             }
             else {
-                if (this.winding_config.prim === 'YN') {
-                    return two_winding_3phase_secondary_i.filter((item) => item.value === 'D' || item.value === 'Y' || item.value === 'YN')
+                if (this.winding_config.prim === WindingConnection.Yn) {
+                    return two_winding_3phase_secondary_i.filter((item) => item.value === WindingConnection.D || item.value === WindingConnection.Y || item.value === WindingConnection.Yn)
                 } else {
                     return two_winding_3phase_secondary_i
                 }
@@ -467,21 +474,21 @@ export default {
                 return two_winding_1phase_secondary_value
             } else if ((this.asset_type === 'Two-winding' || this.asset_type === 'Three-winding' || this.asset_type === 'Auto w/ tert') && this.asset_phase === '3') {
                 if (
-                    this.winding_config.prim === 'D' &&
-                    (this.winding_config.tert.I === 'D' || this.winding_config.tert.I === 'Z' || this.winding_config.tert.I === 'ZN')
+                    this.winding_config.prim === WindingConnection.D &&
+                    (this.winding_config.tert.i === WindingConnection.D || this.winding_config.tert.i === WindingConnection.Z || this.winding_config.tert.i === WindingConnection.Zn)
                 ) {
                     return two_winding_3phase_secondary_value_even
-                } else if (this.winding_config.prim === 'D') {
+                } else if (this.winding_config.prim === WindingConnection.D) {
                     return two_winding_3phase_secondary_value_odd
-                } else if (this.winding_config.prim === 'Y' && this.winding_config.tert.I === 'D') {
+                } else if (this.winding_config.prim === WindingConnection.Y && this.winding_config.tert.i === WindingConnection.D) {
                     return two_winding_3phase_secondary_value_odd
-                } else if (this.winding_config.prim === 'Y' && (this.winding_config.tert.I === 'Y' || this.winding_config.tert.I === 'YN')) {
+                } else if (this.winding_config.prim === WindingConnection.Y && (this.winding_config.tert.i === WindingConnection.Y || this.winding_config.tert.i === WindingConnection.Yn)) {
                     return two_winding_1phase_secondary_value
-                } else if (this.winding_config.prim === 'Y' && (this.winding_config.tert.I === 'Z' || this.winding_config.tert.I === 'ZN')) {
+                } else if (this.winding_config.prim === WindingConnection.Y && (this.winding_config.tert.i === WindingConnection.Z || this.winding_config.tert.i === WindingConnection.Zn)) {
                     return two_winding_3phase_secondary_value_odd.filter((item) => item.value !== '3' && item.value !== '9')
-                } else if (this.winding_config.prim === 'YN' && this.winding_config.tert.I === 'D') {
+                } else if (this.winding_config.prim === WindingConnection.Yn && this.winding_config.tert.I === WindingConnection.D) {
                     return two_winding_3phase_secondary_value_odd
-                } else if (this.winding_config.prim === 'YyNa' && this.winding_config.tert.I === 'D') {
+                } else if (this.winding_config.prim === 'YyNa' && this.winding_config.tert.I === WindingConnection.D) {
                     return two_winding_3phase_secondary_value_odd
                 }
                 else {
@@ -490,13 +497,31 @@ export default {
             }
         },
         handleTertAssessibleArray() {
-            if (this.winding_config.tert.I === 'D' && this.winding_config.tert.Value !== '') {
+            if (this.winding_config.tert.i === WindingConnection.D && this.winding_config.tert.value !== '') {
                 return accessibility
             }
-        }
+        },
+        changePrim() {
+            this.winding_config.sec.i = ''
+            this.winding_config.sec.value = ''
+            this.winding_config.tert.i = ''
+            this.winding_config.tert.value = ''
+            this.winding_config.tert.accessible = ''
+        },
+        changeSecI() {
+            this.winding_config.sec.value = ''
+            this.winding_config.tert.i = ''
+            this.winding_config.tert.value = ''
+            this.winding_config.tert.accessible = ''
+        },
+        changeTertI() {
+            this.winding_config.tert.value = ''
+            this.winding_config.tert.accessible = ''
+        },
     },
     watch: {
         asset_winding_config(val) {
+            console.log('asset_winding_config changed', val)
             this.winding_config = JSON.parse(JSON.stringify(val))
         }
     }

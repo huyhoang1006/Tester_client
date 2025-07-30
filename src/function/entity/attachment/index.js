@@ -41,29 +41,62 @@ export const updateAttachmentById = async (id, attachment) => {
 
 export const uploadAttachment = async (attachment) => {
     return new Promise((resolve, reject) => {
-        db.run('INSERT INTO attachment(id, id_foreign, type, name)' +
-        ' VALUES(?, ?, ?, ?)',
-        [
-            attachment.id || newUuid(), attachment.id_foreign , attachment.type, attachment.name
-        ], function (err) {
-            if (err) return reject({ success: false, err, message: 'Upload attachment failed' })
-            return resolve({ success: true, data: attachment, message: 'Upload attachment completed' })
-        })
-    })
-}
+        const id = attachment.id || newUuid();
+        db.run(
+            `INSERT INTO attachment (id, id_foreign, type, name)
+             VALUES (?, ?, ?, ?)
+             ON CONFLICT(id) DO UPDATE SET
+                 id_foreign = excluded.id_foreign,
+                 type = excluded.type,
+                 name = excluded.name`,
+            [
+                id,
+                attachment.id_foreign,
+                attachment.type,
+                attachment.name
+            ],
+            function (err) {
+                if (err) return reject({ success: false, err, message: 'Upload attachment failed' });
+                return resolve({ 
+                    success: true, 
+                    data: attachment, 
+                    message: 'Upload attachment completed' 
+                });
+            }
+        );
+    });
+};
+
 
 export const uploadAttachmentTransaction = async (attachment, dbsql) => {
     return new Promise((resolve, reject) => {
-        dbsql.run('INSERT INTO attachment(id, path, id_foreign, type, name)' +
-        ' VALUES(?, ?, ?, ?, ?)',
-        [
-            attachment.id || newUuid(), attachment.path, attachment.id_foreign , attachment.type, attachment.name
-        ], function (err) {
-            if (err) return reject({ success: false, err, message: 'Upload attachment failed' })
-            return resolve({ success: true, data: attachment, message: 'Upload attachment completed' })
-        })
-    })
-}
+        const id = attachment.id || newUuid();
+        dbsql.run(
+            `INSERT INTO attachment (id, path, id_foreign, type, name)
+             VALUES (?, ?, ?, ?, ?)
+             ON CONFLICT(id) DO UPDATE SET
+                 path = excluded.path,
+                 id_foreign = excluded.id_foreign,
+                 type = excluded.type,
+                 name = excluded.name`,
+            [
+                id,
+                attachment.path,
+                attachment.id_foreign,
+                attachment.type,
+                attachment.name
+            ],
+            function (err) {
+                if (err) return reject({ success: false, err, message: 'Upload attachment failed' });
+                return resolve({
+                    success: true,
+                    data: { ...attachment, id },
+                    message: 'Upload attachment completed'
+                });
+            }
+        );
+    });
+};
 
 /**
  * Đồng bộ file từ srcList vào destDir, đảm bảo rollback cả file ghi đè và file mới nếu có lỗi
@@ -148,8 +181,9 @@ export const syncFilesWithFullRollback = (srcList, dest, fatherMrid) => {
 };
 
 export const backupAllFilesInDir = (srcDir, backupDir, fatherMrid) => {
-    srcDir = path.join(srcDir || attachmentContext.getAttachmentDir() || fatherMrid || '');
+    srcDir = path.join(srcDir || attachmentContext.getAttachmentDir(), fatherMrid || '');
     backupDir = backupDir || path.join(srcDir, '__backup__');
+    console.log('Backup directory:', backupDir);
     try {
         if (!fs.existsSync(backupDir)) {
             fs.mkdirSync(backupDir, { recursive: true });
@@ -236,6 +270,15 @@ export const deleteBackupFiles = (backupDir, fatherMrid) => {
     }
     return false;
 };
+
+export const deleteDirectory = (directory, fatherMrid) => {
+    console.log('Deleting directory:', directory);
+    directory = directory || path.join(attachmentContext.getAttachmentDir(), fatherMrid);
+    if (fs.existsSync(directory)) {
+        fs.rmSync(directory, { recursive: true, force: true });
+    }
+};
+
 
 export const restoreFiles = (backupDir, destDir, fatherMrid) => {
     const restored = [];

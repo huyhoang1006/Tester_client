@@ -34,7 +34,7 @@ export default {
                 owner: 'fa-solid fa-location-crosshairs',
                 building: 'fa-solid fa-building',
                 voltageLevel: 'fa-solid fa-bolt-lightning',
-                bay: 'fa-solid fa-bolt'
+                bay: 'fa-solid fa-tower-observation'
             }
             return icons[this.folderType] || 'fa-solid fa-location-dot'
         },
