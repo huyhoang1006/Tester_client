@@ -146,12 +146,15 @@ export const getPersonById = async (mrid) => {
 export const getPersonByOrganisationId = async (organisationId) => {
     return new Promise((resolve, reject) => {
         const query = `
-            SELECT p.*
+            SELECT p.*, io.name
             FROM person p
-            JOIN organisation_person po ON p.mrid = po.person_id
-            WHERE po.organisation_id = ?
+            JOIN identified_object io ON p.mrid = io.mrid
+            WHERE p.mrid IN (
+                SELECT DISTINCT person_id
+                FROM organisation_person
+                WHERE organisation_id = ?
+            )
         `;
-
         db.all(query, [organisationId], (err, rows) => {
             if (err) {
                 return reject({
@@ -161,22 +164,15 @@ export const getPersonByOrganisationId = async (organisationId) => {
                 });
             }
 
-            if (!rows || rows.length === 0) {
-                return resolve({
-                    success: false,
-                    data: [],
-                    message: 'No persons found for this organisation'
-                });
-            }
-
             return resolve({
                 success: true,
                 data: rows,
-                message: 'Get persons by organisation id completed'
+                message: rows.length ? 'Get persons by organisation id completed' : 'No persons found for this organisation'
             });
         });
     });
 };
+
 
 
 // Xóa Person theo mrid (gồm cả identified_object)

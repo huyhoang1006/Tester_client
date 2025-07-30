@@ -8,6 +8,7 @@ class OrganisationDto {
         this.district_or_town = ''
         this.city = ''
         this.state_or_province = ''
+        this.tax_code = ''
         this.country = ''
         this.phoneNumber = ''
         this.email = ''

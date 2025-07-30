@@ -139,6 +139,7 @@ export const updatePersonRoleByMrid = () => {
 
 export const active = () => {
     getPersonRoleByMrid()
+    getPersonRoleByPersonId()
     insertPersonRole()
     updatePersonRoleByMrid()
     deletePersonRoleByMrid()

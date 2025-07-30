@@ -3,36 +3,37 @@ import * as organisationFunc from '../organisation/index'
 
 // Thêm mới Parent Organisation (gồm cả insert identified_object)
 export const insertParentOrganisation = async (parentOrganization) => {
+    console.log("Insert parent organisation:", parentOrganization)
     return new Promise((resolve, reject) => {
-        db.serialize(() => {
-            db.run('BEGIN TRANSACTION')
-            organisationFunc.insertOrganisationTransaction(parentOrganization, db)
-                .then(parentOrganizationResult => {
-                    if (!parentOrganizationResult.success) {
-                        db.run('ROLLBACK')
-                        return reject({ success: false, message: 'Insert parent organisation failed', err: parentOrganizationResult.err })
-                    }
-                    db.run(
-                        `INSERT INTO parent_organization(mrid) VALUES (?)
-                         ON CONFLICT(mrid) DO UPDATE SET DO NOTHING`,
-                        [
-                            parentOrganization.mrid,
-                        ],
-                        function (err) {
-                            if (err) {
-                                db.run('ROLLBACK')
-                                return reject({ success: false, err, message: 'Insert organisation failed' })
-                            }
-                            db.run('COMMIT')
-                            return resolve({ success: true, data: parentOrganization, message: 'Insert organisation completed' })
-                        }
-                    )
-                })
-                .catch(err => {
-                    db.run('ROLLBACK')
-                    return reject({ success: false, err, message: 'Insert organisation transaction failed' })
-                })
-        })
+        // db.serialize(() => {
+        //     db.run('BEGIN TRANSACTION')
+        //     organisationFunc.insertOrganisationTransaction(parentOrganization, db)
+        //         .then(parentOrganizationResult => {
+        //             if (!parentOrganizationResult.success) {
+        //                 db.run('ROLLBACK')
+        //                 return reject({ success: false, message: 'Insert parent organisation failed', err: parentOrganizationResult.err })
+        //             }
+        //             db.run(
+        //                 `INSERT INTO parent_organization(mrid) VALUES (?)
+        //                  ON CONFLICT(mrid) DO UPDATE SET DO NOTHING`,
+        //                 [
+        //                     parentOrganization.mrid,
+        //                 ],
+        //                 function (err) {
+        //                     if (err) {
+        //                         db.run('ROLLBACK')
+        //                         return reject({ success: false, err, message: 'Insert organisation failed' })
+        //                     }
+        //                     db.run('COMMIT')
+        //                     return resolve({ success: true, data: parentOrganization, message: 'Insert organisation completed' })
+        //                 }
+        //             )
+        //         })
+        //         .catch(err => {
+        //             db.run('ROLLBACK')
+        //             return reject({ success: false, err, message: 'Insert organisation transaction failed' })
+        //         })
+        // })
     })
 }
 
@@ -75,6 +76,7 @@ export const getParentOrganizationById = async (mrid) => {
         }
         return { success: true, data: orgResult.data, message: 'Get parent organization completed' }
     } catch (err) {
+        console.log("Get parent organization error:", err)
         return { success: false, err, message: 'Get parent organization failed' }
     }
 }
@@ -139,7 +141,7 @@ export const updateParentOrganizationById = async (mrid, parentOrganization) => 
 }
 
 // Cập nhật Organisation trong transaction (cho lớp cha gọi)
-export const updateParentOrganisationTransaction = async (mrid, parentOrganisation, dbsql) => {
+export const updateParentOrganizationTransaction = async (mrid, parentOrganization, dbsql) => {
     return new Promise((resolve, reject) => {
         organisationFunc.updateOrganisationByIdTransaction(mrid, parentOrganisation, dbsql)
             .then(identifiedResult => {
@@ -168,7 +170,7 @@ export const updateParentOrganisationTransaction = async (mrid, parentOrganisati
 }
 
 // Xóa Organisation (gồm cả identified_object, dùng cascade)
-export const deleteParentOrganisationById = async (mrid) => {
+export const deleteParentOrganizationById = async (mrid) => {
     return new Promise((resolve, reject) => {
         organisationFunc.deleteOrganisationByIdTransaction(mrid, db)
             .then(result => {
@@ -184,6 +186,6 @@ export const deleteParentOrganisationById = async (mrid) => {
 }
 
 // Xóa Organisation trong transaction (cho lớp cha gọi)
-export const deleteOrganisationByIdTransaction = async (mrid, dbsql) => {
+export const deleteParentOrganizationByIdTransaction = async (mrid, dbsql) => {
     return organisationFunc.deleteOrganisationByIdTransaction(mrid, dbsql)
 }

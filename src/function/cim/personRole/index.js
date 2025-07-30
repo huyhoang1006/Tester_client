@@ -16,15 +16,18 @@ export const insertPersonRole = async (personRole) => {
                         `INSERT INTO person_role(
                             mrid,
                             department,
-                            position
-                        ) VALUES (?, ?, ?)
+                            position,
+                            person
+                        ) VALUES (?, ?, ?, ?)
                         ON CONFLICT(mrid) DO UPDATE SET
                             department = excluded.department,
-                            position = excluded.position`,
+                            position = excluded.position,
+                            person = excluded.person`,
                         [
                             personRole.mrid,
                             personRole.department,
-                            personRole.position
+                            personRole.position,
+                            personRole.person
                         ],
                         function (err) {
                             if (err) {
@@ -55,14 +58,17 @@ export const insertPersonRoleTransaction = async (personRole, dbsql) => {
                 dbsql.run(
                     `INSERT INTO person_role(
                         mrid,
+                        person,
                         department,
                         position
-                    ) VALUES (?, ?, ?)
+                    ) VALUES (?, ?, ?, ?)
                     ON CONFLICT(mrid) DO UPDATE SET
+                        person = excluded.person,
                         department = excluded.department,
                         position = excluded.position`,
                     [
                         personRole.mrid,
+                        personRole.person,
                         personRole.department,
                         personRole.position
                     ],
@@ -134,11 +140,13 @@ export const updatePersonRole = async (mrid, personRole) => {
                     db.run(
                         `UPDATE person_role SET
                             department = ?,
-                            position = ?
+                            position = ?,
+                            person = ?
                         WHERE mrid = ?`,
                         [
                             personRole.department,
                             personRole.position,
+                            personRole.person,
                             mrid
                         ],
                         function (err) {
@@ -170,11 +178,13 @@ export const updatePersonRoleTransaction = async (mrid, personRole, dbsql) => {
                 dbsql.run(
                     `UPDATE person_role SET
                         department = ?,
-                        position = ?
+                        position = ?,
+                        person = ?
                     WHERE mrid = ?`,
                     [
                         personRole.department,
                         personRole.position,
+                        personRole.person,
                         mrid
                     ],
                     function (err) {

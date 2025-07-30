@@ -1,8 +1,8 @@
 <template>
-    <el-dialog title="Calculate Tap changer" :visible="openDialog" width="500px" @close="handleCancel">
+    <el-dialog title="Calculate Tap changer" :modal="false" :visible="openDialog" width="500px" @close="handleCancel">
         <div>Base on ...</div><br>
 
-        <el-tabs type="card" v-model="activeName">
+        <el-tabs v-if="tapVoltable.length > 1" type="card" v-model="activeName">
             <el-tab-pane label="First and second" name="fas">
                 <table class="w-100 mgt-5 table-strip-input-data">
                     <thead>

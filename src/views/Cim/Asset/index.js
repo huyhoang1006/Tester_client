@@ -8,6 +8,7 @@ class Asset extends IdentifiedObject {
         this.initial_condition = null; // Geographical location of the asset
         this.initial_loss_of_life = null; // Date when the asset was installed
         this.in_use_date = null; // Date when the asset was manufactured
+        this.in_use_state = null; // Date when the asset was last inspected
         this.kind = null; // Date when the asset was purchased
         this.lifecycle_date = null; // Date when the asset was received
         this.lifecycle_state = null; // Date when the asset was removed
@@ -21,6 +22,7 @@ class Asset extends IdentifiedObject {
         this.asset_info = null; // Usage of the asset (e.g., residential, commercial)
         this.product_asset_model = null; // Description of the asset
         this.location = null; // Associated location of the asset
+        this.country_of_origin = null; // Associated country of origin of the asset
     }
 }
 

@@ -13,9 +13,16 @@ import * as organisationFunc from './organisation/index.js'
 import * as parentOrganizationFunc from './parentOrganization/index.js'
 import * as activityRecordFunc from './activityRecord/index.js'
 import * as configurationEventFunc from './configurationEvent/index.js'
+import * as positionPointFunc from './positionPoint/index.js'
+import * as voltageFunc from './voltage/index.js'
+import * as baseVoltageFunc from './baseVoltage/index.js'
+import * as bayFunc from './bay/index.js'
+import * as voltageLevelFunc from './voltageLevel/index.js'
+import * as PowerSystemResourceFunc from './powerSystemResource/index.js'
 
 export {identifiedObjectFunc, substationFunc, electronicAddressFunc, locationFunc,
     personFunc, personRoleFunc, psrTypeFunc, streetAddressFunc, streetDetailFunc,
     townDetailFunc, telephoneNumberFunc, organisationFunc, parentOrganizationFunc,
-    activityRecordFunc, configurationEventFunc
+    activityRecordFunc, configurationEventFunc, positionPointFunc, voltageFunc, baseVoltageFunc,
+    bayFunc, voltageLevelFunc, PowerSystemResourceFunc
 }

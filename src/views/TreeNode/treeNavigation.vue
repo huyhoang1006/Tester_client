@@ -50,7 +50,16 @@
                         >
                         </TreeNode>
                     </ul>
-                    <contextMenu @delete-data="deleteDataClient" @show-addSubsInTree="showAddSubsInTree" @show-addOrganisation="showAddOrganisation" @show-data="showDataClient" ref="contextMenuClient"></contextMenu>
+                    <contextMenu 
+                        @delete-data="deleteDataClient"
+                        @show-addSubsInTree="showAddSubsInTree"
+                        @show-addOrganisation="showAddOrganisation"
+                        @show-addVoltageLevel="showAddVoltageLevel"
+                        @show-addTransformer="showAddTransformer"
+                        @show-addBay="showAddBay"
+                        @show-data="showDataClient"
+                        ref="contextMenuClient">
+                    </contextMenu>
                 </div>
             </div>
             <div ref="sidebarServer" v-show="!clientSlide" class="sidebar">
@@ -468,6 +477,45 @@
                 <el-button size="small" type="primary" @click="handleOrgConfirm">Save</el-button>
             </span>
         </el-dialog>
+
+        <el-dialog
+            title="Add Voltage Level"
+            :visible.sync="signVoltageLevel" 
+            width="1000px"
+            @close="handleVoltageLevelCancel"
+        >
+            <VoltageLevel :parent="parentOrganization" ref="voltageLevel"></VoltageLevel>
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" type="danger" @click="handleVoltageLevelCancel" >Cancel</el-button>
+                <el-button size="small" type="primary" @click="handleVoltageLevelConfirm">Save</el-button>
+            </span>
+        </el-dialog>
+
+        <el-dialog
+            title="Add Bay Level"
+            :visible.sync="signBay" 
+            width="1000px"
+            @close="handleBayCancel"
+        >
+            <Bay :parent="parentOrganization" ref="bay"></Bay>
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" type="danger" @click="handleBayCancel" >Cancel</el-button>
+                <el-button size="small" type="primary" @click="handleBayConfirm">Save</el-button>
+            </span>
+        </el-dialog>
+
+        <el-dialog
+            title="Add Transformer"
+            :visible.sync="signTransformer" 
+            width="1000px"
+            @close="handleTransformerCancel"
+        >
+            <Transformer :locationId="locationId" :parent="parentOrganization" ref="transformer"></Transformer>
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" type="danger" @click="handleTransformerCancel" >Cancel</el-button>
+                <el-button size="small" type="primary" @click="handleTransformerConfirm">Save</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 <script>
@@ -507,6 +555,10 @@ import * as testPowerApi from '@/api/power/testPower'
 
 import Substation from '../LocationInsert/locationLevelView.vue'
 import Organisation from '@/views/Organisation/index.vue'
+import VoltageLevel from '@/views/VoltageLevel/index.vue'
+import Bay from '@/views/Bay/index.vue'
+import Transformer from '@/views/AssetView/Transformer'
+
 import mixin from './mixin'
 
 export default {
@@ -519,7 +571,10 @@ export default {
         contextMenu,
         Tabs,
         Substation,
-        Organisation
+        Organisation,
+        VoltageLevel,
+        Bay,
+        Transformer
     },
     data() {
         return {
@@ -527,9 +582,13 @@ export default {
             logDataServer : [],
             logDataClient : [],
             organisationId : '0000000-0000-0000-0000-000000000000',
+            locationId : '',
             organisationClientList : [],
             signSubs : false,
             signOrg : false,
+            signVoltageLevel : false,
+            signBay : false,
+            signTransformer : false,
             activeTab: {},
             activeTabClient: {},
             indexTabData: null,
@@ -829,7 +888,67 @@ export default {
                 try {
                     let newRows = [];
                     if(node.asset != undefined) {
-                    } else {
+                    } else if(node.mode == 'substation') {
+                        const clickedRow = node;
+                        const [voltageLevelReturn, bayReturn] = await Promise.all([
+                            window.electronAPI.getVoltageLevelBySubstationId(clickedRow.mrid),
+                            window.electronAPI.getBayByVoltageBySubstationId(null, clickedRow.mrid)
+                        ]);
+                        if(voltageLevelReturn.success) {
+                            voltageLevelReturn.data.forEach(row => {
+                                row.parentId = clickedRow.mrid;
+                                row.mode = 'voltageLevel';
+                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                row.parentName = parentName
+                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr.push({
+                                    mrid : clickedRow.mrid,
+                                    parent : clickedRow.name
+                                })
+                            });
+                            newRows.push(...voltageLevelReturn.data);
+                        }
+
+                        if(bayReturn.success) {
+                            bayReturn.data.forEach(row => {
+                                row.parentId = clickedRow.mrid;
+                                row.mode = 'bay';
+                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                row.parentName = parentName
+                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr.push({
+                                    mrid : clickedRow.mrid,
+                                    parent : clickedRow.name
+                                })
+                            });
+                            newRows.push(...bayReturn.data);
+                        }
+
+                    } else if(node.mode == 'voltageLevel') {
+                        const clickedRow = node;
+                        const [bayReturn] = await Promise.all([
+                            window.electronAPI.getBayByVoltageBySubstationId(clickedRow.mrid, null)
+                        ]);
+
+                        if(bayReturn.success) {
+                            bayReturn.data.forEach(row => {
+                                row.parentId = clickedRow.mrid;
+                                row.mode = 'bay';
+                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                row.parentName = parentName
+                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr.push({
+                                    mrid : clickedRow.mrid,
+                                    parent : clickedRow.name
+                                })
+                            });
+                            newRows.push(...bayReturn.data);
+                        }
+
+                    } else if(node.mode == 'bay') {
+                        //
+                    }
+                    else {
                         const clickedRow = node;
                         const [organisationReturn, substationReturn] = await Promise.all([
                             window.electronAPI.getParentOrganizationByParentMrid(clickedRow.mrid),
@@ -842,7 +961,7 @@ export default {
                                 row.parentName = parentName
                                 row.parentArr = [...clickedRow.parentArr || []]
                                 row.parentArr.push({
-                                    id : clickedRow.mrid,
+                                    mrid : clickedRow.mrid,
                                     parent : clickedRow.name
                                 })
                             });
@@ -856,7 +975,7 @@ export default {
                                 row.parentName = parentName
                                 row.parentArr = [...clickedRow.parentArr || []]
                                 row.parentArr.push({
-                                    id : clickedRow.mrid,
+                                    mrid : clickedRow.mrid,
                                     parent : clickedRow.name
                                 })
                             });
@@ -866,6 +985,71 @@ export default {
                     Vue.set(node, "children", newRows); // Đảm bảo Vue reactive
                 } catch (error) {
                     console.error("Error fetching children:", error);
+                }
+            }
+        },
+
+        async checkChildren(node) {
+            if (!node.children) {
+                try {
+                    let newRows = [];
+                    if(node.asset != undefined) {
+                    } else if(node.mode == 'substation') {
+                        const clickedRow = node;
+                        const [voltageLevelReturn, bayReturn] = await Promise.all([
+                            window.electronAPI.getVoltageLevelBySubstationId(clickedRow.mrid),
+                            window.electronAPI.getBayByVoltageBySubstationId(null, clickedRow.mrid)
+                        ]);
+                        if(voltageLevelReturn.success) {
+                            newRows.push(...voltageLevelReturn.data);
+                        }
+
+                        if(bayReturn.success) {
+                            newRows.push(...bayReturn.data);
+                        }
+
+                    } else if(node.mode == 'voltageLevel') {
+                        const clickedRow = node;
+                        const [bayReturn] = await Promise.all([
+                            window.electronAPI.getBayByVoltageBySubstationId(clickedRow.mrid, null)
+                        ]);
+
+                        if(bayReturn.success) {
+                            newRows.push(...bayReturn.data);
+                        }
+
+                    } else if(node.mode == 'bay') {
+                        //
+                    }
+                    else {
+                        const clickedRow = node;
+                        const [organisationReturn, substationReturn] = await Promise.all([
+                            window.electronAPI.getParentOrganizationByParentMrid(clickedRow.mrid),
+                            window.electronAPI.getSubstationsInOrganisationForUser(clickedRow.mrid, this.$store.state.user.user_id)
+                        ]);
+                        if(organisationReturn.success) {
+                            newRows.push(...organisationReturn.data);
+                        }
+
+                        if(substationReturn.success) {
+                            newRows.push(...substationReturn.data);
+                        }
+                    }
+                    return {
+                        success: true,
+                        data: newRows
+                    }
+                } catch (error) {
+                    console.error("Error fetching children:", error);
+                    return {
+                        success: false,
+                        message: "Error fetching children data"
+                    }
+                }
+            } else {
+                return {
+                    success: false,
+                    message: "Error fetching children data"
                 }
             }
         },
@@ -1241,6 +1425,14 @@ export default {
             this.signOrg = false
         },
 
+        async handleVoltageLevelCancel() {
+            this.signVoltageLevel = false
+        },
+
+        async handleBayCancel() {
+            this.signBay = false
+        },
+
         async handleSubsConfirm() {
             try {
                 const subs = this.$refs.substation
@@ -1252,7 +1444,7 @@ export default {
                         let newRows = []
                         if(this.organisationClientList && this.organisationClientList.length > 0) {
                             const newRow = {
-                                id: data.substation.mrid,
+                                mrid: data.substation.mrid,
                                 name: data.substation.name,
                                 parentId: this.parentOrganization.mrid,
                                 parentName: this.parentOrganization.name,
@@ -1284,12 +1476,114 @@ export default {
                     if(success) {
                         this.$message.success("Organisation saved successfully")
                         this.signOrg = false
+                        let newRows = []
+                        if(this.organisationClientList && this.organisationClientList.length > 0) {
+                            const newRow = {
+                                mrid: data.organisation.mrid,
+                                name: data.organisation.name,
+                                parentId: this.parentOrganization.mrid,
+                                parentName: this.parentOrganization.name,
+                                parentArr: this.parentOrganization.parentArr || [],
+                                mode: 'organisation',
+                            }
+                            newRows.push(newRow);
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            if (node) {
+                                const children = Array.isArray(node.children) ? node.children : [];
+                                Vue.set(node, "children", [...children, ...newRows]);
+                            } else {
+                                this.$message.error("Parent node not found in tree");
+                            }
+                        }
                     }
                 }
             } catch (error) {
                 this.$message.error("Some error occur")
                 console.error(error)
             }
+        },
+
+        async handleVoltageLevelConfirm() {
+            try {
+                const voltageLevel = this.$refs.voltageLevel
+                if(voltageLevel) {
+                    const {success, data} =await voltageLevel.saveVoltageLevel()
+                    if(success) {
+                        this.$message.success("Voltage Level saved successfully")
+                        this.signVoltageLevel = false
+                        let newRows = []
+                        if(this.organisationClientList && this.organisationClientList.length > 0) {
+                            const newRow = {
+                                mrid: data.voltageLevel.mrid,
+                                name: data.voltageLevel.name,
+                                parentId: this.parentOrganization.mrid,
+                                parentName: this.parentOrganization.name,
+                                parentArr: this.parentOrganization.parentArr || [],
+                                mode: 'voltageLevel',
+                            }
+                            newRows.push(newRow);
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            if (node) {
+                                const children = Array.isArray(node.children) ? node.children : [];
+                                Vue.set(node, "children", [...children, ...newRows]);
+                            } else {
+                                this.$message.error("Parent node not found in tree");
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
+        },
+
+        async handleBayConfirm() {
+            try {
+                const bay = this.$refs.bay
+                if(bay) {
+                    const {success, data} =await bay.saveBay()
+                    if(success) {
+                        this.$message.success("Bay saved successfully")
+                        this.signBay = false
+                        let newRows = []
+                        if(this.organisationClientList && this.organisationClientList.length > 0) {
+                            const newRow = {
+                                mrid: data.mrid,
+                                name: data.name,
+                                parentId: this.parentOrganization.mrid,
+                                parentName: this.parentOrganization.name,
+                                parentArr: this.parentOrganization.parentArr || [],
+                                mode: 'bay',
+                            }
+                            newRows.push(newRow);
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            if (node) {
+                                const children = Array.isArray(node.children) ? node.children : [];
+                                Vue.set(node, "children", [...children, ...newRows]);
+                            } else {
+                                this.$message.error("Parent node not found in tree");
+                            }
+                        }
+                    } else {
+                        this.$message.error("Failed to save bay")
+                    }
+                }
+            } catch (error) {
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
+        },
+
+        async handleTransformerConfirm() {
+            this.$message.success("Transformer saved successfully")
+            // Cần thêm logic để cập nhật lại cây nếu cần thiết
+            await this.$refs.transformer.saveAsset();
+            // this.signTransformer = false
+        },
+
+        async handleTransformerCancel() {
+            this.signTransformer = false
         },
 
         async downloadFromServer() {
@@ -1558,22 +1852,125 @@ export default {
         },
 
         async deleteDataClient(node) {
-            try {
-                const entity = await window.electronAPI.getSubstationEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                if (!entity.success) {
-                    this.$message.error("Entity not found");
+            if(node.children && node.children.length > 0) {
+                this.$message.error("Node has children, cannot delete");
+                return;
+            } else {
+                const checkDelete = await this.checkChildren(node)
+                if(checkDelete.success) {
+                    this.$message.error("Node has children, cannot delete");
                     return;
-                }
-                const deleteSign = await window.electronAPI.deleteSubstationEntityByMrid(entity.data);
-                if (!deleteSign.success) {
-                    this.$message.error("Delete data failed");
-                    return;
-                }
+                } else {
+                    try {
+                        if(node.mode == 'substation') {
+                        
+                            const entity = await window.electronAPI.getSubstationEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
+                            if (!entity.success) {
+                                this.$message.error("Entity not found");
+                                return;
+                            }
+                            const deleteSign = await window.electronAPI.deleteSubstationEntityByMrid(entity.data);
+                            console.log(deleteSign)
+                            if (!deleteSign.success) {
+                                this.$message.error("Delete data failed");
+                                return;
+                            }
 
-                this.$message.success("Delete data successfully");
-            } catch (error) {
-                this.$message.error("Some error occur when deleting data");
-                console.error(error);
+                            // ✅ Xóa node khỏi cây organisationClientList
+                            const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
+                            if (parentNode && Array.isArray(parentNode.children)) {
+                                const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
+                                if (index !== -1) {
+                                    parentNode.children.splice(index, 1); // Xóa khỏi mảng children
+                                    this.$message.success("Delete data successfully");
+                                } else {
+                                    this.$message.warning("Node not found in tree structure");
+                                }
+                            } else {
+                                this.$message.warning("Parent node not found in tree");
+                            }
+                        } else if(node.mode == 'organisation') {
+                            const entity = await window.electronAPI.getOrganisationEntityByMrid(node.mrid)
+                            if (!entity.success) {
+                                this.$message.error("Entity not found");
+                                return;
+                            }
+                            const deleteSign = await window.electronAPI.deleteParentOrganizationEntity(entity.data);
+                            console.log(deleteSign)
+                            if (!deleteSign.success) {
+                                this.$message.error("Delete data failed");
+                                return;
+                            }
+
+                            // ✅ Xóa node khỏi cây organisationClientList
+                            const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
+                            if (parentNode && Array.isArray(parentNode.children)) {
+                                const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
+                                if (index !== -1) {
+                                    parentNode.children.splice(index, 1); // Xóa khỏi mảng children
+                                    this.$message.success("Delete data successfully");
+                                } else {
+                                    this.$message.warning("Node not found in tree structure");
+                                }
+                            } else {
+                                this.$message.warning("Parent node not found in tree");
+                            }
+                        } else if(node.mode == 'voltageLevel') {
+                            const entity = await window.electronAPI.getVoltageLevelEntityByMrid(node.mrid)
+                            if (!entity.success) {
+                                this.$message.error("Entity not found");
+                                return;
+                            }
+                            const deleteSign = await window.electronAPI.deleteVoltageLevelEntityByMrid(entity.data);
+                            if (!deleteSign.success) {
+                                this.$message.error("Delete data failed");
+                                return;
+                            }
+
+                            // ✅ Xóa node khỏi cây organisationClientList
+                            const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
+                            if (parentNode && Array.isArray(parentNode.children)) {
+                                const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
+                                if (index !== -1) {
+                                    parentNode.children.splice(index, 1); // Xóa khỏi mảng children
+                                    this.$message.success("Delete data successfully");
+                                } else {
+                                    this.$message.warning("Node not found in tree structure");
+                                }
+                            } else {
+                                this.$message.warning("Parent node not found in tree");
+                            }
+                        } else if(node.mode == 'bay') {
+                            const entity = await window.electronAPI.getBayEntityByMrid(node.mrid)
+                            if (!entity.success) {
+                                this.$message.error("Entity not found");
+                                return;
+                            }
+                            const deleteSign = await window.electronAPI.deleteBayEntityByMrid(entity.data);
+                            if (!deleteSign.success) {
+                                this.$message.error("Delete data failed");
+                                return;
+                            }
+
+                            // ✅ Xóa node khỏi cây organisationClientList
+                            const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
+                            if (parentNode && Array.isArray(parentNode.children)) {
+                                const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
+                                if (index !== -1) {
+                                    parentNode.children.splice(index, 1); // Xóa khỏi mảng children
+                                    this.$message.success("Delete data successfully");
+                                } else {
+                                    this.$message.warning("Node not found in tree structure");
+                                }
+                            } else {
+                                this.$message.warning("Parent node not found in tree");
+                            }
+                        }
+                    } catch (error) {
+                        this.$message.error("Some error occur when deleting data");
+                        console.error(error);
+                    }
+                }
             }
         },
 
@@ -1659,6 +2056,88 @@ export default {
                     const organisation = this.$refs.organisation;
                     if (organisation) {
                         organisation.resetForm();
+                    }
+                });
+            } catch (error) {
+                this.parentOrganization = null
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
+        },
+
+        async showAddVoltageLevel(node) {
+            console.log(node)
+            try {
+                this.parentOrganization = node
+                this.signVoltageLevel = true
+                this.$nextTick(() => {
+                    const voltageLevel = this.$refs.voltageLevel;
+                    if (voltageLevel) {
+                        voltageLevel.resetForm();
+                    }
+                });
+            } catch (error) {
+                this.parentOrganization = null
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
+        },
+
+        async showAddBay(node) {
+            try {
+                this.parentOrganization = node
+                this.signBay = true
+                this.$nextTick(() => {
+                    const bay = this.$refs.bay;
+                    if (bay) {
+                        bay.resetForm();
+                    }
+                });
+            } catch (error) {
+                this.parentOrganization = null
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
+        },
+
+        async showAddTransformer(node) {
+            try {
+                this.locationId = null;
+                let psrId = null;
+                if(node.parentArr && node.parentArr.length >= 2) {
+                    psrId = node.parentArr[1].mrid;
+                } else {
+                    psrId = node.mrid;
+                }
+                const dataLoction = await window.electronAPI.getLocationByPowerSystemResourceMrid(psrId);
+                if(dataLoction.success) {
+                    this.locationId = dataLoction.data.mrid
+                } else {
+                    this.locationId = null
+                }
+                this.parentOrganization = node
+                this.signTransformer = true
+                this.$nextTick(() => {
+                    const transformer = this.$refs.transformer;
+                    if (transformer) {
+                        transformer.resetForm();
+                    }
+                });
+            } catch (error) {
+                this.parentOrganization = null
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
+        },
+
+        async showAddBay(node) {
+            try {
+                this.parentOrganization = node
+                this.signBay = true
+                this.$nextTick(() => {
+                    const bay = this.$refs.bay;
+                    if (bay) {
+                        bay.resetForm();
                     }
                 });
             } catch (error) {

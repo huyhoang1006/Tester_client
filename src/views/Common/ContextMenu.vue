@@ -21,13 +21,14 @@
                 <li v-if="this.selectedNode && this.selectedNode.mode == 'substation'" @click="addVoltageLevel">
                     <i class="fa-solid fa-plus"></i> Add voltage level
                 </li>
-                <li v-if="this.selectedNode && this.selectedNode.mode == 'voltageLevel'" @click="addBay">
+                <li v-if="this.selectedNode && (this.selectedNode.mode == 'voltageLevel' || this.selectedNode.mode == 'substation')" @click="addBay">
                     <i class="fa-solid fa-plus"></i> Add bay
                 </li>
-                <li class="has-submenu" v-if="this.selectedNode && (this.selectedNode.mode == 'bay' || this.selectedNode.mode == 'substation' || this.selectedNode.mode == 'organisation')" @click="addAsset">
+                <li class="has-submenu" v-if="this.selectedNode && (this.selectedNode.mode == 'bay' || this.selectedNode.mode == 'substation')">
                     <i class="fa-solid fa-plus"></i> Add asset
                     <ul class="submenu">
-                        <li><i class="fa-solid fa-bolt"></i> Add transformer</li>
+                        <li @click="addTransformer"><i class="fa-solid fa-bolt"></i> Add transformer</li>
+                        <li><i class="fa-solid fa-shield"></i> Add Bushing</li>
                         <li><i class="fa-solid fa-plug"></i> Add Breaker</li>
                         <li><i class="fa-solid fa-ruler"></i> Add CT</li>
                         <li><i class="fa-solid fa-bolt-lightning"></i> Add VT</li>
@@ -134,15 +135,19 @@ export default {
             this.closeContextMenu()
         },
         addVoltageLevel() {
-            this.$emit("show-addVoltageLevel", this.selectedNode.id)
+            this.$emit("show-addVoltageLevel", this.selectedNode)
             this.closeContextMenu()
         },
         addBay() {
-            this.$emit("show-addBay", this.selectedNode.id)
+            this.$emit("show-addBay", this.selectedNode)
+            this.closeContextMenu()
+        },
+        addTransformer() {
+            this.$emit("show-addTransformer", this.selectedNode)
             this.closeContextMenu()
         },
         addAsset() {
-            this.$emit("show-addAsset", this.selectedNode.id)
+            this.$emit("show-addAsset", this.selectedNode)
             this.closeContextMenu()
         }
     }

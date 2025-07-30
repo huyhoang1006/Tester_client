@@ -9,6 +9,7 @@ class ConfigurationEvent extends ActivityRecord {
         this.changed_location = null; // IdentifiedObject
         this.changed_asset = null; // String
         this.changed_organisation_role = null; // IdentifiedObject
+        this.changed_organisation = null; // String
         this.changed_person_role = null; // String
         this.changed_person = null; // IdentifiedObject
         this.changed_attachment = null; // String

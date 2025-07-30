@@ -10,11 +10,11 @@ export default {
         return {
             properties: new substationDto(),
             attachmentData : [],
-            personListData : this.personList.map(item => item.name),
-            locationListData : this.locationList.map(item => item.name),
+            personListData : this.personList,
+            locationListData : this.locationList,
             locationTemp : "",
             personTemp : "",
-            substatiion : null
+            substation : null
         }
     },
     computed: mapState(['user', 'selectedLocation']),
@@ -36,10 +36,14 @@ export default {
                 const { locationList, personList, dto, substation } = data
                 this.properties = dto
                 this.locationListData = locationList
+                console.log('Location List Data:', this.locationListData);
                 this.personListData = personList
-                this.locationTemp = this.properties.locationName || ""
-                this.personTemp = this.properties.personName || ""
+                this.locationTemp = this.properties.locationId || ""
+                this.personTemp = this.properties.personId || ""
                 this.substation = substation
+                if(this.properties.attachment && this.properties.attachment.path) {
+                    this.attachmentData = JSON.parse(this.properties.attachment.path)
+                }
             } catch (error) {
                 this.$message.error('Error loading locations: ' + error.message);
                 console.error('Error loading locations:', error);
@@ -47,13 +51,15 @@ export default {
         },
 
         resetForm() {
+            console.log(this.organisationId)
             this.properties = new substationDto()
             this.attachmentData = []
-            this.personListData = this.personList.map(item => item.name)
-            this.locationListData = this.locationList.map(item => item.name)
+            this.personListData = this.personList
+            this.locationListData = this.locationList
             this.locationTemp = ""
             this.personTemp = ""
         },
+        
         async saveSubstation() {
             if (this.properties.name === '') {
                 this.$message.error('Please enter the name of the substation')
@@ -275,6 +281,8 @@ export default {
                     dto.attachment.type = 'substation'
                     dto.attachment.id_foreign = dto.subsId
                 }
+            } else {
+                dto.attachment.path = JSON.stringify(this.attachmentData)
             } 
         },
 
@@ -401,16 +409,16 @@ export default {
         },
 
         async changeLocationName(value) {
-            console.log(value)
             try {
                 const index = this.locationListData.findIndex(loc => loc.mrid === value);
                 if (index !== -1) {
                     this.properties.locationName = this.locationListData[index].name;
                     this.properties.locationId = this.locationListData[index].mrid;
-                    const [streetAddressData, streetDetailData, townDetailData] = await Promise.all([
+                    const [streetDetailData, streetAddressData, townDetailData, dataPositionPoint] = await Promise.all([
                         window.electronAPI.getStreetDetailByLocationId(this.properties.locationId)
-                        , window.electronAPI.getStreetAddressByMrid(this.properties.locationId)
+                        , window.electronAPI.getStreetAddressByMrid(this.locationListData[index].main_address)
                         , window.electronAPI.getTownDetailByLocationId(this.properties.locationId)
+                        , window.electronAPI.getPositionPointByLocationId(this.properties.locationId)
                     ])
                     if (streetAddressData.success && streetAddressData.data) {
                         this.properties.streetAddressId = streetAddressData.data.mrid;
@@ -418,7 +426,7 @@ export default {
                         this.properties.streetAddressId = null;
                     }
                     if (streetDetailData.success && streetDetailData.data) {
-                        this.properties.street = streetDetailData.data.street || '';
+                        this.properties.street = streetDetailData.data.address_general || '';
                         this.properties.streetDetailId = streetDetailData.data.mrid;
                     } else {
                         this.properties.streetDetailId = null;
@@ -433,9 +441,33 @@ export default {
                     } else {
                         this.properties.townDetailId = null;
                     }
+                    
+                    if (dataPositionPoint.success && dataPositionPoint.data) {
+                        if(dataPositionPoint.data.length !== 0) {
+                            dataPositionPoint.data.forEach((element, index) => {
+                                const posX = {
+                                    id: element.mrid,
+                                    coor: element.x_position
+                                }
+                                const posY = {
+                                    id: element.mrid,
+                                    coor: element.y_position
+                                }
+                                const posZ = {
+                                    id: element.mrid,
+                                    coor: element.z_position
+                                }
+                                this.properties.positionPoints.x.push(posX);
+                                this.properties.positionPoints.y.push(posY);
+                                this.properties.positionPoints.z.push(posZ);
+                            });
+                        }
+                    } else {
+                        this.properties.positionPoints = {x: [], y: [], z: []};
+                    }
+
                 } else {
                     this.properties.locationName = value;
-                    this.properties.locationId = null;
                 }
             } catch (error) {
                 this.$message.error('Error changing location name: ' + error.message);
@@ -454,18 +486,21 @@ export default {
                         window.electronAPI.getElectronicAddressByMrid(this.personListData[index].electronic_address),
                         window.electronAPI.getPersonRoleByPersonId(this.properties.personId)
                     ])
-                    if (telephoneNumberData.success && electronicAddressData.success && personRoleData.success) {
-                        this.properties.telephoneNumber = telephoneNumberData.data || '';
-                        this.properties.electronicAddress = electronicAddressData.data || '';
-                        this.properties.personRole = personRoleData.data || '';
+                    if (telephoneNumberData.success && telephoneNumberData.data) {
+                        this.properties.phoneNumber = telephoneNumberData.data.itu_phone || '';
                         this.properties.telephoneNumberId = telephoneNumberData.data.mrid || null;
-                        this.properties.electronicAddressId = electronicAddressData.data.mrid || null;
-                        this.properties.personRoleId = personRoleData.data.mrid || null;
-                    } else {
-                        this.properties.telephoneNumber = '';
-                        this.properties.electronicAddress = '';
-                        this.properties.personRole = '';
                     }
+                    if (electronicAddressData.success && electronicAddressData.data) {
+                        this.properties.email = electronicAddressData.data.email || '';
+                        this.properties.fax = electronicAddressData.data.fax || null;
+                        this.properties.electronicAddressId = electronicAddressData.data.mrid || null;
+                    }
+                    if (personRoleData.success && personRoleData.data) {
+                        this.properties.personRole = personRoleData.data.department || '';
+                        this.properties.position = personRoleData.data.position || '';
+                        this.properties.personRoleId = personRoleData.data.mrid || null;
+                    } 
+                    
                 } else {
                     this.properties.personName = value;
                     this.properties.personId = null

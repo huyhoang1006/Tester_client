@@ -17,6 +17,8 @@
                     <i style="color: #FDD835;" class="fa-solid fa-folder-open mgr-10 mgl-10"></i>
                     <span v-if="tab.mode == 'organisation'" class="tab-label">{{ tab.name }}</span>
                     <span v-else-if="tab.mode == 'substation'" class="tab-label">{{ tab.name }}</span>
+                    <span v-else-if="tab.mode == 'voltageLevel'" class="tab-label">{{ tab.name }}</span>
+                    <span v-else-if="tab.mode == 'bay'" class="tab-label">{{ tab.name }}</span>
                     <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.serial_no }}</span>
                     <span v-else-if="tab.mode == 'job'" class="tab-label">{{ tab.name }}</span>
                     <span v-else-if="tab.mode == 'test'" class="tab-label">{{ tab.name }}</span>
@@ -27,7 +29,7 @@
         </div>
         <div class="tabs-content">
             <div class="mgr-20 mgt-20 mgb-20 mgl-20" v-for="(item) in tabs" :key="item.mrid">
-                <component mode="update" @reload="loadData" v-show="activeTab.mrid === item.mrid" ref="componentLoadData" :sideData="sideSign" :is="checkTab(item)" :organisationId="item.parrentId"></component>
+                <component mode="update" @reload="loadData" v-show="activeTab.mrid === item.mrid" ref="componentLoadData" :sideData="sideSign" :is="checkTab(item)" :organisationId="item.parentId"></component>
             </div>
         </div>
     </div>
@@ -41,6 +43,10 @@ import OwnerView from '@/views/OwnerViewData/index.vue'
 import Transformer from '@/views/AssetView/Transformer'
 import OrganisationView from '@/views/Organisation/index.vue'
 import * as subsMapper from '@/views/Mapping/Substation/index'
+import * as orgMapper from '@/views/Mapping/Organisation/index'
+import * as voltageMapper from '@/views/Mapping/VoltageLevel/index'
+import VoltageLevel from '@/views/VoltageLevel/index.vue'
+import Bay from '@/views/Bay/index.vue'
 
 export default {
     name : "Tabs",
@@ -48,7 +54,9 @@ export default {
         LocationViewData,
         OwnerView,
         Transformer,
-        OrganisationView
+        OrganisationView,
+        VoltageLevel,
+        Bay
     },
     model: {
         prop: 'value',
@@ -115,14 +123,34 @@ export default {
                         return
                     }
                     this.$refs.componentLoadData[index].loadData(data)
-                } else {
-                    //
+                } else if(tab.mode === 'organisation') {
+                    const data = await window.electronAPI.getOrganisationEntityByMrid(tab.mrid)
+                    if(data.success) {
+                        const orgEntity = orgMapper.OrgEntityToOrgDto(data.data)
+                        this.$refs.componentLoadData[index].loadData(orgEntity)
+                    } else {
+                        this.$message.error("Failed to load organisation data");
+                    }
+                } else if(tab.mode === 'voltageLevel') {
+                    const data = await window.electronAPI.getVoltageLevelEntityByMrid(tab.mrid)
+                    if(data.success) {
+                        const voltageLevelDto = voltageMapper.volEntityToVolDto(data.data)
+                        this.$refs.componentLoadData[index].loadData(voltageLevelDto)
+                    } else {
+                        this.$message.error("Failed to load voltage level data");
+                    }
+                } else if(tab.mode === 'bay') {
+                    const data = await window.electronAPI.getBayEntityByMrid(tab.mrid)
+                    if(data.success) {
+                        this.$refs.componentLoadData[index].loadData(data.data)
+                    } else {
+                        this.$message.error("Failed to load bay data");
+                    }
                 }
             } catch (error) {
                 console.error("Error loading data:", error);
             }
         },
-        
         async selectTab(tab, index) {
             try {
                 this.indexTab = index
@@ -175,6 +203,10 @@ export default {
                 return 'LocationViewData'
             } else if(tab.mode == 'organisation') {
                 return 'OrganisationView'
+            } else if(tab.mode == 'voltageLevel') {
+                return 'VoltageLevel'
+            } else if(tab.mode == 'bay') {
+                return 'Bay'
             }
         },
         saveCtrlS() {

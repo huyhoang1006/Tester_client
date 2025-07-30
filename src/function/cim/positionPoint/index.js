@@ -123,63 +123,91 @@ export const insertPositionPointArray = async (positionPoints) => {
 }
 
 
-export const insertPositionPointArrayTransaction = async (positionPoints, dbsql) => {
+export const insertPositionPointArrayTransaction = async (positionPoints, locationId, dbsql) => {
     return new Promise((resolve, reject) => {
-        if (!Array.isArray(positionPoints) || positionPoints.length === 0) {
-            return reject({ success: false, message: 'Position points array is empty or invalid' })
+        if (!Array.isArray(positionPoints)) {
+            return reject({ success: false, message: 'Invalid positionPoints input' });
         }
 
-        let completedCount = 0
-        let hasError = false
-        const errors = []
-
-        positionPoints.forEach((positionPoint, index) => {
-            if (hasError) return
-
-            dbsql.run(
-                `INSERT INTO position_point(mrid, group_number, sequence_number, x_position, y_position,
-                 z_position, location)
-                 VALUES (?, ?, ?, ?, ?, ?, ?)
-                 ON CONFLICT(mrid) DO UPDATE SET
-                    group_number = excluded.group_number,
-                    sequence_number = excluded.sequence_number,
-                    x_position = excluded.x_position,
-                    y_position = excluded.y_position,
-                    z_position = excluded.z_position,
-                    location = excluded.location`,
-                [
-                    positionPoint.mrid,
-                    positionPoint.group_number,
-                    positionPoint.sequence_number,
-                    positionPoint.x_position,
-                    positionPoint.y_position,
-                    positionPoint.z_position,
-                    positionPoint.location
-                ],
-                function (err) {
-                    if (err) {
-                        hasError = true
-                        errors.push({ index, error: err, mrid: positionPoint.mrid })
-                        return reject({ 
-                            success: false, 
-                            err: errors, 
-                            message: `Insert position point array failed at index ${index}` 
-                        })
-                    }
-
-                    completedCount++
-                    if (completedCount === positionPoints.length) {
-                        return resolve({ 
-                            success: true, 
-                            data: positionPoints, 
-                            message: `Insert ${positionPoints.length} position points completed` 
-                        })
-                    }
+        dbsql.all(
+            "SELECT mrid FROM position_point WHERE location = ?",
+            [locationId],
+            (err, rows) => {
+                if (err) {
+                    return reject({ success: false, err, message: 'Failed to fetch existing position points' });
                 }
-            )
-        })
-    })
-}
+
+                const existingMrids = rows.map(row => row.mrid);
+                const incomingMrids = positionPoints.map(pp => pp.mrid);
+
+                // Xoá các bản ghi không còn trong mảng mới
+                const mridsToDelete = existingMrids.filter(mrid => !incomingMrids.includes(mrid));
+                for (const mrid of mridsToDelete) {
+                    dbsql.run("DELETE FROM position_point WHERE mrid = ?", [mrid]);
+                }
+
+                let completedCount = 0;
+                let hasError = false;
+                const errors = [];
+
+                if (positionPoints.length === 0) {
+                    return resolve({ success: true, deleted: mridsToDelete, updated: [], inserted: [], message: 'Sync completed with only deletion' });
+                }
+
+                const inserted = [];
+                const updated = [];
+
+                positionPoints.forEach((pp, index) => {
+                    dbsql.run(
+                        `INSERT INTO position_point(mrid, group_number, sequence_number, x_position, y_position, z_position, location)
+                         VALUES (?, ?, ?, ?, ?, ?, ?)
+                         ON CONFLICT(mrid) DO UPDATE SET
+                            group_number = excluded.group_number,
+                            sequence_number = excluded.sequence_number,
+                            x_position = excluded.x_position,
+                            y_position = excluded.y_position,
+                            z_position = excluded.z_position,
+                            location = excluded.location`,
+                        [
+                            pp.mrid,
+                            pp.group_number,
+                            pp.sequence_number,
+                            pp.x_position,
+                            pp.y_position,
+                            pp.z_position,
+                            locationId
+                        ],
+                        function (err) {
+                            if (err) {
+                                hasError = true;
+                                errors.push({ index, error: err, mrid: pp.mrid });
+                                return reject({ success: false, err: errors, message: 'Insert/Update failed' });
+                            }
+
+                            if (existingMrids.includes(pp.mrid)) {
+                                updated.push(pp.mrid);
+                            } else {
+                                inserted.push(pp.mrid);
+                            }
+
+                            completedCount++;
+                            if (completedCount === positionPoints.length) {
+                                return resolve({
+                                    success: true,
+                                    inserted,
+                                    updated,
+                                    deleted: mridsToDelete,
+                                    message: `Sync completed: ${inserted.length} inserted, ${updated.length} updated, ${mridsToDelete.length} deleted`
+                                });
+                            }
+                        }
+                    );
+                });
+            }
+        );
+    });
+};
+
 
 
 export const updatePositionPointArrayByIdTransaction = async (positionPoints, dbsql) => {
