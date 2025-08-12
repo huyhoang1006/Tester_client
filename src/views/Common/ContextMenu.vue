@@ -28,11 +28,11 @@
                     <i class="fa-solid fa-plus"></i> Add asset
                     <ul class="submenu">
                         <li @click="addTransformer"><i class="fa-solid fa-bolt"></i> Add transformer</li>
-                        <li><i class="fa-solid fa-shield"></i> Add Bushing</li>
+                        <li @click="addBushing"><i class="fa-solid fa-shield"></i> Add Bushing</li>
                         <li><i class="fa-solid fa-plug"></i> Add Breaker</li>
                         <li><i class="fa-solid fa-ruler"></i> Add CT</li>
                         <li><i class="fa-solid fa-bolt-lightning"></i> Add VT</li>
-                        <li><i class="fa-solid fa-shield-halved"></i> Add Surge Arrester</li>
+                        <li @click="addSurgeArrester"><i class="fa-solid fa-shield-halved"></i> Add Surge Arrester</li>
                         <li><i class="fa-solid fa-route"></i> Add Power Cable</li>
                         <li><i class="fa-solid fa-plug-circle-xmark"></i> Add Disconnector</li>
                     </ul>
@@ -144,6 +144,14 @@ export default {
         },
         addTransformer() {
             this.$emit("show-addTransformer", this.selectedNode)
+            this.closeContextMenu()
+        },
+        addBushing() {
+            this.$emit("show-addBushing", this.selectedNode)
+            this.closeContextMenu()
+        },
+        addSurgeArrester() {
+            this.$emit("show-addSurgeArrester", this.selectedNode)
             this.closeContextMenu()
         },
         addAsset() {

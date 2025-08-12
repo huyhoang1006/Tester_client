@@ -3,8 +3,10 @@ import TransformerDto from "@/views/Dto/Transformer"
 import TapChangersDto from "@/views/Dto/TapChanger"
 import uuid from "@/utils/uuid"
 import * as transformerMapping from "@/views/Mapping/Transformer"
-import OldPowerTransformerInfo from "@/views/Cim/OldPowerTransformerInfo"
 import OldTransformerEndInfo from "@/views/Cim/OldTransformerEndInfo"
+import { WindingConnection } from "@/views/Enum/WindingConnection"
+import { PhaseCode } from "@/views/Enum/PhaseCode"
+import BushingDto from "@/views/Dto/Bushing"
 export default {
     data() {
         return {
@@ -23,319 +25,34 @@ export default {
                 oldTransformerEndInfo: [],
                 shortCircuitTestTransformerEndInfo: [],
             },
-            bushings_config: {
-                id: null,
-                asset_type: {
-                    prim: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    sec: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    tert: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    NameOfPos : {
-                        prim : {},
-                        sec : {},
-                        tert : {}
-                    },
-                    DataShow : {
-                        prim : {
-                            fi : true,
-                            se : true,
-                            th : false,
-                            fo : false
-                        },
-                        sec : {
-                            fi : true,
-                            se : false,
-                            th : false,
-                            fo : false
-                        },
-                        tert : {
-                            fi : false,
-                            se : false,
-                            th : false,
-                            fo : false
-                        }
-                    }
-                },
-                serial_no: {
-                    prim: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    sec: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    tert: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    }
-                },
-                manufacturer: {
-                    prim: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    sec: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    tert: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    }
-                },
-                manufacturer_type: {
-                    prim: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    sec: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    tert: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    }
-                },
-                manufacturer_year: {
-                    prim: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    sec: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    tert: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    }
-                },
-                insull_level: {
-                    prim: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    sec: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    tert: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    }
-                },
-                voltage_gr: {
-                    prim: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    sec: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    tert: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    }
-                },
-                max_sys_voltage: {
-                    prim: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    sec: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        o: ''
-                    },
-                    tert: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    }
-                },
-                rate_current: {
-                    prim: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    sec: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    tert: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    }
-                },
-                df_c1: {
-                    prim: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    sec: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    tert: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    }
-                },
-                cap_c1: {
-                    prim: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    sec: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    tert: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    }
-                },
-                df_c2: {
-                    prim: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    sec: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    tert: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    }
-                },
-                cap_c2: {
-                    prim: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    sec: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    tert: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    }
-                },
-                insulation_type: {
-                    prim: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    sec: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    },
-                    tert: {
-                        fi: '',
-                        se: '',
-                        th: '',
-                        fo: ''
-                    }
-                }
+            attachmentData : [],
+            bushing_data: new BushingDto(),
+            surge_arrester: {
+                prim: [],
+                sec: [],
+                tert: []
             },
-            config: '',
             disabled : false
         }
     },
-    async beforeMount() {
+    watch: {
+        'transformerDto.winding_configuration.vector_group': {
+            deep : true,
+            immediate: true,
+            handler: 'changeDataBushing'
+        },
+        'transformerDto.properties.type': {
+            deep : true,
+            immediate: true,
+            handler: 'changeDataBushing'
+        },
+
+        'transformerDto.winding_configuration.phases': {
+            deep : true,
+            immediate: true,
+            handler: 'changeDataBushing'
+        },
+
     },
     methods: {
         getAssetType(data) {
@@ -392,7 +109,6 @@ export default {
             }
             for (let [index, item] of this.transformerDto.ratings.current_ratings.entries()) {
                 if(value !== this.$constant.THREE_WINDING) {
-                    console.log("check")
                     if(item.tert !== undefined) {
                         this.transformerDto.ratings.current_ratings[index].tert.mrid = ''
                         this.transformerDto.ratings.current_ratings[index].tert.value = ''
@@ -431,6 +147,7 @@ export default {
                     const data = JSON.parse(JSON.stringify(this.checkTransformerDto(this.transformerDto)));
                     const entity = transformerMapping.transformerDtoToEntity(data);
                     console.log(entity)
+                    console.log(this.attachmentData)
                     return true;
                     
                 } else {
@@ -446,6 +163,7 @@ export default {
                     type: 'error',
                     message: "An error occurred while saving the asset."
                 });
+                return false;
             }
         },
 
@@ -467,6 +185,7 @@ export default {
             this.checkOther(data)
             return data;
         },
+
         checkPsrId() {
             if(this.parent.mrid !== null && this.parent.mrid !== '') {
                 this.transformerDto.psrId = this.parent.mrid
@@ -483,7 +202,7 @@ export default {
                         data.oldTransformerEndInfo.push(transformerEndInfo);
                     }
                 } else {
-                    for (let i = 1; i < 2; i++) {
+                    for (let i = 1; i <= 2; i++) {
                         const transformerEndInfo = new OldTransformerEndInfo();
                         transformerEndInfo.mrid = uuid.newUuid();
                         transformerEndInfo.end_number = i
@@ -735,6 +454,1188 @@ export default {
             }
             if(data.others.total_weight.mrid === null || data.others.total_weight.mrid === '') {
                 data.others.total_weight.mrid = uuid.newUuid()
+            }
+        },
+
+        changeDataBushing() {
+            const bushingTemplate = {
+                pos: '',
+                asset_type: '',
+                serial_no: '',
+                manufacturer: '',
+                manufacturer_type: '',
+                manufacturer_year: '',
+                insulation_level: {
+                    value: '',
+                    label: 'kV',
+                    unit: 'k|V'
+                },
+                voltage_l_ground: {
+                    value: '',
+                    label: 'kV',
+                    unit: 'k|V'
+                },
+                max_system_voltage: {
+                    value: '',
+                    label: 'kV',
+                    unit: 'k|V'
+                },
+                rate_current: {
+                    value: '',
+                    label: 'A',
+                    unit: 'A'
+                },
+                df_c1: {
+                    value: '',
+                    label: '%',
+                    unit: '%'
+                },
+                cap_c1: {
+                    value: '',
+                    label: 'pF',
+                    unit: 'p|F'
+                },
+                df_c2: {
+                    value: '',
+                    label: '%',
+                    unit: '%'
+                },
+                cap_c2: {
+                    value: '',
+                    label: 'pF',
+                    unit: 'p|F'
+                },
+                insulation_type: ''
+            }
+            if(this.transformerDto.properties.type === this.$constant.TWO_WINDING) {
+                if(this.transformerDto.winding_configuration.phases === '1') {
+                    this.bushing_data.tert = []
+                    if(this.bushing_data.prim.length === 0) {
+                        for(let i = 1; i <= 2; i++) {
+                            const bushing = Object.assign({}, bushingTemplate);
+                            bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                            this.bushing_data.prim.push(bushing);
+                        }
+                    } else {
+                        if(this.bushing_data.prim.length < 2) {
+                            for(let i = this.bushing_data.prim.length + 1; i <= 2; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.prim.push(bushing);
+                            }
+                        } else if(this.bushing_data.prim.length > 2) {
+                            for(let i = 3; i <= this.bushing_data.prim.length; i++) {
+                                this.bushing_data.prim.splice(i-1,1);
+                            }
+                        }
+                        for(let i = 1; i <= this.bushing_data.prim.length; i++) {
+                            this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        }
+                    }
+                    if(this.bushing_data.sec.length === 0) {
+                        for(let i = 1; i <= 2; i++) {
+                            const bushing = Object.assign({}, bushingTemplate);
+                            bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                            this.bushing_data.sec.push(bushing);
+                        }
+                    } else {
+                        if(this.bushing_data.sec.length < 2) {
+                            for(let i = this.bushing_data.sec.length + 1; i <= 2; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.sec.push(bushing);
+                            }
+                        } else if(this.bushing_data.sec.length > 2) {
+                            for(let i = 3; i <= this.bushing_data.sec.length; i++) {
+                                this.bushing_data.sec.splice(i-1,1);
+                            }
+                        }
+                        for(let i = 1; i <= this.bushing_data.sec.length; i++) {
+                            this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        }
+                    }
+                } else if(this.transformerDto.winding_configuration.phases === '3') {
+                    this.bushing_data.tert = []
+                    if(this.bushing_data.prim.length === 0) {
+                        if(this.transformerDto.winding_configuration.vector_group.prim === WindingConnection.Yn) {
+                            for(let i = 1; i <= 4; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.prim.push(bushing);
+                            }
+                        } else {
+                            for(let i = 1; i <= 3; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.prim.push(bushing);
+                            }
+                        }
+                    } else {
+                        if(this.transformerDto.winding_configuration.vector_group.prim === WindingConnection.Yn || this.transformerDto.winding_configuration.vector_group.prim === '') {
+                            if(this.bushing_data.prim.length < 4) {
+                                for(let i = this.bushing_data.prim.length + 1; i <= 4; i++) {
+                                    const bushing = Object.assign({}, bushingTemplate);
+                                    bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                    this.bushing_data.prim.push(bushing);
+                                }
+                                for(let i = 1; i <= this.bushing_data.prim.length; i++) {
+                                    this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                }
+                            } else {
+                                for(let i = 1; i <= this.bushing_data.prim.length; i++) {
+                                    this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                }
+                            }
+                        } else {
+                            if(this.bushing_data.prim.length < 3) {
+                                for(let i = this.bushing_data.prim.length + 1; i <= 3; i++) {
+                                    const bushing = Object.assign({}, bushingTemplate);
+                                    bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                    this.bushing_data.prim.push(bushing);
+                                }
+                                for(let i = 1; i <= this.bushing_data.prim.length; i++) {
+                                    this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                }
+                            } else {
+                                if(this.bushing_data.prim.length === 3) {
+                                    for(let i = 1; i <= this.bushing_data.prim.length; i++) {
+                                        this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                    }
+                                } else {
+                                    for(let i = 1; i <= 3; i++) {
+                                        this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                    }
+                                    this.bushing_data.prim.splice(3,1);
+                                }
+                            }
+                        }
+                    }
+                    if(this.bushing_data.sec.length === 0) {
+                        if(this.transformerDto.winding_configuration.vector_group.sec.i === WindingConnection.Yn) {
+                            for(let i = 1; i <= 4; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.sec.push(bushing);
+                            }
+                        } else {
+                            for(let i = 1; i <= 3; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.sec.push(bushing);
+                            }
+                        }
+                    } else {
+                        if(this.transformerDto.winding_configuration.vector_group.sec.i === WindingConnection.Yn || this.transformerDto.winding_configuration.vector_group.sec.i === '') {
+                            if(this.bushing_data.sec.length < 4) {
+                                for(let i = this.bushing_data.sec.length + 1; i <= 4; i++) {
+                                    const bushing = Object.assign({}, bushingTemplate);
+                                    bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                    this.bushing_data.sec.push(bushing);
+                                }
+                                for(let i = 1; i <= this.bushing_data.sec.length; i++) {
+                                    this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                }
+                            } else {
+                                for(let i = 1; i <= this.bushing_data.sec.length; i++) {
+                                    this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                }
+                            }
+                        } else {
+                            if(this.bushing_data.sec.length < 3) {
+                                for(let i = this.bushing_data.sec.length + 1; i <= 3; i++) {
+                                    const bushing = Object.assign({}, bushingTemplate);
+                                    bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                    this.bushing_data.sec.push(bushing);
+                                }
+                                for(let i = 1; i <= this.bushing_data.sec.length; i++) {
+                                    this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                }
+                            } else {
+                                if(this.bushing_data.sec.length === 3) {
+                                    for(let i = 1; i <= this.bushing_data.sec.length; i++) {
+                                        this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                    }
+                                } else {
+                                    for(let i = 1; i <= 3; i++) {
+                                        this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                    }
+                                    this.bushing_data.sec.splice(3,1);
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if(this.transformerDto.properties.type === this.$constant.THREE_WINDING) {
+                if(this.transformerDto.winding_configuration.phases === '1') {
+                    if(this.bushing_data.prim.length === 0) {   
+                        for(let i = 1; i <= 2; i++) {
+                            const bushing = Object.assign({}, bushingTemplate);
+                            bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                            this.bushing_data.prim.push(bushing);
+                        }
+                    } else {
+                        if(this.bushing_data.prim.length < 2) {
+                            for(let i = this.bushing_data.prim.length + 1; i <= 2; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.prim.push(bushing);
+                            }
+                        } else if(this.bushing_data.prim.length > 2) {
+                            for(let i = 3; i <= this.bushing_data.prim.length; i++) {
+                                this.bushing_data.prim.splice(i-1,1);
+                            }
+                        }
+                        for(let i = 1; i <= this.bushing_data.prim.length; i++) {
+                            this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        }
+                    }
+                    if(this.bushing_data.sec.length === 0) {
+                        for(let i = 1; i <= 2; i++) {
+                            const bushing = Object.assign({}, bushingTemplate);
+                            bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                            this.bushing_data.sec.push(bushing);
+                        }
+                    }
+                    else {
+                        if(this.bushing_data.sec.length < 2) {
+                            for(let i = this.bushing_data.sec.length + 1; i <= 2; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.sec.push(bushing);
+                            }
+                        } else if(this.bushing_data.sec.length > 2) {
+                            for(let i = 3; i <= this.bushing_data.sec.length; i++) {
+                                this.bushing_data.sec.splice(i-1,1);
+                            }
+                        }
+                        for(let i = 1; i <= this.bushing_data.sec.length; i++) {
+                            this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        }
+                    }
+                    if(this.bushing_data.tert.length === 0) {
+                        for(let i = 1; i <= 2; i++) {
+                            const bushing = Object.assign({}, bushingTemplate);
+                            bushing.pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                            this.bushing_data.tert.push(bushing);
+                        }
+                    }
+                    else {
+                        if(this.bushing_data.tert.length < 2) {
+                            for(let i = this.bushing_data.tert.length + 1; i <= 2; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.tert.push(bushing);
+                            }
+                        } else if(this.bushing_data.tert.length > 2) {
+                            for(let i = 3; i <= this.bushing_data.tert.length; i++) {
+                                this.bushing_data.tert.splice(i-1,1);
+                            }
+                        }
+                        for(let i = 1; i <= this.bushing_data.tert.length; i++) {
+                            this.bushing_data.tert[i-1].pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        }
+                    }
+                } else if(this.transformerDto.winding_configuration.phases === '3') {
+                    if(this.bushing_data.prim.length === 0) {
+                        if(this.transformerDto.winding_configuration.vector_group.prim === WindingConnection.Yn) {
+                            for(let i = 1; i <= 4; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.prim.push(bushing);
+                            }
+                        } else {
+                            for(let i = 1; i <= 3; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.prim.push(bushing);
+                            }
+                        }
+                    } else {
+                        if(this.transformerDto.winding_configuration.vector_group.prim === WindingConnection.Yn || this.transformerDto.winding_configuration.vector_group.prim === '') {
+                            if(this.bushing_data.prim.length < 4) {
+                                for(let i = this.bushing_data.prim.length + 1; i <= 4; i++) {
+                                    const bushing = Object.assign({}, bushingTemplate);
+                                    bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                    this.bushing_data.prim.push(bushing);
+                                }
+                            }
+                            for(let i = 1; i <= this.bushing_data.prim.length; i++) {
+                                this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                            }
+                        } else {
+                            if(this.bushing_data.prim.length < 3) {
+                                for(let i = this.bushing_data.prim.length + 1; i <= 3; i++) {
+                                    const bushing = Object.assign({}, bushingTemplate);
+                                    bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                    this.bushing_data.prim.push(bushing);
+                                }
+                                for(let i = 1; i <= this.bushing_data.prim.length; i++) {
+                                    this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                }
+                            } else {
+                                if(this.bushing_data.prim.length === 3) {
+                                    for(let i = 1; i <= this.bushing_data.prim.length; i++) {
+                                        this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                    }
+                                } else {
+                                    for(let i = 1; i <= 3; i++) {
+                                        this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                    }
+                                    this.bushing_data.prim.splice(3,1);
+                                }
+                            }
+                        }
+                    }
+                    if(this.bushing_data.sec.length === 0) {
+                        if(this.transformerDto.winding_configuration.vector_group.sec.i === WindingConnection.Yn || this.transformerDto.winding_configuration.vector_group.sec.i === '' || this.transformerDto.winding_configuration.vector_group.sec.i === WindingConnection.Zn) {
+                            for(let i = 1; i <= 4; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.sec.push(bushing);
+                            }
+                        } else {
+                            for(let i = 1; i <= 3; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.sec.push(bushing);
+                            }
+                        }
+                    }
+                    else {
+                        if(this.transformerDto.winding_configuration.vector_group.sec.i === WindingConnection.Yn || this.transformerDto.winding_configuration.vector_group.prim === '' || this.transformerDto.winding_configuration.vector_group.sec.i === WindingConnection.Zn) {
+                            if(this.bushing_data.sec.length < 4) {
+                                for(let i = this.bushing_data.sec.length + 1; i <= 4; i++) {
+                                    const bushing = Object.assign({}, bushingTemplate);
+                                    bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                    this.bushing_data.sec.push(bushing);
+                                }
+                            }
+                            for(let i = 1; i <= this.bushing_data.sec.length; i++) {
+                                this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                            }
+                        } else {
+                            if(this.bushing_data.sec.length < 3) {
+                                for(let i = this.bushing_data.sec.length + 1; i <= 3; i++) {
+                                    const bushing = Object.assign({}, bushingTemplate);
+                                    bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                    this.bushing_data.sec.push(bushing);
+                                }
+                                for(let i = 1; i <= this.bushing_data.sec.length; i++) {
+                                    this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                }
+                            } else {
+                                if(this.bushing_data.sec.length === 3) {
+                                    for(let i = 1; i <= this.bushing_data.sec.length; i++) {
+                                        this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                    }
+                                } else {
+                                    for(let i = 1; i <= 3; i++) {
+                                        this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                    }
+                                    this.bushing_data.sec.splice(3,1);
+                                }
+                            }
+                        }
+                    }
+                    if(this.bushing_data.tert.length === 0) {
+                        if(this.transformerDto.winding_configuration.vector_group.tert.i === WindingConnection.Yn || this.transformerDto.winding_configuration.vector_group.tert.i === '' || this.transformerDto.winding_configuration.vector_group.tert.i === WindingConnection.Zn) {
+                            for(let i = 1; i <= 4; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.tert.push(bushing);
+                            }
+                        } else {
+                            for(let i = 1; i <= 3; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.tert.push(bushing);
+                            }
+                        }
+                    }
+                    else {
+                        if(this.transformerDto.winding_configuration.vector_group.tert.i === WindingConnection.Yn || this.transformerDto.winding_configuration.vector_group.tert.i === '' || this.transformerDto.winding_configuration.vector_group.tert.i === WindingConnection.Zn) {
+                            if(this.bushing_data.tert.length < 4) {
+                                for(let i = this.bushing_data.tert.length + 1; i <= 4; i++) {
+                                    const bushing = Object.assign({}, bushingTemplate);
+                                    bushing.pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                    this.bushing_data.tert.push(bushing);
+                                }
+                            }
+                            for(let i = 1; i <= this.bushing_data.tert.length; i++) {
+                                this.bushing_data.tert[i-1].pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                            }
+                        } else {
+                            if(this.bushing_data.tert.length < 3) {
+                                for(let i = this.bushing_data.tert.length + 1; i <= 3; i++) {
+                                    const bushing = Object.assign({}, bushingTemplate);
+                                    bushing.pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                    this.bushing_data.tert.push(bushing);
+                                }
+                                for(let i = 1; i <= this.bushing_data.tert.length; i++) {
+                                    this.bushing_data.tert[i-1].pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                }
+                            } else {
+                                if(this.bushing_data.tert.length === 3) {
+                                    for(let i = 1; i <= this.bushing_data.tert.length; i++) {
+                                        this.bushing_data.tert[i-1].pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                    }
+                                } else {
+                                    for(let i = 1; i <= 3; i++) {
+                                        this.bushing_data.tert[i-1].pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                    }
+                                    this.bushing_data.tert.splice(3,1);
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if(this.transformerDto.properties.type === this.$constant.WITH_TERT) {
+                if(this.transformerDto.winding_configuration.phases === '1') {
+                    if(this.bushing_data.prim.length === 0) {
+                        for(let i = 1; i <= 2; i++) {
+                            const bushing = Object.assign({}, bushingTemplate);
+                            bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                            this.bushing_data.prim.push(bushing);
+                        }
+                    } else {
+                        if(this.bushing_data.prim.length < 2) {
+                            for(let i = this.bushing_data.prim.length + 1; i <= 2; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.prim.push(bushing);
+                            }
+                        } else if(this.bushing_data.prim.length > 2) {
+                            for(let i = 3; i <= this.bushing_data.prim.length; i++) {
+                                this.bushing_data.prim.splice(i-1,1);
+                            }
+                        }
+                        for(let i = 1; i <= this.bushing_data.prim.length; i++) {
+                            this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        }
+                    }
+                    if(this.bushing_data.sec.length === 0) {
+                        for(let i = 1; i <= 1; i++) {
+                            const bushing = Object.assign({}, bushingTemplate);
+                            bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                            this.bushing_data.sec.push(bushing);
+                        }
+                    } else {
+                        if(this.bushing_data.sec.length < 1) {
+                            for(let i = this.bushing_data.sec.length + 1; i <= 1; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.sec.push(bushing);
+                            }
+                        } else if(this.bushing_data.sec.length > 1) {
+                            for(let i = 2; i <= this.bushing_data.sec.length; i++) {
+                                this.bushing_data.sec.splice(i-1,1);
+                            }
+                        }
+                        for(let i = 1; i <= this.bushing_data.sec.length; i++) {
+                            this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        }
+                    }
+                    if(this.bushing_data.tert.length === 0) {
+                        for(let i = 1; i <= 2; i++) {
+                            const bushing = Object.assign({}, bushingTemplate);
+                            bushing.pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                            this.bushing_data.tert.push(bushing);
+                        }
+                    }
+                    else {
+                        if(this.bushing_data.tert.length < 2) {
+                            for(let i = this.bushing_data.tert.length + 1; i <= 2; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.tert.push(bushing);
+                            }
+                        } else if(this.bushing_data.tert.length > 2) {
+                            for(let i = 3; i <= this.bushing_data.tert.length; i++) {
+                                this.bushing_data.tert.splice(i-1,1);
+                            }
+                        }
+                        for(let i = 1; i <= this.bushing_data.tert.length; i++) {
+                            this.bushing_data.tert[i-1].pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        }
+                    }
+                } else if(this.transformerDto.winding_configuration.phases === '3') {
+                    if(this.bushing_data.prim.length === 0) {
+                        for(let i = 1; i <= 4; i++) {
+                            const bushing = Object.assign({}, bushingTemplate);
+                            bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                            this.bushing_data.prim.push(bushing);
+                        }
+                    } else {
+                        if(this.bushing_data.prim.length < 4) {
+                            for(let i = this.bushing_data.prim.length + 1; i <= 4; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.prim.push(bushing);
+                            }
+                        }
+                        for(let i = 1; i <= this.bushing_data.prim.length; i++) {
+                            this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        }
+                    }
+                    if(this.bushing_data.sec.length === 0) {
+                        for(let i = 1; i <= 3; i++) {
+                            const bushing = Object.assign({}, bushingTemplate);
+                            bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                            this.bushing_data.sec.push(bushing);
+                        }
+                    } else {
+                        if(this.bushing_data.sec.length < 3) {
+                            for(let i = this.bushing_data.sec.length + 1; i <= 3; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.sec.push(bushing);
+                            }
+                        } else if(this.bushing_data.sec.length > 3) {
+                            for(let i = 4; i <= this.bushing_data.sec.length; i++) {
+                                this.bushing_data.sec.splice(i-1,1);
+                            }
+                        }
+                        for(let i = 1; i <= this.bushing_data.sec.length; i++) {
+                            this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        }
+                    }
+                    if(this.bushing_data.tert.length === 0) {
+                        if(this.transformerDto.winding_configuration.vector_group.tert.i === WindingConnection.Yn || this.transformerDto.winding_configuration.vector_group.tert.i === '' || this.transformerDto.winding_configuration.vector_group.tert.i === WindingConnection.Zn) {
+                            for(let i = 1; i <= 4; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.tert.push(bushing);
+                            }
+                        }
+                    } else {
+                        if(this.transformerDto.winding_configuration.vector_group.tert.i === WindingConnection.Yn || this.transformerDto.winding_configuration.vector_group.tert.i === '' || this.transformerDto.winding_configuration.vector_group.tert.i === WindingConnection.Zn) {
+                            for(let i = 1; i <= 4; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.tert.push(bushing);
+                            }
+                        } else {
+                            if(this.bushing_data.tert.length < 3) {
+                                for(let i = this.bushing_data.tert.length + 1; i <= 3; i++) {
+                                    const bushing = Object.assign({}, bushingTemplate);
+                                    bushing.pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                    this.bushing_data.tert.push(bushing);
+                                }
+                            } else if(this.bushing_data.tert.length > 3) {
+                                for(let i = 4; i <= this.bushing_data.tert.length; i++) {
+                                    this.bushing_data.tert.splice(i-1,1);
+                                }
+                            }
+                        }
+                        for(let i = 1; i <= this.bushing_data.tert.length; i++) {
+                            this.bushing_data.tert[i-1].pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        }
+                    }
+                }
+            } else if(this.transformerDto.properties.type === this.$constant.WITHOUT_TERT) {
+                if(this.transformerDto.winding_configuration.phases === '1') {
+                    this.bushing_data.tert = [];
+                    if(this.bushing_data.prim.length === 0) {
+                        for(let i = 1; i <= 2; i++) {
+                            const bushing = Object.assign({}, bushingTemplate);
+                            bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                            this.bushing_data.prim.push(bushing);
+                        }
+
+                    } else {
+                        if(this.bushing_data.prim.length < 2) {
+                            for(let i = this.bushing_data.prim.length + 1; i <= 2; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.prim.push(bushing);
+                            }
+                        } else if(this.bushing_data.prim.length > 2) {
+                            for(let i = 3; i <= this.bushing_data.prim.length; i++) {
+                                this.bushing_data.prim.splice(i-1,1);
+                            }
+                        }
+                        for(let i = 1; i <= this.bushing_data.prim.length; i++) {
+                            this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        }
+                    }
+                    if(this.bushing_data.sec.length === 0) {
+                        for(let i = 1; i <= 1; i++) {
+                            const bushing = Object.assign({}, bushingTemplate);
+                            bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                            this.bushing_data.sec.push(bushing);
+                        }
+                    } else {
+                        if(this.bushing_data.sec.length < 1) {
+                            for(let i = this.bushing_data.sec.length + 1; i <= 1; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.sec.push(bushing);
+                            }
+                        } else if(this.bushing_data.sec.length > 1) {
+                            for(let i = 2; i <= this.bushing_data.sec.length; i++) {
+                                this.bushing_data.sec.splice(i-1,1);
+                            }
+                        }
+                        for(let i = 1; i <= this.bushing_data.sec.length; i++) {
+                            this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        }
+                    }
+                } else if(this.transformerDto.winding_configuration.phases === '3') {
+                    this.bushing_data.tert = [];
+                    if(this.bushing_data.prim.length === 0) {
+                        for(let i = 1; i <= 4; i++) {
+                            const bushing = Object.assign({}, bushingTemplate);
+                            bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                            this.bushing_data.prim.push(bushing);
+                        }
+
+                    } else {
+                        if(this.bushing_data.prim.length < 4) {
+                            for(let i = this.bushing_data.prim.length + 1; i <= 4; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.prim.push(bushing);
+                            }
+                        } else if(this.bushing_data.prim.length > 4) {
+                            for(let i = 5; i <= this.bushing_data.prim.length; i++) {
+                                this.bushing_data.prim.splice(i-1,1);
+                            }
+                        }
+                        for(let i = 1; i <= this.bushing_data.prim.length; i++) {
+                            this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        }
+                    }
+                    if(this.bushing_data.sec.length === 0) {
+                        for(let i = 1; i <= 3; i++) {
+                            const bushing = Object.assign({}, bushingTemplate);
+                            bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                            this.bushing_data.sec.push(bushing);
+                        }
+                    } else {
+                        if(this.bushing_data.sec.length < 3) {
+                            for(let i = this.bushing_data.sec.length + 1; i <= 3; i++) {
+                                const bushing = Object.assign({}, bushingTemplate);
+                                bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                this.bushing_data.sec.push(bushing);
+                            }
+                        } else if(this.bushing_data.sec.length > 3) {
+                            for(let i = 4; i <= this.bushing_data.sec.length; i++) {
+                                this.bushing_data.sec.splice(i-1,1);
+                            }
+                        }
+                        for(let i = 1; i <= this.bushing_data.sec.length; i++) {
+                            this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        }
+                    }
+                }
+            }
+
+            this.changeSurgeArresterData();
+        },
+
+        bushingPosReturn(i, end_label, type, phases) {
+            const vectorGroup = this.transformerDto.winding_configuration.vector_group
+            if(type == this.$constant.TWO_WINDING) {
+                if(phases === '1') {
+                    if(end_label === 'prim') {
+                        if(i == 1) {
+                            if(vectorGroup.prim === WindingConnection.I + PhaseCode.A || vectorGroup.prim === WindingConnection.I + PhaseCode.AB) {
+                                return PhaseCode.A
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.B || vectorGroup.prim === WindingConnection.I + PhaseCode.BC) {
+                                return PhaseCode.B
+                            }
+                            else if(vectorGroup.prim === WindingConnection.I + PhaseCode.C || vectorGroup.prim === WindingConnection.I + PhaseCode.CA) {
+                                return PhaseCode.C
+                            }
+                            else {
+                                return 1
+                            }
+                        } else if(i == 2) {
+                            if(vectorGroup.prim === WindingConnection.I + PhaseCode.A) {
+                                return PhaseCode.N
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.B) {
+                                return PhaseCode.N
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.C) {
+                                return PhaseCode.N
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.AB) {
+                                return PhaseCode.B
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.BC) {
+                                return PhaseCode.C
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.CA) {
+                                return PhaseCode.A
+                            } else {
+                                return 2
+                            }
+                        }
+                    } else if(end_label === 'sec') {
+                        if(i == 1) {
+                            if(vectorGroup.prim === WindingConnection.I + PhaseCode.A || vectorGroup.sec === WindingConnection.I + PhaseCode.AB) {
+                                return PhaseCode.a1
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.B || vectorGroup.sec === WindingConnection.I + PhaseCode.BC) {
+                                return PhaseCode.b1
+                            }
+                            else if(vectorGroup.prim === WindingConnection.I + PhaseCode.C || vectorGroup.sec === WindingConnection.I + PhaseCode.CA) {
+                                return PhaseCode.c1
+                            }
+                            else if(vectorGroup.prim === WindingConnection.I + 'Spare I') {
+                                return 3
+                            } else {
+                                return 5
+                            }
+                        } else if(i == 2) {
+                            if(vectorGroup.prim === WindingConnection.I + PhaseCode.A) {
+                                return PhaseCode.n1
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.B) {
+                                return PhaseCode.n1
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.C) {
+                                return PhaseCode.n1
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.AB) {
+                                return PhaseCode.b1
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.BC) {
+                                return PhaseCode.c1
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.CA) {
+                                return PhaseCode.a1
+                            } else if(vectorGroup.prim === WindingConnection.I + 'Spare I') {
+                                return 4
+                            } else {
+                                return 6
+                            }
+                        }
+                    }
+                } else if(phases === '3') {
+                    if(end_label === 'prim') {
+                        if(i == 1) {
+                            return PhaseCode.A
+                        } else if(i == 2) {
+                            return PhaseCode.B
+                        } else if(i == 3) {
+                            return PhaseCode.C
+                        } else if(i == 4) {
+                            return PhaseCode.N
+                        }
+                    } else if(end_label === 'sec') {
+                        if(i == 1) {
+                            return PhaseCode.a1
+                        } else if(i == 2) {
+                            return PhaseCode.b1
+                        } else if(i == 3) {
+                            return PhaseCode.c1
+                        }
+                        else if(i == 4) {
+                            return PhaseCode.n1
+                        }
+                    }
+                }
+            } else if(type === this.$constant.THREE_WINDING) {
+                if(phases === '1') {
+                    if(end_label === 'prim') {
+                        if(i === 1) {
+                            if(vectorGroup.prim === WindingConnection.I + PhaseCode.A || vectorGroup.prim === WindingConnection.I + PhaseCode.AB) {
+                                return PhaseCode.A
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.B || vectorGroup.prim === WindingConnection.I + PhaseCode.BC) {
+                                return PhaseCode.B
+                            }
+                            else if(vectorGroup.prim === WindingConnection.I + PhaseCode.C || vectorGroup.prim === WindingConnection.I + PhaseCode.CA) {
+                                return PhaseCode.C
+                            }
+                            else {
+                                return 1
+                            }
+                        } else if(i === 2) {
+                            if(vectorGroup.prim === WindingConnection.I + PhaseCode.A) {
+                                return PhaseCode.N
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.B) {
+                                return PhaseCode.N
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.C) {
+                                return PhaseCode.N
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.AB) {
+                                return PhaseCode.B
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.BC) {
+                                return PhaseCode.C
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.CA) {
+                                return PhaseCode.A
+                            } else {
+                                return 2
+                            }
+                        }
+                    } else if(end_label === 'sec') {
+                        if(i === 1) {
+                            if(vectorGroup.prim === WindingConnection.I + PhaseCode.A || vectorGroup.prim === WindingConnection.I + PhaseCode.AB) {
+                                return PhaseCode.a1
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.B || vectorGroup.prim === WindingConnection.I + PhaseCode.BC) {
+                                return PhaseCode.b1
+                            }
+                            else if(vectorGroup.prim === WindingConnection.I + PhaseCode.C || vectorGroup.prim === WindingConnection.I + PhaseCode.CA) {
+                                return PhaseCode.c1
+                            }
+                            else {
+                                return 5
+                            }
+                        } else if(i === 2) {
+                            if(vectorGroup.prim === WindingConnection.I + PhaseCode.A) {
+                                return PhaseCode.n1
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.B) {
+                                return PhaseCode.n1
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.C) {
+                                return PhaseCode.n1
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.AB) {
+                                return PhaseCode.b1
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.BC) {
+                                return PhaseCode.c1
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.CA) {
+                                return PhaseCode.a1
+                            } else {
+                                return 6
+                            }
+                        }
+                    } else if(end_label === 'tert') {
+                        if(i === 1) {
+                            if(vectorGroup.prim === WindingConnection.I + PhaseCode.A || vectorGroup.tert === WindingConnection.I + PhaseCode.AB) {
+                                return PhaseCode.a2
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.B || vectorGroup.tert === WindingConnection.I + PhaseCode.BC) {
+                                return PhaseCode.b2
+                            }
+                            else if(vectorGroup.prim === WindingConnection.I + PhaseCode.C || vectorGroup.tert === WindingConnection.I + PhaseCode.CA) {
+                                return PhaseCode.c2
+                            }
+                            else {
+                                return 9
+                            }
+                        } else if(i === 2) {
+                            if(vectorGroup.prim === WindingConnection.I + PhaseCode.A) {
+                                return PhaseCode.n2
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.B) {
+                                return PhaseCode.n2
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.C) {
+                                return PhaseCode.n2
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.AB) {
+                                return PhaseCode.b2
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.BC) {
+                                return PhaseCode.c2
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.CA) {
+                                return PhaseCode.a2
+                            } else {
+                                return 10
+                            }
+                        }
+                    }
+                } else if(phases === '3') {
+                    if(end_label === 'prim') {
+                        if(i === 1) {
+                            return PhaseCode.A
+                        } else if(i === 2) {
+                            return PhaseCode.B
+                        } else if(i === 3) {
+                            return PhaseCode.C
+                        } else if(i === 4) {
+                            return PhaseCode.N
+                        }
+                    } else if(end_label === 'sec') {
+                        if(i === 1) {
+                            return PhaseCode.a1
+                        } else if(i === 2) {
+                            return PhaseCode.b1
+                        } else if(i === 3) {
+                            return PhaseCode.c1
+                        }
+                        else if(i === 4) {
+                            return PhaseCode.n1
+                        }
+                    } else if(end_label === 'tert') {
+                        if(i === 1) {
+                            return PhaseCode.a2
+                        } else if(i === 2) {
+                            return PhaseCode.b2
+                        } else if(i === 3) {
+                            return PhaseCode.c2
+                        }
+                        else if(i === 4) {
+                            return PhaseCode.n2
+                        }
+                    }
+                }
+                
+            } else if(type === this.$constant.WITH_TERT) {
+                if(phases === '1') {
+                    if(end_label === 'prim') {
+                        if(i === 1) {
+                            if(vectorGroup.prim === WindingConnection.I + PhaseCode.A || vectorGroup.prim === WindingConnection.I + PhaseCode.AB) {
+                                return PhaseCode.A
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.B || vectorGroup.prim === WindingConnection.I + PhaseCode.BC) {
+                                return PhaseCode.B
+                            }
+                            else if(vectorGroup.prim === WindingConnection.I + PhaseCode.C || vectorGroup.prim === WindingConnection.I + PhaseCode.CA) {
+                                return PhaseCode.C
+                            }
+                            else {
+                                return 1
+                            }
+                        } else if(i === 2) {
+                            if(vectorGroup.prim === WindingConnection.I + PhaseCode.A) {
+                                return PhaseCode.N
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.B) {
+                                return PhaseCode.N
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.C) {
+                                return PhaseCode.N
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.AB) {
+                                return PhaseCode.B
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.BC) {
+                                return PhaseCode.C
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.CA) {
+                                return PhaseCode.A
+                            } else if(vectorGroup.prim === WindingConnection.I + 'Spare I') {
+                                return  '2+4'
+                            } else {
+                                return 2
+                            }
+                        }
+                    } else if(end_label === 'sec') {
+                        if(i === 1) {
+                            if(vectorGroup.prim === WindingConnection.I + PhaseCode.A || vectorGroup.prim === WindingConnection.I + PhaseCode.AB) {
+                                return PhaseCode.a1
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.B || vectorGroup.prim === WindingConnection.I + PhaseCode.BC) {
+                                return PhaseCode.b1
+                            }
+                            else if(vectorGroup.prim === WindingConnection.I + PhaseCode.C || vectorGroup.prim === WindingConnection.I + PhaseCode.CA) {
+                                return PhaseCode.c1
+                            }
+                            else {
+                                return 5
+                            }
+                        }
+                    } else if(end_label === 'tert') {
+                        if(i === 1) {
+                            if(vectorGroup.prim === WindingConnection.I + PhaseCode.A || vectorGroup.prim === WindingConnection.I + PhaseCode.AB) {
+                                return PhaseCode.a2
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.B || vectorGroup.prim === WindingConnection.I + PhaseCode.BC) {
+                                return PhaseCode.b2
+                            }
+                            else if(vectorGroup.prim === WindingConnection.I + PhaseCode.C || vectorGroup.prim === WindingConnection.I + PhaseCode.CA) {
+                                return PhaseCode.c2
+                            }
+                            else {
+                                return 9
+                            }
+                        } else if(i === 2) {
+                            if(vectorGroup.prim === WindingConnection.I + PhaseCode.A) {
+                                return PhaseCode.n2
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.B) {
+                                return PhaseCode.n2
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.C) {
+                                return PhaseCode.n2
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.AB) {
+                                return PhaseCode.b2
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.BC) {
+                                return PhaseCode.c2
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.CA) {
+                                return PhaseCode.a2
+                            } else {
+                                return 2
+                            }
+                        }
+                    }
+                } else if(phases === '3') {
+                    if(end_label === 'prim') {
+                        if(i === 1) {
+                            return PhaseCode.A
+                        } else if(i === 2) {
+                            return PhaseCode.B
+                        } else if(i === 3) {
+                            return PhaseCode.C
+                        }
+                        else if(i === 4) {
+                            return PhaseCode.N
+                        }
+                    } else if(end_label === 'sec') {
+                        if(i === 1) {
+                            return PhaseCode.a1
+                        } else if(i === 2) {
+                            return PhaseCode.b1
+                        }
+                        else if(i === 3) {
+                            return PhaseCode.c1
+                        }
+                    } else if(end_label === 'tert') {
+                        if(this.transformerDto.winding_configuration.vector_group.tert.i === WindingConnection.Yn || this.transformerDto.winding_configuration.vector_group.tert.i === '' || this.transformerDto.winding_configuration.vector_group.tert.i === WindingConnection.Zn) {
+                            if(i === 1) {
+                                return PhaseCode.a2
+                            } else if(i === 2) {
+                                return PhaseCode.b2
+                            } else if(i === 3) {
+                                return PhaseCode.c2
+                            }
+                            else if(i === 4) {
+                                return PhaseCode.n2
+                            }
+                        }
+                        else {
+                            if(i === 1) {
+                                return PhaseCode.a2
+                            } else if(i === 2) {
+                                return PhaseCode.b2
+                            } else if(i === 3) {
+                                return PhaseCode.c2
+                            }
+                        }
+                    }
+                }
+            } else if(type === this.$constant.WITHOUT_TERT) {
+                if(phases === '1') {
+                    if(end_label === 'prim') {
+                        if(i === 1) {
+                            if(vectorGroup.prim === WindingConnection.I + PhaseCode.A || vectorGroup.prim === WindingConnection.I + PhaseCode.AB) {
+                                return PhaseCode.A
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.B || vectorGroup.prim === WindingConnection.I + PhaseCode.BC) {
+                                return PhaseCode.B
+                            }
+                            else if(vectorGroup.prim === WindingConnection.I + PhaseCode.C || vectorGroup.prim === WindingConnection.I + PhaseCode.CA) {
+                                return PhaseCode.C
+                            }
+                            else {
+                                return 1
+                            }
+                        } else if(i === 2) {
+                            if(vectorGroup.prim === WindingConnection.I + PhaseCode.A) {
+                                return PhaseCode.N
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.B) {
+                                return PhaseCode.N
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.C) {
+                                return PhaseCode.N
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.AB) {
+                                return PhaseCode.B
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.BC) {
+                                return PhaseCode.C
+                            } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.CA) {
+                                return PhaseCode.A
+                            } else if(vectorGroup.prim === WindingConnection.I + 'Spare I') {
+                                return '2+4'
+                            } else {
+                                return 2
+                            }
+                        }
+                    } else if(end_label === 'sec') {
+                        if(vectorGroup.prim === WindingConnection.I + PhaseCode.A || vectorGroup.prim === WindingConnection.I + PhaseCode.AB) {
+                            return PhaseCode.a1
+                        } else if(vectorGroup.prim === WindingConnection.I + PhaseCode.B || vectorGroup.prim === WindingConnection.I + PhaseCode.BC) {
+                            return PhaseCode.b1
+                        }
+                        else if(vectorGroup.prim === WindingConnection.I + PhaseCode.C || vectorGroup.prim === WindingConnection.I + PhaseCode.CA) {
+                            return PhaseCode.c1
+                        }
+                        else if(vectorGroup.prim === WindingConnection.I + 'Spare I') {
+                            return 5
+                        }
+                        else {
+                            return 1
+                        }
+                    }
+                } else if(phases === '3') {
+                    if(end_label === 'prim') {
+                        if(i === 1) {
+                            return PhaseCode.A
+                        } else if(i === 2) {
+                            return PhaseCode.B
+                        } else if(i === 3) {
+                            return PhaseCode.C
+                        } else if(i === 4) {
+                            return PhaseCode.N
+                        }
+                    } else if(end_label === 'sec') {
+                        if(i === 1) {
+                            return PhaseCode.a1
+                        } else if(i === 2) {
+                            return PhaseCode.b1
+                        } else if(i === 3) {
+                            return PhaseCode.c1
+                        }
+                    }
+                }
+            }
+        },
+
+        changeSurgeArresterData() {
+            const surgeArresterTemplate = {
+                sign : false,
+                properties : {
+                    serial_no : '',
+                    manufacturer : '',
+                    manufacturer_year : '',
+                    asset_system_code : '',
+                },
+                ratings : {
+                    pos : '',
+                    unit : '',
+                    table : []
+                }
+            }
+            //primary
+            if(this.surge_arrester.prim.length === 0) {
+                for(let i = 0; i < this.bushing_data.prim.length; i++) {
+                    const surgeArresterPrim = JSON.parse(JSON.stringify(surgeArresterTemplate))
+                    surgeArresterPrim.ratings.pos = this.bushing_data.prim[i].pos;
+                    this.surge_arrester.prim.push(surgeArresterPrim)
+                }
+            } else {
+                if(this.surge_arrester.prim.length < this.bushing_data.prim.length) {
+                    for(let i = this.surge_arrester.prim.length; i < this.bushing_data.prim.length; i++) {
+                        const surgeArresterPrim = JSON.parse(JSON.stringify(surgeArresterTemplate))
+                        surgeArresterPrim.ratings.pos = this.bushing_data.prim[i].pos;
+                        this.surge_arrester.prim.push(surgeArresterPrim)
+                    }
+                } else if(this.surge_arrester.prim.length > this.bushing_data.prim.length) {
+                    for(let i = this.bushing_data.prim.length; i < this.surge_arrester.prim.length; i++) {
+                        this.surge_arrester.prim.splice(i, 1);
+                    }
+                }
+                for(let i = 0; i < this.surge_arrester.prim.length; i++) {
+                    this.surge_arrester.prim[i].ratings.pos = this.bushing_data.prim[i].pos;
+                }
+            }
+            //secondary
+            if(this.surge_arrester.sec.length === 0) {
+                for(let i = 0; i < this.bushing_data.sec.length; i++) {
+                    const surgeArresterSec = JSON.parse(JSON.stringify(surgeArresterTemplate))
+                    surgeArresterSec.ratings.pos = this.bushing_data.sec[i].pos;
+                    this.surge_arrester.sec.push(surgeArresterSec)
+                }
+            } else {
+                if(this.surge_arrester.sec.length < this.bushing_data.sec.length) {
+                    for(let i = this.surge_arrester.sec.length; i < this.bushing_data.sec.length; i++) {
+                        const surgeArresterSec = Object.assign({}, surgeArresterTemplate);
+                        surgeArresterSec.ratings.pos = this.bushing_data.sec[i].pos;
+                        this.surge_arrester.sec.push(surgeArresterSec)
+                    }
+                } else if(this.surge_arrester.sec.length > this.bushing_data.sec.length) {
+                    for(let i = this.bushing_data.sec.length; i < this.surge_arrester.sec.length; i++) {
+                        this.surge_arrester.sec.splice(i, 1);
+                    }
+                }
+                for(let i = 0; i < this.surge_arrester.sec.length; i++) {
+                    this.surge_arrester.sec[i].ratings.pos = this.bushing_data.sec[i].pos;
+                }
+            }
+            //tertiary
+            if(this.surge_arrester.tert.length === 0) {
+                for(let i = 0; i < this.bushing_data.tert.length; i++) {
+                    const surgeArresterTert = JSON.parse(JSON.stringify(surgeArresterTemplate))
+                    surgeArresterTert.ratings.pos = this.bushing_data.tert[i].pos;
+                    this.surge_arrester.tert.push(surgeArresterTert)
+                }
+            } else {
+                if(this.surge_arrester.tert.length < this.bushing_data.tert.length) {
+                    for(let i = this.surge_arrester.tert.length; i < this.bushing_data.tert.length; i++) {
+                        const surgeArresterTert = JSON.parse(JSON.stringify(surgeArresterTemplate))
+                        surgeArresterTert.ratings.pos = this.bushing_data.tert[i].pos;
+                        this.surge_arrester.tert.push(surgeArresterTert)
+                    }
+                } else if(this.surge_arrester.tert.length > this.bushing_data.tert.length) {
+                    for(let i = this.bushing_data.tert.length; i < this.surge_arrester.tert.length; i++) {
+                        this.surge_arrester.tert.splice(i, 1);
+                    }
+                }
+                for(let i = 0; i < this.surge_arrester.tert.length; i++) {
+                    this.surge_arrester.tert[i].ratings.pos = this.bushing_data.tert[i].pos;
+                }
             }
         },
 

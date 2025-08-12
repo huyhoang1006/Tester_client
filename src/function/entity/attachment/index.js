@@ -228,6 +228,9 @@ export const syncFilesWithDeletion = (srcList, destDir, fatherMrid) => {
     try {
         if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
 
+        if(srcList === null || srcList.length === '') {
+            srcList = [];
+        }
         const srcFileNames = srcList.map(item => path.basename(item.path));
         const existingItems = fs.readdirSync(destDir);
 

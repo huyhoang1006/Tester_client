@@ -12,7 +12,6 @@ const circuitAPI = circuitPreload.circuitPreload()
 const currentTransAPI = currentTransPreload.currentTransPreload()
 const voltageTransAPI = voltageTransPreload.voltageTransPreload()
 const disconnectorAPI = disconnectorPreload.disconnectorPreload()
-const surgeArresterAPI = surgeArresterPreload.surgeArresterPreload()
 const powerCablePreAPI = powerCablePreload.powerCablePreload()
 const uploadCustomAPI = uploadCustomPreload.uploadCustomPreload()
 const manufacturerAPI = manufacturerPreload.munufacturerPreload()
@@ -37,13 +36,15 @@ const bayEntityAPI = entityPreload.bayPreload.bayEntityPreload()
 const bayAPI = cimPreload.bayPreload.bayPreload()
 const voltageLevelAPI = cimPreload.voltageLevelPreload.voltageLevelPreload()
 const powerSystemResourceAPI = cimPreload.powerSystemResourcePreload.powerSystemResourcePreload()
+const surgeArresterEntityAPI = entityPreload.surgeArresterEntityPreload.surgeArresterEntityPreload()
+const surgeArresterAPI = cimPreload.SurgeArresterPreload.surgeArresterPreload()
 
 
 const ipcMain = Object.assign(userAPI, transformerAPI, fmecaAPI, conditionAPI, circuitAPI, attachmentAPI, 
     currentTransAPI, voltageTransAPI, disconnectorAPI, surgeArresterAPI, powerCablePreAPI, uploadCustomAPI,
     manufacturerAPI, ownerAPI, parentOrganizationAPI, substationAPI, locationAPI, streetAddressAPI, streetDetailAPI, townDetailAPI,
     electronicAddressAPI, personAPI, personRoleAPI, telephoneNumberAPI, configurationEventAPI, substationEntityAPI, parentOrganizationEntityAPI,
-    positionPointAPI, voltageLevelEntityAPI, voltageLevelAPI, bayEntityAPI, bayAPI, powerSystemResourceAPI)
+    positionPointAPI, voltageLevelEntityAPI, voltageLevelAPI, bayEntityAPI, bayAPI, powerSystemResourceAPI, surgeArresterEntityAPI)
 contextBridge.exposeInMainWorld('electronAPI', 
     ipcMain 
 )

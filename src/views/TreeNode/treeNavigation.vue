@@ -56,6 +56,8 @@
                         @show-addOrganisation="showAddOrganisation"
                         @show-addVoltageLevel="showAddVoltageLevel"
                         @show-addTransformer="showAddTransformer"
+                        @show-addBushing="showAddBushing"
+                        @show-addSurgeArrester="showAddSurgeArrester"
                         @show-addBay="showAddBay"
                         @show-data="showDataClient"
                         ref="contextMenuClient">
@@ -516,6 +518,32 @@
                 <el-button size="small" type="primary" @click="handleTransformerConfirm">Save</el-button>
             </span>
         </el-dialog>
+
+        <el-dialog
+            title="Add Bushing"
+            :visible.sync="signBushing" 
+            width="1000px"
+            @close="handleBushingCancel"
+        >
+            <Bushing :locationId="locationId" :parent="parentOrganization" ref="bushing"></Bushing>
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" type="danger" @click="handleBushingCancel" >Cancel</el-button>
+                <el-button size="small" type="primary" @click="handleBushingConfirm">Save</el-button>
+            </span>
+        </el-dialog>
+
+        <el-dialog
+            title="Add Surge Arrester"
+            :visible.sync="signSurge" 
+            width="1000px"
+            @close="handleSurgeCancel"
+        >
+            <SurgeArrester :locationId="locationId" :parent="parentOrganization" ref="surgeArrester"></SurgeArrester>
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" type="danger" @click="handleSurgeCancel" >Cancel</el-button>
+                <el-button size="small" type="primary" @click="handleSurgeConfirm">Save</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 <script>
@@ -558,6 +586,8 @@ import Organisation from '@/views/Organisation/index.vue'
 import VoltageLevel from '@/views/VoltageLevel/index.vue'
 import Bay from '@/views/Bay/index.vue'
 import Transformer from '@/views/AssetView/Transformer'
+import Bushing from '@/views/AssetView/Bushing'
+import SurgeArrester from '@/views/AssetView/SurgeArrester'
 
 import mixin from './mixin'
 
@@ -574,7 +604,9 @@ export default {
         Organisation,
         VoltageLevel,
         Bay,
-        Transformer
+        Transformer,
+        Bushing,
+        SurgeArrester
     },
     data() {
         return {
@@ -589,6 +621,8 @@ export default {
             signVoltageLevel : false,
             signBay : false,
             signTransformer : false,
+            signBushing : false,
+            signSurge : false,
             activeTab: {},
             activeTabClient: {},
             indexTabData: null,
@@ -874,6 +908,7 @@ export default {
                     if(rs.success) {
                         this.organisationClientList = [rs.data] || []
                     } else {
+                        console.log(rs)
                         this.$message.error("Cannot load root organisation")
                     }
                 }catch (error) {
@@ -894,6 +929,8 @@ export default {
                             window.electronAPI.getVoltageLevelBySubstationId(clickedRow.mrid),
                             window.electronAPI.getBayByVoltageBySubstationId(null, clickedRow.mrid)
                         ]);
+                        const assetReturn = await this.fetchAssetByPsr(clickedRow.mrid);
+                        console.log(assetReturn)
                         if(voltageLevelReturn.success) {
                             voltageLevelReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
@@ -924,6 +961,22 @@ export default {
                             newRows.push(...bayReturn.data);
                         }
 
+                        if(assetReturn.success) {
+                            assetReturn.data.forEach(row => {
+                                row.parentId = clickedRow.mrid;
+                                row.mode = 'asset';
+                                row.asset = 'Surge arrester';
+                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                row.parentName = parentName
+                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr.push({
+                                    mrid : clickedRow.mrid,
+                                    parent : clickedRow.name
+                                })
+                            });
+                            newRows.push(...assetReturn.data);
+                        }
+
                     } else if(node.mode == 'voltageLevel') {
                         const clickedRow = node;
                         const [bayReturn] = await Promise.all([
@@ -946,7 +999,23 @@ export default {
                         }
 
                     } else if(node.mode == 'bay') {
-                        //
+                        const clickedRow = node;
+                        const assetReturn = await this.fetchAssetByPsr(clickedRow.mrid);
+                        if(assetReturn.success) {
+                            assetReturn.data.forEach(row => {
+                                row.parentId = clickedRow.mrid;
+                                row.mode = 'asset';
+                                row.asset = 'Surge arrester';
+                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                row.parentName = parentName
+                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr.push({
+                                    mrid : clickedRow.mrid,
+                                    parent : clickedRow.name
+                                })
+                            });
+                            newRows.push(...assetReturn.data);
+                        }
                     }
                     else {
                         const clickedRow = node;
@@ -986,6 +1055,20 @@ export default {
                 } catch (error) {
                     console.error("Error fetching children:", error);
                 }
+            }
+        },
+
+        async fetchAssetByPsr(id) {
+            try {
+                const response = await window.electronAPI.getSurgeArresterByPsrId(id);
+                return response;
+            } catch (error) {
+                console.error("Error fetching asset by substation:", error);
+                return {
+                    success: false,
+                    data: [],
+                    message: "Error fetching asset by substation"
+                };
             }
         },
 
@@ -1433,6 +1516,14 @@ export default {
             this.signBay = false
         },
 
+        handleBushingCancel() {
+            this.signBushing = false
+        },
+
+        handleSurgeCancel() {
+            this.signSurge = false
+        },
+
         async handleSubsConfirm() {
             try {
                 const subs = this.$refs.substation
@@ -1580,6 +1671,52 @@ export default {
             // Cần thêm logic để cập nhật lại cây nếu cần thiết
             await this.$refs.transformer.saveAsset();
             // this.signTransformer = false
+        },
+
+        async handleBushingConfirm() {
+            this.$message.success("Bushing saved successfully")
+            // Cần thêm logic để cập nhật lại cây nếu cần thiết
+            // await this.$refs.bushing.saveAsset();
+            // this.signBushing = false
+        },
+
+        async handleSurgeConfirm() {
+            try {
+                const surgeArrester = this.$refs.surgeArrester
+                if(surgeArrester) {
+                    const {success, data} = await surgeArrester.saveAsset();
+                    if(success) {
+                        this.$message.success("Surge Arrester saved successfully")
+                        this.signSurge = false
+                        let newRows = []
+                        if(this.organisationClientList && this.organisationClientList.length > 0) {
+                            const newRow = {
+                                mrid: data.surgeArrester.mrid,
+                                name: data.surgeArrester.name,
+                                serial_number : data.surgeArrester.serial_number,
+                                parentId: this.parentOrganization.mrid,
+                                parentName: this.parentOrganization.name,
+                                parentArr: this.parentOrganization.parentArr || [],
+                                mode: 'asset',
+                                asset: 'Surge arrester',
+                            }
+                            newRows.push(newRow);
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            if (node) {
+                                const children = Array.isArray(node.children) ? node.children : [];
+                                Vue.set(node, "children", [...children, ...newRows]);
+                            } else {
+                                this.$message.error("Parent node not found in tree");
+                            }
+                        }
+                    } else {
+                        this.$message.error("Failed to save Surge Arrester")
+                    }
+                }
+            } catch (error) {
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
         },
 
         async handleTransformerCancel() {
@@ -1965,6 +2102,19 @@ export default {
                             } else {
                                 this.$message.warning("Parent node not found in tree");
                             }
+                        } else if(node.mode == 'asset') {
+                            if(node.asset === 'Surge arrester') {
+                                // const entity = await window.electronAPI.getSurgeArresterEntityByMrid(node.mrid, node.parentId)
+                                // if (!entity.success) {
+                                //     this.$message.error("Entity not found");
+                                //     return;
+                                // }
+                                // const deleteSign = await window.electronAPI.deleteSurgeArresterEntityByMrid(entity.data);
+                                // if (!deleteSign.success) {
+                                //     this.$message.error("Delete data failed");
+                                //     return;
+                                // }
+                            }
                         }
                     } catch (error) {
                         this.$message.error("Some error occur when deleting data");
@@ -2066,7 +2216,6 @@ export default {
         },
 
         async showAddVoltageLevel(node) {
-            console.log(node)
             try {
                 this.parentOrganization = node
                 this.signVoltageLevel = true
@@ -2130,14 +2279,31 @@ export default {
             }
         },
 
-        async showAddBay(node) {
+        async showAddBushing(node) {
             try {
                 this.parentOrganization = node
-                this.signBay = true
+                this.signBushing = true
                 this.$nextTick(() => {
-                    const bay = this.$refs.bay;
-                    if (bay) {
-                        bay.resetForm();
+                    const bushing = this.$refs.bushing;
+                    if (bushing) {
+                        bushing.resetForm();
+                    }
+                });
+            } catch (error) {
+                this.parentOrganization = null
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
+        },
+
+        async showAddSurgeArrester(node) {
+            try {
+                this.parentOrganization = node
+                this.signSurge = true
+                this.$nextTick(() => {
+                    const surgeArrester = this.$refs.surgeArrester;
+                    if (surgeArrester) {
+                        surgeArrester.resetForm();
                     }
                 });
             } catch (error) {

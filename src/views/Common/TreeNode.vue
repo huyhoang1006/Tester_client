@@ -15,7 +15,7 @@
             </div>
             <div v-else-if="node.mode == 'asset'" class="icon-wrapper">
                 <icon size="16px" folderType="asset" badgeColor="146EBE"></icon>
-                <span class="node-name">{{ node.serial_no }} </span>
+                <span class="node-name">{{ node.serial_number }} </span>
             </div>
             <div v-else-if="node.mode == 'job'" class="icon-wrapper">
                 <icon size="16px" folderType="job" badgeColor="FF0000"></icon>
