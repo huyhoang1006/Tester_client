@@ -1243,9 +1243,7 @@ app.on('ready', async () => {
     ipcJobSurge.saveTestSurge()
     ipcJobSurge.getTestSurgeByJobId()
 
-    ipcSurgeArrester.insertSurgeArrester()
     ipcSurgeArrester.getSurgeArresterByLocationId()
-    ipcSurgeArrester.getSurgeArresterById()
     ipcSurgeArrester.deleteSurgeArrester()
     ipcSurgeArrester.updateSurgeArrester()
     ipcSurgeArrester.getLocationAssetByIdSurgeArrester()

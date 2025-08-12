@@ -26,12 +26,12 @@ const surgeFeature = {
                 label : "Rated duration of short circuit (s)"
             },
             {
-                value: "polesVotage",
-                label : "Power frequency witdstand voltage(kV) (to eartd and between poles)"
+                value: "polesVoltage",
+                label : "Power frequency withstand voltage(kV) (to earth and between poles)"
             },
             {
                 value: "isoVoltage",
-                label : "Power frequency witdsatand voltage(kV) (across tde isolating distance)"
+                label : "Power frequency withstand voltage(kV) (across the isolating distance)"
             },
         ],
         label : "Table Rating"

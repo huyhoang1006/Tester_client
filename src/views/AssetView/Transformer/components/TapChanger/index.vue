@@ -1,9 +1,9 @@
 <template>
     <div id="tap-changers" class="mgy-5">
-        <el-row :gutter="20" class="content" style="margin-top: 20px;">
+        <el-row :gutter="20" class="content" style="margin-top: 30px;">
             <!-- oltc -->
             <el-col :span="12" class="col-content">
-                <el-row>
+                <el-row style="margin-bottom: 20px;">
                     <el-radio v-model="tapChangersData.mode" label="oltc" @change="onChangeTapChanger">OLTC</el-radio>
                 </el-row>
                 <el-row v-if="tapChangersData.mode === 'oltc'">
@@ -129,7 +129,7 @@
 
             <!-- detc -->
             <el-col :span="12" class="col-content">
-                <el-row>
+                <el-row style="margin-bottom: 20px;">
                     <el-radio v-model="tapChangersData.mode" label="detc" @change="onChangeTapChanger">DETC</el-radio>
                 </el-row>
                 <el-row v-if="tapChangersData.mode === 'detc'">
@@ -475,4 +475,8 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+::v-deep(.el-radio__label) {
+    font-size: 12px !important;
+}
+</style>

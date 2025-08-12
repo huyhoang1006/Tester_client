@@ -3,5 +3,7 @@ import * as substationPreload from './substation/index.js'
 import * as parentOrganizationPreload from './parentOrganization/index.js'
 import * as voltageLevelPreload from './voltageLevel/index.js'
 import * as bayPreload from './bay/index.js'
+import * as surgeArresterEntityPreload from './surgeArrester/index.js'
 
-export { attachmentPreload, substationPreload, parentOrganizationPreload, voltageLevelPreload, bayPreload }
+export { attachmentPreload, substationPreload, parentOrganizationPreload, 
+    voltageLevelPreload, bayPreload, surgeArresterEntityPreload }

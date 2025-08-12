@@ -72,7 +72,34 @@ export const transformerDtoToEntity = (dto) => {
     //oldTransformerEndInfo
     for (let item of dto.oldTransformerEndInfo) {
         if(item.end_number === 1) {
-            item.
+            item.power_transformer_info_id = entity.oldPowerTransformerInfo.mrid || null;
+            if(dto.winding_configuration.vector_group.prim.includes('Spare I')) {
+                item.connection_kind = 'I';
+                item.spare = true ;
+            }
+            item.material = dto.others.winding.prim || null;
+            item.connection_kind = dto.winding_configuration.vector_group.prim || null;
+            entity.oldTransformerEndInfo.push(item);
+        } else if(item.end_number === 2) {
+            item.power_transformer_info_id = entity.oldPowerTransformerInfo.mrid || null;
+            if(dto.winding_configuration.vector_group.sec.i.includes('Spare I')) {
+                item.connection_kind = 'I';
+                item.spare = true ;
+            }
+            item.material = dto.others.winding.sec || null;
+            item.connection_kind = dto.winding_configuration.vector_group.sec.i || null;
+            item.phase_angle_clock = dto.winding_configuration.vector_group.sec.value || null;
+            entity.oldTransformerEndInfo.push(item);
+        } else if(item.end_number === 3) {
+            item.power_transformer_info_id = entity.oldPowerTransformerInfo.mrid || null;
+            if(dto.winding_configuration.vector_group.tert.i.includes('Spare I')) {
+                item.connection_kind = 'I';
+                item.spare = true ;
+            }
+            item.material = dto.others.winding.tert || null;
+            item.connection_kind = dto.winding_configuration.vector_group.tert.i || null;
+            item.phase_angle_clock = dto.winding_configuration.vector_group.tert.value || null;
+            item.accessibility = dto.winding_configuration.vector_group.tert.accessibility || null;
             entity.oldTransformerEndInfo.push(item);
         }
     }

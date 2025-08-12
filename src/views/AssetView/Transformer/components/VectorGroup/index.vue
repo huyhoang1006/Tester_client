@@ -521,7 +521,6 @@ export default {
     },
     watch: {
         asset_winding_config(val) {
-            console.log('asset_winding_config changed', val)
             this.winding_config = JSON.parse(JSON.stringify(val))
         }
     }

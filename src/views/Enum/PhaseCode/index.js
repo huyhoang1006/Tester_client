@@ -24,5 +24,13 @@ export const PhaseCode = {
     X: 'X',
     XN: 'XN',
     XY: 'XY',
-    XYN: 'XYN'
+    XYN: 'XYN',
+    a1: 'a1',
+    b1: 'b1',
+    c1: 'c1',
+    n1: 'n1',
+    a2: 'a2',
+    b2: 'b2',
+    c2: 'c2',
+    n2: 'n2',
 }

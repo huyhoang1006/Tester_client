@@ -11,7 +11,9 @@ import * as geoMapFunc from './geoMap/index'
 import * as parentOrganizationEntityFunc from './parentOrganisation/index'
 import * as voltageLevelEntityFunc from './voltage/index'
 import * as bayEntityFunc from './bay/index'
+import * as surgeArresterEntityFunc from './surgeArrester/index'
 
 export { attachmentFunc, fileFunc, organisationLocationFunc, personSubstationFunc, 
     userFunc, userIdentifiedObjectFunc, substationEntityFunc, organisationPersonFunc, 
-    organisationPsrFunc, geoMapFunc, parentOrganizationEntityFunc, voltageLevelEntityFunc, bayEntityFunc }
+    organisationPsrFunc, geoMapFunc, parentOrganizationEntityFunc, voltageLevelEntityFunc, 
+    bayEntityFunc, surgeArresterEntityFunc }

@@ -1,14 +1,15 @@
 <template>
-    <div>
+    <div style="min-height: 500px; display: flex; flex-direction: column;">
         <div style="width: calc(100% - 20px)">
-            <el-button @click="switchData('Transformer')" size="mini" style="width: calc(50% / 3);" type="primary">Transformer</el-button>
-            <el-button @click="switchData('Bushings')" size="mini" style="width: calc(50% / 3 - 10px);" type="primary">Bushings</el-button>
-            <el-button @click="switchData('Tap changer')" size="mini" style="width: calc(50% / 3 - 10px);" type="primary">Tap changer</el-button>
+            <el-button @click="switchData('Transformer')" size="mini" style="width: calc(50% / 4);" type="primary">Transformer</el-button>
+            <el-button @click="switchData('Bushings')" size="mini" style="width: calc(50% / 4 - 10px);" type="primary">Bushings</el-button>
+            <el-button @click="switchData('Tap changer')" size="mini" style="width: calc(50% / 4 - 10px);" type="primary">Tap changer</el-button>
+            <el-button @click="switchData('Surge Arrester')" size="mini" style="width: calc(50% / 4 - 10px);" type="primary">Surge Arrester</el-button>
         </div>
-        <div>
+        <div style="flex: 1; display: flex; flex-direction: column;">
             <div v-if="this.switch == 'Transformer'">
                 <!-- Properties -->
-                <property @change-type="onChangeAssetType" :data="this.transformerDto.properties" style="font-size: 12px !important;"></property>
+                <property @update-attachment="updateAttachment" :attachment.sync="this.attachmentData" @change-type="onChangeAssetType" :data="this.transformerDto.properties" style="font-size: 12px !important;"></property>
 
                 <!-- Winding configuration -->
                 <winding-configuration :properties="this.transformerDto.properties" :data="this.transformerDto.winding_configuration" style="font-size: 12px !important;"></winding-configuration>
@@ -29,17 +30,21 @@
             </div>
 
             <!-- Bushings -->
-            <div v-else-if="this.switch == 'Bushings'">
+            <div style="flex: 1; display: flex; flex-direction: column;" v-else-if="this.switch == 'Bushings'">
                 <bushing
                     :asset_type="this.transformerDto.properties.type"
                     :asset_phase="this.transformerDto.winding_configuration.phases"
                     :asset_winding_config="this.transformerDto.winding_configuration.vector_group"
-                    :asset_bushings_config="bushings_config"
+                    :bushing_data="this.bushing_data"
                     @input-bushing="onInputBushing">
                 </bushing>
             </div>
-            <!-- Tab changers -->
-                <!-- <tap-changer :properties="properties" :data="tapChangers"></tap-changer> -->
+
+            <!-- Surge Arrester -->
+            <div v-else-if="this.switch == 'Surge Arrester'">
+                <surge-arrester :data="this.surge_arrester" :properties="this.transformerDto.properties" style="font-size: 12px !important;"></surge-arrester>
+            </div>
+
         </div>
     </div>
 </template>
@@ -47,8 +52,9 @@
 <script>
 /* eslint-disable */
 import WindingConfiguration from './components/WindingConfiguration/index.vue'
-import Bushing from '../Bushing/index.vue'
-import TapChanger from '../TapChanger/index.vue'
+import Bushing from './components/Bushing/index.vue'
+import TapChanger from './components/TapChanger/index.vue'
+import SurgeArrester from './components/SurgeArrester/index.vue'
 import Property from './components/Property/index.vue'
 import Rating from './components/Rating/index.vue'
 import Impedance from './components/Impedance/index.vue'
@@ -72,7 +78,8 @@ export default {
         Rating,
         Impedance,
         Other,
-        manufacturerAdd
+        manufacturerAdd,
+        SurgeArrester
     },
     mixins: [mixin],
     data() {
@@ -87,6 +94,9 @@ export default {
         },
         async switchData(data) {
             this.switch = data
+        },
+        updateAttachment(attachment) {
+            this.attachmentData = attachment
         },
         async resetForm() {},
     }

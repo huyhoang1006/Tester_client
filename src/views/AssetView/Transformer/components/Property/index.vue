@@ -67,6 +67,12 @@ export default {
                 return {}
             }
         },
+        attachment: {
+            type: Array,
+            default() {
+                return []
+            }
+        }
     },
     data() {
         return {
@@ -84,6 +90,14 @@ export default {
             attachmentData : [],
         }
     },
+    watch: {
+        attachment: {
+            handler(newVal) {
+                this.attachmentData = newVal
+            },
+            immediate: true
+        }
+    },
     computed: {
         propertiesData: function () {
             return this.data
@@ -92,6 +106,7 @@ export default {
     methods: { 
         getDataAttachment(rowData) {
             this.attachmentData = rowData
+            this.$emit('update-attachment', this.attachmentData)
         },
         onChangeType(value) {
             this.$emit('change-type', value)

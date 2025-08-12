@@ -3,7 +3,6 @@ class ProductAssetModel extends IdentifiedObject {
     constructor() {
         super()
         this.catalogue_number = null;
-        this.description = null;
         this.manufacturer = null;
         this.corporate_standard_kind = null; // e.g., "standard", "custom"
         this.drawing_number = null; // Version of the corporate standard

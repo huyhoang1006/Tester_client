@@ -13,8 +13,9 @@ import * as positionPointPreload from './positionPoint/index'
 import * as voltageLevelPreload from './voltageLevel/index'
 import * as bayPreload from './bay/index'
 import * as powerSystemResourcePreload from './PowerSystemResource/index'
+import * as SurgeArresterPreload from './surgeArrester/index'
 
 export { parentOrganizationPreload, substationPreload, locationPreload, 
     streetAddressPreload, streetDetailPreload, townDetailPreload, electronicAddressPreload, 
     telephoneNumberPreload, personPreload, personRolePreload, configurationEventPreload, 
-    positionPointPreload, voltageLevelPreload, bayPreload, powerSystemResourcePreload }
+    positionPointPreload, voltageLevelPreload, bayPreload, powerSystemResourcePreload, SurgeArresterPreload }

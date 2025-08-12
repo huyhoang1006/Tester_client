@@ -19,7 +19,7 @@
                     <span v-else-if="tab.mode == 'substation'" class="tab-label">{{ tab.name }}</span>
                     <span v-else-if="tab.mode == 'voltageLevel'" class="tab-label">{{ tab.name }}</span>
                     <span v-else-if="tab.mode == 'bay'" class="tab-label">{{ tab.name }}</span>
-                    <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.serial_no }}</span>
+                    <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.serial_number }}</span>
                     <span v-else-if="tab.mode == 'job'" class="tab-label">{{ tab.name }}</span>
                     <span v-else-if="tab.mode == 'test'" class="tab-label">{{ tab.name }}</span>
                     <span class="close-icon mgr-10 mgl-10" :class="{visible: hoveredTab === tab.mrid || activeTab.mrid === tab.mrid}" @click.stop="closeTab(index)">✖</span>
@@ -45,8 +45,10 @@ import OrganisationView from '@/views/Organisation/index.vue'
 import * as subsMapper from '@/views/Mapping/Substation/index'
 import * as orgMapper from '@/views/Mapping/Organisation/index'
 import * as voltageMapper from '@/views/Mapping/VoltageLevel/index'
+import * as surgeMapper from '@/views/Mapping/SurgeArrester/index'
 import VoltageLevel from '@/views/VoltageLevel/index.vue'
 import Bay from '@/views/Bay/index.vue'
+import SurgeArrester from '@/views/AssetView/SurgeArrester/index.vue'
 
 export default {
     name : "Tabs",
@@ -56,7 +58,8 @@ export default {
         Transformer,
         OrganisationView,
         VoltageLevel,
-        Bay
+        Bay,
+        SurgeArrester
     },
     model: {
         prop: 'value',
@@ -146,6 +149,17 @@ export default {
                     } else {
                         this.$message.error("Failed to load bay data");
                     }
+                } else if(tab.mode === 'asset') {
+                    if(tab.asset === 'Surge arrester') {
+                        const data = await window.electronAPI.getSurgeArresterEntityByMrid(tab.mrid, tab.parentId)
+                        if(data.success) {
+                            console.log(data)
+                            const surgeArresterDto = surgeMapper.mapEntityToDto(data.data)
+                            this.$refs.componentLoadData[index].loadData(surgeArresterDto)
+                        } else {
+                            this.$message.error("Failed to load surge arrester data");
+                        }
+                    }
                 }
             } catch (error) {
                 console.error("Error loading data:", error);
@@ -207,6 +221,10 @@ export default {
                 return 'VoltageLevel'
             } else if(tab.mode == 'bay') {
                 return 'Bay'
+            } else if(tab.mode == 'asset') {
+                if(tab.asset === 'Surge arrester') {
+                    return 'SurgeArrester'
+                }
             }
         },
         saveCtrlS() {
