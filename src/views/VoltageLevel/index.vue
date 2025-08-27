@@ -93,6 +93,10 @@ export default {
         parent: {
             type: Object,
             default: () => ({})
+        },
+        locationId: {
+            type: String,
+            default: ''
         }
     },
 }

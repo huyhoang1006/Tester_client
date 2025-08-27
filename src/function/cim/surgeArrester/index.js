@@ -214,15 +214,20 @@ export const deleteSurgeArresterById = async (mrid) => {
 export const deleteSurgeArresterTransaction = async (mrid, dbsql) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const assetResult = await AssetFunc.deleteAssetByIdTransaction(mrid, dbsql)
-            if (!assetResult.success) {
-                return reject({ success: false, message: 'Delete asset failed', err: assetResult.err })
-            }
             dbsql.run("DELETE FROM surge_arrester WHERE mrid=?", [mrid], function (err) {
                 if (err) {
                     return reject({ success: false, err: err, message: 'Delete surge arrester failed' })
                 }
-                return resolve({ success: true, data: mrid, message: 'Delete surge arrester completed' })
+                AssetFunc.deleteAssetByIdTransaction(mrid, dbsql)
+                    .then(assetResult => {
+                        if (!assetResult.success) {
+                            return reject({ success: false, message: 'Delete asset failed', err: assetResult.err })
+                        }
+                        return resolve({ success: true, data: mrid, message: 'Delete surge arrester completed' })
+                    })
+                    .catch(error => {
+                        return reject({ success: false, err: error, message: 'Delete asset transaction failed' })
+                    });
             })
         } catch (error) {
             return reject({ success: false, err: error, message: 'Delete surge arrester transaction failed' })

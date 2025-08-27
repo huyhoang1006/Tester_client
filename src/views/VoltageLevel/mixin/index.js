@@ -86,6 +86,10 @@ export default {
             if(data.substationId === null || data.substationId === '') {
                 data.substationId = this.parent ? this.parent.mrid : null
             }
+            if(data.locationId === null || data.locationId === '') {
+                data.locationId = this.locationId ? this.locationId : null
+            }
+            
             this.checkBaseVoltage(data);
             this.checkNominalVoltage(data);
             this.checkHighVoltageLimit(data);

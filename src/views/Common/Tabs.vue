@@ -29,7 +29,20 @@
         </div>
         <div class="tabs-content">
             <div class="mgr-20 mgt-20 mgb-20 mgl-20" v-for="(item) in tabs" :key="item.mrid">
-                <component mode="update" @reload="loadData" v-show="activeTab.mrid === item.mrid" ref="componentLoadData" :sideData="sideSign" :is="checkTab(item)" :organisationId="item.parentId"></component>
+                <component mode="update" 
+                    @reload="loadData" 
+                    v-show="activeTab.mrid === item.mrid" 
+                    ref="componentLoadData" 
+                    :sideData="sideSign" 
+                    :is="checkTab(item)" 
+                    :organisationId="item.parentId"
+                    :testTypeListData="testTypeListData"
+                    :assetData="assetData"
+                    :productAssetModelData="productAssetModelData"
+                    :parent="parentOrganization"
+                    :locationData="locationData" 
+                    >
+                </component>
             </div>
         </div>
     </div>
@@ -46,9 +59,11 @@ import * as subsMapper from '@/views/Mapping/Substation/index'
 import * as orgMapper from '@/views/Mapping/Organisation/index'
 import * as voltageMapper from '@/views/Mapping/VoltageLevel/index'
 import * as surgeMapper from '@/views/Mapping/SurgeArrester/index'
+import * as SurgeArresterJobMapper from '@/views/Mapping/SurgerArresterJob/index'
 import VoltageLevel from '@/views/VoltageLevel/index.vue'
 import Bay from '@/views/Bay/index.vue'
 import SurgeArrester from '@/views/AssetView/SurgeArrester/index.vue'
+import SurgeArresterJob from '@/views/JobView/SurgeArrester/index.vue'
 
 export default {
     name : "Tabs",
@@ -59,7 +74,8 @@ export default {
         OrganisationView,
         VoltageLevel,
         Bay,
-        SurgeArrester
+        SurgeArrester,
+        SurgeArresterJob,
     },
     model: {
         prop: 'value',
@@ -76,6 +92,11 @@ export default {
     data() {
         return {
             activeTab: this.value,
+            testTypeListData: [],
+            assetData: {},
+            productAssetModelData: {},
+            parentOrganization: {},
+            locationData: {},
             tabsData : [],
             indexTab: null,
             sideSign : this.side,
@@ -151,15 +172,77 @@ export default {
                     }
                 } else if(tab.mode === 'asset') {
                     if(tab.asset === 'Surge arrester') {
+                        this.parentOrganization = {
+                            mrid : tab.parentId
+                        }
                         const data = await window.electronAPI.getSurgeArresterEntityByMrid(tab.mrid, tab.parentId)
                         if(data.success) {
-                            console.log(data)
                             const surgeArresterDto = surgeMapper.mapEntityToDto(data.data)
                             this.$refs.componentLoadData[index].loadData(surgeArresterDto)
                         } else {
                             this.$message.error("Failed to load surge arrester data");
                         }
                     }
+                } else if(tab.mode === 'job') {
+                    const dataAsset = await window.electronAPI.getAssetByMrid(tab.parentId)
+                    if(dataAsset.success) {
+                        this.assetData = dataAsset.data
+                        this.parentOrganization = dataAsset.data
+                        const [dataLocation, dataProductAssetModel] = await Promise.all([
+                            window.electronAPI.getLocationDetailByMrid(dataAsset.data.location),
+                            window.electronAPI.getProductAssetModelByMrid(dataAsset.data.product_asset_model)
+                        ]);
+                        if(dataLocation.success) {
+                            this.locationData = dataLocation.data
+                        } else {
+                            this.locationData = {}
+                        }
+
+                        if(dataProductAssetModel.success) {
+                            this.productAssetModelData = dataProductAssetModel.data
+                        } else {
+                            this.productAssetModelData = {}
+                        }
+                    } else {
+                        this.assetData = {}
+                        this.locationData = {}
+                        this.productAssetModelData = {}
+                    }
+                    if(tab.job === 'Surge arrester') {
+                        const dataTestType = await window.electronAPI.getAllTestTypeSurgeArrester();
+                        if(dataTestType.success) {
+                            this.testTypeListData = dataTestType.data
+                        } else {
+                            this.testTypeListData = []
+                        }
+                        const dataSurgeArrester = await window.electronAPI.getSurgeArresterByMrid(tab.parentId)
+                        if(dataSurgeArrester.success) {
+                            this.assetData = dataSurgeArrester.data
+                        } else {
+                            this.assetData = {}
+                        }
+                        this.checkJobType = 'JobSurgeArrester'
+                        this.signJob = true;
+                        const data = await window.electronAPI.getSurgeArresterJobByMrid(tab.mrid)
+                        console.log("Data from main process:", data); // Debug log
+                        if(data.success) {
+                            const surgeArresterJobDto = SurgeArresterJobMapper.JobEntityToDto(data.data)
+                            for (const test of surgeArresterJobDto.testList) {
+                                for (const type of this.testTypeListData) {
+                                    if(test.testTypeCode === type.code) {
+                                        test.testTypeName = type.name
+                                        test.testTypeId = type.mrid
+                                        break
+                                    }
+                                }
+                            }
+                            this.$refs.componentLoadData[index].loadData(surgeArresterJobDto)
+                        } else {
+                            this.$message.error("Failed to load surge arrester job data");
+                        }
+                    }
+                } else {
+                    this.$message.error("Unsupported tab mode");
                 }
             } catch (error) {
                 console.error("Error loading data:", error);
@@ -209,7 +292,7 @@ export default {
                 if (moveBy) {
                     header.scrollBy({ left: moveBy, behavior: 'smooth' });
                     setTimeout(this.checkScroll, 300);
-                    }
+                }
             });
         },
         checkTab(tab) {
@@ -224,6 +307,10 @@ export default {
             } else if(tab.mode == 'asset') {
                 if(tab.asset === 'Surge arrester') {
                     return 'SurgeArrester'
+                }
+            } else if(tab.mode == 'job') {
+                if(tab.job === 'Surge arrester') {
+                    return 'SurgeArresterJob'
                 }
             }
         },

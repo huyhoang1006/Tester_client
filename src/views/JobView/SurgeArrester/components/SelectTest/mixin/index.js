@@ -1,13 +1,9 @@
-import { mapState } from 'vuex'
-
 export default {
     data() {
         return {}
     },
-    computed: mapState(['selectedAsset', 'selectedJob']),
-    async beforeMount() {},
     methods: {
-        async initTest(testTypeCode) {
+        async initTest(testTypeCode, assetData) {
             let data = null
             switch (testTypeCode) {
                 case 'InsulationResistance':
@@ -17,59 +13,170 @@ export default {
                     data = await this.initGeneralInspection()
                     break
                 case 'LeakageCurrent':
-                    data = await this.initLeakageCurrent()
+                    data = await this.initLeakageCurrent(assetData)
                     break
                 case 'PowerFrequency':
-                    data = await this.initPowerFrequency()
+                    data = await this.initPowerFrequency(assetData)
                     break
             }
-
             return data
         },
         async initInsulationResistance() {
             let table = [
                 {
-                    measurement : "Phase A - GND",
-                    vTest : '',
-                    r60s : "",
-                    assessment : '',
-                    condition_indicator : ''
+                    mrid : '',
+                    measurement : {
+                        mrid : '',
+                        value : 'Phase A - GND',
+                        unit : ''
+                    },
+                    vTest : {
+                        mrid : '',
+                        value : '',
+                        unit : 'V'
+                    },
+                    r60s : {
+                        mrid : '',
+                        value : '',
+                        unit : 'M|Ω'
+                    },
+                    assessment : {
+                        mrid : '',
+                        value : '',
+                        unit : ''
+                    },
+                    condition_indicator : {
+                        mrid : '',
+                        value : '',
+                        unit : ''
+                    }
                 },
                 {
-                    measurement : "Phase B - GND",
-                    vTest : '',
-                    r60s : "",
-                    assessment : '',
-                    condition_indicator : ''
+                    mrid : '',
+                    measurement : {
+                        mrid : '',
+                        value : 'Phase B - GND',
+                        unit : ''
+                    },
+                    vTest : {
+                        mrid : '',
+                        value : '',
+                        unit : 'V'
+                    },
+                    r60s : {
+                        mrid : '',
+                        value : '',
+                        unit : 'M|Ω'
+                    },
+                    assessment : {
+                        mrid : '',
+                        value : '',
+                        unit : ''
+                    },
+                    condition_indicator : {
+                        mrid : '',
+                        value : '',
+                        unit : ''
+                    }
                 },
                 {
-                    measurement : "Phase C - GND)",
-                    vTest : '',
-                    r60s : "",
-                    assessment : '',
-                    condition_indicator : ''
+                    mrid : '',
+                    measurement : {
+                        mrid : '',
+                        value : 'Phase C - GND',
+                        unit : ''
+                    },
+                    vTest : {
+                        mrid : '',
+                        value : '',
+                        unit : 'V'
+                    },
+                    r60s : {
+                        mrid : '',
+                        value : '',
+                        unit : 'M|Ω'
+                    },
+                    assessment : {
+                        mrid : '',
+                        value : '',
+                        unit : ''
+                    },
+                    condition_indicator : {
+                        mrid : '',
+                        value : '',
+                        unit : ''
+                    }
                 },
                 {
-                    measurement : "Base - GND)",
-                    vTest : '',
-                    r60s : "",
-                    assessment : '',
-                    condition_indicator : ''
+                    mrid : '',
+                    measurement : {
+                        mrid : '',
+                        value : "Base - GND",
+                        unit : ''
+                    },
+                    vTest : {
+                        mrid : '',
+                        value : '',
+                        unit : 'V'
+                    },
+                    r60s : {
+                        mrid : '',
+                        value : '',
+                        unit : 'M|Ω'
+                    },
+                    assessment : {
+                        mrid : '',
+                        value : '',
+                        unit : ''
+                    },
+                    condition_indicator : {
+                        mrid : '',
+                        value : '',
+                        unit : ''
+                    }
                 }
             ]
             return {
                 table
             }
         },
-        async initLeakageCurrent() {
-            let units = parseInt(JSON.parse(this.selectedAsset[0].ratings).unitStack)
+        async initLeakageCurrent(assetData) {
+            let units = assetData.unit_count || 0
             let phase = ["A", "B", "C"]
             let table = []
             for(let i in phase) {
                 for(let j = 1; j <= units; j ++) {
                     let data = {
-                        phase : phase[i],
-                        unit_no : j
+                        phase : {
+                            mrid : '',
+                            value : phase[i],
+                            unit : ''
+                        },
+                        unit_no : {
+                            mrid : '',
+                            value : j,
+                            unit : ''
+                        },
+                        vTest : {
+                            mrid : '',
+                            value : '',
+                            unit : 'V'
+                        },
+                        iMeas : {
+                            mrid : '',
+                            value : '',
+                            unit : 'm|A'
+                        },
+                        assessment : {
+                            mrid : '',
+                            value : '',
+                            unit : ''
+                        },
+                        condition_indicator : {
+                            mrid : '',
+                            value : '',
+                            unit : ''
+                        }
                     }
                     table.push(data)
                 }
@@ -78,15 +185,43 @@ export default {
                 table
             }
         },
-        async initPowerFrequency() {
-            let units = parseInt(JSON.parse(this.selectedAsset[0].ratings).unitStack)
+        async initPowerFrequency(assetData) {
+            let units = assetData.unit_count || 0
             let phase = ["A", "B", "C"]
             let table = []
             for(let i in phase) {
                 for(let j = 1; j <= units; j ++) {
                     let data = {
-                        phase : phase[i],
-                        unit_no : j
+                        phase : {
+                            mrid : '',
+                            value : phase[i],
+                            unit : ''
+                        },
+                        unit_no : {
+                            mrid : '',
+                            value : j,
+                            unit : ''
+                        },
+                        refCurrent : {
+                            mrid : '',
+                            value : '',
+                            unit : 'm|A'
+                        },
+                        vmeas : {
+                            mrid : '',
+                            value : '',
+                            unit : 'k|V'
+                        },
+                        assessment : {
+                            mrid : '',
+                            value : '',
+                            unit : ''
+                        },
+                        condition_indicator : {
+                            mrid : '',
+                            value : '',
+                            unit : ''
+                        }
                     }
                     table.push(data)
                 }
@@ -100,9 +235,21 @@ export default {
             const data = ['Nameplate', 'Installation check', 'Grounding check', 'Discharge counter check']
             data.forEach(element => {
                 table.push({
-                    items : element,
-                    assessment : '',
-                    condition_indicator : ''
+                    items : {
+                        mrid : '',
+                        value : element,
+                        unit : ''
+                    },
+                    assessment : {
+                        mrid : '',
+                        value : '',
+                        unit : ''
+                    },
+                    condition_indicator : {
+                        mrid : '',
+                        value : '',
+                        unit : ''
+                    }
                 })
             })
             return {

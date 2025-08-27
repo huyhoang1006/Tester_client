@@ -20,10 +20,14 @@ import * as bayFunc from './bay/index.js'
 import * as voltageLevelFunc from './voltageLevel/index.js'
 import * as PowerSystemResourceFunc from './powerSystemResource/index.js'
 import * as surgeArresterFunc from './surgeArrester/index.js'
+import * as ProductAssetModelFunc from './productAssetModel/index.js'
+import * as oldWorkFunc from './oldWork/index.js'
+import * as assetFunc from './asset/index.js'
 
 export {identifiedObjectFunc, substationFunc, electronicAddressFunc, locationFunc,
     personFunc, personRoleFunc, psrTypeFunc, streetAddressFunc, streetDetailFunc,
     townDetailFunc, telephoneNumberFunc, organisationFunc, parentOrganizationFunc,
     activityRecordFunc, configurationEventFunc, positionPointFunc, voltageFunc, baseVoltageFunc,
-    bayFunc, voltageLevelFunc, PowerSystemResourceFunc, surgeArresterFunc
+    bayFunc, voltageLevelFunc, PowerSystemResourceFunc, surgeArresterFunc, ProductAssetModelFunc,
+    oldWorkFunc, assetFunc
 }

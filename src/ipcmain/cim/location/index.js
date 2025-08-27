@@ -139,9 +139,37 @@ export const updateLocationByMrid = () => {
     })
 }
 
+export const getLocationDetailByMrid = () => {
+    ipcMain.handle('getLocationDetailByMrid', async function (event, mrid) {
+        try {
+            const rs = await cimFunc.locationFunc.getLocationDetailByMrid(mrid)
+            if (rs.success === true) {
+                return {
+                    success: true,
+                    message: rs.message || "Success",
+                    data: rs.data
+                }
+            } else {
+                return {
+                    success: false,
+                    message: rs.message || "fail",
+                }
+            }
+        } catch (error) {
+            console.log(error)
+            return {
+                error: error,
+                success: false,
+                message: (error && error.message) ? error.message : "Internal error",
+            }
+        }
+    })
+}
+
 export const active = () => {
     getLocationByMrid()
     getLocationByOrganisationId()
+    getLocationDetailByMrid()
     insertLocation()
     updateLocationByMrid()
     deleteLocationByMrid()

@@ -57,10 +57,10 @@ export const getSurgeArresterEntityByMrid = () => {
     })
 }
 
-export const deleteSurgeArresterEntityByMrid = () => {
-    ipcMain.handle('deleteSurgeArresterEntityByMrid', async function (event, data) {
+export const deleteSurgeArresterEntity = () => {
+    ipcMain.handle('deleteSurgeArresterEntity', async function (event, data) {
         try {
-            const rs = await entityFunc.surgeArresterEntityFunc.deleteSurgeArresterEntityById(data)
+            const rs = await entityFunc.surgeArresterEntityFunc.deleteSurgeArresterEntity(data)
             console.log("Delete surge arrester entity", rs)
             if (rs.success == true) {
                 return {
@@ -89,5 +89,5 @@ export const deleteSurgeArresterEntityByMrid = () => {
 export const active = () => {
     insertSurgeArresterEntity()
     getSurgeArresterEntityByMrid()
-    deleteSurgeArresterEntityByMrid()
+    deleteSurgeArresterEntity()
 }

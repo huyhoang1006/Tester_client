@@ -56,6 +56,7 @@
                         @show-addOrganisation="showAddOrganisation"
                         @show-addVoltageLevel="showAddVoltageLevel"
                         @show-addTransformer="showAddTransformer"
+                        @show-addJob="showAddJob"
                         @show-addBushing="showAddBushing"
                         @show-addSurgeArrester="showAddSurgeArrester"
                         @show-addBay="showAddBay"
@@ -486,7 +487,7 @@
             width="1000px"
             @close="handleVoltageLevelCancel"
         >
-            <VoltageLevel :parent="parentOrganization" ref="voltageLevel"></VoltageLevel>
+            <VoltageLevel :locationId="locationId" :parent="parentOrganization" ref="voltageLevel"></VoltageLevel>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleVoltageLevelCancel" >Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleVoltageLevelConfirm">Save</el-button>
@@ -499,7 +500,7 @@
             width="1000px"
             @close="handleBayCancel"
         >
-            <Bay :parent="parentOrganization" ref="bay"></Bay>
+            <Bay :locationId="locationId" :parent="parentOrganization" ref="bay"></Bay>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleBayCancel" >Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleBayConfirm">Save</el-button>
@@ -542,6 +543,25 @@
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleSurgeCancel" >Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleSurgeConfirm">Save</el-button>
+            </span>
+        </el-dialog>
+
+        <el-dialog
+            title="Add Job"
+            :visible.sync="signJob" 
+            width="1000px"
+            @close="handleJobCancel"
+            >
+            <component ref="jobData" :is="checkJobType" 
+                :locationData="locationData" 
+                :assetData="assetData" 
+                :productAssetModelData="productAssetModelData" 
+                :parent="parentOrganization" 
+                :testTypeListData="testTypeListData">
+            </component>
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" type="danger" @click="handleJobCancel" >Cancel</el-button>
+                <el-button size="small" type="primary" @click="handleJobConfirm">Save</el-button>
             </span>
         </el-dialog>
     </div>
@@ -589,6 +609,8 @@ import Transformer from '@/views/AssetView/Transformer'
 import Bushing from '@/views/AssetView/Bushing'
 import SurgeArrester from '@/views/AssetView/SurgeArrester'
 
+import JobSurgeArrester from '@/views/JobView/SurgeArrester/index.vue'
+
 import mixin from './mixin'
 
 export default {
@@ -606,7 +628,8 @@ export default {
         Bay,
         Transformer,
         Bushing,
-        SurgeArrester
+        SurgeArrester,
+        JobSurgeArrester
     },
     data() {
         return {
@@ -615,6 +638,11 @@ export default {
             logDataClient : [],
             organisationId : '0000000-0000-0000-0000-000000000000',
             locationId : '',
+            locationData : {},
+            assetData : {},
+            productAssetModelData : {},
+            checkJobType : '',
+            testTypeListData : [],
             organisationClientList : [],
             signSubs : false,
             signOrg : false,
@@ -623,6 +651,7 @@ export default {
             signTransformer : false,
             signBushing : false,
             signSurge : false,
+            signJob : false,
             activeTab: {},
             activeTabClient: {},
             indexTabData: null,
@@ -922,7 +951,26 @@ export default {
             if (!node.children) {
                 try {
                     let newRows = [];
-                    if(node.asset != undefined) {
+                    if(node.mode == 'asset') {
+                        const clickedRow = node;
+                        if(node.asset && node.asset == 'Surge arrester') {
+                            const jobsReturn = await this.fetchJobsByAssetId(node.mrid);
+                            if(jobsReturn.success) {
+                                jobsReturn.data.forEach(row => {
+                                    row.parentId = clickedRow.mrid;
+                                    row.mode = 'job';
+                                    row.job = 'Surge arrester';
+                                    let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                    row.parentName = parentName
+                                    row.parentArr = [...clickedRow.parentArr || []]
+                                    row.parentArr.push({
+                                        mrid : clickedRow.mrid,
+                                        parent : clickedRow.name
+                                    })
+                                });
+                                newRows.push(...jobsReturn.data);
+                            }
+                        }
                     } else if(node.mode == 'substation') {
                         const clickedRow = node;
                         const [voltageLevelReturn, bayReturn] = await Promise.all([
@@ -930,7 +978,6 @@ export default {
                             window.electronAPI.getBayByVoltageBySubstationId(null, clickedRow.mrid)
                         ]);
                         const assetReturn = await this.fetchAssetByPsr(clickedRow.mrid);
-                        console.log(assetReturn)
                         if(voltageLevelReturn.success) {
                             voltageLevelReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
@@ -1016,8 +1063,7 @@ export default {
                             });
                             newRows.push(...assetReturn.data);
                         }
-                    }
-                    else {
+                    } else {
                         const clickedRow = node;
                         const [organisationReturn, substationReturn] = await Promise.all([
                             window.electronAPI.getParentOrganizationByParentMrid(clickedRow.mrid),
@@ -1058,9 +1104,9 @@ export default {
             }
         },
 
-        async fetchAssetByPsr(id) {
+        async fetchAssetByPsr(psrId) {
             try {
-                const response = await window.electronAPI.getSurgeArresterByPsrId(id);
+                const response = await window.electronAPI.getSurgeArresterByPsrId(psrId);
                 return response;
             } catch (error) {
                 console.error("Error fetching asset by substation:", error);
@@ -1072,17 +1118,42 @@ export default {
             }
         },
 
+        async fetchJobsByAssetId(assetId) {
+            try {
+                const result = await window.electronAPI.getOldWorkByAssetId(assetId);
+                return result;
+            } catch (error) {
+                console.error("Error fetching jobs by asset ID:", error);
+                return {
+                    success: false,
+                    data: [],
+                    message: "Error fetching jobs by asset ID"
+                };
+            }
+        },
+
         async checkChildren(node) {
             if (!node.children) {
                 try {
                     let newRows = [];
-                    if(node.asset != undefined) {
+                    if(node.mode == 'asset') {
+                        if(node.asset && node.asset != 'Surge arrester') {
+                            const jobsReturn = await this.fetchJobsByAssetId(node.mode, node.mrid);
+                            if(jobsReturn.success) {
+                                newRows.push(...jobsReturn.data);
+                            }
+                        }
                     } else if(node.mode == 'substation') {
                         const clickedRow = node;
                         const [voltageLevelReturn, bayReturn] = await Promise.all([
                             window.electronAPI.getVoltageLevelBySubstationId(clickedRow.mrid),
                             window.electronAPI.getBayByVoltageBySubstationId(null, clickedRow.mrid)
                         ]);
+                        const assetReturn = await this.fetchAssetByPsr(clickedRow.mrid);
+                        if(assetReturn.success) {
+                            newRows.push(...assetReturn.data);
+                        }
+
                         if(voltageLevelReturn.success) {
                             newRows.push(...voltageLevelReturn.data);
                         }
@@ -1102,25 +1173,23 @@ export default {
                         }
 
                     } else if(node.mode == 'bay') {
-                        //
-                    }
-                    else {
                         const clickedRow = node;
-                        const [organisationReturn, substationReturn] = await Promise.all([
-                            window.electronAPI.getParentOrganizationByParentMrid(clickedRow.mrid),
-                            window.electronAPI.getSubstationsInOrganisationForUser(clickedRow.mrid, this.$store.state.user.user_id)
-                        ]);
-                        if(organisationReturn.success) {
-                            newRows.push(...organisationReturn.data);
-                        }
-
-                        if(substationReturn.success) {
-                            newRows.push(...substationReturn.data);
+                        const assetReturn = await this.fetchAssetByPsr(clickedRow.mrid);
+                        if(assetReturn.success) {
+                            newRows.push(...assetReturn.data);
                         }
                     }
-                    return {
-                        success: true,
-                        data: newRows
+
+                    if(newRows.length > 0) {
+                        return {
+                            success: false,
+                            data: newRows
+                        }
+                    } else {
+                        return {
+                            success: false,
+                            data: []
+                        }
                     }
                 } catch (error) {
                     console.error("Error fetching children:", error);
@@ -1493,7 +1562,32 @@ export default {
         },
 
         async openContextMenuClient(event, node) {
-            this.$refs.contextMenuClient.openContextMenu(event, node);
+            const menu = this.$refs.contextMenuClient.$el;
+            const menuHeight = menu.offsetHeight || 200; // fallback nếu chưa render
+            const menuWidth = menu.offsetWidth || 180;
+            // Lấy vị trí click
+            const clickX = event.clientX;
+            const clickY = event.clientY;
+            // Lấy kích thước cửa sổ
+            const windowHeight = window.innerHeight;
+            const windowWidth = window.innerWidth;
+
+            // Tính toán vị trí hiển thị
+            let top = clickY;
+            let left = clickX;
+
+            // Nếu click quá gần mép dưới, hiện menu lên trên
+            if (clickY + menuHeight > windowHeight) {
+                top = clickY - menuHeight;
+                if (top < 0) top = 0;
+            }
+
+            // Nếu click quá gần mép phải, hiện menu sang trái
+            if (clickX + menuWidth > windowWidth) {
+                left = clickX - menuWidth;
+                if (left < 0) left = 0;
+            }
+            this.$refs.contextMenuClient.openContextMenu(event, node, { top, left });
         },
 
         async showContext(event) {
@@ -1522,6 +1616,10 @@ export default {
 
         handleSurgeCancel() {
             this.signSurge = false
+        },
+
+        handleJobCancel() {
+            this.signJob = false
         },
 
         async handleSubsConfirm() {
@@ -1711,6 +1809,44 @@ export default {
                         }
                     } else {
                         this.$message.error("Failed to save Surge Arrester")
+                    }
+                }
+            } catch (error) {
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
+        },
+
+        async handleJobConfirm() {
+            try {
+                const job = this.$refs.jobData
+                if(job) {
+                    const {success, data} = await job.saveJob();
+                    if(success) {
+                        this.$message.success("Job saved successfully")
+                        this.signJob = false
+                        let newRows = []
+                        if(this.organisationClientList && this.organisationClientList.length > 0) {
+                            const newRow = {
+                                mrid: data.oldWork.mrid,
+                                name: data.oldWork.name,
+                                parentId: this.parentOrganization.mrid,
+                                parentName: this.parentOrganization.name,
+                                parentArr: this.parentOrganization.parentArr || [],
+                                mode: 'job',
+                                job: 'Surge arrester',
+                            }
+                            newRows.push(newRow);
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            if (node) {
+                                const children = Array.isArray(node.children) ? node.children : [];
+                                Vue.set(node, "children", [...children, ...newRows]);
+                            } else {
+                                this.$message.error("Parent node not found in tree");
+                            }
+                        }
+                    } else {
+                        this.$message.error("Failed to save Job")
                     }
                 }
             } catch (error) {
@@ -2007,7 +2143,6 @@ export default {
                                 return;
                             }
                             const deleteSign = await window.electronAPI.deleteSubstationEntityByMrid(entity.data);
-                            console.log(deleteSign)
                             if (!deleteSign.success) {
                                 this.$message.error("Delete data failed");
                                 return;
@@ -2104,16 +2239,30 @@ export default {
                             }
                         } else if(node.mode == 'asset') {
                             if(node.asset === 'Surge arrester') {
-                                // const entity = await window.electronAPI.getSurgeArresterEntityByMrid(node.mrid, node.parentId)
-                                // if (!entity.success) {
-                                //     this.$message.error("Entity not found");
-                                //     return;
-                                // }
-                                // const deleteSign = await window.electronAPI.deleteSurgeArresterEntityByMrid(entity.data);
-                                // if (!deleteSign.success) {
-                                //     this.$message.error("Delete data failed");
-                                //     return;
-                                // }
+                                const entity = await window.electronAPI.getSurgeArresterEntityByMrid(node.mrid);
+                                if (!entity.success) {
+                                    this.$message.error("Entity not found");
+                                    return;
+                                }
+                                console.log(entity)
+                                const deleteSign = await window.electronAPI.deleteSurgeArresterEntity(entity.data);
+                                if (!deleteSign.success) {
+                                    this.$message.error("Delete data failed");
+                                    return;
+                                }
+                                // ✅ Xóa node khỏi cây organisationClientList
+                                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
+                                if (parentNode && Array.isArray(parentNode.children)) {
+                                    const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
+                                    if (index !== -1) {
+                                        parentNode.children.splice(index, 1); // Xóa khỏi mảng children
+                                        this.$message.success("Delete data successfully");
+                                    } else {
+                                        this.$message.warning("Node not found in tree structure");
+                                    }
+                                } else {
+                                    this.$message.warning("Parent node not found in tree");
+                                }
                             }
                         }
                     } catch (error) {
@@ -2217,6 +2366,12 @@ export default {
 
         async showAddVoltageLevel(node) {
             try {
+                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
+                if(dataLocation.success) {
+                    this.locationId = dataLocation.data.mrid
+                } else {
+                    this.locationId = null
+                }
                 this.parentOrganization = node
                 this.signVoltageLevel = true
                 this.$nextTick(() => {
@@ -2234,6 +2389,12 @@ export default {
 
         async showAddBay(node) {
             try {
+                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
+                if(dataLocation.success) {
+                    this.locationId = dataLocation.data.mrid
+                } else {
+                    this.locationId = null
+                }
                 this.parentOrganization = node
                 this.signBay = true
                 this.$nextTick(() => {
@@ -2298,12 +2459,73 @@ export default {
 
         async showAddSurgeArrester(node) {
             try {
+                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
+                if(dataLocation.success) {
+                    this.locationId = dataLocation.data.mrid
+                } else {
+                    this.locationId = null
+                }
                 this.parentOrganization = node
                 this.signSurge = true
                 this.$nextTick(() => {
                     const surgeArrester = this.$refs.surgeArrester;
                     if (surgeArrester) {
                         surgeArrester.resetForm();
+                    }
+                });
+            } catch (error) {
+                this.parentOrganization = null
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
+        },
+
+        async showAddJob(node) {
+            try {
+                const dataAsset = await window.electronAPI.getAssetByMrid(node.mrid);
+                if(dataAsset.success) {
+                    this.assetData = dataAsset.data
+                    const [dataLocation, dataProductAssetModel] = await Promise.all([
+                        window.electronAPI.getLocationDetailByMrid(dataAsset.data.location),
+                        window.electronAPI.getProductAssetModelByMrid(dataAsset.data.product_asset_model)
+                    ]);
+                    if(dataLocation.success) {
+                        this.locationData = dataLocation.data
+                    } else {
+                        this.locationData = {}
+                    }
+
+                    if(dataProductAssetModel.success) {
+                        this.productAssetModelData = dataProductAssetModel.data
+                    } else {
+                        this.productAssetModelData = {}
+                    }
+                } else {
+                    this.$message.error("Asset not found")
+                }
+
+                this.parentOrganization = node
+
+                if(node.asset == 'Surge arrester') {
+                    const dataTestType = await window.electronAPI.getAllTestTypeSurgeArrester();
+                    const dataSurgeArrester = await window.electronAPI.getSurgeArresterByMrid(node.mrid);
+                    if(dataSurgeArrester.success) {
+                        this.assetData = dataSurgeArrester.data
+                    } else {
+                        this.assetData = {}
+                    }
+                    if(dataTestType.success) {
+                        this.testTypeListData = dataTestType.data
+                    } else {
+                        this.testTypeListData = []
+                    }
+                    this.checkJobType = 'JobSurgeArrester'
+                    this.signJob = true;
+                }
+                this.$nextTick(() => {
+                    const job = this.$refs.jobData;
+                    if (job) {
+                        job.resetForm();
                     }
                 });
             } catch (error) {
@@ -2421,7 +2643,7 @@ export default {
                 }
             }
             return null;
-        }
+        },
  
     }
 }

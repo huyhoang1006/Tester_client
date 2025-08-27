@@ -268,3 +268,36 @@ export const deleteLocationByIdTransaction = async (mrid, dbsql) => {
     // Tái sử dụng hàm deleteIdentifiedObjectById đã có sẵn
     return IdentifiedObjectFunc.deleteIdentifiedObjectById(mrid, dbsql)
 }
+
+export const getLocationDetailByMrid = async (mrid) => {
+    return new Promise((resolve, reject) => {
+        const query = `
+            SELECT 
+                l.mrid AS location_mrid,
+                l.*,
+                sa.mrid AS street_address_mrid,
+                sa.*,
+                sd.mrid AS street_detail_mrid,
+                sd.*,
+                td.mrid AS town_detail_mrid,
+                td.*,
+                io.mrid AS identified_object_mrid,
+                io.* 
+            FROM location l
+            Left JOIN identified_object io ON l.mrid = io.mrid
+            LEFT JOIN street_address sa ON l.main_address = sa.mrid
+            LEFT JOIN street_detail sd ON sa.street_detail = sd.mrid
+            LEFT JOIN town_detail td ON sa.town_detail = td.mrid
+            WHERE l.mrid = ?
+        `;
+        db.get(query, [mrid], (err, row) => {
+            if (err) {
+                return reject({ success: false, err, message: 'Get location detail failed' });
+            }
+            if (!row) {
+                return resolve({ success: false, data: null, message: 'Location not found' });
+            }
+            return resolve({ success: true, data: row, message: 'Get location detail completed' });
+        });
+    });
+};

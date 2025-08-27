@@ -15,7 +15,11 @@ import * as ipcBay from './bay/index.js'
 import * as ipcVoltage from './voltage/index.js'
 import * as ipcBaseVoltage from './baseVoltage/index.js'
 import * as ipcPowerSystemResource from './powerSystemResource/index.js'
+import * as ipcProductAssetModel from './productAssetModel/index.js'
 import * as ipcSurgeArrester from './surgeArrester/index.js'
+import * as ipcOldWork from './oldWork/index.js'
+import * as ipcAsset from './asset/index.js'
+
 
 export const active = () => {
     ipcParentOrganization.active()
@@ -36,4 +40,7 @@ export const active = () => {
     ipcBaseVoltage.active()
     ipcPowerSystemResource.active()
     ipcSurgeArrester.active()
+    ipcProductAssetModel.active()
+    ipcOldWork.active()
+    ipcAsset.active()
 }

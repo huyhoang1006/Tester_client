@@ -37,7 +37,7 @@
                         <li><i class="fa-solid fa-plug-circle-xmark"></i> Add Disconnector</li>
                     </ul>
                 </li>
-                <li v-if="this.selectedNode && this.selectedNode.mode == 'asset'">
+                <li @click="addJob" v-if="this.selectedNode && this.selectedNode.mode == 'asset'">
                     <i class="fa-solid fa-plus"></i> Add job
                 </li>
                 <li v-if="this.selectedNode && this.selectedNode.mode == 'job'">
@@ -77,10 +77,13 @@ export default {
         };
     },
     methods: {
-        openContextMenu(event, node) {
+        openContextMenu(event, node, { top, left }) {
             event.preventDefault();
-
-            this.position = { x: event.clientX, y: event.clientY };
+            if(top && left) {
+                this.position = { x: left, y: top };
+            } else {
+                this.position = { x: event.clientX, y: event.clientY };
+            }
             this.selectedNode = node;
             this.visible = true;
 
@@ -157,7 +160,11 @@ export default {
         addAsset() {
             this.$emit("show-addAsset", this.selectedNode)
             this.closeContextMenu()
-        }
+        },
+        addJob() {
+            this.$emit("show-addJob", this.selectedNode)
+            this.closeContextMenu()
+        },
     }
 };
 </script>
