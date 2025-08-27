@@ -38,13 +38,18 @@ const voltageLevelAPI = cimPreload.voltageLevelPreload.voltageLevelPreload()
 const powerSystemResourceAPI = cimPreload.powerSystemResourcePreload.powerSystemResourcePreload()
 const surgeArresterEntityAPI = entityPreload.surgeArresterEntityPreload.surgeArresterEntityPreload()
 const surgeArresterAPI = cimPreload.SurgeArresterPreload.surgeArresterPreload()
-
+const productAssetModelAPI = cimPreload.productAssetModelPreload.productAssetModelPreload()
+const testTypeSurgeArresterAPI = entityPreload.testTypePreload.testTypeSurgeArresterPreload.testTypeSurgeArresterPreload()
+const surgeArresterJobAPI = entityPreload.jobEntityPreload.surgeArresterJob.surgeArresterJobPreload()
+const oldWorkAPI = cimPreload.oldWorkPreload.oldWorkPreload()
+const assetAPI = cimPreload.assetPreload.assetPreload()
 
 const ipcMain = Object.assign(userAPI, transformerAPI, fmecaAPI, conditionAPI, circuitAPI, attachmentAPI, 
     currentTransAPI, voltageTransAPI, disconnectorAPI, surgeArresterAPI, powerCablePreAPI, uploadCustomAPI,
     manufacturerAPI, ownerAPI, parentOrganizationAPI, substationAPI, locationAPI, streetAddressAPI, streetDetailAPI, townDetailAPI,
     electronicAddressAPI, personAPI, personRoleAPI, telephoneNumberAPI, configurationEventAPI, substationEntityAPI, parentOrganizationEntityAPI,
-    positionPointAPI, voltageLevelEntityAPI, voltageLevelAPI, bayEntityAPI, bayAPI, powerSystemResourceAPI, surgeArresterEntityAPI)
+    positionPointAPI, voltageLevelEntityAPI, voltageLevelAPI, bayEntityAPI, bayAPI, powerSystemResourceAPI, surgeArresterEntityAPI, 
+    productAssetModelAPI, testTypeSurgeArresterAPI, surgeArresterJobAPI, oldWorkAPI, assetAPI)
 contextBridge.exposeInMainWorld('electronAPI', 
     ipcMain 
 )

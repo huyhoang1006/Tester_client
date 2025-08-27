@@ -1,4 +1,5 @@
 import db from '../../datacontext/index'
+import path from 'path'
 import * as attachmentContext from '../../attachmentcontext/index'
 import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, deleteDirectory } from '@/function/entity/attachment'
 import {insertSurgeArresterTransaction, getSurgeArresterById, deleteSurgeArresterTransaction} from '@/function/cim/surgeArrester';
@@ -34,13 +35,18 @@ export const insertSurgeArresterEntity = async (old_entity,entity) => {
                 return result;
             }
             await runAsync('BEGIN TRANSACTION');
+
             //voltage
             const newIds = entity.voltage.map(v => v.mrid).filter(id => id); // bỏ null/empty
             const oldIds = old_entity.voltage.map(v => v.mrid).filter(id => id);
 
             const toAdd = entity.voltage.filter(v => v.mrid && !oldIds.includes(v.mrid));
             const toDelete = old_entity.voltage.filter(v => v.mrid && !newIds.includes(v.mrid));
+            const toUpdate = entity.voltage.filter(v => v.mrid && oldIds.includes(v.mrid));
             for (const voltage of toAdd) {
+                await insertVoltageTransaction(voltage, db);
+            }
+            for (const voltage of toUpdate) {
                 await insertVoltageTransaction(voltage, db);
             }
 
@@ -50,7 +56,11 @@ export const insertSurgeArresterEntity = async (old_entity,entity) => {
 
             const toAddSeconds = entity.seconds.filter(s => s.mrid && !oldSecondsIds.includes(s.mrid));
             const toDeleteSeconds = old_entity.seconds.filter(s => s.mrid && !newSecondsIds.includes(s.mrid));
+            const toUpdateSeconds = entity.seconds.filter(s => s.mrid && oldSecondsIds.includes(s.mrid));
             for (const seconds of toAddSeconds) {
+                await insertSecondsTransaction(seconds, db);
+            }
+            for (const seconds of toUpdateSeconds) {
                 await insertSecondsTransaction(seconds, db);
             }
 
@@ -60,7 +70,12 @@ export const insertSurgeArresterEntity = async (old_entity,entity) => {
 
             const toAddCurrentFlow = entity.currentFlow.filter(c => c.mrid && !oldCurrentFlowIds.includes(c.mrid));
             const toDeleteCurrentFlow = old_entity.currentFlow.filter(c => c.mrid && !newCurrentFlowIds.includes(c.mrid));
+            const toUpdateCurrentFlow = entity.currentFlow.filter(c => c.mrid && oldCurrentFlowIds.includes(c.mrid));
             for (const currentFlow of toAddCurrentFlow) {
+                await insertCurrentFlowTransaction(currentFlow, db);
+            }
+
+            for (const currentFlow of toUpdateCurrentFlow) {
                 await insertCurrentFlowTransaction(currentFlow, db);
             }
 
@@ -75,8 +90,13 @@ export const insertSurgeArresterEntity = async (old_entity,entity) => {
 
             const toAddOldSurgeArresterInfo = entity.oldSurgeArresterInfo.filter(o => o.mrid && !oldOldSurgeArresterInfoIds.includes(o.mrid));
             const toDeleteOldSurgeArresterInfo = old_entity.oldSurgeArresterInfo.filter(o => o.mrid && !newOldSurgeArresterInfoIds.includes(o.mrid));
+            const toUpdateOldSurgeArresterInfo = entity.oldSurgeArresterInfo.filter(o => o.mrid && oldOldSurgeArresterInfoIds.includes(o.mrid));
 
             for (const oldSurgeArresterInfo of toAddOldSurgeArresterInfo) {
+                await insertOldSurgeArresterInfoTransaction(oldSurgeArresterInfo, db);
+            }
+
+            for (const oldSurgeArresterInfo of toUpdateOldSurgeArresterInfo) {
                 await insertOldSurgeArresterInfoTransaction(oldSurgeArresterInfo, db);
             }
 
@@ -85,7 +105,7 @@ export const insertSurgeArresterEntity = async (old_entity,entity) => {
                 const newPath = []
                 for(let i = 0; i < pathData.length; i++) {
                     const namefile = path.basename(pathData[i].path);
-                    pathData[i].path = path.join(attachmentContext.getAttachmentDir(), namefile);
+                    pathData[i].path = path.join(attachmentContext.getAttachmentDir(), entity.surgeArrester.mrid, namefile);
                     newPath.push(pathData[i]);
                 }
                 entity.attachment.path = JSON.stringify(newPath);
@@ -197,8 +217,69 @@ export const getSurgeArresterEntityById = async (id, psrId) => {
     }
 }
 
-export const deleteSurgeArresterEntityById = async (data) => {
-    console.log("Deleting Surge Arrester Entity by ID:", data.id);
+export const deleteSurgeArresterEntity = async (data) => {
+    try {
+        if(data.surgeArrester == null || data.surgeArrester.mrid == null || data.surgeArrester.mrid === '') {
+            return { success: false, error: new Error('Invalid ID') };
+        } else {
+            try {
+                await runAsync('BEGIN TRANSACTION');
+                if(data.attachment && data.attachment.id) {
+                    const pathData = JSON.parse(data.attachment.path || '[]')
+                    if (Array.isArray(pathData) && pathData.length > 0) {
+                        syncFilesWithDeletion(pathData, null, data.mrid);
+                    }
+                }
+                if( data.attachment.id) {
+                    await deleteAttachmentByIdTransaction(data.attachment.id, db);
+                }
+                if(data.assetPsr && data.assetPsr.mrid) {
+                    await deleteAssetPsrTransaction(data.assetPsr.mrid, db);
+                }
+                for (const oldSurgeArresterInfo of data.oldSurgeArresterInfo) {
+                    if (oldSurgeArresterInfo.mrid) {
+                        await deleteOldSurgeArresterInfoByIdTransaction(oldSurgeArresterInfo.mrid, db);
+                    }
+                }
+                if(data.surgeArrester.mrid) {
+                    await deleteSurgeArresterTransaction(data.surgeArrester.mrid, db);
+                }
+                if(data.lifecycleDate && data.lifecycleDate.mrid) {
+                    await deleteLifecycleDateByIdTransaction(data.lifecycleDate.mrid, db);
+                }
+                if(data.productAssetModel && data.productAssetModel.mrid) {
+                    await deleteProductAssetModelByIdTransaction(data.productAssetModel.mrid, db);
+                }
+                for (const voltage of data.voltage) {
+                    if (voltage.mrid) {
+                        await deleteVoltageByIdTransaction(voltage.mrid, db);
+                    }
+                }
+                for (const seconds of data.seconds) {
+                    if (seconds.mrid) {
+                        await deleteSecondsByIdTransaction(seconds.mrid, db);
+                    }
+                }
+                for (const currentFlow of data.currentFlow) {
+                    if (currentFlow.mrid) {
+                        await deleteCurrentFlowByIdTransaction(currentFlow.mrid, db);
+                    }
+                }
+                await runAsync('COMMIT');
+                if(data.attachment && data.attachment.id) {
+                    deleteDirectory(null, data.surgeArrester.mrid);
+                }
+                return { success: true, message: 'Surge Arrester entity deleted successfully' };
+            } catch (error) {
+                await runAsync('ROLLBACK');
+                console.error('Error deleting Surge Arrester entity:', error);
+                return { success: false, error, message: 'Error deleting Surge Arrester entity' };
+            }
+        }
+    } catch (error) {
+        console.error('Error deleting Surge Arrester entity:', error);
+        return { success: false, error, message: 'Error deleting Surge Arrester entity' };
+    }
 }
 
 const runAsync = (sql, params = []) => {

@@ -22,6 +22,8 @@ export function mapDtoToEntity(dto) {
     entity.surgeArrester.description = dto.properties.comment || null;
     entity.surgeArrester.unit_count = dto.ratings.unitStack || null;
     entity.productAssetModel.mrid = dto.productAssetModelId || null;
+    entity.surgeArrester.location = dto.locationId || null;
+    entity.surgeArrester.product_asset_model = dto.productAssetModelId || null;
 
     // lifecycle date
     entity.lifecycleDate.manufactured_date = dto.properties.manufacturer_year || null;
@@ -140,6 +142,8 @@ export function mapEntityToDto(entity) {
     dto.properties.country_of_origin = entity.surgeArrester.country_of_origin || '';
     dto.properties.apparatus_id = entity.surgeArrester.name || '';
     dto.properties.comment = entity.surgeArrester.description || '';
+    dto.locationId = entity.surgeArrester.location || '';
+    dto.productAssetModelId = entity.surgeArrester.product_asset_model || '';
 
     // lifecycle date
     dto.lifecycleDateId = entity.surgeArrester.lifecycle_date || '';

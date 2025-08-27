@@ -2,28 +2,28 @@
     <div id="dc-winding-resistance-prim">
 
         <!-- Cấu hình -->
-        <div style="position: sticky; left: 0; display: inline-block;">
-        <el-row class="mgb-10">
-            <el-col>
-                <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
-                    <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
-                </el-button>
-                <el-button class="btn-action" size="mini" type="success" @click="openConditionIndicatorDialog = true">
-                    <i class="fa-solid fa-hammer"></i> Condition indicatior settings
-                </el-button>
-            </el-col>
-        </el-row>
+        <div style="position: sticky; left: 0; display: inline-block; margin-top: 20px;">
+            <el-row class="mgb-10">
+                <el-col>
+                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
+                        <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
+                    </el-button>
+                    <el-button class="btn-action" size="mini" type="success" @click="openConditionIndicatorDialog = true">
+                        <i class="fa-solid fa-hammer"></i> Condition indicatior settings
+                    </el-button>
+                </el-col>
+            </el-row>
 
-        <!-- Tương tác với bảng -->
-        <el-row class="mgb-10">
-            <el-col>
-                <el-button size="mini" type="primary" class="btn-action" @click="calculator" > <i class="fas fa-circle-play"></i> Assess results </el-button>
-                <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i class="fas fa-xmark"></i> Clear all</el-button>
-            </el-col>
-        </el-row>
+            <!-- Tương tác với bảng -->
+            <el-row class="mgb-10">
+                <el-col>
+                    <el-button size="mini" type="primary" class="btn-action" @click="calculator" > <i class="fas fa-circle-play"></i> Assess results </el-button>
+                    <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i class="fas fa-xmark"></i> Clear all</el-button>
+                </el-col>
+            </el-row>
         </div>
 
-        <table class="table-strip-input-data" style="width: 80%">
+        <table class="table-strip-input-data" style="width: 100%">
             <thead>
                 <tr>
                     <th>No.</th>
@@ -44,26 +44,26 @@
                         </td>
                         <td>
                             <div style="display: flex;width: 100%;">   
-                                <el-input size="mini" type="text" v-model="item.measurement"></el-input>
+                                <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
                                 <div :class="{colorTableRed : index%3==0, colorTableYellow : index%3==1, colorTableBlue : index%3==2}"></div>
                             </div>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.vTest"></el-input>
+                            <el-input size="mini" type="text" v-model="item.vTest.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.r60s"></el-input>
+                            <el-input size="mini" type="text" v-model="item.r60s.value"></el-input>
                         </td>
                         <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment">
+                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
                                 <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                                 <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
-                            <span v-if="item.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini" v-model="item.condition_indicator">
+                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
                             </el-input>
                         </td>
                         <td>
@@ -82,11 +82,11 @@
         </table>
 
         <!-- Assessment settings -->
-        <el-dialog title="Assessment settings" :visible.sync="openAssessmentDialog" width="860px">
+        <el-dialog :modal="false" title="Assessment settings" :visible.sync="openAssessmentDialog" width="860px">
         </el-dialog>
 
         <!-- Condition indicator settings -->
-        <el-dialog title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="860px">
+        <el-dialog :modal="false" title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="860px">
         </el-dialog>
     </div>
 </template>
@@ -123,11 +123,32 @@ export default {
     methods: {
         add() {
             this.testData.table.push({
-                measurement : "",
-                vTest : '',
-                r60s : "",
-                assessment : '',
-                condition_indicator : ''
+                mrid : '',
+                measurement : {
+                    mrid : '',
+                    value : '',
+                    unit : ''
+                },
+                vTest : {
+                    mrid : '',
+                    value : '',
+                    unit : 'V'
+                },
+                r60s : {
+                    mrid : '',
+                    value : '',
+                    unit : 'M|Ω'
+                },
+                assessment : {
+                    mrid : '',
+                    value : '',
+                    unit : ''
+                },
+                condition_indicator : {
+                    mrid : '',
+                    value : '',
+                    unit : ''
+                }
             })
         },
         removeAll() {
@@ -146,11 +167,32 @@ export default {
         },
         addTest(index) {
             const data = {
-                measurement : "",
-                vTest : '',
-                r60s : "",
-                assessment : '',
-                condition_indicator : ''
+                mrid : '',
+                measurement : {
+                    mrid : '',
+                    value : '',
+                    unit : ''
+                },
+                vTest : {
+                    mrid : '',
+                    value : '',
+                    unit : 'V'
+                },
+                r60s : {
+                    mrid : '',
+                    value : '',
+                    unit : 'M|Ω'
+                },
+                assessment : {
+                    mrid : '',
+                    value : '',
+                    unit : ''
+                },
+                condition_indicator : {
+                    mrid : '',
+                    value : '',
+                    unit : ''
+                }
             }
             this.testData.table.splice(index+1, 0, data)
         },
@@ -160,11 +202,11 @@ export default {
 
         clear() {
             this.testData.table.forEach((element) => {
-                element.measurement = "",
-                element.vTest = '',
-                element.r60s = "",
-                element.assessment = '',
-                element.condition_indicator = ''
+                element.measurement.value = '',
+                element.vTest.value = '',
+                element.r60s.value = '',
+                element.assessment.value = '',
+                element.condition_indicator.value = ''
             })
         },
         nameColor(data) {

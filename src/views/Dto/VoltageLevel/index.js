@@ -19,6 +19,7 @@ class VoltageLevelDto {
         this.highVoltageLimitId = ''
         this.lowVoltageLimitId = ''
         this.nominalVoltageId = ''
+        this.locationId = ''
     }
 }
 

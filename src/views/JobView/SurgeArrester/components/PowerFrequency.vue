@@ -2,28 +2,28 @@
     <div id="dc-winding-resistance-prim">
 
         <!-- Cấu hình -->
-        <div style="position: sticky; left: 0; display: inline-block;">
-        <el-row class="mgb-10">
-            <el-col>
-                <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
-                    <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
-                </el-button>
-                <el-button class="btn-action" size="mini" type="success" @click="openConditionIndicatorDialog = true">
-                    <i class="fa-solid fa-hammer"></i> Condition indicatior settings
-                </el-button>
-            </el-col>
-        </el-row>
+        <div style="position: sticky; left: 0; display: inline-block; margin-top: 20px;">
+            <el-row class="mgb-10">
+                <el-col>
+                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
+                        <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
+                    </el-button>
+                    <el-button class="btn-action" size="mini" type="success" @click="openConditionIndicatorDialog = true">
+                        <i class="fa-solid fa-hammer"></i> Condition indicatior settings
+                    </el-button>
+                </el-col>
+            </el-row>
 
-        <!-- Tương tác với bảng -->
-        <el-row class="mgb-10">
-            <el-col>
-                <el-button size="mini" type="primary" class="btn-action" @click="calculator" > <i class="fas fa-circle-play"></i> Assess results </el-button>
-                <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i class="fas fa-xmark"></i> Clear all</el-button>
-            </el-col>
-        </el-row>
+            <!-- Tương tác với bảng -->
+            <el-row class="mgb-10">
+                <el-col>
+                    <el-button size="mini" type="primary" class="btn-action" @click="calculator" > <i class="fas fa-circle-play"></i> Assess results </el-button>
+                    <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i class="fas fa-xmark"></i> Clear all</el-button>
+                </el-col>
+            </el-row>
         </div>
 
-        <table class="table-strip-input-data" style="width: 80%">
+        <table class="table-strip-input-data" style="width: 100%">
             <thead>
                 <tr>
                     <th>Phase</th>
@@ -39,39 +39,47 @@
             <tbody>
                 <template v-for="(item, index) in testData.table">
                     <tr :key="index">
-                        <td :rowspan="JSON.parse(assetData.ratings).unitStack" v-if="index%(JSON.parse(assetData.ratings).unitStack)==0">
-                            <div style="display: flex;width: 100%;">   
-                                <el-input style="width: 50px;" size="mini" type="text" v-model="item.phase"></el-input>
-                                <div :class="{colorTableRed : index%3==0, colorTableYellow : index%3==1, colorTableBlue : index%3==2}"></div>
+                        <td>
+                            <div style="display: flex;width: 100%; justify-content: flex-end;">   
+                                <el-input v-if="index%(assetData.unit_count)==1" style="width: 50px;" size="mini" type="text" v-model="item.phase.value"></el-input>
+                                <div 
+                                    :class="{
+                                        colorTableRed : index%3==0, 
+                                        colorTableYellow : index%3==1, 
+                                        colorTableBlue : index%3==2
+                                    }"
+                                    style="min-height: 30px;"
+                                >
+                                </div>
                             </div>
                         </td>
                         <td :class="unitShow">
-                            <el-input size="mini" type="text" v-model="item.unit_no"></el-input>
+                            <el-input size="mini" type="text" v-model="item.unit_no.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.refCurrent"></el-input>
+                            <el-input size="mini" type="text" v-model="item.refCurrent.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.vmeas"></el-input>
+                            <el-input size="mini" type="text" v-model="item.vmeas.value"></el-input>
                         </td>
                         <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment">
+                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
                                 <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                                 <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
-                            <span v-if="item.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini" v-model="item.condition_indicator">
+                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
                             </el-input>
                         </td>
-                        <td :rowspan="JSON.parse(assetData.ratings).unitStack" v-if="index%(JSON.parse(assetData.ratings).unitStack)==0">
+                        <td :rowspan="assetData.unit_count" v-if="index%(assetData.unit_count)==0">
                             <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
                                 <i class="fa-solid fa-plus"></i>
                             </el-button>
                         </td>
-                        <td :rowspan="JSON.parse(assetData.ratings).unitStack" v-if="index%(JSON.parse(assetData.ratings).unitStack)==0">
+                        <td :rowspan="assetData.unit_count" v-if="index%(assetData.unit_count)==0">
                             <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
                                 <i class="fas fa-trash"></i>
                             </el-button>
@@ -112,7 +120,7 @@ export default {
         }
     },
     beforeMount() {
-        let units = JSON.parse(this.assetData.ratings).unitStack
+        let units = this.assetData.unit_count
         if(units == 1 || units == '' || units == undefined) {
             this.unitShow = 'hideUnit'
         }
@@ -129,14 +137,39 @@ export default {
     },
     methods: {
         add() {
-            for(let i=1 ; i<= JSON.parse(this.assetData.ratings).unitStack; i++) {
+            for(let i=1 ; i<= this.assetData.unit_count; i++) {
                 this.testData.table.push({
-                    phase : "",
-                    unit_no : '',
-                    refCurrent : "",
-                    vmeas : "",
-                    assessment : '',
-                    condition_indicator : ''
+                    mrid : '',
+                    phase : {
+                        mrid : '',
+                        value: '',
+                        unit: ''
+                    },
+                    unit_no : {
+                        mrid : '',
+                        value: i,
+                        unit: ''
+                    },
+                    refCurrent : {
+                        mrid : '',
+                        value: '',
+                        unit: 'm|A'
+                    },
+                    vmeas : {
+                        mrid : '',
+                        value: '',
+                        unit: 'k|V'
+                    },
+                    assessment : {
+                        mrid : '',
+                        value: '',
+                        unit: ''
+                    },
+                    condition_indicator : {
+                        mrid : '',
+                        value: '',
+                        unit: ''
+                    }
                 })
             }
         },
@@ -152,18 +185,43 @@ export default {
             )
         },
         deleteTest(index) {
-            this.testData.table.splice(index, JSON.parse(this.assetData.ratings).unitStack)
+            this.testData.table.splice(index, this.assetData.unit_count)
         },
         addTest(index) {
-            let units = JSON.parse(this.assetData.ratings).unitStack
+            let units = this.assetData.unit_count
             for(let i=0 ; i< units; i++) {
                 const data = {
-                    phase : "",
-                    unit_no : i+1,
-                    refCurrent : "",
-                    vmeas : "",
-                    assessment : '',
-                    condition_indicator : ''
+                    mrid : '',
+                    phase : {
+                        mrid : '',
+                        value: '',
+                        unit: ''
+                    },
+                    unit_no : {
+                        mrid : '',
+                        value: i+1,
+                        unit: ''
+                    },
+                    refCurrent : {
+                        mrid : '',
+                        value: '',
+                        unit: 'm|A'
+                    },
+                    vmeas : {
+                        mrid : '',
+                        value: '',
+                        unit: 'k|V'
+                    },
+                    assessment : {
+                        mrid : '',
+                        value: '',
+                        unit: ''
+                    },
+                    condition_indicator : {
+                        mrid : '',
+                        value: '',
+                        unit: ''
+                    }
                 }
                 this.testData.table.splice(index+i+units, 0, data)
             }
@@ -174,12 +232,12 @@ export default {
 
         clear() {
             this.testData.table.forEach((element) => {
-                element.phase = "",
-                element.unit_no = '',
-                element.refCurrent = '',
-                element.vmeas = "",
-                element.assessment = '',
-                element.condition_indicator = ''
+                element.phase.value = "",
+                element.unit_no.value = '',
+                element.refCurrent.value = '',
+                element.vmeas.value = "",
+                element.assessment.value = '',
+                element.condition_indicator.value = ''
             })
         },
         nameColor(data) {
@@ -233,5 +291,9 @@ table, th, td, tr {
 
 .hideUnit {
     display:none;
+}
+
+td, th {
+    font-size: 12px;
 }
 </style>

@@ -28,9 +28,15 @@ export default {
             type: String,
             default: ''
         },
+
+        locationId: {
+            type: String,
+            default: ''
+        },
     },
     data() {
         return {
+            parentData : JSON.parse(JSON.stringify(this.parent)),
         }
     },
     mixins : [mixin],

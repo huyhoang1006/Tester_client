@@ -4,6 +4,8 @@ import * as parentOrganizationPreload from './parentOrganization/index.js'
 import * as voltageLevelPreload from './voltageLevel/index.js'
 import * as bayPreload from './bay/index.js'
 import * as surgeArresterEntityPreload from './surgeArrester/index.js'
+import * as testTypePreload from './testType/index.js'
+import * as jobEntityPreload from './job/index.js'
 
 export { attachmentPreload, substationPreload, parentOrganizationPreload, 
-    voltageLevelPreload, bayPreload, surgeArresterEntityPreload }
+    voltageLevelPreload, bayPreload, surgeArresterEntityPreload, testTypePreload, jobEntityPreload }

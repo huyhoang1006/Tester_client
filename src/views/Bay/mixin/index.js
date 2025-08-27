@@ -63,6 +63,9 @@ export default {
                         data.voltage_level = this.parent.mrid;
                     }
                 }
+                if(data.location === null || data.location === '') {
+                    data.location = this.locationId ? this.locationId : null;
+                }
             }
             return data;
         },

@@ -12,6 +12,7 @@ class SurgeArresterDto {
         this.psrId = '';
         this.attachmentId = '';
         this.attachment = new Attachment();
+        this.locationId = '';
     }
 }
 

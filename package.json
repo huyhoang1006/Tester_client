@@ -25,6 +25,7 @@
     "element-ui": "^2.15.8",
     "exceljs": "^4.3.0",
     "file-icons-js": "github:websemantics/file-icons-js",
+    "knex": "^3.1.0",
     "leaflet": "^1.9.4",
     "puppeteer": "^14.0.0",
     "require-context": "^1.1.0",

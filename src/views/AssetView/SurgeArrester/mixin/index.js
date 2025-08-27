@@ -80,6 +80,7 @@ export default {
                 this.checkAssetPrs(data);
                 this.checkTableRating(data);
                 this.checkAttachment(data);
+                this.checkLocationId(data);
                 return data;
             } catch (error) {
                 console.error("Error checking surge arrester data:", error);
@@ -99,8 +100,8 @@ export default {
         },
 
         checkPsrId(data) {
-            if(this.parent.mrid !== null && this.parent.mrid !== '' && this.parent.mrid !== undefined) {
-                data.psrId = this.parent.mrid
+            if(this.parentData.mrid !== null && this.parentData.mrid !== '' && this.parentData.mrid !== undefined) {
+                data.psrId = this.parentData.mrid
             }
         },
 
@@ -130,7 +131,7 @@ export default {
                     data.attachment.name = null
                     data.attachment.path = JSON.stringify(this.attachmentData)
                     data.attachment.type = 'asset'
-                    data.attachment.id_foreign = this.properties.mrid
+                    data.attachment.id_foreign = data.properties.mrid
                 }
             } 
         },
@@ -161,6 +162,12 @@ export default {
                 if(data.ratings.tableRating[i].shortCurrent.mrid === null || data.ratings.tableRating[i].shortCurrent.mrid === '') {
                     data.ratings.tableRating[i].shortCurrent.mrid = uuid.newUuid();
                 }
+            }
+        },
+
+        checkLocationId(data) {
+            if(data.locationId === null || data.locationId === '') {
+                data.locationId = this.locationId;
             }
         }
     }
