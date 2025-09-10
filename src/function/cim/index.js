@@ -23,11 +23,16 @@ import * as surgeArresterFunc from './surgeArrester/index.js'
 import * as ProductAssetModelFunc from './productAssetModel/index.js'
 import * as oldWorkFunc from './oldWork/index.js'
 import * as assetFunc from './asset/index.js'
+import * as analogFunc from './analog/index.js'
+import * as stringMeasurementFunc from './stringMeasurement/index.js'
+import * as discreteFunc from './discrete/index.js'
+import * as valueToAliasFunc from './valueToAlias/index.js'
+import * as valueAliasSetFunc from './valueAliasSet/index.js'
 
 export {identifiedObjectFunc, substationFunc, electronicAddressFunc, locationFunc,
     personFunc, personRoleFunc, psrTypeFunc, streetAddressFunc, streetDetailFunc,
     townDetailFunc, telephoneNumberFunc, organisationFunc, parentOrganizationFunc,
     activityRecordFunc, configurationEventFunc, positionPointFunc, voltageFunc, baseVoltageFunc,
     bayFunc, voltageLevelFunc, PowerSystemResourceFunc, surgeArresterFunc, ProductAssetModelFunc,
-    oldWorkFunc, assetFunc
+    oldWorkFunc, assetFunc, analogFunc, stringMeasurementFunc, discreteFunc, valueToAliasFunc, valueAliasSetFunc
 }

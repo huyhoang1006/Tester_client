@@ -37,19 +37,26 @@ const bayAPI = cimPreload.bayPreload.bayPreload()
 const voltageLevelAPI = cimPreload.voltageLevelPreload.voltageLevelPreload()
 const powerSystemResourceAPI = cimPreload.powerSystemResourcePreload.powerSystemResourcePreload()
 const surgeArresterEntityAPI = entityPreload.surgeArresterEntityPreload.surgeArresterEntityPreload()
+const transformerEntityAPI = entityPreload.transformerEntityPreload.transformerEntityPreload()
 const surgeArresterAPI = cimPreload.SurgeArresterPreload.surgeArresterPreload()
 const productAssetModelAPI = cimPreload.productAssetModelPreload.productAssetModelPreload()
 const testTypeSurgeArresterAPI = entityPreload.testTypePreload.testTypeSurgeArresterPreload.testTypeSurgeArresterPreload()
 const surgeArresterJobAPI = entityPreload.jobEntityPreload.surgeArresterJob.surgeArresterJobPreload()
 const oldWorkAPI = cimPreload.oldWorkPreload.oldWorkPreload()
 const assetAPI = cimPreload.assetPreload.assetPreload()
+const analogAPI = cimPreload.analogPreload.analogPreload()
+const stringMeasurementAPI = cimPreload.stringMeasurementPreload.stringMeasurementPreload()
+const discreteAPI = cimPreload.discretePreload.discretePreload()
+const valueToAliasAPI = cimPreload.valueToAliasPreload.valueToAliasPreload()
+const valueAliasSetAPI = cimPreload.valueAliasSetPreload.valueAliasSetPreload()
 
 const ipcMain = Object.assign(userAPI, transformerAPI, fmecaAPI, conditionAPI, circuitAPI, attachmentAPI, 
     currentTransAPI, voltageTransAPI, disconnectorAPI, surgeArresterAPI, powerCablePreAPI, uploadCustomAPI,
     manufacturerAPI, ownerAPI, parentOrganizationAPI, substationAPI, locationAPI, streetAddressAPI, streetDetailAPI, townDetailAPI,
     electronicAddressAPI, personAPI, personRoleAPI, telephoneNumberAPI, configurationEventAPI, substationEntityAPI, parentOrganizationEntityAPI,
     positionPointAPI, voltageLevelEntityAPI, voltageLevelAPI, bayEntityAPI, bayAPI, powerSystemResourceAPI, surgeArresterEntityAPI, 
-    productAssetModelAPI, testTypeSurgeArresterAPI, surgeArresterJobAPI, oldWorkAPI, assetAPI)
+    productAssetModelAPI, testTypeSurgeArresterAPI, surgeArresterJobAPI, oldWorkAPI, assetAPI, transformerEntityAPI, analogAPI, 
+    stringMeasurementAPI, discreteAPI, valueToAliasAPI, valueAliasSetAPI)
 contextBridge.exposeInMainWorld('electronAPI', 
     ipcMain 
 )

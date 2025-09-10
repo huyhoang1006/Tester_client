@@ -63,7 +63,8 @@ export default {
                     rel : {}
                 }
                 
-            }
+            },
+            attachmentData : []
         }
     },
     async beforeMount() {

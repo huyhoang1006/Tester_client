@@ -40,7 +40,8 @@
                         <TreeNode 
                             v-for="item in organisationClientList" 
                             :key="item.id" 
-                            :node="item" 
+                            :node="item"
+                            @double-click-node="doubleClickNode" 
                             :selectedNodes.sync="selectedNodes"
                             @fetch-children="fetchChildren" 
                             @show-properties="showPropertiesData"
@@ -59,6 +60,11 @@
                         @show-addJob="showAddJob"
                         @show-addBushing="showAddBushing"
                         @show-addSurgeArrester="showAddSurgeArrester"
+                        @show-addCircuit="showAddCircuitBreaker"
+                        @show-addVt="showAddVt"
+                        @show-addCt="showAddCt"
+                        @show-addPowerCable="showAddPowerCable"
+                        @show-addDisconnector="showAddDisconnector"
                         @show-addBay="showAddBay"
                         @show-data="showDataClient"
                         ref="contextMenuClient">
@@ -547,6 +553,71 @@
         </el-dialog>
 
         <el-dialog
+            title="Add Circuit Breaker"
+            :visible.sync="signCircuit" 
+            width="1000px"
+            @close="handleCircuitCancel"
+        >
+            <CircuitBreaker :locationId="locationId" :parent="parentOrganization" ref="circuitBreaker"></CircuitBreaker>
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" type="danger" @click="handleCircuitCancel" >Cancel</el-button>
+                <el-button size="small" type="primary" @click="handleCircuitConfirm">Save</el-button>
+            </span>
+        </el-dialog>
+
+        <el-dialog
+            title="Add Current Transformer"
+            :visible.sync="signCt" 
+            width="1000px"
+            @close="handleCtCancel"
+        >
+            <CurrentTransformer :locationId="locationId" :parent="parentOrganization" ref="currentTransformer"></CurrentTransformer>
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" type="danger" @click="handleCtCancel" >Cancel</el-button>
+                <el-button size="small" type="primary" @click="handleCtConfirm">Save</el-button>
+            </span>
+        </el-dialog>
+
+        <el-dialog
+            title="Add Voltage Transformer"
+            :visible.sync="signVt" 
+            width="1000px"
+            @close="handleVtCancel"
+        >
+            <VoltageTransformer :locationId="locationId" :parent="parentOrganization" ref="voltageTransformer"></VoltageTransformer>
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" type="danger" @click="handleVtCancel" >Cancel</el-button>
+                <el-button size="small" type="primary" @click="handleVtConfirm">Save</el-button>
+            </span>
+        </el-dialog>
+
+        <el-dialog
+            title="Add Power Cable"
+            :visible.sync="signPower" 
+            width="1000px"
+            @close="handlePowerCancel"
+        >
+            <PowerCable :locationId="locationId" :parent="parentOrganization" ref="powerCable"></PowerCable>
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" type="danger" @click="handlePowerCancel" >Cancel</el-button>
+                <el-button size="small" type="primary" @click="handlePowerConfirm">Save</el-button>
+            </span>
+        </el-dialog>
+
+        <el-dialog
+            title="Add Disconnector"
+            :visible.sync="signDisconnector" 
+            width="1000px"
+            @close="handleDisconnectorCancel"
+        >
+            <Disconnector :locationId="locationId" :parent="parentOrganization" ref="disconnector"></Disconnector>
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" type="danger" @click="handleDisconnectorCancel" >Cancel</el-button>
+                <el-button size="small" type="primary" @click="handleDisconnectorConfirm">Save</el-button>
+            </span>
+        </el-dialog>
+
+        <el-dialog
             title="Add Job"
             :visible.sync="signJob" 
             width="1000px"
@@ -608,6 +679,11 @@ import Bay from '@/views/Bay/index.vue'
 import Transformer from '@/views/AssetView/Transformer'
 import Bushing from '@/views/AssetView/Bushing'
 import SurgeArrester from '@/views/AssetView/SurgeArrester'
+import CircuitBreaker from '@/views/AssetView/CircuitBreaker'
+import CurrentTransformer from '@/views/AssetView/CurrentTransformer'
+import VoltageTransformer from '@/views/AssetView/VoltageTransformer'
+import Disconnector from '@/views/AssetView/Disconnector'
+import PowerCable from '@/views/AssetView/PowerCable'
 
 import JobSurgeArrester from '@/views/JobView/SurgeArrester/index.vue'
 
@@ -629,7 +705,13 @@ export default {
         Transformer,
         Bushing,
         SurgeArrester,
-        JobSurgeArrester
+        CircuitBreaker,
+        CurrentTransformer,
+        VoltageTransformer,
+        Disconnector,
+        PowerCable,
+
+        JobSurgeArrester,
     },
     data() {
         return {
@@ -651,6 +733,11 @@ export default {
             signTransformer : false,
             signBushing : false,
             signSurge : false,
+            signCircuit : false,
+            signCt : false,
+            signVt : false,
+            signPower : false,
+            signDisconnector : false,
             signJob : false,
             activeTab: {},
             activeTabClient: {},
@@ -1610,12 +1697,36 @@ export default {
             this.signBay = false
         },
 
+        async handleTransformerCancel() {
+            this.signTransformer = false
+        },
+
         handleBushingCancel() {
             this.signBushing = false
         },
 
         handleSurgeCancel() {
             this.signSurge = false
+        },
+
+        handleCircuitCancel() {
+            this.signCircuit = false
+        },
+
+        handleVtCancel() {
+            this.signVt = false
+        },
+
+        handleCtCancel() {
+            this.signCt = false
+        },
+
+        handlePowerCancel() {
+            this.signPower = false
+        },
+
+        handleDisconnectorCancel() {
+            this.signDisconnector = false
         },
 
         handleJobCancel() {
@@ -1770,11 +1881,11 @@ export default {
             await this.$refs.transformer.saveAsset();
             // this.signTransformer = false
         },
-
+        
         async handleBushingConfirm() {
             this.$message.success("Bushing saved successfully")
             // Cần thêm logic để cập nhật lại cây nếu cần thiết
-            // await this.$refs.bushing.saveAsset();
+            await this.$refs.bushing.saveAsset();
             // this.signBushing = false
         },
 
@@ -1817,6 +1928,41 @@ export default {
             }
         },
 
+        async handleCircuitConfirm() {
+            this.$message.success("Transformer saved successfully")
+            // Cần thêm logic để cập nhật lại cây nếu cần thiết
+            // await this.$refs.transformer.saveAsset();
+            this.signCircuit = false
+        },
+
+        async handleCtConfirm() {
+            this.$message.success("Current transformer saved successfully")
+            // Cần thêm logic để cập nhật lại cây nếu cần thiết
+            // await this.$refs.transformer.saveAsset();
+            this.signCt = false
+        },
+
+        async handleVtConfirm() {
+            this.$message.success("Voltage transformer saved successfully")
+            // Cần thêm logic để cập nhật lại cây nếu cần thiết
+            // await this.$refs.transformer.saveAsset();
+            this.signVt = false
+        },
+
+        async handlePowerConfirm() {
+            this.$message.success("Power cable saved successfully")
+            // Cần thêm logic để cập nhật lại cây nếu cần thiết
+            // await this.$refs.transformer.saveAsset();
+            this.signPower = false
+        },
+
+        async handleDisconnectorConfirm() {
+            this.$message.success("Disconnector saved successfully")
+            // Cần thêm logic để cập nhật lại cây nếu cần thiết
+            // await this.$refs.transformer.saveAsset();
+            this.signDisconnector = false
+        },
+
         async handleJobConfirm() {
             try {
                 const job = this.$refs.jobData
@@ -1853,10 +1999,6 @@ export default {
                 this.$message.error("Some error occur")
                 console.error(error)
             }
-        },
-
-        async handleTransformerCancel() {
-            this.signTransformer = false
         },
 
         async downloadFromServer() {
@@ -2480,6 +2622,121 @@ export default {
             }
         },
 
+        async showAddCt(node) {
+            try {
+                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
+                if(dataLocation.success) {
+                    this.locationId = dataLocation.data.mrid
+                } else {
+                    this.locationId = null
+                }
+                this.parentOrganization = node
+                this.signCt = true
+                this.$nextTick(() => {
+                    const currentTransformer = this.$refs.currentTransformer;
+                    if (currentTransformer) {
+                        currentTransformer.resetForm();
+                    }
+                });
+            } catch (error) {
+                this.parentOrganization = null
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
+        },
+
+        async showAddVt(node) {
+            try {
+                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
+                if(dataLocation.success) {
+                    this.locationId = dataLocation.data.mrid
+                } else {
+                    this.locationId = null
+                }
+                this.parentOrganization = node
+                this.signVt = true
+                this.$nextTick(() => {
+                    const voltageTransformer = this.$refs.voltageTransformer;
+                    if (voltageTransformer) {
+                        voltageTransformer.resetForm();
+                    }
+                });
+            } catch (error) {
+                this.parentOrganization = null
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
+        },
+
+        async showAddPowerCable(node) {
+            try {
+                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
+                if(dataLocation.success) {
+                    this.locationId = dataLocation.data.mrid
+                } else {
+                    this.locationId = null
+                }
+                this.parentOrganization = node
+                this.signPower = true
+                this.$nextTick(() => {
+                    const powerCable = this.$refs.powerCable;
+                    if (powerCable) {
+                        powerCable.resetForm();
+                    }
+                });
+            } catch (error) {
+                this.parentOrganization = null
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
+        },
+
+        async showAddDisconnector(node) {
+            try {
+                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
+                if(dataLocation.success) {
+                    this.locationId = dataLocation.data.mrid
+                } else {
+                    this.locationId = null
+                }
+                this.parentOrganization = node
+                this.signDisconnector = true
+                this.$nextTick(() => {
+                    const disconnector = this.$refs.disconnector;
+                    if (disconnector) {
+                        disconnector.resetForm();
+                    }
+                });
+            } catch (error) {
+                this.parentOrganization = null
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
+        },
+
+        async showAddCircuitBreaker(node) {
+            try {
+                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
+                if(dataLocation.success) {
+                    this.locationId = dataLocation.data.mrid
+                } else {
+                    this.locationId = null
+                }
+                this.parentOrganization = node
+                this.signCircuit = true
+                this.$nextTick(() => {
+                    const circuitBreaker = this.$refs.circuitBreaker;
+                    if (circuitBreaker) {
+                        circuitBreaker.resetForm();
+                    }
+                });
+            } catch (error) {
+                this.parentOrganization = null
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
+        },
+
         async showAddJob(node) {
             try {
                 const dataAsset = await window.electronAPI.getAssetByMrid(node.mrid);
@@ -2643,6 +2900,10 @@ export default {
                 }
             }
             return null;
+        },
+
+        async doubleClickNode(node) {
+            await this.showDataClient(node);
         },
  
     }

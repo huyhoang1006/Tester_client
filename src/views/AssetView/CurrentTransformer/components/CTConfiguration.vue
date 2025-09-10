@@ -2,14 +2,14 @@
     <div class="mgy-5">
         <el-row>
             <el-col :span="24">
-                <div class="header-toggle pointer" @click="openConfig = !openConfig">
+                <div class="header-toggle pointer font_size_12" @click="openConfig = !openConfig">
                     <i v-if="openConfig" class="fa-solid fa-caret-up"></i>
                     <i v-else class="fa-solid fa-caret-down"></i>
                     CT Configuration
                 </div>
             </el-col>
         </el-row>
-        <div class="content-toggle" v-if="openConfig">
+        <div class="content-toggle " v-if="openConfig">
             <br/>
             <el-row style="width: 100%;" class="content">
                 <el-col :span="8" class="col-content">
@@ -95,7 +95,7 @@
                                             </tbody>
                                         </table>
                                         <div  v-if="item.fullTap.table.isShow" style="width: 80%; margin: auto; margin-top: 20px; margin-bottom;: 20px">
-                                            <div class="bolder">Class ratings</div>
+                                            <div style="font-size: 12px;" class="bolder">Class ratings</div>
                                             <el-divider></el-divider>
                                             <el-row style="width: 100%;">
                                                 <el-col :span="11">
@@ -932,9 +932,14 @@ export default {
     background-color: #012596;
     color: #fff;
 }
+::v-deep(.el-checkbox__label) {
+    font-size: 12px !important;
+}
+
 table, thead, th, td {
     text-align: center;
     white-space: nowrap;
+    font-size: 12px;
 }
 .width-half {
     width: 100%;
@@ -949,15 +954,22 @@ table, thead, th, td {
 }
 .fulltap-data td, th {
     border: 1px solid #7f7f7f;
+    font-size: 12px;
 }
 .fulltap-data table {
     border-collapse: collapse;
+    font-size: 12px;
 }
 .fulltap-data th {
     border-top: none;
+    font-size: 12px;
 }
 
 .displayItem {
     display: none;
+}
+
+.font_size_12 {
+    font-size: 12px;
 }
 </style>

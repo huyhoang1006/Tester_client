@@ -1,6 +1,6 @@
 <template>
     <li>
-        <span @contextmenu.prevent="openContextMenu($event, node)" :class="{ selected: selectedNodes.some(n => n.id === node.id) }" class="folder" @click="toggle">
+        <span @contextmenu.prevent="openContextMenu($event, node)" :class="{ selected: selectedNodes.some(n => n.id === node.id) }" class="folder" @click="toggle" @dblclick="doubleToggle">
             <div v-if="node.mode == 'substation'" class="icon-wrapper">
                 <icon size="16px" folderType="location" badgeColor="146EBE"></icon>
                 <span class="node-name">{{ node.name }}</span>
@@ -37,7 +37,8 @@
             <TreeNode 
                 v-for="child in node.children" 
                 :key="child.id" :node="child" 
-                :selectedNodes="selectedNodes" 
+                :selectedNodes="selectedNodes"
+                @double-click-node="(n) => $emit('double-click-node', n)" 
                 @fetch-children="(n) => $emit('fetch-children', n)"
                 @show-properties="(n) => $emit('show-properties', n)"
                 @update-selection="updateSelection"
@@ -72,24 +73,36 @@ export default {
             contextMenuY: 0,
             dataType : ["OWNER1", "OWNER2", "OWNER3", "OWNER4", "OWNER5"],
             dataOwnerType : ["location", "voltage", "feeder"],
-            assetType : ["Transformer", "Circuit breaker", "Current transformer", "Disconnector", "Surge arrester", "Power cable", "Voltage transformer"]
+            assetType : ["Transformer", "Circuit breaker", "Current transformer", "Disconnector", "Surge arrester", "Power cable", "Voltage transformer"],
+            clickTimeout: null
         }
     },
     methods: {
         async toggle(event) {
-            if(event.ctrlKey) {
-                this.updateSelection(this.node);
-            } else {
-                this.clearSelection();
-                this.$emit("show-properties", this.node);
-                if (!this.node.expanded) {
-                    this.isLoading = true
-                    this.$emit("fetch-children", this.node);
-                    this.isLoading = false
+            // Phân biệt click và double click
+            if (this.clickTimeout) clearTimeout(this.clickTimeout);
+            this.clickTimeout = setTimeout(() => {
+                if(event.ctrlKey) {
+                    this.updateSelection(this.node);
+                } else {
+                    this.clearSelection();
+                    this.$emit("show-properties", this.node);
+                    if (!this.node.expanded) {
+                        this.isLoading = true
+                        this.$emit("fetch-children", this.node);
+                        this.isLoading = false
+                    }
+                    Vue.set(this.node, "expanded", !this.node.expanded);
                 }
-                Vue.set(this.node, "expanded", !this.node.expanded);
-            }
+            }, 250); // 250ms là khoảng thời gian nhận biết double click
         },
+
+        doubleToggle(event) {
+            // Nếu double click thì hủy xử lý click
+            if (this.clickTimeout) clearTimeout(this.clickTimeout);
+            this.$emit("double-click-node", this.node);
+        },
+
         updateSelection(node) {
             this.$emit("update-selection", node);
         },
@@ -199,4 +212,3 @@ ul {
     }
 }
 </style>
-  

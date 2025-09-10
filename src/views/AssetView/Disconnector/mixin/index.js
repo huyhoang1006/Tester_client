@@ -7,8 +7,8 @@ export default {
             ratings : {
             },
             config : {
-
-            }
+            },
+            attachmentData : []
         }
     },
     async beforeMount() {

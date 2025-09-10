@@ -2,9 +2,9 @@
     <div id="ratings" class="mgy-5">
         <div class="content-toggle">
             <el-row :gutter="20" class="content">
-                <el-col :span="8" class="col-content">
+                <el-col :span="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
-                        <span class="bolder">Circuit breaker</span>
+                        <span style="font-size: 12px;" class="bolder">Circuit breaker</span>
                         <el-divider></el-divider>
                         <el-form-item label="Number of phases">
                             <el-radio-group @change="show()" v-model="circuitBreakeringData.numberOfPhase">
@@ -142,3 +142,8 @@ export default {
     }
 }
 </script>
+<style scoped>
+::v-deep(.el-radio__label) {
+    font-size: 12px !important;
+}
+</style>

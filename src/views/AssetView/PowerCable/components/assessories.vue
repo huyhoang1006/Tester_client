@@ -1,7 +1,7 @@
 <template>
     <div id="properties">
         <el-row :gutter="20" class="content">
-            <el-col :span="8" class="col-content">
+            <el-col :span="12" class="col-content">
                 <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Terminal</span>
                     <el-divider></el-divider>
@@ -70,7 +70,7 @@
                     </el-form-item>
                 </el-form>
             </el-col>
-            <el-col :span="8" class="col-content">
+            <el-col :span="12" class="col-content">
                 <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Joint</span>
                     <el-divider></el-divider>
@@ -101,7 +101,7 @@
             </el-col>
         </el-row>
         <el-row style="margin-top: 50px;" :gutter="20" class="content">
-            <el-col :span="8" class="col-content">
+            <el-col :span="12" class="col-content">
                 <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Sheath voltage limiter</span>
                     <el-divider></el-divider>
@@ -177,3 +177,8 @@ export default {
     }
 }
 </script>
+<style scoped>
+.bolder {
+    font-size: 12px;
+}
+</style>

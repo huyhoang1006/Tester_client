@@ -57,10 +57,10 @@
                             <el-input size="mini" type="text" v-model="item.unit_no.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.refCurrent.value"></el-input>
+                            <el-input size="mini" type="text" v-model="item.ref_current.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.vmeas.value"></el-input>
+                            <el-input size="mini" type="text" v-model="item.v_meas.value"></el-input>
                         </td>
                         <td>
                             <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -143,32 +143,38 @@ export default {
                     phase : {
                         mrid : '',
                         value: '',
-                        unit: ''
+                        unit: '',
+                        type: 'discrete'
                     },
                     unit_no : {
                         mrid : '',
                         value: i,
-                        unit: ''
+                        unit: '',
+                        type: 'analog'
                     },
-                    refCurrent : {
+                    ref_current : {
                         mrid : '',
                         value: '',
-                        unit: 'm|A'
+                        unit: 'm|A',
+                        type: 'analog'
                     },
-                    vmeas : {
+                    v_meas : {
                         mrid : '',
                         value: '',
-                        unit: 'k|V'
+                        unit: 'k|V',
+                        type: 'analog'
                     },
                     assessment : {
                         mrid : '',
                         value: '',
-                        unit: ''
+                        unit: '',
+                        type: 'discrete'
                     },
                     condition_indicator : {
                         mrid : '',
                         value: '',
-                        unit: ''
+                        unit: '',
+                        type: 'discrete'
                     }
                 })
             }
@@ -195,32 +201,38 @@ export default {
                     phase : {
                         mrid : '',
                         value: '',
-                        unit: ''
+                        unit: '',
+                        type: 'string'
                     },
                     unit_no : {
                         mrid : '',
                         value: i+1,
-                        unit: ''
+                        unit: '',
+                        type: 'analog'
                     },
-                    refCurrent : {
+                    ref_current : {
                         mrid : '',
                         value: '',
-                        unit: 'm|A'
+                        unit: 'm|A',
+                        type: 'analog'
                     },
-                    vmeas : {
+                    v_meas : {
                         mrid : '',
                         value: '',
-                        unit: 'k|V'
+                        unit: 'k|V',
+                        type: 'analog'
                     },
                     assessment : {
                         mrid : '',
                         value: '',
-                        unit: ''
+                        unit: '',
+                        type: 'discrete'
                     },
                     condition_indicator : {
                         mrid : '',
                         value: '',
-                        unit: ''
+                        unit: '',
+                        type: 'discrete'
                     }
                 }
                 this.testData.table.splice(index+i+units, 0, data)
@@ -234,8 +246,8 @@ export default {
             this.testData.table.forEach((element) => {
                 element.phase.value = "",
                 element.unit_no.value = '',
-                element.refCurrent.value = '',
-                element.vmeas.value = "",
+                element.ref_current.value = '',
+                element.v_meas.value = "",
                 element.assessment.value = '',
                 element.condition_indicator.value = ''
             })

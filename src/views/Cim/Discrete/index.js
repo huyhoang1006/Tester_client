@@ -1,3 +1,4 @@
+import Measurement from "@/views/Cim/Measurement";
 class Discrete extends Measurement {
     constructor() {
         super();

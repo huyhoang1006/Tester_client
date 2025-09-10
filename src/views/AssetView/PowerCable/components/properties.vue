@@ -1,7 +1,7 @@
 <template>
     <div id="properties">
         <el-row :gutter="20" class="content">
-            <el-col :span="8" class="col-content">
+            <el-col :span="12" class="col-content">
                 <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Properties</span>
                     <el-divider></el-divider>
@@ -49,11 +49,12 @@
                     </el-form-item>
                 </el-form>
             </el-col>
-            <el-col :span="8" class="col-content">
+            <el-col :span="12" class="col-content">
                 <el-form :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Comment</span>
                     <el-divider></el-divider>
-                    <el-input type="textarea" :rows="14" v-model="propertiesData.comment"></el-input>
+                    <el-input type="textarea" :rows="5" v-model="propertiesData.comment"></el-input>
+                    <Attachment :attachment_="this.attachmentData" title="powerCable" height="120px" @data-attachment = "getDataAttachment"></Attachment>
                 </el-form>
             </el-col>
         </el-row>
@@ -62,8 +63,12 @@
 
 <script>
 import {country} from '@/views/ConstantAsset/index'
+import Attachment from '@/views/Common/Attachment.vue'
 export default {
     name: 'powerCableProperty',
+    components : {
+        Attachment
+    },
     props : {
         properties: {
             type : Object,
@@ -92,6 +97,7 @@ export default {
             manufacturerList : ['ABB', 'ALSTOM', 'General Electric', 'Mitsubishi Electric', 'Schneider Electric', 'Siemens', 'Toshiba', 'Westinghouse'],
             manufacturerListAll : [],
             itemUpdate : '',
+            attachmentData : []
         }
     },
     methods: {
@@ -152,7 +158,11 @@ export default {
             this.itemUpdate = item
             this.sign ='past'
             this.$emit('editManu', item)
-        } 
+        },
+        getDataAttachment(rowData) {
+            this.attachmentData = rowData
+            this.$emit('update-attachment', this.attachmentData)
+        }, 
     },
     mounted() {
         this.manufacturerListAll = JSON.parse(JSON.stringify(this.manufact))

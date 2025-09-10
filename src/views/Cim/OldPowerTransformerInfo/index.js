@@ -8,6 +8,7 @@ class OldPowerTransformerInfo extends PowerTransformerInfo {
         this.rated_frequency = null; // Rated frequency of the transformer
         this.impedance_temperature = null; // Impedance temperature of the transformer
         this.category = null; // Category of the transformer (e.g., power, distribution)
+        this.apparatus_id = null; // Identifier for the apparatus
     }
 }
 export default OldPowerTransformerInfo;

@@ -24,6 +24,34 @@ export const getValueToAliasById = async (mrid) => {
     }
 }
 
+export const getValueToAliasByValueAliasSetId = async (valueAliasSetId) => {
+    try {
+        return new Promise((resolve, reject) => {
+            const sql = `
+                SELECT vta.*, io.*
+                FROM value_to_alias vta
+                LEFT JOIN identified_object io ON vta.mrid = io.mrid
+                WHERE vta.value_alias_set = ?
+            `;
+
+            db.all(sql, [valueAliasSetId], (err, rows) => {
+                if (err) {
+                    return reject({ success: false, err, message: 'Get valueToAlias by valueAliasSetId failed' });
+                }
+                if (!rows || rows.length === 0) {
+                    return resolve({ success: false, data: [], message: 'No ValueToAlias found' });
+                }
+
+                // rows sẽ chứa thông tin của cả value_to_alias và identified_object
+                return resolve({ success: true, data: rows, message: 'Get valueToAlias by valueAliasSetId completed' });
+            });
+        });
+    } catch (err) {
+        return { success: false, err, message: 'Get valueToAlias by valueAliasSetId failed' };
+    }
+};
+
+
 // Thêm mới valueToAlias
 export const insertValueToAliasTransaction = async (valueToAlias, dbsql) => {
     return new Promise(async (resolve, reject) => {

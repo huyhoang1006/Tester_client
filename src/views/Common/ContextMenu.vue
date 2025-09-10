@@ -29,19 +29,16 @@
                     <ul class="submenu">
                         <li @click="addTransformer"><i class="fa-solid fa-bolt"></i> Add transformer</li>
                         <li @click="addBushing"><i class="fa-solid fa-shield"></i> Add Bushing</li>
-                        <li><i class="fa-solid fa-plug"></i> Add Breaker</li>
-                        <li><i class="fa-solid fa-ruler"></i> Add CT</li>
-                        <li><i class="fa-solid fa-bolt-lightning"></i> Add VT</li>
+                        <li @click="addBreaker"><i class="fa-solid fa-plug"></i> Add Breaker</li>
+                        <li @click="addCt"><i class="fa-solid fa-ruler"></i> Add CT</li>
+                        <li @click="addVt"><i class="fa-solid fa-bolt-lightning"></i> Add VT</li>
                         <li @click="addSurgeArrester"><i class="fa-solid fa-shield-halved"></i> Add Surge Arrester</li>
-                        <li><i class="fa-solid fa-route"></i> Add Power Cable</li>
-                        <li><i class="fa-solid fa-plug-circle-xmark"></i> Add Disconnector</li>
+                        <li @click="addPowerCable"><i class="fa-solid fa-route"></i> Add Power Cable</li>
+                        <li @click="addDisconnector"><i class="fa-solid fa-plug-circle-xmark"></i> Add Disconnector</li>
                     </ul>
                 </li>
                 <li @click="addJob" v-if="this.selectedNode && this.selectedNode.mode == 'asset'">
                     <i class="fa-solid fa-plus"></i> Add job
-                </li>
-                <li v-if="this.selectedNode && this.selectedNode.mode == 'job'">
-                    <i class="fa-solid fa-plus"></i> Add test
                 </li>
                 <li @click="show">
                     <i class="fa-solid fa-eye"></i> Show
@@ -155,6 +152,26 @@ export default {
         },
         addSurgeArrester() {
             this.$emit("show-addSurgeArrester", this.selectedNode)
+            this.closeContextMenu()
+        },
+        addBreaker() {
+            this.$emit("show-addCircuit", this.selectedNode)
+            this.closeContextMenu()
+        },
+        addCt() {
+            this.$emit("show-addCt", this.selectedNode)
+            this.closeContextMenu()
+        },
+        addVt() {
+            this.$emit("show-addVt", this.selectedNode)
+            this.closeContextMenu()
+        },
+        addPowerCable() {
+            this.$emit("show-addPowerCable", this.selectedNode)
+            this.closeContextMenu()
+        },
+        addDisconnector() {
+            this.$emit("show-addDisconnector", this.selectedNode)
             this.closeContextMenu()
         },
         addAsset() {

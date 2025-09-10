@@ -1,3 +1,4 @@
+import MeasurementValue from "@/views/Cim/MeasurementValue";
 class StringMeasurementValue extends MeasurementValue {
     constructor() {
         super();

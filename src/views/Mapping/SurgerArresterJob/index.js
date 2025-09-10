@@ -3,12 +3,21 @@ import SurgeArresterJobEntity from "@/views/Entity/Job/SurgeArrester"
 import SurgeArresterJobDto from "@/views/Dto/Job/SurgeArrester";
 import WorkTask from "@/views/Cim/WorkTask";
 import TestDataSet from "@/views/Cim/TestDataSet";
-import OldSpecimen from "@/views/Cim/OldSpecimen";
 import OldTransformerObservation from "@/views/Cim/OldTransformerObservation";
 import Attachment from '@/views/Entity/Attachment'
 import { UnitSymbol } from "@/views/Enum/UnitSymbol";
 import Percent from "@/views/Cim/Percent";
 import Temperature from "@/views/Cim/Temperature";
+import TestingEquipment from "@/views/Entity/TestingEquipment";
+import SurgeArresterTestingEquipmentTestType from "@/views/Entity/SurgeArresterTestingEquipmentTestType";
+import StringMeaurementValue from "@/views/Cim/StringMeasurementValue";
+import AnalogValue from "@/views/Cim/AnalogValue";
+import DiscreteValue from "@/views/Cim/DiscreteValue";
+import StringMeaurement from "@/views/Cim/StringMeasurement";
+import Analog from "@/views/Cim/Analog";
+import Discrete from "@/views/Cim/Discrete";
+import ValueAliasSet from "@/views/Cim/ValueAliasSet";
+import ValueToAlias from "@/views/Cim/ValueToAlias";
 
 export const jobDtoToEntity = (dto) => {
     const entity = new SurgeArresterJobEntity();
@@ -32,12 +41,64 @@ export const jobDtoToEntity = (dto) => {
     entity.attachment = dto.attachment || null;
 
     //testing equipment
-    entity.testingEquipment = dto.testingEquipmentData || [];
+    for(const equipment of dto.testingEquipmentData) {
+        const data = new TestingEquipment();
+        data.mrid = equipment.mrid || null;
+        data.model = equipment.model || null;
+        data.serial_number = equipment.serial_number || null;
+        data.work_id = equipment.work_id || null;
+        data.calibration_date = equipment.calibration_date || null;
+        entity.testingEquipment.push(data);
+    }
 
     //test list
     for (const item of dto.testList) {
+        const testCodeKey = convertArrayToObject(item.data.row_data);
+        for(const testCodeKeyItem of item.data.row_data) {
+            if(testCodeKeyItem.type === 'string') {
+                const stringMeasurement = new StringMeaurement();
+                stringMeasurement.mrid = testCodeKeyItem.mrid || null;
+                stringMeasurement.alias_name = testCodeKeyItem.code || null;
+                stringMeasurement.name = testCodeKeyItem.name || null;
+                entity.stringMeasurement.push(stringMeasurement);
+            } else if(testCodeKeyItem.type === 'analog') {
+                const analog = new Analog();
+                analog.mrid = testCodeKeyItem.mrid || null;
+                analog.alias_name = testCodeKeyItem.code || null;
+                analog.name = testCodeKeyItem.name || null;
+                const unitParts = (testCodeKeyItem.unit || '').split('|');
+                analog.unit_multiplier = unitParts.length > 1 ? unitParts[0] : null;
+                analog.unit_symbol = unitParts.length > 1 ? unitParts[1] : unitParts[0] || null;
+                entity.analog.push(analog);
+            } else if(testCodeKeyItem.type === 'discrete') {
+                const discrete = new Discrete();
+                discrete.mrid = testCodeKeyItem.mrid || null;
+                discrete.alias_name = testCodeKeyItem.code || null;
+                discrete.name = testCodeKeyItem.name || null;
+                discrete.value_alias_set = testCodeKeyItem.pool.mrid || null;
+                entity.discrete.push(discrete);
+
+                const valueAliasSet = new ValueAliasSet();
+                valueAliasSet.mrid = testCodeKeyItem.pool.mrid || null;
+                entity.valueAliasSet.push(valueAliasSet);
+
+                for(const valueAlias of testCodeKeyItem.pool.valueToAlias) {
+                    const valueToAlias = new ValueToAlias();
+                    valueToAlias.mrid = valueAlias.mrid || null;
+                    valueToAlias.value = valueAlias.value || null;
+                    valueToAlias.alias_name = valueAlias.alias_name || null;
+                    valueToAlias.value_alias_set = testCodeKeyItem.pool.mrid || null;
+                    entity.valueToAlias.push(valueToAlias);
+                }
+            }
+        }
+
+        //MeasurementProcedure
+        for(const measurementProcedure of item.data.measurementProcedure) {
+            entity.measurementProcedure.push(measurementProcedure);
+        }
+
         const workTask = new WorkTask();
-        const specimen = new OldSpecimen();
         const transformerObservation = new OldTransformerObservation();
 
         workTask.mrid = item.mrid || null;
@@ -48,9 +109,9 @@ export const jobDtoToEntity = (dto) => {
         workTask.work = entity.oldWork.mrid || null;
         entity.workTasks.push(workTask);
 
-        specimen.mrid = item.testCondition.mrid || null;
+        transformerObservation.mrid = item.testCondition.mrid || null;
         //humidity_at_sampling
-        specimen.humidity_at_sampling = item.testCondition.condition.humidity.mrid || null;
+        transformerObservation.humidity = item.testCondition.condition.humidity.mrid || null;
         const percent = new Percent();
         percent.mrid = item.testCondition.condition.humidity.mrid || null;
         percent.value = item.testCondition.condition.humidity.value || null;
@@ -60,7 +121,7 @@ export const jobDtoToEntity = (dto) => {
         entity.percent.push(percent);
 
         //ambient_temperature_at_sampling
-        specimen.ambient_temperature_at_sampling = item.testCondition.condition.ambient_temperature.mrid || null;
+        transformerObservation.ambient_temperature = item.testCondition.condition.ambient_temperature.mrid || null;
         const ambientTemp = new Temperature();
         ambientTemp.mrid = item.testCondition.condition.ambient_temperature.mrid || null;
         ambientTemp.value = item.testCondition.condition.ambient_temperature.value || null;
@@ -70,10 +131,10 @@ export const jobDtoToEntity = (dto) => {
         entity.temperature.push(ambientTemp);
 
         //weather_kind
-        specimen.weather_kind = item.testCondition.condition.weather || null;
+        transformerObservation.weather = item.testCondition.condition.weather || null;
 
         //reference_temperature
-        specimen.reference_temp = item.testCondition.condition.reference_temperature.mrid || null;
+        transformerObservation.reference_temp = item.testCondition.condition.reference_temperature.mrid || null;
         const referenceTemp = new Temperature();
         referenceTemp.mrid = item.testCondition.condition.reference_temperature.mrid || null;
         referenceTemp.value = item.testCondition.condition.reference_temperature.value || null;
@@ -83,7 +144,7 @@ export const jobDtoToEntity = (dto) => {
         entity.temperature.push(referenceTemp);
 
         //winding_temperature
-        specimen.winding_temp = item.testCondition.condition.winding_temperature.mrid || null;
+        transformerObservation.winding_temp = item.testCondition.condition.winding_temperature.mrid || null;
         const windingTemp = new Temperature();
         windingTemp.mrid = item.testCondition.condition.winding_temperature.mrid || null;
         windingTemp.value = item.testCondition.condition.winding_temperature.value || null;
@@ -92,11 +153,6 @@ export const jobDtoToEntity = (dto) => {
         windingTemp.unit = unitPartsWindingTemp.length > 1 ? unitPartsWindingTemp[1] : unitPartsWindingTemp[0] || null;
         entity.temperature.push(windingTemp);
 
-        //set work_task_id
-        specimen.work_task_id = item.mrid || null;
-        entity.specimen.push(specimen);
-
-        //transformer observation
         //top_oil_temperature
         transformerObservation.top_oil_temp = item.testCondition.condition.top_oil_temperature.mrid || null;
         const topOilTemp = new Temperature();
@@ -106,9 +162,6 @@ export const jobDtoToEntity = (dto) => {
         topOilTemp.multiplier = unitPartsTopOilTemp.length > 1 ? unitPartsTopOilTemp[0] : null;
         topOilTemp.unit = unitPartsTopOilTemp.length > 1 ? unitPartsTopOilTemp[1] : unitPartsTopOilTemp[0] || null;
         entity.temperature.push(topOilTemp);
-
-        //observation_id
-        transformerObservation.mrid = item.testCondition.observationId || null;
 
         //bottom_oil_temperature
         transformerObservation.bottom_oil_temp = item.testCondition.condition.bottom_oil_temperature.mrid || null;
@@ -131,15 +184,49 @@ export const jobDtoToEntity = (dto) => {
             const testData = new TestDataSet();
             testData.mrid = data.mrid || null;
             testData.work_task = item.mrid || null;
-            testData.specimen_id = specimen.mrid || null;            
+            entity.testDataSet.push(testData);
+
+            for (const [key, value] of Object.entries(data)) {
+                if(typeof value === 'object') {
+                    if(value.type === 'analog') {
+                        const analogValue = new AnalogValue();
+                        analogValue.mrid = value.mrid || null;
+                        analogValue.alias_name = value.value || null;
+                        analogValue.analog = testCodeKey[key] ? testCodeKey[key].mrid : null;
+                        entity.analogValues.push(analogValue);
+                    } else if(value.type === 'string') {
+                        const stringValue = new StringMeaurementValue();
+                        stringValue.mrid = value.mrid || null;
+                        stringValue.value = value.value || null;
+                        stringValue.alias_name = key || null;
+                        stringValue.string_measurement = testCodeKey[key] ? testCodeKey[key].mrid : null;
+                        entity.stringMeasurementValues.push(stringValue);
+                    } else if(value.type === 'discrete') {
+                        const discreteValue = new DiscreteValue();
+                        discreteValue.mrid = value.mrid || null;
+                        discreteValue.value = value.value || null;
+                        discreteValue.alias_name = key || null;
+                        discreteValue.discrete = testCodeKey[key] ? testCodeKey[key].mrid : null;
+                        entity.discreteValues.push(discreteValue);
+                    }
+                }
+            }
         }
     }
 
+    //surgeArresterTestingEquipmentTestType
+    for(const surgeArresterTestingEquipmentTestType of dto.surgeArresterTestingEquipmentTestType) {
+        const data = new SurgeArresterTestingEquipmentTestType();
+        data.mrid = surgeArresterTestingEquipmentTestType.mrid || null;
+        data.testing_equipment_id = surgeArresterTestingEquipmentTestType.testing_equipment_id || null;
+        data.test_type_id = surgeArresterTestingEquipmentTestType.test_type_id || null;
+        entity.surgeArresterTestingEquipmentTestType.push(data);
+    }
+    console.log('entity', entity);
     return entity;
 }
 
 export const JobEntityToDto = (entity) => {
-    console.log("Mapping Entity to DTO:", entity);
     const dto = new SurgeArresterJobDto();
     //job properties
     dto.properties.mrid = entity.oldWork.mrid || '';
@@ -165,7 +252,22 @@ export const JobEntityToDto = (entity) => {
     }
 
     //testing equipment
-    dto.testingEquipmentData = entity.testingEquipment || [];
+    for(const testingEquipment of entity.testingEquipment) {
+        const data = new TestingEquipment();
+        data.mrid = testingEquipment.mrid || '';
+        data.model = testingEquipment.model || '';
+        data.serial_number = testingEquipment.serial_number || '';
+        data.work_id = testingEquipment.work_id || '';
+        data.calibration_date = testingEquipment.calibration_date || '';
+        data.test_type_surge_arrester_id = [];
+        for(const surgeArresterTestingEquipmentTestType of entity.surgeArresterTestingEquipmentTestType) {
+            if(surgeArresterTestingEquipmentTestType.testing_equipment_id === data.mrid) {
+                data.test_type_surge_arrester_id.push(surgeArresterTestingEquipmentTestType.test_type_id);
+            }
+        }
+        dto.testingEquipmentData.push(data);
+    }
+    dto.surgeArresterTestingEquipmentTestType = entity.surgeArresterTestingEquipmentTestType || [];
 
     //test list
     for (const item of entity.workTasks) {
@@ -176,7 +278,6 @@ export const JobEntityToDto = (entity) => {
             testTypeName: '',
             testTypeId: '',
             testCondition: {
-                observationId: '',
                 mrid: '',
                 condition: {
                     top_oil_temperature: {
@@ -216,26 +317,23 @@ export const JobEntityToDto = (entity) => {
                 attachmentData : [],
             },
             data : {
-                table : []
+                row_data : [],
+                table : [],
+                measurementProcedure : []
             }
         }
         testTemplate.testCondition.comment = item.comment || '';
-        for(const specimen of entity.specimen) {
-            if(specimen.work_task_id === item.mrid) {
-                testTemplate.testCondition.mrid = specimen.mrid || '';
-                testTemplate.testCondition.condition.humidity.mrid = specimen.humidity_at_sampling || '';
-                testTemplate.testCondition.condition.ambient_temperature.mrid = specimen.ambient_temperature_at_sampling || '';
-                testTemplate.testCondition.condition.weather = specimen.weather_kind || '';
-                testTemplate.testCondition.condition.reference_temperature.mrid = specimen.reference_temp || '';
-                testTemplate.testCondition.condition.winding_temperature.mrid = specimen.winding_temp || '';
-            }
-        }
 
         for(const observation of entity.transformerObservation) {
             if(observation.work_task_id === item.mrid) {
                 testTemplate.testCondition.observationId = observation.mrid || '';
                 testTemplate.testCondition.condition.top_oil_temperature.mrid = observation.top_oil_temp || '';
                 testTemplate.testCondition.condition.bottom_oil_temperature.mrid = observation.bottom_oil_temp || '';
+                testTemplate.testCondition.condition.winding_temperature.mrid = observation.winding_temp || '';
+                testTemplate.testCondition.condition.reference_temperature.mrid = observation.reference_temp || '';
+                testTemplate.testCondition.condition.ambient_temperature.mrid = observation.ambient_temperature || '';
+                testTemplate.testCondition.condition.weather = observation.weather || '';
+                testTemplate.testCondition.condition.humidity.mrid = observation.humidity || '';
             }
         }
 
@@ -287,3 +385,12 @@ export const JobEntityToDto = (entity) => {
     }
     return dto;
 }
+
+const convertArrayToObject = (arr) => {
+  return arr.reduce((acc, item) => {
+    if (item.code) {
+      acc[item.code] = item;
+    }
+    return acc;
+  }, {});
+};

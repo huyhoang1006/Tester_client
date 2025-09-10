@@ -1,36 +1,11 @@
 <template>
     <div id="asset">
-        <div style="position: fixed; width: 100%; top: 38px; z-index: 1">
-            <el-row id="top-bar">
-                <el-col :span="24">
-                    <el-button @click="backToManage" style="box-sizing: border-box; border-right: 1px solid #aeb6bf">
-                        <i class="fa-solid fa-circle-arrow-left display-block fa-2x"></i>
-                        <div class="mgt-10">Manage</div>
-                    </el-button>
-                    <el-button @click="saveAsset">
-                        <i class="fa-solid fa-floppy-disk display-block fa-2x"></i>
-                        <div class="mgt-10">Save Asset</div>
-                    </el-button>
-                    <el-button @click="onCancel" style="box-sizing: border-box">
-                        <i class="fa-solid fa-ban display-block fa-2x"></i>
-                        <div class="mgt-10">Cancel</div>
-                    </el-button>
-                    <el-button style="float: right; text-align: right; width: fit-content; cursor: default">
-                        <img src="@/assets/images/logo.png" style="max-height: 40px" />
-                    </el-button>
-                </el-col>
-            </el-row>
-        </div>
-        <div style="margin-top: 100px;">
-            <el-row :gutter="20" id="main-content" style="padding: 0; z-index: 0;">
-                <el-tabs type="card" class="w-100 h-100">
-                    <el-tab-pane label="Voltage transformer">
-                        <voltageTransProperty @setUpdate="setUpdate" :updateNew='updateNew' :update="update" @editManu="editManu" :title="title" :properties.sync="properties" @createAdd="updateShowAdd" :manufact="manufacturerCustom" @reloadManu="reloadManu()"></voltageTransProperty>
-                        <ratings :ratings.sync="ratings" :properties="properties"></ratings>
-                        <currentVTConfig :configs.sync="config"></currentVTConfig>
-                    </el-tab-pane>
-                </el-tabs>
-            </el-row>
+        <div style="min-height: 500px; display: flex; flex-direction: column;">
+            <div style="flex: 1; display: flex; flex-direction: column;">
+                <voltageTransProperty @setUpdate="setUpdate" :updateNew='updateNew' :update="update" @editManu="editManu" :title="title" :properties.sync="properties" @createAdd="updateShowAdd" :manufact="manufacturerCustom" @reloadManu="reloadManu()"></voltageTransProperty>
+                <ratings :ratings.sync="ratings" :properties="properties"></ratings>
+                <currentVTConfig :configs.sync="config"></currentVTConfig>
+            </div>
         </div>
         <manufacturerAdd :dataProperties="dataProperties" :showAdd.sync="showAdd" @backSign="backSign()" @backSignUpdate="backSignUpdate" :title="title" :modeManu="modeManu"></manufacturerAdd>
     </div>
@@ -128,7 +103,11 @@ export default {
             if(rs.success) {
                 this.manufacturerCustom = rs.data.map(e => e.name)
             }
-        }
+        },
+        updateAttachment(attachment) {
+            this.attachmentData = attachment
+        },
+        async resetForm() {},
     }
 }
 </script>
@@ -155,5 +134,15 @@ th,
 td {
     padding: 0px 10px;
     height: 30px;
+    font-size: 12px;
+}
+
+::v-deep(.el-form-item__label) {
+    font-size: 12px !important;
+}
+
+::v-deep .el-input__inner,
+::v-deep .el-select .el-input__inner {
+  font-size: 12px !important;
 }
 </style>

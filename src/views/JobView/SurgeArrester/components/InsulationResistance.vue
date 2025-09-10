@@ -49,7 +49,7 @@
                             </div>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.vTest.value"></el-input>
+                            <el-input size="mini" type="text" v-model="item.v_test.value"></el-input>
                         </td>
                         <td>
                             <el-input size="mini" type="text" v-model="item.r60s.value"></el-input>
@@ -127,27 +127,32 @@ export default {
                 measurement : {
                     mrid : '',
                     value : '',
-                    unit : ''
+                    unit : '',
+                    type: 'string'
                 },
-                vTest : {
+                v_test : {
                     mrid : '',
                     value : '',
-                    unit : 'V'
+                    unit : 'V',
+                    type: 'analog'
                 },
                 r60s : {
                     mrid : '',
                     value : '',
-                    unit : 'M|Ω'
+                    unit : 'M|Ω',
+                    type: 'analog'
                 },
                 assessment : {
                     mrid : '',
                     value : '',
-                    unit : ''
+                    unit : '',
+                    type: 'discrete'
                 },
                 condition_indicator : {
                     mrid : '',
                     value : '',
-                    unit : ''
+                    unit : '',
+                    type: 'discrete'
                 }
             })
         },
@@ -171,27 +176,32 @@ export default {
                 measurement : {
                     mrid : '',
                     value : '',
-                    unit : ''
+                    unit : '',
+                    type: 'discrete'
                 },
-                vTest : {
+                v_test : {
                     mrid : '',
                     value : '',
-                    unit : 'V'
+                    unit : 'V',
+                    type: 'analog'
                 },
                 r60s : {
                     mrid : '',
                     value : '',
-                    unit : 'M|Ω'
+                    unit : 'M|Ω',
+                    type: 'analog'
                 },
                 assessment : {
                     mrid : '',
                     value : '',
-                    unit : ''
+                    unit : '',
+                    type: 'discrete'
                 },
                 condition_indicator : {
                     mrid : '',
                     value : '',
-                    unit : ''
+                    unit : '',
+                    type: 'discrete'
                 }
             }
             this.testData.table.splice(index+1, 0, data)
@@ -203,7 +213,7 @@ export default {
         clear() {
             this.testData.table.forEach((element) => {
                 element.measurement.value = '',
-                element.vTest.value = '',
+                element.v_test.value = '',
                 element.r60s.value = '',
                 element.assessment.value = '',
                 element.condition_indicator.value = ''

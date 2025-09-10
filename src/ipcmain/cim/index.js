@@ -19,6 +19,11 @@ import * as ipcProductAssetModel from './productAssetModel/index.js'
 import * as ipcSurgeArrester from './surgeArrester/index.js'
 import * as ipcOldWork from './oldWork/index.js'
 import * as ipcAsset from './asset/index.js'
+import * as ipcAnalog from './analog/index.js'
+import * as ipcStringMeasurement from './stringMeasurement/index.js'
+import * as ipcDiscrete from './discrete/index.js'
+import * as ipcValueToAlias from './valueToAlias/index.js'
+import * as ipcValueAliasSet from './valueAliasSet/index.js'
 
 
 export const active = () => {
@@ -43,4 +48,9 @@ export const active = () => {
     ipcProductAssetModel.active()
     ipcOldWork.active()
     ipcAsset.active()
+    ipcAnalog.active()
+    ipcStringMeasurement.active()
+    ipcDiscrete.active()
+    ipcValueToAlias.active()
+    ipcValueAliasSet.active()
 }

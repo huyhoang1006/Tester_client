@@ -25,6 +25,22 @@ export default {
                 oldTransformerEndInfo: [],
                 shortCircuitTestTransformerEndInfo: [],
             },
+            oldTransformerDto: {
+                properties: new TransformerDto().properties,
+                winding_configuration: new TransformerDto().winding_configuration,
+                ratings: new TransformerDto().ratings,
+                impedances: new TransformerDto().impedances,
+                others: new TransformerDto().others,
+                tap_changers: new TapChangersDto(),
+                productAssetModelId: '',
+                lifecycleDateId: '',
+                assetPsrId: '',
+                psrId: '',
+                oldPowerTransformerInfoId: '',
+                oldTransformerEndInfo: [],
+                shortCircuitTestTransformerEndInfo: [],
+            },
+
             attachmentData : [],
             bushing_data: new BushingDto(),
             surge_arrester: {
@@ -143,27 +159,41 @@ export default {
         async saveAsset() {
             try {
                 if(this.transformerDto.properties.type && this.transformerDto.properties.kind) {
-                    console.log(this.transformerDto)
-                    const data = JSON.parse(JSON.stringify(this.checkTransformerDto(this.transformerDto)));
-                    const entity = transformerMapping.transformerDtoToEntity(data);
-                    console.log(entity)
-                    console.log(this.attachmentData)
-                    return true;
+                    const data = JSON.parse(JSON.stringify(this.transformerDto));
+                    const result = this.checkTransformerDto(data);
+                    const oldResult = this.checkTransformerDto(this.oldTransformerDto);
+                    const resultEntity = transformerMapping.transformerDtoToEntity(result);
+                    const oldResultEntity = transformerMapping.transformerDtoToEntity(oldResult);
+                    let rs = await window.electronAPI.insertTransformerEntity(oldResultEntity, resultEntity)
+                    if(rs.success) {
+                        return {
+                            success: true,
+                            data: rs.data,
+                        };
+                    } else {
+                        this.$message.error("Error saving transformer entity: " + rs.message);
+                        return {
+                            success: false,
+                            error: rs.error,
+                        };
+                    }
                     
                 } else {
                     this.$message({
                         type: 'warning',
                         message: "Please select the type and kind of Asset before saving."
                     });
-                    return false;
+                    return {
+                        success: false,
+                    };
                 }
             } catch (error) {
                 console.error("Error saving asset:", error);
                 this.$message({
+                    success: false,
                     type: 'error',
                     message: "An error occurred while saving the asset."
                 });
-                return false;
             }
         },
 

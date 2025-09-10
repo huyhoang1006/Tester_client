@@ -2,8 +2,10 @@
     <div id="ratings" class="mgy-5">
         <div class="content-toggle">
             <el-row :gutter="20" class="content">
-                <el-col :span="8" class="col-content">
+                <el-col :span="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
+                        <span style="font-size: 12px;" class="bolder">Properties</span>
+                        <el-divider></el-divider>
                         <el-form-item label="Asset type">
                             <el-select v-model="operatingData.asset_type">
                                 <el-option label="<Select asset type>" value="<Select asset type>"> </el-option>
@@ -42,9 +44,9 @@
                         </el-form-item>
                     </el-form>
                 </el-col>
-                <el-col :span="8">
+                <el-col :span="12">
                     <el-form :label-width="labelWidth" size="mini" label-position="left">
-                        <span class="bolder">Comment</span>
+                        <span style="font-size: 12px;" class="bolder">Comment</span>
                         <el-divider></el-divider>
                         <el-input type="textarea" :rows="5" v-model="operatingData.comment"></el-input>
                     </el-form>
@@ -52,7 +54,7 @@
             </el-row>
             <transition>
             <el-row v-if="operating.asset_type !== '<Select asset type>'" :gutter="20" class="content">
-                <el-col :span="12">
+                <el-col :span="18">
                         <table class="table-strip-input-data" style="width: 100%; margin-top: 5%; border: 1px solid;">
                             <thead>
                                 <tr>
@@ -185,7 +187,7 @@
             </el-row>
             </transition>
             <el-row v-if="!['<Select asset type>', 'Spring','Motor','magnetic'].includes(operatingData.asset_type)" style="margin-top: 1%;" class="content">
-                <el-col :span="8">
+                <el-col :span="18">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Rated operating pressure">
                             <el-col :span="10">
@@ -206,7 +208,7 @@
                 </el-col>
             </el-row>
             <el-row style="margin-top: 1%;" class="content">
-                <span class="bolder">Conversion tables</span>
+                <span style="font-size: 12px;" class="bolder">Conversion tables</span>
                 <el-divider></el-divider>
             </el-row>
         </div>
@@ -304,6 +306,7 @@ table, th, td {
     border: 1px solid !important;
     white-space: nowrap;
     border-color: #808080 !important;
+    font-size: 12px !important;
 }
 table {
     border-collapse: collapse;

@@ -12,10 +12,11 @@ import * as parentOrganizationEntityFunc from './parentOrganisation/index'
 import * as voltageLevelEntityFunc from './voltage/index'
 import * as bayEntityFunc from './bay/index'
 import * as surgeArresterEntityFunc from './surgeArrester/index'
+import * as transformerEntityFunc from './Transformer/index'
 import * as TestTypeFunc from './testType/index'
 import * as jobEntityFunc from './job/index'
 
 export { attachmentFunc, fileFunc, organisationLocationFunc, personSubstationFunc, 
     userFunc, userIdentifiedObjectFunc, substationEntityFunc, organisationPersonFunc, 
     organisationPsrFunc, geoMapFunc, parentOrganizationEntityFunc, voltageLevelEntityFunc, 
-    bayEntityFunc, surgeArresterEntityFunc, TestTypeFunc, jobEntityFunc }
+    bayEntityFunc, surgeArresterEntityFunc, transformerEntityFunc, TestTypeFunc, jobEntityFunc }

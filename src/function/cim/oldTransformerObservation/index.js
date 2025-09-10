@@ -35,15 +35,25 @@ export const insertOldTransformerObservationTransaction = async (oldTransformerO
             }
             dbsql.run(
                 `INSERT INTO old_transformer_observation(
-                    mrid, bottom_oil_temp, work_task_id
-                ) VALUES (?, ?, ?)
+                    mrid, bottom_oil_temp, humidity, weather, ambient_temp, reference_temp, winding_temp, work_task_id
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(mrid) DO UPDATE SET
                     bottom_oil_temp = excluded.bottom_oil_temp,
+                    humidity = excluded.humidity,
+                    weather = excluded.weather,
+                    ambient_temp = excluded.ambient_temp,
+                    reference_temp = excluded.reference_temp,
+                    winding_temp = excluded.winding_temp,
                     work_task_id = excluded.work_task_id
                 `,
                 [
                     oldTransformerObservation.mrid,
                     oldTransformerObservation.bottom_oil_temp,
+                    oldTransformerObservation.humidity,
+                    oldTransformerObservation.weather,
+                    oldTransformerObservation.ambient_temp,
+                    oldTransformerObservation.reference_temp,
+                    oldTransformerObservation.winding_temp,
                     oldTransformerObservation.work_task_id
                 ],
                 function (err) {
@@ -69,10 +79,20 @@ export const updateOldTransformerObservationByIdTransaction = async (mrid, oldTr
             dbsql.run(
                 `UPDATE old_transformer_observation SET
                     bottom_oil_temp = ?,
+                    humidity = ?,
+                    weather = ?,
+                    ambient_temp = ?,
+                    reference_temp = ?,
+                    winding_temp = ?,
                     work_task_id = ?
                 WHERE mrid = ?`,
                 [
                     oldTransformerObservation.bottom_oil_temp,
+                    oldTransformerObservation.humidity,
+                    oldTransformerObservation.weather,
+                    oldTransformerObservation.ambient_temp,
+                    oldTransformerObservation.reference_temp,
+                    oldTransformerObservation.winding_temp,
                     oldTransformerObservation.work_task_id,
                     mrid
                 ],
@@ -107,17 +127,16 @@ export const deleteOldTransformerObservationByIdTransaction = async (mrid, dbsql
 // Lấy oldTransformerObservation theo work_task_id
 export const getOldTransformerObservationByWorkTaskId = async (workTaskId) => {
     return new Promise((resolve, reject) => {
-        db.all(
+        db.get(
             `SELECT oto.*, tobs.*, io.*
              FROM old_transformer_observation oto
              LEFT JOIN transformer_observation tobs ON oto.mrid = tobs.mrid
              LEFT JOIN identified_object io ON tobs.mrid = io.mrid
              WHERE oto.work_task_id = ?`,
             [workTaskId],
-            (err, rows) => {
+            (err, row) => {
                 if (err) return reject({ success: false, err, message: 'Get oldTransformerObservation by work_task_id failed' })
-                if (!rows || rows.length === 0) return resolve({ success: false, data: [], message: 'No oldTransformerObservation found for this work_task_id' })
-                return resolve({ success: true, data: rows, message: 'Get oldTransformerObservation by work_task_id completed' })
+                return resolve({ success: true, data: row, message: 'Get oldTransformerObservation by work_task_id completed' })
             }
         )
     })

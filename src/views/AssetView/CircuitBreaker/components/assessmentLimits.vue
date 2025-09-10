@@ -10,7 +10,7 @@
         </el-row>
         <el-row style="margin-top: 2%;">
             <el-col :span="24">
-                <div class="header-toggle pointer" @click="openContacRes = !openContacRes">
+                <div class="header-toggle pointer font_size_12" @click="openContacRes = !openContacRes">
                     <i v-if="openContacRes" class="fa-solid fa-caret-up"></i>
                     <i v-else class="fa-solid fa-caret-down"></i>
                     Contact resistance
@@ -75,7 +75,7 @@
         </div>
         <el-row>
             <el-col :span="24">
-                <div class="header-toggle pointer" @click="openOperatingTime = !openOperatingTime">
+                <div class="header-toggle pointer font_size_12" @click="openOperatingTime = !openOperatingTime">
                     <i v-if="openOperatingTime" class="fa-solid fa-caret-up"></i>
                     <i v-else class="fa-solid fa-caret-down"></i>
                     Operating time
@@ -148,7 +148,7 @@
         </div>
         <el-row>
             <el-col :span="24">
-                <div class="header-toggle pointer" @click="openContactTravel = !openContactTravel">
+                <div class="header-toggle pointer font_size_12" @click="openContactTravel = !openContactTravel">
                     <i v-if="openContactTravel" class="fa-solid fa-caret-up"></i>
                     <i v-else class="fa-solid fa-caret-down"></i>
                     Contact travel
@@ -215,7 +215,7 @@
         </div>
         <el-row>
             <el-col :span="24">
-                <div class="header-toggle pointer" @click="openAuxContact = !openAuxContact">
+                <div class="header-toggle pointer font_size_12" @click="openAuxContact = !openAuxContact">
                     <i v-if="openAuxContact" class="fa-solid fa-caret-up"></i>
                     <i v-else class="fa-solid fa-caret-down"></i>
                     Auxiliary contacts
@@ -374,7 +374,7 @@
         </div>
         <el-row style="margin-top: 2%;">
             <el-col :span="24">
-                <div class="header-toggle pointer" @click="openMiscell = !openMiscell">
+                <div class="header-toggle pointer font_size_12" @click="openMiscell = !openMiscell">
                     <i v-if="openMiscell" class="fa-solid fa-caret-up"></i>
                     <i v-else class="fa-solid fa-caret-down"></i>
                     Miscellaneous
@@ -449,7 +449,7 @@
         </div>
         <el-row style="margin-top: 2%;">
             <el-col :span="24">
-                <div class="header-toggle pointer" @click="openCoilChar = !openCoilChar">
+                <div class="header-toggle pointer font_size_12" @click="openCoilChar = !openCoilChar">
                     <i v-if="openCoilChar" class="fa-solid fa-caret-up"></i>
                     <i v-else class="fa-solid fa-caret-down"></i>
                     Coil Characteristics
@@ -530,7 +530,7 @@
         </div>
         <el-row style="margin-top: 2%;">
             <el-col :span="24">
-                <div class="header-toggle pointer" @click="openPickupVol = !openPickupVol">
+                <div class="header-toggle pointer font_size_12" @click="openPickupVol = !openPickupVol">
                     <i v-if="openPickupVol" class="fa-solid fa-caret-up"></i>
                     <i v-else class="fa-solid fa-caret-down"></i>
                     Pickup voltage
@@ -595,7 +595,7 @@
         </div>
         <el-row style="margin-top: 2%;">
             <el-col :span="24">
-                <div class="header-toggle pointer" @click="openMotorChar = !openMotorChar">
+                <div class="header-toggle pointer font_size_12" @click="openMotorChar = !openMotorChar">
                     <i v-if="openMotorChar" class="fa-solid fa-caret-up"></i>
                     <i v-else class="fa-solid fa-caret-down"></i>
                     Motor Characteristics
@@ -668,7 +668,7 @@
         </div>
         <el-row style="margin-top: 2%;">
             <el-col :span="24">
-                <div class="header-toggle pointer" @click="openUnderVoltageR = !openUnderVoltageR">
+                <div class="header-toggle pointer font_size_12" @click="openUnderVoltageR = !openUnderVoltageR">
                     <i v-if="openUnderVoltageR" class="fa-solid fa-caret-up"></i>
                     <i v-else class="fa-solid fa-caret-down"></i>
                     Under-voltage release
@@ -733,7 +733,7 @@
         </div>
         <el-row style="margin-top: 2%;">
             <el-col :span="24">
-                <div class="header-toggle pointer" @click="openOvercurrentR = !openOvercurrentR">
+                <div class="header-toggle pointer font_size_12" @click="openOvercurrentR = !openOvercurrentR">
                     <i v-if="openOvercurrentR" class="fa-solid fa-caret-up"></i>
                     <i v-else class="fa-solid fa-caret-down"></i>
                     Under-voltage release
@@ -890,6 +890,15 @@ export default {
 .el-input-group__append {
     width: 10px !important;
 }
+
+.font_size_12 {
+    font-size: 12px !important;
+}
+
+::v-deep(.el-radio__label) {
+    font-size: 12px !important;
+}
+
 table, th, td {
     white-space: nowrap;
     width: auto !important;
@@ -900,5 +909,6 @@ table, th {
     border-collapse: collapse;
     border: 1px solid !important;
     border-color: #808080 !important;
+    font-size: 12px !important;
 }
 </style>

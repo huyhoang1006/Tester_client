@@ -36,7 +36,7 @@
                             </el-date-picker>
                         </td>
                         <td>
-                            <el-select size="mini" v-model="item.test_type_surge_arrester_id" placeholder="Select test type">
+                            <el-select multiple collapse-tags size="mini" v-model="item.test_type_surge_arrester_id" placeholder="Select test type">
                                 <el-option
                                     v-for="test in testTypeListData"
                                     :key="test.mrid"
@@ -93,7 +93,7 @@ export default {
                 serial_number: '',
                 calibration_date: '',
                 work_id: '',
-                test_type_surge_arrester_id: ''
+                test_type_surge_arrester_id: []
             }
             this.testingEquipmentListData.push(data);
         },
@@ -104,7 +104,7 @@ export default {
                 serial_number: '',
                 calibration_date: '',
                 work_id : '',
-                test_type_surge_arrester_id: ''
+                test_type_surge_arrester_id: []
             }
             this.testingEquipmentListData.splice(index + 1, 0, data);
         },
@@ -122,5 +122,15 @@ export default {
 <style scoped>
 td, th {
     font-size: 12px;
+}
+
+::v-deep(.el-select .el-select__tags) {
+  flex-wrap: nowrap;
+}
+
+::v-deep(.el-select .el-tag) {
+  max-width: calc(100% - 25px); /* để tag gọn lại */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

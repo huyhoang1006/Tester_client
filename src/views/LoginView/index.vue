@@ -47,7 +47,9 @@
     </div>
 </template>
 
+
 <script>
+/* eslint-disable */
 import * as userApi from '@/api/user'
 
 export default {
@@ -139,38 +141,6 @@ export default {
                     this.loadingLogin = false
                 })
         },
-        // async signup() {
-        //     let valid = await this.$refs.signupForm.validate()
-        //     if (!valid) {
-        //         return
-        //     }
-        //     this.loadingSignup = true
-        //     await this.$common.simulateLoading()
-        //     userApi
-        //         .signup(this.formSignup)
-        //         .then(() => {
-        //             this.$message.success('Sign up successful')
-        //             this.dialogSignup = false
-        //             this.formSignup = {
-        //                 username: '',
-        //                 password: '',
-        //                 firstName: '',
-        //                 lastName: '',
-        //                 gender: '',
-        //                 email: '',
-        //                 phone: '',
-        //                 birthDate: ''
-        //             }
-        //         })
-        //         .catch((error) => {
-        //             console.log(error)
-        //             this.$message.error(error.message)
-        //         })
-        //         .finally(async () => {
-        //             await this.$common.simulateLoading()
-        //             this.loadingSignup = false
-        //         })
-        // },
         getOtherQuery(query) {
             return Object.keys(query).reduce((acc, cur) => {
                 if (cur !== 'redirect') {

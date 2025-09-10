@@ -24,6 +24,29 @@ export const getTestDataSetById = async (mrid) => {
     }
 }
 
+export const getTestDataSetByWorkTaskId = async (workTaskId) => {
+    try {
+        return new Promise((resolve, reject) => {
+            db.all(
+                `SELECT td.*, pd.*, d.*, io.*
+                 FROM test_dataset td
+                 LEFT JOIN procedure_dataset pd ON td.mrid = pd.mrid
+                 LEFT JOIN document d ON td.mrid = d.mrid
+                 LEFT JOIN identified_object io ON td.mrid = io.mrid
+                 WHERE pd.work_task = ?`,
+                [workTaskId],
+                (err, rows) => {
+                    if (err) return reject({ success: false, err, message: 'Get testDataSet by workTaskId failed' })
+                    if (!rows || rows.length === 0) return resolve({ success: false, data: [], message: 'No testDataSet found for this workTaskId' })
+                    return resolve({ success: true, data: rows, message: 'Get testDataSet by workTaskId completed' })
+                }
+            )
+        });
+    } catch (err) {
+        return { success: false, err, message: 'Get testDataSet by workTaskId failed' }
+    }
+}
+
 // Thêm mới testDataSet
 export const insertTestDataSetTransaction = async (testDataSet, dbsql) => {
     return new Promise(async (resolve, reject) => {

@@ -2,7 +2,7 @@
     <div id="ratings" class="mgy-5">
         <el-row>
             <el-col :span="24">
-                <div class="header-toggle pointer" @click="openRatings = !openRatings">
+                <div class="header-toggle pointer font_size_12" @click="openRatings = !openRatings">
                     <i v-if="openRatings" class="fa-solid fa-caret-up"></i>
                     <i v-else class="fa-solid fa-caret-down"></i>
                     Ratings
@@ -11,7 +11,7 @@
         </el-row>
         <div class="content-toggle" v-if="openRatings">
             <el-row style="width: 100%;" class="content">
-                <el-col :span="8" class="col-content">
+                <el-col :span="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Standard">
                             <el-col :span="24" class="pdr-0">
@@ -66,7 +66,7 @@
                         <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                             <el-form-item label="Primary windings">
                                 <el-col :span="24" class="pdr-0">
-                                    <el-select style="width: 25%;" v-model="ratingsData.show.primary">
+                                    <el-select style="width: 100%;" v-model="ratingsData.show.primary">
                                         <el-option label="1" value="1"></el-option>
                                         <el-option label="2" value="2"></el-option>
                                         <el-option label="4" value="4"></el-option>
@@ -116,7 +116,7 @@
                     <el-col :span="2">
                         <br/>
                     </el-col>
-                    <el-col :span="4" class="col-content">
+                    <el-col :span="6" class="col-content">
                         <el-form :inline-message="true" label-width="100px" size="mini" label-position="left">
                             <el-form-item label="Duration">
                                 <el-input v-model="ratingsData.show.duration">
@@ -153,7 +153,7 @@
                             </el-form-item>
                         </el-form>
                     </el-col>
-                    <el-col :span="4" class="col-content">
+                    <el-col :span="6" class="col-content">
                         <el-form :inline-message="true" label-width="100px" size="mini" label-position="left">
                             <el-form-item label="">
                                 <el-select v-model="ratingsData.show.sysVoltageOption">
@@ -238,5 +238,9 @@ export default {
 }
 .ith_content {
     margin-left: 5px;
+}
+
+.font_size_12 {
+    font-size: 12px;
 }
 </style>

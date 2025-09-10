@@ -17,9 +17,15 @@ import * as SurgeArresterPreload from './surgeArrester/index'
 import * as productAssetModelPreload from './productAssetModel/index'
 import * as oldWorkPreload from './oldWork/index'
 import * as assetPreload from './asset/index'
+import * as analogPreload from './analog/index'
+import * as stringMeasurementPreload from './stringMeasurement/index'
+import * as discretePreload from './discrete/index'
+import * as valueToAliasPreload from './valueToAlias/index'
+import * as valueAliasSetPreload from './valueAliasSet/index'
 
 export { parentOrganizationPreload, substationPreload, locationPreload, 
     streetAddressPreload, streetDetailPreload, townDetailPreload, electronicAddressPreload, 
     telephoneNumberPreload, personPreload, personRolePreload, configurationEventPreload, 
     positionPointPreload, voltageLevelPreload, bayPreload, powerSystemResourcePreload, 
-    SurgeArresterPreload, productAssetModelPreload, oldWorkPreload, assetPreload}
+    SurgeArresterPreload, productAssetModelPreload, oldWorkPreload, assetPreload, analogPreload, 
+    stringMeasurementPreload, discretePreload, valueToAliasPreload, valueAliasSetPreload }
