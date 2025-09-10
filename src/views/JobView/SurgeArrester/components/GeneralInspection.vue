@@ -117,17 +117,20 @@ export default {
                 items : {
                     mrid : '',
                     value: '',
-                    unit: ''
+                    unit: '',
+                    type: 'string'
                 },
                 assessment : {
                     mrid : '',
                     value: '',
-                    unit: ''
+                    unit: '',
+                    type: 'discrete'
                 },
                 condition_indicator : {
                     mrid : '',
                     value: '',
-                    unit: ''
+                    unit: '',
+                    type: 'discrete'
                 }
             })
         },
@@ -151,17 +154,20 @@ export default {
                 items : {
                     mrid : '',
                     value: '',
-                    unit: ''
+                    unit: '',
+                    type: 'string'
                 },
                 assessment : {
                     mrid : '',
                     value: '',
-                    unit: ''
+                    unit: '',
+                    type: 'discrete'
                 },
                 condition_indicator : {
                     mrid : '',
                     value: '',
-                    unit: ''
+                    unit: '',
+                    type: 'discrete'
                 }
             }
             this.testData.table.splice(index+1, 0, data)

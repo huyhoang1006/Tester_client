@@ -22,7 +22,7 @@ class SurgeArresterJobDto {
         this.testingEquipmentData = [];
         this.listHealth = [];
         this.attachment = new Attachment();
-    }
+        this.surgeArresterTestingEquipmentTestType = [];    }
 }
 
 export default SurgeArresterJobDto;

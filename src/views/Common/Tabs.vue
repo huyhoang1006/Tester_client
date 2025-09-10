@@ -28,7 +28,7 @@
             <div class="scroll-btn right" @click="scrollRight"><i class="fa-solid fa-angle-right"></i></div>
         </div>
         <div class="tabs-content">
-            <div class="mgr-20 mgt-20 mgb-20 mgl-20" v-for="(item) in tabs" :key="item.mrid">
+            <div class="mgr-20 mgt-20 mgb-20 mgl-20" v-for="(item, index) in tabs" :key="item.mrid">
                 <component mode="update" 
                     @reload="loadData" 
                     v-show="activeTab.mrid === item.mrid" 
@@ -41,8 +41,13 @@
                     :productAssetModelData="productAssetModelData"
                     :parent="parentOrganization"
                     :locationData="locationData" 
+                    style="min-height: calc(100vh - 250px);"
                     >
                 </component>
+                <span class="tab-actions" v-show="activeTab.mrid === item.mrid">
+                    <el-button size="small" type="danger" @click="closeTab(index)">Close</el-button>
+                    <el-button size="small" type="primary" @click="saveCtrlS()">Save</el-button>
+                </span>
             </div>
         </div>
     </div>
@@ -224,7 +229,6 @@ export default {
                         this.checkJobType = 'JobSurgeArrester'
                         this.signJob = true;
                         const data = await window.electronAPI.getSurgeArresterJobByMrid(tab.mrid)
-                        console.log("Data from main process:", data); // Debug log
                         if(data.success) {
                             const surgeArresterJobDto = SurgeArresterJobMapper.JobEntityToDto(data.data)
                             for (const test of surgeArresterJobDto.testList) {
@@ -406,6 +410,14 @@ export default {
 
 .tabs-content::-webkit-scrollbar {
     width: 0; /* Ẩn scrollbar dọc trên Chrome, Safari, Edge */
+}
+
+.tab-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 10px;
+    width: 100%;
 }
 </style>
   

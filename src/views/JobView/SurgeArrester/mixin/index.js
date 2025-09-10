@@ -2,7 +2,12 @@
 import uuid from "@/utils/uuid";
 import * as surgeArresterJobMapping from "@/views/Mapping/SurgerArresterJob/index"
 import SurgeArresterJobDto from "@/views/Dto/Job/SurgeArrester/index";
+import mixins from '../components/SelectTest/mixin'
+import MeasurementProcedure from "@/views/Cim/MeasurementProcedure";
+import ValueAliasSet from "@/views/Cim/ValueAliasSet";
+
 export default {
+    mixins: [mixins],
     data() {
         return {
             surgeArresterJobDto: new SurgeArresterJobDto(),
@@ -16,10 +21,15 @@ export default {
                     this.$message.error('Name is required');
                 } else {
                     const dto = JSON.parse(JSON.stringify(this.surgeArresterJobDto));
-                    const resultDto = this.checkJob(dto);
+                    const resultDto = await this.checkJob(dto);
                     const entity = surgeArresterJobMapping.jobDtoToEntity(resultDto);
                     const old_entity = surgeArresterJobMapping.jobDtoToEntity(this.surgeArresterJobDtoOld);
-                    const rs = await window.electronAPI.insertSurgeArresterJob(old_entity, entity)
+                    // const rs = await window.electronAPI.insertSurgeArresterJob(old_entity, entity)
+                    const rs = {
+                        success: false,
+                        data: null,
+                        message: 'Failed to save job'
+                    }
                     if (rs.success) {
                         return {
                             success: true,
@@ -60,19 +70,25 @@ export default {
         },
 
         async loadData(data) {
-            //properties
+            for(const test of data.testList) {
+                if(test.data.row_data.length == 0) {
+                    const initTest = await this.initTest(test.testTypeCode, this.assetData);
+                    test.data.row_data = initTest.row_data;
+                }
+            }
             this.surgeArresterJobDto = data
             this.surgeArresterJobDtoOld = JSON.parse(JSON.stringify(data));
         },
 
-        checkJob(data) {
+        async checkJob(data) {
             this.checkProperties(data);
             this.checkAssetId(data);
             this.checkAttachment(data);
             this.checkTestingEquipment(data);
-            this.checkTestList(data);
+            await this.checkTestList(data);
             return data;
         },
+
         checkProperties(data) {
             if (data.properties.mrid === '' || data.properties.mrid === null) {
                 data.properties.mrid = uuid.newUuid();
@@ -99,27 +115,50 @@ export default {
         },
 
         checkTestingEquipment(data) {
+            const arr = [];
             for(const item of data.testingEquipmentData) {
-                if (item.mrid === '' || item.mrid === null) {
+                if (item.mrid === '' || item.mrid === null || item.mrid === this.$constant.ROOT) {
                     item.mrid = uuid.newUuid();
+                    item.work_id =  data.properties.mrid;
                 }
-                if (item.work_id === '' || item.work_id === null) {
-                    item.work_id = data.properties.mrid;
+                for(const test_type_id of item.test_type_surge_arrester_id) {
+                    arr.push({
+                        mrid: uuid.newUuid(),
+                        testing_equipment_id: item.mrid,
+                        test_type_id: test_type_id
+                    });
                 }
             }
+
+            // Thêm các phần tử mới vào data.surgeArresterTestingEquipmentTestType nếu chưa có
+            for (const current of arr) {
+                const existed = data.surgeArresterTestingEquipmentTestType.some(
+                    old =>
+                        old.testing_equipment_id === current.testing_equipment_id &&
+                        old.test_type_id === current.test_type_id
+                );
+                if (!existed) {
+                    data.surgeArresterTestingEquipmentTestType.push(current);
+                }
+            }
+
+            // Xóa các phần tử quá khứ không còn trong hiện tại
+            data.surgeArresterTestingEquipmentTestType = data.surgeArresterTestingEquipmentTestType.filter(
+                old => arr.some(
+                    current =>
+                        old.testing_equipment_id === current.testing_equipment_id &&
+                        old.test_type_id === current.test_type_id
+                )
+            );
         },
 
-        checkTestList(data) {
+        async checkTestList(data) {
             for(const item of data.testList) {
                 if (item.mrid === '' || item.mrid === null || item.mrid === this.$constant.ROOT) {
                     item.mrid = uuid.newUuid();
                 }
                 if (item.testCondition.mrid === '' || item.testCondition.mrid === null) {
                     item.testCondition.mrid = uuid.newUuid();
-                }
-
-                if(item.testCondition.observationId === '' || item.testCondition.observationId === null) {
-                    item.testCondition.observationId = uuid.newUuid();
                 }
 
                 if(item.testCondition.condition) {
@@ -152,7 +191,151 @@ export default {
                         item.testCondition.attachment.id_foreign = item.mrid
                     }
                 }
-                
+
+                const dataStringMeasurement = item.data.row_data.filter(i => i.type === 'string')
+                const dataStringMeasurementSet = await window.electronAPI.getAllStringMeasurementByProcedure(item.testTypeId)
+                if(dataStringMeasurementSet.success) {
+                    for(const stringMeasurement of dataStringMeasurement) {
+                        let matched = false;
+                        for(const data of dataStringMeasurementSet.data) {
+                            if(stringMeasurement.code === data.alias_name) {
+                                stringMeasurement.mrid = data.mrid;
+                                matched = true;
+                                break;
+                            }
+                        }
+                        if (!matched) {
+                            stringMeasurement.mrid = uuid.newUuid();
+                            const measurementProcedure = new MeasurementProcedure();
+                            measurementProcedure.mrid = uuid.newUuid();
+                            measurementProcedure.procedure_id = item.testTypeId;
+                            measurementProcedure.measurement_id = stringMeasurement.mrid;
+                            item.data.measurementProcedure.push(measurementProcedure);
+                        }
+                    }
+                } else {
+                    if(dataStringMeasurementSet.data && dataStringMeasurementSet.data.length == 0) {
+                        for(const stringMeasurement of dataStringMeasurement) {
+                            stringMeasurement.mrid = uuid.newUuid();
+                            const measurementProcedure = new MeasurementProcedure();
+                            measurementProcedure.mrid = uuid.newUuid();
+                            measurementProcedure.procedure_id = item.testTypeId;
+                            measurementProcedure.measurement_id = stringMeasurement.mrid;
+                            item.data.measurementProcedure.push(measurementProcedure);
+                        }
+                    }
+                }
+
+                const dataAnalog = item.data.row_data.filter(i => i.type === 'analog')
+                const dataAnalogSet = await window.electronAPI.getAllAnalogByProcedure(item.testTypeId);
+                if(dataAnalogSet.success) {
+                    for(const analog of dataAnalog) {
+                        let matched = false;
+                        for(const data of dataAnalogSet.data) {
+                            if(analog.code === data.alias_name) {
+                                analog.mrid = data.mrid;
+                                matched = true;
+                                break;
+                            }
+                        }
+                        if (!matched) {
+                            analog.mrid = uuid.newUuid();
+                            const measurementProcedure = new MeasurementProcedure();
+                            measurementProcedure.mrid = uuid.newUuid();
+                            measurementProcedure.procedure_id = item.testTypeId;
+                            measurementProcedure.measurement_id = analog.mrid;
+                            item.data.measurementProcedure.push(measurementProcedure);
+                        }
+                    }
+                } else {
+                    if(dataAnalogSet.data && dataAnalogSet.data.length == 0) {
+                        for(const analog of dataAnalog) {
+                            analog.mrid = uuid.newUuid();
+                            const measurementProcedure = new MeasurementProcedure();
+                            measurementProcedure.mrid = uuid.newUuid();
+                            measurementProcedure.procedure_id = item.testTypeId;
+                            measurementProcedure.measurement_id = analog.mrid;
+                            item.data.measurementProcedure.push(measurementProcedure);
+                        }
+                    }
+                }
+
+                const dataDiscrete = item.data.row_data.filter(i => i.type === 'discrete');
+                //lấy tất cả discrete của procedure
+                const dataDiscreteSet = await window.electronAPI.getAllDiscreteByProcedure(item.testTypeId);
+                //nếu thành công
+                if(dataDiscreteSet.success) {
+                    //vòng lặp for để duyệt từng discrete trong dataDiscrete
+                    // để kiểm tra xem dataDiscreteSet và dataDiscrete có trùng nhau không
+                    for(const discrete of dataDiscrete) {
+                        let matched = false;
+                        for(const data of dataDiscreteSet.data) {
+                            //những discrete có code trùng với alias_name trong dataDiscreteSet
+                            if(discrete.code === data.alias_name) {
+                                discrete.mrid = data.mrid;
+                                matched = true;
+                                //nếu trùng thì lấy kiểm tra xem value_alias_set đã tồn tại hay chưa
+                                if(data.value_alias_set === null || data.value_alias_set === '') {
+                                    discrete.pool.mrid = uuid.newUuid();
+                                    for(const item of discrete.pool.valueToAlias) {
+                                        item.mrid = uuid.newUuid();
+                                    }
+                                } else {
+                                    discrete.pool.mrid = data.value_alias_set
+                                    const dataDiscreteSetAndAlias = await window.electronAPI.getValueAliasSetAndValueToAliasByMrid(discrete.pool.mrid);
+                                    if(dataDiscreteSetAndAlias.success) {
+                                        for(const item of discrete.pool.valueToAlias) {
+                                            let matchedAlias = false;
+                                            for(const old of dataDiscreteSetAndAlias.data.value_to_aliases) {
+                                                if(item.alias_name === old.alias_name) {
+                                                    item.mrid = old.mrid;
+                                                    matchedAlias = true;
+                                                    break;
+                                                }
+                                            }
+                                            if(!matchedAlias) {
+                                                item.mrid = uuid.newUuid();
+                                            }
+                                        }
+                                    } else {
+                                        for(const item of discrete.pool.valueToAlias) {
+                                            item.mrid = uuid.newUuid();
+                                        }
+                                    }
+
+                                }
+                                break;
+                            }
+                        }
+                        if (!matched) {
+                            discrete.mrid = uuid.newUuid();
+                            const measurementProcedure = new MeasurementProcedure();
+                            measurementProcedure.mrid = uuid.newUuid();
+                            measurementProcedure.procedure_id = item.testTypeId;
+                            measurementProcedure.measurement_id = discrete.mrid;
+                            item.data.measurementProcedure.push(measurementProcedure);
+                            discrete.pool.mrid = uuid.newUuid();
+                            for(const item of discrete.pool.valueToAlias) {
+                                item.mrid = uuid.newUuid();
+                            }
+                        }
+                    }
+                } else {
+                    if(dataDiscreteSet.data && dataDiscreteSet.data.length == 0) {
+                        for(const discrete of dataDiscrete) {
+                            discrete.mrid = uuid.newUuid();
+                            const measurementProcedure = new MeasurementProcedure();
+                            measurementProcedure.mrid = uuid.newUuid();
+                            measurementProcedure.procedure_id = item.testTypeId;
+                            measurementProcedure.measurement_id = discrete.mrid;
+                            item.data.measurementProcedure.push(measurementProcedure);
+                            discrete.pool.mrid = uuid.newUuid();
+                            for(const item of discrete.pool.valueToAlias) {
+                                item.mrid = uuid.newUuid();
+                            }
+                        }
+                    }
+                }
                 if(item.data.table && item.data.table.length > 0) {
                     for(const data of item.data.table) {
                         if (data.mrid === '' || data.mrid === null || data.mrid === this.$constant.ROOT) {
@@ -167,8 +350,7 @@ export default {
                             }
                         }
                     }
-                }
-                        
+                }                
             }
         },
     }

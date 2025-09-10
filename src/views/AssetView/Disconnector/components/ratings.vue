@@ -2,7 +2,7 @@
     <div id="ratings" class="mgy-5">
         <el-row style="margin-top: 20px; margin-bottom: 10px;">
             <el-col :span="24">
-                <div class="header-toggle pointer" @click="openRatings = !openRatings">
+                <div style="font-size: 12px;" class="header-toggle pointer" @click="openRatings = !openRatings">
                     <i v-if="openRatings" class="fa-solid fa-caret-up"></i>
                     <i v-else class="fa-solid fa-caret-down"></i>
                     Ratings
@@ -101,3 +101,8 @@ export default {
     }
 }
 </script>
+<style scoped>
+.bolder {
+    font-size: 12px;
+}
+</style>

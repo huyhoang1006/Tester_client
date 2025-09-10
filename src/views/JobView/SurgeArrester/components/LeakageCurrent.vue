@@ -49,10 +49,10 @@
                             <el-input size="mini" type="text" v-model="item.unit_no.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.vTest.value"></el-input>
+                            <el-input size="mini" type="text" v-model="item.v_test.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.iMeas.value"></el-input>
+                            <el-input size="mini" type="text" v-model="item.i_meas.value"></el-input>
                         </td>
                         <td>
                             <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -135,32 +135,38 @@ export default {
                     phase : {
                         mrid : '',
                         value: '',
-                        unit: ''
+                        unit: '',
+                        type: 'string'
                     },
                     unit_no : {
                         mrid : '',
                         value: i,
-                        unit: ''
+                        unit: '',
+                        type: 'analog'
                     },
-                    vTest : {
+                    v_test : {
                         mrid : '',
                         value: '',
-                        unit: 'k|V'
+                        unit: 'k|V',
+                        type: 'analog'
                     },
-                    iMeas : {
+                    i_meas : {
                         mrid : '',
                         value: '',
-                        unit: 'm|A'
+                        unit: 'm|A',
+                        type: 'analog'
                     },
                     assessment : {
                         mrid : '',
                         value: '',
-                        unit: ''
+                        unit: '',
+                        type: 'discrete'
                     },
                     condition_indicator : {
                         mrid : '',
                         value: '',
-                        unit: ''
+                        unit: '',
+                        type: 'discrete'
                     }
                 })
             }
@@ -184,27 +190,41 @@ export default {
             for(let i=0 ; i< units; i++) {
                 const data = {
                     mrid : '',
-                    phase : "",
-                    unit_no : i+1,
-                    vTest : {
+                    phase : {
                         mrid : '',
                         value: '',
-                        unit: 'k|V'
+                        unit: '',
+                        type: 'string'
                     },
-                    iMeas : {
+                    unit_no : {
+                        mrid : '',
+                        value: i+1,
+                        unit: '',
+                        type: 'analog'
+                    },
+                    v_test : {
                         mrid : '',
                         value: '',
-                        unit: 'm|A'
+                        unit: 'k|V',
+                        type: 'analog'
+                    },
+                    i_meas : {
+                        mrid : '',
+                        value: '',
+                        unit: 'm|A',
+                        type: 'analog'
                     },
                     assessment : {
                         mrid : '',
                         value: '',
-                        unit: ''
+                        unit: '',
+                        type: 'discrete'
                     },
                     condition_indicator : {
                         mrid : '',
                         value: '',
-                        unit: ''
+                        unit: '',
+                        type: 'discrete'
                     }
                 }
                 this.testData.table.splice(index+i+units, 0, data)
@@ -218,8 +238,8 @@ export default {
             this.testData.table.forEach((element) => {
                 element.phase.value = '',
                 element.unit_no.value = '',
-                element.vTest.value = '',
-                element.iMeas.value = '',
+                element.v_test.value = '',
+                element.i_meas.value = '',
                 element.assessment.value = '',
                 element.condition_indicator.value = ''
             })

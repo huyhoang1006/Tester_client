@@ -116,7 +116,6 @@ export default {
         async addTest(testType) {
             const count = await this.countTest(testType.mrid)
             const initData = await this.initTest(testType.code, this.assetData)
-            const tabId = this.$uuid.newUuid()
             const name = count == 0 ? testType.name : `${testType.name} (${count})`
             this.testListData.push({
                 mrid: this.$uuid.EMPTY,
@@ -126,7 +125,6 @@ export default {
                 name,
                 data: initData,
                 testCondition : {
-                    observationId : '',
                     mrid : '',
                     condition: {
                         top_oil_temperature: {
@@ -165,7 +163,6 @@ export default {
                     attachment : new Attachment(),
                     attachmentData : []
                 },
-                tabId,
                 worst_score: null,
                 worst_score_df: null,
                 worst_score_c: null,
@@ -197,8 +194,6 @@ export default {
 
 <style lang="scss" scoped>
 #select-test {
-    width: calc(100vw - 145px);
-    height: calc(100vh - 150px);
     overflow-y: auto;
     overflow-x: hidden;
 }

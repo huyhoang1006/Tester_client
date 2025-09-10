@@ -22,7 +22,8 @@ export default {
                     oversheath : {},
                     sheath : {},
                     armour_bedding : {}
-                }
+                },
+                attachmentData : []
             },
             assessories : {
                 terminal : {},

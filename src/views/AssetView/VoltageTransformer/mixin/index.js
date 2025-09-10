@@ -9,7 +9,8 @@ export default {
             config : {
                 windings : '',
                 dataVT : []
-            }
+            },
+            attachmentData : []
         }
     },
     async beforeMount() {

@@ -11,7 +11,7 @@
         </el-row>
         <div class="content-toggle" v-if="openContact">
             <el-row :gutter="20" class="content">
-                <el-col :span="8" class="col-content">
+                <el-col :span="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Nominal total travel">
                             <el-input v-model="contactSysData.nominalTravel">

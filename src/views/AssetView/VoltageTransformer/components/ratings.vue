@@ -2,7 +2,7 @@
     <div id="ratings" class="mgy-5">
         <el-row style="margin-top: 20px; margin-bottom: 10px;">
             <el-col :span="24">
-                <div class="header-toggle pointer" @click="openRatings = !openRatings">
+                <div style="font-size: 12px;" class="header-toggle pointer" @click="openRatings = !openRatings">
                     <i v-if="openRatings" class="fa-solid fa-caret-up"></i>
                     <i v-else class="fa-solid fa-caret-down"></i>
                     Ratings
@@ -11,7 +11,7 @@
         </el-row>
         <div class="content-toggle" v-if="openRatings">
             <el-row style="width: 100%;" class="content">
-                <el-col style="width: calc((100%/3) - 20px);" class="col-content">
+                <el-col style="width: calc((100%/2) - 20px);" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Standard">
                             <el-col :span="24" class="pdr-0">

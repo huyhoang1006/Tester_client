@@ -58,7 +58,7 @@
                         <span class="bolder">Layer construction</span>
                         <el-divider></el-divider>
                         <el-row style="margin-top: 20px; width: 100%;">
-                            <el-col style="float: ;" :span="12">
+                            <el-col :span="12">
                                 <el-checkbox style="width: 100%; margin-top: 10px;" v-model="layersData.conductor" label="Conductor"/>
                                 <el-checkbox style="width: 100%; margin-top: 10px;" v-model="layersData.conductor_shield" label="Conductor shield"></el-checkbox>
                                 <el-checkbox style="width: 100%; margin-top: 10px;" v-model="layersData.insulation" label="Insulation" ></el-checkbox>
@@ -568,7 +568,7 @@ export default {
     data() {
         return {
             openRatings : "true",
-            labelWidth : `285px`,
+            labelWidth : `200px`,
         }
     },
     watch : {
@@ -608,5 +608,9 @@ export default {
 div.el-input-group__append {
     text-align: center;
     width: 30px;
+}
+
+.bolder {
+    font-size: 12px;
 }
 </style>

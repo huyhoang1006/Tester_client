@@ -1,3 +1,4 @@
+import Measurement from "@/views/Cim/Measurement";
 class Analog extends Measurement {
     constructor() {
         super();

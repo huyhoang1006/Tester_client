@@ -6,10 +6,18 @@ import {insertOldWorkTransaction, getOldWorkById} from "@/function/cim/oldWork/i
 import { insertTestingEquipmentTransaction, getTestingEquipmentById, getTestingEquipmentByWorkId, deleteTestingEquipmentByIdTransaction } from '../../testingEquipment/index.js'
 import SurgeArresterJobEntity from '@/views/Entity/Job/SurgeArrester'
 import { insertWorkTaskTransaction, getWorkTaskByWork, deleteWorkTaskByIdTransaction } from '@/function/cim/workTask/index.js'
-import { insertOldSpecimenTransaction, getOldSpecimenByWorkTaskId, deleteOldSpecimenByIdTransaction } from '@/function/cim/oldSpecimen/index.js'
 import { insertOldTransformerObservationTransaction, getOldTransformerObservationById, deleteOldTransformerObservationByIdTransaction, getOldTransformerObservationByWorkTaskId } from '@/function/cim/oldTransformerObservation/index.js'
 import {insertPercentTransaction, deletePercentByIdTransaction, getPercentById} from '@/function/cim/percent/index.js'
 import {insertTemperatureTransaction, deleteTemperatureByIdTransaction, getTemperatureById} from '@/function/cim/temperature/index.js'
+import { insertSurgeArresterTestingEquipmentTestTypeTransaction, getSurgeArresterTestingEquipmentTestingEqId, deleteSurgeArresterTestingEquipmentTestTypeByIdTransaction } from '../../surgeArresterTestingEquipmentTestType/index.js'
+import { insertTestDataSetTransaction, getTestDataSetByWorkTaskId, deleteTestDataSetByIdTransaction } from '@/function/cim/testDataSet'
+import { insertAnalogTransaction  } from '@/function/cim/analog'
+import { insertStringMeasurementTransaction } from '@/function/cim/stringMeasurement/index.js'
+import {insertDiscreteTransaction } from  '@/function/cim/discrete'
+import { insertValueAliasSetTransaction} from '@/function/cim/valueAliasSet/index.js'
+import { insertValueToAliasTransaction } from '@/function/cim/valueToAlias'
+import { insertProcedureTransaction } from '@/function/cim/procedure'
+import { insertMeasurementProcedureTransaction } from '@/function/cim/measurementProcedure/index.js'
 
 export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
     try {
@@ -77,6 +85,22 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
                 await insertTestingEquipmentTransaction(equipment, db);
             }
 
+            //surgeArresterTestingEquipmentTestType
+            const newIdsSet = entity.surgeArresterTestingEquipmentTestType.map(v => v.mrid).filter(id => id); // bỏ null/empty
+            const oldIdsSet = old_entity.surgeArresterTestingEquipmentTestType.map(v => v.mrid).filter(id => id);
+
+            const toAddSet = entity.surgeArresterTestingEquipmentTestType.filter(v => v.mrid && !oldIdsSet.includes(v.mrid));
+            const toDeleteSet = old_entity.surgeArresterTestingEquipmentTestType.filter(v => v.mrid && !newIdsSet.includes(v.mrid));
+            const toUpdateSet = entity.surgeArresterTestingEquipmentTestType.filter(v => v.mrid && oldIdsSet.includes(v.mrid));
+            
+            for (const equipmentTestType of toAddSet) {
+                await insertSurgeArresterTestingEquipmentTestTypeTransaction(equipmentTestType, db);
+            }
+
+            for (const equipmentTestType of toUpdateSet) {
+                await insertSurgeArresterTestingEquipmentTestTypeTransaction(equipmentTestType, db);
+            }
+
             //insert work tasks
             const newIdsWorkTask = entity.workTasks.map(v => v.mrid).filter(id => id); // bỏ null/empty
             const oldIdsWorkTask = old_entity.workTasks.map(v => v.mrid).filter(id => id);
@@ -124,22 +148,6 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
                 await insertTemperatureTransaction(temperature, db);
             }
 
-            //specimen
-            const newIdsSpecimen = entity.specimen.map(v => v.mrid).filter(id => id); // bỏ null/empty
-            const oldIdsSpecimen = old_entity.specimen.map(v => v.mrid).filter(id => id);
-
-            const toAddSpecimen = entity.specimen.filter(v => v.mrid && !oldIdsSpecimen.includes(v.mrid));
-            const toDeleteSpecimen = old_entity.specimen.filter(v => v.mrid && !newIdsSpecimen.includes(v.mrid));
-            const toUpdateSpecimen = entity.specimen.filter(v => v.mrid && oldIdsSpecimen.includes(v.mrid));
-
-            for (const specimen of toAddSpecimen) {
-                await insertOldSpecimenTransaction(specimen, db);
-            }
-
-            for (const specimen of toUpdateSpecimen) {
-                await insertOldSpecimenTransaction(specimen, db);
-            }
-
             //transformer observation
             const newIdsTransformerObservation = entity.transformerObservation.map(v => v.mrid).filter(id => id); // bỏ null/empty
             const oldIdsTransformerObservation = old_entity.transformerObservation.map(v => v.mrid).filter(id => id);
@@ -184,18 +192,84 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
                 }
             }
 
+            //testdataset
+            const newIdsTestDataSet = entity.testDataSet.map(v => v.mrid).filter(id => id); // bỏ null/empty
+            const oldIdsTestDataSet = old_entity.testDataSet.map(v => v.mrid).filter(id => id);
+
+            const toAddTestDataSet = entity.testDataSet.filter(v => v.mrid && !oldIdsTestDataSet.includes(v.mrid));
+            const toUpdateTestDataSet = entity.testDataSet.filter(v => v.mrid && oldIdsTestDataSet.includes(v.mrid));
+            const toDeleteTestDataSet = old_entity.testDataSet.filter(v => v.mrid && !newIdsTestDataSet.includes(v.mrid));
+
+            for (const testData of toAddTestDataSet) {
+                await insertTestDataSetTransaction(testData, db);
+            }
+
+            for (const testData of toUpdateTestDataSet) {
+                await insertTestDataSetTransaction(testData, db);
+            }
+
+            //insert string measurement value
+            const newIdsAnalog = entity.analog.map(v => v.mrid).filter(id => id); // bỏ null/empty
+            const oldIdsAnalog = old_entity.analog.map(v => v.mrid).filter(id => id);
+
+            const toAddAnalog = entity.analog.filter(v => v.mrid && !oldIdsAnalog.includes(v.mrid));
+            const toUpdateAnalog = entity.analog.filter(v => v.mrid && oldIdsAnalog.includes(v.mrid));
+            const toDeleteAnalog = old_entity.analog.filter(v => v.mrid && !newIdsAnalog.includes(v.mrid));
+
+            for (const analog of toAddAnalog) {
+                await insertAnalogTransaction(analog, db);
+            }
+
+            for (const analog of toUpdateAnalog) {
+                await insertAnalogTransaction(analog, db);
+            }
+
+            //insert string measurement value
+            const newIdsStringMeasurement = entity.stringMeasurement.map(v => v.mrid).filter(id => id);
+            const oldIdsStringMeasurement = old_entity.stringMeasurement.map(v => v.mrid).filter(id => id);
+
+            const toAddStringMeasurement = entity.stringMeasurement.filter(v => v.mrid && !oldIdsStringMeasurement.includes(v.mrid));
+            const toUpdateStringMeasurement = entity.stringMeasurement.filter(v => v.mrid && oldIdsStringMeasurement.includes(v.mrid));
+            const toDeleteStringMeasurement = old_entity.stringMeasurement.filter(v => v.mrid && !newIdsStringMeasurement.includes(v.mrid));
+
+            for (const stringMeasurement of toAddStringMeasurement) {
+                await insertStringMeasurementTransaction(stringMeasurement, db);
+            }
+
+            for (const stringMeasurement of toUpdateStringMeasurement) {
+                await insertStringMeasurementTransaction(stringMeasurement, db);
+            }
+
+            //insert discrete value
+            const newIdsDiscrete = entity.discrete.map(v => v.mrid).filter(id => id);
+            const oldIdsDiscrete = old_entity.discrete.map(v => v.mrid).filter(id => id);
+
+            const toAddDiscrete = entity.discrete.filter(v => v.mrid && !oldIdsDiscrete.includes(v.mrid));
+            const toUpdateDiscrete = entity.discrete.filter(v => v.mrid && oldIdsDiscrete.includes(v.mrid));
+            const toDeleteDiscrete = old_entity.discrete.filter(v => v.mrid && !newIdsDiscrete.includes(v.mrid));
+
+            for (const discrete of toAddDiscrete) {
+                await insertDiscreteTransaction(discrete, db);
+            }
+
+            for (const discrete of toUpdateDiscrete) {
+                await insertDiscreteTransaction(discrete, db);
+            }
+
             //delete testing equipment that are not in the new list
+            for(const equipmentTestType of toDeleteSet) {
+                await deleteSurgeArresterTestingEquipmentTestTypeByIdTransaction(equipmentTestType.mrid, db);
+            }
+
+            for (const testData of toDeleteTestDataSet) {
+                await deleteTestDataSetByIdTransaction(testData.mrid, db);
+            }
+
             for (const equipment of toDelete) {
                 await deleteTestingEquipmentByIdTransaction(equipment.mrid, db);
             }
 
-            for (const specimen of toDeleteSpecimen) {
-                console.log("Deleting Specimen:", specimen);
-                await deleteOldSpecimenByIdTransaction(specimen.mrid, db);
-            }
-
             for (const observation of toDeleteTransformerObservation) {
-                console.log("Deleting Transformer Observation:", observation);
                 await deleteOldTransformerObservationByIdTransaction(observation.mrid, db);
             }
 
@@ -254,6 +328,13 @@ export const getSurgeArresterJobEntity = async (id) => {
                     entity.testingEquipment = [];
                 }
 
+                for(const equipment of entity.testingEquipment) {
+                    const dataEquipmentTestType = await getSurgeArresterTestingEquipmentTestingEqId(equipment.mrid);
+                    if(dataEquipmentTestType.success) {
+                        entity.surgeArresterTestingEquipmentTestType = entity.surgeArresterTestingEquipmentTestType.concat(dataEquipmentTestType.data);
+                    }
+                }
+
                 const dataWorkTask = await getWorkTaskByWork(entity.oldWork.mrid, db);
                 if(dataWorkTask.success) {
                     entity.workTasks = dataWorkTask.data;
@@ -263,67 +344,71 @@ export const getSurgeArresterJobEntity = async (id) => {
 
                 for (let i = 0; i < entity.workTasks.length; i++) {
                     const workTask = entity.workTasks[i];
-                    const dataSpecimen = await getOldSpecimenByWorkTaskId(workTask.mrid);
-                    if(dataSpecimen.success) {
-                        entity.specimen = entity.specimen.concat(dataSpecimen.data);
-                    }
-
-                    for(const specimen of entity.specimen) {
-                        if(specimen.humidity_at_sampling) {
-                            const dataPercent = await getPercentById(specimen.humidity_at_sampling);
-                            if(dataPercent.success) {
-                                entity.percent.push(dataPercent.data);
-                            }
-                        }
-
-                    }
-                    for(const specimen of entity.specimen) {
-                        if(specimen.ambient_temperature_at_sampling) {
-                            const dataTemp = await getTemperatureById(specimen.ambient_temperature_at_sampling);
-                            if(dataTemp.success) {
-                                entity.temperature.push(dataTemp.data);
-                            }
-                        }
-                    }
-                    for(const specimen of entity.specimen) {
-                        if(specimen.reference_temp) {
-                            const dataTemp = await getTemperatureById(specimen.reference_temp);
-                            if(dataTemp.success) {
-                                entity.temperature.push(dataTemp.data);
-                            }
-                        }
-                    }
-                    for(const specimen of entity.specimen) {
-                        if(specimen.winding_temp) {
-                            const dataTemp = await getTemperatureById(specimen.winding_temp);
-                            if(dataTemp.success) {
-                                entity.temperature.push(dataTemp.data);
-                            }
-                        }
-                    }
-
                     const dataTransformerObservation = await getOldTransformerObservationByWorkTaskId(workTask.mrid);
                     if(dataTransformerObservation.success) {
-                        entity.transformerObservation = entity.transformerObservation.concat(dataTransformerObservation.data);
-                    }
-                    for(const observation of entity.transformerObservation) {
-                        if(observation.top_oil_temp) {
-                            const dataTemp = await getTemperatureById(observation.top_oil_temp);
-                            if(dataTemp.success) {
-                                entity.temperature.push(dataTemp.data);
-                            }
-                        }
-                        if(observation.bottom_oil_temp) {
-                            const dataTemp = await getTemperatureById(observation.bottom_oil_temp);
-                            if(dataTemp.success) {
-                                entity.temperature.push(dataTemp.data);
-                            }
-                        }
+                        entity.transformerObservation.push(dataTransformerObservation.data);
                     }
 
                     const dataAttachmentTest = await getAttachmentByForeignIdAndType(workTask.mrid, 'test');
                     if(dataAttachmentTest.success) {
                         entity.attachmentTest.push(dataAttachmentTest.data);
+                    }
+
+                    const dataTestDataSet = await getTestDataSetByWorkTaskId(workTask.mrid)
+                    if(dataTestDataSet.success) {
+                        entity.testDataSet = entity.testDataSet.concat(dataTestDataSet.data)
+                    }
+                }
+                
+                for(const observation of entity.transformerObservation) {
+                    if(observation.humidity) {
+                        const dataPercent = await getPercentById(observation.humidity);
+                        if(dataPercent.success) {
+                            entity.percent.push(dataPercent.data);
+                        }
+                    }
+
+                }
+
+                for(const observation of entity.transformerObservation) {
+                    if(observation.ambient_temp) {
+                        const dataTemp = await getTemperatureById(observation.ambient_temp);
+                        if(dataTemp.success) {
+                            entity.temperature.push(dataTemp.data);
+                        }
+                    }
+                }
+
+                for(const observation of entity.transformerObservation) {
+                    if(observation.reference_temp) {
+                        const dataTemp = await getTemperatureById(observation.reference_temp);
+                        if(dataTemp.success) {
+                            entity.temperature.push(dataTemp.data);
+                        }
+                    }
+                }
+
+                for(const observation of entity.transformerObservation) {
+                    if(observation.winding_temp) {
+                        const dataTemp = await getTemperatureById(observation.winding_temp);
+                        if(dataTemp.success) {
+                            entity.temperature.push(dataTemp.data);
+                        }
+                    }
+                }
+
+                for(const observation of entity.transformerObservation) {
+                    if(observation.top_oil_temp) {
+                        const dataTemp = await getTemperatureById(observation.top_oil_temp);
+                        if(dataTemp.success) {
+                            entity.temperature.push(dataTemp.data);
+                        }
+                    }
+                    if(observation.bottom_oil_temp) {
+                        const dataTemp = await getTemperatureById(observation.bottom_oil_temp);
+                        if(dataTemp.success) {
+                            entity.temperature.push(dataTemp.data);
+                        }
                     }
                 }
 

@@ -122,7 +122,6 @@ export default {
 <style lang="scss" scoped>
 #job {
     width: 100%;
-    height: 100%;
 }
 
 ::v-deep(.el-tabs__item) {
@@ -140,7 +139,6 @@ export default {
 #tests,
 #job__health-index {
     width: calc(100vw - 145px);
-    height: calc(100vh - 150px);
     overflow-y: auto;
     overflow-x: hidden;
 }

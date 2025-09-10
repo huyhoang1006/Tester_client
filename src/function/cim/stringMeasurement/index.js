@@ -24,6 +24,44 @@ export const getStringMeasurementById = async (mrid) => {
     }
 }
 
+export const getAllStringMeasurementByProcedure = (procedureId) => {
+    try {
+        return new Promise((resolve, reject) => {
+            const sql = `
+                SELECT sm.*, m.*, io.*
+                FROM measurement_procedure mp
+                LEFT JOIN measurement m ON mp.measurement_id = m.mrid
+                LEFT JOIN string_measurement sm ON sm.mrid = m.mrid
+                LEFT JOIN identified_object io ON m.mrid = io.mrid
+                WHERE mp.procedure_id = ?
+            `
+            db.all(sql, [procedureId], (err, rows) => {
+                if (err) {
+                    return reject({
+                        success: false,
+                        err,
+                        message: 'Get all string measurement by procedure failed'
+                    })
+                }
+                if (!rows || rows.length === 0) {
+                    return resolve({
+                        success: false,
+                        data: [],
+                        message: 'No string measurement found'
+                    })
+                }
+                return resolve({
+                    success: true,
+                    data: rows,
+                    message: 'Get all string measurement by procedure completed'
+                })
+            })
+        })
+    } catch (err) {
+        return { success: false, err, message: 'Get all string measurement by procedure failed' }
+    }
+}
+
 // Thêm mới stringMeasurement
 export const insertStringMeasurementTransaction = async (stringMeasurement, dbsql) => {
     return new Promise(async (resolve, reject) => {
@@ -37,8 +75,7 @@ export const insertStringMeasurementTransaction = async (stringMeasurement, dbsq
                 `INSERT INTO string_measurement(
                     mrid
                 ) VALUES (?)
-                ON CONFLICT(mrid) DO UPDATE SET
-                    mrid = excluded.mrid
+                ON CONFLICT(mrid) DO NOTHING
                 `,
                 [
                     stringMeasurement.mrid
@@ -53,6 +90,59 @@ export const insertStringMeasurementTransaction = async (stringMeasurement, dbsq
         }
     })
 }
+
+export const insertStringMeasurement = async (stringMeasurement) => {
+    return new Promise((resolve, reject) => {
+        db.serialize(() => {
+            db.run('BEGIN TRANSACTION', async (err) => {
+                if (err) {
+                    return reject({ success: false, err, message: 'Begin transaction failed' });
+                }
+
+                try {
+                    // Thêm measurement trước
+                    const measResult = await measurementFunc.insertMeasurementTransaction(stringMeasurement, db);
+                    if (!measResult.success) {
+                        db.run('ROLLBACK');
+                        return reject({ success: false, message: 'Insert measurement failed', err: measResult.err });
+                    }
+
+                    // Thêm hoặc update analog
+                    db.run(
+                        `
+                        INSERT INTO string_measurement(
+                            mrid
+                        ) VALUES (?)
+                        ON CONFLICT(mrid) DO NOTHING
+                        `,
+                        [
+                            analog.mrid
+                        ],
+                        function (err) {
+                            if (err) {
+                                db.run('ROLLBACK');
+                                return reject({ success: false, err, message: 'Insert analog failed' });
+                            }
+                            db.run('COMMIT', (err) => {
+                                if (err) {
+                                    return reject({ success: false, err, message: 'Commit failed' });
+                                }
+                                return resolve({
+                                    success: true,
+                                    data: analog,
+                                    message: 'Insert analog completed'
+                                });
+                            });
+                        }
+                    );
+                } catch (err) {
+                    db.run('ROLLBACK');
+                    return reject({ success: false, err, message: 'Insert analog failed (exception)' });
+                }
+            });
+        });
+    });
+};
 
 // Cập nhật stringMeasurement
 export const updateStringMeasurementByIdTransaction = async (mrid, stringMeasurement, dbsql) => {
@@ -98,3 +188,53 @@ export const deleteStringMeasurementByIdTransaction = async (mrid, dbsql) => {
         }
     })
 }
+
+export const deleteStringMeasurementById = async (mrid) => {
+    return new Promise((resolve, reject) => {
+        db.serialize(() => {
+            // Bắt đầu transaction
+            db.run('BEGIN TRANSACTION', async (err) => {
+                if (err) {
+                    return reject({ success: false, err, message: 'Begin transaction failed' });
+                }
+
+                try {
+                    // Xóa string_measurement trước
+                    db.run("DELETE FROM string_measurement WHERE mrid=?", [mrid], function (err) {
+                        if (err) {
+                            db.run('ROLLBACK');
+                            return reject({ success: false, err, message: 'Delete string_measurement failed' });
+                        }
+
+                        if (this.changes === 0) {
+                            db.run('ROLLBACK');
+                            return resolve({ success: false, data: null, message: 'StringMeasurement not found' });
+                        }
+
+                        // Xóa measurement sau khi xóa string_measurement
+                        measurementFunc.deleteMeasurementByIdTransaction(mrid, db)
+                            .then(() => {
+                                db.run('COMMIT', (err) => {
+                                    if (err) {
+                                        return reject({ success: false, err, message: 'Commit failed' });
+                                    }
+                                    return resolve({
+                                        success: true,
+                                        data: null,
+                                        message: 'Delete analog & measurement completed'
+                                    });
+                                });
+                            })
+                            .catch((err) => {
+                                db.run('ROLLBACK');
+                                return reject({ success: false, err, message: 'Delete measurement failed' });
+                            });
+                    });
+                } catch (err) {
+                    db.run('ROLLBACK');
+                    return reject({ success: false, err, message: 'Delete analog transaction failed' });
+                }
+            });
+        });
+    });
+};

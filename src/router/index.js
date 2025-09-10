@@ -212,7 +212,20 @@ const router = new VueRouter({
     routes
 })
 
+// const devBypass = true
+
 router.beforeEach(async (to, from, next) => {
+
+    // if (devBypass) {
+    //     store.commit('setAuth', true)
+    //     if (to.path === '/login') {
+    //         next('/home')
+    //     } else {
+    //         next()
+    //     }
+    //     return
+    // }
+
     const isAuthenticated = store.state.isAuthenticated
 
     if (isAuthenticated) {

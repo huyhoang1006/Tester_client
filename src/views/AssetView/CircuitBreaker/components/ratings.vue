@@ -11,7 +11,7 @@
         </el-row>
         <div class="content-toggle" v-if="openRatings">
             <el-row :gutter="20" class="content">
-                <el-col :span="8" class="col-content">
+                <el-col :span="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Rated frequency">
                             <el-col :span="12" class="pdl-0">
@@ -32,7 +32,7 @@
                 </el-col>
             </el-row>
             <el-row :gutter="20" class="content">
-                <el-col :span="8" class="col-content">
+                <el-col :span="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Rated voltage L-L">
                             <el-input v-model="ratingsData.rated_voltage_ll">

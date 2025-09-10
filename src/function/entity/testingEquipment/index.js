@@ -34,14 +34,11 @@ export const insertTestingEquipmentTransaction = async (testingEquipment, dbsql)
     return new Promise((resolve, reject) => {
         dbsql.run(
             `INSERT INTO testing_equipment(
-                mrid, model, serial_number, test_type_surge_arrester_id,
-                test_type_power_transformer_id, work_id, calibration_date
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                mrid, model, serial_number, work_id, calibration_date
+            ) VALUES (?, ?, ?, ?, ?)
             ON CONFLICT(mrid) DO UPDATE SET
                 model = excluded.model,
                 serial_number = excluded.serial_number,
-                test_type_surge_arrester_id = excluded.test_type_surge_arrester_id,
-                test_type_power_transformer_id = excluded.test_type_power_transformer_id,
                 work_id = excluded.work_id,
                 calibration_date = excluded.calibration_date
             `,
@@ -49,8 +46,6 @@ export const insertTestingEquipmentTransaction = async (testingEquipment, dbsql)
                 testingEquipment.mrid,
                 testingEquipment.model,
                 testingEquipment.serial_number,
-                testingEquipment.test_type_surge_arrester_id,
-                testingEquipment.test_type_power_transformer_id,
                 testingEquipment.work_id,
                 testingEquipment.calibration_date
             ],
@@ -69,16 +64,12 @@ export const updateTestingEquipmentByIdTransaction = async (mrid, testingEquipme
             `UPDATE testing_equipment SET
                 model = ?,
                 serial_number = ?,
-                test_type_surge_arrester_id = ?,
-                test_type_power_transformer_id = ?,
                 work_id = ?,
                 calibration_date = ?
             WHERE mrid = ?`,
             [
                 testingEquipment.model,
                 testingEquipment.serial_number,
-                testingEquipment.test_type_surge_arrester_id,
-                testingEquipment.test_type_power_transformer_id,
                 testingEquipment.work_id,
                 testingEquipment.calibration_date,
                 mrid

@@ -2,7 +2,7 @@
     <div class="mgy-5">
         <el-row>
             <el-col :span="24">
-                <div class="header-toggle pointer" @click="openConfig = !openConfig">
+                <div style="font-size: 12px;" class="header-toggle pointer" @click="openConfig = !openConfig">
                     <i v-if="openConfig" class="fa-solid fa-caret-up"></i>
                     <i v-else class="fa-solid fa-caret-down"></i>
                     VT Configuration
@@ -12,7 +12,7 @@
         <div class="content-toggle" v-if="openConfig">
             <br/>
             <el-row style="width: 100%;" class="content">
-                <el-col :span="8" class="col-content">
+                <el-col :span="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Windings">
                             <el-col :span="24" class="pdr-0">
@@ -25,10 +25,10 @@
                 </el-col>
             </el-row>
             <br/>
-            <el-row style="width: 50%;">
+            <el-row style="width: 80%;">
                 <table style=" width: 100%; background-color: white;">
                     <thead >
-                        <th class="thvol">Name</th>
+                        <th style="min-width: 50px;" class="thvol">Name</th>
                         <th class="thvol"  colspan="2">Usr</th>
                         <th class="thvol" >Rated burden</th>
                         <th class="thvol" >cos φ</th>
@@ -109,6 +109,8 @@ export default {
 th, td, table {
     border: 1px solid black;
     border-collapse: collapse;
+    font-size: 12px;
+    white-space: nowrap;
 }
 .thvol {
     text-align: center;
