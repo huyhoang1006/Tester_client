@@ -1,5 +1,3 @@
-import CableInfo from "../CableInfo";
-
 class OldCableInfo {
     constructor() {
         this.mrid = null
