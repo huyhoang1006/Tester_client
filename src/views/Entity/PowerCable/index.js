@@ -3,6 +3,7 @@ import ProductAssetModel from '@/views/Cim/ProductAssetModel'
 import ConcentricNeutralCableInfo from '@/views/Cim/ConcentricNeutralCableInfo'
 import OldCableInfo from '@/views/Cim/OldCableInfo'
 import Attachment from '@/views/Entity/Attachment'
+import AssetPsr from '@/views/Cim/AssetPsr'
 class PowerCableEntity {
     constructor() {
         this.asset = new Asset()
@@ -16,6 +17,7 @@ class PowerCableEntity {
         this.frequency = []
         this.voltage = []
         this.currentFlow = []
+        this.assetPsr = new AssetPsr()
     }
 }
 

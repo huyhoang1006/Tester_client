@@ -44,6 +44,9 @@ class OldCableInfo {
         this.concentric_area = null
         this.concentric_no_of_wires = null
         this.cable_info_id = null
+        this.phase_count = null
+        this.core_count = null
+
     }
 }
 

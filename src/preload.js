@@ -1,8 +1,8 @@
-import {userPreload, transformerPreload, fmecaPreload, conditionPreload, circuitPreload, currentTransPreload, voltageTransPreload} from '@/preload/index.js'
-import {uploadCustomPreload, manufacturerPreload} from '@/preload/index.js'
-import {disconnectorPreload, surgeArresterPreload, powerCablePreload, ownerPreload} from '@/preload/index.js'
+import { userPreload, transformerPreload, fmecaPreload, conditionPreload, circuitPreload, currentTransPreload, voltageTransPreload } from '@/preload/index.js'
+import { uploadCustomPreload, manufacturerPreload } from '@/preload/index.js'
+import { disconnectorPreload, surgeArresterPreload, powerCablePreload, ownerPreload } from '@/preload/index.js'
 import { entityPreload, cimPreload } from '@/preload/index.js'
-const {contextBridge} = require('electron')
+const { contextBridge } = require('electron')
 
 const userAPI = userPreload.userPreload()
 const transformerAPI = transformerPreload.transformerPreload()
@@ -50,13 +50,13 @@ const discreteAPI = cimPreload.discretePreload.discretePreload()
 const valueToAliasAPI = cimPreload.valueToAliasPreload.valueToAliasPreload()
 const valueAliasSetAPI = cimPreload.valueAliasSetPreload.valueAliasSetPreload()
 
-const ipcMain = Object.assign(userAPI, transformerAPI, fmecaAPI, conditionAPI, circuitAPI, attachmentAPI, 
+const ipcMain = Object.assign(userAPI, transformerAPI, fmecaAPI, conditionAPI, circuitAPI, attachmentAPI,
     currentTransAPI, voltageTransAPI, disconnectorAPI, surgeArresterAPI, powerCablePreAPI, uploadCustomAPI,
     manufacturerAPI, ownerAPI, parentOrganizationAPI, substationAPI, locationAPI, streetAddressAPI, streetDetailAPI, townDetailAPI,
     electronicAddressAPI, personAPI, personRoleAPI, telephoneNumberAPI, configurationEventAPI, substationEntityAPI, parentOrganizationEntityAPI,
-    positionPointAPI, voltageLevelEntityAPI, voltageLevelAPI, bayEntityAPI, bayAPI, powerSystemResourceAPI, surgeArresterEntityAPI, 
-    productAssetModelAPI, testTypeSurgeArresterAPI, surgeArresterJobAPI, oldWorkAPI, assetAPI, transformerEntityAPI, analogAPI, 
+    positionPointAPI, voltageLevelEntityAPI, voltageLevelAPI, bayEntityAPI, bayAPI, powerSystemResourceAPI, surgeArresterEntityAPI,
+    productAssetModelAPI, testTypeSurgeArresterAPI, surgeArresterJobAPI, oldWorkAPI, assetAPI, transformerEntityAPI, analogAPI,
     stringMeasurementAPI, discreteAPI, valueToAliasAPI, valueAliasSetAPI)
-contextBridge.exposeInMainWorld('electronAPI', 
-    ipcMain 
+contextBridge.exposeInMainWorld('electronAPI',
+    ipcMain
 )
