@@ -7,6 +7,10 @@ import * as surgeArresterEntityPreload from './surgeArrester/index.js'
 import * as transformerEntityPreload from './transformer/index.js'
 import * as testTypePreload from './testType/index.js'
 import * as jobEntityPreload from './job/index.js'
+import * as powerCableEntityPreload from './powerCable/index.js'
 
-export { attachmentPreload, substationPreload, parentOrganizationPreload, 
-    voltageLevelPreload, bayPreload, surgeArresterEntityPreload, transformerEntityPreload, testTypePreload, jobEntityPreload }
+export {
+    attachmentPreload, substationPreload, parentOrganizationPreload,
+    voltageLevelPreload, bayPreload, surgeArresterEntityPreload, transformerEntityPreload,
+    testTypePreload, jobEntityPreload, powerCableEntityPreload
+}

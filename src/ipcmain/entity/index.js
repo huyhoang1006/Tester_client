@@ -7,6 +7,7 @@ import * as ipcSurgeArrester from './surgeArrester/index.js'
 import * as ipcTransformer from './transformer/index.js'
 import * as ipcTestType from './testType/index.js'
 import * as ipcJob from './job/index.js'
+import * as ipcPowerCable from './powerCable/index.js'
 export const active = () => {
     ipcSubstation.active()
     ipcAttachment.active()
@@ -17,4 +18,5 @@ export const active = () => {
     ipcTestType.active()
     ipcJob.active()
     ipcTransformer.active()
+    ipcPowerCable.active()
 }
