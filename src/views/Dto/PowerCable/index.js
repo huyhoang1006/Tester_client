@@ -51,7 +51,7 @@ class PowerCableDTO {
 
     this.datasData = {
       conductor: {
-        conductor_size: { mrid: '', value: '', unit: UnitMultiplier.mm2 + '|' + UnitSymbol.mm2 },
+        conductor_size: { mrid: '', value: '', unit: UnitSymbol.squareMilliMeter },
         conductor_class: { mrid: '', value: '', unit: 'string' },
         conductor_count: { mrid: '', value: '', unit: '' },
         conductor_material: { mrid: '', value: '', unit: 'string' },
@@ -83,7 +83,7 @@ class PowerCableDTO {
         diameter: { mrid: '', value: '', unit: UnitSymbol.mm },
         layerOfTapes: { mrid: '', value: '', unit: '' },
         layerOfTapes_custom: { mrid: '', value: '', unit: 'string' },
-        crossSectional: { mrid: '', value: '', unit: UnitSymbol.mm2 },
+        crossSectional: { mrid: '', value: '', unit: UnitSymbol.squareMilliMeter },
       },
       conductor_shield: {
         thickness: { mrid: '', value: '', unit: UnitSymbol.mm },
@@ -102,7 +102,7 @@ class PowerCableDTO {
         construction_custom: { mrid: '', value: '', unit: 'string' },
         thickness: { mrid: '', value: '', unit: UnitSymbol.mm },
         diameter: { mrid: '', value: '', unit: UnitSymbol.mm },
-        area: { mrid: '', value: '', unit: UnitSymbol.mm2 },
+        area: { mrid: '', value: '', unit: UnitSymbol.squareMilliMeter },
         lengthOfLay: { mrid: '', value: '', unit: UnitSymbol.mm },
         numOfWires: { mrid: '', value: '', unit: '' },
       },
