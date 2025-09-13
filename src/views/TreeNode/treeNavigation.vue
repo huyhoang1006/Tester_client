@@ -2,7 +2,7 @@
     <div class="explorer">
         <!-- Thanh công cụ -->
         <div v-show="!clientSlide" class="toolbar">
-            <div style="display: flex; align-items: center;"> 
+            <div style="display: flex; align-items: center;">
                 <div @click="resetAllServer" class="path-hover">Database manage</div>
                 <i style="margin-left: 10px;" class="fa-solid fa-angle-right"></i>
             </div>
@@ -12,7 +12,7 @@
             </div>
         </div>
         <div v-show="clientSlide" class="toolbar">
-            <div style="display: flex; align-items: center;"> 
+            <div style="display: flex; align-items: center;">
                 <div @click="resetAllClient" class="path-hover">Database manage</div>
                 <i style="margin-left: 10px;" class="fa-solid fa-angle-right"></i>
             </div>
@@ -26,7 +26,8 @@
             <div ref="sidebarClient" v-show="clientSlide" class="sidebar">
                 <div class="title-temp">
                     <div ref="tabContainer" class="tab-container">
-                        <div @contextmenu.prevent="showContext" ref="locationRoot" @click="showLocationRoot" class="location">
+                        <div @contextmenu.prevent="showContext" ref="locationRoot" @click="showLocationRoot"
+                            class="location">
                             Location
                         </div>
                         <div ref="ownerRoot" class="tab">
@@ -37,37 +38,20 @@
                 </div>
                 <div class="child-nav">
                     <ul>
-                        <TreeNode 
-                            v-for="item in organisationClientList" 
-                            :key="item.id" 
-                            :node="item"
-                            @double-click-node="doubleClickNode" 
-                            :selectedNodes.sync="selectedNodes"
-                            @fetch-children="fetchChildren" 
-                            @show-properties="showPropertiesData"
-                            @update-selection="updateSelection"
-                            @clear-selection="clearSelection"
-                            @open-context-menu="openContextMenuClient"
-                        >
+                        <TreeNode v-for="item in organisationClientList" :key="item.id" :node="item"
+                            @double-click-node="doubleClickNode" :selectedNodes.sync="selectedNodes"
+                            @fetch-children="fetchChildren" @show-properties="showPropertiesData"
+                            @update-selection="updateSelection" @clear-selection="clearSelection"
+                            @open-context-menu="openContextMenuClient">
                         </TreeNode>
                     </ul>
-                    <contextMenu 
-                        @delete-data="deleteDataClient"
-                        @show-addSubsInTree="showAddSubsInTree"
-                        @show-addOrganisation="showAddOrganisation"
-                        @show-addVoltageLevel="showAddVoltageLevel"
-                        @show-addTransformer="showAddTransformer"
-                        @show-addJob="showAddJob"
-                        @show-addBushing="showAddBushing"
-                        @show-addSurgeArrester="showAddSurgeArrester"
-                        @show-addCircuit="showAddCircuitBreaker"
-                        @show-addVt="showAddVt"
-                        @show-addCt="showAddCt"
-                        @show-addPowerCable="showAddPowerCable"
-                        @show-addDisconnector="showAddDisconnector"
-                        @show-addBay="showAddBay"
-                        @show-data="showDataClient"
-                        ref="contextMenuClient">
+                    <contextMenu @delete-data="deleteDataClient" @show-addSubsInTree="showAddSubsInTree"
+                        @show-addOrganisation="showAddOrganisation" @show-addVoltageLevel="showAddVoltageLevel"
+                        @show-addTransformer="showAddTransformer" @show-addJob="showAddJob"
+                        @show-addBushing="showAddBushing" @show-addSurgeArrester="showAddSurgeArrester"
+                        @show-addCircuit="showAddCircuitBreaker" @show-addVt="showAddVt" @show-addCt="showAddCt"
+                        @show-addPowerCable="showAddPowerCable" @show-addDisconnector="showAddDisconnector"
+                        @show-addBay="showAddBay" @show-data="showDataClient" ref="contextMenuClient">
                     </contextMenu>
                 </div>
             </div>
@@ -81,32 +65,21 @@
                 </div>
                 <div class="child-nav">
                     <ul>
-                        <TreeNode 
-                            v-for="item in ownerServerList" 
-                            :key="item.id" 
-                            :node="item" 
-                            :selectedNodes.sync="selectedNodes"
-                            @fetch-children="fetchChildrenServer" 
-                            @show-properties="showPropertiesData"
-                            @update-selection="updateSelection"
-                            @clear-selection="clearSelection"
-                            @open-context-menu="openContextMenu"
-                        >
+                        <TreeNode v-for="item in ownerServerList" :key="item.id" :node="item"
+                            :selectedNodes.sync="selectedNodes" @fetch-children="fetchChildrenServer"
+                            @show-properties="showPropertiesData" @update-selection="updateSelection"
+                            @clear-selection="clearSelection" @open-context-menu="openContextMenu">
                         </TreeNode>
                     </ul>
                     <contextMenu @show-data="showData" ref="contextMenu"></contextMenu>
                 </div>
                 <div class="page-align">
-                    <page-align
-                        ref="LocationSyncPageAlign" 
-                        :page-user="this.pageLocationSync" 
-                        :display-page-user="this.displayPageLocationSync" 
-                        :page-user-instance="this.pageLocationSyncInstance" 
-                        :current-page="this.currentLocationSync" 
-                        title="LocationSync"
-                        :option.sync="this.optionLocationSync"
+                    <page-align ref="LocationSyncPageAlign" :page-user="this.pageLocationSync"
+                        :display-page-user="this.displayPageLocationSync"
+                        :page-user-instance="this.pageLocationSyncInstance" :current-page="this.currentLocationSync"
+                        title="LocationSync" :option.sync="this.optionLocationSync"
                         @update-page="updateLocationSyncPage">
-                    >
+                        >
                     </page-align>
                 </div>
             </div>
@@ -117,7 +90,8 @@
                     <div ref="content" class="content">
                         <div class="title-content"></div>
                         <div class="content-content">
-                            <Tabs :side="'server'" ref="serverTabs" v-model="activeTab" :tabs="tabs" @close-tab="removeTab" />
+                            <Tabs :side="'server'" ref="serverTabs" v-model="activeTab" :tabs="tabs"
+                                @close-tab="removeTab" />
                         </div>
                     </div>
                     <div @mousedown="startResizeContentServer" ref="resizerContentServer" class="resizer"></div>
@@ -140,35 +114,43 @@
                             <div class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Name</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.name }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.name }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Region</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.region }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.region }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Plant</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.plant }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.plant }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Address</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.address }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.address }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">City</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.city }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.city }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">State/Province</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.state_province }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.state_province }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Postal code</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.postal_code }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.postal_code }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Country</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.country }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.country }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Geo coordinates</div>
@@ -176,11 +158,13 @@
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Phone number</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.phone_no }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.phone_no }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Email</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.email }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.email }}</div>
                                 </div>
                             </div>
                             <div v-if="assetPropertySign" class="content-properties-header">
@@ -190,35 +174,43 @@
                             <div v-if="assetPropertySign" class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Asset</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.asset }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetProperties.asset }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Asset type</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.asset_type }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetProperties.asset_type }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Serial number</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.serial_no }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetProperties.serial_no }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Manufacturer</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.manufacturer }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetProperties.manufacturer }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Manufacturer type</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.manufacturer_type }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetProperties.manufacturer_type }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Manufacturing year</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.manufacturing_year }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetProperties.manufacturing_year }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Country</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.country }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetProperties.country }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Apparatus id</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.apparatus_id }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetProperties.apparatus_id }}</div>
                                 </div>
                             </div>
                             <div v-if="jobPropertySign" class="content-properties-header">
@@ -228,35 +220,43 @@
                             <div v-if="jobPropertySign" class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Name</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.name }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobProperties.name }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Work order</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.work_order }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobProperties.work_order }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Creation date</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.creation_date }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobProperties.creation_date }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Execution date</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.execution_date }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobProperties.execution_date }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Tested by</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.tested_by }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobProperties.tested_by }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Approved by</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.approved_by }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobProperties.approved_by }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Ambient condition</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.ambient_condition }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobProperties.ambient_condition }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Standard</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.standard }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobProperties.standard }}</div>
                                 </div>
                             </div>
                             <div class="content-properties-header">
@@ -291,7 +291,8 @@
                     <div ref="contentClient" class="content">
                         <div class="title-content"></div>
                         <div class="content-content">
-                            <Tabs :side="'client'" ref="clientTabs" v-model="activeTabClient" :tabs="tabsClient" @close-tab="removeTabClient" />
+                            <Tabs :side="'client'" ref="clientTabs" v-model="activeTabClient" :tabs="tabsClient"
+                                @close-tab="removeTabClient" />
                         </div>
                     </div>
                     <div @mousedown="startResizeContentClient" ref="resizerContentClient" class="resizer"></div>
@@ -314,47 +315,58 @@
                             <div class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Name</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word"> {{ propertiesClient.name || '&nbsp;' }} </div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word"> {{
+                                        propertiesClient.name || '&nbsp;' }} </div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Region</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.region || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.region || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Plant</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.plant || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.plant || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Address</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.address || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.address || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">City</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.city || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.city || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">State/Province</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.state_province || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.state_province || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Postal code</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.postal_code || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.postal_code || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Country</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.country || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.country || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Geo coordinates</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.geo_coordinates || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.geo_coordinates || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Phone number</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.phone_no || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.phone_no || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Email</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.email || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.email || '&nbsp;' }}</div>
                                 </div>
                             </div>
                             <div v-if="assetPropertySignClient" class="content-properties-header">
@@ -364,35 +376,43 @@
                             <div v-if="assetPropertySignClient" class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Asset</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.asset || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetPropertiesClient.asset || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Asset type</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.asset_type || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetPropertiesClient.asset_type || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Serial number</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.serial_no || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetPropertiesClient.serial_no || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Manufacturer</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.manufacturer || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetPropertiesClient.manufacturer || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Manufacturer type</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.manufacturer_type || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetPropertiesClient.manufacturer_type || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Manufacturing year</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.manufacturing_year || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetPropertiesClient.manufacturing_year || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Country</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.country || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetPropertiesClient.country || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Apparatus id</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.apparatus_id || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetPropertiesClient.apparatus_id || '&nbsp;' }}</div>
                                 </div>
                             </div>
                             <div v-if="jobPropertySignClient" class="content-properties-header">
@@ -402,35 +422,43 @@
                             <div v-if="jobPropertySignClient" class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Name</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.name }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobPropertiesClient.name }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Work order</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.work_order }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobPropertiesClient.work_order }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Creation date</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.creation_date }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobPropertiesClient.creation_date }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Execution date</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.execution_date }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobPropertiesClient.execution_date }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Tested by</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.tested_by }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobPropertiesClient.tested_by }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Approved by</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.approved_by }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobPropertiesClient.approved_by }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Ambient condition</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.ambient_condition }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobPropertiesClient.ambient_condition }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Standard</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.standard }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobPropertiesClient.standard }}</div>
                                 </div>
                             </div>
                             <div class="content-properties-header">
@@ -457,181 +485,120 @@
                     </div>
                 </div>
                 <div ref="logBarClient" v-if="logSignClient" class="log-bar">
-                    <LogBar @reloadLog="reloadLogClient" :logData="logDataClient" @hideLogBar="hideLogBarClient"></LogBar>
+                    <LogBar @reloadLog="reloadLogClient" :logData="logDataClient" @hideLogBar="hideLogBarClient">
+                    </LogBar>
                 </div>
             </div>
         </div>
-        <el-dialog
-            title="Add Substation"
-            :visible.sync="signSubs" 
-            width="1000px"
-            @close="handleSubsCancel"
-        >
-            <Substation :parentOrganization="parentOrganization" :personList="personList" :locationList="locationList" :organisationId="organisationId" ref="substation"></Substation>
+        <el-dialog title="Add Substation" :visible.sync="signSubs" width="1000px" @close="handleSubsCancel">
+            <Substation :parentOrganization="parentOrganization" :personList="personList" :locationList="locationList"
+                :organisationId="organisationId" ref="substation"></Substation>
             <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleSubsCancel" >Cancel</el-button>
+                <el-button size="small" type="danger" @click="handleSubsCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleSubsConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Organisation"
-            :visible.sync="signOrg" 
-            width="1000px"
-            @close="handleOrgCancel"
-        >
+        <el-dialog title="Add Organisation" :visible.sync="signOrg" width="1000px" @close="handleOrgCancel">
             <Organisation :parent="parentOrganization" ref="organisation"></Organisation>
             <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleOrgCancel" >Cancel</el-button>
+                <el-button size="small" type="danger" @click="handleOrgCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleOrgConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Voltage Level"
-            :visible.sync="signVoltageLevel" 
-            width="1000px"
-            @close="handleVoltageLevelCancel"
-        >
+        <el-dialog title="Add Voltage Level" :visible.sync="signVoltageLevel" width="1000px"
+            @close="handleVoltageLevelCancel">
             <VoltageLevel :locationId="locationId" :parent="parentOrganization" ref="voltageLevel"></VoltageLevel>
             <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleVoltageLevelCancel" >Cancel</el-button>
+                <el-button size="small" type="danger" @click="handleVoltageLevelCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleVoltageLevelConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Bay Level"
-            :visible.sync="signBay" 
-            width="1000px"
-            @close="handleBayCancel"
-        >
+        <el-dialog title="Add Bay Level" :visible.sync="signBay" width="1000px" @close="handleBayCancel">
             <Bay :locationId="locationId" :parent="parentOrganization" ref="bay"></Bay>
             <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleBayCancel" >Cancel</el-button>
+                <el-button size="small" type="danger" @click="handleBayCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleBayConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Transformer"
-            :visible.sync="signTransformer" 
-            width="1000px"
-            @close="handleTransformerCancel"
-        >
+        <el-dialog title="Add Transformer" :visible.sync="signTransformer" width="1000px"
+            @close="handleTransformerCancel">
             <Transformer :locationId="locationId" :parent="parentOrganization" ref="transformer"></Transformer>
             <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleTransformerCancel" >Cancel</el-button>
+                <el-button size="small" type="danger" @click="handleTransformerCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleTransformerConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Bushing"
-            :visible.sync="signBushing" 
-            width="1000px"
-            @close="handleBushingCancel"
-        >
+        <el-dialog title="Add Bushing" :visible.sync="signBushing" width="1000px" @close="handleBushingCancel">
             <Bushing :locationId="locationId" :parent="parentOrganization" ref="bushing"></Bushing>
             <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleBushingCancel" >Cancel</el-button>
+                <el-button size="small" type="danger" @click="handleBushingCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleBushingConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Surge Arrester"
-            :visible.sync="signSurge" 
-            width="1000px"
-            @close="handleSurgeCancel"
-        >
+        <el-dialog title="Add Surge Arrester" :visible.sync="signSurge" width="1000px" @close="handleSurgeCancel">
             <SurgeArrester :locationId="locationId" :parent="parentOrganization" ref="surgeArrester"></SurgeArrester>
             <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleSurgeCancel" >Cancel</el-button>
+                <el-button size="small" type="danger" @click="handleSurgeCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleSurgeConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Circuit Breaker"
-            :visible.sync="signCircuit" 
-            width="1000px"
-            @close="handleCircuitCancel"
-        >
+        <el-dialog title="Add Circuit Breaker" :visible.sync="signCircuit" width="1000px" @close="handleCircuitCancel">
             <CircuitBreaker :locationId="locationId" :parent="parentOrganization" ref="circuitBreaker"></CircuitBreaker>
             <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleCircuitCancel" >Cancel</el-button>
+                <el-button size="small" type="danger" @click="handleCircuitCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleCircuitConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Current Transformer"
-            :visible.sync="signCt" 
-            width="1000px"
-            @close="handleCtCancel"
-        >
-            <CurrentTransformer :locationId="locationId" :parent="parentOrganization" ref="currentTransformer"></CurrentTransformer>
+        <el-dialog title="Add Current Transformer" :visible.sync="signCt" width="1000px" @close="handleCtCancel">
+            <CurrentTransformer :locationId="locationId" :parent="parentOrganization" ref="currentTransformer">
+            </CurrentTransformer>
             <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleCtCancel" >Cancel</el-button>
+                <el-button size="small" type="danger" @click="handleCtCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleCtConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Voltage Transformer"
-            :visible.sync="signVt" 
-            width="1000px"
-            @close="handleVtCancel"
-        >
-            <VoltageTransformer :locationId="locationId" :parent="parentOrganization" ref="voltageTransformer"></VoltageTransformer>
+        <el-dialog title="Add Voltage Transformer" :visible.sync="signVt" width="1000px" @close="handleVtCancel">
+            <VoltageTransformer :locationId="locationId" :parent="parentOrganization" ref="voltageTransformer">
+            </VoltageTransformer>
             <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleVtCancel" >Cancel</el-button>
+                <el-button size="small" type="danger" @click="handleVtCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleVtConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Power Cable"
-            :visible.sync="signPower" 
-            width="1000px"
-            @close="handlePowerCancel"
-        >
+        <el-dialog title="Add Power Cable" :visible.sync="signPower" width="1000px" @close="handlePowerCancel">
             <PowerCable :locationId="locationId" :parent="parentOrganization" ref="powerCable"></PowerCable>
             <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handlePowerCancel" >Cancel</el-button>
+                <el-button size="small" type="danger" @click="handlePowerCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handlePowerConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Disconnector"
-            :visible.sync="signDisconnector" 
-            width="1000px"
-            @close="handleDisconnectorCancel"
-        >
+        <el-dialog title="Add Disconnector" :visible.sync="signDisconnector" width="1000px"
+            @close="handleDisconnectorCancel">
             <Disconnector :locationId="locationId" :parent="parentOrganization" ref="disconnector"></Disconnector>
             <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleDisconnectorCancel" >Cancel</el-button>
+                <el-button size="small" type="danger" @click="handleDisconnectorCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleDisconnectorConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Job"
-            :visible.sync="signJob" 
-            width="1000px"
-            @close="handleJobCancel"
-            >
-            <component ref="jobData" :is="checkJobType" 
-                :locationData="locationData" 
-                :assetData="assetData" 
-                :productAssetModelData="productAssetModelData" 
-                :parent="parentOrganization" 
+        <el-dialog title="Add Job" :visible.sync="signJob" width="1000px" @close="handleJobCancel">
+            <component ref="jobData" :is="checkJobType" :locationData="locationData" :assetData="assetData"
+                :productAssetModelData="productAssetModelData" :parent="parentOrganization"
                 :testTypeListData="testTypeListData">
             </component>
             <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleJobCancel" >Cancel</el-button>
+                <el-button size="small" type="danger" @click="handleJobCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleJobConfirm">Save</el-button>
             </span>
         </el-dialog>
@@ -691,7 +658,7 @@ import mixin from './mixin'
 
 export default {
     name: 'TreeNavigation',
-    components : {
+    components: {
         LogBar,
         TreeNode,
         pageAlign,
@@ -715,158 +682,158 @@ export default {
     },
     data() {
         return {
-            parentOrganization : null,
-            logDataServer : [],
-            logDataClient : [],
-            organisationId : '0000000-0000-0000-0000-000000000000',
-            locationId : '',
-            locationData : {},
-            assetData : {},
-            productAssetModelData : {},
-            checkJobType : '',
-            testTypeListData : [],
-            organisationClientList : [],
-            signSubs : false,
-            signOrg : false,
-            signVoltageLevel : false,
-            signBay : false,
-            signTransformer : false,
-            signBushing : false,
-            signSurge : false,
-            signCircuit : false,
-            signCt : false,
-            signVt : false,
-            signPower : false,
-            signDisconnector : false,
-            signJob : false,
+            parentOrganization: null,
+            logDataServer: [],
+            logDataClient: [],
+            organisationId: '0000000-0000-0000-0000-000000000000',
+            locationId: '',
+            locationData: {},
+            assetData: {},
+            productAssetModelData: {},
+            checkJobType: '',
+            testTypeListData: [],
+            organisationClientList: [],
+            signSubs: false,
+            signOrg: false,
+            signVoltageLevel: false,
+            signBay: false,
+            signTransformer: false,
+            signBushing: false,
+            signSurge: false,
+            signCircuit: false,
+            signCt: false,
+            signVt: false,
+            signPower: false,
+            signDisconnector: false,
+            signJob: false,
             activeTab: {},
             activeTabClient: {},
             indexTabData: null,
             tabs: [],
             tabsClient: [],
-            rightClickNode : null,
-            selectedNodes : [],
-            assetPropertySign : false,
-            jobPropertySign : false,
-            assetPropertySignClient : false,
-            jobPropertySignClient : false,
-            pathMapServer : [],
-            pathMapClient : [],
-            hideTabContentServer : [],
-            hideTabContentClient : [],
-            currentTabServer : '',
-            properties : {
-                region : '',
-                name : '',
-                plant : '',
-                address : '',
-                city : '',
-                state_province : '',
-                postal_code : '',
-                country : '',
-                phone_no : '',
-                email : ''
+            rightClickNode: null,
+            selectedNodes: [],
+            assetPropertySign: false,
+            jobPropertySign: false,
+            assetPropertySignClient: false,
+            jobPropertySignClient: false,
+            pathMapServer: [],
+            pathMapClient: [],
+            hideTabContentServer: [],
+            hideTabContentClient: [],
+            currentTabServer: '',
+            properties: {
+                region: '',
+                name: '',
+                plant: '',
+                address: '',
+                city: '',
+                state_province: '',
+                postal_code: '',
+                country: '',
+                phone_no: '',
+                email: ''
             },
-            assetProperties : {
-                asset : '',
-                asset_type : '',
-                serial_no : '',
-                manufacturer : '',
-                manufacturer_type : '',
-                manufacturing_year : '',
-                apparatus_id : '',
-                country : '',
+            assetProperties: {
+                asset: '',
+                asset_type: '',
+                serial_no: '',
+                manufacturer: '',
+                manufacturer_type: '',
+                manufacturing_year: '',
+                apparatus_id: '',
+                country: '',
             },
-            jobProperties : {
-                name : '',
-                work_order : '',
-                creation_date : '',
-                execution_date : '',
-                tested_by : '',
-                approved_by : '',
-                ambient_condition : '',
-                standard : ''
+            jobProperties: {
+                name: '',
+                work_order: '',
+                creation_date: '',
+                execution_date: '',
+                tested_by: '',
+                approved_by: '',
+                ambient_condition: '',
+                standard: ''
             },
-            propertiesClient : {
-                region : '',
-                name : '',
-                plant : '',
-                address : '',
-                city : '',
-                state_province : '',
-                postal_code : '',
-                country : '',
-                phone_no : '',
-                email : ''
+            propertiesClient: {
+                region: '',
+                name: '',
+                plant: '',
+                address: '',
+                city: '',
+                state_province: '',
+                postal_code: '',
+                country: '',
+                phone_no: '',
+                email: ''
             },
-            assetPropertiesClient : {
-                asset : '',
-                asset_type : '',
-                serial_no : '',
-                manufacturer : '',
-                manufacturer_type : '',
-                manufacturing_year : '',
-                apparatus_id : '',
-                country : '',
+            assetPropertiesClient: {
+                asset: '',
+                asset_type: '',
+                serial_no: '',
+                manufacturer: '',
+                manufacturer_type: '',
+                manufacturing_year: '',
+                apparatus_id: '',
+                country: '',
             },
-            jobPropertiesClient : {
-                name : '',
-                work_order : '',
-                creation_date : '',
-                execution_date : '',
-                tested_by : '',
-                approved_by : '',
-                ambient_condition : '',
-                standard : ''
+            jobPropertiesClient: {
+                name: '',
+                work_order: '',
+                creation_date: '',
+                execution_date: '',
+                tested_by: '',
+                approved_by: '',
+                ambient_condition: '',
+                standard: ''
             },
-            logSign : false,
-            logSignClient : false,
-            propertiesSign : true,
-            propertiesSignClient : true,
-            clientSlide : true,
-            pageLocationSync : {
-                first : 1,
-                second : 2,
-                third : 3,
-                dot : "...",
-                end : 10,
+            logSign: false,
+            logSignClient: false,
+            propertiesSign: true,
+            propertiesSignClient: true,
+            clientSlide: true,
+            pageLocationSync: {
+                first: 1,
+                second: 2,
+                third: 3,
+                dot: "...",
+                end: 10,
             },
-            displayPageLocationSync : {
-                second : true,
-                third : true,
-                dot : true,
-                end : true
+            displayPageLocationSync: {
+                second: true,
+                third: true,
+                dot: true,
+                end: true
             },
-            pageLocationSyncInstance : {
-                first : "",
-                second : "",
-                third : "",
-                dot : "",
-                end : "",
+            pageLocationSyncInstance: {
+                first: "",
+                second: "",
+                third: "",
+                dot: "",
+                end: "",
             },
-            currentLocationSync : {
-                nextP : '',
-                previousP : '',
-                current : 1,
+            currentLocationSync: {
+                nextP: '',
+                previousP: '',
+                current: 1,
             },
-            optionLocationSync : {
-                mode : ''
+            optionLocationSync: {
+                mode: ''
             },
-            sl : 10,
-            count : '',
-            ownerServerList : [],
-            ownerList : [],
-            locationList : [],
-            personList : [],
-            AssetType : ["Transformer", "Circuit breaker", "Current transformer", "Voltage transformer", "Disconnector", "Power cable", "Surge arrester"],
-            LocationType : ["location", "voltage", "feeder"]
+            sl: 10,
+            count: '',
+            ownerServerList: [],
+            ownerList: [],
+            locationList: [],
+            personList: [],
+            AssetType: ["Transformer", "Circuit breaker", "Current transformer", "Voltage transformer", "Disconnector", "Power cable", "Surge arrester"],
+            LocationType: ["location", "voltage", "feeder"]
         }
     },
     mixins: [mixin],
     async beforeMount() {
         try {
             const data = await window.electronAPI.getAllConfigurationEvents()
-            if(data && data.success) {
+            if (data && data.success) {
                 this.logDataClient = data.data;
             }
         } catch (error) {
@@ -877,12 +844,12 @@ export default {
     methods: {
         async reloadLogClient(doneCallback) {
             try {
-            const data = await window.electronAPI.getAllConfigurationEvents()
-            if(data && data.success) {
-                this.logDataClient = data.data;
-                await new Promise(resolve => setTimeout(resolve, 500));
-                this.$message.success("Log data reloaded successfully.");
-            }
+                const data = await window.electronAPI.getAllConfigurationEvents()
+                if (data && data.success) {
+                    this.logDataClient = data.data;
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    this.$message.success("Log data reloaded successfully.");
+                }
             } catch (error) {
                 console.error("Error fetching server log data:", error);
                 this.$message.error("Failed to fetch log data.");
@@ -891,13 +858,13 @@ export default {
             }
         },
         removeTab(index) {
-            if(this.activeTab.id == this.tabs[index].id) {
+            if (this.activeTab.id == this.tabs[index].id) {
                 this.activeTab = {}
             }
             this.tabs.splice(index, 1);
         },
         removeTabClient(index) {
-            if(this.activeTabClient.mrid == this.tabsClient[index].mrid) {
+            if (this.activeTabClient.mrid == this.tabsClient[index].mrid) {
                 this.activeTabClient = {}
             }
             this.tabsClient.splice(index, 1);
@@ -1005,7 +972,7 @@ export default {
                 elementLog.style.height = "20%";
             });
         },
-        
+
         showLocationRoot() {
             const locationRoot = this.$refs.locationRoot;
             const ownerRoot = this.$refs.ownerRoot;
@@ -1021,13 +988,13 @@ export default {
             this.$nextTick(async () => {
                 try {
                     let rs = await window.electronAPI.getParentOrganizationByMrid(this.$constant.ROOT)
-                    if(rs.success) {
+                    if (rs.success) {
                         this.organisationClientList = [rs.data] || []
                     } else {
                         console.log(rs)
                         this.$message.error("Cannot load root organisation")
                     }
-                }catch (error) {
+                } catch (error) {
                     this.$message.error("Error fetching root data")
                     console.error("Error fetching data:", error)
                 }
@@ -1038,11 +1005,11 @@ export default {
             if (!node.children) {
                 try {
                     let newRows = [];
-                    if(node.mode == 'asset') {
+                    if (node.mode == 'asset') {
                         const clickedRow = node;
-                        if(node.asset && node.asset == 'Surge arrester') {
+                        if (node.asset && node.asset == 'Surge arrester') {
                             const jobsReturn = await this.fetchJobsByAssetId(node.mrid);
-                            if(jobsReturn.success) {
+                            if (jobsReturn.success) {
                                 jobsReturn.data.forEach(row => {
                                     row.parentId = clickedRow.mrid;
                                     row.mode = 'job';
@@ -1051,21 +1018,21 @@ export default {
                                     row.parentName = parentName
                                     row.parentArr = [...clickedRow.parentArr || []]
                                     row.parentArr.push({
-                                        mrid : clickedRow.mrid,
-                                        parent : clickedRow.name
+                                        mrid: clickedRow.mrid,
+                                        parent: clickedRow.name
                                     })
                                 });
                                 newRows.push(...jobsReturn.data);
                             }
                         }
-                    } else if(node.mode == 'substation') {
+                    } else if (node.mode == 'substation') {
                         const clickedRow = node;
                         const [voltageLevelReturn, bayReturn] = await Promise.all([
                             window.electronAPI.getVoltageLevelBySubstationId(clickedRow.mrid),
                             window.electronAPI.getBayByVoltageBySubstationId(null, clickedRow.mrid)
                         ]);
                         const assetReturn = await this.fetchAssetByPsr(clickedRow.mrid);
-                        if(voltageLevelReturn.success) {
+                        if (voltageLevelReturn.success) {
                             voltageLevelReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
                                 row.mode = 'voltageLevel';
@@ -1073,14 +1040,14 @@ export default {
                                 row.parentName = parentName
                                 row.parentArr = [...clickedRow.parentArr || []]
                                 row.parentArr.push({
-                                    mrid : clickedRow.mrid,
-                                    parent : clickedRow.name
+                                    mrid: clickedRow.mrid,
+                                    parent: clickedRow.name
                                 })
                             });
                             newRows.push(...voltageLevelReturn.data);
                         }
 
-                        if(bayReturn.success) {
+                        if (bayReturn.success) {
                             bayReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
                                 row.mode = 'bay';
@@ -1088,14 +1055,14 @@ export default {
                                 row.parentName = parentName
                                 row.parentArr = [...clickedRow.parentArr || []]
                                 row.parentArr.push({
-                                    mrid : clickedRow.mrid,
-                                    parent : clickedRow.name
+                                    mrid: clickedRow.mrid,
+                                    parent: clickedRow.name
                                 })
                             });
                             newRows.push(...bayReturn.data);
                         }
 
-                        if(assetReturn.success) {
+                        if (assetReturn.success) {
                             assetReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
                                 row.mode = 'asset';
@@ -1104,20 +1071,20 @@ export default {
                                 row.parentName = parentName
                                 row.parentArr = [...clickedRow.parentArr || []]
                                 row.parentArr.push({
-                                    mrid : clickedRow.mrid,
-                                    parent : clickedRow.name
+                                    mrid: clickedRow.mrid,
+                                    parent: clickedRow.name
                                 })
                             });
                             newRows.push(...assetReturn.data);
                         }
 
-                    } else if(node.mode == 'voltageLevel') {
+                    } else if (node.mode == 'voltageLevel') {
                         const clickedRow = node;
                         const [bayReturn] = await Promise.all([
                             window.electronAPI.getBayByVoltageBySubstationId(clickedRow.mrid, null)
                         ]);
 
-                        if(bayReturn.success) {
+                        if (bayReturn.success) {
                             bayReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
                                 row.mode = 'bay';
@@ -1125,17 +1092,17 @@ export default {
                                 row.parentName = parentName
                                 row.parentArr = [...clickedRow.parentArr || []]
                                 row.parentArr.push({
-                                    mrid : clickedRow.mrid,
-                                    parent : clickedRow.name
+                                    mrid: clickedRow.mrid,
+                                    parent: clickedRow.name
                                 })
                             });
                             newRows.push(...bayReturn.data);
                         }
 
-                    } else if(node.mode == 'bay') {
+                    } else if (node.mode == 'bay') {
                         const clickedRow = node;
                         const assetReturn = await this.fetchAssetByPsr(clickedRow.mrid);
-                        if(assetReturn.success) {
+                        if (assetReturn.success) {
                             assetReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
                                 row.mode = 'asset';
@@ -1144,8 +1111,8 @@ export default {
                                 row.parentName = parentName
                                 row.parentArr = [...clickedRow.parentArr || []]
                                 row.parentArr.push({
-                                    mrid : clickedRow.mrid,
-                                    parent : clickedRow.name
+                                    mrid: clickedRow.mrid,
+                                    parent: clickedRow.name
                                 })
                             });
                             newRows.push(...assetReturn.data);
@@ -1156,29 +1123,29 @@ export default {
                             window.electronAPI.getParentOrganizationByParentMrid(clickedRow.mrid),
                             window.electronAPI.getSubstationsInOrganisationForUser(clickedRow.mrid, this.$store.state.user.user_id)
                         ]);
-                        if(organisationReturn.success) {
+                        if (organisationReturn.success) {
                             organisationReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
                                 let parentName = clickedRow.parentName + "/" + clickedRow.name
                                 row.parentName = parentName
                                 row.parentArr = [...clickedRow.parentArr || []]
                                 row.parentArr.push({
-                                    mrid : clickedRow.mrid,
-                                    parent : clickedRow.name
+                                    mrid: clickedRow.mrid,
+                                    parent: clickedRow.name
                                 })
                             });
                             newRows.push(...organisationReturn.data);
                         }
 
-                        if(substationReturn.success) {
+                        if (substationReturn.success) {
                             substationReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
                                 let parentName = clickedRow.parentName + "/" + clickedRow.name
                                 row.parentName = parentName
                                 row.parentArr = [...clickedRow.parentArr || []]
                                 row.parentArr.push({
-                                    mrid : clickedRow.mrid,
-                                    parent : clickedRow.name
+                                    mrid: clickedRow.mrid,
+                                    parent: clickedRow.name
                                 })
                             });
                             newRows.push(...substationReturn.data);
@@ -1223,51 +1190,51 @@ export default {
             if (!node.children) {
                 try {
                     let newRows = [];
-                    if(node.mode == 'asset') {
-                        if(node.asset && node.asset != 'Surge arrester') {
+                    if (node.mode == 'asset') {
+                        if (node.asset && node.asset != 'Surge arrester') {
                             const jobsReturn = await this.fetchJobsByAssetId(node.mode, node.mrid);
-                            if(jobsReturn.success) {
+                            if (jobsReturn.success) {
                                 newRows.push(...jobsReturn.data);
                             }
                         }
-                    } else if(node.mode == 'substation') {
+                    } else if (node.mode == 'substation') {
                         const clickedRow = node;
                         const [voltageLevelReturn, bayReturn] = await Promise.all([
                             window.electronAPI.getVoltageLevelBySubstationId(clickedRow.mrid),
                             window.electronAPI.getBayByVoltageBySubstationId(null, clickedRow.mrid)
                         ]);
                         const assetReturn = await this.fetchAssetByPsr(clickedRow.mrid);
-                        if(assetReturn.success) {
+                        if (assetReturn.success) {
                             newRows.push(...assetReturn.data);
                         }
 
-                        if(voltageLevelReturn.success) {
+                        if (voltageLevelReturn.success) {
                             newRows.push(...voltageLevelReturn.data);
                         }
 
-                        if(bayReturn.success) {
+                        if (bayReturn.success) {
                             newRows.push(...bayReturn.data);
                         }
 
-                    } else if(node.mode == 'voltageLevel') {
+                    } else if (node.mode == 'voltageLevel') {
                         const clickedRow = node;
                         const [bayReturn] = await Promise.all([
                             window.electronAPI.getBayByVoltageBySubstationId(clickedRow.mrid, null)
                         ]);
 
-                        if(bayReturn.success) {
+                        if (bayReturn.success) {
                             newRows.push(...bayReturn.data);
                         }
 
-                    } else if(node.mode == 'bay') {
+                    } else if (node.mode == 'bay') {
                         const clickedRow = node;
                         const assetReturn = await this.fetchAssetByPsr(clickedRow.mrid);
-                        if(assetReturn.success) {
+                        if (assetReturn.success) {
                             newRows.push(...assetReturn.data);
                         }
                     }
 
-                    if(newRows.length > 0) {
+                    if (newRows.length > 0) {
                         return {
                             success: false,
                             data: newRows
@@ -1297,7 +1264,7 @@ export default {
             if (!node.children) {
                 try {
                     let newRows = [];
-                    if(this.LocationType.includes(node.mode)) {
+                    if (this.LocationType.includes(node.mode)) {
                         const newRowsAsset = await this.getAssets(node, newRows)
                         if (newRowsAsset && newRowsAsset.length > 0) {
                             newRowsAsset.forEach(row => {
@@ -1305,8 +1272,8 @@ export default {
                                 row.parentName = parentName
                                 row.parentArr = [...node.parentArr]
                                 row.parentArr.push({
-                                    id : node.id,
-                                    parent : node.name
+                                    id: node.id,
+                                    parent: node.name
                                 })
                                 const { children, ...nodeWithoutChildren } = node;
                                 row.parent = nodeWithoutChildren;
@@ -1320,15 +1287,15 @@ export default {
                                 row.parentName = parentName
                                 row.parentArr = [...node.parentArr]
                                 row.parentArr.push({
-                                    id : node.id,
-                                    parent : node.name
+                                    id: node.id,
+                                    parent: node.name
                                 })
                                 const { children, ...nodeWithoutChildren } = node;
                                 row.parent = nodeWithoutChildren;
                             });
                             newRows.push(...newRowLocation);
                         }
-                    } else if(node.asset != undefined) {
+                    } else if (node.asset != undefined) {
                         const newRowsJob = await this.getJobs(node, newRows)
                         if (newRowsJob && newRowsJob.length > 0) {
                             newRowsJob.forEach(row => {
@@ -1336,8 +1303,8 @@ export default {
                                 row.parentName = parentName
                                 row.parentArr = [...node.parentArr]
                                 row.parentArr.push({
-                                    id : node.id,
-                                    parent : node.serial_no
+                                    id: node.id,
+                                    parent: node.serial_no
                                 })
                                 const { children, ...nodeWithoutChildren } = node;
                                 row.parent = nodeWithoutChildren;
@@ -1345,7 +1312,7 @@ export default {
                             });
                             newRows.push(...newRowsJob);
                         }
-                    } else if(node.type != undefined && node.type != '') {
+                    } else if (node.type != undefined && node.type != '') {
                         const newRowsTest = await this.getTests(node, newRows)
                         if (newRowsTest && newRowsTest.length > 0) {
                             newRowsTest.forEach(row => {
@@ -1353,8 +1320,8 @@ export default {
                                 row.parentName = parentName
                                 row.parentArr = [...node.parentArr]
                                 row.parentArr.push({
-                                    id : node.id,
-                                    parent : node.name
+                                    id: node.id,
+                                    parent: node.name
                                 })
                                 const { children, ...nodeWithoutChildren } = node;
                                 row.parent = nodeWithoutChildren;
@@ -1376,8 +1343,8 @@ export default {
                                 row.parentName = parentName
                                 row.parentArr = [...clickedRow.parentArr]
                                 row.parentArr.push({
-                                    id : clickedRow.id,
-                                    parent : clickedRow.name
+                                    id: clickedRow.id,
+                                    parent: clickedRow.name
                                 })
                             });
                             newRows.push(...newRowsOwner);
@@ -1391,14 +1358,14 @@ export default {
                                 row.parentName = parentName
                                 row.parentArr = [...clickedRow.parentArr]
                                 row.parentArr.push({
-                                    id : clickedRow.id,
-                                    parent : clickedRow.name
+                                    id: clickedRow.id,
+                                    parent: clickedRow.name
                                 })
                             });
                             newRows.push(...newRowLocation);
                         }
-                    } 
-                    
+                    }
+
                     Vue.set(node, "children", newRows);
                 } catch (error) {
                     console.error("Lỗi khi lấy dữ liệu:", error);
@@ -1431,7 +1398,7 @@ export default {
         },
 
         serverSwap(serverSign) {
-            if(serverSign == true) {
+            if (serverSign == true) {
                 this.clientSlide = false
             } else {
                 this.clientSlide = true
@@ -1440,10 +1407,10 @@ export default {
 
         async updateLocationSyncPage(pageStt) {
             try {
-                if(this.optionLocationSync.mode == 'update') {
+                if (this.optionLocationSync.mode == 'update') {
                     await ownerAPI.getOwnerByRole("OWNER3", pageStt, this.sl).then((res) => {
-                        if(res != null && res.length != 0) {
-                            for(let i in res) {
+                        if (res != null && res.length != 0) {
+                            for (let i in res) {
                                 res[i].id = res[i].mrid
                                 res[i].parentId = ''
                                 res[i].parentName = ''
@@ -1453,7 +1420,7 @@ export default {
                         }
                     })
                 }
-            } catch(error) {
+            } catch (error) {
                 this.$message.error("Some error occur")
                 console.error(error)
             }
@@ -1473,16 +1440,16 @@ export default {
         async showPropertiesData(node) {
             this.assetPropertySign = false
             this.jobPropertySign = false
-            if(node.asset != undefined) {
+            if (node.asset != undefined) {
                 this.assetPropertySign = true
                 await this.mappingAssetProperties(node)
                 await this.mappingProperties(node.parent)
                 await this.loadPathMap(node)
                 this.pathMapServer.push({
-                    id : node.id,
-                    parent : node.serial_no
+                    id: node.id,
+                    parent: node.serial_no
                 })
-            } else if(node.type == 'test' ) {
+            } else if (node.type == 'test') {
                 this.assetPropertySign = true
                 this.jobPropertySign = true
                 await this.mappingProperties(node.parent.parent.parent)
@@ -1490,10 +1457,10 @@ export default {
                 await this.mappingJobProperties(node.parent)
                 await this.loadPathMap(node)
                 this.pathMapServer.push({
-                    id : node.id,
-                    parent : node.name
+                    id: node.id,
+                    parent: node.name
                 })
-            } else if(node.type == 'job') {
+            } else if (node.type == 'job') {
                 this.assetPropertySign = true
                 this.jobPropertySign = true
                 await this.mappingProperties(node.parent.parent)
@@ -1501,30 +1468,30 @@ export default {
                 await this.mappingJobProperties(node)
                 await this.loadPathMap(node)
                 this.pathMapServer.push({
-                    id : node.id,
-                    parent : node.name
+                    id: node.id,
+                    parent: node.name
                 })
             } else {
                 await this.mappingProperties(node)
                 await this.loadPathMap(node)
                 this.pathMapServer.push({
-                    id : node.id,
-                    parent : node.name
+                    id: node.id,
+                    parent: node.name
                 })
             }
         },
 
         async loadPathMap(node) {
             this.pathMapServer = []
-            if(node != undefined) {
-                if(node.parentArr != undefined) {
+            if (node != undefined) {
+                if (node.parentArr != undefined) {
                     this.pathMapServer = [...node.parentArr]
                 }
             }
         },
 
         async mappingProperties(data) {
-            if(data != undefined) {
+            if (data != undefined) {
                 this.properties.name = data.name == undefined || data.name == null ? '' : data.name
                 this.properties.region = data.region == undefined || data.region == null ? '' : data.region
                 this.properties.address = data.address == undefined || data.address == null ? '' : data.address
@@ -1538,7 +1505,7 @@ export default {
         },
 
         async mappingAssetProperties(data) {
-            if(data != undefined) {
+            if (data != undefined) {
                 this.assetProperties.asset = data.asset == undefined || data.asset == null ? '' : data.asset
                 this.assetProperties.asset_type = data.asset_type == undefined || data.asset_type == null ? '' : data.asset_type
                 this.assetProperties.serial_no = data.serial_no == undefined || data.serial_no == null ? '' : data.serial_no
@@ -1551,7 +1518,7 @@ export default {
         },
 
         async mappingJobProperties(data) {
-            if(data != undefined) {
+            if (data != undefined) {
                 this.jobProperties.name = data.name == undefined || data.name == null ? '' : data.name
                 this.jobProperties.work_order = data.work_order == undefined || data.work_order == null ? '' : data.work_order
                 this.jobProperties.creation_date = data.creation_date == undefined || data.creation_date == null ? '' : data.creation_date
@@ -1571,35 +1538,35 @@ export default {
                 let sumOfPage = Math.floor(parseInt(this.count) / this.sl)
                 let remainder = parseInt(this.count) % this.sl
 
-                if(remainder == 0) {
-                    if(sumOfPage < 4) {
+                if (remainder == 0) {
+                    if (sumOfPage < 4) {
                         this.displayPageLocationSync.dot = false
                         this.displayPageLocationSync.end = false
                         this.pageLocationSync.end = sumOfPage
-                        if(sumOfPage <3) {
+                        if (sumOfPage < 3) {
                             this.displayPageLocationSync.third = false
                         }
-                        if(sumOfPage <2) {
+                        if (sumOfPage < 2) {
                             this.displayPageLocationSync.second = false
                         }
-                    } else if(sumOfPage == 4) {
+                    } else if (sumOfPage == 4) {
                         this.displayPageLocationSync.dot = false
                         this.pageLocationSync.end = sumOfPage
                     } else {
                         this.pageLocationSync.end = sumOfPage
                     }
                 } else {
-                    if(sumOfPage < 3) {
-                        if(sumOfPage <2) {
+                    if (sumOfPage < 3) {
+                        if (sumOfPage < 2) {
                             this.displayPageLocationSync.third = false
                         }
-                        if(sumOfPage <1) {
+                        if (sumOfPage < 1) {
                             this.displayPageLocationSync.second = false
                         }
                         this.displayPageLocationSync.dot = false
                         this.displayPageLocationSync.end = false
                         this.pageLocationSync.end = sumOfPage + 1
-                    } else if(sumOfPage == 3) {
+                    } else if (sumOfPage == 3) {
                         this.displayPageLocationSync.dot = false
                         this.pageLocationSync.end = sumOfPage + 1
                     } else {
@@ -1607,8 +1574,8 @@ export default {
                     }
                 }
                 await ownerAPI.getOwnerByRole("OWNER3", 1, this.sl).then((res) => {
-                    if(res != null && res.length != 0) {
-                        for(let i in res) {
+                    if (res != null && res.length != 0) {
+                        for (let i in res) {
                             res[i].id = res[i].mrid
                             res[i].parentId = ''
                             res[i].parentName = ''
@@ -1618,7 +1585,7 @@ export default {
                     }
                 })
                 this.$refs.LocationSyncPageAlign.firstUserPage()
-            } catch(error) {
+            } catch (error) {
                 this.$message.error("Some error occur")
                 console.error(error)
             }
@@ -1736,13 +1703,13 @@ export default {
         async handleSubsConfirm() {
             try {
                 const subs = this.$refs.substation
-                if(subs) {
-                    const {success, data} = await subs.saveSubstation()
-                    if(success) {
+                if (subs) {
+                    const { success, data } = await subs.saveSubstation()
+                    if (success) {
                         this.$message.success("Substation saved successfully")
                         this.signSubs = false
                         let newRows = []
-                        if(this.organisationClientList && this.organisationClientList.length > 0) {
+                        if (this.organisationClientList && this.organisationClientList.length > 0) {
                             const newRow = {
                                 mrid: data.substation.mrid,
                                 name: data.substation.name,
@@ -1771,13 +1738,13 @@ export default {
         async handleOrgConfirm() {
             try {
                 const org = this.$refs.organisation
-                if(org) {
-                    const {success, data} =await org.saveOrganisation()
-                    if(success) {
+                if (org) {
+                    const { success, data } = await org.saveOrganisation()
+                    if (success) {
                         this.$message.success("Organisation saved successfully")
                         this.signOrg = false
                         let newRows = []
-                        if(this.organisationClientList && this.organisationClientList.length > 0) {
+                        if (this.organisationClientList && this.organisationClientList.length > 0) {
                             const newRow = {
                                 mrid: data.organisation.mrid,
                                 name: data.organisation.name,
@@ -1806,13 +1773,13 @@ export default {
         async handleVoltageLevelConfirm() {
             try {
                 const voltageLevel = this.$refs.voltageLevel
-                if(voltageLevel) {
-                    const {success, data} =await voltageLevel.saveVoltageLevel()
-                    if(success) {
+                if (voltageLevel) {
+                    const { success, data } = await voltageLevel.saveVoltageLevel()
+                    if (success) {
                         this.$message.success("Voltage Level saved successfully")
                         this.signVoltageLevel = false
                         let newRows = []
-                        if(this.organisationClientList && this.organisationClientList.length > 0) {
+                        if (this.organisationClientList && this.organisationClientList.length > 0) {
                             const newRow = {
                                 mrid: data.voltageLevel.mrid,
                                 name: data.voltageLevel.name,
@@ -1841,13 +1808,13 @@ export default {
         async handleBayConfirm() {
             try {
                 const bay = this.$refs.bay
-                if(bay) {
-                    const {success, data} =await bay.saveBay()
-                    if(success) {
+                if (bay) {
+                    const { success, data } = await bay.saveBay()
+                    if (success) {
                         this.$message.success("Bay saved successfully")
                         this.signBay = false
                         let newRows = []
-                        if(this.organisationClientList && this.organisationClientList.length > 0) {
+                        if (this.organisationClientList && this.organisationClientList.length > 0) {
                             const newRow = {
                                 mrid: data.mrid,
                                 name: data.name,
@@ -1881,7 +1848,7 @@ export default {
             await this.$refs.transformer.saveAsset();
             // this.signTransformer = false
         },
-        
+
         async handleBushingConfirm() {
             this.$message.success("Bushing saved successfully")
             // Cần thêm logic để cập nhật lại cây nếu cần thiết
@@ -1892,17 +1859,17 @@ export default {
         async handleSurgeConfirm() {
             try {
                 const surgeArrester = this.$refs.surgeArrester
-                if(surgeArrester) {
-                    const {success, data} = await surgeArrester.saveAsset();
-                    if(success) {
+                if (surgeArrester) {
+                    const { success, data } = await surgeArrester.saveAsset();
+                    if (success) {
                         this.$message.success("Surge Arrester saved successfully")
                         this.signSurge = false
                         let newRows = []
-                        if(this.organisationClientList && this.organisationClientList.length > 0) {
+                        if (this.organisationClientList && this.organisationClientList.length > 0) {
                             const newRow = {
                                 mrid: data.surgeArrester.mrid,
                                 name: data.surgeArrester.name,
-                                serial_number : data.surgeArrester.serial_number,
+                                serial_number: data.surgeArrester.serial_number,
                                 parentId: this.parentOrganization.mrid,
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
@@ -1952,7 +1919,7 @@ export default {
         async handlePowerConfirm() {
             this.$message.success("Power cable saved successfully")
             // Cần thêm logic để cập nhật lại cây nếu cần thiết
-            // await this.$refs.transformer.saveAsset();
+            await this.$refs.powerCable.saveAsset();
             this.signPower = false
         },
 
@@ -1966,13 +1933,13 @@ export default {
         async handleJobConfirm() {
             try {
                 const job = this.$refs.jobData
-                if(job) {
-                    const {success, data} = await job.saveJob();
-                    if(success) {
+                if (job) {
+                    const { success, data } = await job.saveJob();
+                    if (success) {
                         this.$message.success("Job saved successfully")
                         this.signJob = false
                         let newRows = []
-                        if(this.organisationClientList && this.organisationClientList.length > 0) {
+                        if (this.organisationClientList && this.organisationClientList.length > 0) {
                             const newRow = {
                                 mrid: data.oldWork.mrid,
                                 name: data.oldWork.name,
@@ -2007,7 +1974,7 @@ export default {
 
         async getAssets(node, rowData) {
             let locationId = node.id
-            await assetApi.getAssetByLocation(locationId).then(async(response) => {
+            await assetApi.getAssetByLocation(locationId).then(async (response) => {
                 if (response && response.length > 0) {
                     response.forEach(row => {
                         row.parentId = node.id;
@@ -2017,7 +1984,7 @@ export default {
                     rowData = response
                 }
             })
-            await circuitApi.findByLocationId(locationId).then(async(responseAsset) => {
+            await circuitApi.findByLocationId(locationId).then(async (responseAsset) => {
                 if (responseAsset && responseAsset.length > 0) {
                     responseAsset.forEach(row => {
                         row.parentId = node.id;
@@ -2027,7 +1994,7 @@ export default {
                     rowData = rowData.concat(responseAsset)
                 }
             })
-            await currentApi.findByLocationId(locationId).then(async(responseAsset) => {
+            await currentApi.findByLocationId(locationId).then(async (responseAsset) => {
                 if (responseAsset && responseAsset.length > 0) {
                     responseAsset.forEach(row => {
                         row.parentId = node.id;
@@ -2037,7 +2004,7 @@ export default {
                     rowData = rowData.concat(responseAsset)
                 }
             })
-            await voltageApi.findByLocationId(locationId).then(async(responseAsset) => {
+            await voltageApi.findByLocationId(locationId).then(async (responseAsset) => {
                 if (responseAsset && responseAsset.length > 0) {
                     responseAsset.forEach(row => {
                         row.parentId = node.id;
@@ -2047,7 +2014,7 @@ export default {
                     rowData = rowData.concat(responseAsset)
                 }
             })
-            await disconnectorApi.findByLocationId(locationId).then(async(responseAsset) => {
+            await disconnectorApi.findByLocationId(locationId).then(async (responseAsset) => {
                 if (responseAsset && responseAsset.length > 0) {
                     responseAsset.forEach(row => {
                         row.parentId = node.id;
@@ -2057,7 +2024,7 @@ export default {
                     rowData = rowData.concat(responseAsset)
                 }
             })
-            await surgeApi.findByLocationId(locationId).then(async(responseAsset) => {
+            await surgeApi.findByLocationId(locationId).then(async (responseAsset) => {
                 if (responseAsset && responseAsset.length > 0) {
                     responseAsset.forEach(row => {
                         row.parentId = node.id;
@@ -2067,7 +2034,7 @@ export default {
                     rowData = rowData.concat(responseAsset)
                 }
             })
-            await powerApi.findByLocationId(locationId).then(async(responseAsset) => {
+            await powerApi.findByLocationId(locationId).then(async (responseAsset) => {
                 if (responseAsset && responseAsset.length > 0) {
                     responseAsset.forEach(row => {
                         row.parentId = node.id;
@@ -2082,7 +2049,7 @@ export default {
         },
 
         async getJobs(node, rowData) {
-            if(node.asset == "Transformer") {
+            if (node.asset == "Transformer") {
                 await jobApi.getJobByAsset(node.id).then((response) => {
                     if (response && response.length > 0) {
                         response.forEach(row => {
@@ -2091,7 +2058,7 @@ export default {
                         rowData = response
                     }
                 })
-            } else if(node.asset == "Circuit breaker") {
+            } else if (node.asset == "Circuit breaker") {
                 await jobCircuitApi.findAllJobByAssetId(node.id).then((responseJob) => {
                     if (responseJob && responseJob.length > 0) {
                         responseJob.forEach(row => {
@@ -2100,7 +2067,7 @@ export default {
                         rowData = rowData.concat(responseJob)
                     }
                 })
-            } else if(node.asset == "Current transformer") {
+            } else if (node.asset == "Current transformer") {
                 await jobCurrentApi.findAllJobByAssetId(node.id).then((responseJob) => {
                     if (responseJob && responseJob.length > 0) {
                         responseJob.forEach(row => {
@@ -2109,7 +2076,7 @@ export default {
                         rowData = rowData.concat(responseJob)
                     }
                 })
-            } else if(node.asset == "Disconnector") {
+            } else if (node.asset == "Disconnector") {
                 await jobDisconnectorApi.findAllJobByAssetId(node.id).then((responseJob) => {
                     if (responseJob && responseJob.length > 0) {
                         responseJob.forEach(row => {
@@ -2118,7 +2085,7 @@ export default {
                         rowData = rowData.concat(responseJob)
                     }
                 })
-            } else if(node.asset == "Surge arrester") {
+            } else if (node.asset == "Surge arrester") {
                 await jobSurgeApi.findAllJobByAssetId(node.id).then((responseJob) => {
                     if (responseJob && responseJob.length > 0) {
                         responseJob.forEach(row => {
@@ -2127,7 +2094,7 @@ export default {
                         rowData = rowData.concat(responseJob)
                     }
                 })
-            } else if(node.asset == "Power cable") {
+            } else if (node.asset == "Power cable") {
                 await jobPowerApi.findAllJobByAssetId(node.id).then((responseJob) => {
                     if (responseJob && responseJob.length > 0) {
                         responseJob.forEach(row => {
@@ -2136,7 +2103,7 @@ export default {
                         rowData = rowData.concat(responseJob)
                     }
                 })
-            } else if(node.asset == "Voltage transformer") {
+            } else if (node.asset == "Voltage transformer") {
                 await jobVoltageApi.findAllJobByAssetId(node.id).then((responseJob) => {
                     if (responseJob && responseJob.length > 0) {
                         responseJob.forEach(row => {
@@ -2150,7 +2117,7 @@ export default {
         },
 
         async getTests(node, rowData) {
-            if(node.parent.asset == "Transformer") {
+            if (node.parent.asset == "Transformer") {
                 await testApi.getTestsByJobId(node.id).then((responseTest) => {
                     if (responseTest && responseTest.length > 0) {
                         responseTest.forEach(row => {
@@ -2159,7 +2126,7 @@ export default {
                         rowData = rowData.concat(responseTest)
                     }
                 })
-            } else if(node.parent.asset == "Circuit breaker") {
+            } else if (node.parent.asset == "Circuit breaker") {
                 await testCircuitApi.findAllTestByJobId(node.id).then((responseTest) => {
                     if (responseTest && responseTest.length > 0) {
                         responseTest.forEach(row => {
@@ -2168,7 +2135,7 @@ export default {
                         rowData = rowData.concat(responseTest)
                     }
                 })
-            } else if(node.parent.asset == "Current transformer") {
+            } else if (node.parent.asset == "Current transformer") {
                 await testCurrentApi.findAllTestByJobId(node.id).then((responseTest) => {
                     if (responseTest && responseTest.length > 0) {
                         responseTest.forEach(row => {
@@ -2177,7 +2144,7 @@ export default {
                         rowData = rowData.concat(responseTest)
                     }
                 })
-            } else if(node.parent.asset == "Disconnector") {
+            } else if (node.parent.asset == "Disconnector") {
                 await testDisconnectorApi.findAllTestByJobId(node.id).then((responseTest) => {
                     if (responseTest && responseTest.length > 0) {
                         responseTest.forEach(row => {
@@ -2186,7 +2153,7 @@ export default {
                         rowData = rowData.concat(responseTest)
                     }
                 })
-            } else if(node.parent.asset == "Surge arrester") {
+            } else if (node.parent.asset == "Surge arrester") {
                 await testSurgeApi.findAllTestByJobId(node.id).then((responseTest) => {
                     if (responseTest && responseTest.length > 0) {
                         responseTest.forEach(row => {
@@ -2195,7 +2162,7 @@ export default {
                         rowData = rowData.concat(responseTest)
                     }
                 })
-            } else if(node.parent.asset == "Power cable") {
+            } else if (node.parent.asset == "Power cable") {
                 await testPowerApi.findAllTestByJobId(node.id).then((responseTest) => {
                     if (responseTest && responseTest.length > 0) {
                         responseTest.forEach(row => {
@@ -2204,7 +2171,7 @@ export default {
                         rowData = rowData.concat(responseTest)
                     }
                 })
-            } else if(node.parent.asset == "Voltage transformer") {
+            } else if (node.parent.asset == "Voltage transformer") {
                 await testVoltageApi.findAllTestByJobId(node.id).then((responseTest) => {
                     if (responseTest && responseTest.length > 0) {
                         responseTest.forEach(row => {
@@ -2267,18 +2234,18 @@ export default {
         },
 
         async deleteDataClient(node) {
-            if(node.children && node.children.length > 0) {
+            if (node.children && node.children.length > 0) {
                 this.$message.error("Node has children, cannot delete");
                 return;
             } else {
                 const checkDelete = await this.checkChildren(node)
-                if(checkDelete.success) {
+                if (checkDelete.success) {
                     this.$message.error("Node has children, cannot delete");
                     return;
                 } else {
                     try {
-                        if(node.mode == 'substation') {
-                        
+                        if (node.mode == 'substation') {
+
                             const entity = await window.electronAPI.getSubstationEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
                             if (!entity.success) {
                                 this.$message.error("Entity not found");
@@ -2303,7 +2270,7 @@ export default {
                             } else {
                                 this.$message.warning("Parent node not found in tree");
                             }
-                        } else if(node.mode == 'organisation') {
+                        } else if (node.mode == 'organisation') {
                             const entity = await window.electronAPI.getOrganisationEntityByMrid(node.mrid)
                             if (!entity.success) {
                                 this.$message.error("Entity not found");
@@ -2329,7 +2296,7 @@ export default {
                             } else {
                                 this.$message.warning("Parent node not found in tree");
                             }
-                        } else if(node.mode == 'voltageLevel') {
+                        } else if (node.mode == 'voltageLevel') {
                             const entity = await window.electronAPI.getVoltageLevelEntityByMrid(node.mrid)
                             if (!entity.success) {
                                 this.$message.error("Entity not found");
@@ -2354,7 +2321,7 @@ export default {
                             } else {
                                 this.$message.warning("Parent node not found in tree");
                             }
-                        } else if(node.mode == 'bay') {
+                        } else if (node.mode == 'bay') {
                             const entity = await window.electronAPI.getBayEntityByMrid(node.mrid)
                             if (!entity.success) {
                                 this.$message.error("Entity not found");
@@ -2379,8 +2346,8 @@ export default {
                             } else {
                                 this.$message.warning("Parent node not found in tree");
                             }
-                        } else if(node.mode == 'asset') {
-                            if(node.asset === 'Surge arrester') {
+                        } else if (node.mode == 'asset') {
+                            if (node.asset === 'Surge arrester') {
                                 const entity = await window.electronAPI.getSurgeArresterEntityByMrid(node.mrid);
                                 if (!entity.success) {
                                     this.$message.error("Entity not found");
@@ -2422,24 +2389,24 @@ export default {
                     window.electronAPI.getPersonByOrganisationId(organisationId),
                     window.electronAPI.getParentOrganizationByMrid(organisationId)
                 ]);
-                if(dataLocation.success) {
+                if (dataLocation.success) {
                     this.locationList = dataLocation.data
                 } else {
                     this.locationList = []
                 }
 
-                if(dataPerson.success) {
+                if (dataPerson.success) {
                     this.personList = dataPerson.data
                 } else {
                     this.personList = []
                 }
 
-                if(parentOrganization.success) {
+                if (parentOrganization.success) {
                     this.parentOrganization = parentOrganization.data
                 } else {
                     this.parentOrganization = null
                 }
-                
+
                 this.organisationId = organisationId
                 this.signSubs = true
                 this.$nextTick(() => {
@@ -2463,13 +2430,13 @@ export default {
                     window.electronAPI.getLocationByOrganisationId(node.mrid),
                     window.electronAPI.getPersonByOrganisationId(node.mrid),
                 ]);
-                if(dataLocation.success) {
+                if (dataLocation.success) {
                     this.locationList = dataLocation.data
                 } else {
                     this.locationList = []
                 }
 
-                if(dataPerson.success) {
+                if (dataPerson.success) {
                     this.personList = dataPerson.data
                 } else {
                     this.personList = []
@@ -2509,7 +2476,7 @@ export default {
         async showAddVoltageLevel(node) {
             try {
                 const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
-                if(dataLocation.success) {
+                if (dataLocation.success) {
                     this.locationId = dataLocation.data.mrid
                 } else {
                     this.locationId = null
@@ -2532,7 +2499,7 @@ export default {
         async showAddBay(node) {
             try {
                 const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
-                if(dataLocation.success) {
+                if (dataLocation.success) {
                     this.locationId = dataLocation.data.mrid
                 } else {
                     this.locationId = null
@@ -2556,13 +2523,13 @@ export default {
             try {
                 this.locationId = null;
                 let psrId = null;
-                if(node.parentArr && node.parentArr.length >= 2) {
+                if (node.parentArr && node.parentArr.length >= 2) {
                     psrId = node.parentArr[1].mrid;
                 } else {
                     psrId = node.mrid;
                 }
                 const dataLoction = await window.electronAPI.getLocationByPowerSystemResourceMrid(psrId);
-                if(dataLoction.success) {
+                if (dataLoction.success) {
                     this.locationId = dataLoction.data.mrid
                 } else {
                     this.locationId = null
@@ -2602,7 +2569,7 @@ export default {
         async showAddSurgeArrester(node) {
             try {
                 const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
-                if(dataLocation.success) {
+                if (dataLocation.success) {
                     this.locationId = dataLocation.data.mrid
                 } else {
                     this.locationId = null
@@ -2625,7 +2592,7 @@ export default {
         async showAddCt(node) {
             try {
                 const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
-                if(dataLocation.success) {
+                if (dataLocation.success) {
                     this.locationId = dataLocation.data.mrid
                 } else {
                     this.locationId = null
@@ -2648,7 +2615,7 @@ export default {
         async showAddVt(node) {
             try {
                 const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
-                if(dataLocation.success) {
+                if (dataLocation.success) {
                     this.locationId = dataLocation.data.mrid
                 } else {
                     this.locationId = null
@@ -2671,7 +2638,7 @@ export default {
         async showAddPowerCable(node) {
             try {
                 const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
-                if(dataLocation.success) {
+                if (dataLocation.success) {
                     this.locationId = dataLocation.data.mrid
                 } else {
                     this.locationId = null
@@ -2694,7 +2661,7 @@ export default {
         async showAddDisconnector(node) {
             try {
                 const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
-                if(dataLocation.success) {
+                if (dataLocation.success) {
                     this.locationId = dataLocation.data.mrid
                 } else {
                     this.locationId = null
@@ -2717,7 +2684,7 @@ export default {
         async showAddCircuitBreaker(node) {
             try {
                 const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
-                if(dataLocation.success) {
+                if (dataLocation.success) {
                     this.locationId = dataLocation.data.mrid
                 } else {
                     this.locationId = null
@@ -2740,19 +2707,19 @@ export default {
         async showAddJob(node) {
             try {
                 const dataAsset = await window.electronAPI.getAssetByMrid(node.mrid);
-                if(dataAsset.success) {
+                if (dataAsset.success) {
                     this.assetData = dataAsset.data
                     const [dataLocation, dataProductAssetModel] = await Promise.all([
                         window.electronAPI.getLocationDetailByMrid(dataAsset.data.location),
                         window.electronAPI.getProductAssetModelByMrid(dataAsset.data.product_asset_model)
                     ]);
-                    if(dataLocation.success) {
+                    if (dataLocation.success) {
                         this.locationData = dataLocation.data
                     } else {
                         this.locationData = {}
                     }
 
-                    if(dataProductAssetModel.success) {
+                    if (dataProductAssetModel.success) {
                         this.productAssetModelData = dataProductAssetModel.data
                     } else {
                         this.productAssetModelData = {}
@@ -2763,15 +2730,15 @@ export default {
 
                 this.parentOrganization = node
 
-                if(node.asset == 'Surge arrester') {
+                if (node.asset == 'Surge arrester') {
                     const dataTestType = await window.electronAPI.getAllTestTypeSurgeArrester();
                     const dataSurgeArrester = await window.electronAPI.getSurgeArresterByMrid(node.mrid);
-                    if(dataSurgeArrester.success) {
+                    if (dataSurgeArrester.success) {
                         this.assetData = dataSurgeArrester.data
                     } else {
                         this.assetData = {}
                     }
-                    if(dataTestType.success) {
+                    if (dataTestType.success) {
                         this.testTypeListData = dataTestType.data
                     } else {
                         this.testTypeListData = []
@@ -2794,75 +2761,75 @@ export default {
 
         async resetAllServer() {
             this.selectedNodes = [],
-            this.assetPropertySign = false
+                this.assetPropertySign = false
             this.jobPropertySign = false
             this.pathMapServer = []
             this.properties = {
-                region : '',
-                name : '',
-                plant : '',
-                address : '',
-                city : '',
-                state_province : '',
-                postal_code : '',
-                country : '',
-                phone_no : '',
-                email : ''
+                region: '',
+                name: '',
+                plant: '',
+                address: '',
+                city: '',
+                state_province: '',
+                postal_code: '',
+                country: '',
+                phone_no: '',
+                email: ''
             }
             this.assetProperties = {
-                asset : '',
-                asset_type : '',
-                serial_no : '',
-                manufacturer : '',
-                manufacturer_type : '',
-                manufacturing_year : '',
-                apparatus_id : '',
-                country : '',
+                asset: '',
+                asset_type: '',
+                serial_no: '',
+                manufacturer: '',
+                manufacturer_type: '',
+                manufacturing_year: '',
+                apparatus_id: '',
+                country: '',
             }
             this.jobProperties = {
-                name : '',
-                work_order : '',
-                creation_date : '',
-                execution_date : '',
-                tested_by : '',
-                approved_by : '',
-                ambient_condition : '',
-                standard : ''
+                name: '',
+                work_order: '',
+                creation_date: '',
+                execution_date: '',
+                tested_by: '',
+                approved_by: '',
+                ambient_condition: '',
+                standard: ''
             }
             this.pageLocationSync = {
-                first : 1,
-                second : 2,
-                third : 3,
-                dot : "...",
-                end : 10,
+                first: 1,
+                second: 2,
+                third: 3,
+                dot: "...",
+                end: 10,
             }
             this.displayPageLocationSync = {
-                second : true,
-                third : true,
-                dot : true,
-                end : true
+                second: true,
+                third: true,
+                dot: true,
+                end: true
             }
             this.pageLocationSyncInstance = {
-                first : "",
-                second : "",
-                third : "",
-                dot : "",
-                end : "",
+                first: "",
+                second: "",
+                third: "",
+                dot: "",
+                end: "",
             }
             this.currentLocationSync = {
-                nextP : '',
-                previousP : '',
-                current : 1,
+                nextP: '',
+                previousP: '',
+                current: 1,
             }
             this.optionLocationSync = {
-                mode : ''
+                mode: ''
             }
             this.ownerServerList = []
             this.count = ''
         },
 
         async resetPathServer(index) {
-            if(index == 0) {
+            if (index == 0) {
                 let currentNode = this.ownerServerList.find(node => node.id === this.pathMapServer[0].id);
                 if (!currentNode) {
                     return; // Không tìm thấy node đầu tiên
@@ -2905,7 +2872,7 @@ export default {
         async doubleClickNode(node) {
             await this.showDataClient(node);
         },
- 
+
     }
 }
 </script>
@@ -2916,7 +2883,8 @@ export default {
     margin: 0;
     padding: 0;
     background-color: #f5f5f5;
-    font-size: 12px; /* Giảm cỡ chữ toàn trang */
+    font-size: 12px;
+    /* Giảm cỡ chữ toàn trang */
 }
 
 .explorer {
@@ -2953,10 +2921,14 @@ export default {
 .sidebar .file {
     display: block;
     padding: 5px;
-    white-space: nowrap; /* Ngăn văn bản xuống dòng */
-    overflow: hidden; /* Ẩn phần văn bản vượt quá kích thước */
-    text-overflow: ellipsis; /* Hiển thị dấu ... khi văn bản quá dài */
-    font-size: 12px; /* Cỡ chữ cho thư mục và tệp */
+    white-space: nowrap;
+    /* Ngăn văn bản xuống dòng */
+    overflow: hidden;
+    /* Ẩn phần văn bản vượt quá kích thước */
+    text-overflow: ellipsis;
+    /* Hiển thị dấu ... khi văn bản quá dài */
+    font-size: 12px;
+    /* Cỡ chữ cho thư mục và tệp */
 }
 
 .sidebar .folder:hover,
@@ -2967,22 +2939,27 @@ export default {
 
 .sidebar .folder i,
 .sidebar .file i {
-    margin-right: 8px; /* Khoảng cách giữa icon và văn bản */
-    width: 16px; /* Kích thước icon */
+    margin-right: 8px;
+    /* Khoảng cách giữa icon và văn bản */
+    width: 16px;
+    /* Kích thước icon */
     text-align: center;
-    font-size: 12px; /* Cỡ chữ cho icon */
+    font-size: 12px;
+    /* Cỡ chữ cho icon */
 }
 
 .resizer {
     width: 5px;
     background-color: white;
-    cursor: ew-resize; /* Con trỏ đổi thành mũi tên kéo ngang */
+    cursor: ew-resize;
+    /* Con trỏ đổi thành mũi tên kéo ngang */
 }
 
 .content {
     width: calc(75% - 5px);
     background-color: white;
-    font-size: 12px; /* Cỡ chữ cho nội dung */
+    font-size: 12px;
+    /* Cỡ chữ cho nội dung */
     box-sizing: border-box;
 }
 
@@ -3000,11 +2977,11 @@ export default {
     box-sizing: border-box;
     border: 1px rgb(224, 222, 222) solid;
     border-bottom: none;
-    overflow : hidden;
+    overflow: hidden;
 }
 
 .content-content:hover {
-    overflow : auto;
+    overflow: auto;
 }
 
 
@@ -3013,23 +2990,28 @@ export default {
     padding: 10px;
     border: 1px solid #ddd;
     cursor: pointer;
-    font-size: 12px; /* Cỡ chữ cho các mục trong nội dung */
+    font-size: 12px;
+    /* Cỡ chữ cho các mục trong nội dung */
 }
 
 .folder-item:hover {
     background-color: #f0f0f0;
 }
+
 .child-nav {
     overflow-y: hidden;
     height: calc(100% - 80px);
     box-sizing: border-box;
 }
+
 .child-nav:hover {
     overflow-y: auto;
 }
+
 .title-node {
     margin-top: 50px;
 }
+
 .title-temp {
     height: 40px;
     color: #555;
@@ -3039,12 +3021,14 @@ export default {
     box-sizing: border-box;
     background-color: white;
 }
+
 .toolbar {
     background-color: #D9D9D9;
     height: 30px;
     display: flex;
     gap: 10px;
-    border-bottom: 1px solid #CCCCCC; /* Độ dày 2px, màu đen */
+    border-bottom: 1px solid #CCCCCC;
+    /* Độ dày 2px, màu đen */
     align-items: center;
     font-size: 12px;
     color: #555;
@@ -3181,34 +3165,39 @@ export default {
 }
 
 .location {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  padding: 0 5px;
-  cursor: pointer;
-  border-bottom: 2px #e6e4e4 solid;
-  box-sizing: border-box;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 5px;
+    cursor: pointer;
+    border-bottom: 2px #e6e4e4 solid;
+    box-sizing: border-box;
 }
 
 .tab {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  padding-left: 5px;
-  width: 100%;
-  box-sizing: border-box;
-  border-bottom: 2px #e6e4e4 solid;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    padding-left: 5px;
+    width: 100%;
+    box-sizing: border-box;
+    border-bottom: 2px #e6e4e4 solid;
 }
 
 .trapezoid {
     position: absolute;
-    top: 50%;  /* Căn giữa theo chiều dọc */
-    right: 0;  /* Đẩy sát mép phải */
-    transform: translateY(-50%); /* Căn giữa theo chiều dọc */
-    width: 1.2vh !important; /* Độ rộng */
-    height: 10vh; /* Độ cao */
+    top: 50%;
+    /* Căn giữa theo chiều dọc */
+    right: 0;
+    /* Đẩy sát mép phải */
+    transform: translateY(-50%);
+    /* Căn giữa theo chiều dọc */
+    width: 1.2vh !important;
+    /* Độ rộng */
+    height: 10vh;
+    /* Độ cao */
     background: #D9D9D9;
     clip-path: polygon(100% 0%, 100% 100%, 0% 80%, 0% 20%);
 }
@@ -3259,7 +3248,8 @@ export default {
     padding: 0;
     margin: 5px 0;
     list-style: none;
-    display: none; /* Ẩn mặc định */
+    display: none;
+    /* Ẩn mặc định */
     z-index: 10;
 }
 

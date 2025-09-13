@@ -140,5 +140,7 @@ export const UnitSymbol = {
     WPers: 'WPers',
     WPersr: 'WPersr',
     WPerW: 'WPerW',
-    percent : '%',
+    percent: '%',
+    squareMilliMeter: 'mm²',
+    squareMeter: 'm²'
 }
