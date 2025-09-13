@@ -54,36 +54,36 @@ export function mapDtoToEntity(dto) {
     entity.oldCableInfo.core_count = dto.configsData.cores.value || null;
 
     /** ================== ratingsData ================== */
-    entity.oldCableInfo.rated_u = dto.ratingsData.rated_voltage.mrid || null;
+    entity.oldCableInfo.rated_u = dto.ratingsData.rated_voltage.mrid || null; //rated voltage
     const newRatedU = new Voltage();
     mappingUnit(newRatedU, dto.ratingsData.rated_voltage);
     entity.voltage.push(newRatedU);
 
-    entity.oldCableInfo.max_u = dto.ratingsData.max_voltage.mrid || null;
+    entity.oldCableInfo.max_u = dto.ratingsData.max_voltage.mrid || null;//max voltage
     const newMaxU = new Voltage();
     mappingUnit(newMaxU, dto.ratingsData.max_voltage);
     entity.voltage.push(newMaxU);
 
-    entity.oldCableInfo.rated_frequency = dto.ratingsData.rated_frequency.mrid || null;
+    entity.oldCableInfo.rated_frequency = dto.ratingsData.rated_frequency.mrid || null;//rated frequency
     const newRatedFrequency = new Frequency();
     mappingUnit(newRatedFrequency, dto.ratingsData.rated_frequency);
     entity.frequency.push(newRatedFrequency);
 
-    entity.oldCableInfo.short_circuit_current = dto.ratingsData.shortcircuit.mrid || null;
+    entity.oldCableInfo.short_circuit_current = dto.ratingsData.shortcircuit.mrid || null;//short circuit current
     const newShortCircuitCurrent = new Temperature();
     mappingUnit(newShortCircuitCurrent, dto.ratingsData.shortcircuit);
     entity.temperature.push(newShortCircuitCurrent);
 
-    entity.oldCableInfo.rated_duration_short_circuit = dto.ratingsData.rated_duration.mrid || null;
+    entity.oldCableInfo.rated_duration_short_circuit = dto.ratingsData.rated_duration.mrid || null;//rated duration of short circuit
     const newRatedDurationShortCircuit = new Seconds();
     mappingUnit(newRatedDurationShortCircuit, dto.ratingsData.rated_duration);
     entity.frequency.push(newRatedDurationShortCircuit);
 
     /** ================== others ================== */
-    entity.oldCableInfo.installation_method = dto.othersData.insulation_method.value || null;
-    entity.oldCableInfo.bonding_type = dto.othersData.bonding_type.value || null;
-    entity.oldCableInfo.install_location = dto.othersData.install_location.value || null;
-    entity.oldCableInfo.length = dto.othersData.cable_length.mrid || null;
+    entity.oldCableInfo.installation_method = dto.othersData.insulation_method.value || null;//installation method
+    entity.oldCableInfo.bonding_type = dto.othersData.bonding_type.value || null;//bonding type
+    entity.oldCableInfo.install_location = dto.othersData.install_location.value || null;//install location
+    entity.oldCableInfo.length = dto.othersData.cable_length.mrid || null;//cable length length
 
     const newLength = new Length();
     mappingUnit(newLength, dto.othersData.cable_length);
@@ -126,6 +126,8 @@ export function mapDtoToEntity(dto) {
     mappingUnit(newSheathThickness, dto.datasData.sheath.thickness);
     entity.length.push(newSheathThickness);
 
+    entity.oldCableInfo.sheath_type = dto.datasData.sheath.sheath_type.value || null;
+
     entity.oldCableInfo.diameter_over_sheath = dto.datasData.sheath.diameter.mrid || null;
     const newDiameterOverSheath = new Length();
     mappingUnit(newDiameterOverSheath, dto.datasData.sheath.diameter);
@@ -137,13 +139,13 @@ export function mapDtoToEntity(dto) {
     mappingUnit(newInsulationMaxTemp, dto.datasData.insulation.insulation_operating);
     entity.temperature.push(newInsulationMaxTemp);
 
-    entity.oldCableInfo.insulation_type = dto.datasData.insulation.insulation_type.value || null;
-    entity.oldCableInfo.thickness = dto.datasData.insulation.thickness.mrid || null;
+    entity.concentricNeutral.insulation_material = dto.datasData.insulation.insulation_type.value || null;
+    entity.concentricNeutral.insulation_thickness = dto.datasData.insulation.thickness.mrid || null;
     const newThickness = new Length();
     mappingUnit(newThickness, dto.datasData.insulation.thickness);
     entity.length.push(newThickness);
 
-    entity.oldCableInfo.diameter = dto.datasData.insulation.diameter.mrid || null;
+    entity.concentricNeutral.diameter_over_insulation = dto.datasData.insulation.diameter.mrid || null;
     const newDiameter = new Length();
     mappingUnit(newDiameter, dto.datasData.insulation.diameter);
     entity.length.push(newDiameter);
@@ -155,7 +157,7 @@ export function mapDtoToEntity(dto) {
     mappingUnit(newScreenThickness, dto.datasData.insulation_screen.thickness);
     entity.length.push(newScreenThickness);
 
-    entity.oldCableInfo.diameter_over_screen = dto.datasData.insulation_screen.diameter.mrid || null;
+    entity.concentricNeutral.diameter_over_screen = dto.datasData.insulation_screen.diameter.mrid || null;
     const newDiameterOverScreen = new Length();
     mappingUnit(newDiameterOverScreen, dto.datasData.insulation_screen.diameter);
     entity.length.push(newDiameterOverScreen);
@@ -204,7 +206,7 @@ export function mapDtoToEntity(dto) {
     mappingUnit(newConcentricThickness, dto.datasData.concentric_neutral.thickness);
     entity.length.push(newConcentricThickness);
 
-    entity.oldCableInfo.concentric_diameter = dto.datasData.concentric_neutral.diameter.mrid || null;
+    entity.concentricNeutral.diameter_over_neutral = dto.datasData.concentric_neutral.diameter.mrid || null;
     const newConcentricDiameter = new Length();
     mappingUnit(newConcentricDiameter, dto.datasData.concentric_neutral.diameter);
     entity.length.push(newConcentricDiameter);
@@ -227,6 +229,10 @@ export function mapDtoToEntity(dto) {
     const newArmourThickness = new Length();
     mappingUnit(newArmourThickness, dto.datasData.armour.thickness);
     entity.length.push(newArmourThickness);
+    entity.oldCableInfo.diameter_over_armour = dto.datasData.armour.diameter.mrid || null;
+    const newDiameterOverArmour = new Length();
+    mappingUnit(newDiameterOverArmour, dto.datasData.armour.diameter);
+    entity.length.push(newDiameterOverArmour);
 
     entity.oldCableInfo.armour_layer_tape = dto.datasData.armour.layerOfTapes.value || null;
     entity.oldCableInfo.armour_cross_sectional_area_tap = dto.datasData.armour.crossSectional.mrid || null;
