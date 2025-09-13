@@ -46,6 +46,8 @@ class OldCableInfo {
         this.cable_info_id = null
         this.phase_count = null
         this.core_count = null
+        this.sheath_type = null
+        this.diameter_over_armour = null
 
     }
 }
