@@ -32,6 +32,21 @@ import assessories from './components/assessories.vue'
 
 export default {
     name: 'powerCable',
+    props: {
+        parent: {
+            type: Object,
+            default: () => ({})
+        },
+        organisationId: {
+            type: String,
+            default: ''
+        },
+
+        locationId: {
+            type: String,
+            default: ''
+        },
+    },
     components: {
         powerCableProperty,
         configs,
@@ -39,7 +54,9 @@ export default {
     },
     data() {
         return {
-            switch: 'powerCable'
+            switch: 'powerCable',
+            parentData: JSON.parse(JSON.stringify(this.parent)),
+
         }
     },
     mixins: [mixin],

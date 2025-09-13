@@ -15,8 +15,11 @@ import * as surgeArresterEntityFunc from './surgeArrester/index'
 import * as transformerEntityFunc from './Transformer/index'
 import * as TestTypeFunc from './testType/index'
 import * as jobEntityFunc from './job/index'
+import * as powerCableEntityFunc from './powerCable/index'
 
-export { attachmentFunc, fileFunc, organisationLocationFunc, personSubstationFunc, 
-    userFunc, userIdentifiedObjectFunc, substationEntityFunc, organisationPersonFunc, 
-    organisationPsrFunc, geoMapFunc, parentOrganizationEntityFunc, voltageLevelEntityFunc, 
-    bayEntityFunc, surgeArresterEntityFunc, transformerEntityFunc, TestTypeFunc, jobEntityFunc }
+export {
+    attachmentFunc, fileFunc, organisationLocationFunc, personSubstationFunc,
+    userFunc, userIdentifiedObjectFunc, substationEntityFunc, organisationPersonFunc,
+    organisationPsrFunc, geoMapFunc, parentOrganizationEntityFunc, voltageLevelEntityFunc,
+    bayEntityFunc, surgeArresterEntityFunc, transformerEntityFunc, TestTypeFunc, jobEntityFunc, powerCableEntityFunc
+}
