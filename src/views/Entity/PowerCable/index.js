@@ -5,6 +5,10 @@ import OldCableInfo from '@/views/Cim/OldCableInfo'
 import Attachment from '@/views/Entity/Attachment'
 import AssetPsr from '@/views/Cim/AssetPsr'
 import LifecycleDate from '@/views/Cim/LifecycleDate'
+import TerminalCableInfo from '@/views/Cim/TerminalCableInfo'
+import JointCableInfo from '@/views/Cim/JointCableInfo'
+import SheathVoltageLimiter from '@/views/Cim/SheathVoltageLimiter'
+
 class PowerCableEntity {
     constructor() {
         this.asset = new Asset()
@@ -20,6 +24,9 @@ class PowerCableEntity {
         this.currentFlow = []
         this.lifecycleDate = new LifecycleDate()
         this.assetPsr = new AssetPsr()
+        this.terminal = new TerminalCableInfo()
+        this.joint = new JointCableInfo()
+        this.sheathVoltageLimiter = new SheathVoltageLimiter()
     }
 }
 

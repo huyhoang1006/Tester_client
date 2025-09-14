@@ -6,6 +6,7 @@ import Seconds from "@/views/Cim/Seconds";
 import Length from "@/views/Cim/Length";
 import Area from "@/views/Cim/Area";
 import PowerCableDTO from "@/views/Dto/PowerCable";
+import CurrentFlow from "@/views/Cim/CurrentFlow";
 
 const mappingUnit = (map, unitDto) => {
     if (!map || !unitDto) return;
@@ -252,6 +253,64 @@ export function mapDtoToEntity(dto) {
     const newDiameterOverJacket = new Length();
     mappingUnit(newDiameterOverJacket, dto.datasData.oversheath.diameter);
     entity.length.push(newDiameterOverJacket);
+
+    // Joint
+    entity.joint.rated_u = dto.datasData.jointsData.rated_u.mrid || null;
+    const newJointRatedU = new Voltage();
+    mappingUnit(newJointRatedU, dto.datasData.jointsData.rated_u);
+    entity.voltage.push(newJointRatedU);
+
+    entity.joint.rated_current = dto.datasData.jointsData.rated_current.mrid || null;
+    const newJointRatedCurrent = new CurrentFlow();
+    mappingUnit(newJointRatedCurrent, dto.datasData.jointsData.rated_current);
+    entity.currentFlow.push(newJointRatedCurrent);
+
+    entity.joint.category = dto.datasData.jointsData.category.value || null;
+    entity.joint.construction = dto.datasData.jointsData.construction.value || null;
+    entity.joint.service_condition = dto.datasData.jointsData.service_condition.value || null;
+
+    // Terminal
+
+    entity.terminal.rated_u = dto.datasData.terminalsData.rated_u.mrid || null;
+    const newTerminalRatedU = new Voltage();
+    mappingUnit(newTerminalRatedU, dto.datasData.terminalsData.rated_u);
+    entity.voltage.push(newTerminalRatedU);
+
+    entity.terminal.bil = dto.datasData.terminalsData.bil.mrid || null;
+    const newTerminalBil = new Voltage();
+    mappingUnit(newTerminalBil, dto.datasData.terminalsData.bil);
+    entity.voltage.push(newTerminalBil);
+
+    entity.terminal.bsl = dto.datasData.terminalsData.bsl.mrid || null;
+    const newTerminalBsl = new Frequency();
+    mappingUnit(newTerminalBsl, dto.datasData.terminalsData.bsl);
+    entity.frequency.push(newTerminalBsl);
+
+    entity.terminal.type = dto.datasData.terminalsData.type.value || null;
+    entity.terminal.connector_type = dto.datasData.terminalsData.connector_type.value || null;
+    entity.terminal.service_condition = dto.datasData.terminalsData.service_condition.value || null;
+    entity.terminal.class = dto.datasData.terminalsData.class.value || null;
+
+    // Sheath Voltage Limiter
+
+    entity.sheathVoltageLimiter.rated_voltage_ur = dto.datasData.sheathLimitsData.rated_voltage_ur.mrid || null;
+    const newSheathRatedU = new Voltage();
+    mappingUnit(newSheathRatedU, dto.datasData.sheathLimitsData.rated_voltage_ur);
+    entity.voltage.push(newSheathRatedU);
+
+    entity.sheathVoltageLimiter.max_continuous_operating_voltage = dto.datasData.sheathLimitsData.max_continuous_operating_voltage.mrid || null;
+    const newSheathMaxU = new Voltage();
+    mappingUnit(newSheathMaxU, dto.datasData.sheathLimitsData.max_continuous_operating_voltage);
+    entity.voltage.push(newSheathMaxU);
+
+    entity.sheathVoltageLimiter.nominal_discharge_current = dto.datasData.sheathLimitsData.nominal_discharge_current.mrid || null;
+    const newSheathNominalCurrent = new Frequency();
+    mappingUnit(newSheathNominalCurrent, dto.datasData.sheathLimitsData.nominal_discharge_current);
+    entity.frequency.push(newSheathNominalCurrent);
+
+    entity.sheathVoltageLimiter.high_current_impulse_withstand = dto.datasData.sheathLimitsData.high_current_impulse_withstand.mrid || null;
+    entity.sheathVoltageLimiter.long_duration_current_impulse_withstand = dto.datasData.sheathLimitsData.long_duration_current_impulse_withstand.mrid || null;
+    entity.sheathVoltageLimiter.short_circuit_withstand = dto.datasData.sheathLimitsData.short_circuit_withstand.mrid || null;
 
     return entity;
 }
