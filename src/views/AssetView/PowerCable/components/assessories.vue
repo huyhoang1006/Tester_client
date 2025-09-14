@@ -6,24 +6,24 @@
                     <span class="bolder">Terminal</span>
                     <el-divider></el-divider>
                     <el-form-item label="Rated voltage">
-                        <el-input v-model="terminalsData.rated_voltage">
+                        <el-input v-model="terminalsData.rated_u.value">
                             <template slot="append">kV</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="BIL">
-                        <el-input v-model="terminalsData.bil">
+                        <el-input v-model="terminalsData.bil.value">
                             <template slot="append">kV</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="BSL">
-                        <el-input v-model="terminalsData.bsl">
+                        <el-input v-model="terminalsData.bsl.value">
                             <template slot="append">Hz</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Type">
                         <el-select
                         style="width: 100%"
-                        v-model="terminalsData.type"
+                        v-model="terminalsData.type.value"
                         placeholder="Select">
                             <el-option label="High dielectric constant tape" value="High dielectric constant tape"> </el-option>
                             <el-option label="Geometric taped stress cone" value="Geometric taped stress cone"> </el-option>
@@ -38,7 +38,7 @@
                     <el-form-item label="Class">
                         <el-select
                         style="width: 100%"
-                        v-model="terminalsData.class"
+                        v-model="terminalsData.class.value"
                         placeholder="Select">
                             <el-option label="Class 1A" value="Class 1A"> </el-option>
                             <el-option label="Class 1B" value="Class 1B"> </el-option>
@@ -50,7 +50,7 @@
                     <el-form-item label="Connector type">
                         <el-select
                         style="width: 100%"
-                        v-model="terminalsData.connector_type"
+                        v-model="terminalsData.connector_type.value"
                         placeholder="Select">
                             <el-option label="Compression" value="Compression"> </el-option>
                             <el-option label="Soldered and welded" value="Soldered and welded"> </el-option>
@@ -60,7 +60,7 @@
                     <el-form-item label="Service condition">
                         <el-select
                         style="width: 100%"
-                        v-model="terminalsData.service_condition"
+                        v-model="terminalsData.service_condition.value"
                         placeholder="Select">
                             <el-option label="Indoor" value="Indoor"> </el-option>
                             <el-option label="Outdoor" value="Outdoor"> </el-option>
@@ -75,25 +75,25 @@
                     <span class="bolder">Joint</span>
                     <el-divider></el-divider>
                     <el-form-item label="Rated voltage">
-                        <el-input v-model="jointsData.rated_voltage">
+                        <el-input v-model="jointsData.rated_u.value">
                             <template slot="append">kV</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Rated current">
-                        <el-input v-model="jointsData.rated_current">
+                        <el-input v-model="jointsData.rated_current.value">
                             <template slot="append">A</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Category">
-                        <el-input v-model="jointsData.category">
+                        <el-input v-model="jointsData.category.value">
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Construction">
-                        <el-input v-model="jointsData.construction">
+                        <el-input v-model="jointsData.construction.value">
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Service condition">
-                        <el-input v-model="jointsData.service_condition">
+                        <el-input v-model="jointsData.service_condition.value">
                             <template slot="append">km</template>
                         </el-input>
                     </el-form-item>
@@ -106,26 +106,26 @@
                     <span class="bolder">Sheath voltage limiter</span>
                     <el-divider></el-divider>
                     <el-form-item label="Rated voltage Ur">
-                        <el-input v-model="sheathLimitsData.rated_voltage">
+                        <el-input v-model="sheathLimitsData.rated_voltage_ur.value">
                             <template slot="append">kV</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Maximum continuous operating voltage Uc">
-                        <el-input v-model="sheathLimitsData.max_continuous">
+                        <el-input v-model="sheathLimitsData.max_continuous_operating_voltage.value">
                             <template slot="append">kV</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Nominal discharge current">
-                        <el-input v-model="sheathLimitsData.nominal_discharge">
+                        <el-input v-model="sheathLimitsData.nominal_discharge_current.value">
                             <template slot="append">Hz</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="High current impulse withstand">
-                        <el-input v-model="sheathLimitsData.hight_current">
+                        <el-input v-model="sheathLimitsData.high_current_impulse_withstand.value">
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Long duration current impulse withstand">
-                        <el-input v-model="sheathLimitsData.long_duration">
+                        <el-input v-model="sheathLimitsData.long_duration_current_impulse_withstand.value">
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Short circuit withstand">
