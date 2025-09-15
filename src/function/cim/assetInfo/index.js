@@ -67,6 +67,7 @@ export const insertAssetInfo = async (info) => {
 export const insertAssetInfoTransaction = (info, dbsql) => {
     return new Promise(async (resolve, reject) => {
         try {
+            console.log('assetInfo_mrid: ', info.mrid)
             const identifiedResult = await IdentifiedObjectFunc.insertIdentifiedObjectTransaction(info, dbsql)
             if (!identifiedResult.success) {
                 return reject({ success: false, message: 'Insert identified object failed', err: identifiedResult.err })

@@ -6,17 +6,12 @@
                     <span style="font-size: 12px !important" class="bolder">Properties</span>
                     <el-divider></el-divider>
                     <el-form-item label="Asset">
-                        <el-select
-                            style="width: 100%"
-                            v-model="propertiesData.asset"
-                            placeholder="Select asset">
+                        <el-select style="width: 100%" v-model="propertiesData.kind" placeholder="Select asset">
                             <el-option label="Voltage transformer" value="Voltage transformer"> </el-option>
-                        </el-select> 
+                        </el-select>
                     </el-form-item>
                     <el-form-item label="Asset type">
-                        <el-select
-                            style="width: 100%"
-                            v-model="propertiesData.asset_type"
+                        <el-select style="width: 100%" v-model="propertiesData.asset_type"
                             placeholder="Select asset type">
                             <el-option label="IVT" value="IVT"> </el-option>
                             <el-option label="CVT / CCVT" value="CVTCCTV"> </el-option>
@@ -26,10 +21,19 @@
                         <el-input v-model="propertiesData.serial_no"></el-input>
                     </el-form-item>
                     <el-form-item label="Manufacturer">
-                        <el-select @change="createNew(propertiesData.manufacturer)" style="width: 100%;" filterable v-model="propertiesData.manufacturer">
-                            <el-option v-for="item in manufacturerList" :label="item" :key="item" :value=item> </el-option>
-                            <el-option v-for="item in manufacturerListAll" :key="item" :value=item> {{ item }} <i @click="deleteManu(item)" style="float: right; cursor: pointer;" class="fa-solid fa-trash"></i> <i @click="editManu(item)" style="float: right; margin-right: 10px; cursor: pointer;" class="fa-solid fa-pen-to-square"></i> </el-option>
-                            <el-option style="border-radius: 12px; background-color:#012596; margin: 10px; color: white;" value="Create new"><i class="fa-solid fa-square-plus" style="margin-right: 10px;"></i>&lt; Create new ></el-option>
+                        <el-select @change="createNew(propertiesData.manufacturer)" style="width: 100%;" filterable
+                            v-model="propertiesData.manufacturer">
+                            <el-option v-for="item in manufacturerList" :label="item" :key="item" :value=item>
+                            </el-option>
+                            <el-option v-for="item in manufacturerListAll" :key="item" :value=item> {{ item }} <i
+                                    @click="deleteManu(item)" style="float: right; cursor: pointer;"
+                                    class="fa-solid fa-trash"></i> <i @click="editManu(item)"
+                                    style="float: right; margin-right: 10px; cursor: pointer;"
+                                    class="fa-solid fa-pen-to-square"></i> </el-option>
+                            <el-option
+                                style="border-radius: 12px; background-color:#012596; margin: 10px; color: white;"
+                                value="Create new"><i class="fa-solid fa-square-plus"
+                                    style="margin-right: 10px;"></i>&lt; Create new ></el-option>
                         </el-select>
                     </el-form-item>
                     <el-form-item label="Manufacturer type">
@@ -56,7 +60,8 @@
                     <span style="font-size: 12px !important" class="bolder">Comment</span>
                     <el-divider></el-divider>
                     <el-input type="textarea" :rows="5" v-model="propertiesData.comment"></el-input>
-                    <Attachment :attachment_="this.attachmentData" title="circuit" height="120px" @data-attachment = "getDataAttachment"></Attachment>
+                    <Attachment :attachment_="this.attachmentData" title="circuit" height="120px"
+                        @data-attachment="getDataAttachment"></Attachment>
                 </el-form>
             </el-col>
         </el-row>
@@ -64,102 +69,102 @@
 </template>
 
 <script>
-import {country} from '@/views/ConstantAsset/index'
+import { country } from '@/views/ConstantAsset/index'
 import Attachment from '@/views/Common/Attachment.vue'
 
 export default {
     name: 'voltageTransProperty',
-    components : {
+    components: {
         Attachment
     },
-    props : {
+    props: {
         properties: {
-            type : Object,
-            require : true,
+            type: Object,
+            require: true,
         },
-        manufact : {
-            require : true,
+        manufact: {
+            require: true,
         },
-        title : {
-            require : true
+        title: {
+            require: true
         },
-        updateNew : {
-            require : true
+        updateNew: {
+            require: true
         },
-        update : {
-            require : true
+        update: {
+            require: true
         }
     },
     data() {
         return {
-            labelWidth : `200px`,
-            countryData : [],
-            manufacturerCurrent : '',
-            sign : '',
-            manufacturerPast : '',
-            manufacturerList : ['ABB', 'ALSTOM', 'General Electric', 'Mitsubishi Electric', 'Schneider Electric', 'Siemens', 'Toshiba', 'Westinghouse'],
-            manufacturerListAll : [],
-            itemUpdate : '',
-            attachmentData : []
+            labelWidth: `200px`,
+            countryData: [],
+            manufacturerCurrent: '',
+            sign: '',
+            manufacturerPast: '',
+            manufacturerList: ['ABB', 'ALSTOM', 'General Electric', 'Mitsubishi Electric', 'Schneider Electric', 'Siemens', 'Toshiba', 'Westinghouse'],
+            manufacturerListAll: [],
+            itemUpdate: '',
+            attachmentData: []
         }
     },
     methods: {
         createNew(data) {
-            if(data == 'Create new') {
+            if (data == 'Create new') {
                 this.propertiesData.manufacturer = JSON.parse(JSON.stringify(this.manufacturerCurrent))
                 this.$emit('createAdd', true)
             }
-            if(this.sign == "past") {
+            if (this.sign == "past") {
                 this.propertiesData.manufacturer = JSON.parse(JSON.stringify(this.manufacturerPast))
                 this.sign = ''
             }
         },
         deleteManu(item) {
-            this.sign ='past'
+            this.sign = 'past'
             this.$confirm('This will delete this manufacturer. Continue?', 'Warning', {
                 confirmButtonText: 'OK',
                 cancelButtonText: 'Cancel',
                 type: 'warning'
             }).then(async () => {
                 let rs = await window.electronAPI.getManufacturerByName(item)
-                if(rs.success && rs.data.length !=0) {
+                if (rs.success && rs.data.length != 0) {
                     var dataType = rs.data[0].type.split(',')
-                    if(dataType.includes(this.title)) {
-                        if(dataType.length == 1) {
+                    if (dataType.includes(this.title)) {
+                        if (dataType.length == 1) {
                             const rt = await window.electronAPI.deleteManufacturerByName(item)
-                            if(rt.success) {
+                            if (rt.success) {
                                 this.$message.success("Delete completed")
-                                if(this.propertiesData.manufacturer == item) {
+                                if (this.propertiesData.manufacturer == item) {
                                     this.propertiesData.manufacturer = ''
-                                    this.sign = '' 
+                                    this.sign = ''
                                 }
                             } else {
-                                this.$message.error();("Delete cannot be done")  
+                                this.$message.error(); ("Delete cannot be done")
                             }
                         } else {
                             var newType = dataType.filter(e => e != this.title).join(",")
-                            const rt = await window.electronAPI.updateManufacturerByName(item, {type:newType})
-                            if(rt.success) {
+                            const rt = await window.electronAPI.updateManufacturerByName(item, { type: newType })
+                            if (rt.success) {
                                 this.$message.success("Delete completed")
-                                if(this.propertiesData.manufacturer == item) {
+                                if (this.propertiesData.manufacturer == item) {
                                     this.propertiesData.manufacturer = ''
-                                    this.sign = '' 
+                                    this.sign = ''
                                 }
                             } else {
-                                this.$message.error();("Delete cannot be done")  
-                            } 
+                                this.$message.error(); ("Delete cannot be done")
+                            }
                         }
                     }
                 }
                 this.$emit('reloadManu')
-                
+
             }).catch(() => {
                 return
             })
         },
         editManu(item) {
             this.itemUpdate = item
-            this.sign ='past'
+            this.sign = 'past'
             this.$emit('editManu', item)
         },
         getDataAttachment(rowData) {
@@ -167,10 +172,10 @@ export default {
             this.$emit('update-attachment', this.attachmentData)
         },
     },
-    watch:{
-        'propertiesData.manufacturer' : {
+    watch: {
+        'propertiesData.manufacturer': {
             handler(newVal, oldVal) {
-                if(newVal == 'Create new') {
+                if (newVal == 'Create new') {
                     this.manufacturerCurrent = oldVal
                 } else {
                     this.manufacturerCurrent = newVal
@@ -178,34 +183,34 @@ export default {
                 this.manufacturerPast = newVal
             },
         },
-        manufact : {
+        manufact: {
             handler(newVal, oldVal) {
-                if(JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+                if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
                     this.manufacturerListAll = newVal
                 }
             },
-            immediate : true,
-            deep : true
+            immediate: true,
+            deep: true
         },
-        update : {
+        update: {
             handler(newVal) {
-                if(newVal == true) {
+                if (newVal == true) {
                     this.$emit('setUpdate', false)
-                    if(this.itemUpdate == this.propertiesData.manufacturer) {
+                    if (this.itemUpdate == this.propertiesData.manufacturer) {
                         this.propertiesData.manufacturer = this.updateNew
                         this.sign = ''
                     }
                 }
             },
-            immediate : true,
-            deep : true
+            immediate: true,
+            deep: true
         }
     },
     mounted() {
         this.manufacturerListAll = JSON.parse(JSON.stringify(this.manufact))
         this.countryData = country.default
     },
-    computed : {
+    computed: {
         propertiesData() {
             return this.properties
         }
