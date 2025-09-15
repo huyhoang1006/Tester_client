@@ -2,6 +2,7 @@ import { UnitSymbol } from "@/views/Enum/UnitSymbol";
 import { UnitMultiplier } from "@/views/Enum/UnitMultiplier";
 import Attachment from "@/views/Entity/Attachment";
 import PropertiesDto from "./Properties";
+import OldCableInfo from "@/views/Cim/OldCableInfo";
 
 
 class PowerCableDTO {
@@ -9,7 +10,7 @@ class PowerCableDTO {
     this.mrid = null;
     this.properties = new PropertiesDto();
     this.attachment = new Attachment();
-
+    this.oldCableInfo = new OldCableInfo();
     this.assetInfoId = ''
     this.productAssetModelId = ''
     this.lifecycleDateId = ''
@@ -42,6 +43,8 @@ class PowerCableDTO {
       oversheath: false,
     };
 
+
+
     this.othersData = {
       insulation_method: { mrid: '', value: '', unit: 'string' },
       bonding_type: { mrid: '', value: '', unit: 'string' },
@@ -53,7 +56,7 @@ class PowerCableDTO {
       conductor: {
         conductor_size: { mrid: '', value: '', unit: UnitSymbol.squareMilliMeter },
         conductor_class: { mrid: '', value: '', unit: 'string' },
-        conductor_count: { mrid: '', value: '', unit: '' },
+        conductor_count: { mrid: '', value: '', unit: 'string' },
         conductor_material: { mrid: '', value: '', unit: 'string' },
         conductor_material_custom: { mrid: '', value: '', unit: 'string' },
         conductor_type: { mrid: '', value: '', unit: 'string' },
@@ -74,14 +77,14 @@ class PowerCableDTO {
         diameter: { mrid: '', value: '', unit: UnitSymbol.mm },
         width: { mrid: '', value: '', unit: UnitSymbol.mm },
         lengthOfLay: { mrid: '', value: '', unit: UnitSymbol.mm },
-        numOfTapes: { mrid: '', value: '', unit: '' },
+        numOfTapes: { mrid: '', value: '', unit: 'string' },
       },
       armour: {
         material: { mrid: '', value: '', unit: 'string' },
         material_custom: { mrid: '', value: '', unit: 'string' },
         thickness: { mrid: '', value: '', unit: UnitSymbol.mm },
         diameter: { mrid: '', value: '', unit: UnitSymbol.mm },
-        layerOfTapes: { mrid: '', value: '', unit: '' },
+        layerOfTapes: { mrid: '', value: '', unit: 'string' },
         layerOfTapes_custom: { mrid: '', value: '', unit: 'string' },
         crossSectional: { mrid: '', value: '', unit: UnitSymbol.squareMilliMeter },
       },
@@ -104,7 +107,7 @@ class PowerCableDTO {
         diameter: { mrid: '', value: '', unit: UnitSymbol.mm },
         area: { mrid: '', value: '', unit: UnitSymbol.squareMilliMeter },
         lengthOfLay: { mrid: '', value: '', unit: UnitSymbol.mm },
-        numOfWires: { mrid: '', value: '', unit: '' },
+        numOfWires: { mrid: '', value: '', unit: 'string' },
       },
       oversheath: {
         material: { mrid: '', value: '', unit: 'string' },
@@ -129,6 +132,7 @@ class PowerCableDTO {
       },
 
       jointsData: {
+        mrid: '',
         cable_info_id: { mrid: '', value: '', unit: 'string' },
         rated_u: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.V },
         rated_current: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.A },
@@ -137,6 +141,7 @@ class PowerCableDTO {
         service_condition: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.m },
       },
       terminalsData: {
+        mrid: '',
         cable_info_id: { mrid: '', value: '', unit: 'string' },
         rated_u: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.V },
         bil: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.V },
@@ -147,6 +152,7 @@ class PowerCableDTO {
         class: { mrid: '', value: '', unit: 'string' },
       },
       sheathLimitsData: {
+        mrid: '',
         cable_info_id: { mrid: '', value: '', unit: 'string' },
         rated_voltage_ur: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.V },
         max_continuous_operating_voltage: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.V },
