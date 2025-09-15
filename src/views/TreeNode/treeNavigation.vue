@@ -819,6 +819,30 @@ export default {
             optionLocationSync: {
                 mode: ''
             },
+            terminal: {
+        rated_u: { value: '' },
+        bil: { value: '' },
+        bsl: { value: '' },
+        type: { value: '' },
+        class: { value: '' },
+        connector_type: { value: '' },
+        service_condition: { value: '' }
+      },
+      joint: {
+        rated_u: { value: '' },
+        rated_current: { value: '' },
+        category: { value: '' },
+        construction: { value: '' },
+        service_condition: { value: '' }
+      },
+      sheath_limits: {
+        rated_voltage_ur: { value: '' },
+        max_continuous_operating_voltage: { value: '' },
+        nominal_discharge_current: { value: '' },
+        high_current_impulse_withstand: { value: '' },
+        long_duration_current_impulse_withstand: { value: '' },
+        short_circuit: { value: '' }
+      },
             sl: 10,
             count: '',
             ownerServerList: [],
@@ -842,6 +866,7 @@ export default {
         }
     },
     methods: {
+        
         async reloadLogClient(doneCallback) {
             try {
                 const data = await window.electronAPI.getAllConfigurationEvents()
