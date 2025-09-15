@@ -15,7 +15,7 @@
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Standard">
                             <el-col :span="24" class="pdr-0">
-                                <el-select style="width: 100%;" v-model="ratingsData.standard">
+                                <el-select style="width: 100%;" v-model="ratingsData.standard.value">
                                     <el-option label="<Select standard>" value="selectStandard"></el-option>
                                     <el-option label="IEC 60044" value="IEC60044"></el-option>
                                     <el-option label="IEC 61869" value="IEC61869"></el-option>
@@ -24,7 +24,8 @@
                             </el-col>
                         </el-form-item>
                     </el-form>
-                    <el-form v-if="ratingsData.rated_frequency != 'Custom'" :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
+                    <el-form v-if="ratingsData.rated_frequency != 'Custom'" :inline-message="true"
+                        :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Rated frequency">
                             <el-col :span="24" class="pdr-0">
                                 <el-select style="width: 100%;" v-model="ratingsData.rated_frequency">
@@ -56,17 +57,18 @@
                             </el-col>
                         </el-form-item>
                     </el-form>
-                    <el-form v-if="propertiesData.asset_type == 'CVTCCTV'" :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
+                    <el-form v-if="propertiesData.asset_type == 'CVTCCTV'" :inline-message="true"
+                        :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="C1">
                             <el-col :span="11" class="pdl-0">
-                                <el-input v-model="ratingsData.c1">
+                                <el-input v-model="ratingsData.c1.value">
                                     <template slot="append">pF</template>
                                 </el-input>
                             </el-col>
                         </el-form-item>
                         <el-form-item label="C2">
                             <el-col :span="11" class="pdl-0">
-                                <el-input v-model="ratingsData.c2">
+                                <el-input v-model="ratingsData.c2.value">
                                     <template slot="append">pF</template>
                                 </el-input>
                             </el-col>
@@ -75,7 +77,7 @@
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Upr">
                             <el-col :span="11" class="pdl-0">
-                                <el-select v-model="ratingsData.uprRatio">
+                                <el-select v-model="ratingsData.upr">
                                     <el-option label="1 / 1" value="1"></el-option>
                                     <el-option label="1 / 3" value="3"></el-option>
                                     <el-option label="1 / √3" value="3sqrt"></el-option>
@@ -85,7 +87,7 @@
                                 <br>
                             </el-col>
                             <el-col :span="11" class="pdr-0">
-                                <el-input v-model="ratingsData.upr">
+                                <el-input v-model="ratingsData.rated_voltage.value">
                                     <template slot="append">kV</template>
                                 </el-input>
                             </el-col>
@@ -98,27 +100,26 @@
 </template>
 <script>
 export default {
-    name : "ratings",
-    props : {
-        ratings : {
-            type : Object,
-            require : true,
+    name: "ratings",
+    props: {
+        ratings: {
+            type: Object,
+            require: true,
         },
-        properties : {
-            type : Object,
-            require : true,  
+        properties: {
+            type: Object,
+            require: true,
         }
     },
     data() {
         return {
-            openRatings : "true",
-            labelWidth : `200px`,
+            openRatings: true,
+            labelWidth: `200px`,
         }
-    },
-    watch : {
     },
     computed: {
         ratingsData() {
+            console.log(this.ratings)
             return this.ratings
         },
         propertiesData() {
