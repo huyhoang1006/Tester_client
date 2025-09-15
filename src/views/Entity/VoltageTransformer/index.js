@@ -1,0 +1,23 @@
+import LifecycleDate from "@/views/Cim/LifecycleDate"
+import ProductAssetModel from "@/views/Cim/ProductAssetModel"
+import AssetPsr from "@/views/Cim/AssetPsr"
+import Attachment from '@/views/Entity/Attachment';
+import OldPotentialTransformerInfo from "@/views/Cim/OldPotentialTransformerInfo";
+import Asset from "@/views/Cim/Asset";
+
+class VoltageTransformerEntity {
+    constructor() {
+        this.OldPotentialTransformerInfo = new OldPotentialTransformerInfo()
+        this.potentialTransformerTable = []
+        this.length = []
+        this.voltage = []
+        this.frequency = []
+        this.apparentPower = []
+        this.lifecycleDate = new LifecycleDate()
+        this.productAssetModel = new ProductAssetModel();
+        this.assetPsr = new AssetPsr();
+        this.attachment = new Attachment();
+        this.asset = new Asset()
+    }
+}
+export default VoltageTransformerEntity;
