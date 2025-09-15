@@ -36,19 +36,29 @@ export function mapDtoToEntity(dto) {
     entity.productAssetModel.mrid = dto.productAssetModelId || null;
     entity.asset.location = dto.locationId || null;
     entity.asset.product_asset_model = dto.productAssetModelId || null;
+    entity.asset.asset_info = dto.mrid || null;
+    entity.concentricNeutral.mrid = dto.mrid || null;
+    entity.joint.mrid = dto.datasData.jointsData.mrid || null;
+    entity.terminal.mrid = dto.datasData.terminalsData.mrid || null;
+    entity.sheathVoltageLimiter.mrid = dto.datasData.sheathLimitsData.mrid || null;
+    entity.joint.cable_info_id = dto.mrid || null;
+    entity.terminal.cable_info_id = dto.mrid || null;
+    entity.sheathVoltageLimiter.cable_info_id = dto.mrid || null;
+    entity.oldCableInfo.mrid = dto.oldCableInfo.mrid || null;
+    entity.oldCableInfo.cable_info_id = dto.oldCableInfo.cable_info_id || null;
 
     /** ================== attachment ================== */
     entity.attachment.mrid = dto.attachmentId || null;
     entity.attachment = dto.attachment || null;
 
     // lifecycle date
-    dto.lifecycleDateId = entity.asset.lifecycle_date || '';
-    dto.properties.manufacturer_year = entity.lifecycleDate.manufactured_date || '';
+    entity.lifecycleDate.manufactured_date = dto.properties.manufacturer_year || null;
+    entity.lifecycleDate.mrid = dto.lifecycleDateId || null;
 
     //assetPsr
-    dto.assetPsrId = entity.assetPsr.mrid || '';
-    dto.psrId = entity.assetPsr.psr_id || '';
-    dto.assetInfoId = entity.assetPsr.asset_id || '';
+    entity.assetPsr.mrid = dto.assetPsrId || null;
+    entity.assetPsr.asset_id = dto.properties.mrid || null;
+    entity.assetPsr.psr_id = dto.psrId || null;
 
     /** ================== phases ================== */
     entity.oldCableInfo.phase_count = dto.configsData.phases.value || null;
@@ -317,22 +327,323 @@ export function mapDtoToEntity(dto) {
 
 export function mapEntityToDto(entity) {
     const dto = new PowerCableDTO();
-    //properties
-    dto.properties.mrid = entity.surgeArrester.mrid || '';
-    dto.properties.kind = entity.surgeArrester.kind || '';
-    dto.properties.type = entity.surgeArrester.type || '';
-    dto.properties.serial_no = entity.surgeArrester.serial_number || '';
-    dto.oldSurgeArresterInfoId = entity.surgeArrester.asset_info || '';
+
+    /** ================== properties ================== */
+    dto.properties.mrid = entity.asset.mrid || '';
+    dto.properties.kind = entity.asset.kind || '';
+    dto.properties.type = entity.asset.type || '';
+    dto.properties.serial_no = entity.asset.serial_number || '';
+    dto.assetInfoId = entity.asset.asset_info || '';
     dto.properties.manufacturer = entity.productAssetModel.manufacturer || '';
+    dto.properties.manufacturer_type = entity.asset.manufacturer_type || '';
+    dto.properties.country_of_origin = entity.asset.country_of_origin || '';
+    dto.properties.apparatus_id = entity.asset.name || '';
+    dto.properties.comment = entity.asset.description || '';
     dto.productAssetModelId = entity.productAssetModel.mrid || '';
-    dto.properties.manufacturer_type = entity.surgeArrester.manufacturer_type || '';
-    dto.properties.country_of_origin = entity.surgeArrester.country_of_origin || '';
-    dto.properties.apparatus_id = entity.surgeArrester.name || '';
-    dto.properties.comment = entity.surgeArrester.description || '';
-    dto.locationId = entity.surgeArrester.location || '';
-    dto.productAssetModelId = entity.surgeArrester.product_asset_model || '';
+    dto.locationId = entity.asset.location || '';
+    dto.productAssetModelId = entity.asset.product_asset_model || '';
+    dto.mrid = entity.asset.asset_info || '';
+    dto.mrid = entity.concentricNeutral.mrid || '';
+    dto.datasData.jointsData.mrid = entity.joint.mrid || '';
+    dto.datasData.terminalsData.mrid = entity.terminal.mrid || '';
+    dto.datasData.sheathLimitsData.mrid = entity.sheathVoltageLimiter.mrid || '';
+    dto.mrid = entity.joint.cable_info_id || '';
+    dto.mrid = entity.terminal.cable_info_id || '';
+    dto.mrid = entity.sheathVoltageLimiter.cable_info_id || '';
+    dto.mrid = entity.oldCableInfo.cable_info_id || '';
+    dto.oldCableInfo.mrid = entity.oldCableInfo.mrid || '';
 
+    /** ================== attachment ================== */
+    dto.attachmentId = entity.attachment.mrid || '';
+    dto.attachment = entity.attachment || '';
 
+    /** ================== lifecycle date ================== */
+    dto.properties.manufacturer_year = entity.lifecycleDate.manufactured_date || '';
+    dto.lifecycleDateId = entity.lifecycleDate.mrid || '';
+
+    /** ================== assetPsr ================== */
+    dto.assetPsrId = entity.assetPsr.mrid || '';
+    dto.properties.mrid = entity.assetPsr.asset_id || '';
+    dto.psrId = entity.assetPsr.psr_id || '';
+
+    /** ================== phases ================== */
+    dto.configsData = dto.configsData || {};
+    dto.configsData.phases = { value: entity.oldCableInfo.phase_count || '' };
+    dto.configsData.cores = { value: entity.oldCableInfo.core_count || '' };
+
+    /** ================== ratingsData ================== */
+    dto.ratingsData = dto.ratingsData || {};
+    // Rated voltage
+    dto.ratingsData.rated_voltage = { mrid: entity.oldCableInfo.rated_u || '' };
+    const ratedVoltage = entity.voltage.find(v => v.mrid === entity.oldCableInfo.rated_u) || {};
+    dto.ratingsData.rated_voltage.value = ratedVoltage.value || '';
+    dto.ratingsData.rated_voltage.unit = ratedVoltage.unit ? (ratedVoltage.multiplier ? `${ratedVoltage.multiplier}|${ratedVoltage.unit}` : ratedVoltage.unit) : '';
+
+    // Max voltage
+    dto.ratingsData.max_voltage = { mrid: entity.oldCableInfo.max_u || '' };
+    const maxVoltage = entity.voltage.find(v => v.mrid === entity.oldCableInfo.max_u) || {};
+    dto.ratingsData.max_voltage.value = maxVoltage.value || '';
+    dto.ratingsData.max_voltage.unit = maxVoltage.unit ? (maxVoltage.multiplier ? `${maxVoltage.multiplier}|${maxVoltage.unit}` : maxVoltage.unit) : '';
+
+    // Rated frequency
+    dto.ratingsData.rated_frequency = { mrid: entity.oldCableInfo.rated_frequency || '' };
+    const ratedFrequency = entity.frequency.find(f => f.mrid === entity.oldCableInfo.rated_frequency) || {};
+    dto.ratingsData.rated_frequency.value = ratedFrequency.value || '';
+    dto.ratingsData.rated_frequency.unit = ratedFrequency.unit ? (ratedFrequency.multiplier ? `${ratedFrequency.multiplier}|${ratedFrequency.unit}` : ratedFrequency.unit) : '';
+
+    // Short circuit current
+    dto.ratingsData.shortcircuit = { mrid: entity.oldCableInfo.short_circuit_current || '' };
+    const shortCircuitCurrent = entity.temperature.find(t => t.mrid === entity.oldCableInfo.short_circuit_current) || {};
+    dto.ratingsData.shortcircuit.value = shortCircuitCurrent.value || '';
+    dto.ratingsData.shortcircuit.unit = shortCircuitCurrent.unit ? (shortCircuitCurrent.multiplier ? `${shortCircuitCurrent.multiplier}|${shortCircuitCurrent.unit}` : shortCircuitCurrent.unit) : '';
+
+    // Rated duration of short circuit
+    dto.ratingsData.rated_duration = { mrid: entity.oldCableInfo.rated_duration_short_circuit || '' };
+    const ratedDuration = entity.frequency.find(f => f.mrid === entity.oldCableInfo.rated_duration_short_circuit) || {};
+    dto.ratingsData.rated_duration.value = ratedDuration.value || '';
+    dto.ratingsData.rated_duration.unit = ratedDuration.unit ? (ratedDuration.multiplier ? `${ratedDuration.multiplier}|${ratedDuration.unit}` : ratedDuration.unit) : '';
+
+    /** ================== others ================== */
+    dto.othersData = dto.othersData || {};
+    dto.othersData.insulation_method = { value: entity.oldCableInfo.installation_method || '' };
+    dto.othersData.bonding_type = { value: entity.oldCableInfo.bonding_type || '' };
+    dto.othersData.install_location = { value: entity.oldCableInfo.install_location || '' };
+    dto.othersData.cable_length = { mrid: entity.oldCableInfo.length || '' };
+    const cableLength = entity.length.find(l => l.mrid === entity.oldCableInfo.length) || {};
+    dto.othersData.cable_length.value = cableLength.value || '';
+    dto.othersData.cable_length.unit = cableLength.unit ? (cableLength.multiplier ? `${cableLength.multiplier}|${cableLength.unit}` : cableLength.unit) : '';
+
+    /** ================== conductor ================== */
+    dto.datasData = dto.datasData || {};
+    dto.datasData.conductor = dto.datasData.conductor || {};
+    dto.datasData.conductor.conductor_size = { mrid: entity.oldCableInfo.conductor_size || '' };
+    const conductorSize = entity.area.find(a => a.mrid === entity.oldCableInfo.conductor_size) || {};
+    dto.datasData.conductor.conductor_size.value = conductorSize.value || '';
+    dto.datasData.conductor.conductor_size.unit = conductorSize.unit ? (conductorSize.multiplier ? `${conductorSize.multiplier}|${conductorSize.unit}` : conductorSize.unit) : '';
+
+    dto.datasData.conductor.conductor_material = { value: entity.concentricNeutral.material || '' };
+    dto.datasData.conductor.conductor_class = { value: entity.oldCableInfo.conductor_class || '' };
+    dto.datasData.conductor.conductor_type = { value: entity.oldCableInfo.conductor_type || '' };
+    dto.datasData.conductor.conductor_diameter = { mrid: entity.oldCableInfo.nominal_conductor_diameter || '' };
+    const conductorDiameter = entity.length.find(l => l.mrid === entity.oldCableInfo.nominal_conductor_diameter) || {};
+    dto.datasData.conductor.conductor_diameter.value = conductorDiameter.value || '';
+    dto.datasData.conductor.conductor_diameter.unit = conductorDiameter.unit ? (conductorDiameter.multiplier ? `${conductorDiameter.multiplier}|${conductorDiameter.unit}` : conductorDiameter.unit) : '';
+
+    /** ================== conductor shield ================== */
+    dto.datasData.conductor_shield = dto.datasData.conductor_shield || {};
+    dto.datasData.conductor_shield.thickness = { mrid: entity.oldCableInfo.conductor_shield_thickness || '' };
+    const conductorShieldThickness = entity.length.find(l => l.mrid === entity.oldCableInfo.conductor_shield_thickness) || {};
+    dto.datasData.conductor_shield.thickness.value = conductorShieldThickness.value || '';
+    dto.datasData.conductor_shield.thickness.unit = conductorShieldThickness.unit ? (conductorShieldThickness.multiplier ? `${conductorShieldThickness.multiplier}|${conductorShieldThickness.unit}` : conductorShieldThickness.unit) : '';
+
+    dto.datasData.conductor_shield.diameter = { mrid: entity.oldCableInfo.diameter_over_shield || '' };
+    const diameterOverShield = entity.length.find(l => l.mrid === entity.oldCableInfo.diameter_over_shield) || {};
+    dto.datasData.conductor_shield.diameter.value = diameterOverShield.value || '';
+    dto.datasData.conductor_shield.diameter.unit = diameterOverShield.unit ? (diameterOverShield.multiplier ? `${diameterOverShield.multiplier}|${diameterOverShield.unit}` : diameterOverShield.unit) : '';
+
+    /** ================== sheath ================== */
+    dto.datasData.sheath = dto.datasData.sheath || {};
+    dto.datasData.sheath.multicore = { value: entity.oldCableInfo.sheath_multicore || '' };
+    dto.datasData.sheath.construction = { value: entity.oldCableInfo.sheath_contruction || '' };
+    dto.datasData.sheath.thickness = { mrid: entity.oldCableInfo.sheath_thickness || '' };
+    const sheathThickness = entity.length.find(l => l.mrid === entity.oldCableInfo.sheath_thickness) || {};
+    dto.datasData.sheath.thickness.value = sheathThickness.value || '';
+    dto.datasData.sheath.thickness.unit = sheathThickness.unit ? (sheathThickness.multiplier ? `${sheathThickness.multiplier}|${sheathThickness.unit}` : sheathThickness.unit) : '';
+
+    dto.datasData.sheath.sheath_type = { value: entity.oldCableInfo.sheath_type || '' };
+    dto.datasData.sheath.diameter = { mrid: entity.oldCableInfo.diameter_over_sheath || '' };
+    const diameterOverSheath = entity.length.find(l => l.mrid === entity.oldCableInfo.diameter_over_sheath) || {};
+    dto.datasData.sheath.diameter.value = diameterOverSheath.value || '';
+    dto.datasData.sheath.diameter.unit = diameterOverSheath.unit ? (diameterOverSheath.multiplier ? `${diameterOverSheath.multiplier}|${diameterOverSheath.unit}` : diameterOverSheath.unit) : '';
+
+    /** ================== insulation ================== */
+    dto.datasData.insulation = dto.datasData.insulation || {};
+    dto.datasData.insulation.insulation_operating = { mrid: entity.oldCableInfo.insulation_max_operating_temp || '' };
+    const insulationMaxTemp = entity.temperature.find(t => t.mrid === entity.oldCableInfo.insulation_max_operating_temp) || {};
+    dto.datasData.insulation.insulation_operating.value = insulationMaxTemp.value || '';
+    dto.datasData.insulation.insulation_operating.unit = insulationMaxTemp.unit ? (insulationMaxTemp.multiplier ? `${insulationMaxTemp.multiplier}|${insulationMaxTemp.unit}` : insulationMaxTemp.unit) : '';
+
+    dto.datasData.insulation.insulation_type = { value: entity.concentricNeutral.insulation_material || '' };
+    dto.datasData.insulation.thickness = { mrid: entity.concentricNeutral.insulation_thickness || '' };
+    const insulationThickness = entity.length.find(l => l.mrid === entity.concentricNeutral.insulation_thickness) || {};
+    dto.datasData.insulation.thickness.value = insulationThickness.value || '';
+    dto.datasData.insulation.thickness.unit = insulationThickness.unit ? (insulationThickness.multiplier ? `${insulationThickness.multiplier}|${insulationThickness.unit}` : insulationThickness.unit) : '';
+
+    dto.datasData.insulation.diameter = { mrid: entity.concentricNeutral.diameter_over_insulation || '' };
+    const diameterOverInsulation = entity.length.find(l => l.mrid === entity.concentricNeutral.diameter_over_insulation) || {};
+    dto.datasData.insulation.diameter.value = diameterOverInsulation.value || '';
+    dto.datasData.insulation.diameter.unit = diameterOverInsulation.unit ? (diameterOverInsulation.multiplier ? `${diameterOverInsulation.multiplier}|${diameterOverInsulation.unit}` : diameterOverInsulation.unit) : '';
+
+    /** ================== insulation screen ================== */
+    dto.datasData.insulation_screen = dto.datasData.insulation_screen || {};
+    dto.datasData.insulation_screen.material = { value: entity.oldCableInfo.screen_material || '' };
+    dto.datasData.insulation_screen.thickness = { mrid: entity.oldCableInfo.screen_thickness || '' };
+    const screenThickness = entity.length.find(l => l.mrid === entity.oldCableInfo.screen_thickness) || {};
+    dto.datasData.insulation_screen.thickness.value = screenThickness.value || '';
+    dto.datasData.insulation_screen.thickness.unit = screenThickness.unit ? (screenThickness.multiplier ? `${screenThickness.multiplier}|${screenThickness.unit}` : screenThickness.unit) : '';
+
+    dto.datasData.insulation_screen.diameter = { mrid: entity.concentricNeutral.diameter_over_screen || '' };
+    const diameterOverScreen = entity.length.find(l => l.mrid === entity.concentricNeutral.diameter_over_screen) || {};
+    dto.datasData.insulation_screen.diameter.value = diameterOverScreen.value || '';
+    dto.datasData.insulation_screen.diameter.unit = diameterOverScreen.unit ? (diameterOverScreen.multiplier ? `${diameterOverScreen.multiplier}|${diameterOverScreen.unit}` : diameterOverScreen.unit) : '';
+
+    /** ================== armour bedding ================== */
+    dto.datasData.armour_bedding = dto.datasData.armour_bedding || {};
+    dto.datasData.armour_bedding.material = { value: entity.oldCableInfo.armour_bedding_material || '' };
+    dto.datasData.armour_bedding.thickness = { mrid: entity.oldCableInfo.armour_bedding_thickness || '' };
+    const armourBeddingThickness = entity.length.find(l => l.mrid === entity.oldCableInfo.armour_bedding_thickness) || {};
+    dto.datasData.armour_bedding.thickness.value = armourBeddingThickness.value || '';
+    dto.datasData.armour_bedding.thickness.unit = armourBeddingThickness.unit ? (armourBeddingThickness.multiplier ? `${armourBeddingThickness.multiplier}|${armourBeddingThickness.unit}` : armourBeddingThickness.unit) : '';
+
+    dto.datasData.armour_bedding.diameter = { mrid: entity.oldCableInfo.diameter_bedding_over_armour || '' };
+    const diameterBeddingOverArmour = entity.length.find(l => l.mrid === entity.oldCableInfo.diameter_bedding_over_armour) || {};
+    dto.datasData.armour_bedding.diameter.value = diameterBeddingOverArmour.value || '';
+    dto.datasData.armour_bedding.diameter.unit = diameterBeddingOverArmour.unit ? (diameterBeddingOverArmour.multiplier ? `${diameterBeddingOverArmour.multiplier}|${diameterBeddingOverArmour.unit}` : diameterBeddingOverArmour.unit) : '';
+
+    /** ================== sheath reinforcing ================== */
+    dto.datasData.sheath_reinforcing = dto.datasData.sheath_reinforcing || {};
+    dto.datasData.sheath_reinforcing.material = { value: entity.oldCableInfo.sheath_reinforcing_material || '' };
+    dto.datasData.sheath_reinforcing.thickness = { mrid: entity.oldCableInfo.sheath_reinforcing_thickness || '' };
+    const sheathReinforcingThickness = entity.length.find(l => l.mrid === entity.oldCableInfo.sheath_reinforcing_thickness) || {};
+    dto.datasData.sheath_reinforcing.thickness.value = sheathReinforcingThickness.value || '';
+    dto.datasData.sheath_reinforcing.thickness.unit = sheathReinforcingThickness.unit ? (sheathReinforcingThickness.multiplier ? `${sheathReinforcingThickness.multiplier}|${sheathReinforcingThickness.unit}` : sheathReinforcingThickness.unit) : '';
+
+    dto.datasData.sheath_reinforcing.diameter = { mrid: entity.oldCableInfo.diameter_over_sheath_reinforcing || '' };
+    const diameterOverSheathReinforcing = entity.length.find(l => l.mrid === entity.oldCableInfo.diameter_over_sheath_reinforcing) || {};
+    dto.datasData.sheath_reinforcing.diameter.value = diameterOverSheathReinforcing.value || '';
+    dto.datasData.sheath_reinforcing.diameter.unit = diameterOverSheathReinforcing.unit ? (diameterOverSheathReinforcing.multiplier ? `${diameterOverSheathReinforcing.multiplier}|${diameterOverSheathReinforcing.unit}` : diameterOverSheathReinforcing.unit) : '';
+
+    dto.datasData.sheath_reinforcing.width = { mrid: entity.oldCableInfo.sheath_reinforcing_width || '' };
+    const sheathReinforcingWidth = entity.length.find(l => l.mrid === entity.oldCableInfo.sheath_reinforcing_width) || {};
+    dto.datasData.sheath_reinforcing.width.value = sheathReinforcingWidth.value || '';
+    dto.datasData.sheath_reinforcing.width.unit = sheathReinforcingWidth.unit ? (sheathReinforcingWidth.multiplier ? `${sheathReinforcingWidth.multiplier}|${sheathReinforcingWidth.unit}` : sheathReinforcingWidth.unit) : '';
+
+    dto.datasData.sheath_reinforcing.lengthOfLay = { mrid: entity.oldCableInfo.sheath_reinforcing_length_lay || '' };
+    const sheathReinforcingLengthLay = entity.length.find(l => l.mrid === entity.oldCableInfo.sheath_reinforcing_length_lay) || {};
+    dto.datasData.sheath_reinforcing.lengthOfLay.value = sheathReinforcingLengthLay.value || '';
+    dto.datasData.sheath_reinforcing.lengthOfLay.unit = sheathReinforcingLengthLay.unit ? (sheathReinforcingLengthLay.multiplier ? `${sheathReinforcingLengthLay.multiplier}|${sheathReinforcingLengthLay.unit}` : sheathReinforcingLengthLay.unit) : '';
+
+    dto.datasData.sheath_reinforcing.numOfTapes = { value: entity.oldCableInfo.sheath_reinforcing_no_tape || '' };
+
+    /** ================== concentric neutral ================== */
+    dto.datasData.concentric_neutral = dto.datasData.concentric_neutral || {};
+    dto.datasData.concentric_neutral.material = { value: entity.oldCableInfo.concentric_material || '' };
+    dto.datasData.concentric_neutral.construction = { value: entity.oldCableInfo.concentric_contruction || '' };
+    dto.datasData.concentric_neutral.thickness = { mrid: entity.oldCableInfo.concentric_thickness || '' };
+    const concentricThickness = entity.length.find(l => l.mrid === entity.oldCableInfo.concentric_thickness) || {};
+    dto.datasData.concentric_neutral.thickness.value = concentricThickness.value || '';
+    dto.datasData.concentric_neutral.thickness.unit = concentricThickness.unit ? (concentricThickness.multiplier ? `${concentricThickness.multiplier}|${concentricThickness.unit}` : concentricThickness.unit) : '';
+
+    dto.datasData.concentric_neutral.diameter = { mrid: entity.concentricNeutral.diameter_over_neutral || '' };
+    const concentricDiameter = entity.length.find(l => l.mrid === entity.concentricNeutral.diameter_over_neutral) || {};
+    dto.datasData.concentric_neutral.diameter.value = concentricDiameter.value || '';
+    dto.datasData.concentric_neutral.diameter.unit = concentricDiameter.unit ? (concentricDiameter.multiplier ? `${concentricDiameter.multiplier}|${concentricDiameter.unit}` : concentricDiameter.unit) : '';
+
+    dto.datasData.concentric_neutral.lengthOfLay = { mrid: entity.oldCableInfo.concentric_length_lay || '' };
+    const concentricLengthLay = entity.length.find(l => l.mrid === entity.oldCableInfo.concentric_length_lay) || {};
+    dto.datasData.concentric_neutral.lengthOfLay.value = concentricLengthLay.value || '';
+    dto.datasData.concentric_neutral.lengthOfLay.unit = concentricLengthLay.unit ? (concentricLengthLay.multiplier ? `${concentricLengthLay.multiplier}|${concentricLengthLay.unit}` : concentricLengthLay.unit) : '';
+
+    dto.datasData.concentric_neutral.area = { mrid: entity.oldCableInfo.concentric_area || '' };
+    const concentricArea = entity.area.find(a => a.mrid === entity.oldCableInfo.concentric_area) || {};
+    dto.datasData.concentric_neutral.area.value = concentricArea.value || '';
+    dto.datasData.concentric_neutral.area.unit = concentricArea.unit ? (concentricArea.multiplier ? `${concentricArea.multiplier}|${concentricArea.unit}` : concentricArea.unit) : '';
+
+    dto.datasData.concentric_neutral.numOfWires = { value: entity.oldCableInfo.concentric_no_of_wires || '' };
+
+    /** ================== armour ================== */
+    dto.datasData.armour = dto.datasData.armour || {};
+    dto.datasData.armour.material = { value: entity.oldCableInfo.armour_material || '' };
+    dto.datasData.armour.thickness = { mrid: entity.oldCableInfo.armour_thickness || '' };
+    const armourThickness = entity.length.find(l => l.mrid === entity.oldCableInfo.armour_thickness) || {};
+    dto.datasData.armour.thickness.value = armourThickness.value || '';
+    dto.datasData.armour.thickness.unit = armourThickness.unit ? (armourThickness.multiplier ? `${armourThickness.multiplier}|${armourThickness.unit}` : armourThickness.unit) : '';
+
+    dto.datasData.armour.diameter = { mrid: entity.oldCableInfo.diameter_over_armour || '' };
+    const diameterOverArmour = entity.length.find(l => l.mrid === entity.oldCableInfo.diameter_over_armour) || {};
+    dto.datasData.armour.diameter.value = diameterOverArmour.value || '';
+    dto.datasData.armour.diameter.unit = diameterOverArmour.unit ? (diameterOverArmour.multiplier ? `${diameterOverArmour.multiplier}|${diameterOverArmour.unit}` : diameterOverArmour.unit) : '';
+
+    dto.datasData.armour.layerOfTapes = { value: entity.oldCableInfo.armour_layer_tape || '' };
+    dto.datasData.armour.crossSectional = { mrid: entity.oldCableInfo.armour_cross_sectional_area_tap || '' };
+    const armourCrossSectional = entity.area.find(a => a.mrid === entity.oldCableInfo.armour_cross_sectional_area_tap) || {};
+    dto.datasData.armour.crossSectional.value = armourCrossSectional.value || '';
+    dto.datasData.armour.crossSectional.unit = armourCrossSectional.unit ? (armourCrossSectional.multiplier ? `${armourCrossSectional.multiplier}|${armourCrossSectional.unit}` : armourCrossSectional.unit) : '';
+
+    /** ================== jacket ================== */
+    dto.datasData.oversheath = dto.datasData.oversheath || {};
+    dto.datasData.oversheath.thickness = { mrid: entity.oldCableInfo.jacket_thickness || '' };
+    const jacketThickness = entity.length.find(l => l.mrid === entity.oldCableInfo.jacket_thickness) || {};
+    dto.datasData.oversheath.thickness.value = jacketThickness.value || '';
+    dto.datasData.oversheath.thickness.unit = jacketThickness.unit ? (jacketThickness.multiplier ? `${jacketThickness.multiplier}|${jacketThickness.unit}` : jacketThickness.unit) : '';
+
+    dto.datasData.oversheath.material = { value: entity.concentricNeutral.outer_jacket_kind || '' };
+    dto.datasData.oversheath.diameter = { mrid: entity.concentricNeutral.diameter_over_jacket || '' };
+    const diameterOverJacket = entity.length.find(l => l.mrid === entity.concentricNeutral.diameter_over_jacket) || {};
+    dto.datasData.oversheath.diameter.value = diameterOverJacket.value || '';
+    dto.datasData.oversheath.diameter.unit = diameterOverJacket.unit ? (diameterOverJacket.multiplier ? `${diameterOverJacket.multiplier}|${diameterOverJacket.unit}` : diameterOverJacket.unit) : '';
+
+    /** ================== joint ================== */
+    dto.datasData.jointsData = dto.datasData.jointsData || {};
+    dto.datasData.jointsData.rated_u = { mrid: entity.joint.rated_u || '' };
+    const jointRatedU = entity.voltage.find(v => v.mrid === entity.joint.rated_u) || {};
+    dto.datasData.jointsData.rated_u.value = jointRatedU.value || '';
+    dto.datasData.jointsData.rated_u.unit = jointRatedU.unit ? (jointRatedU.multiplier ? `${jointRatedU.multiplier}|${jointRatedU.unit}` : jointRatedU.unit) : '';
+
+    dto.datasData.jointsData.rated_current = { mrid: entity.joint.rated_current || '' };
+    const jointRatedCurrent = entity.currentFlow.find(c => c.mrid === entity.joint.rated_current) || {};
+    dto.datasData.jointsData.rated_current.value = jointRatedCurrent.value || '';
+    dto.datasData.jointsData.rated_current.unit = jointRatedCurrent.unit ? (jointRatedCurrent.multiplier ? `${jointRatedCurrent.multiplier}|${jointRatedCurrent.unit}` : jointRatedCurrent.unit) : '';
+
+    dto.datasData.jointsData.category = { value: entity.joint.category || '' };
+    dto.datasData.jointsData.construction = { value: entity.joint.construction || '' };
+    dto.datasData.jointsData.service_condition = { value: entity.joint.service_condition || '' };
+
+    /** ================== terminal ================== */
+    dto.datasData.terminalsData = dto.datasData.terminalsData || {};
+    dto.datasData.terminalsData.rated_u = { mrid: entity.terminal.rated_u || '' };
+    const terminalRatedU = entity.voltage.find(v => v.mrid === entity.terminal.rated_u) || {};
+    dto.datasData.terminalsData.rated_u.value = terminalRatedU.value || '';
+    dto.datasData.terminalsData.rated_u.unit = terminalRatedU.unit ? (terminalRatedU.multiplier ? `${terminalRatedU.multiplier}|${terminalRatedU.unit}` : terminalRatedU.unit) : '';
+
+    dto.datasData.terminalsData.bil = { mrid: entity.terminal.bil || '' };
+    const terminalBil = entity.voltage.find(v => v.mrid === entity.terminal.bil) || {};
+    dto.datasData.terminalsData.bil.value = terminalBil.value || '';
+    dto.datasData.terminalsData.bil.unit = terminalBil.unit ? (terminalBil.multiplier ? `${terminalBil.multiplier}|${terminalBil.unit}` : terminalBil.unit) : '';
+
+    dto.datasData.terminalsData.bsl = { mrid: entity.terminal.bsl || '' };
+    const terminalBsl = entity.frequency.find(f => f.mrid === entity.terminal.bsl) || {};
+    dto.datasData.terminalsData.bsl.value = terminalBsl.value || '';
+    dto.datasData.terminalsData.bsl.unit = terminalBsl.unit ? (terminalBsl.multiplier ? `${terminalBsl.multiplier}|${terminalBsl.unit}` : terminalBsl.unit) : '';
+
+    dto.datasData.terminalsData.type = { value: entity.terminal.type || '' };
+    dto.datasData.terminalsData.connector_type = { value: entity.terminal.connector_type || '' };
+    dto.datasData.terminalsData.service_condition = { value: entity.terminal.service_condition || '' };
+    dto.datasData.terminalsData.class = { value: entity.terminal.class || '' };
+
+    /** ================== sheath voltage limiter ================== */
+    dto.datasData.sheathLimitsData = dto.datasData.sheathLimitsData || {};
+    dto.datasData.sheathLimitsData.rated_voltage_ur = { mrid: entity.sheathVoltageLimiter.rated_voltage_ur || '' };
+    const sheathRatedU = entity.voltage.find(v => v.mrid === entity.sheathVoltageLimiter.rated_voltage_ur) || {};
+    dto.datasData.sheathLimitsData.rated_voltage_ur.value = sheathRatedU.value || '';
+    dto.datasData.sheathLimitsData.rated_voltage_ur.unit = sheathRatedU.unit ? (sheathRatedU.multiplier ? `${sheathRatedU.multiplier}|${sheathRatedU.unit}` : sheathRatedU.unit) : '';
+
+    dto.datasData.sheathLimitsData.max_continuous_operating_voltage = { mrid: entity.sheathVoltageLimiter.max_continuous_operating_voltage || '' };
+    const sheathMaxU = entity.voltage.find(v => v.mrid === entity.sheathVoltageLimiter.max_continuous_operating_voltage) || {};
+    dto.datasData.sheathLimitsData.max_continuous_operating_voltage.value = sheathMaxU.value || '';
+    dto.datasData.sheathLimitsData.max_continuous_operating_voltage.unit = sheathMaxU.unit ? (sheathMaxU.multiplier ? `${sheathMaxU.multiplier}|${sheathMaxU.unit}` : sheathMaxU.unit) : '';
+
+    dto.datasData.sheathLimitsData.nominal_discharge_current = { mrid: entity.sheathVoltageLimiter.nominal_discharge_current || '' };
+    const sheathNominalCurrent = entity.frequency.find(f => f.mrid === entity.sheathVoltageLimiter.nominal_discharge_current) || {};
+    dto.datasData.sheathLimitsData.nominal_discharge_current.value = sheathNominalCurrent.value || '';
+    dto.datasData.sheathLimitsData.nominal_discharge_current.unit = sheathNominalCurrent.unit ? (sheathNominalCurrent.multiplier ? `${sheathNominalCurrent.multiplier}|${sheathNominalCurrent.unit}` : sheathNominalCurrent.unit) : '';
+
+    dto.datasData.sheathLimitsData.high_current_impulse_withstand = { mrid: entity.sheathVoltageLimiter.high_current_impulse_withstand || '' };
+    dto.datasData.sheathLimitsData.long_duration_current_impulse_withstand = { mrid: entity.sheathVoltageLimiter.long_duration_current_impulse_withstand || '' };
+    dto.datasData.sheathLimitsData.short_circuit_withstand = { mrid: entity.sheathVoltageLimiter.short_circuit_withstand || '' };
+
+    return dto;
 }
+
 
 
