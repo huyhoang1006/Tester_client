@@ -648,9 +648,9 @@ import Bushing from '@/views/AssetView/Bushing'
 import SurgeArrester from '@/views/AssetView/SurgeArrester'
 import CircuitBreaker from '@/views/AssetView/CircuitBreaker'
 import CurrentTransformer from '@/views/AssetView/CurrentTransformer'
-import VoltageTransformer from '@/views/AssetView/VoltageTransformer'
 import Disconnector from '@/views/AssetView/Disconnector'
 import PowerCable from '@/views/AssetView/PowerCable'
+import VoltageTransformer from '@/views/AssetView/VoltageTransformer'
 
 import JobSurgeArrester from '@/views/JobView/SurgeArrester/index.vue'
 
@@ -1161,6 +1161,8 @@ export default {
         async fetchAssetByPsr(psrId) {
             try {
                 const response = await window.electronAPI.getSurgeArresterByPsrId(psrId);
+                const responseVt = await window.electronAPI.getVtByPsrId(psrId);
+
                 return response;
             } catch (error) {
                 console.error("Error fetching asset by substation:", error);
@@ -1909,11 +1911,51 @@ export default {
             this.signCt = false
         },
 
+        // async handleVtConfirm() {
+        //     this.$message.success("Voltage transformer saved successfully")
+        //     // Cần thêm logic để cập nhật lại cây nếu cần thiết
+        //     await this.$refs.voltageTransformer.saveAsset();
+        //     this.signVt = false
+        // },
+
         async handleVtConfirm() {
-            this.$message.success("Voltage transformer saved successfully")
-            // Cần thêm logic để cập nhật lại cây nếu cần thiết
-            // await this.$refs.transformer.saveAsset();
-            this.signVt = false
+            try {
+                const voltageTransformer = this.$refs.voltageTransformer
+                if (voltageTransformer) {
+                    const { success, data } = await voltageTransformer.saveAsset();
+                    if (success) {
+                        this.$message.success("Surge Arrester saved successfully")
+                        this.signVt = false
+                        let newRows = []
+                        if (this.organisationClientList && this.organisationClientList.length > 0) {
+                            console.log(data.asset)
+                            const newRow = {
+                                mrid: data.asset.mrid,
+                                name: data.asset.name,
+                                serial_number: data.asset.serial_number,
+                                parentId: this.parentOrganization.mrid,
+                                parentName: this.parentOrganization.name,
+                                parentArr: this.parentOrganization.parentArr || [],
+                                mode: 'asset',
+                                asset: 'Voltage transformer',
+                            }
+                            newRows.push(newRow);
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            if (node) {
+                                const children = Array.isArray(node.children) ? node.children : [];
+                                Vue.set(node, "children", [...children, ...newRows]);
+                            } else {
+                                this.$message.error("Parent node not found in tree");
+                            }
+                        }
+                    } else {
+                        this.$message.error("Failed to save Voltage transformer")
+                    }
+                }
+            } catch (error) {
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
         },
 
         async handlePowerConfirm() {
@@ -2623,6 +2665,7 @@ export default {
                 this.parentOrganization = node
                 this.signVt = true
                 this.$nextTick(() => {
+                    console.log("Check var :  ", this.parentOrganization)
                     const voltageTransformer = this.$refs.voltageTransformer;
                     if (voltageTransformer) {
                         voltageTransformer.resetForm();

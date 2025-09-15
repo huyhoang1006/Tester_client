@@ -34,6 +34,7 @@ export const insertIdentifiedObject = async (identifiedObject) => {
 }
 
 export const insertIdentifiedObjectTransaction = async (identifiedObject, dbsql) => {
+    console.log('identifiedObject_mrid: ', identifiedObject.mrid)
     return new Promise((resolve, reject) => {
         dbsql.run(
             `INSERT INTO identified_object(mrid, name, alias_name, description)
@@ -44,9 +45,9 @@ export const insertIdentifiedObjectTransaction = async (identifiedObject, dbsql)
                 description = excluded.description`,
             [
                 identifiedObject.mrid,
-                identifiedObject.name,
-                identifiedObject.alias_name,
-                identifiedObject.description
+                identifiedObject.name || null,
+                identifiedObject.alias_name || null,
+                identifiedObject.description || null
             ],
             function (err) {
                 if (err) return reject({ success: false, err, message: 'Insert identified object failed' })
