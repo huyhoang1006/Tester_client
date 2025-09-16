@@ -3,8 +3,9 @@ import { backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDele
 import { insertVoltageTransaction, deleteVoltageByIdTransaction } from '@/function/cim/voltage';
 import { insertSecondsTransaction, deleteSecondsByIdTransaction } from '@/function/cim/seconds';
 import { insertCurrentFlowTransaction, deleteCurrentFlowByIdTransaction } from '@/function/cim/currentFlow';
-import { insertDisconnectorInfoTransaction } from '@/function/cim/disconnectorInfo';
-
+import { getDisconnectorInfoById, insertDisconnectorInfoTransaction } from '@/function/cim/disconnectorInfo';
+import DisconnectorEntity from '@/views/Entity/Disconnector';
+import { getAssetById } from '@/function/cim/asset';
 
 
 export const insertDisconnectorEntity = async (old_entity,entity) => {
@@ -77,6 +78,56 @@ export const insertDisconnectorEntity = async (old_entity,entity) => {
         console.error('Error retrieving disconnector entity:', error);
         await runAsync('ROLLBACK');
         return { success: false, error, message: 'Error retrieving disconnector entity' };
+    }
+}
+
+
+export const getDisconnectorEntityById = async (id, psrId) => {
+    try {
+        if(id == null || id === '') {
+            return { success: false, error: new Error('Invalid ID') };
+        } else {
+            const entity = new DisconnectorEntity()
+            const dataDisconnector = await getAssetById(id);
+            if(dataDisconnector.success) {
+                entity.asset = dataDisconnector.data
+                const dataLifecycleDate = await getLifecycleDateById(entity.asset.lifecycle_date);
+                if(dataLifecycleDate.success) {
+                    entity.lifecycleDate = dataLifecycleDate.data;
+                }
+                const dataDisconnectorInfo = await getDisconnectorInfoById(entity.asset.asset_info);
+                if(dataOldBushingInfo.success) {
+                    entity.oldBushingInfo = dataOldBushingInfo.data;
+                }
+                
+                const productAssetModelId = entity.oldBushingInfo.product_asset_model;
+                const dataProductAssetModel = await getProductAssetModelById(productAssetModelId);
+                if(dataProductAssetModel.success) {
+                    entity.productAssetModel = dataProductAssetModel.data;
+                }
+                
+                const dataAssetPsr = await getAssetPsrByAssetIdAndPsrId(entity.bushing.mrid, psrId);
+                if(dataAssetPsr.success) {
+                    entity.assetPsr = dataAssetPsr.data;
+                }
+
+                const dataAttachment = await getAttachmentByForeignIdAndType(entity.bushing.mrid, 'asset');
+                if(dataAttachment.success) {
+                    entity.attachment = dataAttachment.data;
+                }
+
+                return {
+                    success: true,
+                    data: entity,
+                    message: 'Bushing entity retrieved successfully'
+                }
+            } else {
+                return { success: false, error: dataBushing.error, message: dataBushing.message };
+            }
+        }
+    } catch (error) {
+        console.error("Error retrieving Bushing entity by ID:", error);
+        return { success: false, error, message: 'Error retrieving Bushing entity by ID' };
     }
 }
 
