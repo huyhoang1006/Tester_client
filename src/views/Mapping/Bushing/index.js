@@ -86,7 +86,6 @@ export function mapEntityToDto(entity) {
     //assetPsr
     dto.assetPsrId = entity.assetPsr.mrid || '';
     dto.psrId = entity.assetPsr.psr_id || '';
-    dto.oldBushingInfoId = entity.assetPsr.asset_id || '';
 
     //attachment
     dto.attachmentId = entity.attachment.mrid || '';

@@ -53,6 +53,7 @@ const powerCableEntityAPI = entityPreload.powerCableEntityPreload.powerCableEnti
 const voltageTransformerEntityAPI = entityPreload.voltageTransformerEntityPreload.voltageTransformerEntityPreload()
 const bushingEntityAPI = entityPreload.bushingEntityPreload.bushingEntityPreload()
 const bushingAPI = cimPreload.bushingPreload.bushingPreload()
+const disconnectorEntityAPI = entityPreload.disconnectorEntityPreload.disconnectorEntityPreload()
 
 const ipcMain = Object.assign(userAPI, transformerAPI, fmecaAPI, conditionAPI, circuitAPI, attachmentAPI,
     currentTransAPI, voltageTransAPI, disconnectorAPI, surgeArresterAPI, powerCablePreAPI, uploadCustomAPI,
@@ -61,7 +62,7 @@ const ipcMain = Object.assign(userAPI, transformerAPI, fmecaAPI, conditionAPI, c
     positionPointAPI, voltageLevelEntityAPI, voltageLevelAPI, bayEntityAPI, bayAPI, powerSystemResourceAPI, surgeArresterEntityAPI,
     productAssetModelAPI, testTypeSurgeArresterAPI, surgeArresterJobAPI, oldWorkAPI, assetAPI, transformerEntityAPI, analogAPI,
     stringMeasurementAPI, discreteAPI, valueToAliasAPI, valueAliasSetAPI, powerCableEntityAPI, voltageTransformerEntityAPI, bushingEntityAPI,
-    bushingAPI)
+    bushingAPI, disconnectorEntityAPI)
 contextBridge.exposeInMainWorld('electronAPI',
     ipcMain
 )

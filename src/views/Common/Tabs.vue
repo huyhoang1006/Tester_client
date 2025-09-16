@@ -67,12 +67,14 @@ import * as surgeMapper from '@/views/Mapping/SurgeArrester/index'
 import * as bushingMapper from '@/views/Mapping/Bushing/index'
 import * as vtMapper from '@/views/Mapping/VoltageTransformer/index'
 import * as SurgeArresterJobMapper from '@/views/Mapping/SurgerArresterJob/index'
+import * as disconnectorMapper from '@/views/Mapping/Disconnector/index'
 import VoltageLevel from '@/views/VoltageLevel/index.vue'
 import Bay from '@/views/Bay/index.vue'
 import SurgeArrester from '@/views/AssetView/SurgeArrester/index.vue'
 import Bushing from '@/views/AssetView/Bushing/index.vue'
 import SurgeArresterJob from '@/views/JobView/SurgeArrester/index.vue'
 import VoltageTransformer from '@/views/AssetView/VoltageTransformer/index.vue'
+import Disconnector from '@/views/AssetView/Disconnector/index.vue'
 
 export default {
     name : "Tabs",
@@ -87,6 +89,7 @@ export default {
         Bushing,
         VoltageTransformer,
         SurgeArresterJob,
+        Disconnector
     },
     model: {
         prop: 'value',
@@ -214,6 +217,17 @@ export default {
                             this.$refs.componentLoadData[index].loadData(vtDto)
                         } else {
                             this.$message.error("Failed to load surge arrester data");
+                        }
+                    } else if(tab.asset === 'Disconnector') {
+                        this.parentOrganization = {
+                            mrid : tab.parentId
+                        }
+                        const data = await window.electronAPI.getDisconnectorEntityByMrid(tab.mrid, tab.parentId)
+                        if(data.success) {
+                            const disconnectorDto = disconnectorMapper.disconnectorEntityToDto(data.data)
+                            this.$refs.componentLoadData[index].loadData(disconnectorDto)
+                        } else {
+                            this.$message.error("Failed to load Disconnector data");
                         }
                     }
                 } else if(tab.mode === 'job') {
@@ -343,6 +357,8 @@ export default {
                     return 'Bushing'
                 } else if(tab.asset === 'Voltage transformer') {
                     return 'VoltageTransformer'
+                } else if(tab.asset === 'Disconnector') {
+                    return 'Disconnector'
                 }
             } else if(tab.mode == 'job') {
                 if(tab.job === 'Surge arrester') {
