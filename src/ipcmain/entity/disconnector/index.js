@@ -6,18 +6,10 @@ import { entityFunc } from "@/function"
  * Insert DisconnectorEntity
  */
 export const insertDisconnectorEntity = () => {
-    ipcMain.handle('insertDisconnectorEntity', async (event, old_data, data) => {
+    ipcMain.handle('insertDisconnectorEntity', async (event, data) => {
         try {
            
-            const rs = await entityFunc.disconnectorEntityFunc.insertDisconnectorEntity(old_data, data)
-            try {
-                console.log('[Disconnector][IPC] insertDisconnectorEntity result:', {
-                    success: rs && rs.success,
-                    message: rs && rs.message,
-                })
-            } catch (logErr) {
-                console.log('[Disconnector][IPC] result log error', (logErr && logErr.message) || logErr)
-            }
+            const rs = await entityFunc.disconnectorEntityFunc.insertDisconnectorEntity(data)
             return {
                 success: rs.success === true,
                 message: rs.success ? "Insert DisconnectorEntity success" : "Insert DisconnectorEntity failed",
@@ -37,41 +29,28 @@ export const insertDisconnectorEntity = () => {
  * Get DisconnectorEntity by MRID
  */
 export const getDisconnectorEntityByMrid = () => {
-    ipcMain.handle('getDisconnectorEntityByMrid', async (event, mrid, user_id, organisation_id) => {
+    ipcMain.handle('getDisconnectorEntityByMrid', async function (event, mrid, psrId) {
         try {
-            const rs = await entityFunc.disconnectorEntityFunc.getDisconnectorEntityById(mrid, user_id, organisation_id)
-            return {
-                success: rs.success === true,
-                message: rs.success ? "Get DisconnectorEntity success" : "Get DisconnectorEntity failed",
-                data: rs.data || null
+            const rs = await entityFunc.disconnectorEntityFunc.getDisconnectorEntityById(mrid, psrId)
+            if (rs.success == true) {
+                return {
+                    success: true,
+                    message: "Success",
+                    data : rs.data
+                }
+            }
+            else {
+                return {
+                    success: false,
+                    message: "fail",
+                }
             }
         } catch (error) {
+            console.error("Error retrieving Disconnector entity by MRID:", error);
             return {
+                error: error,
                 success: false,
-                message: (error && error.message) || "Internal error",
-                error
-            }
-        }
-    })
-}
-
-/**
- * Delete DisconnectorEntity by MRID
- */
-export const deleteDisconnectorEntityByMrid = () => {
-    ipcMain.handle('deleteDisconnectorEntityByMrid', async (event, mrid) => {
-        try {
-            const rs = await entityFunc.disconnectorEntityFunc.deleteDisconnectorEntityById(mrid)
-            return {
-                success: rs.success === true,
-                message: rs.success ? "Delete DisconnectorEntity success" : "Delete DisconnectorEntity failed",
-                data: rs.success ? mrid : null
-            }
-        } catch (error) {
-            return {
-                success: false,
-                message: (error && error.message) || "Internal error",
-                error
+                message: (error && error.message) ? error.message : "Internal error",
             }
         }
     })
@@ -83,5 +62,4 @@ export const deleteDisconnectorEntityByMrid = () => {
 export const active = () => {
     insertDisconnectorEntity()
     getDisconnectorEntityByMrid()
-    deleteDisconnectorEntityByMrid()
 }
