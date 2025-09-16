@@ -54,6 +54,21 @@ export default {
             }
         },
 
+        loadData(data) {
+            this.old_data = JSON.parse(JSON.stringify(data));
+            this.voltageTransformer = data;
+            if(data.attachment && data.attachment.path) {
+                this.attachmentData = JSON.parse(data.attachment.path)
+            } else {
+                this.attachmentData = []
+            }
+        },
+
+        async resetForm() {
+            this.voltageTransformer = new VoltageTransformerDto();
+            this.attachmentData = [];
+        },
+
         async checkVoltageTransformerData(data) {
             try {
                 this.checkProperty(data);
@@ -66,6 +81,7 @@ export default {
                 this.checkLocationId(data);
                 this.checkVoltageTransformerTree(data);
                 this.checkPsrId(data);
+                this.checkAssetInfoId(data)
                 return data;
             } catch (error) {
                 console.error("Error checking voltage transformer data:", error);
@@ -119,6 +135,7 @@ export default {
                 }
             }
         },
+
         checkLocationId(data) {
             if (data.locationId === null || data.locationId === '') {
                 data.locationId = this.locationId;
@@ -128,6 +145,7 @@ export default {
         checkVoltageTransformerTree(data) {
             this.traverseAndFillMrid(data);
         },
+
         checkDataVT(data) {
             data.vt_Configuration.dataVT.forEach(item => {
                 const table = item.table;
@@ -151,7 +169,6 @@ export default {
                 data.vt_Configuration.windings.mrid = uuid.newUuid()
             }
         },
-
 
         traverseAndFillMrid(obj) {
             if (Array.isArray(obj)) {
@@ -234,11 +251,13 @@ export default {
                     }
                 })
             };
+        },
+        
+        checkAssetInfoId(data) {
+            if(data.assetInfoId === null || data.assetInfoId === '') {
+                data.assetInfoId = uuid.newUuid()
+            }
         }
-
-
-
-
 
     }
 }

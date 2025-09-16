@@ -22,10 +22,11 @@ import * as stringMeasurementPreload from './stringMeasurement/index'
 import * as discretePreload from './discrete/index'
 import * as valueToAliasPreload from './valueToAlias/index'
 import * as valueAliasSetPreload from './valueAliasSet/index'
+import * as bushingPreload from './bushing/index'
 
 export { parentOrganizationPreload, substationPreload, locationPreload, 
     streetAddressPreload, streetDetailPreload, townDetailPreload, electronicAddressPreload, 
     telephoneNumberPreload, personPreload, personRolePreload, configurationEventPreload, 
     positionPointPreload, voltageLevelPreload, bayPreload, powerSystemResourcePreload, 
     SurgeArresterPreload, productAssetModelPreload, oldWorkPreload, assetPreload, analogPreload, 
-    stringMeasurementPreload, discretePreload, valueToAliasPreload, valueAliasSetPreload }
+    stringMeasurementPreload, discretePreload, valueToAliasPreload, valueAliasSetPreload, bushingPreload }

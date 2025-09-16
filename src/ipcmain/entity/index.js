@@ -8,7 +8,8 @@ import * as ipcTransformer from './transformer/index.js'
 import * as ipcTestType from './testType/index.js'
 import * as ipcJob from './job/index.js'
 import * as ipcPowerCable from './powerCable/index.js'
-import * as ipcVoltageTransformer from './VoltageTransformer/index.js'
+import * as ipcVoltageTransformer from './voltageTransformer/index.js'
+import * as ipcBushing from './bushing/index.js'
 export const active = () => {
     ipcSubstation.active()
     ipcAttachment.active()
@@ -21,4 +22,5 @@ export const active = () => {
     ipcTransformer.active()
     ipcPowerCable.active()
     ipcVoltageTransformer.active()
+    ipcBushing.active()
 }
