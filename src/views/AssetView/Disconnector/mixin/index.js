@@ -9,12 +9,7 @@ export default {
     },
     methods : {
         saveAsset() {
-            if(this.$route.query.mode === "add" || this.$route.query.mode === "dup") {
-                this.insertDisconnector()
-            }
-            else if(this.$route.query.mode === "edit") {
-                this.updateDisconnector()
-            }
+            
         },
     }
 }
