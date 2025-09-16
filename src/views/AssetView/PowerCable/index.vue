@@ -16,8 +16,9 @@
                     </configs>
                 </div>
                 <div v-else-if="this.switch == 'assessories'">
-                    <assessories :joint="assessories.joint" :terminal="assessories.terminal"
-                        :sheathLimit="assessories.sheath_limits"></assessories>
+                    <assessories :joint="powerCable.datasData.jointsData"
+                :terminal="powerCable.datasData.terminalsData"
+                :sheathLimit="powerCable.datasData.sheathLimitsData"></assessories>
                 </div>
             </div>
         </div>

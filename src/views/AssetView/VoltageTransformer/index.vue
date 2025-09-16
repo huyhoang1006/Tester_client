@@ -124,7 +124,10 @@ export default {
         updateAttachment(attachment) {
             this.attachmentData = attachment
         },
-        async resetForm() { },
+        
+        loadMapForView() {
+
+        }
     }
 }
 </script>

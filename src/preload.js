@@ -51,6 +51,8 @@ const valueToAliasAPI = cimPreload.valueToAliasPreload.valueToAliasPreload()
 const valueAliasSetAPI = cimPreload.valueAliasSetPreload.valueAliasSetPreload()
 const powerCableEntityAPI = entityPreload.powerCableEntityPreload.powerCableEntityPreload()
 const voltageTransformerEntityAPI = entityPreload.voltageTransformerEntityPreload.voltageTransformerEntityPreload()
+const bushingEntityAPI = entityPreload.bushingEntityPreload.bushingEntityPreload()
+const bushingAPI = cimPreload.bushingPreload.bushingPreload()
 
 const ipcMain = Object.assign(userAPI, transformerAPI, fmecaAPI, conditionAPI, circuitAPI, attachmentAPI,
     currentTransAPI, voltageTransAPI, disconnectorAPI, surgeArresterAPI, powerCablePreAPI, uploadCustomAPI,
@@ -58,7 +60,8 @@ const ipcMain = Object.assign(userAPI, transformerAPI, fmecaAPI, conditionAPI, c
     electronicAddressAPI, personAPI, personRoleAPI, telephoneNumberAPI, configurationEventAPI, substationEntityAPI, parentOrganizationEntityAPI,
     positionPointAPI, voltageLevelEntityAPI, voltageLevelAPI, bayEntityAPI, bayAPI, powerSystemResourceAPI, surgeArresterEntityAPI,
     productAssetModelAPI, testTypeSurgeArresterAPI, surgeArresterJobAPI, oldWorkAPI, assetAPI, transformerEntityAPI, analogAPI,
-    stringMeasurementAPI, discreteAPI, valueToAliasAPI, valueAliasSetAPI, powerCableEntityAPI, voltageTransformerEntityAPI)
+    stringMeasurementAPI, discreteAPI, valueToAliasAPI, valueAliasSetAPI, powerCableEntityAPI, voltageTransformerEntityAPI, bushingEntityAPI,
+    bushingAPI)
 contextBridge.exposeInMainWorld('electronAPI',
     ipcMain
 )

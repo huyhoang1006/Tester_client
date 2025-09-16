@@ -1,3 +1,4 @@
+/* eslint-disable */
 import PowerCableDto from "@/views/Dto/PowerCable"
 import * as powerCableMapping from "@/views/Mapping/PowerCable/index"
 import uuid from "@/utils/uuid";
@@ -5,24 +6,49 @@ export default {
     data() {
         return {
             powerCable: new PowerCableDto(),
+            powerCableOld: new PowerCableDto(),
             attachmentData: [],
-            assessories: {
-                terminal: {},
-                joint: {},
-                sheath_limits: {}
-            }
         }
     },
     methods: {
         async saveAsset() {
-            const data = JSON.parse(JSON.stringify(this.powerCable))
-            const result = await this.checkPowerCableData(data)
-            console.log(result)
-            const entity = powerCableMapping.mapDtoToEntity(result)
+            try {
+                if (this.powerCable.properties.serial_no !== null && this.powerCable.properties.serial_no !== '') {
+                    const data = JSON.parse(JSON.stringify(this.powerCable));
+                    const result = await this.checkPowerCableData(data);
+                    console.log("Checked Power Cable Data:", result);
+                    const resultEntity = powerCableMapping.mapDtoToEntity(result);
+                    const oldResultEntity = powerCableMapping.mapDtoToEntity(this.powerCableOld);
+                    console.log("Mapped Power Cable Entity:", resultEntity);
+                    let rs = await window.electronAPI.insertPowerCableEntity(oldResultEntity, resultEntity)
+                    if (rs.success) {
 
-            console.log(entity)
-
+                        return {
+                            success: true,
+                            data: rs.data,
+                        };
+                    } else {
+                        this.$message.error("Error saving Power Cable entity: " + rs.message);
+                        return {
+                            success: false,
+                            error: rs.error,
+                        };
+                    }
+                } else {
+                    this.$message.error("Serial number is required");
+                    return {
+                        success: false,
+                    };
+                }
+            } catch (error) {
+                console.error("Error saving asset:", error);
+                this.$message.error("Error saving asset: " + error.message);
+                return {
+                    success: false,
+                };
+            }
         },
+
 
         async checkPowerCableData(data) {
             try {
@@ -36,7 +62,7 @@ export default {
                 this.checkPowerCableTree(data);
                 return data;
             } catch (error) {
-                console.error("Error checking surge arrester data:", error);
+                console.error("Error checking power cable data:", error);
             }
         },
         checkProperty(data) {
