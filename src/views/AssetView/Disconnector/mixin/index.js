@@ -22,7 +22,7 @@ export default {
                             data: rs.data,
                         };
                     } else {
-                        this.$message.error("Error saving Surge Arrester entity: " + rs.message);
+                        this.$message.error("Error saving Disconnector entity: " + rs.message);
                         return {
                             success: false,
                             error: rs.error,

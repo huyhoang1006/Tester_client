@@ -35,19 +35,25 @@ export const insertDisconnectorEntity = async (entity) => {
             }
             await runAsync('BEGIN TRANSACTION');
 
-            voltage
+            //voltage
             for (const voltage of entity.voltage) {
-                await insertVoltageTransaction(voltage, db);
+                if(voltage.mrid) {
+                    await insertVoltageTransaction(voltage, db);
+                }
             }
 
-            second
-            for (const seconds of entity.voltage) {
-                await insertSecondsTransaction(seconds, db);
+            //second
+            for (const second of entity.seconds) {
+                if(second.mrid) {
+                    await insertSecondsTransaction(seconds, db);
+                }
             }
            
-            currentFlow
+            //currentFlow
             for (const currentFlow of entity.currentFlow) {
-                await insertCurrentFlowTransaction(currentFlow, db);
+                if(currentFlow.mrid) {
+                    await insertCurrentFlowTransaction(currentFlow, db);
+                }
             }
 
 

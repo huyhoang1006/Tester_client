@@ -151,5 +151,4 @@ export const disconnectorEntityToDto = (entity) => {
     dto.attachment = entity.attachment;
 
     return dto;
-
 }
