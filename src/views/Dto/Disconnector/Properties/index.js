@@ -1,8 +1,7 @@
 class PropertiesDto {
     constructor() {
         this.mrid = '';
-        this.asset = ''; // Loại thiết bị
-        this.asset_type = ''; // Kiểu thiết bị
+        this.type = ''; // Kiểu thiết bị
         this.kind = 'Disconnector';
         this.serial_no = '';
         this.manufacturer = '';

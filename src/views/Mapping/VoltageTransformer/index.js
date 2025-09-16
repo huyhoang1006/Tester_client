@@ -50,14 +50,14 @@ export function mapDtoToEntity(dto) {
     mappingUnit(newRatedVoltage, dto.ratings.rated_voltage);
     entity.voltage.push(newRatedVoltage);
     entity.OldPotentialTransformerInfo.windings = dto.vt_Configuration.windings || '';
-    entity.OldPotentialTransformerInfo.c1 = dto.ratings.c1.value || '';
-    const newC1 = new Voltage();
-    mappingUnit(newC1, dto.ratings.c1);
-    entity.voltage.push(newC1);
-    entity.OldPotentialTransformerInfo.c2 = dto.ratings.c2.value || '';
-    const newC2 = new Voltage();
-    mappingUnit(newC2, dto.ratings.c2);
-    entity.voltage.push(newC2);
+    // entity.OldPotentialTransformerInfo.c1 = dto.ratings.c1.value || '';
+    // const newC1 = new Voltage();
+    // mappingUnit(newC1, dto.ratings.c1);
+    // entity.voltage.push(newC1);
+    // entity.OldPotentialTransformerInfo.c2 = dto.ratings.c2.value || '';
+    // const newC2 = new Voltage();
+    // mappingUnit(newC2, dto.ratings.c2);
+    // entity.voltage.push(newC2);
     entity.OldPotentialTransformerInfo.upr_formula = dto.ratings.upr || '';
 
     mapDataVTtoArrayPotentialTransformerTable(dto, entity)
