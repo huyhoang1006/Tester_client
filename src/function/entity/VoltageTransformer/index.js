@@ -1,14 +1,15 @@
 import db from '../../datacontext/index'
-import { backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion } from '@/function/entity/attachment'
+import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, deleteDirectory } from '@/function/entity/attachment'
 import { insertVoltageTransaction, getVoltageById, deleteVoltageByIdTransaction } from '@/function/cim/voltage'
 import { insertFrequencyTransaction, getFrequencyById, deleteFrequencyByIdTransaction } from '@/function/cim/frequency'
 import { insertApparentPowerTransaction, getApparentPowerById, deleteApparentPowerByIdTransaction } from '@/function/cim/apparentPower'
 import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction } from '@/function/cim/lifecycleDate'
 import { insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction } from '@/function/cim/productAssetModel'
 import { insertAssetTransaction, getAssetById, deleteAssetByIdTransaction } from '@/function/cim/asset'
-import { insertOldPotentialTransformerTransaction } from '@/function/cim/OldPotentialTransformerInfo/index.js'
+import { insertOldPotentialTransformerTransaction, getOldPotentialTransformerInfoById } from '@/function/cim/OldPotentialTransformerInfo/index.js'
 import { insertPotentialTransformerTable } from '@/function/cim/PotentialTransformerTable/index.js'
-import { insertPotentialTransformerTransaction } from '@/function/cim/PotentialTransformerInfo/index.js'
+import {insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction} from '@/function/entity/assetPsr'
+import VoltageTransformerEntity from '@/views/Entity/VoltageTransformer'
 
 
 /**
@@ -76,29 +77,28 @@ export const insertVoltageTransformerEntity = async (old_entity, entity) => {
             for (const apparentPower of toUpdateApparentPower) {
                 await insertApparentPowerTransaction(apparentPower, db);
             }
-            console.log('apparentPower')
+
             //lifecycleDate
             await insertLifecycleDateTransaction(entity.lifecycleDate, db);
-            console.log('lifecycleDate')
 
+            //productAssetModel
             await insertProductAssetModelTransaction(entity.productAssetModel, db);
-            console.log('productAssetModel')
-            //asset
-            await insertAssetTransaction(entity.asset, db);
-            console.log('asset')
-            //potentialTransformerInfo
-            await insertPotentialTransformerTransaction(entity.OldPotentialTransformerInfo, db);
-            console.log('potentialTransformerInfo')
-            //potentialTransformerTable
-            console.log('potentialTransformerTable: ' + entity.potentialTransformerTable.length)
-            for (const table of entity.potentialTransformerTable) {
-                console.log("hẹ hẹ hẹ !!!!")
-                await insertPotentialTransformerTable(table, db);
-            }
-            console.log('potentialTransformerTable')
+            
+
             //oldPotentialTransformerInfo
             await insertOldPotentialTransformerTransaction(entity.OldPotentialTransformerInfo, db);
-            console.log('oldPotentialTransformerInfo')
+
+            //asset
+            await insertAssetTransaction(entity.asset, db);
+
+            //assetPsr
+            await insertAssetPsrTransaction(entity.assetPsr, db);
+
+
+            //potentialTransformerTable
+            for (const table of entity.potentialTransformerTable) {
+                await insertPotentialTransformerTable(table, db);
+            }
             await runAsync('COMMIT');
             deleteBackupFiles(null, entity.OldPotentialTransformerInfo.mrid);
             return { success: true, data: entity, message: 'Voltage Transformer entity inserted successfully' };
@@ -110,6 +110,56 @@ export const insertVoltageTransformerEntity = async (old_entity, entity) => {
         console.error('Error retrieving voltage transformer entity:', error);
         await runAsync('ROLLBACK');
         return { success: false, error, message: 'Error retrieving voltage transformer entity' };
+    }
+}
+
+export const getVoltageTransformerEntityById = async (id, psrId) => {
+    try {
+        if(id == null || id === '') {
+            return { success: false, error: new Error('Invalid ID') };
+        } else {
+            const entity = new VoltageTransformerEntity()
+            const dataVt = await getAssetById(id);
+            if(dataVt.success) {
+                entity.asset = dataVt.data
+                const dataLifecycleDate = await getLifecycleDateById(entity.asset.lifecycle_date);
+                if(dataLifecycleDate.success) {
+                    entity.lifecycleDate = dataLifecycleDate.data;
+                }
+
+                const dataOldVtInfo = await getOldPotentialTransformerInfoById(entity.asset.mrid);
+                if(dataOldVtInfo.success) {
+                    entity.OldPotentialTransformerInfo = dataOldVtInfo.data;
+                }
+                
+                const productAssetModelId = entity.OldPotentialTransformerInfo.product_asset_model;
+                const dataProductAssetModel = await getProductAssetModelById(productAssetModelId);
+                if(dataProductAssetModel.success) {
+                    entity.productAssetModel = dataProductAssetModel.data;
+                }
+                
+                const dataAssetPsr = await getAssetPsrByAssetIdAndPsrId(entity.asset.mrid, psrId);
+                if(dataAssetPsr.success) {
+                    entity.assetPsr = dataAssetPsr.data;
+                }
+
+                const dataAttachment = await getAttachmentByForeignIdAndType(entity.asset.mrid, 'asset');
+                if(dataAttachment.success) {
+                    entity.attachment = dataAttachment.data;
+                }
+
+                return {
+                    success: true,
+                    data: entity,
+                    message: 'Voltage transformer entity retrieved successfully'
+                }
+            } else {
+                return { success: false, error: dataVt.error, message: dataVt.message };
+            }
+        }
+    } catch (error) {
+        console.error("Error retrieving Voltage Transformer entity by ID:", error);
+        return { success: false, error, message: 'Error retrieving Voltage Transformer entity by ID' };
     }
 }
 

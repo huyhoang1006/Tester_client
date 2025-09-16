@@ -1056,7 +1056,7 @@ export default {
                             window.electronAPI.getVoltageLevelBySubstationId(clickedRow.mrid),
                             window.electronAPI.getBayByVoltageBySubstationId(null, clickedRow.mrid)
                         ]);
-                        const assetReturn = await this.fetchAssetByPsr(clickedRow.mrid);
+                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (voltageLevelReturn.success) {
                             voltageLevelReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
@@ -1087,8 +1087,8 @@ export default {
                             newRows.push(...bayReturn.data);
                         }
 
-                        if (assetReturn.success) {
-                            assetReturn.data.forEach(row => {
+                        if (assetSurgeReturn.success) {
+                            assetSurgeReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
                                 row.mode = 'asset';
                                 row.asset = 'Surge arrester';
@@ -1100,7 +1100,39 @@ export default {
                                     parent: clickedRow.name
                                 })
                             });
-                            newRows.push(...assetReturn.data);
+                            newRows.push(...assetSurgeReturn.data);
+                        }
+
+                        if (assetBushingReturn.success) {
+                            assetBushingReturn.data.forEach(row => {
+                                row.parentId = clickedRow.mrid;
+                                row.mode = 'asset';
+                                row.asset = 'Bushing';
+                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                row.parentName = parentName
+                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr.push({
+                                    mrid: clickedRow.mrid,
+                                    parent: clickedRow.name
+                                })
+                            });
+                            newRows.push(...assetBushingReturn.data);
+                        }
+
+                        if (assetVtReturn.success) {
+                            assetVtReturn.data.forEach(row => {
+                                row.parentId = clickedRow.mrid;
+                                row.mode = 'asset';
+                                row.asset = 'Voltage transformer';
+                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                row.parentName = parentName
+                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr.push({
+                                    mrid: clickedRow.mrid,
+                                    parent: clickedRow.name
+                                })
+                            });
+                            newRows.push(...assetVtReturn.data);
                         }
 
                     } else if (node.mode == 'voltageLevel') {
@@ -1126,9 +1158,9 @@ export default {
 
                     } else if (node.mode == 'bay') {
                         const clickedRow = node;
-                        const assetReturn = await this.fetchAssetByPsr(clickedRow.mrid);
-                        if (assetReturn.success) {
-                            assetReturn.data.forEach(row => {
+                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                        if (assetSurgeReturn.success) {
+                            assetSurgeReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
                                 row.mode = 'asset';
                                 row.asset = 'Surge arrester';
@@ -1140,7 +1172,37 @@ export default {
                                     parent: clickedRow.name
                                 })
                             });
-                            newRows.push(...assetReturn.data);
+                            newRows.push(...assetSurgeReturn.data);
+                        }
+                        if (assetBushingReturn.success) {
+                            assetBushingReturn.data.forEach(row => {
+                                row.parentId = clickedRow.mrid;
+                                row.mode = 'asset';
+                                row.asset = 'Bushing';
+                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                row.parentName = parentName
+                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr.push({
+                                    mrid: clickedRow.mrid,
+                                    parent: clickedRow.name
+                                })
+                            });
+                            newRows.push(...assetBushingReturn.data);
+                        }
+                        if (assetVtReturn.success) {
+                            assetVtReturn.data.forEach(row => {
+                                row.parentId = clickedRow.mrid;
+                                row.mode = 'asset';
+                                row.asset = 'Voltage transformer';
+                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                row.parentName = parentName
+                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr.push({
+                                    mrid: clickedRow.mrid,
+                                    parent: clickedRow.name
+                                })
+                            });
+                            newRows.push(...assetVtReturn.data);
                         }
                     } else {
                         const clickedRow = node;
@@ -1185,10 +1247,13 @@ export default {
 
         async fetchAssetByPsr(psrId) {
             try {
-                const response = await window.electronAPI.getSurgeArresterByPsrId(psrId);
-                const responseVt = await window.electronAPI.getVtByPsrId(psrId);
 
-                return response;
+                const [responseSurge, responseBushing, responseVT] = await Promise.all([
+                    window.electronAPI.getSurgeArresterByPsrId(psrId),
+                    window.electronAPI.getBushingByPsrId(psrId),
+                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Voltage transformer')
+                ])
+                return [responseSurge, responseBushing, responseVT];
             } catch (error) {
                 console.error("Error fetching asset by substation:", error);
                 return {
@@ -1230,9 +1295,17 @@ export default {
                             window.electronAPI.getVoltageLevelBySubstationId(clickedRow.mrid),
                             window.electronAPI.getBayByVoltageBySubstationId(null, clickedRow.mrid)
                         ]);
-                        const assetReturn = await this.fetchAssetByPsr(clickedRow.mrid);
-                        if (assetReturn.success) {
-                            newRows.push(...assetReturn.data);
+                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                        if (assetSurgeReturn.success) {
+                            newRows.push(...assetSurgeReturn.data);
+                        }
+
+                        if (assetBushingReturn.success) {
+                            newRows.push(...assetBushingReturn.data);
+                        }
+
+                        if (assetVtReturn.success) {
+                            newRows.push(...assetVtReturn.data);
                         }
 
                         if (voltageLevelReturn.success) {
@@ -1255,9 +1328,15 @@ export default {
 
                     } else if (node.mode == 'bay') {
                         const clickedRow = node;
-                        const assetReturn = await this.fetchAssetByPsr(clickedRow.mrid);
-                        if (assetReturn.success) {
-                            newRows.push(...assetReturn.data);
+                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                        if (assetSurgeReturn.success) {
+                            newRows.push(...assetSurgeReturn.data);
+                        }
+                        if (assetBushingReturn.success) {
+                            newRows.push(...assetBushingReturn.data);
+                        }
+                        if (assetVtReturn.success) {
+                            newRows.push(...assetVtReturn.data);
                         }
                     }
 
@@ -2618,6 +2697,12 @@ export default {
 
         async showAddBushing(node) {
             try {
+                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
+                if (dataLocation.success) {
+                    this.locationId = dataLocation.data.mrid
+                } else {
+                    this.locationId = null
+                }
                 this.parentOrganization = node
                 this.signBushing = true
                 this.$nextTick(() => {

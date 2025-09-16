@@ -50,6 +50,45 @@ export const getAssetByLocationId = async (locationId) => {
     }
 };
 
+export const getAssetByPsrIdAndKind = (psrId, kind) => {
+    return new Promise((resolve, reject) => {
+        const query = `
+            SELECT a.* 
+            FROM asset a
+            INNER JOIN asset_psr ap ON a.mrid = ap.asset_id
+            WHERE ap.psr_id = ?
+              AND a.kind = ?
+        `;
+
+        db.all(query, [psrId, kind], (err, rows) => {
+            if (err) {
+                reject({
+                    success: false,
+                    error: err.message,
+                    message: 'Database query failed when getting Asset by PSR ID and kind'
+                });
+                return;
+            }
+
+            if (!rows || rows.length === 0) {
+                resolve({
+                    success: false,
+                    data: [],
+                    message: `No Asset found for PSR ID: ${psrId} with kind: ${kind}`
+                });
+                return;
+            }
+
+            resolve({
+                success: true,
+                data: rows,
+                message: 'Asset retrieved successfully by PSR ID and kind'
+            });
+        });
+    });
+};
+
+
 // Thêm mới asset
 export const insertAsset = async (asset) => {
     return new Promise((resolve, reject) => {

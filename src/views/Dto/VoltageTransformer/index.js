@@ -14,6 +14,7 @@ class VoltageTransformerDto {
         this.lifecycleDateId = ''
         this.assetPsrId = ''
         this.psrId = ''
+        this.attachmentId = ''
 
         this.ratings = new RatingDto();
         this.vt_Configuration = new VTConfigurationDto();

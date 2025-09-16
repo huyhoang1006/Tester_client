@@ -1,4 +1,5 @@
 import VoltageTransformerEntity from "@/views/Entity/VoltageTransformer";
+import VoltageTransformerDto from "@/views/Dto/VoltageTransformer";
 import Frequency from "@/views/Cim/Frequency";
 import Voltage from "@/views/Cim/Voltage";
 import PotentialTransformerTable from "@/views/Cim/PotentialTransformerTable";
@@ -38,7 +39,7 @@ export function mapDtoToEntity(dto) {
     entity.attachment = dto.attachment || null;
 
     //Ratings
-    entity.OldPotentialTransformerInfo.mrid = entity.asset.mrid;
+    entity.OldPotentialTransformerInfo.mrid = dto.assetInfoId;
     entity.OldPotentialTransformerInfo.standard = dto.ratings.standard.value || '';
     entity.OldPotentialTransformerInfo.rated_frequency = dto.ratings.rated_frequency.mrid || '';
     const newRatedFrequency = new Frequency();
@@ -71,10 +72,42 @@ export function mapDtoToEntity(dto) {
     entity.assetPsr.asset_id = dto.properties.mrid || null;
     entity.assetPsr.psr_id = dto.psrId || null;
 
-
-
     return entity;
 }
+
+export function mapEntityToDto(entity) {
+    const dto = new VoltageTransformerDto();
+
+    //properties
+    dto.properties.mrid = entity.asset.mrid || '';
+    dto.properties.kind = entity.asset.kind || '';
+    dto.properties.type = entity.asset.type || '';
+    dto.properties.serial_no = entity.asset.serial_number || '';
+    dto.assetInfoId = entity.asset.asset_info || '';
+    dto.properties.manufacturer = entity.productAssetModel.manufacturer || '';
+    dto.productAssetModelId = entity.productAssetModel.mrid || '';
+    dto.properties.manufacturer_type = entity.asset.manufacturer_type || '';
+    dto.properties.country_of_origin = entity.asset.country_of_origin || '';
+    dto.properties.apparatus_id = entity.asset.name || '';
+    dto.properties.comment = entity.asset.description || '';
+    dto.locationId = entity.asset.location || '';
+    dto.productAssetModelId = entity.asset.product_asset_model || '';
+
+    // lifecycle date
+    dto.lifecycleDateId = entity.asset.lifecycle_date || '';
+    dto.properties.manufacturer_year = entity.lifecycleDate.manufactured_date || '';
+
+    //assetPsr
+    dto.assetPsrId = entity.assetPsr.mrid || '';
+    dto.psrId = entity.assetPsr.psr_id || '';
+
+    //attachment
+    dto.attachmentId = entity.attachment.mrid || '';
+    dto.attachment = entity.attachment;
+
+    return dto;
+}
+
 
 const mapDataVTtoArrayPotentialTransformerTable = (dto, entity) => {
     dto.vt_Configuration.dataVT.forEach(item => {

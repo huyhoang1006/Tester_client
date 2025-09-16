@@ -18,18 +18,31 @@ export default {
     },
     data() {
         return {
+            parentData : JSON.parse(JSON.stringify(this.parent)),
         }
     },
     mixins: [mixin],
     props: {
-        parent: {
+        parent : {
             type: Object,
             default: () => ({})
+        },
+        organisationId: {
+            type: String,
+            default: ''
+        },
+
+        locationId: {
+            type: String,
+            default: ''
         },
     },
     methods: {
         updateAttachment(attachment) {
             this.attachmentData = attachment
+        },
+        loadMapForView() {
+
         },
     }
 }

@@ -129,28 +129,28 @@ export const insertTransformerEntity = async (old_entity,entity) => {
             // }
 
 
-            // await insertLifecycleDateTransaction(entity.lifecycleDate, db);
+            await insertLifecycleDateTransaction(entity.lifecycleDate, db);
             await insertProductAssetModelTransaction(entity.productAssetModel, db);
             await insertAssetTransaction(entity.asset, db);
-            // await insertAssetPsrTransaction(entity.assetPsr, db);
+            await insertAssetPsrTransaction(entity.assetPsr, db);
             // await insertOldTransformerEndInfoTransaction(entity.oldPowerTransformerInfo, db);
 
 
             //oldPowerTransformerInfo
-            const newOldTransformerEndInfoIds = entity.oldTransformerEndInfo.map(o => o.mrid).filter(id => id);
-            const oldOldTransformerEndInfoIds = old_entity.oldTransformerEndInfo.map(o => o.mrid).filter(id => id);
+            // const newOldTransformerEndInfoIds = entity.oldTransformerEndInfo.map(o => o.mrid).filter(id => id);
+            // const oldOldTransformerEndInfoIds = old_entity.oldTransformerEndInfo.map(o => o.mrid).filter(id => id);
 
-            const toAddOldTransformerEndInfo = entity.oldTransformerEndInfo.filter(o => o.mrid && !oldOldTransformerEndInfoIds.includes(o.mrid));
-            const toDeleteOldTransformerEndInfo = old_entity.oldTransformerEndInfo.filter(o => o.mrid && !newOldTransformerEndInfoIds.includes(o.mrid));
-            const toUpdateOldTransformerEndInfo = entity.oldTransformerEndInfo.filter(o => o.mrid && oldOldTransformerEndInfoIds.includes(o.mrid));
+            // const toAddOldTransformerEndInfo = entity.oldTransformerEndInfo.filter(o => o.mrid && !oldOldTransformerEndInfoIds.includes(o.mrid));
+            // const toDeleteOldTransformerEndInfo = old_entity.oldTransformerEndInfo.filter(o => o.mrid && !newOldTransformerEndInfoIds.includes(o.mrid));
+            // const toUpdateOldTransformerEndInfo = entity.oldTransformerEndInfo.filter(o => o.mrid && oldOldTransformerEndInfoIds.includes(o.mrid));
 
-            for (const oldTransformerEndInfo of toAddOldTransformerEndInfo) {
-                await insertOldTransformerEndInfoTransaction(oldTransformerEndInfo, db);
-            }
+            // for (const oldTransformerEndInfo of toAddOldTransformerEndInfo) {
+            //     await insertOldTransformerEndInfoTransaction(oldTransformerEndInfo, db);
+            // }
 
-            for (const oldTransformerEndInfo of toUpdateOldTransformerEndInfo) {
-                await insertOldTransformerEndInfoTransaction(oldTransformerEndInfo, db);
-            }
+            // for (const oldTransformerEndInfo of toUpdateOldTransformerEndInfo) {
+            //     await insertOldTransformerEndInfoTransaction(oldTransformerEndInfo, db);
+            // }
 
             if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
                 const pathData = JSON.parse(entity.attachment.path);

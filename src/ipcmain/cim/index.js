@@ -24,6 +24,7 @@ import * as ipcStringMeasurement from './stringMeasurement/index.js'
 import * as ipcDiscrete from './discrete/index.js'
 import * as ipcValueToAlias from './valueToAlias/index.js'
 import * as ipcValueAliasSet from './valueAliasSet/index.js'
+import * as ipcBushing from './bushing/index.js'
 
 
 export const active = () => {
@@ -53,4 +54,5 @@ export const active = () => {
     ipcDiscrete.active()
     ipcValueToAlias.active()
     ipcValueAliasSet.active()
+    ipcBushing.active()
 }
