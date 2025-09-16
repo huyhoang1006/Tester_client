@@ -64,11 +64,15 @@ import * as subsMapper from '@/views/Mapping/Substation/index'
 import * as orgMapper from '@/views/Mapping/Organisation/index'
 import * as voltageMapper from '@/views/Mapping/VoltageLevel/index'
 import * as surgeMapper from '@/views/Mapping/SurgeArrester/index'
+import * as bushingMapper from '@/views/Mapping/Bushing/index'
+import * as vtMapper from '@/views/Mapping/VoltageTransformer/index'
 import * as SurgeArresterJobMapper from '@/views/Mapping/SurgerArresterJob/index'
 import VoltageLevel from '@/views/VoltageLevel/index.vue'
 import Bay from '@/views/Bay/index.vue'
 import SurgeArrester from '@/views/AssetView/SurgeArrester/index.vue'
+import Bushing from '@/views/AssetView/Bushing/index.vue'
 import SurgeArresterJob from '@/views/JobView/SurgeArrester/index.vue'
+import VoltageTransformer from '@/views/AssetView/VoltageTransformer/index.vue'
 
 export default {
     name : "Tabs",
@@ -80,6 +84,8 @@ export default {
         VoltageLevel,
         Bay,
         SurgeArrester,
+        Bushing,
+        VoltageTransformer,
         SurgeArresterJob,
     },
     model: {
@@ -184,6 +190,28 @@ export default {
                         if(data.success) {
                             const surgeArresterDto = surgeMapper.mapEntityToDto(data.data)
                             this.$refs.componentLoadData[index].loadData(surgeArresterDto)
+                        } else {
+                            this.$message.error("Failed to load surge arrester data");
+                        }
+                    } else if(tab.asset === 'Bushing') {
+                        this.parentOrganization = {
+                            mrid : tab.parentId
+                        }
+                        const data = await window.electronAPI.getBushingEntityByMrid(tab.mrid, tab.parentId)
+                        if(data.success) {
+                            const BushingDto = bushingMapper.mapEntityToDto(data.data)
+                            this.$refs.componentLoadData[index].loadData(BushingDto)
+                        } else {
+                            this.$message.error("Failed to load surge arrester data");
+                        }
+                    } else if(tab.asset === 'Voltage transformer') {
+                        this.parentOrganization = {
+                            mrid : tab.parentId
+                        }
+                        const data = await window.electronAPI.getVoltageTransformerEntityByMrid(tab.mrid, tab.parentId)
+                        if(data.success) {
+                            const vtDto = vtMapper.mapEntityToDto(data.data)
+                            this.$refs.componentLoadData[index].loadData(vtDto)
                         } else {
                             this.$message.error("Failed to load surge arrester data");
                         }
@@ -311,6 +339,10 @@ export default {
             } else if(tab.mode == 'asset') {
                 if(tab.asset === 'Surge arrester') {
                     return 'SurgeArrester'
+                } else if(tab.asset === 'Bushing') {
+                    return 'Bushing'
+                } else if(tab.asset === 'Voltage transformer') {
+                    return 'VoltageTransformer'
                 }
             } else if(tab.mode == 'job') {
                 if(tab.job === 'Surge arrester') {

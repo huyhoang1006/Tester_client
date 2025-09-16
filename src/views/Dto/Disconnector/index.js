@@ -9,13 +9,12 @@ class DisconnectorDTO {
 
         // Properties
         this.properties = new PropertiesDto()
-
         // Attachments
         this.attachment = new Attachment()
-
         this.lifecycleDateId = ''
-
         this.productAssetModelId = ''
+        this.attachmentId = ''
+        this.assetInfoId = ''
 
         // Ratings
         this.ratings = {
