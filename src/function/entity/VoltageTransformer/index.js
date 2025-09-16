@@ -8,7 +8,7 @@ import { insertProductAssetModelTransaction, getProductAssetModelById, deletePro
 import { insertAssetTransaction, getAssetById, deleteAssetByIdTransaction } from '@/function/cim/asset'
 import { insertOldPotentialTransformerTransaction, getOldPotentialTransformerInfoById } from '@/function/cim/OldPotentialTransformerInfo/index.js'
 import { insertPotentialTransformerTable } from '@/function/cim/PotentialTransformerTable/index.js'
-import {insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction} from '@/function/entity/assetPsr'
+import { insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
 import VoltageTransformerEntity from '@/views/Entity/VoltageTransformer'
 
 
@@ -83,7 +83,7 @@ export const insertVoltageTransformerEntity = async (old_entity, entity) => {
 
             //productAssetModel
             await insertProductAssetModelTransaction(entity.productAssetModel, db);
-            
+
 
             //oldPotentialTransformerInfo
             await insertOldPotentialTransformerTransaction(entity.OldPotentialTransformerInfo, db);
@@ -115,36 +115,36 @@ export const insertVoltageTransformerEntity = async (old_entity, entity) => {
 
 export const getVoltageTransformerEntityById = async (id, psrId) => {
     try {
-        if(id == null || id === '') {
+        if (id == null || id === '') {
             return { success: false, error: new Error('Invalid ID') };
         } else {
             const entity = new VoltageTransformerEntity()
             const dataVt = await getAssetById(id);
-            if(dataVt.success) {
+            if (dataVt.success) {
                 entity.asset = dataVt.data
                 const dataLifecycleDate = await getLifecycleDateById(entity.asset.lifecycle_date);
-                if(dataLifecycleDate.success) {
+                if (dataLifecycleDate.success) {
                     entity.lifecycleDate = dataLifecycleDate.data;
                 }
 
                 const dataOldVtInfo = await getOldPotentialTransformerInfoById(entity.asset.mrid);
-                if(dataOldVtInfo.success) {
+                if (dataOldVtInfo.success) {
                     entity.OldPotentialTransformerInfo = dataOldVtInfo.data;
                 }
-                
+
                 const productAssetModelId = entity.OldPotentialTransformerInfo.product_asset_model;
                 const dataProductAssetModel = await getProductAssetModelById(productAssetModelId);
-                if(dataProductAssetModel.success) {
+                if (dataProductAssetModel.success) {
                     entity.productAssetModel = dataProductAssetModel.data;
                 }
-                
+
                 const dataAssetPsr = await getAssetPsrByAssetIdAndPsrId(entity.asset.mrid, psrId);
-                if(dataAssetPsr.success) {
+                if (dataAssetPsr.success) {
                     entity.assetPsr = dataAssetPsr.data;
                 }
 
                 const dataAttachment = await getAttachmentByForeignIdAndType(entity.asset.mrid, 'asset');
-                if(dataAttachment.success) {
+                if (dataAttachment.success) {
                     entity.attachment = dataAttachment.data;
                 }
 

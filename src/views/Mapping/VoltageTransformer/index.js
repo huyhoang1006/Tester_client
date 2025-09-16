@@ -79,19 +79,19 @@ export function mapEntityToDto(entity) {
     const dto = new VoltageTransformerDto();
 
     //properties
-    dto.properties.mrid = entity.asset.mrid || '';
-    dto.properties.kind = entity.asset.kind || '';
-    dto.properties.type = entity.asset.type || '';
-    dto.properties.serial_no = entity.asset.serial_number || '';
-    dto.assetInfoId = entity.asset.asset_info || '';
-    dto.properties.manufacturer = entity.productAssetModel.manufacturer || '';
-    dto.productAssetModelId = entity.productAssetModel.mrid || '';
-    dto.properties.manufacturer_type = entity.asset.manufacturer_type || '';
-    dto.properties.country_of_origin = entity.asset.country_of_origin || '';
-    dto.properties.apparatus_id = entity.asset.name || '';
-    dto.properties.comment = entity.asset.description || '';
-    dto.locationId = entity.asset.location || '';
-    dto.productAssetModelId = entity.asset.product_asset_model || '';
+    dto.properties.mrid = entity.asset.mrid;
+    dto.properties.kind = entity.asset.kind;
+    dto.properties.type = entity.asset.type;
+    dto.properties.serial_no = entity.asset.serial_number;
+    dto.assetInfoId = entity.asset.asset_info;
+    dto.properties.manufacturer = entity.productAssetModel.manufacturer;
+    dto.properties.manufacturer_type = entity.asset.manufacturer_type;
+    dto.properties.country_of_origin = entity.asset.country_of_origin;
+    dto.properties.apparatus_id = entity.asset.name;
+    dto.properties.comment = entity.asset.description;
+    dto.productAssetModelId = entity.productAssetModel.mrid;
+    dto.locationId = entity.asset.location;
+    dto.productAssetModelId = entity.asset.product_asset_model;
 
     // lifecycle date
     dto.lifecycleDateId = entity.asset.lifecycle_date || '';

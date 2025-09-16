@@ -53,6 +53,14 @@ export default {
                 };
             }
         },
+        async saveCtrS() {
+            const data = await this.saveAsset()
+            if(data.success) {
+                this.$message.success("Asset saved successfully")
+            } else {
+                this.$message.error("Failed to save asset")
+            }
+        },
 
         loadData(data) {
             this.old_data = JSON.parse(JSON.stringify(data));

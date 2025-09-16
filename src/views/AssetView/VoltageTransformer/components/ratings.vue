@@ -119,7 +119,6 @@ export default {
     },
     computed: {
         ratingsData() {
-            console.log(this.ratings)
             return this.ratings
         },
         propertiesData() {
