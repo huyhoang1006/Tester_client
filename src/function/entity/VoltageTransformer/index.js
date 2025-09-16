@@ -92,7 +92,6 @@ export const insertVoltageTransformerEntity = async (old_entity, entity) => {
             //potentialTransformerTable
             console.log('potentialTransformerTable: ' + entity.potentialTransformerTable.length)
             for (const table of entity.potentialTransformerTable) {
-                console.log("hẹ hẹ hẹ !!!!")
                 await insertPotentialTransformerTable(table, db);
             }
             console.log('potentialTransformerTable')
