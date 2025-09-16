@@ -16,10 +16,8 @@ export default {
                 if (this.powerCable.properties.serial_no !== null && this.powerCable.properties.serial_no !== '') {
                     const data = JSON.parse(JSON.stringify(this.powerCable));
                     const result = await this.checkPowerCableData(data);
-                    console.log("Checked Power Cable Data:", result);
                     const resultEntity = powerCableMapping.mapDtoToEntity(result);
                     const oldResultEntity = powerCableMapping.mapDtoToEntity(this.powerCableOld);
-                    console.log("Mapped Power Cable Entity:", resultEntity);
                     let rs = await window.electronAPI.insertPowerCableEntity(oldResultEntity, resultEntity)
                     if (rs.success) {
 
