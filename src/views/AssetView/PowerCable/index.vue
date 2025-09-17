@@ -69,6 +69,7 @@ export default {
             this.attachmentData = attachment
         },
         async resetForm() { },
+        loadMapForView() {},
     }
 }
 </script>
