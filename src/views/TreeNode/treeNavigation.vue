@@ -1056,7 +1056,7 @@ export default {
                             window.electronAPI.getVoltageLevelBySubstationId(clickedRow.mrid),
                             window.electronAPI.getBayByVoltageBySubstationId(null, clickedRow.mrid)
                         ]);
-                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (voltageLevelReturn.success) {
                             voltageLevelReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
@@ -1151,6 +1151,22 @@ export default {
                             newRows.push(...assetDisconnectorReturn.data);
                         }
 
+                        if (assetPowerCableReturn.success) {
+                            assetPowerCableReturn.data.forEach(row => {
+                                row.parentId = clickedRow.mrid;
+                                row.mode = 'asset';
+                                row.asset = 'Power cable';
+                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                row.parentName = parentName
+                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr.push({
+                                    mrid: clickedRow.mrid,
+                                    parent: clickedRow.name
+                                })
+                            });
+                            newRows.push(...assetPowerCableReturn.data);
+                        }
+
                     } else if (node.mode == 'voltageLevel') {
                         const clickedRow = node;
                         const [bayReturn] = await Promise.all([
@@ -1174,7 +1190,7 @@ export default {
 
                     } else if (node.mode == 'bay') {
                         const clickedRow = node;
-                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (assetSurgeReturn.success) {
                             assetSurgeReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
@@ -1235,6 +1251,21 @@ export default {
                             });
                             newRows.push(...assetVtReturn.data);
                         }
+                        if (assetPowerCableReturn.success) {
+                            assetPowerCableReturn.data.forEach(row => {
+                                row.parentId = clickedRow.mrid;
+                                row.mode = 'asset';
+                                row.asset = 'PowerCable';
+                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                row.parentName = parentName
+                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr.push({
+                                    mrid: clickedRow.mrid,
+                                    parent: clickedRow.name
+                                })
+                            });
+                            newRows.push(...assetPowerCableReturn.data);
+                        }
                     } else {
                         const clickedRow = node;
                         const [organisationReturn, substationReturn] = await Promise.all([
@@ -1279,13 +1310,14 @@ export default {
         async fetchAssetByPsr(psrId) {
             try {
 
-                const [responseSurge, responseBushing, responseVT, responseDisconnector] = await Promise.all([
+                const [responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale] = await Promise.all([
                     window.electronAPI.getSurgeArresterByPsrId(psrId),
                     window.electronAPI.getBushingByPsrId(psrId),
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Voltage transformer'),
-                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Disconnector')
+                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Disconnector'),
+                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Power cable')
                 ])
-                return [responseSurge, responseBushing, responseVT, responseDisconnector];
+                return [responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale];
             } catch (error) {
                 console.error("Error fetching asset by substation:", error);
                 return {
@@ -1327,7 +1359,7 @@ export default {
                             window.electronAPI.getVoltageLevelBySubstationId(clickedRow.mrid),
                             window.electronAPI.getBayByVoltageBySubstationId(null, clickedRow.mrid)
                         ]);
-                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (assetSurgeReturn.success) {
                             newRows.push(...assetSurgeReturn.data);
                         }
@@ -1341,7 +1373,11 @@ export default {
                         }
 
                         if (assetDisconnectorReturn.success) {
-                            newRows.push(...assetVtReturn.data);
+                            newRows.push(...assetDisconnectorReturn.data);
+                        }
+
+                        if (assetPowerCableReturn.success) {
+                            newRows.push(...assetPowerCableReturn.data);
                         }
 
                         if (voltageLevelReturn.success) {
@@ -1364,7 +1400,7 @@ export default {
 
                     } else if (node.mode == 'bay') {
                         const clickedRow = node;
-                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (assetSurgeReturn.success) {
                             newRows.push(...assetSurgeReturn.data);
                         }
@@ -1377,6 +1413,10 @@ export default {
 
                         if (assetDisconnectorReturn.success) {
                             newRows.push(...assetVtReturn.data);
+                        }
+
+                        if (assetPowerCableReturn.success) {
+                            newRows.push(...assetPowerCableReturn.data);
                         }
                     }
 
@@ -2103,10 +2143,42 @@ export default {
         },
 
         async handlePowerConfirm() {
-            this.$message.success("Power cable saved successfully")
-            // Cần thêm logic để cập nhật lại cây nếu cần thiết
-            await this.$refs.powerCable.saveAsset();
-            this.signPower = false
+            try {
+                const powerCable = this.$refs.powerCable
+                if (powerCable) {
+                    const { success, data } = await powerCable.saveAsset();
+                    if (success) {
+                        this.$message.success("Power cable saved successfully")
+                        this.signPower = false
+                        let newRows = []
+                        if (this.organisationClientList && this.organisationClientList.length > 0) {
+                            const newRow = {
+                                mrid: data.asset.mrid,
+                                name: data.asset.name,
+                                serial_number: data.asset.serial_number,
+                                parentId: this.parentOrganization.mrid,
+                                parentName: this.parentOrganization.name,
+                                parentArr: this.parentOrganization.parentArr || [],
+                                mode: 'asset',
+                                asset: 'Power cable',
+                            }
+                            newRows.push(newRow);
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            if (node) {
+                                const children = Array.isArray(node.children) ? node.children : [];
+                                Vue.set(node, "children", [...children, ...newRows]);
+                            } else {
+                                this.$message.error("Parent node not found in tree");
+                            }
+                        }
+                    } else {
+                        this.$message.error("Failed to save Power Cable")
+                    }
+                }
+            } catch (error) {
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
         },
 
         async handleDisconnectorConfirm() {

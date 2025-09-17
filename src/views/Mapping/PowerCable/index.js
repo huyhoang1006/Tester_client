@@ -29,23 +29,22 @@ export function mapDtoToEntity(dto) {
     entity.asset.serial_number = dto.properties.serial_no || null;
     entity.asset.asset_info = dto.assetInfoId || null;
     entity.productAssetModel.manufacturer = dto.properties.manufacturer || null;
-    entity.asset.manufacturer_type = dto.properties.manufacturer_type || null;
+    entity.concentricNeutral.manufacturer_type = dto.properties.manufacturer_type || null;
     entity.asset.country_of_origin = dto.properties.country_of_origin || null;
     entity.asset.name = dto.properties.apparatus_id || null;
     entity.asset.description = dto.properties.comment || null;
     entity.productAssetModel.mrid = dto.productAssetModelId || null;
     entity.asset.location = dto.locationId || null;
     entity.asset.product_asset_model = dto.productAssetModelId || null;
-    entity.asset.asset_info = dto.mrid || null;
-    entity.concentricNeutral.mrid = dto.mrid || null;
+    entity.concentricNeutral.mrid = dto.assetInfoId || null;
     entity.joint.mrid = dto.datasData.jointsData.mrid || null;
     entity.terminal.mrid = dto.datasData.terminalsData.mrid || null;
     entity.sheathVoltageLimiter.mrid = dto.datasData.sheathLimitsData.mrid || null;
-    entity.joint.cable_info_id = dto.mrid || null;
-    entity.terminal.cable_info_id = dto.mrid || null;
-    entity.sheathVoltageLimiter.cable_info_id = dto.mrid || null;
-    entity.oldCableInfo.mrid = dto.oldCableInfo.mrid || null;
-    entity.oldCableInfo.cable_info_id = dto.oldCableInfo.cable_info_id || null;
+    entity.joint.cable_info_id = dto.assetInfoId || null;
+    entity.terminal.cable_info_id = dto.assetInfoId || null;
+    entity.sheathVoltageLimiter.cable_info_id = dto.assetInfoId || null;
+    entity.oldCableInfo.mrid = dto.oldCableInfoId || null;
+    entity.oldCableInfo.cable_info_id = dto.assetInfoId || null;
 
     /** ================== attachment ================== */
     entity.attachment.mrid = dto.attachmentId || null;
@@ -81,14 +80,14 @@ export function mapDtoToEntity(dto) {
     entity.frequency.push(newRatedFrequency);
 
     entity.oldCableInfo.short_circuit_current = dto.ratingsData.shortcircuit.mrid || null;//short circuit current
-    const newShortCircuitCurrent = new Temperature();
+    const newShortCircuitCurrent = new CurrentFlow();
     mappingUnit(newShortCircuitCurrent, dto.ratingsData.shortcircuit);
-    entity.temperature.push(newShortCircuitCurrent);
+    entity.currentFlow.push(newShortCircuitCurrent);
 
     entity.oldCableInfo.rated_duration_short_circuit = dto.ratingsData.rated_duration.mrid || null;//rated duration of short circuit
     const newRatedDurationShortCircuit = new Seconds();
     mappingUnit(newRatedDurationShortCircuit, dto.ratingsData.rated_duration);
-    entity.frequency.push(newRatedDurationShortCircuit);
+    entity.second.push(newRatedDurationShortCircuit);
 
     /** ================== others ================== */
     entity.oldCableInfo.installation_method = dto.othersData.insulation_method.value || null;//installation method
