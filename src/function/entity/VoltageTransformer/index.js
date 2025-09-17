@@ -10,6 +10,8 @@ import { insertOldPotentialTransformerTransaction, getOldPotentialTransformerInf
 import { insertPotentialTransformerTable } from '@/function/cim/PotentialTransformerTable/index.js'
 import { insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
 import VoltageTransformerEntity from '@/views/Entity/VoltageTransformer'
+import { getAssetInfoById } from '@/function/cim/assetInfo'
+import { insertAssetInfoTransaction } from '@/function/cim/assetInfo'
 
 
 /**
@@ -78,18 +80,24 @@ export const insertVoltageTransformerEntity = async (old_entity, entity) => {
                 await insertApparentPowerTransaction(apparentPower, db);
             }
 
+            //productAssetModel
+            console.log("product assetmodel : ", entity.productAssetModel)
+            const productAssetModelResult = await insertProductAssetModelTransaction(entity.productAssetModel, db);
+
+            //oldPotentialTransformerInfo
+            console.log("old potential transformer info : ", entity.OldPotentialTransformerInfo)
+            await insertOldPotentialTransformerTransaction(entity.OldPotentialTransformerInfo, db);
+
             //lifecycleDate
             await insertLifecycleDateTransaction(entity.lifecycleDate, db);
 
-            //productAssetModel
-            await insertProductAssetModelTransaction(entity.productAssetModel, db);
 
 
-            //oldPotentialTransformerInfo
-            await insertOldPotentialTransformerTransaction(entity.OldPotentialTransformerInfo, db);
+
 
             //asset
             await insertAssetTransaction(entity.asset, db);
+
 
             //assetPsr
             await insertAssetPsrTransaction(entity.assetPsr, db);
@@ -122,20 +130,31 @@ export const getVoltageTransformerEntityById = async (id, psrId) => {
             const dataVt = await getAssetById(id);
             if (dataVt.success) {
                 entity.asset = dataVt.data
+                console.log('dataVt:', dataVt)
                 const dataLifecycleDate = await getLifecycleDateById(entity.asset.lifecycle_date);
                 if (dataLifecycleDate.success) {
                     entity.lifecycleDate = dataLifecycleDate.data;
                 }
 
-                const dataOldVtInfo = await getOldPotentialTransformerInfoById(entity.asset.mrid);
+
+                const dataOldVtInfo = await getOldPotentialTransformerInfoById(entity.asset.asset_info);
                 if (dataOldVtInfo.success) {
                     entity.OldPotentialTransformerInfo = dataOldVtInfo.data;
                 }
 
-                const productAssetModelId = entity.OldPotentialTransformerInfo.product_asset_model;
+                console.log('entity.OldPotentialTransformerInfo:', entity.OldPotentialTransformerInfo)
+
+                const productAssetModelId = entity.asset.product_asset_model;
+
                 const dataProductAssetModel = await getProductAssetModelById(productAssetModelId);
+
                 if (dataProductAssetModel.success) {
                     entity.productAssetModel = dataProductAssetModel.data;
+                }
+
+                const dataAssetInfo = await getAssetInfoById(entity.asset.asset_info);
+                if (dataAssetInfo.success) {
+                    entity.assetInfo = dataAssetInfo.data;
                 }
 
                 const dataAssetPsr = await getAssetPsrByAssetIdAndPsrId(entity.asset.mrid, psrId);

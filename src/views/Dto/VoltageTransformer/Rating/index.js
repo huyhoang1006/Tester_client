@@ -4,6 +4,7 @@ import { UnitMultiplier } from "@/views/Enum/UnitMultiplier";
 class RatingDto {
     constructor() {
         this.standard = { mrid: '', value: '', unit: 'string' },
+            this.rated_frequency_custom = '',
             this.rated_frequency = { mrid: '', value: '', unit: UnitSymbol.Hz },
             this.uprRatio = { mrid: '', value: '', unit: 'string' },
             this.upr = '',

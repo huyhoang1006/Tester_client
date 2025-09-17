@@ -28,6 +28,7 @@ export const getPotentialTransformerInfoById = async (mrid) => {
 export const insertPotentialTransformerTransaction = async (potentialTransformer, dbsql) => {
     return new Promise(async (resolve, reject) => {
         try {
+            console.log('start insert potential transformer : ' + potentialTransformer);
             const assetInfoResult = await AssetInfoFunc.insertAssetInfoTransaction(potentialTransformer, dbsql)
             if (!assetInfoResult.success) {
                 return reject({ success: false, message: 'Insert assetInfo failed', err: assetInfoResult.err })
