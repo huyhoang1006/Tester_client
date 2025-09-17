@@ -53,12 +53,16 @@ import * as surgeMapper from '@/views/Mapping/SurgeArrester/index'
 import * as bushingMapper from '@/views/Mapping/Bushing/index'
 import * as vtMapper from '@/views/Mapping/VoltageTransformer/index'
 import * as SurgeArresterJobMapper from '@/views/Mapping/SurgerArresterJob/index'
+import * as disconnectorMapper from '@/views/Mapping/Disconnector/index'
+import * as PowerCableMapper from '@/views/Mapping/PowerCable'
 import VoltageLevel from '@/views/VoltageLevel/index.vue'
 import Bay from '@/views/Bay/index.vue'
 import SurgeArrester from '@/views/AssetView/SurgeArrester/index.vue'
 import Bushing from '@/views/AssetView/Bushing/index.vue'
 import SurgeArresterJob from '@/views/JobView/SurgeArrester/index.vue'
 import VoltageTransformer from '@/views/AssetView/VoltageTransformer/index.vue'
+import Disconnector from '@/views/AssetView/Disconnector/index.vue'
+import PowerCable from '@/views/AssetView/PowerCable/index.vue'
 
 export default {
     name: "Tabs",
@@ -73,6 +77,9 @@ export default {
         Bushing,
         VoltageTransformer,
         SurgeArresterJob,
+        Disconnector,
+        PowerCable
+        
     },
     model: {
         prop: 'value',
@@ -203,6 +210,28 @@ export default {
                         } else {
                             this.$message.error("Failed to load surge arrester data");
                         }
+                    } else if(tab.asset === 'Disconnector') {
+                        this.parentOrganization = {
+                            mrid : tab.parentId
+                        }
+                        const data = await window.electronAPI.getDisconnectorEntityByMrid(tab.mrid, tab.parentId)
+                        if(data.success) {
+                            const disconnectorDto = disconnectorMapper.disconnectorEntityToDto(data.data)
+                            this.$refs.componentLoadData[index].loadData(disconnectorDto)
+                        } else {
+                            this.$message.error("Failed to load Disconnector data");
+                        }
+                    } else if(tab.asset === 'Power cable') {
+                        this.parentOrganization = {
+                            mrid : tab.parentId
+                        }
+                        const data = await window.electronAPI.getPowerCableEntityByMrid(tab.mrid, tab.parentId)
+                        if(data.success) {
+                            const powerCableDto = PowerCableMapper.mapEntityToDto(data.data)
+                            this.$refs.componentLoadData[index].loadData(powerCableDto)
+                        } else {
+                            this.$message.error("Failed to load Disconnector data");
+                        }
                     }
                 } else if (tab.mode === 'job') {
                     const dataAsset = await window.electronAPI.getAssetByMrid(tab.parentId)
@@ -331,6 +360,10 @@ export default {
                     return 'Bushing'
                 } else if (tab.asset === 'Voltage transformer') {
                     return 'VoltageTransformer'
+                } else if(tab.asset === 'Disconnector') {
+                    return 'Disconnector'
+                } else if(tab.asset === 'Power cable') {
+                    return 'PowerCable'
                 }
             } else if (tab.mode == 'job') {
                 if (tab.job === 'Surge arrester') {

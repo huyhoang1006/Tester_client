@@ -41,15 +41,14 @@ export function mapDtoToEntity(dto) {
     entity.oldBushingInfo.insulation_kind = dto.bushing.insulation_type || null
 
     //rated current
-    entity.oldBushingInfo.rated_current = dto.bushing.rated_current.mrid || null
-    let unitPartsRatedCurrent = (dto.bushing.rated_current.unit || '').split('|');
-    const currentFlow = new CurrentFlow();
-    currentFlow.mrid = dto.bushing.rated_current.mrid || null;
-    currentFlow.multiplier = unitPartsRatedCurrent.length > 1 ? unitPartsRatedCurrent[0] : null;
-    currentFlow.unit = unitPartsRatedCurrent.length > 1 ? unitPartsRatedCurrent[1] : unitPartsRatedCurrent[0] || null;
-    currentFlow.value = dto.bushing.rated_current.value || null;
-    entity.currentFlow.push(currentFlow);
-
+    // entity.oldBushingInfo.rated_current = dto.bushing.rated_current.mrid || null
+    // let unitPartsRatedCurrent = (dto.bushing.rated_current.unit || '').split('|');
+    // const currentFlow = new CurrentFlow();
+    // currentFlow.mrid = dto.bushing.rated_current.mrid || null;
+    // currentFlow.multiplier = unitPartsRatedCurrent.length > 1 ? unitPartsRatedCurrent[0] : null;
+    // currentFlow.unit = unitPartsRatedCurrent.length > 1 ? unitPartsRatedCurrent[1] : unitPartsRatedCurrent[0] || null;
+    // currentFlow.value = dto.bushing.rated_current.value || null;
+    // entity.currentFlow.push(currentFlow);
 
     //attachment
     entity.attachment.mrid = dto.attachmentId || null;
@@ -86,7 +85,6 @@ export function mapEntityToDto(entity) {
     //assetPsr
     dto.assetPsrId = entity.assetPsr.mrid || '';
     dto.psrId = entity.assetPsr.psr_id || '';
-    dto.oldBushingInfoId = entity.assetPsr.asset_id || '';
 
     //attachment
     dto.attachmentId = entity.attachment.mrid || '';

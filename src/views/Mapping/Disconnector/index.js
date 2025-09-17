@@ -42,6 +42,7 @@ export const disconnectorDtoToEntity = (dto) => {
     entity.productAssetModel.mrid = dto.productAssetModelId || null
     entity.asset.location = dto.locationId || null
     entity.asset.product_asset_model = dto.productAssetModelId || null
+    entity.asset.asset_info = dto.assetInfoId
 
     /** ================== attachment ================== */
     entity.attachment.mrid = dto.attachmentId || null
@@ -54,7 +55,9 @@ export const disconnectorDtoToEntity = (dto) => {
     /** ================== assetPsr ================== */
     entity.assetPsr.mrid = dto.assetPsrId || null
     entity.assetPsr.psr_id = dto.psrId || null
-    entity.assetPsr.asset_id = dto.assetInfoId || null
+    entity.assetPsr.asset_id = dto.properties.mrid || null
+
+    entity.disconnectorInfo.mrid = dto.assetInfoId || null
 
     /** ================== Ratings ================== */
     if (dto.ratings) {
@@ -112,8 +115,6 @@ export const disconnectorDtoToEntity = (dto) => {
             entity.disconnectorInfo.power_frequency_isolating_distance = dto.ratings.rated_frequency.mrid || null
         }
 
-        entity.disconnectorInfo.mrid = dto.properties.mrid || null
-
     }
     console.log('entity', entity)
     return entity
@@ -122,72 +123,32 @@ export const disconnectorDtoToEntity = (dto) => {
 export const disconnectorEntityToDto = (entity) => {
     const dto = new DisconnectorDto()
 
-    // properties
-    entity.properties.mrid = dto.properties.mrid || null
-    entity.properties.kind = dto.properties.kind || null
-    entity.properties.type = dto.properties.type || null
-    entity.properties.serial_number = dto.properties.serial_no || null // serial_no là serial_number trong entity
-    entity.properties.asset_info = dto.oldSurgeArresterInfoId || null // assetInfoId là asset_info trong entity
-    entity.properties.manufacturer = dto.properties.manufacturer || null
-    entity.properties.manufacturer_type = dto.properties.manufacturer_type || null
-    entity.properties.country_of_origin = dto.properties.country_of_origin || null
-    entity.properties.name = dto.properties.apparatus_id || null
-    entity.properties.description = dto.properties.comment || null
-    entity.properties.unit_count = dto.ratings.unitStack || null
-    entity.properties.mrid = dto.productAssetModelId || null
-    entity.properties.location = dto.locationId || null
-    entity.properties.product_asset_model = dto.productAssetModelId || null
+    //properties
+    dto.properties.mrid = entity.asset.mrid || '';
+    dto.properties.kind = entity.asset.kind || '';
+    dto.properties.type = entity.asset.type || '';
+    dto.properties.serial_no = entity.asset.serial_number || '';
+    dto.assetInfoId = entity.asset.asset_info || '';
+    dto.properties.manufacturer = entity.productAssetModel.manufacturer || '';
+    dto.productAssetModelId = entity.productAssetModel.mrid || '';
+    dto.properties.manufacturer_type = entity.asset.manufacturer_type || '';
+    dto.properties.country_of_origin = entity.asset.country_of_origin || '';
+    dto.properties.apparatus_id = entity.asset.name || '';
+    dto.properties.comment = entity.asset.description || '';
+    dto.locationId = entity.asset.location || '';
+    dto.productAssetModelId = entity.asset.product_asset_model || '';
 
     // lifecycle date
-    entity.lifecycleDate.manufactured_date = dto.properties.manufacturering_year || null
-    entity.lifecycleDate.mrid = dto.lifecycleDateId || null // lifecycleDateId là mrid của lifecycleDate trong entity
-    entity.lifecycleDate.lifecycle_date = dto.lifecycleDateId || null
+    dto.lifecycleDateId = entity.asset.lifecycle_date || '';
+    dto.properties.manufacturing_year = entity.lifecycleDate.manufactured_date || '';
 
     //assetPsr
-    entity.assetPsr.mrid = dto.assetPsrId || null
-    entity.assetPsr.asset_id = dto.properties.mrid || null
-    entity.assetPsr.psr_id = dto.psrId || null
+    dto.assetPsrId = entity.assetPsr.mrid || '';
+    dto.psrId = entity.assetPsr.psr_id || '';
 
-    // ratings
-    for (let voltage of entity.voltage) {
-        if (voltage.mrid) {
-            dto.ratings.rated_voltage = {
-                mrid: voltage.mrid,
-                value: voltage.value,
-                unit: (voltage.multiplier ? voltage.multiplier + '|' : '') + (voltage.unit || '')
-            }
-        }
-    }
+    //attachment
+    dto.attachmentId = entity.attachment.mrid || '';
+    dto.attachment = entity.attachment;
 
-    for (let frequency of entity.frequency) {
-        if (frequency.mrid) {
-            dto.ratings.rated_frequency = {
-                mrid: frequency.mrid,
-                value: frequency.value,
-                unit: (frequency.multiplier ? frequency.multiplier + '|' : '') + (frequency.unit || '')
-            }
-        }
-    }
-
-    for (let current of entity.currentFlow) {
-        if (current.mrid) {
-            dto.ratings.rated_current = {
-                mrid: current.mrid,
-                value: current.value,
-                unit: (current.multiplier ? current.multiplier + '|' : '') + (current.unit || '')
-            }
-        }
-    }
-
-    for (let seconds of entity.seconds) {
-        if (seconds.mrid) {
-            dto.ratings.rated_duration_of_short_circuit = {
-                mrid: seconds.mrid,
-                value: seconds.value,
-                unit: (seconds.multiplier ? seconds.multiplier + '|' : '') + (seconds.unit || '')
-            }
-        }
-    }
-
-    return dto
+    return dto;
 }

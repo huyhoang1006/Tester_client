@@ -30,8 +30,8 @@ export const insertOldCableInfoTransaction = async (info, dbsql) => {
                 sheath_reinforcing_length_lay, sheath_reinforcing_no_tape, armour_material, armour_thickness,
                 armour_layer_tape, armour_cross_sectional_area_tap, jacket_thickness, concentric_thickness,
                 concentric_contruction, concentric_material, concentric_length_lay, concentric_area,
-                concentric_no_of_wires, cable_info_id
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                concentric_no_of_wires, cable_info_id, phase_count, core_count, sheath_type, diameter_over_armour
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(mrid) DO UPDATE SET
                 rated_u = excluded.rated_u,
                 max_u = excluded.max_u,
@@ -75,7 +75,11 @@ export const insertOldCableInfoTransaction = async (info, dbsql) => {
                 concentric_length_lay = excluded.concentric_length_lay,
                 concentric_area = excluded.concentric_area,
                 concentric_no_of_wires = excluded.concentric_no_of_wires,
-                cable_info_id = excluded.cable_info_id
+                cable_info_id = excluded.cable_info_id,
+                phase_count = excluded.phase_count,
+                core_count = excluded.core_count,
+                sheath_type = excluded.sheath_type,
+                diameter_over_armour = excluded.diameter_over_armour
             `,
             [
                 info.mrid,
@@ -121,7 +125,11 @@ export const insertOldCableInfoTransaction = async (info, dbsql) => {
                 info.concentric_length_lay,
                 info.concentric_area,
                 info.concentric_no_of_wires,
-                info.cable_info_id
+                info.cable_info_id,
+                info.phase_count,
+                info.core_count,
+                info.sheath_type,
+                info.diameter_over_armour
             ],
             function (err) {
                 if (err) {
@@ -180,7 +188,11 @@ export const updateOldCableInfoTransaction = async (mrid, info, dbsql) => {
                 concentric_length_lay = ?,
                 concentric_area = ?,
                 concentric_no_of_wires = ?,
-                cable_info_id = ?
+                cable_info_id = ?,
+                phase_count = ?,
+                core_count = ?,
+                sheath_type = ?,
+                diameter_over_armour = ?
             WHERE mrid = ?`,
             [
                 info.rated_u,
@@ -226,6 +238,10 @@ export const updateOldCableInfoTransaction = async (mrid, info, dbsql) => {
                 info.concentric_area,
                 info.concentric_no_of_wires,
                 info.cable_info_id,
+                info.phase_count,
+                info.core_count,
+                info.sheath_type,
+                info.diameter_over_armour,
                 mrid
             ],
             function (err) {
@@ -246,6 +262,6 @@ export const deleteOldCableInfoTransaction = async (mrid, dbsql) => {
                 return reject({ success: false, err, message: 'Delete oldCableInfo failed' })
             }
             return resolve({ success: true, data: mrid, message: 'Delete oldCableInfo completed' })
-           })
+        })
     })
 }

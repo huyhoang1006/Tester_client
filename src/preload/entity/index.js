@@ -10,10 +10,11 @@ import * as jobEntityPreload from './job/index.js'
 import * as powerCableEntityPreload from './powerCable/index.js'
 import * as voltageTransformerEntityPreload from './voltageTransformer/index.js'
 import * as bushingEntityPreload from './bushing/index'
+import * as disconnectorEntityPreload from './disconnector/index'
 
 export {
     attachmentPreload, substationPreload, parentOrganizationPreload,
     voltageLevelPreload, bayPreload, surgeArresterEntityPreload, transformerEntityPreload,
     testTypePreload, jobEntityPreload, powerCableEntityPreload, voltageTransformerEntityPreload,
-    bushingEntityPreload
+    bushingEntityPreload, disconnectorEntityPreload
 }

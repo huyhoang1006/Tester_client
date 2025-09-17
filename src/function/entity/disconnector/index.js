@@ -1,14 +1,17 @@
 import db from '../../datacontext/index'
-import { backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion } from '@/function/entity/attachment'
+import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, deleteDirectory } from '@/function/entity/attachment'
 import { insertVoltageTransaction, deleteVoltageByIdTransaction } from '@/function/cim/voltage';
 import { insertSecondsTransaction, deleteSecondsByIdTransaction } from '@/function/cim/seconds';
 import { insertCurrentFlowTransaction, deleteCurrentFlowByIdTransaction } from '@/function/cim/currentFlow';
 import { getDisconnectorInfoById, insertDisconnectorInfoTransaction } from '@/function/cim/disconnectorInfo';
 import DisconnectorEntity from '@/views/Entity/Disconnector';
-import { getAssetById } from '@/function/cim/asset';
+import { insertAssetTransaction, getAssetById } from '@/function/cim/asset';
+import {insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction} from '@/function/entity/assetPsr'
+import {insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction} from '@/function/cim/lifecycleDate';
+import {insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction} from '@/function/cim/productAssetModel';
 
 
-export const insertDisconnectorEntity = async (old_entity,entity) => {
+export const insertDisconnectorEntity = async (entity) => {
     try {
         if(entity.asset.mrid === null || entity.asset.mrid === '') {
             const result = {
@@ -31,43 +34,47 @@ export const insertDisconnectorEntity = async (old_entity,entity) => {
                 return result;
             }
             await runAsync('BEGIN TRANSACTION');
+
             //voltage
-            console.log('start voltage' );
-            const oldIds = (old_entity.voltage || []).map(v => v.mrid).filter(id => id);
-            const toAdd = entity.voltage.filter(v => v.mrid && !oldIds.includes(v.mrid));
-            const toUpdate = entity.voltage.filter(v => v.mrid && oldIds.includes(v.mrid));
-            for (const voltage of toAdd) {
-                await insertVoltageTransaction(voltage, db);
+            for (const voltage of entity.voltage) {
+                if(voltage.mrid) {
+                    await insertVoltageTransaction(voltage, db);
+                }
             }
-            for (const voltage of toUpdate) {
-                await insertVoltageTransaction(voltage, db);
+
+            //second
+            for (const second of entity.seconds) {
+                if(second.mrid) {
+                    await insertSecondsTransaction(seconds, db);
+                }
             }
-            console.log('voltage' );
-            //seconds
-            const oldSecondsIds = (old_entity.seconds || []).map(s => s.mrid).filter(id => id);
-            const toAddSeconds = entity.seconds.filter(s => s.mrid && !oldSecondsIds.includes(s.mrid));
-            const toUpdateSeconds = entity.seconds.filter(s => s.mrid && oldSecondsIds.includes(s.mrid));
-            for (const seconds of toAddSeconds) {
-                await insertSecondsTransaction(seconds, db);
-            }
-            for (const seconds of toUpdateSeconds) {
-                await insertSecondsTransaction(seconds, db);
-            }
-            console.log('seconds' );
+           
             //currentFlow
-            const oldCurrentFlowIds = (old_entity.currentFlow || []).map(c => c.mrid).filter(id => id);
-            const toAddCurrentFlow = entity.currentFlow.filter(c => c.mrid && !oldCurrentFlowIds.includes(c.mrid));
-            const toUpdateCurrentFlow = entity.currentFlow.filter(c => c.mrid && oldCurrentFlowIds.includes(c.mrid));
-            for (const currentFlow of toAddCurrentFlow) {
-                await insertCurrentFlowTransaction(currentFlow, db);
+            for (const currentFlow of entity.currentFlow) {
+                if(currentFlow.mrid) {
+                    await insertCurrentFlowTransaction(currentFlow, db);
+                }
             }
-            for (const currentFlow of toUpdateCurrentFlow) {
-                await insertCurrentFlowTransaction(currentFlow, db);
+
+
+            await insertLifecycleDateTransaction(entity.lifecycleDate, db);
+            await insertProductAssetModelTransaction(entity.productAssetModel, db);
+            await insertDisconnectorInfoTransaction(entity.disconnectorInfo, db);
+            await insertAssetTransaction(entity.asset, db);
+            await insertAssetPsrTransaction(entity.assetPsr, db);
+
+            if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
+                const pathData = JSON.parse(entity.attachment.path);
+                const newPath = []
+                for(let i = 0; i < pathData.length; i++) {
+                    const namefile = path.basename(pathData[i].path);
+                    pathData[i].path = path.join(attachmentContext.getAttachmentDir(), entity.asset.mrid, namefile);
+                    newPath.push(pathData[i]);
+                }
+                entity.attachment.path = JSON.stringify(newPath);
+                await uploadAttachmentTransaction(entity.attachment, db);
             }
-            console.log('currentFlow' );
-           //disconnectorInfo
-           await insertDisconnectorInfoTransaction(entity.disconnectorInfo, db);
-           console.log('disconnectorInfo' );
+
            await runAsync('COMMIT');
            return { success: true, data: entity, message: 'Insert disconnector entity completed' };
 
@@ -96,22 +103,22 @@ export const getDisconnectorEntityById = async (id, psrId) => {
                     entity.lifecycleDate = dataLifecycleDate.data;
                 }
                 const dataDisconnectorInfo = await getDisconnectorInfoById(entity.asset.asset_info);
-                if(dataOldBushingInfo.success) {
-                    entity.oldBushingInfo = dataOldBushingInfo.data;
+                if(dataDisconnectorInfo.success) {
+                    entity.disconnectorInfo = dataDisconnectorInfo.data;
                 }
                 
-                const productAssetModelId = entity.oldBushingInfo.product_asset_model;
+                const productAssetModelId = entity.disconnectorInfo.product_asset_model;
                 const dataProductAssetModel = await getProductAssetModelById(productAssetModelId);
                 if(dataProductAssetModel.success) {
                     entity.productAssetModel = dataProductAssetModel.data;
                 }
                 
-                const dataAssetPsr = await getAssetPsrByAssetIdAndPsrId(entity.bushing.mrid, psrId);
+                const dataAssetPsr = await getAssetPsrByAssetIdAndPsrId(entity.asset.mrid, psrId);
                 if(dataAssetPsr.success) {
                     entity.assetPsr = dataAssetPsr.data;
                 }
 
-                const dataAttachment = await getAttachmentByForeignIdAndType(entity.bushing.mrid, 'asset');
+                const dataAttachment = await getAttachmentByForeignIdAndType(entity.asset.mrid, 'asset');
                 if(dataAttachment.success) {
                     entity.attachment = dataAttachment.data;
                 }
@@ -119,15 +126,15 @@ export const getDisconnectorEntityById = async (id, psrId) => {
                 return {
                     success: true,
                     data: entity,
-                    message: 'Bushing entity retrieved successfully'
+                    message: 'Disconnector entity retrieved successfully'
                 }
             } else {
-                return { success: false, error: dataBushing.error, message: dataBushing.message };
+                return { success: false, error: dataDisconnector.error, message: dataDisconnector.message };
             }
         }
     } catch (error) {
-        console.error("Error retrieving Bushing entity by ID:", error);
-        return { success: false, error, message: 'Error retrieving Bushing entity by ID' };
+        console.error("Error retrieving Disconnector entity by ID:", error);
+        return { success: false, error, message: 'Error retrieving Disconnector entity by ID' };
     }
 }
 

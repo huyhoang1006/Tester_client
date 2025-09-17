@@ -2,7 +2,6 @@ import { UnitSymbol } from "@/views/Enum/UnitSymbol";
 import { UnitMultiplier } from "@/views/Enum/UnitMultiplier";
 import Attachment from "@/views/Entity/Attachment";
 import PropertiesDto from "./Properties";
-import OldCableInfo from "@/views/Cim/OldCableInfo";
 
 
 class PowerCableDTO {
@@ -10,7 +9,7 @@ class PowerCableDTO {
     this.mrid = null;
     this.properties = new PropertiesDto();
     this.attachment = new Attachment();
-    this.oldCableInfo = new OldCableInfo();
+    this.oldCableInfoId = ''
     this.assetInfoId = ''
     this.productAssetModelId = ''
     this.lifecycleDateId = ''

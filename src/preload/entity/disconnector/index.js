@@ -2,6 +2,7 @@
 const { ipcRenderer } = require('electron')
 export const disconnectorEntityPreload = () => {
     return {
-        insertDisconnectorEntity: (old_data, data) => ipcRenderer.invoke('insertDisconnectorEntity', old_data, data),
+        insertDisconnectorEntity: (data) => ipcRenderer.invoke('insertDisconnectorEntity', data),
+        getDisconnectorEntityByMrid : (mrid, psr_id) => ipcRenderer.invoke('getDisconnectorEntityByMrid', mrid, psr_id),
     }
 }

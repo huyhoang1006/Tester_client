@@ -15,6 +15,7 @@ class DisconnectorDTO {
         this.productAssetModelId = ''
         this.attachmentId = ''
         this.assetInfoId = ''
+        this.assetPsrId = ''
 
         // Ratings
         this.ratings = {

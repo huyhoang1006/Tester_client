@@ -1,7 +1,7 @@
 import SwitchInfo from '../SwitchInfo'
 
 class OldSwitchInfo extends SwitchInfo {
-    contructor() {
+    constructor() {
         super()
         // FK references
         this.dielectric_strength = null
