@@ -22,17 +22,19 @@ export function mapDtoToEntity(dto) {
     /** ================== properties ================== */
     entity.asset.mrid = dto.properties.mrid || null;
     entity.asset.kind = dto.properties.kind || null;
-    entity.asset.type = dto.properties.type || null;
+    entity.asset.type = dto.properties.asset_type || null;
     entity.asset.serial_number = dto.properties.serial_no || null;
     entity.asset.asset_info = dto.assetInfoId || null;
+    entity.assetInfo.mrid = dto.assetInfoId || null;
     entity.productAssetModel.manufacturer = dto.properties.manufacturer || null;
-    entity.asset.manufacturer_type = dto.properties.manufacturer_type || null;
+    entity.assetInfo.manufacturer_type = dto.properties.manufacturer_type || null;
     entity.asset.country_of_origin = dto.properties.country_of_origin || null;
     entity.asset.name = dto.properties.apparatus_id || null;
     entity.asset.description = dto.properties.comment || null;
     entity.productAssetModel.mrid = dto.productAssetModelId || null;
     entity.asset.location = dto.locationId || null;
     entity.asset.product_asset_model = dto.productAssetModelId || null;
+    entity.assetInfo.product_asset_model = dto.productAssetModelId || null
 
     /** ================== attachment ================== */
     entity.attachment.mrid = dto.attachmentId || null;
@@ -40,6 +42,7 @@ export function mapDtoToEntity(dto) {
 
     //Ratings
     entity.OldPotentialTransformerInfo.mrid = dto.assetInfoId;
+    entity.OldPotentialTransformerInfo.manufacturer_type = dto.properties.manufacturer_type || null;
     entity.OldPotentialTransformerInfo.standard = dto.ratings.standard.value || '';
     entity.OldPotentialTransformerInfo.rated_frequency = dto.ratings.rated_frequency.mrid || '';
     const newRatedFrequency = new Frequency();
@@ -63,9 +66,9 @@ export function mapDtoToEntity(dto) {
     mapDataVTtoArrayPotentialTransformerTable(dto, entity)
 
     //lifecycleDate
-
-    entity.lifecycleDate.manufactured_date = dto.properties.manufacturer_year || null;
+    entity.asset.lifecycle_date = dto.lifecycleDateId || null;
     entity.lifecycleDate.mrid = dto.lifecycleDateId || null;
+    entity.lifecycleDate.manufactured_date = dto.properties.manufacturing_year || null;
 
     //assetPsr
     entity.assetPsr.mrid = dto.assetPsrId || null;
@@ -81,21 +84,21 @@ export function mapEntityToDto(entity) {
     //properties
     dto.properties.mrid = entity.asset.mrid;
     dto.properties.kind = entity.asset.kind;
-    dto.properties.type = entity.asset.type;
+    dto.properties.asset_type = entity.asset.type;
     dto.properties.serial_no = entity.asset.serial_number;
     dto.assetInfoId = entity.asset.asset_info;
     dto.properties.manufacturer = entity.productAssetModel.manufacturer;
-    dto.properties.manufacturer_type = entity.asset.manufacturer_type;
+    dto.properties.manufacturer_type = entity.assetInfo.manufacturer_type;
     dto.properties.country_of_origin = entity.asset.country_of_origin;
     dto.properties.apparatus_id = entity.asset.name;
     dto.properties.comment = entity.asset.description;
-    dto.productAssetModelId = entity.productAssetModel.mrid;
+    dto.productAssetModelId = entity.assetInfo.product_asset_model;
     dto.locationId = entity.asset.location;
-    dto.productAssetModelId = entity.asset.product_asset_model;
 
     // lifecycle date
-    dto.lifecycleDateId = entity.asset.lifecycle_date || '';
-    dto.properties.manufacturer_year = entity.lifecycleDate.manufactured_date || '';
+    dto.lifecycleDateId = entity.lifecycleDate.mrid || null;
+    dto.properties.manufacturing_year = entity.lifecycleDate.manufactured_date || null;
+    dto.lifecycleDateId = entity.lifecycleDate.mrid || null;
 
     //assetPsr
     dto.assetPsrId = entity.assetPsr.mrid || '';
@@ -104,6 +107,21 @@ export function mapEntityToDto(entity) {
     //attachment
     dto.attachmentId = entity.attachment.mrid || '';
     dto.attachment = entity.attachment;
+
+    //ratings
+    dto.properties.manufacturer_type = entity.OldPotentialTransformerInfo.manufacturer_type || null;
+    for (let i = 0; i < entity.frequency.length; i++) {
+        if (entity.frequency[i].mrid === entity.OldPotentialTransformerInfo.rated_frequency) {
+            dto.ratings.rated_frequency.value = entity.frequency[i].value || '';
+        }
+    }
+
+    for (let i = 0; i < entity.voltage.length; i++) {
+        if (entity.voltage[i].mrid === entity.OldPotentialTransformerInfo.rated_voltage) {
+            dto.ratings.rated_voltage.value = entity.voltage[i].value || '';
+        }
+    }
+
 
     return dto;
 }
