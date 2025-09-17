@@ -8,6 +8,34 @@ export default {
             attachmentData : []
         }
     },
+    async beforeMount() {
+        try {
+            const mode = this.$route && this.$route.query ? this.$route.query.mode : null
+            const assetId = this.$route && this.$route.query ? this.$route.query.asset_id : null
+            if (mode === 'edit' || mode === 'dup') {
+                if (assetId) {
+                    const rs = await window.electronAPI.getDisconnectorById(assetId)
+                    if (rs && rs.success && rs.data && rs.data.length) {
+                        const row = rs.data[0]
+                        const properties = JSON.parse(row.properties || '{}')
+                        const ratings = JSON.parse(row.ratings || '{}')
+                        const config = JSON.parse(row.config || '{}')
+                        if (mode === 'dup') {
+                            properties.serial_no = ''
+                        }
+                        // Bind back to form
+                        this.disconnector.properties = Object.assign({}, this.disconnector.properties, properties)
+                        this.disconnector.ratings = Object.assign({}, this.disconnector.ratings, ratings)
+                        this.disconnector.config = Object.assign({}, this.disconnector.config || {}, config)
+                        // keep id if needed later
+                        this.disconnector.id = row.id
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Failed to load disconnector for edit:', e)
+        }
+    },
     methods : {
         async saveAsset() {
             try {
@@ -45,7 +73,13 @@ export default {
 
         async saveCtrS() {
             const data = await this.saveAsset()
-            if(data.success) {
+            if (data && data.success) {
+                // Load back the saved entity so the UI shows exactly what was stored
+                if (data.data) {
+                    // Convert Entity -> DTO before binding to UI
+                    const dto = Mapping.disconnectorEntityToDto(data.data)
+                    this.loadData(dto)
+                }
                 this.$message.success("Asset saved successfully")
             } else {
                 this.$message.error("Failed to save asset")
