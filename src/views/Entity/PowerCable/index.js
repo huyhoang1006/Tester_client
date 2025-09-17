@@ -27,6 +27,7 @@ class PowerCableEntity {
         this.terminal = new TerminalCableInfo()
         this.joint = new JointCableInfo()
         this.sheathVoltageLimiter = new SheathVoltageLimiter()
+        this.second = []
     }
 }
 

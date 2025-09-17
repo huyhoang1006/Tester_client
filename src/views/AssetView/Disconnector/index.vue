@@ -23,15 +23,31 @@ export default {
     data() {
         return {
             title : 'disconnector',
+            parentData : JSON.parse(JSON.stringify(this.parent)),
         }
     },
     mixins : [mixin],
-    mounted() {},
+    props: {
+        parent : {
+            type: Object,
+            default: () => ({})
+        },
+        organisationId: {
+            type: String,
+            default: ''
+        },
+
+        locationId: {
+            type: String,
+            default: ''
+        },
+    },
     methods: {
         updateAttachment(attachment) {
             this.attachmentData = attachment
         },
-        async resetForm() {},
+        loadMapForView() {
+        },
     }
 }
 </script>

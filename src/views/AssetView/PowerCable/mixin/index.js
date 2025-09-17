@@ -16,10 +16,9 @@ export default {
                 if (this.powerCable.properties.serial_no !== null && this.powerCable.properties.serial_no !== '') {
                     const data = JSON.parse(JSON.stringify(this.powerCable));
                     const result = await this.checkPowerCableData(data);
-                    console.log("Checked Power Cable Data:", result);
                     const resultEntity = powerCableMapping.mapDtoToEntity(result);
+                    console.log(resultEntity)
                     const oldResultEntity = powerCableMapping.mapDtoToEntity(this.powerCableOld);
-                    console.log("Mapped Power Cable Entity:", resultEntity);
                     let rs = await window.electronAPI.insertPowerCableEntity(oldResultEntity, resultEntity)
                     if (rs.success) {
 
@@ -49,6 +48,29 @@ export default {
             }
         },
 
+        async saveCtrS() {
+            const data = await this.saveAsset()
+            if(data.success) {
+                this.$message.success("Asset saved successfully")
+            } else {
+                this.$message.error("Failed to save asset")
+            }
+        },
+
+        resetForm() {
+            this.powerCable = new PowerCableDto();
+            this.attachmentData = [];
+        },
+
+        loadData(data) {
+            this.powerCableOld = JSON.parse(JSON.stringify(data));
+            this.powerCable = data;
+            if(data.attachment && data.attachment.path) {
+                this.attachmentData = JSON.parse(data.attachment.path)
+            } else {
+                this.attachmentData = []
+            }
+        },
 
         async checkPowerCableData(data) {
             try {
@@ -60,6 +82,8 @@ export default {
                 this.checkAttachment(data);
                 this.checkLocationId(data);
                 this.checkPowerCableTree(data);
+                this.checkAssetInfoId(data)
+                this.checkOldCableInfoId(data)
                 return data;
             } catch (error) {
                 console.error("Error checking power cable data:", error);
@@ -123,6 +147,17 @@ export default {
             this.traverseAndFillMrid(data);
         },
 
+        checkAssetInfoId(data) {
+            if(data.assetInfoId === null || data.assetInfoId === '') {
+                data.assetInfoId = uuid.newUuid()
+            }
+        },
+
+        checkOldCableInfoId(data) {
+            if(data.oldCableInfoId === null || data.oldCableInfoId === '') {
+                data.oldCableInfoId = uuid.newUuid()
+            }
+        },
 
         traverseAndFillMrid(obj) {
             if (Array.isArray(obj)) {
