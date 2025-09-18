@@ -109,3 +109,21 @@ export const deleteOldSwitchInfoByIdTransaction = async (mrid, dbsql) => {
             })
     })
 }
+
+export const deleteOldSwitchInfoTransaction = async (mrid, dbsql) => {
+    return new Promise((resolve, reject) => {
+        SwitchInfoFunc.deleteSwitchInfoByIdTransaction(mrid, dbsql)
+            .then(result => {
+                if (!result.success) {
+                    return reject({ success: false, message: 'Delete SwitchInfo failed', err: result.err })
+                }
+                dbsql.run("DELETE FROM old_switch_info WHERE mrid=?", [mrid], function (err) {
+                    if (err) return reject({ success: false, err, message: 'Delete OldSwitchInfo failed' })
+                    return resolve({ success: true, data: mrid, message: 'Delete OldSwitchInfo completed' })
+                })
+            })
+            .catch(err => {
+                return reject({ success: false, err, message: 'Delete OldSwitchInfo transaction failed' })
+            })
+    })
+}

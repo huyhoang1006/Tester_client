@@ -1,9 +1,9 @@
-import ProPropertiesDto from './Properties/index.js';
+import PropertiesDto from './Properties/index.js';
 import BushingDto from './Bushing/index.js';
 import Attachment from '@/views/Entity/Attachment'
 class BushingAssetDto {
     constructor() {
-        this.properties = new ProPropertiesDto();
+        this.properties = new PropertiesDto();
         this.bushing = new BushingDto();
         this.assetInfoId = ''
         this.productAssetModelId = '';

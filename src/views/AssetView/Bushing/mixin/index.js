@@ -16,6 +16,7 @@ export default {
                     const data = JSON.parse(JSON.stringify(this.bushing_data));
                     const result = this.checkBushingData(data);
                     const resultEntity = Mapping.mapDtoToEntity(result);
+                    console.log(resultEntity)
                     let rs = await window.electronAPI.insertBushingEntity(resultEntity)
                     if(rs.success) {
                         return {
@@ -43,10 +44,21 @@ export default {
                 };
             }
         },
+
+        async saveCtrS() {
+            const data = await this.saveAsset()
+            if(data.success) {
+                this.$message.success("Asset saved successfully")
+            } else {
+                this.$message.error("Failed to save asset")
+            }
+        },
+
         resetForm() {
             this.bushing_data = new BushingAssetDto();
             this.attachmentData = [];
         },
+
         loadData(data) {
             this.bushing_data = data;
             if(data.attachment && data.attachment.path) {
@@ -55,6 +67,7 @@ export default {
                 this.attachmentData = []
             }
         },
+
         checkBushingData(data) {
             try {
                 this.checkProperty(data);
@@ -65,16 +78,19 @@ export default {
                 this.checkAttachment(data);
                 this.checkLocationId(data);
                 this.checkAssetInfoId(data)
+                this.checkFullMridOfData(data)
                 return data;
             } catch (error) {
                 console.error("Error checking surge arrester data:", error);
             }
         },
+
         checkProperty(data) {
             if(data.properties.mrid == null || data.properties.mrid == '') {
                 data.properties.mrid = uuid.newUuid();
             }
         },
+
         checkLifecycleDate(data) {
             if(data.lifecycleDateId == null || data.lifecycleDateId == '') {
                 data.lifecycleDateId = uuid.newUuid();
@@ -128,6 +144,27 @@ export default {
             if(data.assetInfoId === null || data.assetInfoId === '') {
                 data.assetInfoId = uuid.newUuid()
             }
+        },
+
+        checkFullMridOfData(data) {
+            this.traverseAndFillMrid(data)
+        },
+
+        traverseAndFillMrid(obj) {
+            if (Array.isArray(obj)) {
+                obj.forEach(item => this.traverseAndFillMrid(item));
+            } else if (obj !== null && typeof obj === "object") {
+                // Nếu có thuộc tính mrid
+                if ("mrid" in obj) {
+                    if (!obj.mrid || obj.mrid === "") {
+                        obj.mrid = uuid.newUuid();
+                    }
+                }
+                // Duyệt tiếp các key con
+                Object.values(obj).forEach(val => this.traverseAndFillMrid(val));
+            }
+            return obj;
         }
+
     }
 }

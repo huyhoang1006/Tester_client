@@ -2036,10 +2036,42 @@ export default {
         },
 
         async handleBushingConfirm() {
-            this.$message.success("Bushing saved successfully")
-            // Cần thêm logic để cập nhật lại cây nếu cần thiết
-            await this.$refs.bushing.saveAsset();
-            // this.signBushing = false
+            try {
+                const bushing = this.$refs.bushing
+                if (bushing) {
+                    const { success, data } = await bushing.saveBay()
+                    if (success) {
+                        this.$message.success("Bushing saved successfully")
+                        this.signBushing = false
+                        let newRows = []
+                        if (this.organisationClientList && this.organisationClientList.length > 0) {
+                            const newRow = {
+                                mrid: data.bushing.mrid,
+                                name: data.bushing.name,
+                                serial_number: data.bushing.serial_number,
+                                parentId: this.parentOrganization.mrid,
+                                parentName: this.parentOrganization.name,
+                                parentArr: this.parentOrganization.parentArr || [],
+                                mode: 'asset',
+                                asset: 'Bushing',
+                            }
+                            newRows.push(newRow);
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            if (node) {
+                                const children = Array.isArray(node.children) ? node.children : [];
+                                Vue.set(node, "children", [...children, ...newRows]);
+                            } else {
+                                this.$message.error("Parent node not found in tree");
+                            }
+                        }
+                    } else {
+                        this.$message.error("Failed to save bushing")
+                    }
+                }
+            } catch (error) {
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
         },
 
         async handleSurgeConfirm() {
