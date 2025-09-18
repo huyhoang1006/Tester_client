@@ -37,6 +37,48 @@ export default {
         }
     },
     methods : {
+        async deleteAsset() {
+            try {
+                const assetMrid = this.disconnector && this.disconnector.properties && this.disconnector.properties.mrid
+                const psrId = this.parentData && this.parentData.mrid ? this.parentData.mrid : null
+                if(!assetMrid) {
+                    this.$message.error('Không tìm thấy MRID của asset để xóa')
+                    return { success: false }
+                }
+
+                await this.$confirm('Xóa Disconnector này và toàn bộ dữ liệu liên quan?', 'Cảnh báo', {
+                    type: 'warning',
+                    confirmButtonText: 'OK',
+                    cancelButtonText: 'Hủy'
+                })
+
+                // Lấy entity đầy đủ theo MRID để xóa theo đúng quan hệ
+                const entityRs = await window.electronAPI.getDisconnectorEntityByMrid(assetMrid, psrId)
+                if(!entityRs || !entityRs.success || !entityRs.data) {
+                    this.$message.error('Không lấy được dữ liệu entity để xóa')
+                    return { success: false }
+                }
+
+                const rt = await window.electronAPI.deleteDisconnectorEntity(entityRs.data)
+                if(rt && rt.success) {
+                    this.$message.success('Đã xóa Disconnector')
+                    // Optional: điều hướng về danh sách hoặc đóng tab hiện tại
+                    if (this.$router) {
+                        this.$router.back()
+                    }
+                    return { success: true }
+                }
+                this.$message.error(rt && rt.message ? rt.message : 'Xóa thất bại')
+                return { success: false }
+            } catch (err) {
+                // Người dùng bấm Cancel hoặc lỗi runtime
+                if (err !== 'cancel') {
+                    console.error('Delete Disconnector error:', err)
+                    this.$message.error('Xóa thất bại')
+                }
+                return { success: false }
+            }
+        },
         async saveAsset() {
             try {
                 if(this.disconnector.properties.serial_no !== null && this.disconnector.properties.serial_no !== '') {

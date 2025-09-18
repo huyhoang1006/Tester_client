@@ -6,7 +6,7 @@ import { insertVoltageTransaction, deleteVoltageByIdTransaction } from '@/functi
 import { insertSecondsTransaction, deleteSecondsByIdTransaction } from '@/function/cim/seconds';
 import { insertCurrentFlowTransaction, deleteCurrentFlowByIdTransaction } from '@/function/cim/currentFlow';
 import { insertFrequencyTransaction, deleteFrequencyByIdTransaction } from '@/function/cim/frequency';
-import { getDisconnectorInfoById, insertDisconnectorInfoTransaction } from '@/function/cim/disconnectorInfo';
+import { getDisconnectorInfoById, insertDisconnectorInfoTransaction, deleteDisconnectorInfoTransaction } from '@/function/cim/disconnectorInfo';
 import { getSwitchInfoById } from '@/function/cim/switchInfo';
 import { getOldSwitchInfoById } from '@/function/cim/oldSwitchInfo';
 import { getVoltageById } from '@/function/cim/voltage';
@@ -15,6 +15,7 @@ import { getCurrentFlowById } from '@/function/cim/currentFlow';
 import { getSecondById } from '@/function/cim/seconds';
 import DisconnectorEntity from '@/views/Entity/Disconnector';
 import { insertAssetTransaction, getAssetById } from '@/function/cim/asset';
+import { deleteAssetByIdTransaction } from '@/function/cim/asset';
 import {insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction} from '@/function/entity/assetPsr'
 import {insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction} from '@/function/cim/lifecycleDate';
 import {insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction} from '@/function/cim/productAssetModel';
@@ -263,3 +264,140 @@ const runAsync = (sql, params = []) => {
         });
     });
 };
+
+export const deleteDisconnectorEntity = async (data) => {
+    try {
+        if(!data || !data.asset || !data.asset.mrid) {
+            return { success: false, error: new Error('Invalid ID'), message: 'Invalid ID' };
+        }
+
+        try {
+            await runAsync('BEGIN TRANSACTION');
+
+            // Prepare and sync file deletions (logical first)
+            if(data.attachment && data.attachment.id) {
+                const pathData = JSON.parse(data.attachment.path || '[]')
+                if (Array.isArray(pathData) && pathData.length > 0) {
+                    syncFilesWithDeletion(pathData, null, data.asset.mrid);
+                }
+            }
+            console.log('1');
+
+            // Delete attachment record (no dependencies)
+            if(data.attachment && data.attachment.id) {
+                await deleteAttachmentByIdTransaction(data.attachment.id, db);
+            }
+            console.log('2');
+
+            // Delete asset-psr link (depends on asset)
+            if(data.assetPsr && data.assetPsr.mrid) {
+                await deleteAssetPsrTransaction(data.assetPsr.mrid, db);
+            }
+            console.log('3');
+
+            // Delete main asset (has foreign key references to lifecycleDate)
+            if (data.asset && data.asset.mrid) {
+                await deleteAssetByIdTransaction(data.asset.mrid, db);
+            }
+            console.log('4');
+
+             // Delete disconnector info (depends on asset - must be before asset)
+             if (data.disconnectorInfo && data.disconnectorInfo.mrid) {
+                const mridInfo = data.disconnectorInfo.mrid;
+                const delInfoRes = await deleteDisconnectorInfoTransaction(mridInfo, db);
+                if (!delInfoRes || delInfoRes.success === false) {
+                    throw (delInfoRes && delInfoRes.err) || new Error('Delete DisconnectorInfo failed');
+                }
+            }
+            console.log('5');
+            
+            if (data.productAssetModel && data.productAssetModel.mrid) {
+                await deleteProductAssetModelByIdTransaction(data.productAssetModel.mrid, db);
+            }
+            console.log('6');
+
+             // Delete lifecycleDate and productAssetModel (after asset is deleted)
+             if (data.lifecycleDate && data.lifecycleDate.mrid) {
+                await deleteLifecycleDateByIdTransaction(data.lifecycleDate.mrid, db);
+            }
+            console.log('7');
+
+            // //voltage
+            // for (const voltage of entity.voltage) {
+            //     if(voltage.mrid) {
+            //         await insertVoltageTransaction(voltage, db);
+            //     }
+            // }
+
+            // //frequency
+            // for (const frequency of entity.frequency) {
+            //     if(frequency.mrid) {
+            //         await insertFrequencyTransaction(frequency, db);
+            //     }
+            // }
+
+            // //second
+            // for (const second of entity.seconds) {
+            //     if(second.mrid) {
+            //         await insertSecondsTransaction(second, db);
+            //     }
+            // }
+           
+            // //currentFlow
+            // for (const currentFlow of entity.currentFlow) {
+            //     if(currentFlow.mrid) {
+            //         await insertCurrentFlowTransaction(currentFlow, db);
+            //     }
+            // }
+
+            //voltage
+            for (const voltage of data.voltage) {
+                if(voltage.mrid) {
+                    await deleteVoltageByIdTransaction(voltage.mrid, db);
+                }
+            }
+            console.log('8');
+
+            //frequency
+            for (const frequency of data.frequency) {
+                if(frequency.mrid) {
+                    await deleteFrequencyByIdTransaction(frequency.mrid, db);
+                }
+            }
+            console.log('9');
+
+            //second
+            for (const second of data.seconds) {
+                if(second.mrid) {
+                    await deleteSecondsByIdTransaction(second.mrid, db);
+                }
+            }
+            console.log('10');
+
+            //currentFlow
+            for (const currentFlow of data.currentFlow) {
+                if(currentFlow.mrid) {
+                    await deleteCurrentFlowByIdTransaction(currentFlow.mrid, db);
+                }
+            }
+            console.log('11');
+
+            await runAsync('COMMIT');
+
+            // Physical file deletions after commit
+            if(data.attachment && data.attachment.id) {
+                deleteDirectory(null, data.asset.mrid);
+            }
+        
+
+            return { success: true, message: 'Disconnector entity deleted successfully' };
+        } catch (error) {
+            await runAsync('ROLLBACK');
+            console.error('Error deleting Disconnector entity:', error);
+            return { success: false, error, message: 'Error deleting Disconnector entity' };
+        }
+    } catch (error) {
+        console.error('Error deleting Disconnector entity:', error);
+        return { success: false, error, message: 'Error deleting Disconnector entity' };
+    }
+}
