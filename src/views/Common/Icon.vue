@@ -22,13 +22,26 @@ export default {
         badgeColor: {
             type: String,
             default: '4285f4'
+        },
+        assetDetail: {
+            type: String,
+            default: 'Unknown',
+            validator: (value) => ['Surge arrester', 'Disconnector', 'Power cable', 'Bushing', 'Voltage transformer', 'Unknown'].includes(value)
         }
     },
     computed: {
         badgeIcon() {
             const icons = {
                 location: 'fa-solid fa-location-dot',
-                asset: 'fa-solid fa-gear',
+                asset: {
+                    Unknown : 'fa-solid fa-gear',
+                    "Transformer" : 'fa-solid fa-bolt',
+                    'Surge arrester' : 'fa-solid fa-shield-halved',
+                    'Disconnector' : 'fa-solid fa-plug-circle-xmark',
+                    'Power cable' : 'fa-solid fa-route',
+                    'Bushing' : "fa-solid fa-shield",
+                    'Voltage transformer' : 'fa-solid fa-bolt-lightning'
+                },
                 job: 'fa-solid fa-toolbox',
                 test: 'fa-solid fa-file-lines',
                 owner: 'fa-solid fa-location-crosshairs',
@@ -36,7 +49,16 @@ export default {
                 voltageLevel: 'fa-solid fa-bolt-lightning',
                 bay: 'fa-solid fa-tower-observation'
             }
-            return icons[this.folderType] || 'fa-solid fa-location-dot'
+            if(this.folderType == 'asset') {
+                console.log(icons.asset[this.assetDetail])
+                if(this.assetDetail == 'Unknown') {
+                    return icons.asset['Unknown']
+                } else {
+                    return icons.asset[this.assetDetail]
+                }
+            } else {
+                return icons[this.folderType] || 'fa-solid fa-location-dot'
+            }
         },
         badgeStyle() {
             return {
