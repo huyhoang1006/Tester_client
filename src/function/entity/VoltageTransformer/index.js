@@ -7,9 +7,10 @@ import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDa
 import { insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction } from '@/function/cim/productAssetModel'
 import { insertAssetTransaction, getAssetById, deleteAssetByIdTransaction } from '@/function/cim/asset'
 import { insertOldPotentialTransformerTransaction, getOldPotentialTransformerInfoById } from '@/function/cim/OldPotentialTransformerInfo/index.js'
-import { insertPotentialTransformerTable } from '@/function/cim/PotentialTransformerTable/index.js'
-import {insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction} from '@/function/entity/assetPsr'
+import { insertPotentialTransformerTable, deletePotentialTransformerTableByPotentialTransformerInfoId, getPotentialTransformerTableByPotentialTransformerInfoId } from '@/function/cim/PotentialTransformerTable/index.js'
+import { insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
 import VoltageTransformerEntity from '@/views/Entity/VoltageTransformer'
+import { getAssetInfoById } from '@/function/cim/assetInfo'
 
 
 /**
@@ -78,22 +79,30 @@ export const insertVoltageTransformerEntity = async (old_entity, entity) => {
                 await insertApparentPowerTransaction(apparentPower, db);
             }
 
+            //productAssetModel
+            console.log("product assetmodel : ", entity.productAssetModel)
+            const productAssetModelResult = await insertProductAssetModelTransaction(entity.productAssetModel, db);
+
+            //oldPotentialTransformerInfo
+            console.log("old potential transformer info : ", entity.OldPotentialTransformerInfo)
+            await insertOldPotentialTransformerTransaction(entity.OldPotentialTransformerInfo, db);
+
             //lifecycleDate
             await insertLifecycleDateTransaction(entity.lifecycleDate, db);
 
-            //productAssetModel
-            await insertProductAssetModelTransaction(entity.productAssetModel, db);
-            
 
-            //oldPotentialTransformerInfo
-            await insertOldPotentialTransformerTransaction(entity.OldPotentialTransformerInfo, db);
+
+
 
             //asset
             await insertAssetTransaction(entity.asset, db);
 
+
             //assetPsr
             await insertAssetPsrTransaction(entity.assetPsr, db);
 
+            //delete old data potentialTransformerTable
+            await deletePotentialTransformerTableByPotentialTransformerInfoId(entity.OldPotentialTransformerInfo.mrid, db);
 
             //potentialTransformerTable
             for (const table of entity.potentialTransformerTable) {
@@ -115,38 +124,93 @@ export const insertVoltageTransformerEntity = async (old_entity, entity) => {
 
 export const getVoltageTransformerEntityById = async (id, psrId) => {
     try {
-        if(id == null || id === '') {
+        if (id == null || id === '') {
             return { success: false, error: new Error('Invalid ID') };
         } else {
             const entity = new VoltageTransformerEntity()
             const dataVt = await getAssetById(id);
-            if(dataVt.success) {
+            if (dataVt.success) {
                 entity.asset = dataVt.data
+                console.log('dataVt:', dataVt)
                 const dataLifecycleDate = await getLifecycleDateById(entity.asset.lifecycle_date);
-                if(dataLifecycleDate.success) {
+                if (dataLifecycleDate.success) {
                     entity.lifecycleDate = dataLifecycleDate.data;
                 }
 
-                const dataOldVtInfo = await getOldPotentialTransformerInfoById(entity.asset.mrid);
-                if(dataOldVtInfo.success) {
+
+                const dataOldVtInfo = await getOldPotentialTransformerInfoById(entity.asset.asset_info);
+                if (dataOldVtInfo.success) {
                     entity.OldPotentialTransformerInfo = dataOldVtInfo.data;
                 }
-                
-                const productAssetModelId = entity.OldPotentialTransformerInfo.product_asset_model;
+
+                console.log('entity.OldPotentialTransformerInfo:', entity.OldPotentialTransformerInfo)
+
+                const productAssetModelId = entity.asset.product_asset_model;
+
                 const dataProductAssetModel = await getProductAssetModelById(productAssetModelId);
-                if(dataProductAssetModel.success) {
+
+                if (dataProductAssetModel.success) {
                     entity.productAssetModel = dataProductAssetModel.data;
                 }
-                
+
+                const dataAssetInfo = await getAssetInfoById(entity.asset.asset_info);
+                if (dataAssetInfo.success) {
+                    entity.assetInfo = dataAssetInfo.data;
+                }
+
                 const dataAssetPsr = await getAssetPsrByAssetIdAndPsrId(entity.asset.mrid, psrId);
-                if(dataAssetPsr.success) {
+                if (dataAssetPsr.success) {
                     entity.assetPsr = dataAssetPsr.data;
                 }
 
                 const dataAttachment = await getAttachmentByForeignIdAndType(entity.asset.mrid, 'asset');
-                if(dataAttachment.success) {
+                if (dataAttachment.success) {
                     entity.attachment = dataAttachment.data;
                 }
+
+                const dataVoltage = await getVoltageById(entity.OldPotentialTransformerInfo.rated_voltage);
+                if (dataVoltage.success) {
+                    entity.voltage.push(dataVoltage.data);
+                }
+
+                const dataFrequency = await getFrequencyById(entity.OldPotentialTransformerInfo.rated_frequency);
+                if (dataFrequency.success) {
+                    entity.frequency.push(dataFrequency.data);
+                }
+
+                const dataPotentialTransformerTable = await getPotentialTransformerTableByPotentialTransformerInfoId(entity.OldPotentialTransformerInfo.mrid);
+                if (dataPotentialTransformerTable.success) {
+                    entity.potentialTransformerTable = dataPotentialTransformerTable.data;
+                }
+
+                const arrVoltage = [];
+                const arrApparentPower = [];
+                entity.potentialTransformerTable.forEach(item => {
+                    arrVoltage.push(item.usr_rated_voltage);
+                    arrApparentPower.push(item.rated_burden);
+                })
+                const arrVoltageUnique = [...new Set(arrVoltage)];
+                const arrApparentPowerUnique = [...new Set(arrApparentPower)];
+
+                for (const voltage of arrVoltageUnique) {
+                    const dataVoltage = await getVoltageById(voltage);
+                    if (dataVoltage.success) {
+                        entity.voltage.push(dataVoltage.data);
+                    }
+                }
+
+                for (const apparentPower of arrApparentPowerUnique) {
+                    const dataApparentPower = await getApparentPowerById(apparentPower);
+                    if (dataApparentPower.success) {
+                        entity.apparentPower.push(dataApparentPower.data);
+                    }
+                }
+
+                console.log('entity.potentialTransformerTable:', entity.potentialTransformerTable)
+
+                console.log('entity.voltage:', entity.voltage)
+                console.log('entity.apparentPower:', entity.apparentPower)
+                console.log('entity.frequency:', entity.frequency)
 
                 return {
                     success: true,

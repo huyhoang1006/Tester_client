@@ -16,7 +16,7 @@ import * as transformerEntityFunc from './transformer/index'
 import * as TestTypeFunc from './testType/index'
 import * as jobEntityFunc from './job/index'
 import * as powerCableEntityFunc from './powerCable/index'
-import * as voltageTransformerEntityFunc from './voltageTransformer/index'
+import * as voltageTransformerEntityFunc from './VoltageTransformer/index'
 import * as bushingEntityFunc from './Bushing/index'
 import * as disconnectorEntityFunc from "./disconnector/index"
 
