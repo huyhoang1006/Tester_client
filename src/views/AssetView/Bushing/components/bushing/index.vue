@@ -51,7 +51,7 @@
                     </el-input>
                 </el-form-item>
                 <el-form-item label="Cap. (C2)">
-                    <el-input style="width: 100%;" filterable v-model="bushingData.cap_c2.value">
+                    <el-input style="width: 100%;" v-model="bushingData.cap_c2.value">
                         <template #append>{{ bushingData.cap_c2.label }}</template>
                     </el-input>
                 </el-form-item>

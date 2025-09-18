@@ -16,8 +16,10 @@ export default {
                 if(this.surge_arrester_data.properties.serial_no !== null && this.surge_arrester_data.properties.serial_no !== '') {
                     const data = JSON.parse(JSON.stringify(this.surge_arrester_data));
                     const result = this.checkSurgeArresterData(data);
+                    console.log(result)
                     const oldResult = this.checkSurgeArresterData(this.surge_arrester_data_old);
                     const resultEntity = Mapping.mapDtoToEntity(result);
+                    console.log(resultEntity)
                     const oldResultEntity = Mapping.mapDtoToEntity(oldResult);
                     let rs = await window.electronAPI.insertSurgeArresterEntity(oldResultEntity, resultEntity)
                     if(rs.success) {

@@ -34,20 +34,22 @@ export const insertOldBushingInfoTransaction = async (info, dbsql) => {
             }
             dbsql.run(
                 `INSERT INTO old_bushing_info(
-                    mrid, high_voltage_limit, power_transformer_info_id, c2_capacitance, c2_power_factor
-                ) VALUES (?, ?, ?, ?, ?)
+                    mrid, high_voltage_limit, power_transformer_info_id, c2_capacitance, c2_power_factor, rated_frequency
+                ) VALUES (?, ?, ?, ?, ?, ?)
                 ON CONFLICT(mrid) DO UPDATE SET
                     high_voltage_limit = excluded.high_voltage_limit,
                     power_transformer_info_id = excluded.power_transformer_info_id,
                     c2_capacitance = excluded.c2_capacitance,
-                    c2_power_factor = excluded.c2_power_factor
+                    c2_power_factor = excluded.c2_power_factor,
+                    rated_frequency = excluded.rated_frequency
                 `,
                 [
                     info.mrid,
                     info.high_voltage_limit,
                     info.power_transformer_info_id,
                     info.c2_capacitance,
-                    info.c2_power_factor
+                    info.c2_power_factor,
+                    info.rated_frequency
                 ],
                 function (err) {
                     if (err) {
@@ -75,13 +77,15 @@ export const updateOldBushingInfoTransaction = async (mrid, info, dbsql) => {
                     high_voltage_limit = ?,
                     power_transformer_info_id = ?,
                     c2_capacitance = ?,
-                    c2_power_factor = ?
+                    c2_power_factor = ?,
+                    rated_frequency = ?
                 WHERE mrid = ?`,
                 [
                     info.high_voltage_limit,
                     info.power_transformer_info_id,
                     info.c2_capacitance,
                     info.c2_power_factor,
+                    info.rated_frequency,
                     mrid
                 ],
                 function (err) {
