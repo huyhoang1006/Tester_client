@@ -820,29 +820,29 @@ export default {
                 mode: ''
             },
             terminal: {
-        rated_u: { value: '' },
-        bil: { value: '' },
-        bsl: { value: '' },
-        type: { value: '' },
-        class: { value: '' },
-        connector_type: { value: '' },
-        service_condition: { value: '' }
-      },
-      joint: {
-        rated_u: { value: '' },
-        rated_current: { value: '' },
-        category: { value: '' },
-        construction: { value: '' },
-        service_condition: { value: '' }
-      },
-      sheath_limits: {
-        rated_voltage_ur: { value: '' },
-        max_continuous_operating_voltage: { value: '' },
-        nominal_discharge_current: { value: '' },
-        high_current_impulse_withstand: { value: '' },
-        long_duration_current_impulse_withstand: { value: '' },
-        short_circuit: { value: '' }
-      },
+                rated_u: { value: '' },
+                bil: { value: '' },
+                bsl: { value: '' },
+                type: { value: '' },
+                class: { value: '' },
+                connector_type: { value: '' },
+                service_condition: { value: '' }
+            },
+            joint: {
+                rated_u: { value: '' },
+                rated_current: { value: '' },
+                category: { value: '' },
+                construction: { value: '' },
+                service_condition: { value: '' }
+            },
+            sheath_limits: {
+                rated_voltage_ur: { value: '' },
+                max_continuous_operating_voltage: { value: '' },
+                nominal_discharge_current: { value: '' },
+                high_current_impulse_withstand: { value: '' },
+                long_duration_current_impulse_withstand: { value: '' },
+                short_circuit: { value: '' }
+            },
             sl: 10,
             count: '',
             ownerServerList: [],
@@ -866,7 +866,7 @@ export default {
         }
     },
     methods: {
-        
+
         async reloadLogClient(doneCallback) {
             try {
                 const data = await window.electronAPI.getAllConfigurationEvents()
@@ -2702,6 +2702,31 @@ export default {
                                 }
                                 console.log('Disconnector entity:', entity)
                                 const deleteSign = await window.electronAPI.deleteDisconnectorEntity(entity.data);
+                                if (!deleteSign.success) {
+                                    this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
+                                    return;
+                                }
+                                // ✅ Xóa node khỏi cây organisationClientList
+                                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
+                                if (parentNode && Array.isArray(parentNode.children)) {
+                                    const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
+                                    if (index !== -1) {
+                                        parentNode.children.splice(index, 1); // Xóa khỏi mảng children
+                                        this.$message.success("Delete data successfully");
+                                    } else {
+                                        this.$message.warning("Node not found in tree structure");
+                                    }
+                                } else {
+                                    this.$message.warning("Parent node not found in tree");
+                                }
+                            } else if (node.asset === 'Voltage transformer') {
+                                const entity = await window.electronAPI.getVoltageTransformerEntityByMrid(node.mrid, node.parentId);
+                                if (!entity.success) {
+                                    this.$message.error("Entity not found");
+                                    return;
+                                }
+                                console.log('Voltage transformer entity:', entity)
+                                const deleteSign = await window.electronAPI.deleteVoltageTransformerEntity(entity.data);
                                 if (!deleteSign.success) {
                                     this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
                                     return;
