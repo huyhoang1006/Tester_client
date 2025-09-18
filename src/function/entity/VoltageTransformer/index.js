@@ -6,9 +6,9 @@ import { insertApparentPowerTransaction, getApparentPowerById, deleteApparentPow
 import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction } from '@/function/cim/lifecycleDate'
 import { insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction } from '@/function/cim/productAssetModel'
 import { insertAssetTransaction, getAssetById, deleteAssetByIdTransaction } from '@/function/cim/asset'
-import { insertOldPotentialTransformerTransaction, getOldPotentialTransformerInfoById } from '@/function/cim/OldPotentialTransformerInfo/index.js'
+import { insertOldPotentialTransformerTransaction, getOldPotentialTransformerInfoById, deleteOldPotentialTransformerInfoTransaction } from '@/function/cim/OldPotentialTransformerInfo/index.js'
 import { insertPotentialTransformerTable, deletePotentialTransformerTableByPotentialTransformerInfoId, getPotentialTransformerTableByPotentialTransformerInfoId } from '@/function/cim/PotentialTransformerTable/index.js'
-import { insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
+import { insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction, deleteAssetPsrByIdTransaction } from '@/function/entity/assetPsr'
 import VoltageTransformerEntity from '@/views/Entity/VoltageTransformer'
 import { getAssetInfoById } from '@/function/cim/assetInfo'
 
@@ -226,6 +226,122 @@ export const getVoltageTransformerEntityById = async (id, psrId) => {
         return { success: false, error, message: 'Error retrieving Voltage Transformer entity by ID' };
     }
 }
+
+export const deleteVoltageTransformerEntity = async (data) => {
+    console.log('start deleteVoltageTransformerEntity');
+    try {
+        if (!data.asset || !data.asset.mrid) {
+            return { success: false, error: new Error('Invalid ID') };
+        }
+
+        try {
+            await runAsync('BEGIN TRANSACTION');
+
+            // Xóa attachment
+            if (data.attachment && data.attachment.id) {
+                const pathData = JSON.parse(data.attachment.path || '[]');
+                if (Array.isArray(pathData) && pathData.length > 0) {
+                    syncFilesWithDeletion(pathData, null, data.mrid);
+                }
+                await deleteAttachmentByIdTransaction(data.attachment.id, db);
+            }
+
+
+
+            // Xóa assetPsr
+            if (data.assetPsr && data.assetPsr.mrid) {
+                await deleteAssetPsrTransaction(data.assetPsr.mrid, db);
+            }
+            console.log('1');
+
+            if (data.asset && data.asset.mrid) {
+                await deleteAssetByIdTransaction(data.asset.mrid, db);
+            }
+            console.log('2');
+
+            // Xóa productAssetModel
+            if (data.productAssetModel && data.productAssetModel.mrid) {
+                await deleteProductAssetModelByIdTransaction(data.productAssetModel.mrid, db);
+            }
+            console.log('3');
+
+            // Xóa lifecycleDate
+            if (data.lifecycleDate && data.lifecycleDate.mrid) {
+                await deleteLifecycleDateByIdTransaction(data.lifecycleDate.mrid, db);
+            }
+            console.log('4');
+
+            await deletePotentialTransformerTableByPotentialTransformerInfoId(data.OldPotentialTransformerInfo.mrid, db);
+            console.log('5');
+            // Xóa OldPotentialTransformerInfo
+            if (data.OldPotentialTransformerInfo && data.OldPotentialTransformerInfo.mrid) {
+                await deleteOldPotentialTransformerInfoTransaction(data.OldPotentialTransformerInfo.mrid, db);
+            }
+            console.log('6');
+            // Collect voltage & apparentPower
+            const arrVoltage = [];
+            const arrApparentPower = [];
+
+            if (Array.isArray(data.potentialTransformerTable)) {
+                data.potentialTransformerTable.forEach(item => {
+                    if (item.usr_rated_voltage) arrVoltage.push(item.usr_rated_voltage);
+                    if (item.rated_burden) arrApparentPower.push(item.rated_burden);
+                });
+            }
+
+            // Xóa voltage
+            for (const voltage of arrVoltage) {
+                if (voltage && voltage.mrid) {
+                    await deleteVoltageByIdTransaction(voltage.mrid, db);
+                }
+            }
+
+            // Xóa apparent power
+            for (const apparentPower of arrApparentPower) {
+                if (apparentPower && apparentPower.mrid) {
+                    await deleteApparentPowerByIdTransaction(apparentPower.mrid, db);
+                }
+            }
+
+            // Xóa frequency nếu có
+            if (data.OldPotentialTransformerInfo
+                && data.OldPotentialTransformerInfo.rated_frequency
+                && data.OldPotentialTransformerInfo.rated_frequency.mrid) {
+                await deleteFrequencyByIdTransaction(data.OldPotentialTransformerInfo.rated_frequency.mrid, db);
+            }
+
+            // Xóa voltage còn lại
+            if (Array.isArray(data.voltage)) {
+                for (const voltage of data.voltage) {
+                    if (voltage && voltage.mrid) {
+                        await deleteVoltageByIdTransaction(voltage.mrid, db);
+                    }
+                }
+            }
+
+
+
+            await runAsync('COMMIT');
+
+            // Xóa thư mục theo mrid asset
+            if (data.asset && data.asset.mrid) {
+                deleteDirectory(null, data.asset.mrid);
+            }
+
+            return { success: true, message: 'Voltage Transformer entity deleted successfully' };
+
+        } catch (error) {
+            await runAsync('ROLLBACK');
+            console.error('Error deleting Voltage Transformer entity:', error);
+            return { success: false, error, message: 'Error deleting Voltage Transformer entity' };
+        }
+
+    } catch (error) {
+        console.error('Error deleting Voltage Transformer entity:', error);
+        return { success: false, error, message: 'Error deleting Voltage Transformer entity' };
+    }
+}
+
 
 const runAsync = (sql, params = []) => {
     return new Promise((resolve, reject) => {
