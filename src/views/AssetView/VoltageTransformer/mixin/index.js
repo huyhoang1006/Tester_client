@@ -53,16 +53,38 @@ export default {
                 };
             }
         },
+        async saveCtrS() {
+            const data = await this.saveAsset()
+            if (data.success) {
+                this.$message.success("Asset saved successfully")
+            } else {
+                this.$message.error("Failed to save asset")
+            }
+        },
 
         loadData(data) {
             this.old_data = JSON.parse(JSON.stringify(data));
-            this.voltageTransformer = data;
-            if(data.attachment && data.attachment.path) {
-                this.attachmentData = JSON.parse(data.attachment.path)
+
+            const cloned = JSON.parse(JSON.stringify(data));
+
+            if (cloned.vt_Configuration) {
+
+                // convert sang format cho UI
+                cloned.vt_Configuration = this.convertDTOToUIConfig(cloned.vt_Configuration);
+                console.log('cloned.vt_Configuration: ', cloned.vt_Configuration)
+            }
+
+            this.voltageTransformer = cloned;
+
+            console.log('x (UI data): ', this.voltageTransformer);
+
+            if (data.attachment && data.attachment.path) {
+                this.attachmentData = JSON.parse(data.attachment.path);
             } else {
-                this.attachmentData = []
+                this.attachmentData = [];
             }
         },
+
 
         async resetForm() {
             this.voltageTransformer = new VoltageTransformerDto();
@@ -71,6 +93,7 @@ export default {
 
         async checkVoltageTransformerData(data) {
             try {
+                this.checkRatedFrequency(data)
                 this.checkProperty(data);
                 this.checkLifecycleDate(data);
                 data.vt_Configuration = this.normalizeVTConfig(data.vt_Configuration)
@@ -81,7 +104,7 @@ export default {
                 this.checkLocationId(data);
                 this.checkVoltageTransformerTree(data);
                 this.checkPsrId(data);
-                this.checkAssetInfoId(data)
+                this.checkAssetInfoId(data);
                 return data;
             } catch (error) {
                 console.error("Error checking voltage transformer data:", error);
@@ -120,6 +143,12 @@ export default {
         checkProductAssetModelId(data) {
             if (data.productAssetModelId === null || data.productAssetModelId === '') {
                 data.productAssetModelId = uuid.newUuid();
+            }
+        },
+
+        checkAssetInfoId(data) {
+            if (data.assetInfoId === null || data.assetInfoId === '') {
+                data.assetInfoId = uuid.newUuid();
             }
         },
 
@@ -162,6 +191,27 @@ export default {
                 this.checkValueWithUnit(table.usr_rated_voltage);
             })
         },
+
+        convertDTOToUIConfig(vtConfig) {
+            if (!vtConfig || !vtConfig.dataVT) return null;
+            console.log('vtConfig: ', vtConfig)
+            return {
+                windings: vtConfig.windings,
+                dataVT: vtConfig.dataVT.map(item => {
+                    const table = item || {};
+                    return {
+                        table: {
+                            mrid: table.mrid || null,
+                            usrRatio: table.usr_formula.value || null,
+                            usr: table.usr_rated_voltage.value || table.usr || null,
+                            rated_burden: table.rated_burden.value || table.rated_burden || null,
+                            cosphi: table.rated_power_factor.value || table.cosphi || null,
+                        }
+                    };
+                })
+            };
+        }
+        ,
 
 
         checkWindings(data) {
@@ -252,10 +302,16 @@ export default {
                 })
             };
         },
-        
+
         checkAssetInfoId(data) {
-            if(data.assetInfoId === null || data.assetInfoId === '') {
+            if (data.assetInfoId === null || data.assetInfoId === '') {
                 data.assetInfoId = uuid.newUuid()
+            }
+        },
+
+        checkRatedFrequency(data) {
+            if (data.ratings.rated_frequency.value === 'Custom') {
+                data.ratings.rated_frequency.value = data.ratings.rated_frequency_custom
             }
         }
 

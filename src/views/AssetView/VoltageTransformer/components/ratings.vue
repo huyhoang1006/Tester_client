@@ -15,7 +15,7 @@
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Standard">
                             <el-col :span="24" class="pdr-0">
-                                <el-select style="width: 100%;" v-model="ratingsData.standard.value">
+                                <el-select style="width: 100%;" v-model="ratingsData.standard">
                                     <el-option label="<Select standard>" value="selectStandard"></el-option>
                                     <el-option label="IEC 60044" value="IEC60044"></el-option>
                                     <el-option label="IEC 61869" value="IEC61869"></el-option>
@@ -24,11 +24,11 @@
                             </el-col>
                         </el-form-item>
                     </el-form>
-                    <el-form v-if="ratingsData.rated_frequency != 'Custom'" :inline-message="true"
+                    <el-form v-if="ratingsData.rated_frequency.value != 'Custom'" :inline-message="true"
                         :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Rated frequency">
                             <el-col :span="24" class="pdr-0">
-                                <el-select style="width: 100%;" v-model="ratingsData.rated_frequency">
+                                <el-select style="width: 100%;" v-model="ratingsData.rated_frequency.value">
                                     <el-option label="Custom" value="Custom"></el-option>
                                     <el-option label="60Hz" value="60"></el-option>
                                     <el-option label="50Hz" value="50"></el-option>
@@ -40,7 +40,7 @@
                     <el-form v-else :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Rated frequency">
                             <el-col :span="11" class="pdl-0">
-                                <el-select v-model="ratingsData.rated_frequency">
+                                <el-select v-model="ratingsData.rated_frequency.value">
                                     <el-option label="Custom" value="Custom"></el-option>
                                     <el-option label="60Hz" value="60"></el-option>
                                     <el-option label="50Hz" value="50"></el-option>
@@ -50,7 +50,7 @@
                             <el-col :span="2" class="pdl-0">
                                 <br>
                             </el-col>
-                            <el-col :span="11" class="pdr-0" v-if="ratingsData.rated_frequency === 'Custom'">
+                            <el-col :span="11" class="pdr-0" v-if="ratingsData.rated_frequency.value === 'Custom'">
                                 <el-input v-model="ratingsData.rated_frequency_custom">
                                     <template slot="append">Hz</template>
                                 </el-input>
@@ -119,7 +119,6 @@ export default {
     },
     computed: {
         ratingsData() {
-            console.log(this.ratings)
             return this.ratings
         },
         propertiesData() {

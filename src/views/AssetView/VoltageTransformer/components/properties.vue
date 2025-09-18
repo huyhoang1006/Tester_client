@@ -43,7 +43,7 @@
                         <el-input v-model="propertiesData.manufacturing_year"></el-input>
                     </el-form-item>
                     <el-form-item label="Country of origin">
-                        <el-select style="width: 100%;" filterable v-model="propertiesData.asset_system_code">
+                        <el-select style="width: 100%;" filterable v-model="propertiesData.country_of_origin">
                             <el-option v-for="item in countryData" :key="item" :label="item" :value="item"> </el-option>
                         </el-select>
                     </el-form-item>
