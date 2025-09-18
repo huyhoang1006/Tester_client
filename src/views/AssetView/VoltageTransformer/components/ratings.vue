@@ -15,7 +15,7 @@
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Standard">
                             <el-col :span="24" class="pdr-0">
-                                <el-select style="width: 100%;" v-model="ratingsData.standard.value">
+                                <el-select style="width: 100%;" v-model="ratingsData.standard">
                                     <el-option label="<Select standard>" value="selectStandard"></el-option>
                                     <el-option label="IEC 60044" value="IEC60044"></el-option>
                                     <el-option label="IEC 61869" value="IEC61869"></el-option>

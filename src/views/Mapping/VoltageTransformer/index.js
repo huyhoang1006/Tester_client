@@ -43,7 +43,7 @@ export function mapDtoToEntity(dto) {
     //Ratings
     entity.OldPotentialTransformerInfo.mrid = dto.assetInfoId;
     entity.OldPotentialTransformerInfo.manufacturer_type = dto.properties.manufacturer_type || null;
-    entity.OldPotentialTransformerInfo.standard = dto.ratings.standard.value || '';
+    entity.OldPotentialTransformerInfo.standard = dto.ratings.standard || '';
     entity.OldPotentialTransformerInfo.rated_frequency = dto.ratings.rated_frequency.mrid || '';
     const newRatedFrequency = new Frequency();
     mappingUnit(newRatedFrequency, dto.ratings.rated_frequency);
@@ -110,72 +110,144 @@ export function mapEntityToDto(entity) {
 
     //ratings
     dto.properties.manufacturer_type = entity.OldPotentialTransformerInfo.manufacturer_type || null;
-    for (let i = 0; i < entity.frequency.length; i++) {
-        if (entity.frequency[i].mrid === entity.OldPotentialTransformerInfo.rated_frequency) {
-            dto.ratings.rated_frequency.value = entity.frequency[i].value || '';
+    dto.ratings.standard = entity.OldPotentialTransformerInfo.standard || null;
+
+    for (let frequency of entity.frequency) {
+        if (frequency.mrid === entity.OldPotentialTransformerInfo.rated_frequency) {
+            dto.ratings.rated_frequency.mrid = frequency.mrid || '';
+            dto.ratings.rated_frequency.value = frequency.value || '';
+            dto.ratings.rated_frequency.unit = frequency.multiplier + '|' + frequency.unit || '';
         }
     }
 
-    for (let i = 0; i < entity.voltage.length; i++) {
-        if (entity.voltage[i].mrid === entity.OldPotentialTransformerInfo.rated_voltage) {
-            dto.ratings.rated_voltage.value = entity.voltage[i].value || '';
+    dto.ratings.upr = entity.OldPotentialTransformerInfo.upr_formula || '';
+
+    for (let voltage of entity.voltage) {
+        if (voltage.mrid === entity.OldPotentialTransformerInfo.rated_voltage) {
+            dto.ratings.rated_voltage.mrid = voltage.mrid || '';
+            dto.ratings.rated_voltage.value = voltage.value || '';
+            dto.ratings.rated_voltage.unit = voltage.multiplier + '|' + voltage.unit || '';
         }
     }
 
+    dto.vt_Configuration.windings = entity.OldPotentialTransformerInfo.windings || '';
+    dto.vt_Configuration.dataVT = mapDataVTRevert(entity);
 
     return dto;
 }
 
+const mapDataVTRevert = (entity) => {
+    if (!entity || !entity.potentialTransformerTable) return [];
+
+    return entity.potentialTransformerTable.map(item => {
+        // tìm voltage matching
+        const voltage = entity.voltage?.find(v => v.mrid === item.usr_rated_voltage);
+        // tìm apparentPower matching
+        const burden = entity.apparentPower?.find(b => b.mrid === item.rated_burden);
+
+        return {
+            mrid: item.mrid || null,
+            name: item.name || null,
+
+            usr_formula: {
+                mrid: "",
+                value: item.usr_formula || null,
+                unit: "",
+                multiplier: ""
+            },
+
+            rated_power_factor: {
+                mrid: "",
+                value: item.rated_power_factor || null,
+                unit: "",
+                multiplier: ""
+            },
+
+            usr_rated_voltage: voltage
+                ? {
+                    mrid: voltage.mrid,
+                    value: voltage.value,
+                    unit: `${voltage.multiplier || "null"}|${voltage.unit || ""}`,
+                    multiplier: voltage.multiplier || ""
+                }
+                : null,
+
+            rated_burden: burden
+                ? {
+                    mrid: burden.mrid,
+                    value: burden.value,
+                    unit: `${burden.multiplier || "null"}|${burden.unit || ""}`,
+                    multiplier: burden.multiplier || ""
+                }
+                : null
+        };
+    });
+};
 
 const mapDataVTtoArrayPotentialTransformerTable = (dto, entity) => {
-    dto.vt_Configuration.dataVT.forEach(item => {
-        const table = item.table;
+    if (!dto?.vt_Configuration?.dataVT) return;
+
+    dto.vt_Configuration.dataVT.forEach((item, idx) => {
+        // Hỗ trợ cả 2 dạng: item.table hoặc item là chính table
+        const table = item?.table ?? item;
+        if (!table || typeof table !== 'object') {
+            console.warn(`mapDataVTtoArrayPotentialTransformerTable: dataVT[${idx}] missing table`, item);
+            return;
+        }
+
         const newTable = new PotentialTransformerTable();
 
         // mrid của bảng
         newTable.mrid = table.mrid || null;
 
-        // usr_formula: lấy value trực tiếp
-        newTable.usr_formula = table.usr_formula?.value || null;
+        // usr_formula: lấy value nếu là object {value:...}, hoặc raw nếu là string/number
+        newTable.usr_formula = table.usr_formula?.value ?? table.usr_formula ?? null;
 
-        // rated_power_factor: số thực
-        newTable.rated_power_factor = table.rated_power_factor?.value
-            ? parseFloat(table.rated_power_factor.value)
-            : null;
+        // rated_power_factor: parse nếu có
+        const rpfRaw = table.rated_power_factor?.value ?? table.rated_power_factor ?? null;
+        newTable.rated_power_factor = (rpfRaw !== null && rpfRaw !== '' && !isNaN(Number(rpfRaw)))
+            ? parseFloat(rpfRaw)
+            : (rpfRaw === '' || rpfRaw === null ? null : (isNaN(Number(rpfRaw)) ? rpfRaw : parseFloat(rpfRaw)));
 
-        // rated_burden: ApparentPower
+        // rated_burden: nếu là object (ValueWithUnit-like) => tạo ApparentPower, else nếu là string (mrid) gán trực tiếp
         if (table.rated_burden) {
-            const newBurden = new ApparentPower();
-            mappingUnit(newBurden, table.rated_burden);
-            newTable.rated_burden = newBurden.mrid;
-
-            // push vào entity.apparentPower
-            if (!entity.apparentPower) entity.apparentPower = [];
-            entity.apparentPower.push(newBurden);
+            if (typeof table.rated_burden === 'object') {
+                const newBurden = new ApparentPower();
+                mappingUnit(newBurden, table.rated_burden);
+                newTable.rated_burden = newBurden.mrid;
+                entity.apparentPower = entity.apparentPower || [];
+                entity.apparentPower.push(newBurden);
+            } else {
+                // có thể đã là mrid string
+                newTable.rated_burden = table.rated_burden;
+            }
+        } else {
+            newTable.rated_burden = null;
         }
 
-        // usr_rated_voltage: Voltage
+        // usr_rated_voltage: tương tự như trên với Voltage
         if (table.usr_rated_voltage) {
-            const newVoltage = new Voltage();
-            mappingUnit(newVoltage, table.usr_rated_voltage);
-            newTable.usr_rated_voltage = newVoltage.mrid;
-
-            // push vào entity.voltage
-            if (!entity.voltage) entity.voltage = [];
-            entity.voltage.push(newVoltage);
+            if (typeof table.usr_rated_voltage === 'object') {
+                const newVoltage = new Voltage();
+                mappingUnit(newVoltage, table.usr_rated_voltage);
+                newTable.usr_rated_voltage = newVoltage.mrid;
+                entity.voltage = entity.voltage || [];
+                entity.voltage.push(newVoltage);
+            } else {
+                newTable.usr_rated_voltage = table.usr_rated_voltage; // mrid
+            }
+        } else {
+            newTable.usr_rated_voltage = null;
         }
 
-        // nếu sau này có thêm length/frequency cũng làm tương tự:
-        // const newLen = new Length(); mappingUnit(newLen, table.someLength); entity.length.push(newLen);
+        // FK potential_transformer_info: check an toàn
+        newTable.potential_transformer_info_id = entity?.OldPotentialTransformerInfo?.mrid ?? entity?.assetInfoId ?? null;
 
-        // FK potential_transformer_info
-        newTable.potential_transformer_info_id = entity.OldPotentialTransformerInfo.mrid;
-
-        // cuối cùng push table vào entity.potentialTransformerTable
-        if (!entity.potentialTransformerTable) entity.potentialTransformerTable = [];
+        // push
+        entity.potentialTransformerTable = entity.potentialTransformerTable || [];
         entity.potentialTransformerTable.push(newTable);
     });
-}
+};
 
 
 

@@ -1,3 +1,4 @@
+import db from '../../datacontext/index'
 
 export const insertPotentialTransformerTable = async (potentialTransformerTable, dbsql) => {
     return new Promise(async (resolve, reject) => {
@@ -30,5 +31,29 @@ export const insertPotentialTransformerTable = async (potentialTransformerTable,
         } catch (err) {
             return reject({ success: false, err, message: 'Insert potentialTransformerTable transaction failed' })
         }
+    })
+}
+
+export const deletePotentialTransformerTableByPotentialTransformerInfoId = async (mrid, dbsql) => {
+    return new Promise((resolve, reject) => {
+        dbsql.run("DELETE FROM potential_transformer_table WHERE potential_transformer_info_id=?", [mrid], function (err) {
+            if (err) {
+                return reject({ success: false, err, message: 'Delete potentialTransformerTable failed' })
+            }
+            return resolve({ success: true, data: mrid, message: 'Delete potentialTransformerTable completed' })
+        })
+    })
+}
+
+export const getPotentialTransformerTableByPotentialTransformerInfoId = async (mrid) => {
+    return new Promise((resolve, reject) => {
+        db.all(
+            `SELECT * FROM potential_transformer_table WHERE potential_transformer_info_id=?`,
+            [mrid],
+            (err, rows) => {
+                if (err) return reject({ success: false, err, message: 'Get potentialTransformerTable by id failed' })
+                return resolve({ success: true, data: rows, message: 'Get potentialTransformerTable by id completed' })
+            }
+        )
     })
 }

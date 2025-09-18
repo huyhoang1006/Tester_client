@@ -10,13 +10,14 @@
             </el-col>
         </el-row>
         <div class="content-toggle" v-if="openConfig">
-            <br/>
+            <br />
             <el-row style="width: 100%;" class="content">
                 <el-col :span="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Windings">
                             <el-col :span="24" class="pdr-0">
-                                <el-select @change="changeWindingData(configsData.windings)" style="width: 25%;" v-model="configsData.windings">
+                                <el-select @change="changeWindingData(configsData.windings)" style="width: 25%;"
+                                    v-model="configsData.windings">
                                     <el-option v-for="item in 6" :key="item" :label="item" :value="item"> </el-option>
                                 </el-select>
                             </el-col>
@@ -24,19 +25,19 @@
                     </el-form>
                 </el-col>
             </el-row>
-            <br/>
+            <br />
             <el-row style="width: 80%;">
                 <table style=" width: 100%; background-color: white;">
-                    <thead >
+                    <thead>
                         <th style="min-width: 50px;" class="thvol">Name</th>
-                        <th class="thvol"  colspan="2">Usr</th>
-                        <th class="thvol" >Rated burden</th>
-                        <th class="thvol" >cos φ</th>
+                        <th class="thvol" colspan="2">Usr</th>
+                        <th class="thvol">Rated burden</th>
+                        <th class="thvol">cos φ</th>
                     </thead>
-                    <tbody v-for="(item,index) in this.configsData.dataVT" :key="index">
+                    <tbody v-for="(item, index) in this.configsData.dataVT" :key="index">
                         <tr>
                             <td>
-                                {{`${index+1}a${index+1}n`}}
+                                {{ `${index + 1}a${index + 1}n` }}
                             </td>
                             <td>
                                 <el-select size="mini" v-model="item.table.usrRatio">
@@ -68,20 +69,20 @@
 </template>
 <script>
 export default {
-    name : "currentVTConfig",
-    props : {
-        configs : {
-            type : Object,
-            require : true,
+    name: "currentVTConfig",
+    props: {
+        configs: {
+            type: Object,
+            require: true,
         },
     },
     data() {
         return {
-            openConfig : "true",
-            labelWidth : `200px`,
+            openConfig: "true",
+            labelWidth: `200px`,
         }
     },
-    watch : {
+    watch: {
     },
     computed: {
         configsData() {
@@ -91,27 +92,30 @@ export default {
     methods: {
         changeWindingData(data) {
             let lengthData = this.configsData.dataVT.length
-            if(lengthData < data) {
-                for(let i=0; i < data-lengthData; i++) {
+            if (lengthData < data) {
+                for (let i = 0; i < data - lengthData; i++) {
                     this.configsData.dataVT.push({
-                        table : {
+                        table: {
                         }
                     })
                 }
-            } else if(lengthData > data) {
-                this.configsData.dataVT.splice(1, parseInt(lengthData-data))
+            } else if (lengthData > data) {
+                this.configsData.dataVT.splice(1, parseInt(lengthData - data))
             }
         }
     }
 }
 </script>
 <style scoped>
-th, td, table {
+th,
+td,
+table {
     border: 1px solid black;
     border-collapse: collapse;
     font-size: 12px;
     white-space: nowrap;
 }
+
 .thvol {
     text-align: center;
     padding-top: 10px;

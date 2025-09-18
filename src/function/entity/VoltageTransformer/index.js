@@ -7,11 +7,10 @@ import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDa
 import { insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction } from '@/function/cim/productAssetModel'
 import { insertAssetTransaction, getAssetById, deleteAssetByIdTransaction } from '@/function/cim/asset'
 import { insertOldPotentialTransformerTransaction, getOldPotentialTransformerInfoById } from '@/function/cim/OldPotentialTransformerInfo/index.js'
-import { insertPotentialTransformerTable } from '@/function/cim/PotentialTransformerTable/index.js'
+import { insertPotentialTransformerTable, deletePotentialTransformerTableByPotentialTransformerInfoId, getPotentialTransformerTableByPotentialTransformerInfoId } from '@/function/cim/PotentialTransformerTable/index.js'
 import { insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
 import VoltageTransformerEntity from '@/views/Entity/VoltageTransformer'
 import { getAssetInfoById } from '@/function/cim/assetInfo'
-import { insertAssetInfoTransaction } from '@/function/cim/assetInfo'
 
 
 /**
@@ -102,6 +101,8 @@ export const insertVoltageTransformerEntity = async (old_entity, entity) => {
             //assetPsr
             await insertAssetPsrTransaction(entity.assetPsr, db);
 
+            //delete old data potentialTransformerTable
+            await deletePotentialTransformerTableByPotentialTransformerInfoId(entity.OldPotentialTransformerInfo.mrid, db);
 
             //potentialTransformerTable
             for (const table of entity.potentialTransformerTable) {
@@ -166,6 +167,50 @@ export const getVoltageTransformerEntityById = async (id, psrId) => {
                 if (dataAttachment.success) {
                     entity.attachment = dataAttachment.data;
                 }
+
+                const dataVoltage = await getVoltageById(entity.OldPotentialTransformerInfo.rated_voltage);
+                if (dataVoltage.success) {
+                    entity.voltage.push(dataVoltage.data);
+                }
+
+                const dataFrequency = await getFrequencyById(entity.OldPotentialTransformerInfo.rated_frequency);
+                if (dataFrequency.success) {
+                    entity.frequency.push(dataFrequency.data);
+                }
+
+                const dataPotentialTransformerTable = await getPotentialTransformerTableByPotentialTransformerInfoId(entity.OldPotentialTransformerInfo.mrid);
+                if (dataPotentialTransformerTable.success) {
+                    entity.potentialTransformerTable = dataPotentialTransformerTable.data;
+                }
+
+                const arrVoltage = [];
+                const arrApparentPower = [];
+                entity.potentialTransformerTable.forEach(item => {
+                    arrVoltage.push(item.usr_rated_voltage);
+                    arrApparentPower.push(item.rated_burden);
+                })
+                const arrVoltageUnique = [...new Set(arrVoltage)];
+                const arrApparentPowerUnique = [...new Set(arrApparentPower)];
+
+                for (const voltage of arrVoltageUnique) {
+                    const dataVoltage = await getVoltageById(voltage);
+                    if (dataVoltage.success) {
+                        entity.voltage.push(dataVoltage.data);
+                    }
+                }
+
+                for (const apparentPower of arrApparentPowerUnique) {
+                    const dataApparentPower = await getApparentPowerById(apparentPower);
+                    if (dataApparentPower.success) {
+                        entity.apparentPower.push(dataApparentPower.data);
+                    }
+                }
+
+                console.log('entity.potentialTransformerTable:', entity.potentialTransformerTable)
+
+                console.log('entity.voltage:', entity.voltage)
+                console.log('entity.apparentPower:', entity.apparentPower)
+                console.log('entity.frequency:', entity.frequency)
 
                 return {
                     success: true,

@@ -64,14 +64,27 @@ export default {
 
         loadData(data) {
             this.old_data = JSON.parse(JSON.stringify(data));
-            this.voltageTransformer = data;
-            console.log('x: ', data)
+
+            const cloned = JSON.parse(JSON.stringify(data));
+
+            if (cloned.vt_Configuration) {
+
+                // convert sang format cho UI
+                cloned.vt_Configuration = this.convertDTOToUIConfig(cloned.vt_Configuration);
+                console.log('cloned.vt_Configuration: ', cloned.vt_Configuration)
+            }
+
+            this.voltageTransformer = cloned;
+
+            console.log('x (UI data): ', this.voltageTransformer);
+
             if (data.attachment && data.attachment.path) {
-                this.attachmentData = JSON.parse(data.attachment.path)
+                this.attachmentData = JSON.parse(data.attachment.path);
             } else {
-                this.attachmentData = []
+                this.attachmentData = [];
             }
         },
+
 
         async resetForm() {
             this.voltageTransformer = new VoltageTransformerDto();
@@ -178,6 +191,27 @@ export default {
                 this.checkValueWithUnit(table.usr_rated_voltage);
             })
         },
+
+        convertDTOToUIConfig(vtConfig) {
+            if (!vtConfig || !vtConfig.dataVT) return null;
+            console.log('vtConfig: ', vtConfig)
+            return {
+                windings: vtConfig.windings,
+                dataVT: vtConfig.dataVT.map(item => {
+                    const table = item || {};
+                    return {
+                        table: {
+                            mrid: table.mrid || null,
+                            usrRatio: table.usr_formula.value || null,
+                            usr: table.usr_rated_voltage.value || table.usr || null,
+                            rated_burden: table.rated_burden.value || table.rated_burden || null,
+                            cosphi: table.rated_power_factor.value || table.cosphi || null,
+                        }
+                    };
+                })
+            };
+        }
+        ,
 
 
         checkWindings(data) {
