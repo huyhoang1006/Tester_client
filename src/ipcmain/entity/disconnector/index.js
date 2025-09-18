@@ -56,10 +56,38 @@ export const getDisconnectorEntityByMrid = () => {
     })
 }
 
+export const deleteDisconnectorEntity = () => {
+    ipcMain.handle('deleteDisconnectorEntity', async function (event, data) {
+        try {
+            const rs = await entityFunc.disconnectorEntityFunc.deleteDisconnectorEntity(data)
+            if (rs.success == true) {
+                return {
+                    success: true,
+                    message: "Success",
+                    data : data
+                }
+            }
+            else {
+                return {
+                    success: false,
+                    message: "fail",
+                }
+            }
+        } catch (error) {
+            return {
+                error: error,
+                success: false,
+                message: (error && error.message) ? error.message : "Internal error",
+            }
+        }
+    })
+}
+
 /**
  * Active handlers
  */
 export const active = () => {
     insertDisconnectorEntity()
     getDisconnectorEntityByMrid()
+    deleteDisconnectorEntity()
 }

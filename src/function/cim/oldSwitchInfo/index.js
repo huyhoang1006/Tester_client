@@ -43,7 +43,17 @@ export const insertOldSwitchInfoTransaction = async (info, dbsql) => {
                     pole_count = excluded.pole_count,
                     remote = excluded.remote
                 `,
-                [info.mrid, info.dielectric_strength, info.making_capacity, info.minimum_current, info.withstand_current, info.load_break, info.pole_count, info.remote],
+                [
+                    info.mrid,
+                    info.dielectric_strength,
+                    info.making_capacity,
+                    info.minimum_current,
+                    // Map "Short time withstand current" (currentFlow.mrid) into withstand_current if provided
+                    (info.withstand_current || info.short_time_withstand_current),
+                    info.load_break,
+                    info.pole_count,
+                    info.remote
+                ],
                 function (err) {
                     if (err) {
                         console.log(err);
@@ -83,6 +93,24 @@ export const updateOldSwitchInfoTransaction = async (mrid, info, dbsql) => {
 
 // --- DELETE ---
 export const deleteOldSwitchInfoByIdTransaction = async (mrid, dbsql) => {
+    return new Promise((resolve, reject) => {
+        SwitchInfoFunc.deleteSwitchInfoByIdTransaction(mrid, dbsql)
+            .then(result => {
+                if (!result.success) {
+                    return reject({ success: false, message: 'Delete SwitchInfo failed', err: result.err })
+                }
+                dbsql.run("DELETE FROM old_switch_info WHERE mrid=?", [mrid], function (err) {
+                    if (err) return reject({ success: false, err, message: 'Delete OldSwitchInfo failed' })
+                    return resolve({ success: true, data: mrid, message: 'Delete OldSwitchInfo completed' })
+                })
+            })
+            .catch(err => {
+                return reject({ success: false, err, message: 'Delete OldSwitchInfo transaction failed' })
+            })
+    })
+}
+
+export const deleteOldSwitchInfoTransaction = async (mrid, dbsql) => {
     return new Promise((resolve, reject) => {
         SwitchInfoFunc.deleteSwitchInfoByIdTransaction(mrid, dbsql)
             .then(result => {

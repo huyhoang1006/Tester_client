@@ -1,5 +1,5 @@
 import db from '../../datacontext/index'
-import * as OldSwitchInfoFunc from '../OldSwitchInfo/index.js'
+import * as OldSwitchInfoFunc from '../oldSwitchInfo/index.js'
 
 // Lấy disconnectorInfo theo mrid
 export const getDisconnectorInfoById = async (mrid) => {

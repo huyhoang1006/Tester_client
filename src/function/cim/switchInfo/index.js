@@ -30,10 +30,37 @@ export const insertSwitchInfoTransaction = async (info, dbsql) => {
                 return reject({ success: false, message: 'Insert AssetInfo failed', err: assetInfoResult.err })
             }
             dbsql.run(
-                `INSERT INTO switch_info (mrid, breaking_capacity, gas_weight_per_tank, oil_volume_per_tank, rated_current, rated_frequency, rated_impulse_withstand_voltage, rated_interrupting_time, rated_voltage)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                 ON CONFLICT(mrid) DO NOTHING`,
-                [info.mrid],
+                `INSERT INTO switch_info (
+                    mrid,
+                    breaking_capacity,
+                    gas_weight_per_tank,
+                    oil_volume_per_tank,
+                    rated_current,
+                    rated_frequency,
+                    rated_impulse_withstand_voltage,
+                    rated_interrupting_time,
+                    rated_voltage
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(mrid) DO UPDATE SET
+                    breaking_capacity = excluded.breaking_capacity,
+                    gas_weight_per_tank = excluded.gas_weight_per_tank,
+                    oil_volume_per_tank = excluded.oil_volume_per_tank,
+                    rated_current = excluded.rated_current,
+                    rated_frequency = excluded.rated_frequency,
+                    rated_impulse_withstand_voltage = excluded.rated_impulse_withstand_voltage,
+                    rated_interrupting_time = excluded.rated_interrupting_time,
+                    rated_voltage = excluded.rated_voltage`,
+                [
+                    info.mrid,
+                    info.breaking_capacity || null,
+                    info.gas_weight_per_tank || null,
+                    info.oil_volume_per_tank || null,
+                    info.rated_current || null,
+                    info.rated_frequency || null,
+                    info.rated_impulse_withstand_voltage || null,
+                    info.rated_interrupting_time || null,
+                    info.rated_voltage || null
+                ],
                 function (err) {
                     if (err) {
                         return reject({ success: false, err, message: 'Insert SwitchInfo failed' })

@@ -8,7 +8,77 @@ export default {
             attachmentData : []
         }
     },
+    async beforeMount() {
+        try {
+            const mode = this.$route && this.$route.query ? this.$route.query.mode : null
+            const assetId = this.$route && this.$route.query ? this.$route.query.asset_id : null
+            if (mode === 'edit' || mode === 'dup') {
+                if (assetId) {
+                    const rs = await window.electronAPI.getDisconnectorById(assetId)
+                    if (rs && rs.success && rs.data && rs.data.length) {
+                        const row = rs.data[0]
+                        const properties = JSON.parse(row.properties || '{}')
+                        const ratings = JSON.parse(row.ratings || '{}')
+                        const config = JSON.parse(row.config || '{}')
+                        if (mode === 'dup') {
+                            properties.serial_no = ''
+                        }
+                        // Bind back to form
+                        this.disconnector.properties = Object.assign({}, this.disconnector.properties, properties)
+                        this.disconnector.ratings = Object.assign({}, this.disconnector.ratings, ratings)
+                        this.disconnector.config = Object.assign({}, this.disconnector.config || {}, config)
+                        // keep id if needed later
+                        this.disconnector.id = row.id
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Failed to load disconnector for edit:', e)
+        }
+    },
     methods : {
+        async deleteAsset() {
+            try {
+                const assetMrid = this.disconnector && this.disconnector.properties && this.disconnector.properties.mrid
+                const psrId = this.parentData && this.parentData.mrid ? this.parentData.mrid : null
+                if(!assetMrid) {
+                    this.$message.error('Không tìm thấy MRID của asset để xóa')
+                    return { success: false }
+                }
+
+                await this.$confirm('Xóa Disconnector này và toàn bộ dữ liệu liên quan?', 'Cảnh báo', {
+                    type: 'warning',
+                    confirmButtonText: 'OK',
+                    cancelButtonText: 'Hủy'
+                })
+
+                // Lấy entity đầy đủ theo MRID để xóa theo đúng quan hệ
+                const entityRs = await window.electronAPI.getDisconnectorEntityByMrid(assetMrid, psrId)
+                if(!entityRs || !entityRs.success || !entityRs.data) {
+                    this.$message.error('Không lấy được dữ liệu entity để xóa')
+                    return { success: false }
+                }
+
+                const rt = await window.electronAPI.deleteDisconnectorEntity(entityRs.data)
+                if(rt && rt.success) {
+                    this.$message.success('Đã xóa Disconnector')
+                    // Optional: điều hướng về danh sách hoặc đóng tab hiện tại
+                    if (this.$router) {
+                        this.$router.back()
+                    }
+                    return { success: true }
+                }
+                this.$message.error(rt && rt.message ? rt.message : 'Xóa thất bại')
+                return { success: false }
+            } catch (err) {
+                // Người dùng bấm Cancel hoặc lỗi runtime
+                if (err !== 'cancel') {
+                    console.error('Delete Disconnector error:', err)
+                    this.$message.error('Xóa thất bại')
+                }
+                return { success: false }
+            }
+        },
         async saveAsset() {
             try {
                 if(this.disconnector.properties.serial_no !== null && this.disconnector.properties.serial_no !== '') {
@@ -45,7 +115,13 @@ export default {
 
         async saveCtrS() {
             const data = await this.saveAsset()
-            if(data.success) {
+            if (data && data.success) {
+                // Load back the saved entity so the UI shows exactly what was stored
+                if (data.data) {
+                    // Convert Entity -> DTO before binding to UI
+                    const dto = Mapping.disconnectorEntityToDto(data.data)
+                    this.loadData(dto)
+                }
                 this.$message.success("Asset saved successfully")
             } else {
                 this.$message.error("Failed to save asset")

@@ -2036,10 +2036,42 @@ export default {
         },
 
         async handleBushingConfirm() {
-            this.$message.success("Bushing saved successfully")
-            // Cần thêm logic để cập nhật lại cây nếu cần thiết
-            await this.$refs.bushing.saveAsset();
-            // this.signBushing = false
+            try {
+                const bushing = this.$refs.bushing
+                if (bushing) {
+                    const { success, data } = await bushing.saveBay()
+                    if (success) {
+                        this.$message.success("Bushing saved successfully")
+                        this.signBushing = false
+                        let newRows = []
+                        if (this.organisationClientList && this.organisationClientList.length > 0) {
+                            const newRow = {
+                                mrid: data.bushing.mrid,
+                                name: data.bushing.name,
+                                serial_number: data.bushing.serial_number,
+                                parentId: this.parentOrganization.mrid,
+                                parentName: this.parentOrganization.name,
+                                parentArr: this.parentOrganization.parentArr || [],
+                                mode: 'asset',
+                                asset: 'Bushing',
+                            }
+                            newRows.push(newRow);
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            if (node) {
+                                const children = Array.isArray(node.children) ? node.children : [];
+                                Vue.set(node, "children", [...children, ...newRows]);
+                            } else {
+                                this.$message.error("Parent node not found in tree");
+                            }
+                        }
+                    } else {
+                        this.$message.error("Failed to save bushing")
+                    }
+                }
+            } catch (error) {
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
         },
 
         async handleSurgeConfirm() {
@@ -2647,6 +2679,31 @@ export default {
                                 const deleteSign = await window.electronAPI.deleteSurgeArresterEntity(entity.data);
                                 if (!deleteSign.success) {
                                     this.$message.error("Delete data failed");
+                                    return;
+                                }
+                                // ✅ Xóa node khỏi cây organisationClientList
+                                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
+                                if (parentNode && Array.isArray(parentNode.children)) {
+                                    const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
+                                    if (index !== -1) {
+                                        parentNode.children.splice(index, 1); // Xóa khỏi mảng children
+                                        this.$message.success("Delete data successfully");
+                                    } else {
+                                        this.$message.warning("Node not found in tree structure");
+                                    }
+                                } else {
+                                    this.$message.warning("Parent node not found in tree");
+                                }
+                            } else if (node.asset === 'Disconnector') {
+                                const entity = await window.electronAPI.getDisconnectorEntityByMrid(node.mrid, node.parentId);
+                                if (!entity.success) {
+                                    this.$message.error("Entity not found");
+                                    return;
+                                }
+                                console.log('Disconnector entity:', entity)
+                                const deleteSign = await window.electronAPI.deleteDisconnectorEntity(entity.data);
+                                if (!deleteSign.success) {
+                                    this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
                                     return;
                                 }
                                 // ✅ Xóa node khỏi cây organisationClientList

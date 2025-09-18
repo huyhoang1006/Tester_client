@@ -4,6 +4,7 @@ import Voltage from '@/views/Cim/Voltage'
 import Frequency from '@/views/Cim/Frequency'
 import CurrentFlow from '@/views/Cim/CurrentFlow'
 import Seconds from '@/views/Cim/Seconds'
+import uuid from '@/utils/uuid'
 
 /**
  * Helper để map đơn vị đo (đơn vị đo là các đơn vị như Voltage, Frequency, CurrentFlow, Seconds)
@@ -47,10 +48,18 @@ export const disconnectorDtoToEntity = (dto) => {
     /** ================== attachment ================== */
     entity.attachment.mrid = dto.attachmentId || null
     entity.attachment.data = dto.attachment || null // giữ object raw nếu cần
+    if (dto.attachment && dto.attachment.path) {
+        // nếu path là object array thì stringify, nếu đã là string thì giữ nguyên
+        entity.attachment.path = typeof dto.attachment.path === 'string'
+            ? dto.attachment.path
+            : JSON.stringify(dto.attachment.path)
+    }
 
     /** ================== lifecycle date ================== */
     entity.lifecycleDate.mrid = dto.lifecycleDateId || null
     entity.lifecycleDate.manufactured_date = dto.properties.manufacturing_year || null
+    // liên kết lifecycle vào asset để phía DB insert asset có thể tham chiếu
+    entity.asset.lifecycle_date = dto.lifecycleDateId || null
 
     /** ================== assetPsr ================== */
     entity.assetPsr.mrid = dto.assetPsrId || null
@@ -58,61 +67,93 @@ export const disconnectorDtoToEntity = (dto) => {
     entity.assetPsr.asset_id = dto.properties.mrid || null
 
     entity.disconnectorInfo.mrid = dto.assetInfoId || null
+    // Ensure AssetInfo receives manufacturer_type and product_asset_model via SwitchInfo chain
+    entity.disconnectorInfo.manufacturer_type = dto.properties.manufacturer_type || null
+    entity.disconnectorInfo.product_asset_model = dto.productAssetModelId || null
 
     /** ================== Ratings ================== */
     if (dto.ratings) {
         // Voltage
-        if (dto.ratings.rated_voltage) {
-            entity.disconnectorInfo.rated_voltage = dto.ratings.rated_voltage.mrid || null
+        if (dto.ratings.rated_voltage && dto.ratings.rated_voltage.value) {
+            // Tạo mrid nếu chưa có
+            if (!dto.ratings.rated_voltage.mrid) {
+                dto.ratings.rated_voltage.mrid = uuid.newUuid()
+            }
+            entity.disconnectorInfo.rated_voltage = dto.ratings.rated_voltage.mrid
             const newVoltage = new Voltage()
             mappingUnit(newVoltage, dto.ratings.rated_voltage)
             entity.voltage.push(newVoltage)
         }
 
         // Frequency
-        if (dto.ratings.rated_frequency) {
-            entity.disconnectorInfo.rated_frequency = dto.ratings.rated_frequency.mrid || null
+        if (dto.ratings.rated_frequency && dto.ratings.rated_frequency.value) {
+            // Tạo mrid nếu chưa có
+            if (!dto.ratings.rated_frequency.mrid) {
+                dto.ratings.rated_frequency.mrid = uuid.newUuid()
+            }
+            entity.disconnectorInfo.rated_frequency = dto.ratings.rated_frequency.mrid
             const newFreq = new Frequency()
             mappingUnit(newFreq, dto.ratings.rated_frequency)
             entity.frequency.push(newFreq)
         }
 
         // Current
-        if (dto.ratings.rated_current) {
-            entity.disconnectorInfo.rated_current = dto.ratings.rated_current.mrid || null
+        if (dto.ratings.rated_current && dto.ratings.rated_current.value) {
+            // Tạo mrid nếu chưa có
+            if (!dto.ratings.rated_current.mrid) {
+                dto.ratings.rated_current.mrid = uuid.newUuid()
+            }
+            entity.disconnectorInfo.rated_current = dto.ratings.rated_current.mrid
             const newCurrent = new CurrentFlow()
             mappingUnit(newCurrent, dto.ratings.rated_current)
             entity.currentFlow.push(newCurrent)
         }
 
         // Short-time withstand current
-        if (dto.ratings.short_time_withstand_current) {
-            entity.disconnectorInfo.short_time_withstand_current = dto.ratings.short_time_withstand_current.mrid || null
+        if (dto.ratings.short_time_withstand_current && dto.ratings.short_time_withstand_current.value) {
+            // Tạo mrid nếu chưa có
+            if (!dto.ratings.short_time_withstand_current.mrid) {
+                dto.ratings.short_time_withstand_current.mrid = uuid.newUuid()
+            }
+            entity.disconnectorInfo.short_time_withstand_current = dto.ratings.short_time_withstand_current.mrid
             const newShortTime = new CurrentFlow()
             mappingUnit(newShortTime, dto.ratings.short_time_withstand_current)
             entity.currentFlow.push(newShortTime)
         }
 
         // Rated duration of short circuit
-        if (dto.ratings.rated_duration_of_short_circuit) {
-            entity.disconnectorInfo.rated_duration_short_circuit = dto.ratings.rated_duration_of_short_circuit.mrid || null
+        if (dto.ratings.rated_duration_of_short_circuit && dto.ratings.rated_duration_of_short_circuit.value) {
+            // Tạo mrid nếu chưa có
+            if (!dto.ratings.rated_duration_of_short_circuit.mrid) {
+                dto.ratings.rated_duration_of_short_circuit.mrid = uuid.newUuid()
+            }
+            entity.disconnectorInfo.rated_duration_short_circuit = dto.ratings.rated_duration_of_short_circuit.mrid
             const newDuration = new Seconds()
             mappingUnit(newDuration, dto.ratings.rated_duration_of_short_circuit)
             entity.seconds.push(newDuration)
         }
 
         // Withstand voltage earth poles
-        if (dto.ratings.power_freq_withstand_voltage_earth_poles) {
-            entity.disconnectorInfo.withstand_voltage_earth_poles = dto.ratings.power_freq_withstand_voltage_earth_poles.mrid || null
+        if (dto.ratings.power_freq_withstand_voltage_earth_poles && dto.ratings.power_freq_withstand_voltage_earth_poles.value) {
+            // Tạo mrid nếu chưa có
+            if (!dto.ratings.power_freq_withstand_voltage_earth_poles.mrid) {
+                dto.ratings.power_freq_withstand_voltage_earth_poles.mrid = uuid.newUuid()
+            }
+            entity.disconnectorInfo.withstand_voltage_earth_poles = dto.ratings.power_freq_withstand_voltage_earth_poles.mrid
             const newWithstand = new Voltage()
             mappingUnit(newWithstand, dto.ratings.power_freq_withstand_voltage_earth_poles)
             entity.voltage.push(newWithstand)
         }
 
-        // Power frequency isolating distance (DB expects FK to frequency)
-        // Map to rated_frequency.mrid to satisfy FK constraint to table `frequency`
-        if (dto.ratings.rated_frequency) {
-            entity.disconnectorInfo.power_frequency_isolating_distance = dto.ratings.rated_frequency.mrid || null
+        // Power frequency isolating distance (own frequency value)
+        if (dto.ratings.power_freq_withstand_voltage_isolating_distance && dto.ratings.power_freq_withstand_voltage_isolating_distance.value) {
+            if (!dto.ratings.power_freq_withstand_voltage_isolating_distance.mrid) {
+                dto.ratings.power_freq_withstand_voltage_isolating_distance.mrid = uuid.newUuid()
+            }
+            entity.disconnectorInfo.power_frequency_isolating_distance = dto.ratings.power_freq_withstand_voltage_isolating_distance.mrid
+            const isoFreq = new Frequency()
+            mappingUnit(isoFreq, dto.ratings.power_freq_withstand_voltage_isolating_distance)
+            entity.frequency.push(isoFreq)
         }
 
     }
@@ -131,13 +172,14 @@ export const disconnectorEntityToDto = (entity) => {
     dto.assetInfoId = entity.asset.asset_info || '';
     dto.properties.manufacturer = entity.productAssetModel.manufacturer || '';
     dto.productAssetModelId = entity.productAssetModel.mrid || '';
-    dto.properties.manufacturer_type = entity.asset.manufacturer_type || '';
+    dto.properties.manufacturer_type = (entity.disconnectorInfo && entity.disconnectorInfo.manufacturer_type)
+    ? entity.disconnectorInfo.manufacturer_type
+    : (entity.asset.manufacturer_type || '');    
     dto.properties.country_of_origin = entity.asset.country_of_origin || '';
     dto.properties.apparatus_id = entity.asset.name || '';
     dto.properties.comment = entity.asset.description || '';
     dto.locationId = entity.asset.location || '';
-    dto.productAssetModelId = entity.asset.product_asset_model || '';
-
+    dto.productAssetModelId = entity.productAssetModel.mrid || '';
     // lifecycle date
     dto.lifecycleDateId = entity.asset.lifecycle_date || '';
     dto.properties.manufacturing_year = entity.lifecycleDate.manufactured_date || '';
@@ -149,6 +191,67 @@ export const disconnectorEntityToDto = (entity) => {
     //attachment
     dto.attachmentId = entity.attachment.mrid || '';
     dto.attachment = entity.attachment;
+
+    // =============== Ratings ===============
+    const info = entity.disconnectorInfo || {}
+    // helper to find unit by mrid in a list
+    const pickUnit = (list, mrid) => {
+        if (!mrid || !Array.isArray(list)) return null
+        return list.find(u => u && u.mrid === mrid) || null
+    }
+
+    // Voltage
+    const ratedVoltage = pickUnit(entity.voltage, info.rated_voltage)
+    if (ratedVoltage) {
+        dto.ratings.rated_voltage.mrid = ratedVoltage.mrid || ''
+        dto.ratings.rated_voltage.value = ratedVoltage.value || ''
+        dto.ratings.rated_voltage.unit = [ratedVoltage.multiplier, ratedVoltage.unit].filter(Boolean).join('|') || ''
+    }
+
+    const withstandEarthPoles = pickUnit(entity.voltage, info.withstand_voltage_earth_poles)
+    if (withstandEarthPoles) {
+        dto.ratings.power_freq_withstand_voltage_earth_poles.mrid = withstandEarthPoles.mrid || ''
+        dto.ratings.power_freq_withstand_voltage_earth_poles.value = withstandEarthPoles.value || ''
+        dto.ratings.power_freq_withstand_voltage_earth_poles.unit = [withstandEarthPoles.multiplier, withstandEarthPoles.unit].filter(Boolean).join('|') || ''
+    }
+
+    // Frequency
+    const ratedFrequency = pickUnit(entity.frequency, info.rated_frequency)
+    if (ratedFrequency) {
+        dto.ratings.rated_frequency.mrid = ratedFrequency.mrid || ''
+        dto.ratings.rated_frequency.value = ratedFrequency.value || ''
+        dto.ratings.rated_frequency.unit = ratedFrequency.unit || ''
+    }
+
+    const powerFreqIsoDistance = pickUnit(entity.frequency, info.power_frequency_isolating_distance)
+    if (powerFreqIsoDistance) {
+        dto.ratings.power_freq_withstand_voltage_isolating_distance.mrid = powerFreqIsoDistance.mrid || ''
+        dto.ratings.power_freq_withstand_voltage_isolating_distance.value = powerFreqIsoDistance.value || ''
+        dto.ratings.power_freq_withstand_voltage_isolating_distance.unit = powerFreqIsoDistance.unit || ''
+    }
+
+    // Current
+    const ratedCurrent = pickUnit(entity.currentFlow, info.rated_current)
+    if (ratedCurrent) {
+        dto.ratings.rated_current.mrid = ratedCurrent.mrid || ''
+        dto.ratings.rated_current.value = ratedCurrent.value || ''
+        dto.ratings.rated_current.unit = ratedCurrent.unit || ''
+    }
+
+    const shortTimeWithstand = pickUnit(entity.currentFlow, info.short_time_withstand_current)
+    if (shortTimeWithstand) {
+        dto.ratings.short_time_withstand_current.mrid = shortTimeWithstand.mrid || ''
+        dto.ratings.short_time_withstand_current.value = shortTimeWithstand.value || ''
+        dto.ratings.short_time_withstand_current.unit = [shortTimeWithstand.multiplier, shortTimeWithstand.unit].filter(Boolean).join('|') || ''
+    }
+
+    // Seconds
+    const ratedDurationSC = pickUnit(entity.seconds, info.rated_duration_short_circuit)
+    if (ratedDurationSC) {
+        dto.ratings.rated_duration_of_short_circuit.mrid = ratedDurationSC.mrid || ''
+        dto.ratings.rated_duration_of_short_circuit.value = ratedDurationSC.value || ''
+        dto.ratings.rated_duration_of_short_circuit.unit = ratedDurationSC.unit || ''
+    }
 
     return dto;
 }
