@@ -15,9 +15,10 @@ class PowerCableDTO {
     this.lifecycleDateId = ''
     this.assetPsrId = ''
     this.psrId = ''
+    this.attachmentId = ''
 
     this.configsData = {
-      phases: { mrid: '', value: '', unit: 'string' }, // 1 | 3
+      phases: { mrid: '', value: 'null', unit: 'number' }, // 1 | 3
       cores: { mrid: '', value: '', unit: 'string' },  // Single | Multiple
     };
 
@@ -137,7 +138,7 @@ class PowerCableDTO {
         rated_current: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.A },
         category: { mrid: '', value: '', unit: 'string' },
         construction: { mrid: '', value: '', unit: 'string' },
-        service_condition: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.m },
+        service_condition: { mrid: '', value: '', unit: 'string' },
       },
       terminalsData: {
         mrid: '',
