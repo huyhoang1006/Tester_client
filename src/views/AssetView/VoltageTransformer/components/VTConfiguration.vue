@@ -40,28 +40,24 @@
                                 {{ `${index + 1}a${index + 1}n` }}
                             </td>
                             <td>
-                                <el-select size="mini" :value="formatField(item.table.usrRatio)"
-                                    @input="val => item.table.usrRatio = parseField(val, '')">
+                                <el-select size="mini" v-model="item.usr_formula.value">
                                     <el-option label="1 / 1" value="1"></el-option>
                                     <el-option label="1 / √3" value="3sqrt"></el-option>
                                     <el-option label="1 / 3" value="3"></el-option>
                                 </el-select>
                             </td>
                             <td>
-                                <el-input size="mini" :value="formatField(item.table.usr)"
-                                    @input="val => item.table.usr = parseField(val, 'V')">
+                                <el-input size="mini" v-model="item.usr_rated_voltage.value">
                                     <template slot="append">V</template>
                                 </el-input>
                             </td>
                             <td>
-                                <el-input size="mini" :value="formatField(item.table.rated_burden)"
-                                    @input="val => item.table.rated_burden = parseField(val, 'VA')">
+                                <el-input size="mini" v-model="item.rated_burden.value">
                                     <template slot="append">VA</template>
                                 </el-input>
                             </td>
                             <td>
-                                <el-input size="mini" :value="formatField(item.table.cosphi)"
-                                    @input="val => item.table.cosphi = parseField(val, null)">
+                                <el-input size="mini" v-model="item.rated_power_factor.value">
                                 </el-input>
                             </td>
                         </tr>
@@ -82,8 +78,8 @@ export default {
     },
     data() {
         return {
-            openConfig: true,
-            labelWidth: `200px`
+            openConfig: "true",
+            labelWidth: `200px`,
         }
     },
     watch: {
@@ -95,32 +91,44 @@ export default {
     },
     methods: {
         changeWindingData(data) {
-            let lengthData = this.configsData.dataVT.length
-            if (lengthData < data) {
-                for (let i = 0; i < data - lengthData; i++) {
-                    this.configsData.dataVT.push({
-                        table: {
-                        }
-                    })
-                }
-            } else if (lengthData > data) {
-                this.configsData.dataVT.splice(1, parseInt(lengthData - data))
-            }
-        },
-        formatField(field) {
-            if (!field) return "";
-            if (typeof field === "object") {
-                return field.value ?? "";
-            }
-            return field; // trường hợp đã là string/number
-        },
+            let lengthData = this.configsData.dataVT.length;
+            // đảm bảo data là số
+            const target = parseInt(data, 10) || 0;
 
-        // Parse string -> object khi người dùng nhập
-        parseField(value, unit) {
-            return {
-                value: value,
-                unit: unit
-            };
+            if (lengthData < target) {
+                for (let i = 0; i < target - lengthData; i++) {
+                    this.configsData.dataVT.push({
+                        mrid: '',
+                        usr_formula: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            multiplier: ''
+                        },           // default
+                        usr_rated_voltage: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            multiplier: ''
+                        },      // default empty
+                        rated_burden: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            multiplier: ''
+                        },           // default empty
+                        rated_power_factor: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            multiplier: ''
+                        }      // default empty
+                    });
+                }
+            } else if (lengthData > target) {
+                // xoá từ vị trí 'target' số phần tử thừa
+                this.configsData.dataVT.splice(target, lengthData - target);
+            }
         }
     }
 }
