@@ -105,6 +105,8 @@ export const updateOldPotentialTransformerInfoTransaction = async (mrid, info, d
 
 // Xóa oldPotentialTransformerInfo (transaction)
 export const deleteOldPotentialTransformerInfoTransaction = async (mrid, dbsql) => {
+    console.log("Deleting OldPotentialTransformerInfo:", mrid);
+
     return new Promise(async (resolve, reject) => {
         try {
             const ptInfoResult = await PotentialTransformerInfoFunc.deletePotentialTransformerInfoTransaction(mrid, dbsql)

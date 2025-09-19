@@ -4,7 +4,7 @@ import AssetPsr from "@/views/Cim/AssetPsr"
 import Attachment from '@/views/Entity/Attachment';
 import OldPotentialTransformerInfo from "@/views/Cim/OldPotentialTransformerInfo";
 import Asset from "@/views/Cim/Asset";
-
+import AssetInfo from "@/views/Cim/AssetInfo";
 class VoltageTransformerEntity {
     constructor() {
         this.OldPotentialTransformerInfo = new OldPotentialTransformerInfo()
@@ -18,6 +18,7 @@ class VoltageTransformerEntity {
         this.assetPsr = new AssetPsr();
         this.attachment = new Attachment();
         this.asset = new Asset()
+        this.assetInfo = new AssetInfo()
     }
 }
 export default VoltageTransformerEntity;
