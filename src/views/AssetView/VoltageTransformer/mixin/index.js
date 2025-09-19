@@ -236,25 +236,37 @@ export default {
             return obj;
         },
 
-        convertVTConfig(vtConfig) {
-            if (!vtConfig || !vtConfig.dataVT) return null;
+        convertDTOToUIConfig(vtConfig) {
+            // nếu không có config thì trả về cấu trúc rỗng an toàn
+            if (!vtConfig || !vtConfig.dataVT) return { windings: vtConfig?.windings ?? null, dataVT: [] };
+
+            // helper: lấy value từ nhiều dạng: ValueWithUnit object, primitive, hoặc fallback
+            const getValue = (field, fallback = null) => {
+                if (field === null || field === undefined) return fallback;
+                if (typeof field === 'object') return field.value ?? fallback;
+                return field; // primitive string/number
+            };
 
             return {
                 windings: vtConfig.windings,
-                dataVT: vtConfig.dataVT.map(item => {
-                    const table = item.table || {};
+                dataVT: (vtConfig.dataVT || []).map(item => {
+                    // item có thể là { table: {...} } hoặc đôi khi trực tiếp {...}
+                    const table = (item && (item.table || item)) || {};
 
                     return {
                         table: {
-                            rated_burden: new ValueWithUnit(null, table.rated_burden || null, null, 'VA'),
-                            rated_power_factor: new ValueWithUnit(null, table.cosphi || null, null, null),
-                            usr_formula: new ValueWithUnit(null, table.usrRatio || null, null, null),
-                            usr_rated_voltage: new ValueWithUnit(null, table.usr || null, null, 'V'),
+                            mrid: table.mrid ?? null,
+                            // thử lấy .value nếu có, nếu không có thì fallback sang các field cũ (usrRatio/usr/cosphi)
+                            usrRatio: getValue(table.usr_formula, table.usrRatio ?? null),
+                            usr: getValue(table.usr_rated_voltage, table.usr ?? null),
+                            rated_burden: getValue(table.rated_burden, null),
+                            cosphi: getValue(table.rated_power_factor, table.cosphi ?? null),
                         }
-                    }
+                    };
                 })
             };
-        },
+        }
+        ,
 
         checkValueWithUnit(field) {
             if (field) {
@@ -274,34 +286,37 @@ export default {
                 dataVT: vtConfig.dataVT.map(item => {
                     const table = item.table || {};
 
-                    const rated_burden = table.rated_burden instanceof ValueWithUnit
-                        ? table.rated_burden
-                        : new ValueWithUnit(uuid.newUuid(), table.rated_burden || null, null, 'VA');
-
-                    const rated_power_factor = table.rated_power_factor instanceof ValueWithUnit
-                        ? table.rated_power_factor
-                        : new ValueWithUnit(uuid.newUuid(), table.cosphi || null, null, null);
-
-                    const usr_formula = table.usr_formula instanceof ValueWithUnit
-                        ? table.usr_formula
-                        : new ValueWithUnit(uuid.newUuid(), table.usrRatio || null, null, null);
-
-                    const usr_rated_voltage = table.usr_rated_voltage instanceof ValueWithUnit
-                        ? table.usr_rated_voltage
-                        : new ValueWithUnit(uuid.newUuid(), table.usr || null, null, 'V');
-
                     return {
                         table: {
                             mrid: table.mrid || uuid.newUuid(),
-                            rated_burden,
-                            rated_power_factor,
-                            usr_formula,
-                            usr_rated_voltage
+                            rated_burden: table.rated_burden instanceof ValueWithUnit
+                                ? table.rated_burden
+                                : this.makeValueWithUnit(table.rated_burden, 'VA'),
+
+                            rated_power_factor: table.rated_power_factor instanceof ValueWithUnit
+                                ? table.rated_power_factor
+                                : this.makeValueWithUnit(table.cosphi, null),
+
+                            usr_formula: table.usr_formula instanceof ValueWithUnit
+                                ? table.usr_formula
+                                : this.makeValueWithUnit(table.usrRatio, null),
+
+                            usr_rated_voltage: table.usr_rated_voltage instanceof ValueWithUnit
+                                ? table.usr_rated_voltage
+                                : this.makeValueWithUnit(table.usr, 'V'),
                         }
                     }
                 })
             };
         },
+
+        makeValueWithUnit(value, unit) {
+            if (value === null || value === undefined || value === '') {
+                return null; // Không tạo object nếu không có giá trị
+            }
+            return new ValueWithUnit(uuid.newUuid(), value, null, unit);
+        },
+
 
         checkAssetInfoId(data) {
             if (data.assetInfoId === null || data.assetInfoId === '') {
