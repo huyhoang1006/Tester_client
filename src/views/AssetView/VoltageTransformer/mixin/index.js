@@ -64,20 +64,11 @@ export default {
 
         loadData(data) {
             this.old_data = JSON.parse(JSON.stringify(data));
-
             const cloned = JSON.parse(JSON.stringify(data));
-
             if (cloned.vt_Configuration) {
-
-                // convert sang format cho UI
-                cloned.vt_Configuration = this.convertDTOToUIConfig(cloned.vt_Configuration);
                 console.log('cloned.vt_Configuration: ', cloned.vt_Configuration)
             }
-
             this.voltageTransformer = cloned;
-
-            console.log('x (UI data): ', this.voltageTransformer);
-
             if (data.attachment && data.attachment.path) {
                 this.attachmentData = JSON.parse(data.attachment.path);
             } else {
@@ -96,7 +87,6 @@ export default {
                 this.checkRatedFrequency(data)
                 this.checkProperty(data);
                 this.checkLifecycleDate(data);
-                data.vt_Configuration = this.normalizeVTConfig(data.vt_Configuration)
                 this.checkWindings(data)
                 this.checkProductAssetModel(data);
                 await this.checkAssetPrs(data);
@@ -175,44 +165,6 @@ export default {
             this.traverseAndFillMrid(data);
         },
 
-        checkDataVT(data) {
-            data.vt_Configuration.dataVT.forEach(item => {
-                const table = item.table;
-
-                // nếu table có mrid thì check
-                if (table.mrid === null || table.mrid === '') {
-                    table.mrid = uuid.newUuid();
-                }
-
-                // check từng ValueWithUnit
-                this.checkValueWithUnit(table.rated_burden);
-                this.checkValueWithUnit(table.rated_power_factor);
-                this.checkValueWithUnit(table.usr_formula);
-                this.checkValueWithUnit(table.usr_rated_voltage);
-            })
-        },
-
-        convertDTOToUIConfig(vtConfig) {
-            if (!vtConfig || !vtConfig.dataVT) return null;
-            console.log('vtConfig: ', vtConfig)
-            return {
-                windings: vtConfig.windings,
-                dataVT: vtConfig.dataVT.map(item => {
-                    const table = item || {};
-                    return {
-                        table: {
-                            mrid: table.mrid || null,
-                            usrRatio: table.usr_formula.value || null,
-                            usr: table.usr_rated_voltage.value || table.usr || null,
-                            rated_burden: table.rated_burden.value || table.rated_burden || null,
-                            cosphi: table.rated_power_factor.value || table.cosphi || null,
-                        }
-                    };
-                })
-            };
-        }
-        ,
-
 
         checkWindings(data) {
             if (data.vt_Configuration.windings.mrid === null || data.vt_Configuration.windings.mrid === '') {
@@ -236,86 +188,8 @@ export default {
             return obj;
         },
 
-        convertDTOToUIConfig(vtConfig) {
-            // nếu không có config thì trả về cấu trúc rỗng an toàn
-            if (!vtConfig || !vtConfig.dataVT) return { windings: vtConfig?.windings ?? null, dataVT: [] };
+        
 
-            // helper: lấy value từ nhiều dạng: ValueWithUnit object, primitive, hoặc fallback
-            const getValue = (field, fallback = null) => {
-                if (field === null || field === undefined) return fallback;
-                if (typeof field === 'object') return field.value ?? fallback;
-                return field; // primitive string/number
-            };
-
-            return {
-                windings: vtConfig.windings,
-                dataVT: (vtConfig.dataVT || []).map(item => {
-                    // item có thể là { table: {...} } hoặc đôi khi trực tiếp {...}
-                    const table = (item && (item.table || item)) || {};
-
-                    return {
-                        table: {
-                            mrid: table.mrid ?? null,
-                            // thử lấy .value nếu có, nếu không có thì fallback sang các field cũ (usrRatio/usr/cosphi)
-                            usrRatio: getValue(table.usr_formula, table.usrRatio ?? null),
-                            usr: getValue(table.usr_rated_voltage, table.usr ?? null),
-                            rated_burden: getValue(table.rated_burden, null),
-                            cosphi: getValue(table.rated_power_factor, table.cosphi ?? null),
-                        }
-                    };
-                })
-            };
-        }
-        ,
-
-        checkValueWithUnit(field) {
-            if (field) {
-                if (!field.mrid || field.mrid === '') {
-                    field.mrid = uuid.newUuid();
-                }
-                if (field.value === undefined) field.value = null;
-                if (field.multiplier === undefined) field.multiplier = null;
-                if (field.unit === undefined) field.unit = null;
-            }
-        },
-        normalizeVTConfig(vtConfig) {
-            if (!vtConfig || !vtConfig.dataVT) return null;
-
-            return {
-                windings: vtConfig.windings,
-                dataVT: vtConfig.dataVT.map(item => {
-                    const table = item.table || {};
-
-                    return {
-                        table: {
-                            mrid: table.mrid || uuid.newUuid(),
-                            rated_burden: table.rated_burden instanceof ValueWithUnit
-                                ? table.rated_burden
-                                : this.makeValueWithUnit(table.rated_burden, 'VA'),
-
-                            rated_power_factor: table.rated_power_factor instanceof ValueWithUnit
-                                ? table.rated_power_factor
-                                : this.makeValueWithUnit(table.cosphi, null),
-
-                            usr_formula: table.usr_formula instanceof ValueWithUnit
-                                ? table.usr_formula
-                                : this.makeValueWithUnit(table.usrRatio, null),
-
-                            usr_rated_voltage: table.usr_rated_voltage instanceof ValueWithUnit
-                                ? table.usr_rated_voltage
-                                : this.makeValueWithUnit(table.usr, 'V'),
-                        }
-                    }
-                })
-            };
-        },
-
-        makeValueWithUnit(value, unit) {
-            if (value === null || value === undefined || value === '') {
-                return null; // Không tạo object nếu không có giá trị
-            }
-            return new ValueWithUnit(uuid.newUuid(), value, null, unit);
-        },
 
 
         checkAssetInfoId(data) {
@@ -329,6 +203,8 @@ export default {
                 data.ratings.rated_frequency.value = data.ratings.rated_frequency_custom
             }
         }
+
+
 
     }
 }
