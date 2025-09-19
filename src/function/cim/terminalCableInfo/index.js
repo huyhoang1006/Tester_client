@@ -15,6 +15,20 @@ export const getTerminalCableInfoById = async (mrid) => {
     })
 }
 
+export const getTerminalCableInfoByCableInfoId = async (cableInfoId) => {
+    try {
+        return new Promise((resolve, reject) => {
+            db.get("SELECT * FROM terminal_cable_info WHERE cable_info_id=?", [cableInfoId], (err, row) => {
+                if (err) return reject({ success: false, err, message: 'Get terminal cable info by cable info id failed' })
+                if (!row) return resolve({ success: false, data: null, message: 'Terminal cable info not found' })
+                return resolve({ success: true, data: row, message: 'Get terminal cable info by cable info id completed' })
+            })
+        })
+    } catch (err) {
+        return { success: false, err, message: 'Get terminal cable info by cable info id failed' }
+    }
+}
+
 // Thêm mới terminalCableInfo (transaction)
 export const insertTerminalCableInfoTransaction = async (info, dbsql) => {
     return new Promise((resolve, reject) => {
