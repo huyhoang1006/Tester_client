@@ -2,24 +2,23 @@ import db from '../../datacontext/index'
 import path from 'path'
 import * as attachmentContext from '../../attachmentcontext/index'
 import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, deleteDirectory } from '@/function/entity/attachment'
-import { insertVoltageTransaction, getVoltageById, deleteVoltageByIdTransaction } from '@/function/cim/voltage';
-import { insertCurrentFlowTransaction, getCurrentFlowById, deleteCurrentFlowByIdTransaction } from '@/function/cim/currentFlow';
+import { insertVoltageTransaction, getVoltageById, deleteVoltageByIdTransaction, getVoltageByIds } from '@/function/cim/voltage';
+import { insertCurrentFlowTransaction, getCurrentFlowByIds, deleteCurrentFlowByIdTransaction } from '@/function/cim/currentFlow';
 import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction } from '@/function/cim/lifecycleDate';
 import { insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction } from '@/function/cim/productAssetModel';
 import { insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
-import { insertLengthTransaction } from '@/function/cim/length'
-import { insertAreaTransaction } from '@/function/cim/area';
-import { insertFrequencyTransaction } from '@/function/cim/frequency';
-import { insertTemperatureTransaction } from '@/function/cim/temperature';
+import { insertLengthTransaction, getLengthById, getLengthByIds } from '@/function/cim/length'
+import { insertAreaTransaction, getAreaById, getAreaByIds } from '@/function/cim/area';
+import { insertFrequencyTransaction, getFrequencyById, getFrequencyByIds } from '@/function/cim/frequency';
+import { insertTemperatureTransaction, getTemperatureById, getTemperatureByIds } from '@/function/cim/temperature';
 import { getAssetById, insertAssetTransaction } from '@/function/cim/asset';
 import { getConcentricNeutralCableInfoById, insertConcentricNeutralCableInfoTransaction } from '@/function/cim/concentricNeutralCableInfo';
-import { insertJointCableInfoTransaction } from '@/function/cim/jointCableInfo';
-import { insertOldCableInfoTransaction } from '@/function/cim/oldCableInfo';
-import { insertSheathVoltageLimiterTransaction } from '@/function/cim/sheathVoltageLimiter';
-import { insertTerminalCableInfoTransaction } from '@/function/cim/terminalCableInfo';
-import { insertSecondsTransaction } from '@/function/cim/seconds';
+import { insertJointCableInfoTransaction, getJointCableInfoById, getJointCableInfoByCableInfoId } from '@/function/cim/jointCableInfo';
+import { insertOldCableInfoTransaction, getOldCableInfoById, getOldCableInfoByCableInfoId } from '@/function/cim/oldCableInfo';
+import { insertSheathVoltageLimiterTransaction, getSheathVoltageLimiterById, getSheathVoltageLimiterByCableInfoId } from '@/function/cim/sheathVoltageLimiter';
+import { insertTerminalCableInfoTransaction, getTerminalCableInfoById, getTerminalCableInfoByCableInfoId } from '@/function/cim/terminalCableInfo';
+import { insertSecondsTransaction, getSecondById, getSecondByIds } from '@/function/cim/seconds';
 import PowerCableEntity from '@/views/Entity/PowerCable/index'
-
 
 export const insertPowerCableEntity = async (old_entity, entity) => {
     try {
@@ -159,8 +158,8 @@ export const insertPowerCableEntity = async (old_entity, entity) => {
             console.log('Inserted jointCableInfo');
 
             //sheathVoltageLimiter
-            // await insertSheathVoltageLimiterTransaction(entity.sheathVoltageLimiter, db);
-            // console.log('Inserted sheathVoltageLimiter');
+            await insertSheathVoltageLimiterTransaction(entity.sheathVoltageLimiter, db);
+            console.log('Inserted sheathVoltageLimiter');
 
             //terminalCableInfo
             await insertTerminalCableInfoTransaction(entity.terminal, db);
@@ -215,36 +214,208 @@ export const insertPowerCableEntity = async (old_entity, entity) => {
 
 export const getPowerCableEntity = async (id, psrId) => {
     try {
-        if(id == null || id === '') {
+        if (id == null || id === '') {
             return { success: false, error: new Error('Invalid ID') };
         } else {
             const entity = new PowerCableEntity()
             const dataPowerCable = await getAssetById(id);
-            if(dataPowerCable.success) {
+            if (dataPowerCable.success) {
                 entity.asset = dataPowerCable.data
                 const dataLifecycleDate = await getLifecycleDateById(entity.asset.lifecycle_date);
-                if(dataLifecycleDate.success) {
+                if (dataLifecycleDate.success) {
                     entity.lifecycleDate = dataLifecycleDate.data;
                 }
                 const dataCencentricNeutralInfo = await getConcentricNeutralCableInfoById(entity.asset.asset_info);
-                if(dataCencentricNeutralInfo.success) {
+                if (dataCencentricNeutralInfo.success) {
                     entity.concentricNeutral = dataCencentricNeutralInfo.data;
                 }
-                
+
                 const productAssetModelId = entity.asset.product_asset_model;
                 const dataProductAssetModel = await getProductAssetModelById(productAssetModelId);
-                if(dataProductAssetModel.success) {
+                if (dataProductAssetModel.success) {
                     entity.productAssetModel = dataProductAssetModel.data;
                 }
-                
+
                 const dataAssetPsr = await getAssetPsrByAssetIdAndPsrId(entity.asset.mrid, psrId);
-                if(dataAssetPsr.success) {
+                if (dataAssetPsr.success) {
                     entity.assetPsr = dataAssetPsr.data;
                 }
 
                 const dataAttachment = await getAttachmentByForeignIdAndType(entity.asset.mrid, 'asset');
-                if(dataAttachment.success) {
+                if (dataAttachment.success) {
                     entity.attachment = dataAttachment.data;
+                }
+
+                const dataOldCableInfo = await getOldCableInfoByCableInfoId(entity.concentricNeutral.mrid);
+                if (dataOldCableInfo.success) {
+                    entity.oldCableInfo = dataOldCableInfo.data;
+                }
+
+                const dataJointInfo = await getJointCableInfoByCableInfoId(entity.concentricNeutral.mrid);
+                if (dataJointInfo.success) {
+                    entity.joint = dataJointInfo.data;
+                }
+
+                const terminalCableInfo = await getTerminalCableInfoByCableInfoId(entity.concentricNeutral.mrid);
+                if (terminalCableInfo.success) {
+                    entity.terminal = terminalCableInfo.data;
+                }
+
+                const sheathVoltageLimiter = await getSheathVoltageLimiterByCableInfoId(entity.concentricNeutral.mrid);
+                if (sheathVoltageLimiter.success) {
+                    entity.sheathVoltageLimiter = sheathVoltageLimiter.data;
+                }
+
+                const joint_cable_info_arr = {
+                    currentFlow: ['rated_current'],
+                    voltage: ['rated_u']
+                }
+                const terminal_cable_info_arr = {
+                    voltage: ['rated_u', 'bil', 'bsl'],
+                }
+                const sheath_voltage_limiter_arr = {
+                    currentFlow: ['nominal_discharge_current', 'high_current_impulse_withstand', 'long_duration_current_impulse_withstand', 'short_circuit_withstand'],
+                    voltage: ['rated_voltage_ur', 'max_continuous_operating_voltage']
+                }
+                const oldCableInfoArr = {
+                    voltage: [
+                        "rated_u",
+                        "max_u"
+                    ],
+                    currentFlow: [
+                        "short_circuit_current"
+                    ],
+                    second: [
+                        "rated_duration_short_circuit"
+                    ],
+                    temperature: [
+                        "insulation_max_operating_temp"
+                    ],
+                    area: [
+                        "conductor_size",
+                        "armour_cross_sectional_area_tap",
+                        "concentric_area"
+                    ],
+                    frequency: [
+                        "rated_frequency"
+                    ],
+                    length: [
+                        "armour_bedding_thickness",
+                        "armour_thickness",
+                        "concentric_length_lay",
+                        "concentric_thickness",
+                        "conductor_shield_thickness",
+                        "nominal_conductor_diameter",
+                        "diameter_over_shield",
+                        "diameter_over_sheath",
+                        "diameter_over_armour",
+                        "diameter_bedding_over_armour",
+                        "diameter_over_sheath_reinforcing",
+                        "sheath_thickness",
+                        "sheath_reinforcing_thickness",
+                        "sheath_reinforcing_length_lay",
+                        "sheath_reinforcing_width",
+                        "jacket_thickness",
+                        "length"
+                    ]
+                };
+                const concentricNeutral = {
+                    length: [
+                        'insulation_thickness',
+                        'diameter_over_insulation',
+                        'diameter_over_screen',
+                        'diameter_over_neutral',
+                        'diameter_over_jacket'
+                    ],
+                }
+
+                const dataDB = [joint_cable_info_arr, terminal_cable_info_arr, sheath_voltage_limiter_arr, concentricNeutral, oldCableInfoArr]
+                const entityDB = ['joint', 'terminal', 'sheathVoltageLimiter', 'concentricNeutral', 'oldCableInfo']
+
+                const voltage = [];
+                const currentFlow = [];
+                const second = [];
+                const temperature = [];
+                const area = [];
+                const frequency = [];
+                const length = [];
+
+                for (const i in dataDB) {
+                    const item = dataDB[i];
+                    for (const key in item) {
+                        for (const field of item[key]) {
+                            if (key === 'voltage') {
+                                if (entity[entityDB[i]][field] != null) {
+                                    voltage.push(entity[entityDB[i]][field]);
+                                }
+                            }
+                            else if (key === 'currentFlow') {
+                                if (entity[entityDB[i]][field] != null) {
+                                    currentFlow.push(entity[entityDB[i]][field]);
+                                }
+                            }
+                            else if (key === 'second') {
+                                if (entity[entityDB[i]][field] != null) {
+                                    second.push(entity[entityDB[i]][field]);
+                                }
+                            }
+                            else if (key === 'temperature') {
+                                if (entity[entityDB[i]][field] != null) {
+                                    temperature.push(entity[entityDB[i]][field]);
+                                }
+                            }
+                            else if (key === 'area') {
+                                if (entity[entityDB[i]][field] != null) {
+                                    area.push(entity[entityDB[i]][field]);
+                                }
+                            }
+                            else if (key === 'frequency') {
+                                if (entity[entityDB[i]][field] != null) {
+                                    frequency.push(entity[entityDB[i]][field]);
+                                }
+                            }
+                            else if (key === 'length') {
+                                if (entity[entityDB[i]][field] != null) {
+                                    length.push(entity[entityDB[i]][field]);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                const dataVoltage = await getVoltageByIds(voltage);
+                if (dataVoltage.success) {
+                    entity.voltage = dataVoltage.data;
+                }
+
+                const dataCurrentFlow = await getCurrentFlowByIds(currentFlow);
+                if (dataCurrentFlow.success) {
+                    entity.currentFlow = dataCurrentFlow.data;
+                }
+
+                const dataSecond = await getSecondByIds(second);
+                if (dataSecond.success) {
+                    entity.second = dataSecond.data;
+                }
+
+                const dataTemperature = await getTemperatureByIds(temperature);
+                if (dataTemperature.success) {
+                    entity.temperature = dataTemperature.data;
+                }
+
+                const dataArea = await getAreaByIds(area);
+                if (dataArea.success) {
+                    entity.area = dataArea.data;
+                }
+
+                const dataFrequency = await getFrequencyByIds(frequency);
+                if (dataFrequency.success) {
+                    entity.frequency = dataFrequency.data;
+                }
+
+                const dataLength = await getLengthByIds(length);
+                if (dataLength.success) {
+                    entity.length = dataLength.data;
                 }
 
                 return {

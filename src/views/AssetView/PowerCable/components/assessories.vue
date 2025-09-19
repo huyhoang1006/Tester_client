@@ -17,7 +17,7 @@
                     </el-form-item>
                     <el-form-item label="BSL">
                         <el-input v-model="terminalsData.bsl.value">
-                            <template slot="append">Hz</template>
+                            <template slot="append">kV</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Type">
@@ -94,7 +94,7 @@
                     </el-form-item>
                     <el-form-item label="Service condition">
                         <el-input v-model="jointsData.service_condition.value">
-                            <template slot="append">km</template>
+                            
                         </el-input>
                     </el-form-item>
                 </el-form>
@@ -117,19 +117,22 @@
                     </el-form-item>
                     <el-form-item label="Nominal discharge current">
                         <el-input v-model="sheathLimitsData.nominal_discharge_current.value">
-                            <template slot="append">Hz</template>
+                            <template slot="append">A</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="High current impulse withstand">
                         <el-input v-model="sheathLimitsData.high_current_impulse_withstand.value">
+                             <template slot="append">kA</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Long duration current impulse withstand">
                         <el-input v-model="sheathLimitsData.long_duration_current_impulse_withstand.value">
+                            <template slot="append">kA</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Short circuit withstand">
-                        <el-input v-model="sheathLimitsData.short_circuit">
+                        <el-input v-model="sheathLimitsData.short_circuit_withstand.value">
+                            <template slot="append">kA</template>
                         </el-input>
                     </el-form-item>
                 </el-form>
