@@ -50,7 +50,7 @@ export default {
 
         async saveCtrS() {
             const data = await this.saveAsset()
-            if(data.success) {
+            if (data.success) {
                 this.$message.success("Asset saved successfully")
             } else {
                 this.$message.error("Failed to save asset")
@@ -65,7 +65,7 @@ export default {
         loadData(data) {
             this.powerCableOld = JSON.parse(JSON.stringify(data));
             this.powerCable = data;
-            if(data.attachment && data.attachment.path) {
+            if (data.attachment && data.attachment.path) {
                 this.attachmentData = JSON.parse(data.attachment.path)
             } else {
                 this.attachmentData = []
@@ -148,13 +148,13 @@ export default {
         },
 
         checkAssetInfoId(data) {
-            if(data.assetInfoId === null || data.assetInfoId === '') {
+            if (data.assetInfoId === null || data.assetInfoId === '') {
                 data.assetInfoId = uuid.newUuid()
             }
         },
 
         checkOldCableInfoId(data) {
-            if(data.oldCableInfoId === null || data.oldCableInfoId === '') {
+            if (data.oldCableInfoId === null || data.oldCableInfoId === '') {
                 data.oldCableInfoId = uuid.newUuid()
             }
         },
