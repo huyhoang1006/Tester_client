@@ -40,24 +40,28 @@
                                 {{ `${index + 1}a${index + 1}n` }}
                             </td>
                             <td>
-                                <el-select size="mini" v-model="item.table.usrRatio">
+                                <el-select size="mini" :value="formatField(item.table.usrRatio)"
+                                    @input="val => item.table.usrRatio = parseField(val, '')">
                                     <el-option label="1 / 1" value="1"></el-option>
                                     <el-option label="1 / √3" value="3sqrt"></el-option>
                                     <el-option label="1 / 3" value="3"></el-option>
                                 </el-select>
                             </td>
                             <td>
-                                <el-input size="mini" v-model="item.table.usr">
+                                <el-input size="mini" :value="formatField(item.table.usr)"
+                                    @input="val => item.table.usr = parseField(val, 'V')">
                                     <template slot="append">V</template>
                                 </el-input>
                             </td>
                             <td>
-                                <el-input size="mini" v-model="item.table.rated_burden">
+                                <el-input size="mini" :value="formatField(item.table.rated_burden)"
+                                    @input="val => item.table.rated_burden = parseField(val, 'VA')">
                                     <template slot="append">VA</template>
                                 </el-input>
                             </td>
                             <td>
-                                <el-input size="mini" v-model="item.table.cosphi">
+                                <el-input size="mini" :value="formatField(item.table.cosphi)"
+                                    @input="val => item.table.cosphi = parseField(val, null)">
                                 </el-input>
                             </td>
                         </tr>
@@ -78,8 +82,8 @@ export default {
     },
     data() {
         return {
-            openConfig: "true",
-            labelWidth: `200px`,
+            openConfig: true,
+            labelWidth: `200px`
         }
     },
     watch: {
@@ -102,6 +106,21 @@ export default {
             } else if (lengthData > data) {
                 this.configsData.dataVT.splice(1, parseInt(lengthData - data))
             }
+        },
+        formatField(field) {
+            if (!field) return "";
+            if (typeof field === "object") {
+                return field.value ?? "";
+            }
+            return field; // trường hợp đã là string/number
+        },
+
+        // Parse string -> object khi người dùng nhập
+        parseField(value, unit) {
+            return {
+                value: value,
+                unit: unit
+            };
         }
     }
 }
