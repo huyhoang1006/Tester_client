@@ -106,9 +106,8 @@ export function mapDtoToEntity(dto) {
     mappingUnit(newConductorSize, dto.datasData.conductor.conductor_size);
     entity.area.push(newConductorSize);
 
-    if (dto.datasData.conductor.conductor_material.value !== 'Custom') {
-        entity.concentricNeutral.material = dto.datasData.conductor.conductor_material.value || null;
-    }
+    entity.concentricNeutral.material = dto.datasData.conductor.conductor_material.value || null;
+
 
     entity.oldCableInfo.conductor_class = dto.datasData.conductor.conductor_class.value || null;
     entity.oldCableInfo.conductor_type = dto.datasData.conductor.conductor_type.value || null;

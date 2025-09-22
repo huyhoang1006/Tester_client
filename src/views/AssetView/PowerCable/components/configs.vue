@@ -63,28 +63,28 @@
                         <el-row style="margin-top: 20px; width: 100%;">
                             <el-col :span="12">
                                 <el-checkbox style="width: 100%; margin-top: 10px;" v-model="layersData.conductor"
-                                    label="Conductor" />
+                                    label="Conductor" @change="onLayerCheckboxChange"/>
                                 <el-checkbox style="width: 100%; margin-top: 10px;"
-                                    v-model="layersData.conductor_shield" label="Conductor shield"></el-checkbox>
+                                    v-model="layersData.conductor_shield" label="Conductor shield" @change="onLayerCheckboxChange"/>
                                 <el-checkbox style="width: 100%; margin-top: 10px;" v-model="layersData.insulation"
-                                    label="Insulation"></el-checkbox>
+                                    label="Insulation" @change="onLayerCheckboxChange"/>
                                 <el-checkbox style="width: 100%; margin-top: 10px;"
-                                    v-model="layersData.insulation_screen" label="Insulation screen"></el-checkbox>
+                                    v-model="layersData.insulation_screen" label="Insulation screen" @change="onLayerCheckboxChange"/>
                                 <el-checkbox style="width: 100%; margin-top: 10px;" v-model="layersData.sheath"
-                                    label="Sheath"></el-checkbox>
+                                    label="Sheath" @change="onLayerCheckboxChange"/>
                             </el-col>
                             <el-col :span="12">
                                 <el-checkbox style="width: 100%; margin-top: 10px;"
                                     v-model="layersData.sheath_reinforcing"
-                                    label="Sheath reinforcing tap"></el-checkbox>
+                                    label="Sheath reinforcing tap" @change="onLayerCheckboxChange"/>
                                 <el-checkbox style="width: 100%; margin-top: 10px;"
-                                    v-model="layersData.concentric_neutral" label="Concentric neutral"></el-checkbox>
+                                    v-model="layersData.concentric_neutral" label="Concentric neutral" @change="onLayerCheckboxChange"/>
                                 <el-checkbox style="width: 100%; margin-top: 10px;" v-model="layersData.armour_bedding"
-                                    label="Amour bedding"></el-checkbox>
+                                    label="Amour bedding" @change="onLayerCheckboxChange"/>
                                 <el-checkbox style="width: 100%; margin-top: 10px;" v-model="layersData.armour"
-                                    label="Amour"></el-checkbox>
+                                    label="Amour" @change="onLayerCheckboxChange"/>
                                 <el-checkbox style="width: 100%; margin-top: 10px;" v-model="layersData.oversheath"
-                                    label="Oversheath/Jacket/Serving"></el-checkbox>
+                                    label="Oversheath/Jacket/Serving" @change="onLayerCheckboxChange"/>
                             </el-col>
                         </el-row>
                     </el-form>
@@ -161,7 +161,7 @@
                         </el-select>
                         <el-input style="margin-top: 5px;"
                             v-if="datasData.conductor.conductor_material.value == 'Custom'"
-                            v-model="datasData.conductor.conductor_material_custom">
+                            v-model="datasData.conductor.conductor_material_custom.value">
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Conductor type">
@@ -607,42 +607,91 @@ export default {
         return {
             openRatings: "true",
             labelWidth: `200px`,
+            autoLayerTicked: false 
         }
     },
+    mounted() {
+        this.autoTickLayers();
+    },
     watch: {
-        'datasData.conductor.conductor_class.value'(val) {
-            this.layersData.conductor = !!val;
-        },
-        'datasData.insulation.insulation_type.value'(val) {
-            this.layersData.insulation = !!val;
-        },
-        'datasData.sheath_reinforcing.material.value'(val) {
-            this.layersData.sheath_reinforcing = !!val;
-        },
-        'datasData.armour.material.value'(val) {
-            this.layersData.armour = !!val;
-        },
-        'datasData.conductor_shield.thickness.value'(val) {
-            this.layersData.conductor_shield = !!val;
-        },
-        'datasData.insulation_screen.material.value'(val) {
-            this.layersData.insulation_screen = !!val;
-        },
-        'datasData.concentric_neutral.material.value'(val) {
-            this.layersData.concentric_neutral = !!val;
-        },
-        'datasData.oversheath.material.value'(val) {
-            this.layersData.oversheath = !!val;
-        },
-        'datasData.sheath.sheath_type.value'(val) {
-            this.layersData.sheath = !!val;
-        },
-        'datasData.armour_bedding.material.value'(val) {
-            this.layersData.armour_bedding = !!val;
-        },
-
+        datas: {
+            handler() {
+                this.autoTickLayers();
+            },
+            deep: true
+        }
     },
     methods: {
+        autoTickLayers() {
+            // Chỉ tick tự động nếu chưa tick thủ công
+            if (!this.autoLayerTicked) {
+                this.layersData.conductor =
+                    !!this.datasData.conductor.conductor_class.value ||
+                    !!this.datasData.conductor.conductor_size.value ||
+                    !!this.datasData.conductor.conductor_material.value ||
+                    !!this.datasData.conductor.conductor_type.value ||
+                    !!this.datasData.conductor.conductor_diameter.value;
+
+                this.layersData.insulation =
+                    !!this.datasData.insulation.insulation_type.value ||
+                    !!this.datasData.insulation.thickness.value ||
+                    !!this.datasData.insulation.diameter.value ||
+                    !!this.datasData.insulation.insulation_operating.value;
+
+                this.layersData.sheath_reinforcing =
+                    !!this.datasData.sheath_reinforcing.material.value ||
+                    !!this.datasData.sheath_reinforcing.thickness.value ||
+                    !!this.datasData.sheath_reinforcing.diameter.value ||
+                    !!this.datasData.sheath_reinforcing.width.value ||
+                    !!this.datasData.sheath_reinforcing.lengthOfLay.value ||
+                    !!this.datasData.sheath_reinforcing.numOfTapes.value;
+
+                this.layersData.armour =
+                    !!this.datasData.armour.material.value ||
+                    !!this.datasData.armour.thickness.value ||
+                    !!this.datasData.armour.diameter.value ||
+                    !!this.datasData.armour.layerOfTapes.value ||
+                    !!this.datasData.armour.crossSectional.value;
+
+                this.layersData.conductor_shield =
+                    !!this.datasData.conductor_shield.thickness.value ||
+                    !!this.datasData.conductor_shield.diameter.value;
+
+                this.layersData.insulation_screen =
+                    !!this.datasData.insulation_screen.material.value ||
+                    !!this.datasData.insulation_screen.thickness.value ||
+                    !!this.datasData.insulation_screen.diameter.value;
+
+                this.layersData.concentric_neutral =
+                    !!this.datasData.concentric_neutral.material.value ||
+                    !!this.datasData.concentric_neutral.construction.value ||
+                    !!this.datasData.concentric_neutral.thickness.value ||
+                    !!this.datasData.concentric_neutral.diameter.value ||
+                    !!this.datasData.concentric_neutral.area.value ||
+                    !!this.datasData.concentric_neutral.lengthOfLay.value ||
+                    !!this.datasData.concentric_neutral.numOfWires.value;
+
+                this.layersData.oversheath =
+                    !!this.datasData.oversheath.material.value ||
+                    !!this.datasData.oversheath.thickness.value ||
+                    !!this.datasData.oversheath.diameter.value;
+
+                this.layersData.sheath =
+                    !!this.datasData.sheath.sheath_type.value ||
+                    !!this.datasData.sheath.construction.value ||
+                    !!this.datasData.sheath.thickness.value ||
+                    !!this.datasData.sheath.diameter.value ||
+                    !!this.datasData.sheath.multicore.value;
+
+                this.layersData.armour_bedding =
+                    !!this.datasData.armour_bedding.material.value ||
+                    !!this.datasData.armour_bedding.thickness.value ||
+                    !!this.datasData.armour_bedding.diameter.value;
+            }
+        },
+        onLayerCheckboxChange() {
+            this.autoLayerTicked = true;
+        },
         onChangePhase() {
             console.log(this.configs.phases.value)
         },
@@ -652,21 +701,11 @@ export default {
         }
     },
     computed: {
-        configsData() {
-            return this.configs
-        },
-        ratingsData() {
-            return this.ratings
-        },
-        layersData() {
-            return this.layer
-        },
-        othersData() {
-            return this.other
-        },
-        datasData() {
-            return this.datas
-        }
+        configsData() { return this.configs },
+        ratingsData() { return this.ratings },
+        layersData() { return this.layer },
+        othersData() { return this.other },
+        datasData() { return this.datas }
     }
 }
 </script>

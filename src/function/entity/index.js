@@ -19,11 +19,12 @@ import * as powerCableEntityFunc from './powerCable/index'
 import * as voltageTransformerEntityFunc from './VoltageTransformer/index'
 import * as bushingEntityFunc from './Bushing/index'
 import * as disconnectorEntityFunc from "./disconnector/index"
+import * as rotatingMachineEntityFunc from "./rotatingMachine/index"
 
 export {
     attachmentFunc, fileFunc, organisationLocationFunc, personSubstationFunc,
     userFunc, userIdentifiedObjectFunc, substationEntityFunc, organisationPersonFunc,
     organisationPsrFunc, geoMapFunc, parentOrganizationEntityFunc, voltageLevelEntityFunc,
     bayEntityFunc, surgeArresterEntityFunc, transformerEntityFunc, TestTypeFunc, jobEntityFunc, powerCableEntityFunc,
-    voltageTransformerEntityFunc, bushingEntityFunc, disconnectorEntityFunc
+    voltageTransformerEntityFunc, bushingEntityFunc, disconnectorEntityFunc, rotatingMachineEntityFunc
 }
