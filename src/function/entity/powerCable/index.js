@@ -7,17 +7,17 @@ import { insertCurrentFlowTransaction, getCurrentFlowByIds, deleteCurrentFlowByI
 import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction } from '@/function/cim/lifecycleDate';
 import { insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction } from '@/function/cim/productAssetModel';
 import { insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
-import { insertLengthTransaction, getLengthById, getLengthByIds } from '@/function/cim/length'
-import { insertAreaTransaction, getAreaById, getAreaByIds } from '@/function/cim/area';
-import { insertFrequencyTransaction, getFrequencyById, getFrequencyByIds } from '@/function/cim/frequency';
-import { insertTemperatureTransaction, getTemperatureById, getTemperatureByIds } from '@/function/cim/temperature';
-import { getAssetById, insertAssetTransaction } from '@/function/cim/asset';
-import { getConcentricNeutralCableInfoById, insertConcentricNeutralCableInfoTransaction } from '@/function/cim/concentricNeutralCableInfo';
-import { insertJointCableInfoTransaction, getJointCableInfoById, getJointCableInfoByCableInfoId } from '@/function/cim/jointCableInfo';
-import { insertOldCableInfoTransaction, getOldCableInfoById, getOldCableInfoByCableInfoId } from '@/function/cim/oldCableInfo';
-import { insertSheathVoltageLimiterTransaction, getSheathVoltageLimiterById, getSheathVoltageLimiterByCableInfoId } from '@/function/cim/sheathVoltageLimiter';
-import { insertTerminalCableInfoTransaction, getTerminalCableInfoById, getTerminalCableInfoByCableInfoId } from '@/function/cim/terminalCableInfo';
-import { insertSecondsTransaction, getSecondById, getSecondByIds } from '@/function/cim/seconds';
+import { insertLengthTransaction, getLengthById, getLengthByIds, deleteLengthByIdTransaction } from '@/function/cim/length'
+import { insertAreaTransaction, getAreaById, getAreaByIds, deleteAreaByIdTransaction } from '@/function/cim/area';
+import { insertFrequencyTransaction, getFrequencyById, getFrequencyByIds, deleteFrequencyByIdTransaction } from '@/function/cim/frequency';
+import { insertTemperatureTransaction, getTemperatureById, getTemperatureByIds, deleteTemperatureByIdTransaction } from '@/function/cim/temperature';
+import { getAssetById, insertAssetTransaction, deleteAssetByIdTransaction } from '@/function/cim/asset';
+import { getConcentricNeutralCableInfoById, insertConcentricNeutralCableInfoTransaction, deleteConcentricNeutralCableInfoTransaction } from '@/function/cim/concentricNeutralCableInfo';
+import { insertJointCableInfoTransaction, getJointCableInfoById, getJointCableInfoByCableInfoId, deleteJointCableInfoById } from '@/function/cim/jointCableInfo';
+import { insertOldCableInfoTransaction, getOldCableInfoById, getOldCableInfoByCableInfoId, deleteOldCableInfoTransaction } from '@/function/cim/oldCableInfo';
+import { insertSheathVoltageLimiterTransaction, getSheathVoltageLimiterById, getSheathVoltageLimiterByCableInfoId, deleteSheathVoltageLimiterTransaction } from '@/function/cim/sheathVoltageLimiter';
+import { insertTerminalCableInfoTransaction, getTerminalCableInfoById, getTerminalCableInfoByCableInfoId, deleteTerminalCableInfoTransaction } from '@/function/cim/terminalCableInfo';
+import { insertSecondsTransaction, getSecondById, getSecondByIds, deleteSecondsByIdTransaction } from '@/function/cim/seconds';
 import PowerCableEntity from '@/views/Entity/PowerCable/index'
 
 export const insertPowerCableEntity = async (old_entity, entity) => {
@@ -316,6 +316,7 @@ export const getPowerCableEntity = async (id, psrId) => {
                         "sheath_reinforcing_length_lay",
                         "sheath_reinforcing_width",
                         "jacket_thickness",
+                        "screen_thickness",
                         "length"
                     ]
                 };
@@ -430,6 +431,122 @@ export const getPowerCableEntity = async (id, psrId) => {
     } catch (error) {
         console.error("Error retrieving Power Cable entity by ID:", error);
         return { success: false, error, message: 'Error retrieving Power Cable entity by ID' };
+    }
+}
+
+export const deletePowerCableEntity = async (entity) => {
+    try {
+        await runAsync('BEGIN TRANSACTION');
+
+        // Xóa attachment trước
+        if (entity.attachment && entity.attachment.id) {
+            const pathData = JSON.parse(entity.attachment.path || '[]')
+            if (Array.isArray(pathData) && pathData.length > 0) {
+                syncFilesWithDeletion(pathData, null, entity.asset.mrid);
+            }
+        }
+        console.log('1');
+        // Xóa oldCableInfo
+        if (entity.oldCableInfo && entity.oldCableInfo.mrid) {
+            await deleteOldCableInfoTransaction(entity.oldCableInfo.mrid, db);
+        }
+        console.log('2');
+
+        // Xóa assetPsr
+        if (entity.assetPsr && entity.assetPsr.mrid) {
+            await deleteAssetPsrTransaction(entity.assetPsr.mrid, db);
+        }
+        console.log('3');
+
+        // Xóa asset
+        if (entity.asset && entity.asset.mrid) {
+            await deleteAssetByIdTransaction(entity.asset.mrid, db);
+        }
+        console.log('4');
+
+        // Xóa productAssetModel
+        if (entity.productAssetModel && entity.productAssetModel.mrid) {
+            await deleteProductAssetModelByIdTransaction(entity.productAssetModel.mrid, db);
+        }
+        console.log('5');
+
+        // Xóa lifecycleDate
+        if (entity.lifecycleDate && entity.lifecycleDate.mrid) {
+            await deleteLifecycleDateByIdTransaction(entity.lifecycleDate.mrid, db);
+        }
+        console.log('6');
+
+        // Xóa terminal
+        if (entity.terminal && entity.terminal.mrid) {
+            await deleteTerminalCableInfoTransaction(entity.terminal.mrid, db);
+        }
+        console.log('7');
+
+        // Xóa sheathVoltageLimiter
+        if (entity.sheathVoltageLimiter && entity.sheathVoltageLimiter.mrid) {
+            await deleteSheathVoltageLimiterTransaction(entity.sheathVoltageLimiter.mrid, db);
+        }
+        console.log('8');
+
+        // Xóa joint
+        if (entity.joint && entity.joint.mrid) {
+            await deleteJointCableInfoById(entity.joint.mrid, db);
+        }
+        console.log('9');
+
+        // Xóa concentricNeutralCableInfo
+        if (entity.concentricNeutral && entity.concentricNeutral.mrid) {
+            await deleteConcentricNeutralCableInfoTransaction(entity.concentricNeutral.mrid, db);
+        }
+        console.log('10');
+
+        // Xóa temperature
+        for (const temperature of entity.temperature || []) {
+            if (temperature.mrid) await deleteTemperatureByIdTransaction(temperature.mrid, db);
+        }
+        console.log('11');
+
+        // Xóa voltage
+        for (const voltage of entity.voltage || []) {
+            if (voltage.mrid) await deleteVoltageByIdTransaction(voltage.mrid, db);
+        }
+        console.log('12');
+
+        // Xóa length
+        for (const length of entity.length || []) {
+            if (length.mrid) await deleteLengthByIdTransaction(length.mrid, db);
+        }
+        console.log('13');
+
+        // Xóa frequency
+        for (const frequency of entity.frequency || []) {
+            if (frequency.mrid) await deleteFrequencyByIdTransaction(frequency.mrid, db);
+        }
+        console.log('14');
+
+        // Xóa second
+        for (const second of entity.second || []) {
+            if (second.mrid) await deleteSecondsByIdTransaction(second.mrid, db);
+        }
+        console.log('15');
+
+        // Xóa currentFlow
+        for (const currentFlow of entity.currentFlow || []) {
+            if (currentFlow.mrid) await deleteCurrentFlowByIdTransaction(currentFlow.mrid, db);
+        }
+        console.log('16');
+
+        // Xóa area
+        for (const area of entity.area || []) {
+            if (area.mrid) await deleteAreaByIdTransaction(area.mrid, db);
+        }
+        console.log('17');
+
+        await runAsync('COMMIT');
+        return { success: true, message: 'Power cable entity deleted successfully' };
+    } catch (error) {
+        await runAsync('ROLLBACK');
+        return { success: false, error, message: 'Error deleting Power Cable entity' };
     }
 }
 
