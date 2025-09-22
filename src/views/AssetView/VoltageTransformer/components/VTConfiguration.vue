@@ -40,24 +40,24 @@
                                 {{ `${index + 1}a${index + 1}n` }}
                             </td>
                             <td>
-                                <el-select size="mini" v-model="item.table.usrRatio">
+                                <el-select size="mini" v-model="item.usr_formula.value">
                                     <el-option label="1 / 1" value="1"></el-option>
                                     <el-option label="1 / √3" value="3sqrt"></el-option>
                                     <el-option label="1 / 3" value="3"></el-option>
                                 </el-select>
                             </td>
                             <td>
-                                <el-input size="mini" v-model="item.table.usr">
+                                <el-input size="mini" v-model="item.usr_rated_voltage.value">
                                     <template slot="append">V</template>
                                 </el-input>
                             </td>
                             <td>
-                                <el-input size="mini" v-model="item.table.rated_burden">
+                                <el-input size="mini" v-model="item.rated_burden.value">
                                     <template slot="append">VA</template>
                                 </el-input>
                             </td>
                             <td>
-                                <el-input size="mini" v-model="item.table.cosphi">
+                                <el-input size="mini" v-model="item.rated_power_factor.value">
                                 </el-input>
                             </td>
                         </tr>
@@ -91,16 +91,43 @@ export default {
     },
     methods: {
         changeWindingData(data) {
-            let lengthData = this.configsData.dataVT.length
-            if (lengthData < data) {
-                for (let i = 0; i < data - lengthData; i++) {
+            let lengthData = this.configsData.dataVT.length;
+            // đảm bảo data là số
+            const target = parseInt(data, 10) || 0;
+
+            if (lengthData < target) {
+                for (let i = 0; i < target - lengthData; i++) {
                     this.configsData.dataVT.push({
-                        table: {
-                        }
-                    })
+                        mrid: '',
+                        usr_formula: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            multiplier: ''
+                        },           // default
+                        usr_rated_voltage: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            multiplier: ''
+                        },      // default empty
+                        rated_burden: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            multiplier: ''
+                        },           // default empty
+                        rated_power_factor: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            multiplier: ''
+                        }      // default empty
+                    });
                 }
-            } else if (lengthData > data) {
-                this.configsData.dataVT.splice(1, parseInt(lengthData - data))
+            } else if (lengthData > target) {
+                // xoá từ vị trí 'target' số phần tử thừa
+                this.configsData.dataVT.splice(target, lengthData - target);
             }
         }
     }

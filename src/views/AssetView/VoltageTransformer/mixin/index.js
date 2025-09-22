@@ -64,20 +64,11 @@ export default {
 
         loadData(data) {
             this.old_data = JSON.parse(JSON.stringify(data));
-
             const cloned = JSON.parse(JSON.stringify(data));
-
             if (cloned.vt_Configuration) {
-
-                // convert sang format cho UI
-                cloned.vt_Configuration = this.convertDTOToUIConfig(cloned.vt_Configuration);
                 console.log('cloned.vt_Configuration: ', cloned.vt_Configuration)
             }
-
             this.voltageTransformer = cloned;
-
-            console.log('x (UI data): ', this.voltageTransformer);
-
             if (data.attachment && data.attachment.path) {
                 this.attachmentData = JSON.parse(data.attachment.path);
             } else {
@@ -96,7 +87,6 @@ export default {
                 this.checkRatedFrequency(data)
                 this.checkProperty(data);
                 this.checkLifecycleDate(data);
-                data.vt_Configuration = this.normalizeVTConfig(data.vt_Configuration)
                 this.checkWindings(data)
                 this.checkProductAssetModel(data);
                 await this.checkAssetPrs(data);
@@ -175,44 +165,6 @@ export default {
             this.traverseAndFillMrid(data);
         },
 
-        checkDataVT(data) {
-            data.vt_Configuration.dataVT.forEach(item => {
-                const table = item.table;
-
-                // nếu table có mrid thì check
-                if (table.mrid === null || table.mrid === '') {
-                    table.mrid = uuid.newUuid();
-                }
-
-                // check từng ValueWithUnit
-                this.checkValueWithUnit(table.rated_burden);
-                this.checkValueWithUnit(table.rated_power_factor);
-                this.checkValueWithUnit(table.usr_formula);
-                this.checkValueWithUnit(table.usr_rated_voltage);
-            })
-        },
-
-        convertDTOToUIConfig(vtConfig) {
-            if (!vtConfig || !vtConfig.dataVT) return null;
-            console.log('vtConfig: ', vtConfig)
-            return {
-                windings: vtConfig.windings,
-                dataVT: vtConfig.dataVT.map(item => {
-                    const table = item || {};
-                    return {
-                        table: {
-                            mrid: table.mrid || null,
-                            usrRatio: table.usr_formula.value || null,
-                            usr: table.usr_rated_voltage.value || table.usr || null,
-                            rated_burden: table.rated_burden.value || table.rated_burden || null,
-                            cosphi: table.rated_power_factor.value || table.cosphi || null,
-                        }
-                    };
-                })
-            };
-        }
-        ,
-
 
         checkWindings(data) {
             if (data.vt_Configuration.windings.mrid === null || data.vt_Configuration.windings.mrid === '') {
@@ -236,72 +188,9 @@ export default {
             return obj;
         },
 
-        convertVTConfig(vtConfig) {
-            if (!vtConfig || !vtConfig.dataVT) return null;
+        
 
-            return {
-                windings: vtConfig.windings,
-                dataVT: vtConfig.dataVT.map(item => {
-                    const table = item.table || {};
 
-                    return {
-                        table: {
-                            rated_burden: new ValueWithUnit(null, table.rated_burden || null, null, 'VA'),
-                            rated_power_factor: new ValueWithUnit(null, table.cosphi || null, null, null),
-                            usr_formula: new ValueWithUnit(null, table.usrRatio || null, null, null),
-                            usr_rated_voltage: new ValueWithUnit(null, table.usr || null, null, 'V'),
-                        }
-                    }
-                })
-            };
-        },
-
-        checkValueWithUnit(field) {
-            if (field) {
-                if (!field.mrid || field.mrid === '') {
-                    field.mrid = uuid.newUuid();
-                }
-                if (field.value === undefined) field.value = null;
-                if (field.multiplier === undefined) field.multiplier = null;
-                if (field.unit === undefined) field.unit = null;
-            }
-        },
-        normalizeVTConfig(vtConfig) {
-            if (!vtConfig || !vtConfig.dataVT) return null;
-
-            return {
-                windings: vtConfig.windings,
-                dataVT: vtConfig.dataVT.map(item => {
-                    const table = item.table || {};
-
-                    const rated_burden = table.rated_burden instanceof ValueWithUnit
-                        ? table.rated_burden
-                        : new ValueWithUnit(uuid.newUuid(), table.rated_burden || null, null, 'VA');
-
-                    const rated_power_factor = table.rated_power_factor instanceof ValueWithUnit
-                        ? table.rated_power_factor
-                        : new ValueWithUnit(uuid.newUuid(), table.cosphi || null, null, null);
-
-                    const usr_formula = table.usr_formula instanceof ValueWithUnit
-                        ? table.usr_formula
-                        : new ValueWithUnit(uuid.newUuid(), table.usrRatio || null, null, null);
-
-                    const usr_rated_voltage = table.usr_rated_voltage instanceof ValueWithUnit
-                        ? table.usr_rated_voltage
-                        : new ValueWithUnit(uuid.newUuid(), table.usr || null, null, 'V');
-
-                    return {
-                        table: {
-                            mrid: table.mrid || uuid.newUuid(),
-                            rated_burden,
-                            rated_power_factor,
-                            usr_formula,
-                            usr_rated_voltage
-                        }
-                    }
-                })
-            };
-        },
 
         checkAssetInfoId(data) {
             if (data.assetInfoId === null || data.assetInfoId === '') {
@@ -314,6 +203,8 @@ export default {
                 data.ratings.rated_frequency.value = data.ratings.rated_frequency_custom
             }
         }
+
+
 
     }
 }
