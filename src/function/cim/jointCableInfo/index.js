@@ -175,20 +175,11 @@ export const updateJointCableInfo = async (mrid, joint) => {
  */
 export const deleteJointCableInfoById = async (mrid) => {
     return new Promise((resolve, reject) => {
-        AssetFunc.deleteAssetById(mrid)
-            .then(result => {
-                if (!result.success) {
-                    return reject({ success: false, message: 'Delete asset failed', err: result.err })
-                }
-                db.run("DELETE FROM joint_cable_info WHERE mrid=?", [mrid], function (err) {
-                    if (err) {
-                        return reject({ success: false, err, message: 'Delete joint cable info failed' })
-                    }
-                    return resolve({ success: true, data: mrid, message: 'Delete joint cable info completed' })
-                })
-            })
-            .catch(err => {
-                return reject({ success: false, err, message: 'Delete joint cable info transaction failed' })
-            })
-    })
+        db.run("DELETE FROM joint_cable_info WHERE mrid=?", [mrid], function (err) {
+            if (err) {
+                return reject({ success: false, err, message: 'Delete joint cable info failed' });
+            }
+            return resolve({ success: true, data: mrid, message: 'Delete joint cable info completed' });
+        });
+    });
 }

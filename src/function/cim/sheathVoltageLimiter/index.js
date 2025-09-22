@@ -98,20 +98,15 @@ export const updateSheathVoltageLimiterTransaction = async (svl, dbsql) => {
 
 export const deleteSheathVoltageLimiterTransaction = async (mrid, dbsql) => {
     return new Promise((resolve, reject) => {
-        dbsql.serialize(() => {
-            dbsql.run("BEGIN TRANSACTION");
-            dbsql.run(
-                "DELETE FROM sheath_voltage_limiter WHERE mrid = ?",
-                [mrid],
-                function (err) {
-                    if (err) {
-                        dbsql.run("ROLLBACK");
-                        return reject({ success: false, message: "Delete failed", err });
-                    }
-                    dbsql.run("COMMIT");
-                    resolve({ success: true });
+        dbsql.run(
+            "DELETE FROM sheath_voltage_limiter WHERE mrid = ?",
+            [mrid],
+            function (err) {
+                if (err) {
+                    return reject({ success: false, message: "Delete failed", err });
                 }
-            );
-        });
+                resolve({ success: true });
+            }
+        );
     });
 };

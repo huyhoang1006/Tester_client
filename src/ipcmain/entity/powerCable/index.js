@@ -37,7 +37,7 @@ export const getPowerCableEntityByMrid = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data : rs.data
+                    data: rs.data
                 }
             }
             else {
@@ -57,7 +57,38 @@ export const getPowerCableEntityByMrid = () => {
     })
 }
 
+
+export const deletePowerCableEntity = () => {
+    ipcMain.handle('deletePowerCableEntity', async function (event, data) {
+        try {
+            const rs = await entityFunc.powerCableEntityFunc.deletePowerCableEntity(data)
+            console.log("Delete power cable entity", rs)
+            if (rs.success == true) {
+                return {
+                    success: true,
+                    message: "Success",
+                    data: data
+                }
+            }
+            else {
+                return {
+                    success: false,
+                    message: "fail",
+                }
+            }
+        } catch (error) {
+            return {
+                error: error,
+                success: false,
+                message: (error && error.message) ? error.message : "Internal error",
+            }
+        }
+    })
+}
+
+
 export const active = () => {
     insertPowerCableEntity()
     getPowerCableEntityByMrid()
+    deletePowerCableEntity()
 }

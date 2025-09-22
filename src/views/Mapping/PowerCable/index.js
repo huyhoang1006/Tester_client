@@ -173,7 +173,10 @@ export function mapDtoToEntity(dto) {
     mappingUnit(newDiameterOverScreen, dto.datasData.insulation_screen.diameter);
     entity.length.push(newDiameterOverScreen);
 
-    entity.concentricNeutral.insulation_thickness = dto.datasData.insulation_screen.thickness.mrid || null;
+    entity.oldCableInfo.screen_thickness = dto.datasData.insulation_screen.thickness.mrid || null;
+    const newInsulationScreenThickness = new Length();
+    mappingUnit(newInsulationScreenThickness, dto.datasData.insulation_screen.thickness);
+    entity.length.push(newInsulationScreenThickness);
 
     /** ================== armour bedding ================== */
     entity.oldCableInfo.armour_bedding_material = dto.datasData.armour_bedding.material.value || null;
@@ -517,7 +520,13 @@ export function mapEntityToDto(entity) {
             break;
         }
     }
-    dto.datasData.insulation_screen.thickness.mrid = entity.concentricNeutral.insulation_thickness || null;
+    dto.datasData.insulation_screen.thickness.mrid = entity.oldCableInfo.screen_thickness || null;
+    for (const length of entity.length) {
+        if (length && dto.datasData.insulation_screen.thickness.mrid === length.mrid) {
+            dto.datasData.insulation_screen.thickness.value = length.value || null;
+            break;
+        }
+    }
     // ================== armour bedding ==================
     dto.datasData.armour_bedding.material.value = entity.oldCableInfo.armour_bedding_material || null;
 
