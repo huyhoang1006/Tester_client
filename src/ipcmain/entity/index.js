@@ -11,6 +11,7 @@ import * as ipcPowerCable from './powerCable/index.js'
 import * as ipcVoltageTransformer from './voltageTransformer/index.js'
 import * as ipcBushing from './bushing/index.js'
 import * as ipcDisconnector from './disconnector/index.js'
+import * as ipcRotatingMachine from './rotatingMachine/index.js'
 
 export const active = () => {
     ipcSubstation.active()
@@ -26,4 +27,5 @@ export const active = () => {
     ipcVoltageTransformer.active()
     ipcBushing.active()
     ipcDisconnector.active()
+    ipcRotatingMachine.active()
 }
