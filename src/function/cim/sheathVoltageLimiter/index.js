@@ -1,3 +1,4 @@
+import db from '../../datacontext/index'
 export const insertSheathVoltageLimiterTransaction = async (svl, dbsql) => {
     return new Promise((resolve, reject) => {
         dbsql.run(
@@ -30,6 +31,20 @@ export const insertSheathVoltageLimiterTransaction = async (svl, dbsql) => {
         );
     });
 };
+
+export const getSheathVoltageLimiterByCableInfoId = async (cableInfoId) => {
+    try {
+        return new Promise((resolve, reject) => {
+            db.get("SELECT * FROM sheath_voltage_limiter WHERE cable_info_id=?", [cableInfoId], (err, row) => {
+                if (err) return reject({ success: false, err, message: 'Get sheath voltage limiter by cable info id failed' })
+                if (!row) return resolve({ success: false, data: null, message: 'Sheath voltage limiter not found' })
+                return resolve({ success: true, data: row, message: 'Get sheath voltage limiter by cable info id completed' })
+            })
+        })
+    } catch (err) {
+        return { success: false, err, message: 'Get sheath voltage limiter by cable info id failed' }
+    }
+}
 
 export const getSheathVoltageLimiterById = async (mrid, dbsql) => {
     return new Promise((resolve, reject) => {
@@ -83,20 +98,15 @@ export const updateSheathVoltageLimiterTransaction = async (svl, dbsql) => {
 
 export const deleteSheathVoltageLimiterTransaction = async (mrid, dbsql) => {
     return new Promise((resolve, reject) => {
-        dbsql.serialize(() => {
-            dbsql.run("BEGIN TRANSACTION");
-            dbsql.run(
-                "DELETE FROM sheath_voltage_limiter WHERE mrid = ?",
-                [mrid],
-                function (err) {
-                    if (err) {
-                        dbsql.run("ROLLBACK");
-                        return reject({ success: false, message: "Delete failed", err });
-                    }
-                    dbsql.run("COMMIT");
-                    resolve({ success: true });
+        dbsql.run(
+            "DELETE FROM sheath_voltage_limiter WHERE mrid = ?",
+            [mrid],
+            function (err) {
+                if (err) {
+                    return reject({ success: false, message: "Delete failed", err });
                 }
-            );
-        });
+                resolve({ success: true });
+            }
+        );
     });
 };

@@ -10,6 +10,31 @@ export const getCurrentFlowById = async (mrid) => {
     })
 }
 
+export const getCurrentFlowByIds = async (mrids) => {
+    return new Promise((resolve, reject) => {
+        if (!mrids || mrids.length === 0) {
+            return resolve({ success: false, data: [], message: 'No mrids provided' })
+        }
+
+        // Tạo chuỗi placeholder (?, ?, ?) tùy theo số lượng mrid
+        const placeholders = mrids.map(() => '?').join(',')
+
+        db.all(
+            `SELECT * FROM current_flow WHERE mrid IN (${placeholders})`,
+            mrids,
+            (err, rows) => {
+                if (err) {
+                    return reject({ success: false, err: err, message: 'Get current flows by ids failed' })
+                }
+                if (!rows || rows.length === 0) {
+                    return resolve({ success: false, data: [], message: 'Current flows not found' })
+                }
+                return resolve({ success: true, data: rows, message: 'Get current flows by ids completed' })
+            }
+        )
+    })
+}
+
 export const insertCurrentFlow = async (currentFlow) => {
     return new Promise((resolve, reject) => {
         db.run(

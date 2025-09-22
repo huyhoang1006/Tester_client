@@ -10,6 +10,31 @@ export const getAreaById = async (mrid) => {
     })
 }
 
+export const getAreaByIds = async (mrids) => {
+    return new Promise((resolve, reject) => {
+        if (!mrids || mrids.length === 0) {
+            return resolve({ success: false, data: [], message: 'No mrids provided' })
+        }
+
+        // Tạo chuỗi placeholder (?, ?, ?) tùy theo số lượng mrid
+        const placeholders = mrids.map(() => '?').join(',')
+
+        db.all(
+            `SELECT * FROM area WHERE mrid IN (${placeholders})`,
+            mrids,
+            (err, rows) => {
+                if (err) {
+                    return reject({ success: false, err: err, message: 'Get area by ids failed' })
+                }
+                if (!rows || rows.length === 0) {
+                    return resolve({ success: false, data: [], message: 'Area not found' })
+                }
+                return resolve({ success: true, data: rows, message: 'Get area by ids completed' })
+            }
+        )
+    })
+}
+
 export const insertArea = async (area) => {
     return new Promise((resolve, reject) => {
         db.run(
@@ -96,12 +121,12 @@ export const deleteLengthById = async (mrid) => {
     })
 }
 
-export const deleteLengthByIdTransaction = async (mrid, dbsql) => {
+export const deleteAreaByIdTransaction = async (mrid, dbsql) => {
     return new Promise((resolve, reject) => {
-        dbsql.run("DELETE FROM length WHERE mrid=?", [mrid], function (err) {
-            if (err) return reject({ success: false, err, message: 'Delete length failed' })
-            if (this.changes === 0) return resolve({ success: false, data: null, message: 'Length not found' })
-            return resolve({ success: true, data: null, message: 'Delete length completed' })
+        dbsql.run("DELETE FROM area WHERE mrid=?", [mrid], function (err) {
+            if (err) return reject({ success: false, err, message: 'Delete area failed' })
+            if (this.changes === 0) return resolve({ success: false, data: null, message: 'Area not found' })
+            return resolve({ success: true, data: null, message: 'Delete area completed' })
         })
     })
 }

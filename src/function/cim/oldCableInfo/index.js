@@ -15,6 +15,21 @@ export const getOldCableInfoById = async (mrid) => {
     })
 }
 
+// Lấy oldCableInfo theo cable_info_id
+export const getOldCableInfoByCableInfoId = async (cableInfoId) => {
+    return new Promise((resolve, reject) => {
+        db.get(
+            `SELECT * FROM old_cable_info WHERE cable_info_id=?`,
+            [cableInfoId],
+            (err, row) => {
+                if (err) return reject({ success: false, err, message: 'Get oldCableInfo by cable_info_id failed' })
+                if (!row) return resolve({ success: false, data: null, message: 'OldCableInfo not found' })
+                return resolve({ success: true, data: row, message: 'Get oldCableInfo by cable_info_id completed' })
+            }
+        )
+    })
+}
+
 // Thêm mới oldCableInfo (transaction)
 export const insertOldCableInfoTransaction = async (info, dbsql) => {
     return new Promise((resolve, reject) => {
