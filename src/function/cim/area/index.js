@@ -121,12 +121,12 @@ export const deleteLengthById = async (mrid) => {
     })
 }
 
-export const deleteLengthByIdTransaction = async (mrid, dbsql) => {
+export const deleteAreaByIdTransaction = async (mrid, dbsql) => {
     return new Promise((resolve, reject) => {
-        dbsql.run("DELETE FROM length WHERE mrid=?", [mrid], function (err) {
-            if (err) return reject({ success: false, err, message: 'Delete length failed' })
-            if (this.changes === 0) return resolve({ success: false, data: null, message: 'Length not found' })
-            return resolve({ success: true, data: null, message: 'Delete length completed' })
+        dbsql.run("DELETE FROM area WHERE mrid=?", [mrid], function (err) {
+            if (err) return reject({ success: false, err, message: 'Delete area failed' })
+            if (this.changes === 0) return resolve({ success: false, data: null, message: 'Area not found' })
+            return resolve({ success: true, data: null, message: 'Delete area completed' })
         })
     })
 }
