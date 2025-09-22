@@ -3,6 +3,7 @@ const { ipcRenderer } = require('electron')
 export const powerCableEntityPreload = () => {
     return {
         insertPowerCableEntity: (old_data, data) => ipcRenderer.invoke('insertPowerCableEntity', old_data, data),
-        getPowerCableEntityByMrid: (mrid, prsId) => ipcRenderer.invoke('getPowerCableEntityByMrid', mrid, prsId)
+        getPowerCableEntityByMrid: (mrid, prsId) => ipcRenderer.invoke('getPowerCableEntityByMrid', mrid, prsId),
+        deletePowerCableEntity: (data) => ipcRenderer.invoke('deletePowerCableEntity', data)
     }
 }
