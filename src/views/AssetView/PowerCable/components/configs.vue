@@ -7,8 +7,8 @@
                         <span class="bolder">Phase</span>
                         <el-divider></el-divider>
                         <el-radio-group style="margin-top: 20px;" v-model="configsData.phases.value">
-                            <el-radio style="margin-right: 100px;" type="number" label="1"></el-radio>
-                            <el-radio type="number" label="3"></el-radio>
+                            <el-radio style="margin-right: 100px;" label="1"></el-radio>
+                            <el-radio label="3"></el-radio>
                         </el-radio-group>
                     </el-form>
                     <el-form style="margin-top: 50px;" :inline-message="true" :label-width="labelWidth" size="mini"
@@ -610,6 +610,37 @@ export default {
         }
     },
     watch: {
+        'datasData.conductor.conductor_class.value'(val) {
+            this.layersData.conductor = !!val;
+        },
+        'datasData.insulation.insulation_type.value'(val) {
+            this.layersData.insulation = !!val;
+        },
+        'datasData.sheath_reinforcing.material.value'(val) {
+            this.layersData.sheath_reinforcing = !!val;
+        },
+        'datasData.armour.material.value'(val) {
+            this.layersData.armour = !!val;
+        },
+        'datasData.conductor_shield.thickness.value'(val) {
+            this.layersData.conductor_shield = !!val;
+        },
+        'datasData.insulation_screen.material.value'(val) {
+            this.layersData.insulation_screen = !!val;
+        },
+        'datasData.concentric_neutral.material.value'(val) {
+            this.layersData.concentric_neutral = !!val;
+        },
+        'datasData.oversheath.material.value'(val) {
+            this.layersData.oversheath = !!val;
+        },
+        'datasData.sheath.sheath_type.value'(val) {
+            this.layersData.sheath = !!val;
+        },
+        'datasData.armour_bedding.material.value'(val) {
+            this.layersData.armour_bedding = !!val;
+        },
+
     },
     methods: {
         onChangePhase() {
