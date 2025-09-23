@@ -105,12 +105,22 @@ export function mapDtoToEntity(dto) {
     const newConductorSize = new Area();
     mappingUnit(newConductorSize, dto.datasData.conductor.conductor_size);
     entity.area.push(newConductorSize);
-
-    entity.concentricNeutral.material = dto.datasData.conductor.conductor_material.value || null;
+    if (dto.datasData.conductor.conductor_material.value !== "Custom") {
+        entity.concentricNeutral.material = dto.datasData.conductor.conductor_material.value || null;
+    }
+    else {
+        entity.concentricNeutral.material = dto.datasData.conductor.conductor_material_custom.value || null;
+    }
 
 
     entity.oldCableInfo.conductor_class = dto.datasData.conductor.conductor_class.value || null;
-    entity.oldCableInfo.conductor_type = dto.datasData.conductor.conductor_type.value || null;
+    if (dto.datasData.conductor.conductor_type.value !== "Custom") {
+        entity.oldCableInfo.conductor_type = dto.datasData.conductor.conductor_type.value || null;
+    }
+    else {
+        entity.oldCableInfo.conductor_type = dto.datasData.conductor.conductor_type_custom.value || null;
+    }
+
     entity.oldCableInfo.nominal_conductor_diameter = dto.datasData.conductor.conductor_diameter.mrid || null;
     const newNominalConductorDiameter = new Length();
     mappingUnit(newNominalConductorDiameter, dto.datasData.conductor.conductor_diameter);
@@ -129,14 +139,24 @@ export function mapDtoToEntity(dto) {
 
     /** ================== sheath ================== */
     entity.oldCableInfo.sheath_multicore = dto.datasData.sheath.multicore.value || null;
-    entity.oldCableInfo.sheath_contruction = dto.datasData.sheath.construction.value || null;
+    if (dto.datasData.sheath.construction.value !== "Custom") {
+        entity.oldCableInfo.sheath_contruction = dto.datasData.sheath.construction.value || null;
+    } else {
+        entity.oldCableInfo.sheath_contruction = dto.datasData.sheath.construction_custom.value || null;
+    }
+
 
     entity.oldCableInfo.sheath_thickness = dto.datasData.sheath.thickness.mrid || null;
     const newSheathThickness = new Length();
     mappingUnit(newSheathThickness, dto.datasData.sheath.thickness);
     entity.length.push(newSheathThickness);
+    if (dto.datasData.sheath.sheath_type.value !== "Custom") {
+        entity.oldCableInfo.sheath_type = dto.datasData.sheath.sheath_type.value || null;
+    }
+    else {
+        entity.oldCableInfo.sheath_type = dto.datasData.sheath.sheath_type_custom.value || null;
+    }
 
-    entity.oldCableInfo.sheath_type = dto.datasData.sheath.sheath_type.value || null;
 
     entity.oldCableInfo.diameter_over_sheath = dto.datasData.sheath.diameter.mrid || null;
     const newDiameterOverSheath = new Length();
@@ -148,8 +168,12 @@ export function mapDtoToEntity(dto) {
     const newInsulationMaxTemp = new Temperature();
     mappingUnit(newInsulationMaxTemp, dto.datasData.insulation.insulation_operating);
     entity.temperature.push(newInsulationMaxTemp);
+    if (dto.datasData.insulation.insulation_type.value !== "Custom") {
+        entity.concentricNeutral.insulation_material = dto.datasData.insulation.insulation_type.value || null;
+    } else {
+        entity.concentricNeutral.insulation_material = dto.datasData.insulation.insulation_type_custom.value || null;
+    }
 
-    entity.concentricNeutral.insulation_material = dto.datasData.insulation.insulation_type.value || null;
     entity.concentricNeutral.insulation_thickness = dto.datasData.insulation.thickness.mrid || null;
     const newThickness = new Length();
     mappingUnit(newThickness, dto.datasData.insulation.thickness);
@@ -161,7 +185,12 @@ export function mapDtoToEntity(dto) {
     entity.length.push(newDiameter);
 
     /** ================== insulation screen ================== */
-    entity.oldCableInfo.screen_material = dto.datasData.insulation_screen.material.value || null;
+    if (dto.datasData.insulation_screen.material.value !== "Custom") {
+        entity.oldCableInfo.screen_material = dto.datasData.insulation_screen.material.value || null;
+    } else {
+        entity.oldCableInfo.screen_material = dto.datasData.insulation_screen.material_custom.value || null;
+    }
+
     entity.oldCableInfo.screen_thickness = dto.datasData.insulation_screen.thickness.mrid || null;
     const newScreenThickness = new Length();
     mappingUnit(newScreenThickness, dto.datasData.insulation_screen.thickness);
@@ -178,7 +207,12 @@ export function mapDtoToEntity(dto) {
     entity.length.push(newInsulationScreenThickness);
 
     /** ================== armour bedding ================== */
-    entity.oldCableInfo.armour_bedding_material = dto.datasData.armour_bedding.material.value || null;
+    if (dto.datasData.armour_bedding.material.value !== "Custom") {
+        entity.oldCableInfo.armour_bedding_material = dto.datasData.armour_bedding.material.value || null;
+    } else {
+        entity.oldCableInfo.armour_bedding_material = dto.datasData.armour_bedding.material_custom.value || null;
+    }
+
     entity.oldCableInfo.armour_bedding_thickness = dto.datasData.armour_bedding.thickness.mrid || null;
     const newArmourBeddingThickness = new Length();
     mappingUnit(newArmourBeddingThickness, dto.datasData.armour_bedding.thickness);
@@ -190,7 +224,12 @@ export function mapDtoToEntity(dto) {
     entity.length.push(newDiameterBeddingOverArmour);
 
     /** ================== sheath reinforcing ================== */
-    entity.oldCableInfo.sheath_reinforcing_material = dto.datasData.sheath_reinforcing.material.value || null;
+    if (dto.datasData.sheath_reinforcing.material.value !== "Custom") {
+        entity.oldCableInfo.sheath_reinforcing_material = dto.datasData.sheath_reinforcing.material.value || null;
+    } else {
+        entity.oldCableInfo.sheath_reinforcing_material = dto.datasData.sheath_reinforcing.material_custom.value || null;
+    }
+
     entity.oldCableInfo.sheath_reinforcing_thickness = dto.datasData.sheath_reinforcing.thickness.mrid || null;
     const newSheathReinforcingThickness = new Length();
     mappingUnit(newSheathReinforcingThickness, dto.datasData.sheath_reinforcing.thickness);
@@ -214,8 +253,19 @@ export function mapDtoToEntity(dto) {
     entity.oldCableInfo.sheath_reinforcing_no_tape = dto.datasData.sheath_reinforcing.numOfTapes.value || null;
 
     /** ================== concentric neutral ================== */
-    entity.oldCableInfo.concentric_material = dto.datasData.concentric_neutral.material.value || null;
-    entity.oldCableInfo.concentric_contruction = dto.datasData.concentric_neutral.construction.value || null;
+    if (dto.datasData.concentric_neutral.material.value !== "Custom") {
+        entity.oldCableInfo.concentric_material = dto.datasData.concentric_neutral.material.value || null;
+    }
+    else {
+        entity.oldCableInfo.concentric_material = dto.datasData.concentric_neutral.material_custom.value || null;
+    }
+
+    if (dto.datasData.concentric_neutral.construction.value !== "Custom") {
+        entity.oldCableInfo.concentric_contruction = dto.datasData.concentric_neutral.construction.value || null;
+    } else {
+        entity.oldCableInfo.concentric_contruction = dto.datasData.concentric_neutral.construction_custom.value || null;
+    }
+
     entity.oldCableInfo.concentric_thickness = dto.datasData.concentric_neutral.thickness.mrid || null;
     const newConcentricThickness = new Length();
     mappingUnit(newConcentricThickness, dto.datasData.concentric_neutral.thickness);
@@ -239,7 +289,12 @@ export function mapDtoToEntity(dto) {
     entity.oldCableInfo.concentric_no_of_wires = dto.datasData.concentric_neutral.numOfWires.value || null;
 
     /** ================== armour ================== */
-    entity.oldCableInfo.armour_material = dto.datasData.armour.material.value || null;
+    if (dto.datasData.armour.material.value !== "Custom") {
+        entity.oldCableInfo.armour_material = dto.datasData.armour.material.value || null;
+    } else {
+        entity.oldCableInfo.armour_material = dto.datasData.armour.material_custom.value || null;
+    }
+
     entity.oldCableInfo.armour_thickness = dto.datasData.armour.thickness.mrid || null;
     const newArmourThickness = new Length();
     mappingUnit(newArmourThickness, dto.datasData.armour.thickness);
@@ -249,7 +304,12 @@ export function mapDtoToEntity(dto) {
     mappingUnit(newDiameterOverArmour, dto.datasData.armour.diameter);
     entity.length.push(newDiameterOverArmour);
 
-    entity.oldCableInfo.armour_layer_tape = dto.datasData.armour.layerOfTapes.value || null;
+    if (dto.datasData.armour.layerOfTapes.value !== "Custom") {
+        entity.oldCableInfo.armour_layer_tape = dto.datasData.armour.layerOfTapes.value || null;
+    }
+    else {
+        entity.oldCableInfo.armour_layer_tape = dto.datasData.armour.layerOfTapes_custom.value || null;
+    }
     entity.oldCableInfo.armour_cross_sectional_area_tap = dto.datasData.armour.crossSectional.mrid || null;
     const newArmourCrossSectionalAreaTap = new Area();
     mappingUnit(newArmourCrossSectionalAreaTap, dto.datasData.armour.crossSectional);
@@ -260,8 +320,12 @@ export function mapDtoToEntity(dto) {
     const newJacketThickness = new Length();
     mappingUnit(newJacketThickness, dto.datasData.oversheath.thickness);
     entity.length.push(newJacketThickness);
+    if (dto.datasData.oversheath.material.value !== "Custom") {
+        entity.concentricNeutral.outer_jacket_kind = dto.datasData.oversheath.material.value || null;
+    } else {
+        entity.concentricNeutral.outer_jacket_kind = dto.datasData.oversheath.material_custom.value || null;
+    }
 
-    entity.concentricNeutral.outer_jacket_kind = dto.datasData.oversheath.material.value || null;
 
     entity.concentricNeutral.diameter_over_jacket = dto.datasData.oversheath.diameter.mrid || null;
     const newDiameterOverJacket = new Length();
@@ -438,7 +502,34 @@ export function mapEntityToDto(entity) {
         }
     }
     dto.datasData.conductor.conductor_class.value = entity.oldCableInfo.conductor_class || null;
-    dto.datasData.conductor.conductor_type.value = entity.oldCableInfo.conductor_type || null;
+
+    const conductorTypeOptions = [
+        "Cooper-round, solid",
+        "Cooper-Round, stranded (Fluid/ paper/ PPL insulation)",
+        "Cooper-Round, stranded (Extruded/ Mineral insulation)",
+        "Cooper-Round, Milliken (Fluid/ paper/ PPL insulation)",
+        "Cooper-Round, Milliken, insulated wires (Extruded insulation)",
+        "Cooper-Round, Milliken, bare uni-directional wires (Extruded insulation)",
+        "Cooper-Round, Milliken, bare bi-directional wires (Extruded insulation)",
+        "Copper_Hollow, helical stranded",
+        "Cooper_Sector-shaped (Fluid/ paper/ PPL insulation)",
+        "Cooper_Sector-shaped (Extruded/ Mineral insulation)",
+        "Alluminium_Round, solid",
+        "Alluminium_Round, stranded",
+        "Alluminium_Round, Milliken",
+        "Alluminium_Hollow, helical stranded",
+    ];
+    if (conductorTypeOptions.includes(entity.oldCableInfo.conductor_type)) {
+        dto.datasData.conductor.conductor_type.value = entity.oldCableInfo.conductor_type || null;
+    }
+    else if (entity.oldCableInfo.conductor_type == null) {
+        dto.datasData.conductor.conductor_type.value = null;
+        dto.datasData.conductor.conductor_type_custom.value = null;
+    } else {
+        dto.datasData.conductor.conductor_type.value = "Custom";
+        dto.datasData.conductor.conductor_type_custom.value = entity.oldCableInfo.conductor_type || null;
+    }
+
     dto.datasData.conductor.conductor_diameter.mrid = entity.oldCableInfo.nominal_conductor_diameter || null;
     for (const length of entity.length) {
         if (length && dto.datasData.conductor.conductor_diameter.mrid === length.mrid) {
@@ -446,7 +537,16 @@ export function mapEntityToDto(entity) {
             break;
         }
     }
-    dto.datasData.conductor.conductor_material.value = entity.concentricNeutral.material || null;
+    const conductorMaterialOptions = ["Copper, plain wires", "Copper, metal-coated wires", "Alluminium wires", "Alluminium alloy wires"];
+    if (conductorMaterialOptions.includes(entity.concentricNeutral.material)) {
+        dto.datasData.conductor.conductor_material.value = entity.concentricNeutral.material || null;
+    } else if (entity.concentricNeutral.material == null) {
+        dto.datasData.conductor.conductor_material.value = null;
+        dto.datasData.conductor.conductor_material_custom.value = null;
+    } else {
+        dto.datasData.conductor.conductor_material.value = "Custom";
+        dto.datasData.conductor.conductor_material_custom.value = entity.concentricNeutral.material || null;
+    }
     // ================== conductor shield ==================
     dto.datasData.conductor_shield.thickness.mrid = entity.oldCableInfo.conductor_shield_thickness || null;
     for (const length of entity.length) {
@@ -463,10 +563,39 @@ export function mapEntityToDto(entity) {
         }
     }
     // ================== sheath ==================
+    const sheathTypeOptions = [
+        "Corrugated",
+        "Alumiminum",
+        "Cooper",
+        "Lead",
+    ];
+    if (sheathTypeOptions.includes(entity.oldCableInfo.sheath_type)) {
+        dto.datasData.sheath.sheath_type.value = entity.oldCableInfo.sheath_type || null;
+    } else if (entity.oldCableInfo.sheath_type == null) {
+        dto.datasData.sheath.sheath_type.value = null;
+        dto.datasData.sheath.sheath_type_custom.value = null;
+    } else {
+        dto.datasData.sheath.sheath_type.value = "Custom";
+        dto.datasData.sheath.sheath_type_custom.value = entity.oldCableInfo.sheath_type || null;
+    }
+    const sheathConstructionOptions = [
+        "Lead with reinforcing tape",
+        "Non-corrugated",
+        "Longitudinally-corrugated",
+    ];
+    if (sheathConstructionOptions.includes(entity.oldCableInfo.sheath_contruction)) {
+        dto.datasData.sheath.construction.value = entity.oldCableInfo.sheath_contruction || null;
+    } else if (entity.oldCableInfo.sheath_contruction == null) {
+        dto.datasData.sheath.construction.value = null;
+        dto.datasData.sheath.construction_custom.value = null;
+    } else {
+        dto.datasData.sheath.construction.value = "Custom";
+        dto.datasData.sheath.construction_custom.value = entity.oldCableInfo.sheath_contruction || null;
+    }
+
     dto.datasData.sheath.multicore.value = entity.oldCableInfo.sheath_multicore || null;
-    dto.datasData.sheath.construction.value = entity.oldCableInfo.sheath_contruction || null;
     dto.datasData.sheath.thickness.mrid = entity.oldCableInfo.sheath_thickness || null;
-    dto.datasData.sheath.sheath_type.value = entity.oldCableInfo.sheath_type || null;
+
     for (const length of entity.length) {
         if (length && dto.datasData.sheath.thickness.mrid === length.mrid) {
             dto.datasData.sheath.thickness.value = length.value || null;
@@ -481,7 +610,27 @@ export function mapEntityToDto(entity) {
         }
     }
     // ================== insulation ==================
-    dto.datasData.insulation.insulation_type.value = entity.concentricNeutral.insulation_material || null;
+    const insulationTypeOptions = [
+        "Impregnated paper_Solid type, fully- pre- or massimpregnated non-draining",
+        "Butyl rubber",
+        "EPR",
+        "PVC",
+        "HDPE",
+        "LDPE",
+        "XLPE_Filled",
+        "XLPE_Unfilled",
+        "PPL",
+        "Nylon",
+    ];
+    if (insulationTypeOptions.includes(entity.concentricNeutral.insulation_material)) {
+        dto.datasData.insulation.insulation_type.value = entity.concentricNeutral.insulation_material || null;
+    } else if (entity.concentricNeutral.insulation_material == null) {
+        dto.datasData.insulation.insulation_type.value = null;
+        dto.datasData.insulation.insulation_type_custom.value = null;
+    } else {
+        dto.datasData.insulation.insulation_type.value = "Custom";
+        dto.datasData.insulation.insulation_type_custom.value = entity.concentricNeutral.insulation_material || null;
+    }
     dto.datasData.insulation.insulation_operating.mrid = entity.oldCableInfo.insulation_max_operating_temp || null;
     const insulationOperatingObj = entity.temperature.find(
         t => t && dto.datasData.insulation.insulation_operating.mrid === t.mrid
@@ -502,8 +651,21 @@ export function mapEntityToDto(entity) {
         }
     }
     // ================== insulation screen ==================
+    const insulationScreenMaterialOptions = [
+        "Semi-conductor screen",
+        "Copper screen tape",
+        "Aluminium screen tap",
+    ];
+    if (insulationScreenMaterialOptions.includes(entity.oldCableInfo.screen_material)) {
+        dto.datasData.insulation_screen.material.value = entity.oldCableInfo.screen_material || null;
+    } else if (entity.oldCableInfo.screen_material == null) {
+        dto.datasData.insulation_screen.material.value = null;
+        dto.datasData.insulation_screen.material_custom.value = null;
+    } else {
+        dto.datasData.insulation_screen.material.value = "Custom";
+        dto.datasData.insulation_screen.material_custom.value = entity.oldCableInfo.screen_material || null;
+    }
 
-    dto.datasData.insulation_screen.material.value = entity.oldCableInfo.screen_material || null;
 
     dto.datasData.insulation_screen.thickness.mrid = entity.oldCableInfo.screen_thickness || null;
     for (const length of entity.length) {
@@ -527,7 +689,23 @@ export function mapEntityToDto(entity) {
         }
     }
     // ================== armour bedding ==================
-    dto.datasData.armour_bedding.material.value = entity.oldCableInfo.armour_bedding_material || null;
+    const armourBeddingMaterialOptions = [
+        "PVC",
+        "PVC/ bitumen on corrugated aluminium",
+        "PE",
+        "Rubber sandwich",
+        "Polychloroprene",
+        "Compounded jute and fibrous materials",
+    ];
+    if (armourBeddingMaterialOptions.includes(entity.oldCableInfo.armour_bedding_material)) {
+        dto.datasData.armour_bedding.material.value = entity.oldCableInfo.armour_bedding_material || null;
+    } else if (entity.oldCableInfo.armour_bedding_material == null) {
+        dto.datasData.armour_bedding.material.value = null;
+        dto.datasData.armour_bedding.material_custom.value = null;
+    } else {
+        dto.datasData.armour_bedding.material.value = "Custom";
+        dto.datasData.armour_bedding.material_custom.value = entity.oldCableInfo.armour_bedding_material || null;
+    }
 
     dto.datasData.armour_bedding.thickness.mrid = entity.oldCableInfo.armour_bedding_thickness || null;
     for (const length of entity.length) {
@@ -545,7 +723,22 @@ export function mapEntityToDto(entity) {
     }
 
     // ================== sheath reinforcing ==================
-    dto.datasData.sheath_reinforcing.material.value = entity.oldCableInfo.sheath_reinforcing_material || null;
+    const sheathReinforcingMaterialOptions = [
+        "Cooper",
+        "Aluminimum",
+        "Brass/ Bronze",
+        "Zinc",
+        "Stainless steel",
+    ];
+    if (sheathReinforcingMaterialOptions.includes(entity.oldCableInfo.sheath_reinforcing_material)) {
+        dto.datasData.sheath_reinforcing.material.value = entity.oldCableInfo.sheath_reinforcing_material || null;
+    } else if (entity.oldCableInfo.sheath_reinforcing_material == null) {
+        dto.datasData.sheath_reinforcing.material.value = null;
+        dto.datasData.sheath_reinforcing.material_custom.value = null;
+    } else {
+        dto.datasData.sheath_reinforcing.material.value = "Custom";
+        dto.datasData.sheath_reinforcing.material_custom.value = entity.oldCableInfo.sheath_reinforcing_material || null;
+    }
 
     dto.datasData.sheath_reinforcing.thickness.mrid = entity.oldCableInfo.sheath_reinforcing_thickness || null;
     for (const length of entity.length) {
@@ -578,8 +771,37 @@ export function mapEntityToDto(entity) {
     dto.datasData.sheath_reinforcing.numOfTapes.value = entity.oldCableInfo.sheath_reinforcing_no_tape || null;
 
     // ================== concentric neutral ==================
-    dto.datasData.concentric_neutral.material.value = entity.oldCableInfo.concentric_material || null;
-    dto.datasData.concentric_neutral.construction.value = entity.oldCableInfo.concentric_contruction || null;
+    const concentricNeutralMaterialOptions = [
+        "Cooper",
+        "Aluminimum",
+        "Brass/ Bronze",
+        "Zinc",
+        "Stainless steel",
+    ];
+    if (concentricNeutralMaterialOptions.includes(entity.oldCableInfo.concentric_material)) {
+        dto.datasData.concentric_neutral.material.value = entity.oldCableInfo.concentric_material || null;
+    } else if (entity.oldCableInfo.concentric_material == null) {
+        dto.datasData.concentric_neutral.material.value = null;
+        dto.datasData.concentric_neutral.material_custom.value = null;
+    } else {
+        dto.datasData.concentric_neutral.material.value = "Custom";
+        dto.datasData.concentric_neutral.material_custom.value = entity.oldCableInfo.concentric_material || null;
+    }
+
+    const concentricNeutralConstructionOptions = [
+        "Round wires",
+        "Flat straps",
+    ];
+    if (concentricNeutralConstructionOptions.includes(entity.oldCableInfo.concentric_contruction)) {
+        dto.datasData.concentric_neutral.construction.value = entity.oldCableInfo.concentric_contruction || null;
+    } else if (entity.oldCableInfo.concentric_contruction == null) {
+        dto.datasData.concentric_neutral.construction.value = null;
+        dto.datasData.concentric_neutral.construction_custom.value = null;
+    } else {
+        dto.datasData.concentric_neutral.construction.value = "Custom";
+        dto.datasData.concentric_neutral.construction_custom.value = entity.oldCableInfo.concentric_contruction || null;
+    }
+
     dto.datasData.concentric_neutral.thickness.mrid = entity.oldCableInfo.concentric_thickness || null;
     for (const length of entity.length) {
         if (length && dto.datasData.concentric_neutral.thickness.mrid === length.mrid) {
@@ -612,7 +834,33 @@ export function mapEntityToDto(entity) {
 
 
     // ================== armour ==================
-    dto.datasData.armour.material.value = entity.oldCableInfo.armour_material || null;
+    const armourOptions = {
+        material: [
+            "Steel tape reinforcement",
+            "Steel wires_touching",
+            "Steel wires_not touching",
+            "Stainless steel wires",
+            "Cooper armour wires",
+            "TECK armour",
+            "Custom_non-magnetic tape",
+            "Custom_non-magnetic wires",
+        ],
+        layerOfTapes: [
+            "Very long lay (longitudinal tapes)",
+            "Wound at approximately 54°",
+            "Wound in very short lay (circumferential tapes)",
+            "Layers of tapes in contact with each other having a very short lay",
+        ]
+    };
+    if (armourOptions.material.includes(entity.oldCableInfo.armour_material)) {
+        dto.datasData.armour.material.value = entity.oldCableInfo.armour_material || null;
+    } else if (entity.oldCableInfo.armour_material == null) {
+        dto.datasData.armour.material.value = null;
+        dto.datasData.armour.material_custom.value = null;
+    } else {
+        dto.datasData.armour.material.value = "Custom";
+        dto.datasData.armour.material_custom.value = entity.oldCableInfo.armour_material || null;
+    }
 
     dto.datasData.armour.thickness.mrid = entity.oldCableInfo.armour_thickness || null;
     for (const length of entity.length) {
@@ -628,7 +876,15 @@ export function mapEntityToDto(entity) {
             break;
         }
     }
-    dto.datasData.armour.layerOfTapes.value = entity.oldCableInfo.armour_layer_tape || null;
+    if (armourOptions.layerOfTapes.includes(entity.oldCableInfo.armour_layer_tape)) {
+        dto.datasData.armour.layerOfTapes.value = entity.oldCableInfo.armour_layer_tape || null;
+    } else if (entity.oldCableInfo.armour_layer_tape == null) {
+        dto.datasData.armour.layerOfTapes.value = null;
+        dto.datasData.armour.layerOfTapes_custom.value = null;
+    } else {
+        dto.datasData.armour.layerOfTapes.value = "Custom";
+        dto.datasData.armour.layerOfTapes_custom.value = entity.oldCableInfo.armour_layer_tape || null;
+    }
     dto.datasData.armour.crossSectional.mrid = entity.oldCableInfo.armour_cross_sectional_area_tap || null;
     for (const area of entity.area) {
         if (area && dto.datasData.armour.crossSectional.mrid === area.mrid) {
@@ -638,8 +894,25 @@ export function mapEntityToDto(entity) {
     }
 
     // ================== jacket ==================
+    const oversheathMaterialOptions = [
+        "PVC",
+        "Rubber sandwich",
+        "Butyl rubber",
+        "Coal tar wrapping",
+        "Polyethylene",
+        "Polychloroprene",
+        "Compounded jute and fibrous materials",
+    ];
+    if (oversheathMaterialOptions.includes(entity.concentricNeutral.outer_jacket_kind)) {
+        dto.datasData.oversheath.material.value = entity.concentricNeutral.outer_jacket_kind || null;
+    } else if (entity.concentricNeutral.outer_jacket_kind == null) {
+        dto.datasData.oversheath.material.value = null;
+        dto.datasData.oversheath.material_custom.value = null;
+    } else {
+        dto.datasData.oversheath.material.value = "Custom";
+        dto.datasData.oversheath.material_custom.value = entity.concentricNeutral.outer_jacket_kind || null;
+    }
     dto.datasData.oversheath.thickness.mrid = entity.oldCableInfo.jacket_thickness || null;
-    dto.datasData.oversheath.material.value = entity.concentricNeutral.outer_jacket_kind || null;
     for (const length of entity.length) {
         if (length && dto.datasData.oversheath.thickness.mrid === length.mrid) {
             dto.datasData.oversheath.thickness.value = length.value || null;

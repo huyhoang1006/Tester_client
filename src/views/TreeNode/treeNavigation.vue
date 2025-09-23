@@ -51,6 +51,7 @@
                         @show-addBushing="showAddBushing" @show-addSurgeArrester="showAddSurgeArrester"
                         @show-addCircuit="showAddCircuitBreaker" @show-addVt="showAddVt" @show-addCt="showAddCt"
                         @show-addPowerCable="showAddPowerCable" @show-addDisconnector="showAddDisconnector"
+                        @show-addRotatingMachine="showAddRotatingMachine"
                         @show-addBay="showAddBay" @show-data="showDataClient" ref="contextMenuClient">
                     </contextMenu>
                 </div>
@@ -592,6 +593,15 @@
             </span>
         </el-dialog>
 
+        <el-dialog title="Add Rotating Machine" :visible.sync="signRotating" width="1000px"
+            @close="handleRotatingCancel">
+            <!-- <RotatingMachine :locationId="locationId" :parent="parentOrganization" ref="rotatingMachine"></RotatingMachine> -->
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" type="danger" @click="handleRotatingCancel">Cancel</el-button>
+                <el-button size="small" type="primary" @click="handleRotatingConfirm">Save</el-button>
+            </span>
+        </el-dialog>
+
         <el-dialog title="Add Job" :visible.sync="signJob" width="1000px" @close="handleJobCancel">
             <component ref="jobData" :is="checkJobType" :locationData="locationData" :assetData="assetData"
                 :productAssetModelData="productAssetModelData" :parent="parentOrganization"
@@ -705,6 +715,7 @@ export default {
             signVt: false,
             signPower: false,
             signDisconnector: false,
+            signRotating: false,
             signJob: false,
             activeTab: {},
             activeTabClient: {},
@@ -1882,6 +1893,10 @@ export default {
             this.signDisconnector = false
         },
 
+        handleRotatingCancel() {
+            this.signRotating = false
+        },
+
         handleJobCancel() {
             this.signJob = false
         },
@@ -2250,6 +2265,13 @@ export default {
                 this.$message.error("Some error occur")
                 console.error(error)
             }
+        },
+
+        async handleRotatingConfirm() {
+            this.$message.success("Rotating machine saved successfully")
+            // Cần thêm logic để cập nhật lại cây nếu cần thiết
+            // await this.$refs.transformer.saveAsset();
+            this.signRotating = false
         },
 
         async handleJobConfirm() {
@@ -3054,6 +3076,29 @@ export default {
                     const powerCable = this.$refs.powerCable;
                     if (powerCable) {
                         powerCable.resetForm();
+                    }
+                });
+            } catch (error) {
+                this.parentOrganization = null
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
+        },
+
+        async showAddRotatingMachine(node) {
+            try {
+                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
+                if (dataLocation.success) {
+                    this.locationId = dataLocation.data.mrid
+                } else {
+                    this.locationId = null
+                }
+                this.parentOrganization = node
+                this.signRotating = true
+                this.$nextTick(() => {
+                    const rotatingMachine = this.$refs.rotatingMachine;
+                    if (rotatingMachine) {
+                        rotatingMachine.resetForm();
                     }
                 });
             } catch (error) {
