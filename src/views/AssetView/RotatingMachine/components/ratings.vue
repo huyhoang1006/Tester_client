@@ -12,10 +12,9 @@
         <el-form style = "width: 50%;" v-show="openRatings" :label-width="labelWidth" size="mini" label-position="left" >
             <el-form-item label="Rated frequency">
                 <el-select v-model="ratingsData.rated_frequency.value" style="width: 100%;"  placeholder="Select frequency">
-                    <el-option label="50 Hz" value="50" />
-                    <el-option label="60 Hz" value="60" />
-                    <el-option label="16.7 Hz" value="16.7" />
-                    
+                    <el-option label="50 Hz" value="50 Hz" />
+                    <el-option label="60 Hz" value="60 Hz" />
+                    <el-option label="16.7 Hz" value="16.7 Hz" />
                 </el-select>
             </el-form-item>
             <el-form-item label="Rated voltage L-L">
