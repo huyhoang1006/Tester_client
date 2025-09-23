@@ -126,7 +126,7 @@ export const updateRotatingMachineInfoTransaction = async (mrid, info, dbsql) =>
 export const deleteRotatingMachineInfoTransaction = async (mrid, dbsql) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const assetInfoResult = await AssetInfoFunc.deleteAssetInfoTransaction(mrid, dbsql)
+            const assetInfoResult = await AssetInfoFunc.deleteAssetInfoByIdTransaction(mrid, dbsql)
             if (!assetInfoResult.success) {
                 return reject({ success: false, message: 'Delete assetInfo failed', err: assetInfoResult.err })
             }

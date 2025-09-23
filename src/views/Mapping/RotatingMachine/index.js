@@ -25,17 +25,18 @@ export function mapDtoToEntity(dto) {
     entity.asset.type = dto.properties.type || null;
     entity.asset.serial_number = dto.properties.serial_no || null;
     entity.asset.asset_info = dto.assetInfoId || null;
+    entity.asset.product_asset_model = dto.productAssetModelId || null;
     entity.productAssetModel.manufacturer = dto.properties.manufacturer || null;
     entity.productAssetModel.mrid = dto.productAssetModelId || null;
     entity.rotatingMachine.manufacturer_type = dto.properties.manufacturer_type || null;
-    entity.rotatingMachine.country_of_origin = dto.properties.country_of_origin || null;
+    entity.asset.country_of_origin = dto.properties.country_of_origin || null;
     entity.rotatingMachine.mrid = dto.assetInfoId || null;
     entity.asset.name = dto.properties.apparatus_id || null;
     entity.asset.description = dto.properties.comment || null;
 
     /** ================== lifecycle date ================== */
     entity.lifecycleDate.mrid = dto.lifecycleDateId || null;
-    entity.lifecycleDate.manufactured_date = dto.properties.manufacturing_year || null;
+    entity.lifecycleDate.manufactured_date = dto.properties.manufacturer_year || null;
     entity.asset.lifecycle_date = dto.lifecycleDateId || null;
 
     //assetPsr
@@ -90,6 +91,7 @@ export function mapDtoToEntity(dto) {
 }
 
 export function mapEntityToDto(entity) {
+    console.log("Mapping entity to dto", entity);
     const dto = new RotatingMachineDTO();
 
     // properties
@@ -98,87 +100,92 @@ export function mapEntityToDto(entity) {
     dto.properties.type = entity.asset.type || null;
     dto.properties.serial_no = entity.asset.serial_number || null;
     dto.assetInfoId = entity.asset.asset_info || null;
+    dto.productAssetModelId = entity.asset.product_asset_model || null;
     dto.properties.manufacturer = entity.productAssetModel.manufacturer || null;
     dto.productAssetModelId = entity.productAssetModel.mrid || null;
     dto.properties.manufacturer_type = entity.rotatingMachine.manufacturer_type || null;
-    dto.properties.country_of_origin = entity.rotatingMachine.country_of_origin || null;
+    dto.properties.country_of_origin = entity.asset.country_of_origin || null;
     dto.assetInfoId = entity.rotatingMachine.mrid || null;
     dto.properties.apparatus_id = entity.asset.name || null;
     dto.properties.comment = entity.asset.description || null;
 
     // lifecycle date
+    dto.properties.manufacturer_year = entity.lifecycleDate.manufactured_date || null;
     dto.lifecycleDateId = entity.lifecycleDate.mrid || null;
-    dto.properties.manufacturing_year = entity.lifecycleDate.manufactured_date || null;
     dto.lifecycleDateId = entity.asset.lifecycle_date || null;
 
     // assetPsr
     dto.assetPsrId = entity.assetPsr.mrid || null;
-    dto.properties.mrid = entity.assetPsr.asset_id || dto.properties.mrid;
+    dto.properties.mrid = entity.assetPsr.asset_id || null;
     dto.psrId = entity.assetPsr.psr_id || null;
 
-    // attachment
-    dto.attachmentId = entity.attachment?.mrid || null;
+    // ================== attachment ==================
+    dto.attachmentId = entity.attachment.mrid || null;
     dto.attachment = entity.attachment || null;
 
     // configsData
     dto.configsData.star_point = entity.rotatingMachine.star_point || null;
 
-    // ratingsData
-    // Helper to find first by mrid
-    const findByMrid = (arr, mrid) => arr?.find(x => x.mrid === mrid) || {};
 
     // rated_frequency
-    const freq = findByMrid(entity.frequency, entity.rotatingMachine.rated_frequency);
-    dto.ratingsData.rated_frequency = {
-        mrid: freq.mrid || null,
-        value: freq.value || null,
-        unit: (freq.multiplier ? freq.multiplier + "|" : "") + (freq.unit || "")
-    };
 
-    // rated_current
-    const cur = findByMrid(entity.currentFlow, entity.rotatingMachine.rated_current);
-    dto.ratingsData.rated_current = {
-        mrid: cur.mrid || null,
-        value: cur.value || null,
-        unit: (cur.multiplier ? cur.multiplier + "|" : "") + (cur.unit || "")
-    };
+    dto.ratingsData.rated_frequency.mrid = entity.rotatingMachine.rated_frequency || null;
+    for (const frequency of entity.frequency) {
+        if (frequency && dto.ratingsData.rated_frequency.mrid === frequency.mrid) {
+            dto.ratingsData.rated_frequency.value = frequency.value || null;
+            break;
+        }
+    }
 
-    // rated_u
-    const volt = findByMrid(entity.voltage, entity.rotatingMachine.rated_u);
-    dto.ratingsData.rated_u = {
-        mrid: volt.mrid || null,
-        value: volt.value || null,
-        unit: (volt.multiplier ? volt.multiplier + "|" : "") + (volt.unit || "")
-    };
+
+    dto.ratingsData.rated_current.mrid = entity.rotatingMachine.rated_current || null;
+    for (const currentFlow of entity.currentFlow) {
+        if (currentFlow && dto.ratingsData.rated_current.mrid === currentFlow.mrid) {
+            dto.ratingsData.rated_current.value = currentFlow.value || null;
+            break;
+        }
+    }
+
+
+    dto.ratingsData.rated_u.mrid = entity.rotatingMachine.rated_u || null;
+    for (const voltage of entity.voltage) {
+        if (voltage && dto.ratingsData.rated_u.mrid === voltage.mrid) {
+            dto.ratingsData.rated_u.value = voltage.value || null;
+            break;
+        }
+    }
+
+    dto.ratingsData.rated_power.mrid = entity.rotatingMachine.rated_power || null;
+    for (const apparentPower of entity.apparentPower) {
+        if (apparentPower && dto.ratingsData.rated_power.mrid === apparentPower.mrid) {
+            dto.ratingsData.rated_power.value = apparentPower.value || null;
+            break;
+        }
+    }
+
+
+
 
     dto.ratingsData.rated_speed = entity.rotatingMachine.rated_speed || null;
-
-    // rated_power
-    const pow = findByMrid(entity.apparentPower, entity.rotatingMachine.rated_power);
-    dto.ratingsData.rated_power = {
-        mrid: pow.mrid || null,
-        value: pow.value || null,
-        unit: (pow.multiplier ? pow.multiplier + "|" : "") + (pow.unit || "")
-    };
-
     dto.ratingsData.rated_power_factor = entity.rotatingMachine.rated_power_factor || null;
     dto.ratingsData.rated_thermal_class = entity.rotatingMachine.rated_thermal_class || null;
 
-    // rated_ifd
-    const ifd = findByMrid(entity.currentFlow, entity.rotatingMachine.rated_ifd);
-    dto.ratingsData.rated_ifd = {
-        mrid: ifd.mrid || null,
-        value: ifd.value || null,
-        unit: (ifd.multiplier ? ifd.multiplier + "|" : "") + (ifd.unit || "")
-    };
 
-    // rated_ufd
-    const ufd = findByMrid(entity.voltage, entity.rotatingMachine.rated_ufd);
-    dto.ratingsData.rated_ufd = {
-        mrid: ufd.mrid || null,
-        value: ufd.value || null,
-        unit: (ufd.multiplier ? ufd.multiplier + "|" : "") + (ufd.unit || "")
-    };
+    dto.ratingsData.rated_ifd.mrid = entity.rotatingMachine.rated_ifd || null;
+    for (const currentFlow of entity.currentFlow) {
+        if (currentFlow && dto.ratingsData.rated_ifd.mrid === currentFlow.mrid) {
+            dto.ratingsData.rated_ifd.value = currentFlow.value || null;
+            break;
+        }
+    }
+
+    dto.ratingsData.rated_ufd.mrid = entity.rotatingMachine.rated_ufd || null;
+    for (const voltage of entity.voltage) {
+        if (voltage && dto.ratingsData.rated_ufd.mrid === voltage.mrid) {
+            dto.ratingsData.rated_ufd.value = voltage.value || null;
+            break;
+        }
+    }
 
     return dto;
 }
