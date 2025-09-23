@@ -26,7 +26,7 @@ export default {
         assetDetail: {
             type: String,
             default: 'Unknown',
-            validator: (value) => ['Surge arrester', 'Disconnector', 'Power cable', 'Bushing', 'Voltage transformer', 'Unknown'].includes(value)
+            validator: (value) => ['Surge arrester', 'Disconnector', 'Power cable', 'Bushing', 'Voltage transformer', 'Rotating machine', 'Unknown'].includes(value)
         }
     },
     computed: {
@@ -34,13 +34,14 @@ export default {
             const icons = {
                 location: 'fa-solid fa-location-dot',
                 asset: {
-                    Unknown : 'fa-solid fa-gear',
+                    "Unknown" : 'fa-solid fa-gear',
                     "Transformer" : 'fa-solid fa-bolt',
                     'Surge arrester' : 'fa-solid fa-shield-halved',
                     'Disconnector' : 'fa-solid fa-plug-circle-xmark',
                     'Power cable' : 'fa-solid fa-route',
                     'Bushing' : "fa-solid fa-shield",
-                    'Voltage transformer' : 'fa-solid fa-bolt-lightning'
+                    'Voltage transformer' : 'fa-solid fa-bolt-lightning',
+                    'Rotating machine': 'fa-solid fa-group-arrows-rotate'
                 },
                 job: 'fa-solid fa-toolbox',
                 test: 'fa-solid fa-file-lines',
@@ -50,7 +51,6 @@ export default {
                 bay: 'fa-solid fa-tower-observation'
             }
             if(this.folderType == 'asset') {
-                console.log(icons.asset[this.assetDetail])
                 if(this.assetDetail == 'Unknown') {
                     return icons.asset['Unknown']
                 } else {

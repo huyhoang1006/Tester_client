@@ -10,103 +10,88 @@ import { insertAssetPsrTransaction } from '@/function/entity/assetPsr'
 import { insertFrequencyTransaction } from '@/function/cim/frequency';
 import { insertAssetTransaction } from '@/function/cim/asset';
 import { insertRotatingMachineInfoTransaction } from '@/function/cim/rotatingMachineInfo';
+import { insertApparentPowerTransaction } from '@/function/cim/apparentPower';
 
 
 
-export const insertRotatingMachineEntity = async (old_entity, entity) => {
+export const insertRotatingMachineEntity = async (entity) => {
     try {
         if (entity.asset.mrid === null || entity.asset.mrid === '') {
-            const result = {
+            return {
                 success: false,
                 error: new Error("MRID is required for Rotating Machine Entity"),
                 message: '',
-            }
-            return result;
+            };
         } else {
             backupAllFilesInDir(null, null, entity.asset.mrid);
             const syncResult = syncFilesWithDeletion(JSON.parse(entity.attachment.path), null, entity.asset.mrid);
+
             if (!syncResult.success) {
                 restoreFiles(null, null, entity.asset.mrid);
                 deleteBackupFiles(null, entity.asset.mrid);
-                const result = {
+                return {
                     success: false,
                     error: new Error("MRID is required for Rotating Machine Entity"),
                     message: '',
-                }
-                return result;
+                };
             }
             await runAsync('BEGIN TRANSACTION');
 
-
-            //current flow
-            const newCurrentFlowIds = entity.currentFlow.map(s => s.mrid).filter(id => id);
-            const oldCurrentFlowIds = old_entity.currentFlow.map(s => s.mrid).filter(id => id);
-
-            const toAddCurrentFlow = entity.currentFlow.filter(s => s.mrid && !oldCurrentFlowIds.includes(s.mrid));
-            const toDeleteCurrentFlow = old_entity.currentFlow.filter(s => s.mrid && !newCurrentFlowIds.includes(s.mrid));
-            const toUpdateCurrentFlow = entity.currentFlow.filter(s => s.mrid && oldCurrentFlowIds.includes(s.mrid));
-            for (const currentFlow of toAddCurrentFlow) {
-                await insertCurrentFlowTransaction(currentFlow, db);
-            }
-            for (const currentFlow of toUpdateCurrentFlow) {
-                await insertCurrentFlowTransaction(currentFlow, db);
+            // current flow
+            for (const currentFlow of entity.currentFlow) {
+                if (currentFlow.mrid) {
+                    await insertCurrentFlowTransaction(currentFlow, db);
+                }
             }
             console.log('Inserted current flow');
 
-
-            //frequency
-            const newFrequencyIds = entity.frequency.map(s => s.mrid).filter(id => id);
-            const oldFrequencyIds = old_entity.frequency.map(s => s.mrid).filter(id => id);
-
-            const toAddFrequency = entity.frequency.filter(s => s.mrid && !oldFrequencyIds.includes(s.mrid));
-            const toDeleteFrequency = old_entity.frequency.filter(s => s.mrid && !newFrequencyIds.includes(s.mrid));
-            const toUpdateFrequency = entity.frequency.filter(s => s.mrid && oldFrequencyIds.includes(s.mrid));
-            for (const frequency of toAddFrequency) {
-                await insertFrequencyTransaction(frequency, db);
-            }
-            for (const frequency of toUpdateFrequency) {
-                await insertFrequencyTransaction(frequency, db);
+            // frequency
+            for (const frequency of entity.frequency) {
+                if (frequency.mrid) {
+                    await insertFrequencyTransaction(frequency, db);
+                }
             }
             console.log('Inserted frequency');
 
-            //voltage
-            const newIds = entity.voltage.map(v => v.mrid).filter(id => id); // bỏ null/empty
-            const oldIds = old_entity.voltage.map(v => v.mrid).filter(id => id);
-
-            const toAdd = entity.voltage.filter(v => v.mrid && !oldIds.includes(v.mrid));
-            const toDelete = old_entity.voltage.filter(v => v.mrid && !newIds.includes(v.mrid));
-            const toUpdate = entity.voltage.filter(v => v.mrid && oldIds.includes(v.mrid));
-            for (const voltage of toAdd) {
-                await insertVoltageTransaction(voltage, db);
-            }
-            for (const voltage of toUpdate) {
-                await insertVoltageTransaction(voltage, db);
+            // voltage
+            for (const voltage of entity.voltage) {
+                if (voltage.mrid) {
+                    await insertVoltageTransaction(voltage, db);
+                }
             }
             console.log('Inserted voltage');
+
+            // apparentPower
+            for (const apparentPower of entity.apparentPower) {
+                if (apparentPower.mrid) {
+                    await insertApparentPowerTransaction(apparentPower, db);
+                }
+            }
+            console.log('Inserted apparentPower');
 
             await insertRotatingMachineInfoTransaction(entity.rotatingMachine, db);
             console.log('Inserted rotatingMachineInfo');
 
-            //lifecycleDate
+            // lifecycleDate
             await insertLifecycleDateTransaction(entity.lifecycleDate, db);
             console.log('Inserted lifecycleDate');
 
-            //productAssetModel
+            // productAssetModel
             await insertProductAssetModelTransaction(entity.productAssetModel, db);
             console.log('Inserted productAssetModel');
 
-            //asset
+            // asset
             await insertAssetTransaction(entity.asset, db);
             console.log('Inserted asset');
 
-            //assetPsr
+            // assetPsr
             await insertAssetPsrTransaction(entity.assetPsr, db);
             console.log('Inserted assetPsr');
 
-            //attachment
+            // attachment
             if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
                 const pathData = JSON.parse(entity.attachment.path);
-                const newPath = []
+                const newPath = [];
                 for (let i = 0; i < pathData.length; i++) {
                     const namefile = path.basename(pathData[i].path);
                     pathData[i].path = path.join(attachmentContext.getAttachmentDir(), entity.asset.mrid, namefile);
