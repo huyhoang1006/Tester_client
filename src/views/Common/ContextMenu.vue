@@ -35,6 +35,7 @@
                         <li @click="addSurgeArrester"><i class="fa-solid fa-shield-halved"></i> Add Surge Arrester</li>
                         <li @click="addPowerCable"><i class="fa-solid fa-route"></i> Add Power Cable</li>
                         <li @click="addDisconnector"><i class="fa-solid fa-plug-circle-xmark"></i> Add Disconnector</li>
+                        <li @click="addRotatingMachine"><i class="fa-solid fa-gear"></i> Add Rotating Machine</li>
                     </ul>
                 </li>
                 <li @click="addJob" v-if="this.selectedNode && this.selectedNode.mode == 'asset'">
@@ -172,6 +173,10 @@ export default {
         },
         addDisconnector() {
             this.$emit("show-addDisconnector", this.selectedNode)
+            this.closeContextMenu()
+        },
+        addRotatingMachine() {
+            this.$emit("show-addRotatingMachine", this.selectedNode)
             this.closeContextMenu()
         },
         addAsset() {
