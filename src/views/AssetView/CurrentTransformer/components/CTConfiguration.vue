@@ -80,13 +80,13 @@
                                                     </td>
                                                     <td style="width : 60px;">{{ item.fullTap.table.name }}</td>
                                                     <td style="width : 250px;">
-                                                        <el-input size="mini" v-model="item.fullTap.table.ipn">
+                                                        <el-input size="mini" v-model="item.fullTap.table.ipn.value">
                                                             <template slot="append">A</template>
                                                         </el-input>
                                                     </td>
                                                     <td style="width : 10px;">:</td>
                                                     <td style="width : 250px;">
-                                                        <el-input size="mini" v-model="item.fullTap.table.isn">
+                                                        <el-input size="mini" v-model="item.fullTap.table.isn.value">
                                                             <template slot="append">A</template>
                                                         </el-input>
                                                     </td>
@@ -94,7 +94,7 @@
                                                 </tr>
                                             </tbody>
                                         </table>
-                                        <div  v-if="item.fullTap.table.isShow" style="width: 80%; margin: auto; margin-top: 20px; margin-bottom;: 20px">
+                                        <div  v-if="item.fullTap.table.isShow" style="width: 80%; margin: auto; margin-top: 20px; margin-bottom: 20px">
                                             <div style="font-size: 12px;" class="bolder">Class ratings</div>
                                             <el-divider></el-divider>
                                             <el-row style="width: 100%;">
@@ -678,10 +678,13 @@ export default {
                 for(let i=0; i<this.configsData.cores; i++) {
                     if(i==0 && this.configsData.cores == 1) {
                         this.configsData.dataCT.push({
+                            
                             fullTap: {
                                 table : {
                                     isShow : false,
-                                    name : "S1 - S2"
+                                    name : "S1 - S2",
+                                    ipn : {mrid: '', value: '', unit: "A"},
+                                    isn : {mrid: '', value: '', unit: "A"},
                                 },
                                 classRating : {class : ''}
                             },
@@ -726,6 +729,7 @@ export default {
                                 table : {
                                     isShow : false,
                                     name : `${i+1+length}`+"S1 - " + `${i+1+length}` +"S2"
+                                    
                                 },
                                 classRating : {
                                     class : ''
