@@ -51,7 +51,7 @@ export default {
                 // Load back the saved entity so the UI shows exactly what was stored
                 if (data.data) {
                     // Convert Entity -> DTO before binding to UI
-                    const dto = Mapping.disconnectorEntityToDto(data.data)
+                    const dto = Mapping.mapEntityToDto(data.data)
                     this.loadData(dto)
                 }
                 this.$message.success("Asset saved successfully")
@@ -83,7 +83,9 @@ export default {
                 await this.checkAssetPrs(data);
                 this.checkAttachment(data);
                 this.checkLocationId(data);
-                this.checkAssetInfoId(data)
+                this.checkAssetInfoId(data);
+                this.checkRotatingMachineTree(data);
+                this.checkProductAssetModelId(data);
                 return data;
             } catch (error) {
                 console.error("Error checking rotating machine data:", error);
@@ -107,6 +109,7 @@ export default {
                 data.psrId = this.parentData.mrid
             }
         },
+
 
         checkProductAssetModel(data) {
             if (data.productAssetModelId === null || data.productAssetModelId === '') {
@@ -139,6 +142,10 @@ export default {
             }
         },
 
+        checkRotatingMachineTree(data) {
+            this.traverseAndFillMrid(data);
+        },
+
         checkLocationId(data) {
             if (data.locationId === null || data.locationId === '') {
                 data.locationId = this.locationId;
@@ -149,6 +156,22 @@ export default {
             if (data.assetInfoId === null || data.assetInfoId === '') {
                 data.assetInfoId = uuid.newUuid()
             }
+        },
+
+        traverseAndFillMrid(obj) {
+            if (Array.isArray(obj)) {
+                obj.forEach(item => this.traverseAndFillMrid(item));
+            } else if (obj !== null && typeof obj === "object") {
+                // Nếu có thuộc tính mrid
+                if ("mrid" in obj) {
+                    if (!obj.mrid || obj.mrid === "") {
+                        obj.mrid = uuid.newUuid();
+                    }
+                }
+                // Duyệt tiếp các key con
+                Object.values(obj).forEach(val => this.traverseAndFillMrid(val));
+            }
+            return obj;
         }
     }
 }
