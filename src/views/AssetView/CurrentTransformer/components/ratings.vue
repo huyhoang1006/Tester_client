@@ -75,7 +75,7 @@
                             </el-form-item>
                         </el-form>
                         <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
-                            <el-form-item label="Um (r.m.r)">
+                            <el-form-item label="Um (r.m.s)">
                                 <el-input v-model="ratingsData.show.um">
                                     <template slot="append">V</template>
                                 </el-input>
@@ -92,7 +92,7 @@
                             </el-form-item>
                             <el-form-item label="Icth">
                                 <el-input v-model="ratingsData.show.icth">
-                                    <template slot="append">%</template>
+                                    <template slot="append">A</template>
                                 </el-input>
                             </el-form-item>
                             <el-form-item label="Idyn (peak)">
@@ -188,10 +188,12 @@
                             </el-select>
                         </el-col>
                         <el-col :span="2" style="margin-left: 10px;">
-                            <div>@</div>
+                            <div>at</div>
                         </el-col>
                         <el-col :span="8">
-                            <el-input size="mini" v-model="ratingsData.ratedFactorArrData"></el-input>
+                            <el-input size="mini" v-model="ratingsData.ratedFactorArrData">
+                                <template slot="append">°C</template>
+                            </el-input>
                         </el-col>
                     </el-row>
                 </el-col>
