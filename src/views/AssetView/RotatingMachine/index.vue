@@ -18,7 +18,7 @@ import ratings  from '../RotatingMachine/components/ratings.vue'
 import mixin from './mixin'
 
 export default {
-    name: 'rotatingMachine',
+    name: 'RotatingMachine',
     components: {
         properties,
         configs,

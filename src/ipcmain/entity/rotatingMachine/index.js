@@ -3,9 +3,9 @@ import { ipcMain } from 'electron'
 import { entityFunc } from "@/function"
 
 export const insertRotatingMachineEntity = () => {
-    ipcMain.handle('insertRotatingMachineEntity', async function (event, old_data, data) {
+    ipcMain.handle('insertRotatingMachineEntity', async function (event, data) {
         try {
-            const rs = await entityFunc.rotatingMachineEntityFunc.insertRotatingMachineEntity(old_data, data)
+            const rs = await entityFunc.rotatingMachineEntityFunc.insertRotatingMachineEntity(data)
             if (rs.success == true) {
                 return {
                     success: true,

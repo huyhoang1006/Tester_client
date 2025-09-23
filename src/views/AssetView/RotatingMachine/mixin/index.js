@@ -1,29 +1,30 @@
 
 import uuid from "@/utils/uuid";
-import * as Mapping from "@/views/Mapping/Disconnector"
+import * as Mapping from "@/views/Mapping/RotatingMachine/index"
 import RotatingMachineDTO from "@/views/Dto/RotatingMachine";
 export default {
     data() {
         return {
-            rotatingMachine : new RotatingMachineDTO,
-            attachmentData : []
+            rotatingMachine: new RotatingMachineDTO,
+            attachmentData: []
         }
     },
-    methods : {
+    methods: {
         async saveAsset() {
             try {
-                if(this.disconnector.properties.serial_no !== null && this.disconnector.properties.serial_no !== '') {
-                    const data = JSON.parse(JSON.stringify(this.disconnector));
-                    const result = this.checkDisconnectorData(data);
-                    const resultEntity = Mapping.disconnectorDtoToEntity(result);
-                    let rs = await window.electronAPI.insertDisconnectorEntity(resultEntity)
-                    if(rs.success) {
+                if (this.rotatingMachine.properties.serial_no !== null && this.rotatingMachine.properties.serial_no !== '') {
+                    const data = JSON.parse(JSON.stringify(this.rotatingMachine));
+                    const result = await this.checkRotatingMachineData(data);
+                    const resultEntity = Mapping.mapDtoToEntity(result);
+                    console.log("resultEntity", resultEntity)
+                    let rs = await window.electronAPI.insertRotatingMachineEntity(resultEntity)
+                    if (rs.success) {
                         return {
                             success: true,
                             data: rs.data,
                         };
                     } else {
-                        this.$message.error("Error saving Disconnector entity: " + rs.message);
+                        this.$message.error("Error saving Rotating Machine entity: " + rs.message);
                         return {
                             success: false,
                             error: rs.error,
@@ -66,50 +67,67 @@ export default {
 
         loadData(data) {
             this.rotatingMachine = data;
-            if(data.attachment && data.attachment.path) {
+            if (data.attachment && data.attachment.path) {
                 this.attachmentData = JSON.parse(data.attachment.path)
             } else {
                 this.attachmentData = []
             }
         },
 
+        async checkRotatingMachineData(data) {
+            try {
+                this.checkProperty(data);
+                this.checkLifecycleDate(data);
+                this.checkPsrId(data);
+                this.checkProductAssetModel(data);
+                await this.checkAssetPrs(data);
+                this.checkAttachment(data);
+                this.checkLocationId(data);
+                this.checkAssetInfoId(data)
+                return data;
+            } catch (error) {
+                console.error("Error checking rotating machine data:", error);
+            }
+        },
+
         checkProperty(data) {
-            if(data.properties.mrid == null || data.properties.mrid == '') {
+            if (data.properties.mrid == null || data.properties.mrid == '') {
                 data.properties.mrid = uuid.newUuid();
             }
         },
         checkLifecycleDate(data) {
-            if(data.lifecycleDateId == null || data.lifecycleDateId == '') {
+            if (data.lifecycleDateId == null || data.lifecycleDateId == '') {
                 data.lifecycleDateId = uuid.newUuid();
             }
         },
 
+
         checkPsrId(data) {
-            if(this.parentData.mrid !== null && this.parentData.mrid !== '' && this.parentData.mrid !== undefined) {
+            if (this.parentData.mrid !== null && this.parentData.mrid !== '' && this.parentData.mrid !== undefined) {
                 data.psrId = this.parentData.mrid
             }
         },
 
         checkProductAssetModel(data) {
-            if(data.productAssetModelId === null || data.productAssetModelId === '') {
+            if (data.productAssetModelId === null || data.productAssetModelId === '') {
                 data.productAssetModelId = uuid.newUuid()
             }
         },
 
-        checkAssetPrs(data) {
-            if(data.assetPsrId === null || data.assetPsrId === '') {
+        async checkAssetPrs(data) {
+            if (data.assetPsrId === null || data.assetPsrId === '') {
                 data.assetPsrId = uuid.newUuid();
             }
         },
 
         checkProductAssetModelId(data) {
-            if(data.productAssetModelId === null || data.productAssetModelId === '') {
+            if (data.productAssetModelId === null || data.productAssetModelId === '') {
                 data.productAssetModelId = uuid.newUuid();
             }
         },
 
         checkAttachment(data) {
-            if(data.attachmentId === null || data.attachmentId === '') {
+            if (data.attachmentId === null || data.attachmentId === '') {
                 if (this.attachmentData.length > 0) {
                     data.attachmentId = uuid.newUuid()
                     data.attachment.id = data.attachmentId
@@ -118,17 +136,17 @@ export default {
                     data.attachment.type = 'asset'
                     data.attachment.id_foreign = data.properties.mrid
                 }
-            } 
+            }
         },
 
         checkLocationId(data) {
-            if(data.locationId === null || data.locationId === '') {
+            if (data.locationId === null || data.locationId === '') {
                 data.locationId = this.locationId;
             }
         },
 
         checkAssetInfoId(data) {
-            if(data.assetInfoId === null || data.assetInfoId === '') {
+            if (data.assetInfoId === null || data.assetInfoId === '') {
                 data.assetInfoId = uuid.newUuid()
             }
         }

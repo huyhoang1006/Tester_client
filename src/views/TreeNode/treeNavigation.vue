@@ -595,7 +595,7 @@
 
         <el-dialog title="Add Rotating Machine" :visible.sync="signRotating" width="1000px"
             @close="handleRotatingCancel">
-            <!-- <RotatingMachine :locationId="locationId" :parent="parentOrganization" ref="rotatingMachine"></RotatingMachine> -->
+            <RotatingMachine :locationId="locationId" :parent="parentOrganization" ref="rotatingMachine"></RotatingMachine>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleRotatingCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleRotatingConfirm">Save</el-button>
@@ -663,8 +663,11 @@ import PowerCable from '@/views/AssetView/PowerCable'
 import VoltageTransformer from '@/views/AssetView/VoltageTransformer'
 
 import JobSurgeArrester from '@/views/JobView/SurgeArrester/index.vue'
-
+import * as rotatingMachineMapping from "@/views/Mapping/RotatingMachine/index"
+import RotatingMachine from '@/views/AssetView/RotatingMachine/index.vue'
 import mixin from './mixin'
+import Attachment from '../Common/Attachment.vue';
+
 
 export default {
     name: 'TreeNavigation',
@@ -687,6 +690,7 @@ export default {
         VoltageTransformer,
         Disconnector,
         PowerCable,
+        RotatingMachine,
 
         JobSurgeArrester,
     },
@@ -829,30 +833,6 @@ export default {
             },
             optionLocationSync: {
                 mode: ''
-            },
-            terminal: {
-                rated_u: { value: '' },
-                bil: { value: '' },
-                bsl: { value: '' },
-                type: { value: '' },
-                class: { value: '' },
-                connector_type: { value: '' },
-                service_condition: { value: '' }
-            },
-            joint: {
-                rated_u: { value: '' },
-                rated_current: { value: '' },
-                category: { value: '' },
-                construction: { value: '' },
-                service_condition: { value: '' }
-            },
-            sheath_limits: {
-                rated_voltage_ur: { value: '' },
-                max_continuous_operating_voltage: { value: '' },
-                nominal_discharge_current: { value: '' },
-                high_current_impulse_withstand: { value: '' },
-                long_duration_current_impulse_withstand: { value: '' },
-                short_circuit: { value: '' }
             },
             sl: 10,
             count: '',
@@ -1067,8 +1047,7 @@ export default {
                             window.electronAPI.getVoltageLevelBySubstationId(clickedRow.mrid),
                             window.electronAPI.getBayByVoltageBySubstationId(null, clickedRow.mrid)
                         ]);
-                        console.log(JSON.parse(JSON.stringify(bayReturn.data)))
-                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (voltageLevelReturn.success) {
                             voltageLevelReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
@@ -1179,6 +1158,22 @@ export default {
                             newRows.push(...assetPowerCableReturn.data);
                         }
 
+                        if (assetRotatingMachineReturn.success) {
+                            assetRotatingMachineReturn.data.forEach(row => {
+                                row.parentId = clickedRow.mrid;
+                                row.mode = 'asset';
+                                row.asset = 'Rotating machine';
+                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                row.parentName = parentName
+                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr.push({
+                                    mrid: clickedRow.mrid,
+                                    parent: clickedRow.name
+                                })
+                            });
+                            newRows.push(...assetRotatingMachineReturn.data);
+                        }
+
                     } else if (node.mode == 'voltageLevel') {
                         const clickedRow = node;
                         const [bayReturn] = await Promise.all([
@@ -1202,7 +1197,7 @@ export default {
 
                     } else if (node.mode == 'bay') {
                         const clickedRow = node;
-                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (assetSurgeReturn.success) {
                             assetSurgeReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
@@ -1278,6 +1273,22 @@ export default {
                             });
                             newRows.push(...assetPowerCableReturn.data);
                         }
+
+                        if (assetRotatingMachineReturn.success) {
+                            assetRotatingMachineReturn.data.forEach(row => {
+                                row.parentId = clickedRow.mrid;
+                                row.mode = 'asset';
+                                row.asset = 'Rotating machine';
+                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                row.parentName = parentName
+                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr.push({
+                                    mrid: clickedRow.mrid,
+                                    parent: clickedRow.name
+                                })
+                            });
+                            newRows.push(...assetRotatingMachineReturn.data);
+                        }
                     } else {
                         const clickedRow = node;
                         const [organisationReturn, substationReturn] = await Promise.all([
@@ -1321,15 +1332,15 @@ export default {
 
         async fetchAssetByPsr(psrId) {
             try {
-
-                const [responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale] = await Promise.all([
+                const [responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine] = await Promise.all([
                     window.electronAPI.getSurgeArresterByPsrId(psrId),
                     window.electronAPI.getBushingByPsrId(psrId),
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Voltage transformer'),
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Disconnector'),
-                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Power cable')
+                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Power cable'),
+                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Rotating machine')
                 ])
-                return [responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale];
+                return [responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine];
             } catch (error) {
                 console.error("Error fetching asset by substation:", error);
                 return {
@@ -2269,10 +2280,42 @@ export default {
         },
 
         async handleRotatingConfirm() {
-            this.$message.success("Rotating machine saved successfully")
-            // Cần thêm logic để cập nhật lại cây nếu cần thiết
-            // await this.$refs.transformer.saveAsset();
-            this.signRotating = false
+            try {
+                const rotatingMachine = this.$refs.rotatingMachine
+                if (rotatingMachine) {
+                    const { success, data } = await rotatingMachine.saveAsset();
+                    if (success) {
+                        this.$message.success("Rotating machine saved successfully")
+                        this.signRotating = false
+                        let newRows = []
+                        if (this.organisationClientList && this.organisationClientList.length > 0) {
+                            const newRow = {
+                                mrid: data.asset.mrid,
+                                name: data.asset.name,
+                                serial_number: data.asset.serial_number,
+                                parentId: this.parentOrganization.mrid,
+                                parentName: this.parentOrganization.name,
+                                parentArr: this.parentOrganization.parentArr || [],
+                                mode: 'asset',
+                                asset: 'Rotating machine',
+                            }
+                            newRows.push(newRow);
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            if (node) {
+                                const children = Array.isArray(node.children) ? node.children : [];
+                                Vue.set(node, "children", [...children, ...newRows]);
+                            } else {
+                                this.$message.error("Parent node not found in tree");
+                            }
+                        }
+                    } else {
+                        this.$message.error("Failed to save Rotating machine")
+                    }
+                }
+            } catch (error) {
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
         },
 
         async handleJobConfirm() {
