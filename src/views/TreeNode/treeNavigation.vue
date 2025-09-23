@@ -51,8 +51,8 @@
                         @show-addBushing="showAddBushing" @show-addSurgeArrester="showAddSurgeArrester"
                         @show-addCircuit="showAddCircuitBreaker" @show-addVt="showAddVt" @show-addCt="showAddCt"
                         @show-addPowerCable="showAddPowerCable" @show-addDisconnector="showAddDisconnector"
-                        @show-addRotatingMachine="showAddRotatingMachine"
-                        @show-addBay="showAddBay" @show-data="showDataClient" ref="contextMenuClient">
+                        @show-addRotatingMachine="showAddRotatingMachine" @show-addBay="showAddBay"
+                        @show-data="showDataClient" ref="contextMenuClient">
                     </contextMenu>
                 </div>
             </div>
@@ -595,7 +595,8 @@
 
         <el-dialog title="Add Rotating Machine" :visible.sync="signRotating" width="1000px"
             @close="handleRotatingCancel">
-            <RotatingMachine :locationId="locationId" :parent="parentOrganization" ref="rotatingMachine"></RotatingMachine>
+            <RotatingMachine :locationId="locationId" :parent="parentOrganization" ref="rotatingMachine">
+            </RotatingMachine>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleRotatingCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleRotatingConfirm">Save</el-button>
@@ -667,6 +668,7 @@ import * as rotatingMachineMapping from "@/views/Mapping/RotatingMachine/index"
 import RotatingMachine from '@/views/AssetView/RotatingMachine/index.vue'
 import mixin from './mixin'
 import Attachment from '../Common/Attachment.vue';
+import * as demoAPI from '@/api/demo'
 
 
 export default {
@@ -1291,13 +1293,18 @@ export default {
                         }
                     } else {
                         const clickedRow = node;
+                        console.log('Loading organization data for:', clickedRow.name, clickedRow.mrid);
                         const [organisationReturn, substationReturn] = await Promise.all([
                             window.electronAPI.getParentOrganizationByParentMrid(clickedRow.mrid),
                             window.electronAPI.getSubstationsInOrganisationForUser(clickedRow.mrid, this.$store.state.user.user_id)
                         ]);
-                        if (organisationReturn.success) {
+                        console.log('Organization API response:', organisationReturn);
+                        console.log('Substation API response:', substationReturn);
+                        if (organisationReturn.success && organisationReturn.data && organisationReturn.data.length > 0) {
+                            console.log('Found organizations:', organisationReturn.data.length);
                             organisationReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
+                                row.mode = 'organisation';
                                 let parentName = clickedRow.parentName + "/" + clickedRow.name
                                 row.parentName = parentName
                                 row.parentArr = [...clickedRow.parentArr || []]
@@ -1307,11 +1314,15 @@ export default {
                                 })
                             });
                             newRows.push(...organisationReturn.data);
+                        } else {
+                            console.log('No organizations found or API failed:', organisationReturn);
                         }
 
-                        if (substationReturn.success) {
+                        if (substationReturn.success && substationReturn.data && substationReturn.data.length > 0) {
+                            console.log('Found substations:', substationReturn.data.length);
                             substationReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
+                                row.mode = 'substation';
                                 let parentName = clickedRow.parentName + "/" + clickedRow.name
                                 row.parentName = parentName
                                 row.parentArr = [...clickedRow.parentArr || []]
@@ -1321,11 +1332,14 @@ export default {
                                 })
                             });
                             newRows.push(...substationReturn.data);
+                        } else {
+                            console.log('No substations found or API failed:', substationReturn);
                         }
                     }
                     Vue.set(node, "children", newRows); // Đảm bảo Vue reactive
                 } catch (error) {
                     console.error("Error fetching children:", error);
+                    this.$message.error("Có lỗi xảy ra khi tải dữ liệu: " + error.message);
                 }
             }
         },
@@ -1473,107 +1487,83 @@ export default {
             if (!node.children) {
                 try {
                     let newRows = [];
-                    if (this.LocationType.includes(node.mode)) {
-                        const newRowsAsset = await this.getAssets(node, newRows)
-                        if (newRowsAsset && newRowsAsset.length > 0) {
-                            newRowsAsset.forEach(row => {
-                                let parentName = node.parentName + "/" + node.name
-                                row.parentName = parentName
-                                row.parentArr = [...node.parentArr]
-                                row.parentArr.push({
-                                    id: node.id,
-                                    parent: node.name
-                                })
-                                const { children, ...nodeWithoutChildren } = node;
-                                row.parent = nodeWithoutChildren;
-                            });
-                            newRows.push(...newRowsAsset);
-                        }
-                        const newRowLocation = await locationApi.findAllLocationByRefId(node.id)
-                        if (newRowLocation && newRowLocation.length > 0) {
-                            newRowLocation.forEach(row => {
-                                let parentName = node.parentName + "/" + row.name
-                                row.parentName = parentName
-                                row.parentArr = [...node.parentArr]
-                                row.parentArr.push({
-                                    id: node.id,
-                                    parent: node.name
-                                })
-                                const { children, ...nodeWithoutChildren } = node;
-                                row.parent = nodeWithoutChildren;
-                            });
-                            newRows.push(...newRowLocation);
-                        }
-                    } else if (node.asset != undefined) {
-                        const newRowsJob = await this.getJobs(node, newRows)
-                        if (newRowsJob && newRowsJob.length > 0) {
-                            newRowsJob.forEach(row => {
-                                let parentName = node.parentName + "/" + node.serial_no
-                                row.parentName = parentName
-                                row.parentArr = [...node.parentArr]
-                                row.parentArr.push({
-                                    id: node.id,
-                                    parent: node.serial_no
-                                })
-                                const { children, ...nodeWithoutChildren } = node;
-                                row.parent = nodeWithoutChildren;
-                                row.type = 'job'
-                            });
-                            newRows.push(...newRowsJob);
-                        }
-                    } else if (node.type != undefined && node.type != '') {
-                        const newRowsTest = await this.getTests(node, newRows)
-                        if (newRowsTest && newRowsTest.length > 0) {
-                            newRowsTest.forEach(row => {
-                                let parentName = node.parentName + "/" + node.name
-                                row.parentName = parentName
-                                row.parentArr = [...node.parentArr]
-                                row.parentArr.push({
-                                    id: node.id,
-                                    parent: node.name
-                                })
-                                const { children, ...nodeWithoutChildren } = node;
-                                row.parent = nodeWithoutChildren;
-                                row.type = 'test'
-                            });
-                            newRows.push(...newRowsTest);
-                        }
-                    } else {
-                        const clickedRow = node;
-                        const [newRowsOwner, newRowLocation] = await Promise.all([
-                            ownerAPI.getOwnerByParentId(clickedRow.id),
-                            locationApi.findAllLocationByRefId(clickedRow.id)
-                        ]);
-
+                    if (node.mode == 'organisation') {
+                        const newRowsOwner = await demoAPI.getChildOrganisation(node.id)
                         if (newRowsOwner && newRowsOwner.length > 0) {
                             newRowsOwner.forEach(row => {
-                                row.parentId = clickedRow.id;
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr]
+                                row.id = row.mrid;
+                                row.parentId = node.mrid;
+                                row.mode = 'organisation';
+                                row.parentName = node.parentName + "/" + node.name;
+                                row.parentArr = [...node.parentArr];
                                 row.parentArr.push({
-                                    id: clickedRow.id,
-                                    parent: clickedRow.name
-                                })
+                                    id: node.id,
+                                    parent: node.name
+                                });
                             });
                             newRows.push(...newRowsOwner);
                         }
-
-                        // ✅ Thêm Location Rows
-                        if (newRowLocation && newRowLocation.length > 0) {
-                            newRowLocation.forEach(row => {
-                                row.parentId = clickedRow.id;
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr]
+                        const newRowsSubstation = await demoAPI.getChildSubstation(node.id)
+                        if (newRowsSubstation && newRowsSubstation.length > 0) {
+                            newRowsSubstation.forEach(row => {
+                                row.id = row.mrid;
+                                row.parentId = node.mrid;
+                                row.mode = 'substation';
+                                row.parentName = node.parentName + "/" + node.name;
+                                row.parentArr = [...node.parentArr];
                                 row.parentArr.push({
-                                    id: clickedRow.id,
-                                    parent: clickedRow.name
-                                })
+                                    id: node.id,
+                                    parent: node.name
+                                });
                             });
-                            newRows.push(...newRowLocation);
+                            newRows.push(...newRowsSubstation);
+                        }
+                    } else if (node.mode == 'substation') {
+                        const newRowsBay = await demoAPI.getChildBay(node.id)
+                        if (newRowsBay && newRowsBay.length > 0) {
+                            newRowsBay.forEach(row => {
+                                row.parentId = node.mrid;
+                                row.mode = 'bay';
+                                row.parentName = node.parentName + "/" + node.name;
+                                row.parentArr = [...node.parentArr];
+                                row.parentArr.push({
+                                    id: node.id,
+                                    parent: node.name
+                                });
+                            });
+                        }
+                        const newRowsVoltageLevel = await demoAPI.getVoltageLevelBySubstationId(node.id)
+                        if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
+                            newRowsVoltageLevel.forEach(row => {
+                                row.id = row.mrid;
+                                row.parentId = node.mrid;
+                                row.mode = 'voltageLevel';
+                                row.parentName = node.parentName + "/" + node.name;
+                                row.parentArr = [...node.parentArr];
+                                row.parentArr.push({
+                                    id: node.id,
+                                    parent: node.name
+                                });
+                            });
+                            newRows.push(...newRowsVoltageLevel);
+                        }
+                    } else if (node.mode == 'voltageLevel') {
+                        const newRowsBay = await demoAPI.getBayByVoltageLevel(node.id)
+                        if (newRowsBay && newRowsBay.length > 0) {
+                            newRowsBay.forEach(row => {
+                                row.parentId = node.mrid;
+                                row.mode = 'bay';
+                                row.parentName = node.parentName + "/" + node.name;
+                                row.parentArr = [...node.parentArr];
+                                row.parentArr.push({
+                                    id: node.id,
+                                    parent: node.name
+                                });
+                            });
+                            newRows.push(...newRowsBay);
                         }
                     }
+
 
                     Vue.set(node, "children", newRows);
                 } catch (error) {
@@ -1741,62 +1731,27 @@ export default {
 
         async getOwnerLocation() {
             try {
-                this.$store.state.selectedLocationSync = []
-                this.count = await ownerAPI.countOwnerByRole("OWNER3")
-
-                let sumOfPage = Math.floor(parseInt(this.count) / this.sl)
-                let remainder = parseInt(this.count) % this.sl
-
-                if (remainder == 0) {
-                    if (sumOfPage < 4) {
-                        this.displayPageLocationSync.dot = false
-                        this.displayPageLocationSync.end = false
-                        this.pageLocationSync.end = sumOfPage
-                        if (sumOfPage < 3) {
-                            this.displayPageLocationSync.third = false
+                const res = await demoAPI.getOwnerOrganisation();
+                if (res !== null) {
+                    this.ownerServerList = [res].map(item => {
+                        return {
+                            id: item.mrid || '',
+                            name: item.name || '',
+                            parentName: '',
+                            parentArr: [],
+                            mode: item.mode || '',
+                            parentId: '',
+                            mode: 'organisation',
                         }
-                        if (sumOfPage < 2) {
-                            this.displayPageLocationSync.second = false
-                        }
-                    } else if (sumOfPage == 4) {
-                        this.displayPageLocationSync.dot = false
-                        this.pageLocationSync.end = sumOfPage
-                    } else {
-                        this.pageLocationSync.end = sumOfPage
-                    }
+                    });
                 } else {
-                    if (sumOfPage < 3) {
-                        if (sumOfPage < 2) {
-                            this.displayPageLocationSync.third = false
-                        }
-                        if (sumOfPage < 1) {
-                            this.displayPageLocationSync.second = false
-                        }
-                        this.displayPageLocationSync.dot = false
-                        this.displayPageLocationSync.end = false
-                        this.pageLocationSync.end = sumOfPage + 1
-                    } else if (sumOfPage == 3) {
-                        this.displayPageLocationSync.dot = false
-                        this.pageLocationSync.end = sumOfPage + 1
-                    } else {
-                        this.pageLocationSync.end = sumOfPage + 1
-                    }
+                    this.ownerServerList = [];
+                    this.$message.warning("Không tìm thấy dữ liệu tổ chức chủ sở hữu.");
                 }
-                await ownerAPI.getOwnerByRole("OWNER3", 1, this.sl).then((res) => {
-                    if (res != null && res.length != 0) {
-                        for (let i in res) {
-                            res[i].id = res[i].mrid
-                            res[i].parentId = ''
-                            res[i].parentName = ''
-                            res[i].parentArr = []
-                        }
-                        this.ownerServerList = res
-                    }
-                })
-                this.$refs.LocationSyncPageAlign.firstUserPage()
             } catch (error) {
-                this.$message.error("Some error occur")
-                console.error(error)
+                this.$message.error("Có lỗi xảy ra khi lấy danh sách tổ chức chủ sở hữu.");
+                console.error("getOwnerLocation error:", error);
+                this.ownerServerList = [];
             }
         },
 
@@ -2761,7 +2716,7 @@ export default {
                                     this.$message.warning("Parent node not found in tree");
                                 }
                             }
-                             else if (node.asset === 'Power cable') {
+                            else if (node.asset === 'Power cable') {
                                 const entity = await window.electronAPI.getPowerCableEntityByMrid(node.mrid, node.parentId);
                                 if (!entity.success) {
                                     this.$message.error("Entity not found");
@@ -2786,7 +2741,7 @@ export default {
                                 } else {
                                     this.$message.warning("Parent node not found in tree");
                                 }
-                            }  else if (node.asset === 'Disconnector') {
+                            } else if (node.asset === 'Disconnector') {
                                 const entity = await window.electronAPI.getDisconnectorEntityByMrid(node.mrid, node.parentId);
                                 if (!entity.success) {
                                     this.$message.error("Entity not found");

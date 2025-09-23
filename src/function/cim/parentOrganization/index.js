@@ -95,7 +95,7 @@ export const getParentOrganizationByParentId = async (parentId) => {
                     return reject({ success: false, err, message: 'Get parent organizations by parentId failed' })
                 }
                 if (!rows || rows.length === 0) {
-                    return resolve({ success: false, data: [], message: 'No parent organizations found' })
+                    return resolve({ success: true, data: [], message: 'No parent organizations found' })
                 }
                 return resolve({ success: true, data: rows, message: 'Get parent organizations by parentId completed' })
             }
