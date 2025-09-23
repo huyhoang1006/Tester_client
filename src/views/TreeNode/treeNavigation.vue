@@ -2139,7 +2139,7 @@ export default {
         async handleCtConfirm() {
             this.$message.success("Current transformer saved successfully")
             // Cần thêm logic để cập nhật lại cây nếu cần thiết
-            // await this.$refs.transformer.saveAsset();
+            await this.$refs.currentTransformer.saveAsset();
             this.signCt = false
         },
 
