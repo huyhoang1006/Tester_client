@@ -55,6 +55,8 @@ import * as vtMapper from '@/views/Mapping/VoltageTransformer/index'
 import * as SurgeArresterJobMapper from '@/views/Mapping/SurgerArresterJob/index'
 import * as disconnectorMapper from '@/views/Mapping/Disconnector/index'
 import * as PowerCableMapper from '@/views/Mapping/PowerCable'
+import * as RotatingMachineMapper from '@/views/Mapping/RotatingMachine'
+
 import VoltageLevel from '@/views/VoltageLevel/index.vue'
 import Bay from '@/views/Bay/index.vue'
 import SurgeArrester from '@/views/AssetView/SurgeArrester/index.vue'
@@ -63,6 +65,7 @@ import SurgeArresterJob from '@/views/JobView/SurgeArrester/index.vue'
 import VoltageTransformer from '@/views/AssetView/VoltageTransformer/index.vue'
 import Disconnector from '@/views/AssetView/Disconnector/index.vue'
 import PowerCable from '@/views/AssetView/PowerCable/index.vue'
+import RotatingMachine from '@/views/AssetView/RotatingMachine/index.vue'
 
 export default {
     name: "Tabs",
@@ -78,8 +81,8 @@ export default {
         VoltageTransformer,
         SurgeArresterJob,
         Disconnector,
-        PowerCable
-        
+        PowerCable,
+        RotatingMachine
     },
     model: {
         prop: 'value',
@@ -232,6 +235,17 @@ export default {
                         } else {
                             this.$message.error("Failed to load Disconnector data");
                         }
+                    } else if(tab.asset === 'Rotating machine') {
+                        this.parentOrganization = {
+                            mrid : tab.parentId
+                        }
+                        const data = await window.electronAPI.getRotatingMachineEntityByMrid(tab.mrid, tab.parentId)
+                        if(data.success) {
+                            const rotatingMachineDto = RotatingMachineMapper.mapEntityToDto(data.data)
+                            this.$refs.componentLoadData[index].loadData(rotatingMachineDto)
+                        } else {
+                            this.$message.error("Failed to load Rotating Machine data");
+                        }
                     }
                 } else if (tab.mode === 'job') {
                     const dataAsset = await window.electronAPI.getAssetByMrid(tab.parentId)
@@ -364,6 +378,8 @@ export default {
                     return 'Disconnector'
                 } else if(tab.asset === 'Power cable') {
                     return 'PowerCable'
+                } else if (tab.asset === 'Rotating machine') {
+                    return 'RotatingMachine'
                 }
             } else if (tab.mode == 'job') {
                 if (tab.job === 'Surge arrester') {
