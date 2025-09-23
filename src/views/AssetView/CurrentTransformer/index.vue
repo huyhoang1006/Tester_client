@@ -2,12 +2,17 @@
     <div id="asset">
         <div style="min-height: 500px; display: flex; flex-direction: column;">
             <div style="flex: 1; display: flex; flex-direction: column;">
-                <currentTransProperty @setUpdate="setUpdate" :updateNew='updateNew' :update="update" @editManu="editManu" :title="title" :properties.sync="properties" @createAdd="updateShowAdd" :manufact="manufacturerCustom" @reloadManu="reloadManu()"></currentTransProperty>
-                <currentTransRating :ratings="ratings"></currentTransRating>
-                <currentCTConfig v-if="config" :configs="config" :ratings="ratings"></currentCTConfig>
+                <currentTransProperty @setUpdate="setUpdate" :updateNew='updateNew' :update="update"
+                    @editManu="editManu" :title="title" :properties.sync="currentTransformer.properties"
+                    @createAdd="updateShowAdd" :manufact="manufacturerCustom" @reloadManu="reloadManu()">
+                </currentTransProperty>
+                <currentTransRating :ratings.sync="currentTransformer.ratings"></currentTransRating>
+                <currentCTConfig v-if="currentTransformer.ctConfiguration" :configs.sync="currentTransformer.ctConfiguration"
+                    :ratings="currentTransformer.ratings"></currentCTConfig>
             </div>
         </div>
-        <manufacturerAdd :dataProperties="dataProperties" :showAdd.sync="showAdd" @backSign="backSign()" @backSignUpdate="backSignUpdate" :title="title" :modeManu="modeManu"></manufacturerAdd>
+        <manufacturerAdd :dataProperties="dataProperties" :showAdd.sync="showAdd" @backSign="backSign()"
+            @backSignUpdate="backSignUpdate" :title="title" :modeManu="modeManu"></manufacturerAdd>
     </div>
 </template>
 
@@ -31,20 +36,20 @@ export default {
             mode: this.$constant.ADD,
             asset_id: null,
             saved: false,
-            showAdd : false,
-            title : 'current',
-            manufacturerCustom : [],
-            modeManu : 'insert',
-            dataProperties : {},
-            updateNew : '',
-            update : false
+            showAdd: false,
+            title: 'current',
+            manufacturerCustom: [],
+            modeManu: 'insert',
+            dataProperties: {},
+            updateNew: '',
+            update: false
         }
     },
-    mixins : [mixin],
-    mounted() {},
+    mixins: [mixin],
+    mounted() { },
     async beforeMount() {
         let rs = await window.electronAPI.getManufacturerByType(this.title)
-        if(rs.success) {
+        if (rs.success) {
             this.manufacturerCustom = rs.data.map(e => e.name)
         }
     },
@@ -54,7 +59,7 @@ export default {
         },
         async editManu(item) {
             let rs = await window.electronAPI.getManufacturerByName(item)
-            if(rs.success) {
+            if (rs.success) {
                 this.dataProperties = rs.data[0]
                 this.showAdd = true
                 this.modeManu = 'edit'
@@ -63,7 +68,7 @@ export default {
         async backSign(sign) {
             this.showAdd = sign
             let rs = await await window.electronAPI.getManufacturerByType(this.title)
-            if(rs.success) {
+            if (rs.success) {
                 this.manufacturerCustom = rs.data.map(e => e.name)
             }
             this.modeManu = 'insert'
@@ -71,7 +76,7 @@ export default {
         async backSignUpdate(dataUpdate) {
             this.showAdd = false
             let rs = await await window.electronAPI.getManufacturerByType(this.title)
-            if(rs.success) {
+            if (rs.success) {
                 this.manufacturerCustom = rs.data.map(e => e.name)
             }
             this.modeManu = 'insert'
@@ -83,14 +88,14 @@ export default {
         },
         async reloadManu() {
             let rs = await await window.electronAPI.getManufacturerByType(this.title)
-            if(rs.success) {
+            if (rs.success) {
                 this.manufacturerCustom = rs.data.map(e => e.name)
             }
         },
         updateAttachment(attachment) {
             this.attachmentData = attachment
         },
-        async resetForm() {},
+        async resetForm() { },
     }
 }
 </script>
@@ -125,6 +130,6 @@ td {
 
 ::v-deep .el-input__inner,
 ::v-deep .el-select .el-input__inner {
-  font-size: 12px !important;
+    font-size: 12px !important;
 }
 </style>
