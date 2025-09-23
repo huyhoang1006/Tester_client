@@ -2,15 +2,16 @@ import db from '../../datacontext/index'
 import path from 'path'
 import * as attachmentContext from '../../attachmentcontext/index'
 import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, deleteDirectory } from '@/function/entity/attachment'
-import { insertVoltageTransaction } from '@/function/cim/voltage';
-import { insertCurrentFlowTransaction } from '@/function/cim/currentFlow';
-import { insertLifecycleDateTransaction } from '@/function/cim/lifecycleDate';
-import { insertProductAssetModelTransaction } from '@/function/cim/productAssetModel';
-import { insertAssetPsrTransaction } from '@/function/entity/assetPsr'
-import { insertFrequencyTransaction } from '@/function/cim/frequency';
-import { insertAssetTransaction } from '@/function/cim/asset';
-import { insertRotatingMachineInfoTransaction } from '@/function/cim/rotatingMachineInfo';
-import { insertApparentPowerTransaction } from '@/function/cim/apparentPower';
+import { insertVoltageTransaction, getVoltageByIds, deleteVoltageByIdTransaction } from '@/function/cim/voltage';
+import { insertCurrentFlowTransaction, getCurrentFlowByIds, deleteCurrentFlowByIdTransaction } from '@/function/cim/currentFlow';
+import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction } from '@/function/cim/lifecycleDate';
+import { insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction } from '@/function/cim/productAssetModel';
+import { insertAssetPsrTransaction, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
+import { insertFrequencyTransaction, getFrequencyByIds, deleteFrequencyByIdTransaction } from '@/function/cim/frequency';
+import { insertAssetTransaction, getAssetById, deleteAssetByIdTransaction } from '@/function/cim/asset';
+import { insertRotatingMachineInfoTransaction, getRotatingMachineInfoById, deleteRotatingMachineInfoTransaction } from '@/function/cim/rotatingMachineInfo';
+import { insertApparentPowerTransaction, getApparentPowerByIds, deleteApparentPowerByIdTransaction } from '@/function/cim/apparentPower';
+import RotatingMachineEntity from '@/views/Entity/RotatingMachine';
 
 
 
@@ -114,6 +115,174 @@ export const insertRotatingMachineEntity = async (entity) => {
         return { success: false, error, message: 'Error retrieving Rotating Machine entity' };
     }
 }
+
+export const getRotatingMachineEntity = async (id, psrId) => {
+    try {
+        if (id == null || id === '') {
+            return { success: false, error: new Error('Invalid ID') };
+        } else {
+            const entity = new RotatingMachineEntity()
+            const dataRotatingMachine = await getAssetById(id);
+            if (dataRotatingMachine.success) {
+                entity.asset = dataRotatingMachine.data
+                const dataLifecycleDate = await getLifecycleDateById(entity.asset.lifecycle_date);
+                if (dataLifecycleDate.success) {
+                    entity.lifecycleDate = dataLifecycleDate.data;
+                }
+
+                const dataRotatingMachineInfo = await getRotatingMachineInfoById(entity.asset.asset_info);
+                if (dataRotatingMachineInfo.success) {
+                    entity.rotatingMachine = dataRotatingMachineInfo.data;
+                }
+
+
+                const dataProductAssetModel = await getProductAssetModelById(entity.asset.product_asset_model);
+                if (dataProductAssetModel.success) {
+                    entity.productAssetModel = dataProductAssetModel.data;
+                }
+
+                const dataAssetPsr = await getAssetPsrByAssetIdAndPsrId(entity.asset.mrid, psrId);
+                if (dataAssetPsr.success) {
+                    entity.assetPsr = dataAssetPsr.data;
+                }
+
+                const dataAttachment = await getAttachmentByForeignIdAndType(entity.asset.mrid, 'asset');
+                if (dataAttachment.success) {
+                    entity.attachment = dataAttachment.data;
+                }
+
+                const rotating_arr = {
+                    voltage: ['rated_u', 'rated_ufd'],
+                    currentFlow: ['rated_current', 'rated_ifd'],
+                    frequency: ['rated_frequency'],
+                    apparentPower: ['rated_power'],
+                }
+
+                let voltage = [];
+                let currentFlow = [];
+                let frequency = [];
+                let apparentPower = [];
+
+                for (const key in rotating_arr) {
+                    for (const item of rotating_arr[key]) {
+                        switch (key) {
+                            case 'voltage':
+                                voltage.push(entity.rotatingMachine[item]);
+                                break;
+                            case 'currentFlow':
+                                currentFlow.push(entity.rotatingMachine[item]);
+                                break;
+                            case 'frequency':
+                                frequency.push(entity.rotatingMachine[item]);
+                                break;
+                            case 'apparentPower':
+                                apparentPower.push(entity.rotatingMachine[item]);
+                                break;
+                        }
+                    }
+                }
+
+                const dataVoltage = await getVoltageByIds(voltage);
+                if (dataVoltage.success) {
+                    entity.voltage = dataVoltage.data;
+                }
+
+                const dataCurrentFlow = await getCurrentFlowByIds(currentFlow);
+                if (dataCurrentFlow.success) {
+                    entity.currentFlow = dataCurrentFlow.data;
+                }
+
+                const dataFrequency = await getFrequencyByIds(frequency);
+                if (dataFrequency.success) {
+                    entity.frequency = dataFrequency.data;
+                }
+
+                const dataApparentPower = await getApparentPowerByIds(apparentPower);
+                if (dataApparentPower.success) {
+                    entity.apparentPower = dataApparentPower.data;
+                }
+                return {
+                    success: true,
+                    data: entity,
+                    message: 'Rotating Machine entity retrieved successfully'
+                }
+            } else {
+                return { success: false, error: dataRotatingMachine.error, message: dataRotatingMachine.message };
+            }
+        }
+    } catch (error) {
+        console.error("Error retrieving Rotating Machine entity by ID:", error);
+        return { success: false, error, message: 'Error retrieving Rotating Machine entity by ID' };
+    }
+};
+export const deleteRotatingMachineEntity = async (entity) => {
+    try {
+        await runAsync('BEGIN TRANSACTION');
+
+        // Xóa attachment trước
+        if (entity.attachment && entity.attachment.id) {
+            await deleteAttachmentByIdTransaction(entity.attachment.id, db);
+            // Xóa thư mục vật lý nếu cần
+            if (entity.asset && entity.asset.mrid) {
+                const dirPath = path.join(attachmentContext.getAttachmentDir(), entity.asset.mrid);
+                await deleteDirectory(dirPath);
+            }
+        }
+        console.log('1')
+
+        // Xóa assetPsr
+        if (entity.assetPsr && entity.assetPsr.mrid) {
+            await deleteAssetPsrTransaction(entity.assetPsr.mrid, db);
+        }
+        console.log('2')
+        // Xóa asset
+        if (entity.asset && entity.asset.mrid) {
+            await deleteAssetByIdTransaction(entity.asset.mrid, db);
+        }
+        console.log('3')
+        // Xóa productAssetModel
+        if (entity.productAssetModel && entity.productAssetModel.mrid) {
+            await deleteProductAssetModelByIdTransaction(entity.productAssetModel.mrid, db);
+        }
+        console.log('4')
+        // Xóa lifecycleDate
+        if (entity.lifecycleDate && entity.lifecycleDate.mrid) {
+            await deleteLifecycleDateByIdTransaction(entity.lifecycleDate.mrid, db);
+        }
+        console.log('5')
+        // Xóa rotatingMachineInfo
+        if (entity.rotatingMachine && entity.rotatingMachine.mrid) {
+            await deleteRotatingMachineInfoTransaction(entity.rotatingMachine.mrid, db);
+        }
+        console.log('6')
+        // Xóa các bảng liên quan đến dòng điện, điện áp, tần số, công suất biểu kiến
+        for (const currentFlow of entity.currentFlow || []) {
+            if (currentFlow.mrid) await deleteCurrentFlowByIdTransaction(currentFlow.mrid, db);
+        }
+        console.log('7')
+        for (const volt of entity.voltage || []) {
+            if (volt.mrid) await deleteVoltageByIdTransaction(volt.mrid, db);
+        }
+        console.log('8')
+        for (const freq of entity.frequency || []) {
+            if (freq.mrid) await deleteFrequencyByIdTransaction(freq.mrid, db);
+        }
+        console.log('9')
+        for (const power of entity.apparentPower || []) {
+            if (power.mrid) await deleteApparentPowerByIdTransaction(power.mrid, db);
+        }
+
+        console.log('10')
+
+        await runAsync('COMMIT');
+        return { success: true, message: 'Rotating Machine entity deleted successfully' };
+    } catch (error) {
+        await runAsync('ROLLBACK');
+        console.error('Error deleting Rotating Machine entity:', error);
+        return { success: false, error, message: 'Error deleting Rotating Machine entity' };
+    }
+};
+
 
 const runAsync = (sql, params = []) => {
     return new Promise((resolve, reject) => {
