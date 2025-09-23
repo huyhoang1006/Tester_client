@@ -4,8 +4,10 @@
             <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                 <span class="bolder">Rotating Machine Properties</span>
                 <el-divider></el-divider>
-                <el-form-item label="Asset">
-                    <el-input style="width: 100%" disabled v-model="propertiesData.kind"></el-input>
+                <el-form-item label="Asset"> 
+                    <el-select style="width: 100%" v-model="propertiesData.kind" placeholder="Select asset">
+                            <el-option label="Rotating machine" value="Rotating machine"> </el-option>
+                    </el-select>
                 </el-form-item>
                 <el-form-item label="Asset type">
                     <el-select style="width: 100%" v-model="propertiesData.type" placeholder="Select asset type">

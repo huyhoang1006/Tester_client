@@ -14,6 +14,8 @@
                 <el-select v-model="ratingsData.rated_frequency.value" style="width: 100%;"  placeholder="Select frequency">
                     <el-option label="50 Hz" value="50" />
                     <el-option label="60 Hz" value="60" />
+                    <el-option label="16.7 Hz" value="16.7" />
+                    
                 </el-select>
             </el-form-item>
             <el-form-item label="Rated voltage L-L">
@@ -40,9 +42,12 @@
                 </el-input>
             </el-form-item>
             <el-form-item label="Rated thermal class">
-                <!-- <el-select placeholder="Select class">
-                    
-                </el-select> -->
+                <el-select v-model="ratingsData.rated_thermal_class" placeholder="Select class">
+                    <el-option label="Class A" value="Class A"> </el-option>
+                    <el-option label="Class B" value="Class B"> </el-option>
+                    <el-option label="Class F" value="Class F"> </el-option>
+                    <el-option label="Class H" value="Class H"> </el-option>
+                </el-select>
             </el-form-item>
             <el-form-item label="Rated excitation current (rotor)">
                 <el-input v-model="ratingsData.rated_ifd.value" style="width: 100%;">

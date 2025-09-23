@@ -16,6 +16,7 @@ class RotatingMachineEntity {
         this.frequency = []
         this.voltage = []
         this.currentFlow = []
+        this.apparentPower = []
     }
 }
 
