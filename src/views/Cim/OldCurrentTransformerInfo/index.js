@@ -31,7 +31,7 @@
 	FOREIGN KEY("um_rms") REFERENCES "voltage"("mrid")
 );
  */
-import CurrentTransformerInfo from "./CurrentTransformerInfo";
+import CurrentTransformerInfo from "../CurrentTransformerInfo";
 
 class OldCurrentTransformerInfo extends CurrentTransformerInfo {
     constructor() {

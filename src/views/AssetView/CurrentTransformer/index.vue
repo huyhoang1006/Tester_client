@@ -31,6 +31,22 @@ export default {
         currentCTConfig,
         manufacturerAdd
     },
+    props: {
+        parent: {
+            type: Object,
+            default: () => ({}),
+            required: true
+        },
+        organisationId: {
+            type: String,
+            default: ''
+        },
+
+        locationId: {
+            type: String,
+            default: ''
+        },
+    },
     data() {
         return {
             mode: this.$constant.ADD,
@@ -42,7 +58,8 @@ export default {
             modeManu: 'insert',
             dataProperties: {},
             updateNew: '',
-            update: false
+            update: false,
+            parentData: JSON.parse(JSON.stringify(this.parent)),
         }
     },
     mixins: [mixin],
