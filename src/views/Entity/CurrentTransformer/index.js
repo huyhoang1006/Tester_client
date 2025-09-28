@@ -5,8 +5,6 @@ import Attachment from '@/views/Entity/Attachment';
 import Asset from "@/views/Cim/Asset";
 import AssetInfo from "@/views/Cim/AssetInfo";
 import OldCurrentTransformerInfo from "@/views/Cim/OldCurrentTransformerInfo";
-import CtCoreInfo from "@/views/Cim/CtCoreInfo";
-import CtTapInfo from "@/views/Cim/CtTapInfo";
 
 class CurrentTransformerEntity {
     constructor() {
@@ -17,12 +15,16 @@ class CurrentTransformerEntity {
         this.asset = new Asset()
         this.assetInfo = new AssetInfo()
         this.oldCurrentTransformerInfo = new OldCurrentTransformerInfo()
-        this.CtCoreInfo = new CtCoreInfo() 
-        this.CtTapInfo = new CtTapInfo()       
+        this.CtCoreInfo = []
+        this.CtTapInfo = []       
         this.voltage = []
         this.currentFlow = []
         this.seconds = []
-        
+        this.frequency = []
+        this.resistance = []
+        this.percent = []
+        this.apparentPower = []
+        this.temperature = []
     }
 }
 
