@@ -10,14 +10,15 @@ import { insertResistanceTransaction, getResistanceById, deleteResistanceByIdTra
 import { insertPercentTransaction, getPercentById, deletePercentByIdTransaction } from "@/function/cim/percent";
 import { insertApparentPowerTransaction, getApparentPowerById, deleteApparentPowerByIdTransaction } from "@/function/cim/apparentPower";
 import { insertTemperatureTransaction, getTemperatureById, deleteTemperatureByIdTransaction } from "@/function/cim/temperature";
-import { insertCtCoreInfoTransaction, getCtCoreInfoById, deleteCtCoreInfoByCurrentTransformerInfoIdTransaction } from "@/function/cim/ctCoreInfo";
-import { insertCtTapInfoTransaction, getCtTapInfoById, deleteCtTapInfoByCtCoreInfoIdTransaction } from "@/function/cim/ctTapInfo";
+import { insertCtCoreInfoTransaction, deleteCtCoreInfoByCurrentTransformerInfoIdTransaction, getCtCoreInfoByCurrentTransformerInfoId } from "@/function/cim/ctCoreInfo";
+import { insertCtTapInfoTransaction, deleteCtTapInfoByCtCoreInfoIdTransaction, getCtTapInfoByCtCoreInfoId } from "@/function/cim/ctTapInfo";
 import { insertAssetTransaction, getAssetById, deleteAssetByIdTransaction } from "@/function/cim/asset";
 import { insertAssetPsrTransaction, getAssetPsrById, deleteAssetPsrByIdTransaction, getAssetPsrByAssetIdAndPsrId } from "@/function/entity/assetPsr";
 import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction } from "@/function/cim/lifecycleDate";
 import CurrentTransformerEntity from "@/views/Entity/CurrentTransformer";
 import { getAssetInfoById } from "@/function/cim/assetInfo";
 import { getAttachmentByForeignIdAndType } from "@/function/entity/attachment";
+import { insertAssetInfoTransaction } from "@/function/cim/assetInfo";
 
 
 export const insertCurrentTransformerEntity = async (old_entity, entity) => {
@@ -154,6 +155,10 @@ export const insertCurrentTransformerEntity = async (old_entity, entity) => {
         const productAssetModelResult = await insertProductAssetModelTransaction(entity.productAssetModel, db);
         console.log("product assetmodel inserted successfully")
 
+        //assetInfo
+        await insertAssetInfoTransaction(entity.assetInfo, db);
+        console.log("asset info inserted successfully")
+
         //oldCurrentTransformerInfo
         await insertOldCurrentTransformerInfoTransaction(entity.oldCurrentTransformerInfo, db);
         console.log("old current transformer info inserted successfully")
@@ -248,9 +253,82 @@ export const getCurrentTransformerEntityById = async (id, psrId) => {
                 if (dataAttachment.success) {
                     entity.attachment = dataAttachment.data;
                 }
+                const dataCtCoreInfo = await getCtCoreInfoByCurrentTransformerInfoId(entity.oldCurrentTransformerInfo.mrid);
+                if (dataCtCoreInfo.success && dataCtCoreInfo.data) {
+                    for (const ctCoreInfo of dataCtCoreInfo.data) {
+                        entity.CtCoreInfo.push(ctCoreInfo);
+                    }
+                }
+
+                for (const ctCoreInfo of entity.CtCoreInfo) {
+                    const dataCtTapInfo = await getCtTapInfoByCtCoreInfoId(ctCoreInfo.mrid);
+                    if (dataCtTapInfo.success && dataCtTapInfo.data) {
+                        for (const ctTapInfo of dataCtTapInfo.data) {
+                            entity.CtTapInfo.push(ctTapInfo);
+                        }
+                    }
+                }
+                //rated_frequency
+                const dataRatedFrequency = await getFrequencyById(entity.oldCurrentTransformerInfo.rated_frequency);
+                if (dataRatedFrequency.success) {
+                    entity.frequency.push(dataRatedFrequency.data);
+                }
+                //um_rms
+                const dataUmRms = await getVoltageById(entity.oldCurrentTransformerInfo.um_rms);
+                if (dataUmRms.success) {
+                    entity.voltage.push(dataUmRms.data);
+                }
+                //u_withstand_rms
+                const dataUWithStandRms = await getVoltageById(entity.oldCurrentTransformerInfo.u_withstand_rms);
+                if (dataUWithStandRms.success) {
+                    entity.voltage.push(dataUWithStandRms.data);
+                }
+                //u_lightning_peak
+                const dataULightningPeak = await getVoltageById(entity.oldCurrentTransformerInfo.u_lightning_peak);
+                if (dataULightningPeak.success) {
+                    entity.voltage.push(dataULightningPeak.data);
+                }
+                //i_cth
+                const dataIcth = await getCurrentFlowById(entity.oldCurrentTransformerInfo.i_cth);
+                if (dataIcth.success) {
+                    entity.currentFlow.push(dataIcth.data);
+                }
+                //i_dynamic_peak
+                const dataIdynPeak = await getCurrentFlowById(entity.oldCurrentTransformerInfo.i_dynamic_peak);
+                if (dataIdynPeak.success) {
+                    entity.currentFlow.push(dataIdynPeak.data);
+                }
+                //ith_rms
+                const dataIthRms = await getCurrentFlowById(entity.oldCurrentTransformerInfo.ith_rms);
+                if (dataIthRms.success) {
+                    entity.currentFlow.push(dataIthRms.data);
+                }
+                //ith_duration
+                const dataDuration = await getSecondById(entity.oldCurrentTransformerInfo.ith_duration);
+                if (dataDuration.success) {
+                    entity.seconds.push(dataDuration.data);
+                }
+                //sys_voltage
+                const dataSysVoltage = await getVoltageById(entity.oldCurrentTransformerInfo.system_voltage);
+                if (dataSysVoltage.success) {
+                    entity.voltage.push(dataSysVoltage.data);
+                }
+                
+                //bil
+                const dataBil = await getVoltageById(entity.oldCurrentTransformerInfo.bil);
+                if (dataBil.success) {
+                    entity.voltage.push(dataBil.data);
+                }
+                //rating_factor_temp
+                const dataRatingFactorTemp = await getTemperatureById(entity.oldCurrentTransformerInfo.rating_factor_temp);
+                if (dataRatingFactorTemp.success) {
+                    entity.temperature.push(dataRatingFactorTemp.data);
+                }
 
                 
 
+               
+                
                 return {
                     success: true,
                     data: entity,

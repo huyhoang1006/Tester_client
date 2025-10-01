@@ -71,6 +71,7 @@ export default {
         }
     },
     methods: {
+        loadMapForView() {},
         updateShowAdd(sign) {
             this.showAdd = sign
         },

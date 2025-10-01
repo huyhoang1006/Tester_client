@@ -21,6 +21,7 @@
 	FOREIGN KEY("rated_burden") REFERENCES "apparent_power"("mrid")
 );
  */
+import dbsql from '@/function/datacontext/index'
 
 // Thêm mới ctTapInfo
 export const insertCtTapInfoTransaction = async (info, dbsql) => {
@@ -68,6 +69,17 @@ export const insertCtTapInfoTransaction = async (info, dbsql) => {
             return reject({ success: false, err, message: 'Insert ctTapInfo transaction failed' })
         }
     })
+}
+
+export const getCtTapInfoByCtCoreInfoId = (ct_core_info_id) => {
+    return new Promise((resolve, reject) => {
+        const sql = `SELECT * FROM ct_tap_info WHERE ct_core_info_id = ?`;
+        const params = [ct_core_info_id];
+        dbsql.all(sql, params, function (err, row) {
+            if (err) return reject({ success: false, err, message: 'Get ctTapInfo failed' });
+            return resolve({ success: true, data: row, message: 'Get ctTapInfo completed' });
+        });
+    });
 }
 
 

@@ -9,6 +9,7 @@ import Resistance from "@/views/Cim/Resistance";
 import Percent from "@/views/Cim/Percent";
 import CtTapInfo from "@/views/Cim/CtTapInfo";
 import ApparentPower from "@/views/Cim/ApparentPower";
+import CurrentTransformerDto from "@/views/Dto/CurrentTransformer";
 const mappingUnit = (map, unitDto) => {
     if (!map || !unitDto) return;
 
@@ -73,11 +74,11 @@ export const mapDtoToEntity = (dto) => {
     const newULightningPeak = new Voltage();
     mappingUnit(newULightningPeak, dto.ratings.u_lightning_peak);
     entity.voltage.push(newULightningPeak);
-    entity.oldCurrentTransformerInfo.icth = dto.ratings.icth.mrid || null;
+    entity.oldCurrentTransformerInfo.i_cth = dto.ratings.icth.mrid || null;
     const newIcth = new CurrentFlow();
     mappingUnit(newIcth, dto.ratings.icth);
     entity.currentFlow.push(newIcth);
-    entity.oldCurrentTransformerInfo.idyn_peak = dto.ratings.idyn_peak.mrid || null;
+    entity.oldCurrentTransformerInfo.i_dynamic_peak = dto.ratings.idyn_peak.mrid || null;
     const newIdynPeak = new CurrentFlow();
     mappingUnit(newIdynPeak, dto.ratings.idyn_peak);
     entity.currentFlow.push(newIdynPeak);
@@ -103,6 +104,10 @@ export const mapDtoToEntity = (dto) => {
     const newRatingFactorTemp = new Temperature();
     mappingUnit(newRatingFactorTemp, dto.ratings.rating_factor_temp);
     entity.temperature.push(newRatingFactorTemp);
+
+    //core
+    entity.oldCurrentTransformerInfo.core_count = dto.ctConfiguration.cores || null;
+
 
     //ct_Configuration
     dto.ctConfiguration.dataCT.forEach(item => {
@@ -196,7 +201,7 @@ export const mapDtoToEntity = (dto) => {
 
             mainTapCore.mrid = item.classRating.mrid || null;
             mainTap.mrid = item.table.mrid || null;
-       
+
             mainTapCore.rated_burden = item.classRating.rated_burden.mrid || null;
             const newRatedBurden = new ApparentPower();
             mappingUnit(newRatedBurden, item.classRating.rated_burden);
@@ -213,7 +218,7 @@ export const mapDtoToEntity = (dto) => {
             entity.apparentPower.push(newOperatingBurden);
             mainTapCore.operatingBurdenCos = item.classRating.operatingBurdenCos || null;
             mainTapCore.current_transformer_info_id = entity.assetInfo.mrid || null;
-       
+
             mainTap.isShow = item.table.isShow || null;
             mainTap.name = item.table.name || null;
             mainTap.ipn = item.table.ipn.mrid || null;
@@ -237,7 +242,7 @@ export const mapDtoToEntity = (dto) => {
 
             interTapCore.mrid = item.classRating.mrid || null;
             interTap.mrid = item.table.mrid || null;
-      
+
             interTapCore.rated_burden = item.classRating.rated_burden.mrid || null;
             const newRatedBurden = new ApparentPower();
             mappingUnit(newRatedBurden, item.classRating.rated_burden);
@@ -254,7 +259,7 @@ export const mapDtoToEntity = (dto) => {
             entity.apparentPower.push(newOperatingBurden);
             interTapCore.operatingBurdenCos = item.classRating.operatingBurdenCos || null;
             interTapCore.current_transformer_info_id = entity.assetInfo.mrid || null;
-          
+
             interTap.isShow = item.table.isShow || null;
             interTap.name = item.table.name || null;
             interTap.ipn = item.table.ipn.mrid || null;
@@ -274,3 +279,121 @@ export const mapDtoToEntity = (dto) => {
     });
     return entity;
 }
+
+// Hàm mapping ngược từ entity sang DTO
+export const mapEntityToDto = (entity) => {
+    const dto = new CurrentTransformerDto();
+    //properties
+    dto.properties.mrid = entity.asset.mrid;
+    dto.properties.kind = entity.asset.kind;
+    dto.properties.asset_type = entity.asset.type;
+    dto.properties.serial_no = entity.asset.serial_number;
+    dto.assetInfoId = entity.asset.asset_info;
+    dto.properties.manufacturer = entity.productAssetModel.manufacturer;
+    dto.properties.manufacturer_type = entity.assetInfo.manufacturer_type;
+    dto.properties.country_of_origin = entity.asset.country_of_origin;
+    dto.properties.apparatus_id = entity.asset.name;
+    dto.properties.comment = entity.asset.description;
+    dto.productAssetModelId = entity.assetInfo.product_asset_model;
+    dto.locationId = entity.asset.location;
+
+    // lifecycle date
+    dto.lifecycleDateId = entity.lifecycleDate.mrid || null;
+    dto.properties.manufacturing_year = entity.lifecycleDate.manufactured_date || null;
+    dto.lifecycleDateId = entity.lifecycleDate.mrid || null;
+
+    //assetPsr
+    dto.assetPsrId = entity.assetPsr.mrid || '';
+    dto.psrId = entity.assetPsr.psr_id || '';
+
+    //attachment
+    dto.attachmentId = entity.attachment.mrid || '';
+    dto.attachment = entity.attachment;
+
+    //rattings 
+    dto.ratings.standard.value = entity.oldCurrentTransformerInfo.standard || '';
+    for (let frequency of entity.frequency) {
+        if (frequency.mrid == entity.oldCurrentTransformerInfo.rated_frequency) {
+            dto.ratings.rated_frequency.mrid = frequency.mrid || '';
+            dto.ratings.rated_frequency.value = frequency.value || '';
+            dto.ratings.rated_frequency.unit = frequency.multiplier + '|' + frequency.unit || '';
+        }
+
+    }
+
+    dto.ratings.primary_winding_count = entity.oldCurrentTransformerInfo.primary_winding_count || '';
+    for (let voltage of entity.voltage) {
+        if (voltage.mrid == entity.oldCurrentTransformerInfo.um_rms) {
+            dto.ratings.um_rms.mrid = voltage.mrid || '';
+            dto.ratings.um_rms.value = voltage.value || '';
+            dto.ratings.um_rms.unit = voltage.multiplier + '|' + voltage.unit || '';
+        }
+        if (voltage.mrid == entity.oldCurrentTransformerInfo.u_withstand_rms) {
+            dto.ratings.u_withstand_rms.mrid = voltage.mrid || '';
+            dto.ratings.u_withstand_rms.value = voltage.value || '';
+            dto.ratings.u_withstand_rms.unit = voltage.multiplier + '|' + voltage.unit || '';
+        }
+        if (voltage.mrid == entity.oldCurrentTransformerInfo.u_lightning_peak) {
+            dto.ratings.u_lightning_peak.mrid = voltage.mrid || '';
+            dto.ratings.u_lightning_peak.value = voltage.value || '';
+            dto.ratings.u_lightning_peak.unit = voltage.multiplier + '|' + voltage.unit || '';
+        }
+        if (voltage.mrid == entity.oldCurrentTransformerInfo.system_voltage) {
+            dto.ratings.system_voltage.mrid = voltage.mrid || '';
+            dto.ratings.system_voltage.value = voltage.value || '';
+            dto.ratings.system_voltage.unit = voltage.multiplier + '|' + voltage.unit || '';
+        }
+        if (voltage.mrid == entity.oldCurrentTransformerInfo.bil) {
+            dto.ratings.bil.mrid = voltage.mrid || '';
+            dto.ratings.bil.value = voltage.value || '';
+            dto.ratings.bil.unit = voltage.multiplier + '|' + voltage.unit || '';
+        }
+    }
+
+    for (let currentFlow of entity.currentFlow) {
+        if (currentFlow.mrid == entity.oldCurrentTransformerInfo.i_cth) {
+            dto.ratings.icth.mrid = currentFlow.mrid || '';
+            dto.ratings.icth.value = currentFlow.value || '';
+            dto.ratings.icth.unit = currentFlow.multiplier + '|' + currentFlow.unit || '';
+        }
+        if (currentFlow.mrid == entity.oldCurrentTransformerInfo.i_dynamic_peak) {
+            dto.ratings.idyn_peak.mrid = currentFlow.mrid || '';
+            dto.ratings.idyn_peak.value = currentFlow.value || '';
+            dto.ratings.idyn_peak.unit = currentFlow.multiplier + '|' + currentFlow.unit || '';
+        }
+        if (currentFlow.mrid == entity.oldCurrentTransformerInfo.ith_rms) {
+            dto.ratings.ith_rms.mrid = currentFlow.mrid || '';
+            dto.ratings.ith_rms.value = currentFlow.value || '';
+            dto.ratings.ith_rms.unit = currentFlow.multiplier + '|' + currentFlow.unit || '';
+        }
+    }
+
+    for (let seconds of entity.seconds) {
+        if (seconds.mrid == entity.oldCurrentTransformerInfo.ith_duration) {
+            dto.ratings.ith_duration.mrid = seconds.mrid || '';
+            dto.ratings.ith_duration.value = seconds.value || '';
+            dto.ratings.ith_duration.unit = seconds.multiplier + '|' + seconds.unit || '';
+        }
+    }
+
+    dto.ratings.system_voltage_type.value = entity.oldCurrentTransformerInfo.system_voltage_type || '';
+
+    dto.ratings.rating_factor = entity.oldCurrentTransformerInfo.rating_factor || '';
+
+    for (let temperature of entity.temperature) {
+        if (temperature.mrid == entity.oldCurrentTransformerInfo.rating_factor_temp) {
+            dto.ratings.rating_factor_temp.mrid = temperature.mrid || '';
+            dto.ratings.rating_factor_temp.value = temperature.value || '';
+            dto.ratings.rating_factor_temp.unit = temperature.multiplier + '|' + temperature.unit || '';
+        }
+    }
+
+    //core
+    dto.ctConfiguration.cores = entity.oldCurrentTransformerInfo.core_count || '';
+
+
+
+
+    return dto;
+}
+

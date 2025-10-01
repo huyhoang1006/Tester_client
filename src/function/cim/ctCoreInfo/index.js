@@ -39,6 +39,7 @@
 
 // Thêm mới ctCoreInfo
 // Thêm mới ctCoreInfo (UPSERT)
+import dbsql from '@/function/datacontext/index'
 export const insertCtCoreInfoTransaction = (info, dbsql) => {
     return new Promise((resolve, reject) => {
         const sql = `
@@ -117,6 +118,17 @@ export const insertCtCoreInfoTransaction = (info, dbsql) => {
                 return reject({ success: false, err, message: "Insert ctCoreInfo failed" });
             }
             return resolve({ success: true, data: info, message: "Insert ctCoreInfo completed" });
+        });
+    });
+};
+
+export const getCtCoreInfoByCurrentTransformerInfoId = (current_transformer_info_id) => {
+    return new Promise((resolve, reject) => {
+        const sql = `SELECT * FROM ct_core_info WHERE current_transformer_info_id = ?`;
+        const params = [current_transformer_info_id];
+        dbsql.all(sql, params, function (err, rows) {
+            if (err) return reject({ success: false, err, message: 'Get ctCoreInfo failed' });
+            return resolve({ success: true, data: rows, message: 'Get ctCoreInfo completed' });
         });
     });
 };

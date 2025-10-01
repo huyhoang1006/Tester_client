@@ -2,7 +2,7 @@ class PropertiesDto {
     constructor() {
         this.mrid = '';
         this.type = '';
-        this.kind = 'Voltage transformer';
+        this.kind = 'Current transformer';
         this.serial_no = '';
         this.manufacturer = '';
         this.manufacturer_type = '';
