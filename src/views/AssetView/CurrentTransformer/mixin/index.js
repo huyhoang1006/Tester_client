@@ -13,18 +13,17 @@ export default {
     methods: {
         async saveAsset() {
             try {
-                if(this.currentTransformer.properties.serial_no !== null && this.currentTransformer.properties.serial_no !== '') {
+                if (this.currentTransformer.properties.serial_no !== null && this.currentTransformer.properties.serial_no !== '') {
                     const data = JSON.parse(JSON.stringify(this.currentTransformer));
                     const result = await this.checkCurrentTransformerData(data)
-                    console.log("result: ",result)
+                    console.log("result: ", result)
                     const oldResult = JSON.parse(JSON.stringify(this.old_data))
                     const oldEntity = CurrentTransformerMapping.mapDtoToEntity(oldResult)
-                    console.log("oldEntity: ",oldEntity)
                     const entity = CurrentTransformerMapping.mapDtoToEntity(result)
-                    console.log("entity: ",entity)
+                    console.log("entity: ", entity)
                     let rs = await window.electronAPI.insertCurrentTransformerEntity(oldEntity, entity)
-                    console.log("rs: ",rs)
-                    if(rs.success) {
+                    console.log("rs: ", rs)
+                    if (rs.success) {
                         return {
                             success: true,
                             data: rs.data,
@@ -49,19 +48,28 @@ export default {
                     success: false,
                     error: error,
                 };
-            } 
+            }
         },
+
         loadData(data) {
             this.currentTransformer_old = JSON.parse(JSON.stringify(data));
-            this.currentTransformer = data; 
-            if(data.attachment && data.attachment.path) {
+            this.currentTransformer = data;
+            if (data.attachment && data.attachment.path) {
                 this.attachmentData = JSON.parse(data.attachment.path)
             } else {
                 this.attachmentData = []
             }
         },
+        async saveCtrS() {
+            const data = await this.saveAsset()
+            if (data.success) {
+                this.$message.success("Asset saved successfully")
+            } else {
+                this.$message.error("Failed to save asset")
+            }
+        },
 
-        
+
 
         async checkCurrentTransformerData(data) {
             try {
@@ -82,7 +90,7 @@ export default {
             }
         },
 
-        
+
 
         checkProperty(data) {
             if (data.properties.mrid == null || data.properties.mrid == '') {
@@ -166,5 +174,7 @@ export default {
         },
 
     }
+
+
 
 }

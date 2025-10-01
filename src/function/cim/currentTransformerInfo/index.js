@@ -40,10 +40,6 @@ import db from '../../datacontext/index'
 export const insertCurrentTransformerInfo = async (info, dbsql) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const assetInfoResult = await AssetInfoFunc.insertAssetInfoTransaction(info, dbsql)
-            if (!assetInfoResult.success) {
-                return reject({ success: false, message: 'Insert assetInfo failed', err: assetInfoResult.err })
-            }
             dbsql.run(
                 `INSERT INTO current_transformer_info(
                     mrid, accuracy_class, accuracy_limit, core_count, ct_class, knee_point_current, knee_point_voltage, max_ratio, nominal_ratio, primary_fls_rating, primary_ratio, rated_current, secondary_fls_rating, secondary_ratio, tertiary_fls_rating, tertiary_ratio, usage
