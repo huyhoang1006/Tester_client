@@ -55,7 +55,7 @@ const bushingEntityAPI = entityPreload.bushingEntityPreload.bushingEntityPreload
 const bushingAPI = cimPreload.bushingPreload.bushingPreload()
 const disconnectorEntityAPI = entityPreload.disconnectorEntityPreload.disconnectorEntityPreload()
 const rotatingMachineEntityAPI = entityPreload.rotatingMachineEntityPreload.rotatingMachineEntityPreload()
-
+const currentTransformerEntityAPI = entityPreload.currentTransformerEntityPreload.currentTransformerEntityPreload()
 const ipcMain = Object.assign(userAPI, transformerAPI, fmecaAPI, conditionAPI, circuitAPI, attachmentAPI,
     currentTransAPI, voltageTransAPI, disconnectorAPI, surgeArresterAPI, powerCablePreAPI, uploadCustomAPI,
     manufacturerAPI, ownerAPI, parentOrganizationAPI, substationAPI, locationAPI, streetAddressAPI, streetDetailAPI, townDetailAPI,
@@ -63,7 +63,8 @@ const ipcMain = Object.assign(userAPI, transformerAPI, fmecaAPI, conditionAPI, c
     positionPointAPI, voltageLevelEntityAPI, voltageLevelAPI, bayEntityAPI, bayAPI, powerSystemResourceAPI, surgeArresterEntityAPI,
     productAssetModelAPI, testTypeSurgeArresterAPI, surgeArresterJobAPI, oldWorkAPI, assetAPI, transformerEntityAPI, analogAPI,
     stringMeasurementAPI, discreteAPI, valueToAliasAPI, valueAliasSetAPI, powerCableEntityAPI, voltageTransformerEntityAPI, bushingEntityAPI,
-    bushingAPI, disconnectorEntityAPI, rotatingMachineEntityAPI)
+    bushingAPI, disconnectorEntityAPI, rotatingMachineEntityAPI, currentTransformerEntityAPI)
 contextBridge.exposeInMainWorld('electronAPI',
     ipcMain
 )
+    

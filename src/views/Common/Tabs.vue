@@ -56,6 +56,7 @@ import * as SurgeArresterJobMapper from '@/views/Mapping/SurgerArresterJob/index
 import * as disconnectorMapper from '@/views/Mapping/Disconnector/index'
 import * as PowerCableMapper from '@/views/Mapping/PowerCable'
 import * as RotatingMachineMapper from '@/views/Mapping/RotatingMachine'
+import * as currentTransformerMapper from '@/views/Mapping/CurrentTransformer'
 
 import VoltageLevel from '@/views/VoltageLevel/index.vue'
 import Bay from '@/views/Bay/index.vue'
@@ -66,6 +67,7 @@ import VoltageTransformer from '@/views/AssetView/VoltageTransformer/index.vue'
 import Disconnector from '@/views/AssetView/Disconnector/index.vue'
 import PowerCable from '@/views/AssetView/PowerCable/index.vue'
 import RotatingMachine from '@/views/AssetView/RotatingMachine/index.vue'
+import CurrentTransformer from '@/views/AssetView/CurrentTransformer/index.vue'
 
 export default {
     name: "Tabs",
@@ -82,7 +84,8 @@ export default {
         SurgeArresterJob,
         Disconnector,
         PowerCable,
-        RotatingMachine
+        RotatingMachine,
+        CurrentTransformer
     },
     model: {
         prop: 'value',
@@ -200,7 +203,21 @@ export default {
                         } else {
                             this.$message.error("Failed to load surge arrester data");
                         }
-                    } else if (tab.asset === 'Voltage transformer') {
+                    } else if (tab.asset === 'Current transformer') {
+                        this.parentOrganization = {
+                            mrid: tab.parentId
+                        }
+                        const data = await window.electronAPI.getCurrentTransformerEntityByMrid(tab.mrid, tab.parentId)
+                        console.log("data : ", data)
+                        if (data.success) {
+                            const currentTransformerDto = currentTransformerMapper.mapEntityToDto(data.data)
+                            console.log("currentTransformerDto : ", currentTransformerDto)
+                            this.$refs.componentLoadData[index].loadData(currentTransformerDto)
+                        } else {
+                            this.$message.error("Failed to load Current transformer data");
+                        }
+                    }
+                     else if (tab.asset === 'Voltage transformer') {
                         this.parentOrganization = {
                             mrid: tab.parentId
                         }
@@ -380,6 +397,8 @@ export default {
                     return 'PowerCable'
                 } else if (tab.asset === 'Rotating machine') {
                     return 'RotatingMachine'
+                } else if (tab.asset === 'Current transformer') {
+                    return 'CurrentTransformer'
                 }
             } else if (tab.mode == 'job') {
                 if (tab.job === 'Surge arrester') {
