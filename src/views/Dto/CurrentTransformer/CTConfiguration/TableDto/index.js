@@ -6,6 +6,8 @@ class TableDto {
         this.ipn = {mrid: '', value: '', unit: UnitSymbol.A};
         this.isn = {mrid: '', value: '', unit: UnitSymbol.A};
         this.inUse = false;
+        this.type = '';
+        this.mrid = '';
     }
 }
 

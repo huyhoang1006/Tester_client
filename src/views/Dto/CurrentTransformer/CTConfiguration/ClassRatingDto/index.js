@@ -1,6 +1,7 @@
 import { UnitSymbol } from "@/views/Enum/UnitSymbol";
 class ClassRatingDto {
     constructor() {
+        this.mrid = '';
         this.app = 'chooseApp';
         this.class = '';
         this.wr = {mrid: '', value: '', unit:UnitSymbol.ohm};
