@@ -4,12 +4,13 @@ import Voltage from "@/views/Cim/Voltage";
 import CurrentFlow from "@/views/Cim/CurrentFlow";
 import Seconds from "@/views/Cim/Seconds";
 import Temperature from "@/views/Cim/Temperature";
+import CurrentTransformerDto from "@/views/Dto/CurrentTransformer";
 import CtCoreInfo from "@/views/Cim/CtCoreInfo";
 import Resistance from "@/views/Cim/Resistance";
-import Percent from "@/views/Cim/Percent";
 import CtTapInfo from "@/views/Cim/CtTapInfo";
 import ApparentPower from "@/views/Cim/ApparentPower";
-import CurrentTransformerDto from "@/views/Dto/CurrentTransformer";
+import CoreDto from "@/views/Dto/CurrentTransformer/CTConfiguration/CoreDto";
+import FullTapDto from "@/views/Dto/CurrentTransformer/CTConfiguration/FullTapDto";
 const mappingUnit = (map, unitDto) => {
     if (!map || !unitDto) return;
 
@@ -107,177 +108,211 @@ export const mapDtoToEntity = (dto) => {
 
     //core
     entity.oldCurrentTransformerInfo.core_count = dto.ctConfiguration.cores || null;
-
-
-    //ct_Configuration
+    //ctConfiguration
     dto.ctConfiguration.dataCT.forEach(item => {
+        const core = new CtCoreInfo();
         const fullTap = new CtTapInfo();
-        const fullTapCore = new CtCoreInfo();
-
-        // fullTap
-        fullTapCore.mrid = item.fullTap.classRating.mrid || null;
-        fullTap.mrid = item.fullTap.table.mrid || null;
-        fullTapCore.core_application = item.fullTap.classRating.app || null;
-        fullTapCore.core_class = item.fullTap.classRating.class || null;
-        fullTapCore.fs = item.fullTap.classRating.fs || null;
-        fullTapCore.alf = item.fullTap.classRating.alf || null;
-        fullTapCore.ts = item.fullTap.classRating.ts || null;
-        fullTapCore.ek = item.fullTap.classRating.ek || null;
-        fullTapCore.e1 = item.fullTap.classRating.e1 || null;
-        fullTapCore.ie = item.fullTap.classRating.ie || null;
-        fullTapCore.ie1 = item.fullTap.classRating.ie1 || null;
-        fullTapCore.kssc = item.fullTap.classRating.kssc || null;
-        fullTapCore.val = item.fullTap.classRating.val || null;
-        fullTapCore.tp = item.fullTap.classRating.tp || null;
-        fullTapCore.iai = item.fullTap.classRating.iai || null;
-        fullTapCore.k = item.fullTap.classRating.k || null;
-        fullTapCore.ktd = item.fullTap.classRating.ktd || null;
-        fullTapCore.duty = item.fullTap.classRating.duty || null;
-        fullTapCore.kx = item.fullTap.classRating.kx || null;
-        fullTapCore.current_transformer_info_id = entity.assetInfo.mrid || null;
-        fullTapCore.ex = item.fullTap.classRating.ex || null;
-        fullTapCore.vb = item.fullTap.classRating.vb || null;
-        fullTapCore.vk = item.fullTap.classRating.vk || null;
-        fullTapCore.vk1 = item.fullTap.classRating.vk1 || null;
-        fullTapCore.ik = item.fullTap.classRating.ik || null;
-        fullTapCore.ik1 = item.fullTap.classRating.ik1 || null;
-        fullTapCore.ratio_error = item.fullTap.classRating.ratio_error || null;
-        const newRatioError = new Percent();
-        mappingUnit(newRatioError, item.fullTap.classRating.ratio_error);
-        entity.percent.push(newRatioError);
-        fullTapCore.vb = item.fullTap.classRating.vb || null;
-        const newVb = new Voltage();
-        mappingUnit(newVb, item.fullTap.classRating.vb);
-        entity.voltage.push(newVb);
-        fullTapCore.winding_resistance = item.fullTap.classRating.wr.mrid || null;
+        //mrid
+        core.mrid = item.mrid || null;
+        //tap_count
+        core.tap_count = item.taps || null;
+        //common_tap
+        core.common_tap = item.commonTap || null;
+        //core_application
+        core.core_application = item.fullTap.classRating.app || null;
+        //core_class
+        core.core_class = item.fullTap.classRating.class || null;
+        //fs
+        core.fs = item.fullTap.classRating.fs || null;
+        //alf
+        core.alf = item.fullTap.classRating.alf || null;
+        //winding_resistance
+        core.winding_resistance = item.fullTap.classRating.wr.mrid || null;
         const newWindingResistance = new Resistance();
         mappingUnit(newWindingResistance, item.fullTap.classRating.wr);
         entity.resistance.push(newWindingResistance);
-        fullTapCore.ts = item.fullTap.classRating.ts || null;
-        const newTs = new Seconds();
-        mappingUnit(newTs, item.fullTap.classRating.ts);
-        entity.seconds.push(newTs);
-        fullTapCore.ek = item.fullTap.classRating.ek || null;
-        const newEk = new Voltage();
-        mappingUnit(newEk, item.fullTap.classRating.ek);
-        entity.voltage.push(newEk);
-        fullTapCore.e1 = item.fullTap.classRating.e1 || null;
-        const newE1 = new Voltage();
-        mappingUnit(newE1, item.fullTap.classRating.e1);
-        entity.voltage.push(newE1);
+        //ts
+        core.ts = item.fullTap.classRating.ts || null;
+        //ek
+        core.ek = item.fullTap.classRating.ek || null;
+        //e1
+        core.e1 = item.fullTap.classRating.e1 || null;
+        //ie
+        core.ie = item.fullTap.classRating.ie || null;
+        //ie1
+        core.ie1 = item.fullTap.classRating.ie1 || null;
+        //kssc
+        core.kssc = item.fullTap.classRating.kssc || null;
+        //val
+        core.val = item.fullTap.classRating.val || null;
+        //tp
+        core.tp = item.fullTap.classRating.tp || null;
+        //iai
+        core.iai = item.fullTap.classRating.iai || null;
+        //k
+        core.k = item.fullTap.classRating.k || null;
+        //ktd
+        core.ktd = item.fullTap.classRating.ktd || null;
+        //duty
+        core.duty = item.fullTap.classRating.duty || null;
+        //kx
+        core.kx = item.fullTap.classRating.kx || null;
+        //current_transformer_info_id
+        core.current_transformer_info_id = entity.assetInfo.mrid || null;
+        //ex
+        core.ex = item.fullTap.classRating.ex || null;
+        //vb
+        core.vb = item.fullTap.classRating.vb || null;
+        //vk
+        core.vk = item.fullTap.classRating.vk || null;
+        //vk1
+        core.vk1 = item.fullTap.classRating.vk1 || null;
+        //ik
+        core.ik = item.fullTap.classRating.ik || null;
+        //ik1
+        core.ik1 = item.fullTap.classRating.ik1 || null;
+        //ratio_error
+        core.ratio_error = item.fullTap.classRating.ratio_error || null;
+        //mrid
+        fullTap.mrid = item.fullTap.classRating.mrid || null;
+        //tap_name
         fullTap.tap_name = item.fullTap.table.name || null;
+        //type
+        fullTap.type = item.fullTap.table.type || null;
+        //ipn
         fullTap.ipn = item.fullTap.table.ipn.mrid || null;
         const newIpn = new CurrentFlow();
         mappingUnit(newIpn, item.fullTap.table.ipn);
         entity.currentFlow.push(newIpn);
+        //isn
         fullTap.isn = item.fullTap.table.isn.mrid || null;
         const newIsn = new CurrentFlow();
         mappingUnit(newIsn, item.fullTap.table.isn);
         entity.currentFlow.push(newIsn);
+        //in_use
         fullTap.in_use = item.fullTap.table.inUse || null;
+        //rated_burden
         fullTap.rated_burden = item.fullTap.classRating.rated_burden.mrid || null;
         const newRatedBurden = new ApparentPower();
         mappingUnit(newRatedBurden, item.fullTap.classRating.rated_burden);
         entity.apparentPower.push(newRatedBurden);
+        //burden
         fullTap.burden = item.fullTap.classRating.burden.mrid || null;
         const newBurden = new ApparentPower();
         mappingUnit(newBurden, item.fullTap.classRating.burden);
         entity.apparentPower.push(newBurden);
+        //extended_burden
         fullTap.extended_burden = item.fullTap.classRating.extended_burden || null;
+        //burden_power_factor
         fullTap.burden_power_factor = item.fullTap.classRating.burdenCos || null;
+        //operating_burden
         fullTap.operating_burden = item.fullTap.classRating.operatingBurden.mrid || null;
         const newOperatingBurden = new ApparentPower();
         mappingUnit(newOperatingBurden, item.fullTap.classRating.operatingBurden);
         entity.apparentPower.push(newOperatingBurden);
+        //operating_burden_power_factor
         fullTap.operating_burden_power_factor = item.fullTap.classRating.operatingBurdenCos || null;
-        fullTap.ct_core_info_id = fullTapCore.mrid || null;
-        entity.CtCoreInfo.push(fullTapCore);
+        //ct_core_info_id
+        fullTap.ct_core_info_id = core.mrid || null;
         entity.CtTapInfo.push(fullTap);
+        entity.CtCoreInfo.push(core);
 
-        // mainTap
+        /** ================== mainTap ================== */
         item.mainTap.data.forEach(item => {
             const mainTap = new CtTapInfo();
-            const mainTapCore = new CtCoreInfo();
-
-            mainTapCore.mrid = item.classRating.mrid || null;
-            mainTap.mrid = item.table.mrid || null;
-
-            mainTapCore.rated_burden = item.classRating.rated_burden.mrid || null;
-            const newRatedBurden = new ApparentPower();
-            mappingUnit(newRatedBurden, item.classRating.rated_burden);
-            entity.apparentPower.push(newRatedBurden);
-            mainTapCore.extended_burden = item.classRating.extended_burden || null;
-            mainTapCore.burden = item.classRating.burden.mrid || null;
-            const newBurden = new ApparentPower();
-            mappingUnit(newBurden, item.classRating.burden);
-            entity.apparentPower.push(newBurden);
-            mainTapCore.burdenCos = item.classRating.burdenCos || null;
-            mainTapCore.operatingBurden = item.classRating.operatingBurden.mrid || null;
-            const newOperatingBurden = new ApparentPower();
-            mappingUnit(newOperatingBurden, item.classRating.operatingBurden);
-            entity.apparentPower.push(newOperatingBurden);
-            mainTapCore.operatingBurdenCos = item.classRating.operatingBurdenCos || null;
-            mainTapCore.current_transformer_info_id = entity.assetInfo.mrid || null;
-
-            mainTap.isShow = item.table.isShow || null;
-            mainTap.name = item.table.name || null;
+            //mrid
+            mainTap.mrid = item.classRating.mrid || null;
+            //tap_name
+            mainTap.tap_name = item.table.name || null;
+            //type
+            mainTap.type = item.table.type || null;
+            //ipn
             mainTap.ipn = item.table.ipn.mrid || null;
             const newIpn = new CurrentFlow();
             mappingUnit(newIpn, item.table.ipn);
             entity.currentFlow.push(newIpn);
+            //isn
             mainTap.isn = item.table.isn.mrid || null;
             const newIsn = new CurrentFlow();
             mappingUnit(newIsn, item.table.isn);
             entity.currentFlow.push(newIsn);
+            //in_use
             mainTap.in_use = item.table.inUse || null;
-            mainTap.ct_core_info_id = mainTapCore.mrid || null;
-            entity.CtCoreInfo.push(mainTapCore);
-            entity.CtTapInfo.push(mainTap);
-        });
-
-        // interTap
-        item.interTap.data.forEach(item => {
-            const interTap = new CtTapInfo();
-            const interTapCore = new CtCoreInfo();
-
-            interTapCore.mrid = item.classRating.mrid || null;
-            interTap.mrid = item.table.mrid || null;
-
-            interTapCore.rated_burden = item.classRating.rated_burden.mrid || null;
+            //rated_burden
+            mainTap.rated_burden = item.classRating.rated_burden.mrid || null;
             const newRatedBurden = new ApparentPower();
             mappingUnit(newRatedBurden, item.classRating.rated_burden);
             entity.apparentPower.push(newRatedBurden);
-            interTapCore.extended_burden = item.classRating.extended_burden || null;
-            interTapCore.burden = item.classRating.burden.mrid || null;
+            //burden
+            mainTap.burden = item.classRating.burden.mrid || null;
             const newBurden = new ApparentPower();
             mappingUnit(newBurden, item.classRating.burden);
             entity.apparentPower.push(newBurden);
-            interTapCore.burdenCos = item.classRating.burdenCos || null;
-            interTapCore.operatingBurden = item.classRating.operatingBurden.mrid || null;
+            //extended_burden
+            mainTap.extended_burden = item.classRating.extended_burden || null;
+            //burden_power_factor
+            mainTap.burden_power_factor = item.classRating.burdenCos || null;
+            //operating_burden
+            mainTap.operating_burden = item.classRating.operatingBurden.mrid || null;
             const newOperatingBurden = new ApparentPower();
             mappingUnit(newOperatingBurden, item.classRating.operatingBurden);
             entity.apparentPower.push(newOperatingBurden);
-            interTapCore.operatingBurdenCos = item.classRating.operatingBurdenCos || null;
-            interTapCore.current_transformer_info_id = entity.assetInfo.mrid || null;
+            //operating_burden_power_factor
+            mainTap.operating_burden_power_factor = item.classRating.operatingBurdenCos || null;
+            //ct_core_info_id
+            mainTap.ct_core_info_id = core.mrid || null;
+            entity.CtTapInfo.push(mainTap);
+        })
 
-            interTap.isShow = item.table.isShow || null;
-            interTap.name = item.table.name || null;
+        /** ================== interTap ================== */
+        item.interTap.data.forEach(item => {
+            const interTap = new CtTapInfo();
+            //mrid
+            interTap.mrid = item.classRating.mrid || null;
+            //tap_name
+            interTap.tap_name = item.table.name || null;
+            //type
+            interTap.type = item.table.type || null;
+            //ipn
             interTap.ipn = item.table.ipn.mrid || null;
             const newIpn = new CurrentFlow();
             mappingUnit(newIpn, item.table.ipn);
             entity.currentFlow.push(newIpn);
+            //isn
             interTap.isn = item.table.isn.mrid || null;
             const newIsn = new CurrentFlow();
             mappingUnit(newIsn, item.table.isn);
             entity.currentFlow.push(newIsn);
+            //in_use
             interTap.in_use = item.table.inUse || null;
-            interTap.ct_core_info_id = interTapCore.mrid || null;
-            entity.CtCoreInfo.push(interTapCore);
+            //rated_burden
+            interTap.rated_burden = item.classRating.rated_burden.mrid || null;
+            const newRatedBurden = new ApparentPower();
+            mappingUnit(newRatedBurden, item.classRating.rated_burden);
+            entity.apparentPower.push(newRatedBurden);
+            //burden
+            interTap.burden = item.classRating.burden.mrid || null;
+            const newBurden = new ApparentPower();
+            mappingUnit(newBurden, item.classRating.burden);
+            entity.apparentPower.push(newBurden);
+            //extended_burden
+            interTap.extended_burden = item.classRating.extended_burden || null;
+            //burden_power_factor
+            interTap.burden_power_factor = item.classRating.burdenCos || null;
+            //operating_burden
+            interTap.operating_burden = item.classRating.operatingBurden.mrid || null;
+            const newOperatingBurden = new ApparentPower();
+            mappingUnit(newOperatingBurden, item.classRating.operatingBurden);
+            entity.apparentPower.push(newOperatingBurden);
+            //operating_burden_power_factor
+            interTap.operating_burden_power_factor = item.classRating.operatingBurdenCos || null;
+            //ct_core_info_id
+            interTap.ct_core_info_id = core.mrid || null;
             entity.CtTapInfo.push(interTap);
-        });
-
-    });
+        })
+    })
     return entity;
+
 }
 
 // Hàm mapping ngược từ entity sang DTO
@@ -388,8 +423,126 @@ export const mapEntityToDto = (entity) => {
         }
     }
 
-    //core
-    dto.ctConfiguration.cores = entity.oldCurrentTransformerInfo.core_count || '';
+    //cores
+    dto.ctConfiguration.cores= entity.CtCoreInfo.length || '1';
+
+    const itemDataCT = new CoreDto();
+
+    entity.CtCoreInfo.forEach(item => {
+        itemDataCT.mrid = item.mrid || '';
+        itemDataCT.commonTap = item.common_tap || '1';
+        itemDataCT.taps = item.tap_count || '2';
+        
+        /** ================== fullTap ================== */
+        itemDataCT.fullTap.table.mrid = item.mrid || '';
+        //name
+        itemDataCT.fullTap.table.name = item.fullTap.table.name || 'S1 - S2';
+        //type
+        itemDataCT.fullTap.table.type = item.fullTap.table.type || 'fulltap';
+        //isn
+        itemDataCT.fullTap.table.isn.mrid = item.fullTap.table.isn.mrid || '';
+        itemDataCT.fullTap.table.isn.value = item.fullTap.table.isn.value || '';
+        itemDataCT.fullTap.table.isn.unit = item.fullTap.table.isn.unit || '';
+        //ipn
+        itemDataCT.fullTap.table.ipn.mrid = item.fullTap.table.ipn.mrid || '';
+        itemDataCT.fullTap.table.ipn.value = item.fullTap.table.ipn.value || '';
+        itemDataCT.fullTap.table.ipn.unit = item.fullTap.table.ipn.unit || '';
+        //in_use
+        itemDataCT.fullTap.table.inUse = item.fullTap.table.inUse || false;
+        //classRating
+        //mrid
+        const ctTap = entity.CtTapInfo.find(item => item.ct_core_info_id == item.mrid);
+        ctTap.forEach(item => {
+            itemDataCT.fullTap.classRating.mrid = item.mrid || '';
+            //app
+            itemDataCT.fullTap.classRating.app = item.classRating.app || '';
+            //class
+            itemDataCT.fullTap.classRating.class = item.classRating.class || '';
+            //wr
+            for (let resistance of entity.resistance) {
+                if (resistance.mrid == item.classRating.wr.mrid) {
+                    itemDataCT.fullTap.classRating.wr.mrid = resistance.mrid || '';
+                    itemDataCT.fullTap.classRating.wr.value = resistance.value || '';
+                    itemDataCT.fullTap.classRating.wr.unit = resistance.multiplier + '|' + resistance.unit || '';
+                }
+            }
+            //kx
+            itemDataCT.fullTap.classRating.kx = item.classRating.kx || '';
+            //re20lsn
+            itemDataCT.fullTap.classRating.re20lsn = item.classRating.re20lsn || '';
+            //k
+            itemDataCT.fullTap.classRating.k = item.classRating.k || '';
+            //fs
+            itemDataCT.fullTap.classRating.fs = item.classRating.fs || '';
+            //kssc
+            itemDataCT.fullTap.classRating.kssc = item.classRating.kssc || '';
+            //ktd
+            itemDataCT.fullTap.classRating.ktd = item.classRating.ktd || '';
+            //duty
+            itemDataCT.fullTap.classRating.duty = item.classRating.duty || '';
+            //vb
+            itemDataCT.fullTap.classRating.vb = item.classRating.vb || '';
+            //alf
+            itemDataCT.fullTap.classRating.alf = item.classRating.alf || '';
+            //ts
+            itemDataCT.fullTap.classRating.ts = item.classRating.ts || '';
+            //ek
+            itemDataCT.fullTap.classRating.ek = item.classRating.ek || '';
+            //e1
+            itemDataCT.fullTap.classRating.e1 = item.classRating.e1 || '';
+            //ie
+            itemDataCT.fullTap.classRating.ie = item.classRating.ie || '';
+            //ie1
+            itemDataCT.fullTap.classRating.ie1 = item.classRating.ie1 || '';
+            //val
+            itemDataCT.fullTap.classRating.val = item.classRating.val || '';
+            //tp
+            itemDataCT.fullTap.classRating.tp = item.classRating.tp || '';
+            //iai
+            itemDataCT.fullTap.classRating.iai = item.classRating.iai || '';
+            //k
+            itemDataCT.fullTap.classRating.k = item.classRating.k || '';
+            //vk
+            itemDataCT.fullTap.classRating.vk = item.classRating.vk || '';
+            //vk1
+            itemDataCT.fullTap.classRating.vk1 = item.classRating.vk1 || '';
+            //ik
+            itemDataCT.fullTap.classRating.ik = item.classRating.ik || '';
+            //ik1
+            itemDataCT.fullTap.classRating.ik1 = item.classRating.ik1 || '';
+            //ratio_error
+            itemDataCT.fullTap.classRating.ratio_error = item.classRating.ratio_error || '';
+            //rated_burden
+            for (let apparentPower of entity.apparentPower) {
+                if (apparentPower.mrid == item.classRating.rated_burden.mrid) {
+                    itemDataCT.fullTap.classRating.rated_burden.value = apparentPower.value || '';
+                    itemDataCT.fullTap.classRating.rated_burden.unit = apparentPower.multiplier + '|' + apparentPower.unit || '';
+                }
+            }
+            //extended_burden
+            itemDataCT.fullTap.classRating.extended_burden = item.classRating.extended_burden || false;
+            //burden
+            for (let apparentPower of entity.apparentPower) {
+                if (apparentPower.mrid == item.classRating.burden.mrid) {
+                    itemDataCT.fullTap.classRating.burden.value = apparentPower.value || '';
+                    itemDataCT.fullTap.classRating.burden.unit = apparentPower.multiplier + '|' + apparentPower.unit || '';
+                }
+            }
+            //burdenCos
+            itemDataCT.fullTap.classRating.burdenCos = item.classRating.burdenCos || '';
+            //operatingBurden
+            for (let apparentPower of entity.apparentPower) {
+                if (apparentPower.mrid == item.classRating.operatingBurden.mrid) {
+                    itemDataCT.fullTap.classRating.operatingBurden.value = apparentPower.value || '';
+                    itemDataCT.fullTap.classRating.operatingBurden.unit = apparentPower.multiplier + '|' + apparentPower.unit || '';
+                }
+            }
+            //operatingBurdenCos
+            itemDataCT.fullTap.classRating.operatingBurdenCos = item.classRating.operatingBurdenCos || '';
+        })
+        /** ================== mainTap ================== */
+        
+    })
 
 
 
@@ -397,3 +550,4 @@ export const mapEntityToDto = (entity) => {
     return dto;
 }
 
+  

@@ -8,6 +8,7 @@ class InterTapDto {
                 classRating : new ClassRatingSmallDto()
             },
         ]
+        this.data[0].table.type = 'intertap';
     }
 }
 

@@ -852,13 +852,16 @@ export default {
                     const coreData = {
                         taps: 2,
                         commonTap: '1',
+                        mrid: '',
                         fullTap: {
                             table: {
+                                mrid: '',
                                 isShow: false,
                                 name: i === 0 && this.configsData.cores === 1 ? "S1 - S2" : `${i + 1}S1 - ${i + 1}S2`,
                                 ipn: { mrid: '', value: '', unit: "A" },
                                 isn: { mrid: '', value: '', unit: "A" },
-                                inUse: false
+                                inUse: false,
+                                type: 'fulltap'
                             },
                             classRating: {
                                 class: '',
@@ -905,7 +908,8 @@ export default {
                                         name: '',
                                         ipn: { mrid: '', value: '', unit: "A" },
                                         isn: { mrid: '', value: '', unit: "A" },
-                                        inUse: false
+                                        inUse: false,
+                                        type: 'maintap'
                                     },
                                     classRating: {
 
@@ -930,7 +934,8 @@ export default {
                                         name: '',
                                         ipn: { mrid: '', value: '', unit: "A" },
                                         isn: { mrid: '', value: '', unit: "A" },
-                                        inUse: false
+                                        inUse: false,
+                                        type: 'intertap'
                                     },
                                     classRating: {
 
@@ -955,6 +960,7 @@ export default {
                 if (data > length) {
                     for (let i = 0; i < (data - length); i++) {
                         const newCoreData = {
+                            mrid: '',
                             taps: 2,
                             commonTap: '1',
                             fullTap: {
@@ -964,7 +970,8 @@ export default {
                                     name: `${i + 1 + length}S1 - ${i + 1 + length}S2`,
                                     ipn: { mrid: '', value: '', unit: "A" },
                                     isn: { mrid: '', value: '', unit: "A" },
-                                    inUse: false
+                                    inUse: false,
+                                    type: 'fulltap'
                                 },
                                 classRating: {
                                     mrid: '',
@@ -1012,7 +1019,9 @@ export default {
                                             name: '',
                                             ipn: { mrid: '', value: '', unit: "A" },
                                             isn: { mrid: '', value: '', unit: "A" },
-                                            inUse: false
+                                            inUse: false,
+                                            type: 'maintap'
+
                                         },
                                         classRating: {
 
@@ -1037,7 +1046,8 @@ export default {
                                             name: '',
                                             ipn: { mrid: '', value: '', unit: "A" },
                                             isn: { mrid: '', value: '', unit: "A" },
-                                            inUse: false
+                                            inUse: false,
+                                            type: 'intertap'
                                         },
                                         classRating: {
 
@@ -1165,7 +1175,8 @@ export default {
                                 name: '',
                                 ipn: { mrid: '', value: '', unit: "A" },
                             isn: { mrid: '', value: '', unit: "A" },
-                            inUse: false
+                            inUse: false,
+                            type: 'maintap'
                         },
                         classRating: {
 
@@ -1200,7 +1211,8 @@ export default {
                                 name: '',
                                 ipn: { mrid: '', value: '', unit: "A" },
                             isn: { mrid: '', value: '', unit: "A" },
-                            inUse: false
+                            inUse: false,
+                            type: 'intertap'
                         },
                         classRating: {
 
