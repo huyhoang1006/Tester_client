@@ -12,6 +12,7 @@
 	"operating_burden"	TEXT,
 	"operating_burden_power_factor"	TEXT,
 	"ct_core_info_id"	TEXT,
+	"type"	TEXT,
 	PRIMARY KEY("mrid"),
 	FOREIGN KEY("burden") REFERENCES "apparent_power"("mrid"),
 	FOREIGN KEY("ct_core_info_id") REFERENCES "ct_core_info"("mrid"),
@@ -28,9 +29,8 @@ export const insertCtTapInfoTransaction = async (info, dbsql) => {
     return new Promise((resolve, reject) => {
         try {
             dbsql.run(
-                `INSERT INTO ct_tap_info(
-                    mrid, tap_name, ipn, isn, in_use, rated_burden, burden, extended_burden, burden_power_factor, operating_burden, operating_burden_power_factor, ct_core_info_id
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                `INSERT INTO ct_tap_info(mrid, tap_name, ipn, isn, in_use, rated_burden, burden, extended_burden, burden_power_factor, operating_burden, operating_burden_power_factor, ct_core_info_id, type)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(mrid) DO UPDATE SET
                     tap_name = excluded.tap_name,
                     ipn = excluded.ipn,
@@ -42,7 +42,8 @@ export const insertCtTapInfoTransaction = async (info, dbsql) => {
                     burden_power_factor = excluded.burden_power_factor,
                     operating_burden = excluded.operating_burden,
                     operating_burden_power_factor = excluded.operating_burden_power_factor,
-                    ct_core_info_id = excluded.ct_core_info_id
+                    ct_core_info_id = excluded.ct_core_info_id,
+                    type = excluded.type
                 `,
                 [
                     info.mrid,
@@ -56,7 +57,8 @@ export const insertCtTapInfoTransaction = async (info, dbsql) => {
                     info.burden_power_factor,
                     info.operating_burden,
                     info.operating_burden_power_factor,
-                    info.ct_core_info_id
+                    info.ct_core_info_id,
+                    info.type
                 ],
                 function (err) {
                     if (err) {

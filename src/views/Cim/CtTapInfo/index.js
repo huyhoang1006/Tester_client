@@ -12,6 +12,7 @@
 	"operating_burden"	TEXT,
 	"operating_burden_power_factor"	TEXT,
 	"ct_core_info_id"	TEXT,
+	"type"	TEXT,
 	PRIMARY KEY("mrid"),
 	FOREIGN KEY("burden") REFERENCES "apparent_power"("mrid"),
 	FOREIGN KEY("ct_core_info_id") REFERENCES "ct_core_info"("mrid"),
@@ -36,6 +37,7 @@ class CtTapInfo {
         this.operating_burden = null;
         this.operating_burden_power_factor = null;
         this.ct_core_info_id = null;
+        this.type = null;
     }
 
 }

@@ -8,7 +8,7 @@ class MainTapDto {
                 classRating : new ClassRatingSmallDto()
             },
         ]
-      
+        this.data[0].table.type = 'maintap';
     }
 }
 
