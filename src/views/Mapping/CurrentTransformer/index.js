@@ -10,7 +10,6 @@ import Resistance from "@/views/Cim/Resistance";
 import CtTapInfo from "@/views/Cim/CtTapInfo";
 import ApparentPower from "@/views/Cim/ApparentPower";
 import CoreDto from "@/views/Dto/CurrentTransformer/CTConfiguration/CoreDto";
-import FullTapDto from "@/views/Dto/CurrentTransformer/CTConfiguration/FullTapDto";
 const mappingUnit = (map, unitDto) => {
     if (!map || !unitDto) return;
 
@@ -109,7 +108,7 @@ export const mapDtoToEntity = (dto) => {
     //core
     entity.oldCurrentTransformerInfo.core_count = dto.ctConfiguration.cores || null;
     //ctConfiguration
-    dto.ctConfiguration.dataCT.forEach(item => {
+    dto.ctConfiguration.dataCT.forEach((item, index) => {
         const core = new CtCoreInfo();
         const fullTap = new CtTapInfo();
         //mrid
@@ -173,6 +172,8 @@ export const mapDtoToEntity = (dto) => {
         core.ik1 = item.fullTap.classRating.ik1 || null;
         //ratio_error
         core.ratio_error = item.fullTap.classRating.ratio_error || null;
+        //core_index
+        core.core_index = index + 1 || null;
         //mrid
         fullTap.mrid = item.fullTap.classRating.mrid || null;
         //tap_name
@@ -424,130 +425,81 @@ export const mapEntityToDto = (entity) => {
     }
 
     //cores
-    dto.ctConfiguration.cores= entity.CtCoreInfo.length || '1';
+    dto.ctConfiguration.cores = entity.CtCoreInfo.length || '1';
 
-    const itemDataCT = new CoreDto();
-
-    entity.CtCoreInfo.forEach(item => {
-        itemDataCT.mrid = item.mrid || '';
-        itemDataCT.commonTap = item.common_tap || '1';
-        itemDataCT.taps = item.tap_count || '2';
-        
-        /** ================== fullTap ================== */
-        itemDataCT.fullTap.table.mrid = item.mrid || '';
-        //name
-        itemDataCT.fullTap.table.name = item.fullTap.table.name || 'S1 - S2';
-        //type
-        itemDataCT.fullTap.table.type = item.fullTap.table.type || 'fulltap';
-        //isn
-        itemDataCT.fullTap.table.isn.mrid = item.fullTap.table.isn.mrid || '';
-        itemDataCT.fullTap.table.isn.value = item.fullTap.table.isn.value || '';
-        itemDataCT.fullTap.table.isn.unit = item.fullTap.table.isn.unit || '';
-        //ipn
-        itemDataCT.fullTap.table.ipn.mrid = item.fullTap.table.ipn.mrid || '';
-        itemDataCT.fullTap.table.ipn.value = item.fullTap.table.ipn.value || '';
-        itemDataCT.fullTap.table.ipn.unit = item.fullTap.table.ipn.unit || '';
-        //in_use
-        itemDataCT.fullTap.table.inUse = item.fullTap.table.inUse || false;
-        //classRating
+    // dataCT
+    const dataCT = entity.CtCoreInfo.sort((a, b) => a.core_index - b.core_index);
+    dataCT.forEach(item => {
+        const core = new CoreDto();
         //mrid
-        const ctTap = entity.CtTapInfo.find(item => item.ct_core_info_id == item.mrid);
-        ctTap.forEach(item => {
-            itemDataCT.fullTap.classRating.mrid = item.mrid || '';
-            //app
-            itemDataCT.fullTap.classRating.app = item.classRating.app || '';
-            //class
-            itemDataCT.fullTap.classRating.class = item.classRating.class || '';
-            //wr
-            for (let resistance of entity.resistance) {
-                if (resistance.mrid == item.classRating.wr.mrid) {
-                    itemDataCT.fullTap.classRating.wr.mrid = resistance.mrid || '';
-                    itemDataCT.fullTap.classRating.wr.value = resistance.value || '';
-                    itemDataCT.fullTap.classRating.wr.unit = resistance.multiplier + '|' + resistance.unit || '';
+        core.mrid = item.mrid || '';
+        //taps
+        core.taps = item.tap_count || '2';
+        //commonTap
+        core.commonTap = item.common_tap || '1';
+        //fullTap
+        entity.CtTapInfo.filter(item => item.ct_core_info_id == item.mrid).forEach(item => {
+            if (item.type == 'fulltap') {
+                //mrid
+                core.fullTap.table.mrid = item.mrid || '';
+                //inUse
+                core.fullTap.table.inUse = item.in_use || '';
+                //name
+                core.fullTap.table.name = item.tap_name || '';
+                //type
+                core.fullTap.table.type = item.type || '';
+                //ipn
+                for (let currentFlow of entity.currentFlow) {
+                    if (currentFlow.mrid == item.ipn) {
+                        core.fullTap.table.ipn.mrid = currentFlow.mrid || '';
+                        core.fullTap.table.ipn.value = currentFlow.value || '';
+                        core.fullTap.table.ipn.unit = currentFlow.multiplier + '|' + currentFlow.unit || '';
+                    }
                 }
-            }
-            //kx
-            itemDataCT.fullTap.classRating.kx = item.classRating.kx || '';
-            //re20lsn
-            itemDataCT.fullTap.classRating.re20lsn = item.classRating.re20lsn || '';
-            //k
-            itemDataCT.fullTap.classRating.k = item.classRating.k || '';
-            //fs
-            itemDataCT.fullTap.classRating.fs = item.classRating.fs || '';
-            //kssc
-            itemDataCT.fullTap.classRating.kssc = item.classRating.kssc || '';
-            //ktd
-            itemDataCT.fullTap.classRating.ktd = item.classRating.ktd || '';
-            //duty
-            itemDataCT.fullTap.classRating.duty = item.classRating.duty || '';
-            //vb
-            itemDataCT.fullTap.classRating.vb = item.classRating.vb || '';
-            //alf
-            itemDataCT.fullTap.classRating.alf = item.classRating.alf || '';
-            //ts
-            itemDataCT.fullTap.classRating.ts = item.classRating.ts || '';
-            //ek
-            itemDataCT.fullTap.classRating.ek = item.classRating.ek || '';
-            //e1
-            itemDataCT.fullTap.classRating.e1 = item.classRating.e1 || '';
-            //ie
-            itemDataCT.fullTap.classRating.ie = item.classRating.ie || '';
-            //ie1
-            itemDataCT.fullTap.classRating.ie1 = item.classRating.ie1 || '';
-            //val
-            itemDataCT.fullTap.classRating.val = item.classRating.val || '';
-            //tp
-            itemDataCT.fullTap.classRating.tp = item.classRating.tp || '';
-            //iai
-            itemDataCT.fullTap.classRating.iai = item.classRating.iai || '';
-            //k
-            itemDataCT.fullTap.classRating.k = item.classRating.k || '';
-            //vk
-            itemDataCT.fullTap.classRating.vk = item.classRating.vk || '';
-            //vk1
-            itemDataCT.fullTap.classRating.vk1 = item.classRating.vk1 || '';
-            //ik
-            itemDataCT.fullTap.classRating.ik = item.classRating.ik || '';
-            //ik1
-            itemDataCT.fullTap.classRating.ik1 = item.classRating.ik1 || '';
-            //ratio_error
-            itemDataCT.fullTap.classRating.ratio_error = item.classRating.ratio_error || '';
-            //rated_burden
-            for (let apparentPower of entity.apparentPower) {
-                if (apparentPower.mrid == item.classRating.rated_burden.mrid) {
-                    itemDataCT.fullTap.classRating.rated_burden.value = apparentPower.value || '';
-                    itemDataCT.fullTap.classRating.rated_burden.unit = apparentPower.multiplier + '|' + apparentPower.unit || '';
+                //isn
+                for (let currentFlow of entity.currentFlow) {
+                    if (currentFlow.mrid == item.isn) {
+                        core.fullTap.table.isn.mrid = currentFlow.mrid || '';
+                        core.fullTap.table.isn.value = currentFlow.value || '';
+                        core.fullTap.table.isn.unit = currentFlow.multiplier + '|' + currentFlow.unit || '';
+                    }
                 }
-            }
-            //extended_burden
-            itemDataCT.fullTap.classRating.extended_burden = item.classRating.extended_burden || false;
-            //burden
-            for (let apparentPower of entity.apparentPower) {
-                if (apparentPower.mrid == item.classRating.burden.mrid) {
-                    itemDataCT.fullTap.classRating.burden.value = apparentPower.value || '';
-                    itemDataCT.fullTap.classRating.burden.unit = apparentPower.multiplier + '|' + apparentPower.unit || '';
+                //rated_burden
+                core.fullTap.classRating.rated_burden.mrid = item.rated_burden || '';
+                for (let apparentPower of entity.apparentPower) {
+                    if (apparentPower.mrid == item.rated_burden) {
+                        core.fullTap.classRating.rated_burden.value = apparentPower.value || '';
+                        core.fullTap.classRating.rated_burden.unit = apparentPower.multiplier + '|' + apparentPower.unit || '';
+                    }
                 }
-            }
-            //burdenCos
-            itemDataCT.fullTap.classRating.burdenCos = item.classRating.burdenCos || '';
-            //operatingBurden
-            for (let apparentPower of entity.apparentPower) {
-                if (apparentPower.mrid == item.classRating.operatingBurden.mrid) {
-                    itemDataCT.fullTap.classRating.operatingBurden.value = apparentPower.value || '';
-                    itemDataCT.fullTap.classRating.operatingBurden.unit = apparentPower.multiplier + '|' + apparentPower.unit || '';
+                //burden
+                core.fullTap.classRating.burden.mrid = item.burden || '';
+                for (let apparentPower of entity.apparentPower) {
+                    if (apparentPower.mrid == item.burden) {
+                        core.fullTap.classRating.burden.value = apparentPower.value || '';
+                        core.fullTap.classRating.burden.unit = apparentPower.multiplier + '|' + apparentPower.unit || '';
+                    }
                 }
+                //extended_burden
+                core.fullTap.classRating.extended_burden = item.extended_burden || '';
+                //burden_power_factor
+                core.fullTap.classRating.burdenCos = item.burden_power_factor || '';
+                //operating_burden
+                core.fullTap.classRating.operatingBurden.mrid = item.operating_burden || '';
+                for (let apparentPower of entity.apparentPower) {
+                    if (apparentPower.mrid == item.operating_burden) {
+                        core.fullTap.classRating.operatingBurden.value = apparentPower.value || '';
+                        core.fullTap.classRating.operatingBurden.unit = apparentPower.multiplier + '|' + apparentPower.unit || '';
+                    }
+                }
+                //operating_burden_power_factor
+                core.fullTap.classRating.operatingBurdenCos = item.operating_burden_power_factor || '';
+
             }
-            //operatingBurdenCos
-            itemDataCT.fullTap.classRating.operatingBurdenCos = item.classRating.operatingBurdenCos || '';
+
+           
         })
-        /** ================== mainTap ================== */
-        
     })
-
-
-
 
     return dto;
 }
-
-  

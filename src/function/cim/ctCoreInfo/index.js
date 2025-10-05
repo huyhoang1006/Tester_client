@@ -29,6 +29,7 @@
 	"ik"	TEXT,
 	"ik1"	TEXT,
 	"ratio_error"	TEXT,
+	"core_index"	TEXT,
 	PRIMARY KEY("mrid"),
 	FOREIGN KEY("current_transformer_info_id") REFERENCES "current_transformer_info"("mrid"),
 	FOREIGN KEY("ratio_error") REFERENCES "percent"("mrid"),
@@ -46,9 +47,9 @@ export const insertCtCoreInfoTransaction = (info, dbsql) => {
             INSERT INTO ct_core_info (
                 mrid, tap_count, common_tap, core_application, core_class, fs, alf, 
                 winding_resistance, ts, ek, e1, ie, ie1, kssc, val, tp, iai, k, ktd, 
-                duty, kx, current_transformer_info_id, ex, vb, vk, vk1, ik, ik1, ratio_error
+                duty, kx, current_transformer_info_id, ex, vb, vk, vk1, ik, ik1, ratio_error, core_index
             ) VALUES (
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             )
             ON CONFLICT(mrid) DO UPDATE SET
                 tap_count = excluded.tap_count,
@@ -78,7 +79,8 @@ export const insertCtCoreInfoTransaction = (info, dbsql) => {
                 vk1 = excluded.vk1,
                 ik = excluded.ik,
                 ik1 = excluded.ik1,
-                ratio_error = excluded.ratio_error
+                ratio_error = excluded.ratio_error,
+                core_index = excluded.core_index
         `;
 
         const params = [
@@ -110,7 +112,8 @@ export const insertCtCoreInfoTransaction = (info, dbsql) => {
             info.vk1,
             info.ik,
             info.ik1,
-            info.ratio_error
+            info.ratio_error,
+            info.core_index
         ];
 
         dbsql.run(sql, params, function (err) {
