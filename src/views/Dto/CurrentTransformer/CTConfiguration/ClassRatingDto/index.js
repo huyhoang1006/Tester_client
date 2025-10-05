@@ -35,6 +35,7 @@ class ClassRatingDto {
         this.burdenCos = '';
         this.operatingBurden = {mrid: '', value: '', unit:UnitSymbol.VA};
         this.operatingBurdenCos = '';
+        this.core_index = 1;
     }
 }
 

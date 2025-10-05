@@ -28,6 +28,7 @@
     "ik"	TEXT,
     "ik1"	TEXT,
     "ratio_error"	TEXT,
+    "core_index"	TEXT,
     PRIMARY KEY("mrid"),
     FOREIGN KEY("current_transformer_info_id") REFERENCES "current_transformer_info"("mrid"),
     FOREIGN KEY("ratio_error") REFERENCES "percent"("mrid"),
@@ -66,6 +67,7 @@ class CtCoreInfo {
         this.ik = null;
         this.ik1 = null;
         this.ratio_error = null;
+        this.core_index = null;
     }
 }
 
