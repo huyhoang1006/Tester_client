@@ -213,6 +213,12 @@ export const insertCurrentTransformerEntity = async (old_entity, entity) => {
     }
 }
 
+const addUnique = (array, item) => {
+    if (item && item.mrid && !array.some(i => i.mrid === item.mrid)) {
+        array.push(item);
+    }
+};
+
 export const getCurrentTransformerEntityById = async (id, psrId) => {
     try {
         if (id == null || id === '') {
@@ -222,7 +228,7 @@ export const getCurrentTransformerEntityById = async (id, psrId) => {
             const dataCurrentTransformer = await getAssetById(id)
             if (dataCurrentTransformer.success) {
                 entity.asset = dataCurrentTransformer.data
-                console.log('dataCurrentTransformer:', dataCurrentTransformer)
+                
                 const dataLifecycleDate = await getLifecycleDateById(entity.asset.lifecycle_date)
                 if (dataLifecycleDate.success) {
                     entity.lifecycleDate = dataLifecycleDate.data
@@ -253,81 +259,93 @@ export const getCurrentTransformerEntityById = async (id, psrId) => {
                 if (dataAttachment.success) {
                     entity.attachment = dataAttachment.data;
                 }
+
+                // Lấy các đối tượng giá trị từ oldCurrentTransformerInfo và currentTransformerInfo
+                if (entity.oldCurrentTransformerInfo) {
+                    const info = entity.oldCurrentTransformerInfo;
+                    const [
+                        ratedFreq, umRms, uWithstandRms, uLightningPeak, iCth, iDynPeak, ithRms,
+                        ithDuration, sysVoltage, bil, ratingFactorTemp, accuracyLimit, kneePointCurrent,
+                        kneePointVoltage, primaryFlsRating, ratedCurrent, secondaryFlsRating, tertiaryFlsRating
+                    ] = await Promise.all([
+                        getFrequencyById(info.rated_frequency),
+                        getVoltageById(info.um_rms),
+                        getVoltageById(info.u_withstand_rms),
+                        getVoltageById(info.u_lightning_peak),
+                        getCurrentFlowById(info.i_cth),
+                        getCurrentFlowById(info.i_dynamic_peak),
+                        getCurrentFlowById(info.ith_rms),
+                        getSecondById(info.ith_duration),
+                        getVoltageById(info.system_voltage),
+                        getVoltageById(info.bil),
+                        getTemperatureById(info.rating_factor_temp),
+                        getCurrentFlowById(info.accuracy_limit),
+                        getCurrentFlowById(info.knee_point_current),
+                        getVoltageById(info.knee_point_voltage),
+                        getCurrentFlowById(info.primary_fls_rating),
+                        getCurrentFlowById(info.rated_current),
+                        getCurrentFlowById(info.secondary_fls_rating),
+                        getCurrentFlowById(info.tertiary_fls_rating)
+                    ]);
+
+                    if (ratedFreq.success) addUnique(entity.frequency, ratedFreq.data);
+                    if (umRms.success) addUnique(entity.voltage, umRms.data);
+                    if (uWithstandRms.success) addUnique(entity.voltage, uWithstandRms.data);
+                    if (uLightningPeak.success) addUnique(entity.voltage, uLightningPeak.data);
+                    if (iCth.success) addUnique(entity.currentFlow, iCth.data);
+                    if (iDynPeak.success) addUnique(entity.currentFlow, iDynPeak.data);
+                    if (ithRms.success) addUnique(entity.currentFlow, ithRms.data);
+                    if (ithDuration.success) addUnique(entity.seconds, ithDuration.data);
+                    if (sysVoltage.success) addUnique(entity.voltage, sysVoltage.data);
+                    if (bil.success) addUnique(entity.voltage, bil.data);
+                    if (ratingFactorTemp.success) addUnique(entity.temperature, ratingFactorTemp.data);
+                    if (accuracyLimit.success) addUnique(entity.currentFlow, accuracyLimit.data);
+                    if (kneePointCurrent.success) addUnique(entity.currentFlow, kneePointCurrent.data);
+                    if (kneePointVoltage.success) addUnique(entity.voltage, kneePointVoltage.data);
+                    if (primaryFlsRating.success) addUnique(entity.currentFlow, primaryFlsRating.data);
+                    if (ratedCurrent.success) addUnique(entity.currentFlow, ratedCurrent.data);
+                    if (secondaryFlsRating.success) addUnique(entity.currentFlow, secondaryFlsRating.data);
+                    if (tertiaryFlsRating.success) addUnique(entity.currentFlow, tertiaryFlsRating.data);
+                }
+
                 const dataCtCoreInfo = await getCtCoreInfoByCurrentTransformerInfoId(entity.oldCurrentTransformerInfo.mrid);
                 if (dataCtCoreInfo.success && dataCtCoreInfo.data) {
                     for (const ctCoreInfo of dataCtCoreInfo.data) {
                         entity.CtCoreInfo.push(ctCoreInfo);
-                    }
-                }
 
-                for (const ctCoreInfo of entity.CtCoreInfo) {
-                    const dataCtTapInfo = await getCtTapInfoByCtCoreInfoId(ctCoreInfo.mrid);
-                    if (dataCtTapInfo.success && dataCtTapInfo.data) {
-                        for (const ctTapInfo of dataCtTapInfo.data) {
-                            entity.CtTapInfo.push(ctTapInfo);
+                        // Lấy các đối tượng giá trị từ CtCoreInfo
+                        const [windingResistance, vb, ratioError] = await Promise.all([
+                            getResistanceById(ctCoreInfo.winding_resistance),
+                            getVoltageById(ctCoreInfo.vb),
+                            getPercentById(ctCoreInfo.ratio_error)
+                        ]);
+                        if (windingResistance.success) addUnique(entity.resistance, windingResistance.data);
+                        if (vb.success) addUnique(entity.voltage, vb.data);
+                        if (ratioError.success) addUnique(entity.percent, ratioError.data);
+                        
+                        // Lấy CtTapInfo liên quan
+                        const dataCtTapInfo = await getCtTapInfoByCtCoreInfoId(ctCoreInfo.mrid);
+                        if (dataCtTapInfo.success && dataCtTapInfo.data) {
+                            for (const ctTapInfo of dataCtTapInfo.data) {
+                                entity.CtTapInfo.push(ctTapInfo);
+
+                                // Lấy các đối tượng giá trị từ CtTapInfo
+                                const [ipn, isn, burden, operatingBurden, ratedBurden] = await Promise.all([
+                                    getCurrentFlowById(ctTapInfo.ipn),
+                                    getCurrentFlowById(ctTapInfo.isn),
+                                    getApparentPowerById(ctTapInfo.burden),
+                                    getApparentPowerById(ctTapInfo.operating_burden),
+                                    getApparentPowerById(ctTapInfo.rated_burden)
+                                ]);
+                                if (ipn.success) addUnique(entity.currentFlow, ipn.data);
+                                if (isn.success) addUnique(entity.currentFlow, isn.data);
+                                if (burden.success) addUnique(entity.apparentPower, burden.data);
+                                if (operatingBurden.success) addUnique(entity.apparentPower, operatingBurden.data);
+                                if (ratedBurden.success) addUnique(entity.apparentPower, ratedBurden.data);
+                            }
                         }
                     }
                 }
-                //rated_frequency
-                const dataRatedFrequency = await getFrequencyById(entity.oldCurrentTransformerInfo.rated_frequency);
-                if (dataRatedFrequency.success) {
-                    entity.frequency.push(dataRatedFrequency.data);
-                }
-                //um_rms
-                const dataUmRms = await getVoltageById(entity.oldCurrentTransformerInfo.um_rms);
-                if (dataUmRms.success) {
-                    entity.voltage.push(dataUmRms.data);
-                }
-                //u_withstand_rms
-                const dataUWithStandRms = await getVoltageById(entity.oldCurrentTransformerInfo.u_withstand_rms);
-                if (dataUWithStandRms.success) {
-                    entity.voltage.push(dataUWithStandRms.data);
-                }
-                //u_lightning_peak
-                const dataULightningPeak = await getVoltageById(entity.oldCurrentTransformerInfo.u_lightning_peak);
-                if (dataULightningPeak.success) {
-                    entity.voltage.push(dataULightningPeak.data);
-                }
-                //i_cth
-                const dataIcth = await getCurrentFlowById(entity.oldCurrentTransformerInfo.i_cth);
-                if (dataIcth.success) {
-                    entity.currentFlow.push(dataIcth.data);
-                }
-                //i_dynamic_peak
-                const dataIdynPeak = await getCurrentFlowById(entity.oldCurrentTransformerInfo.i_dynamic_peak);
-                if (dataIdynPeak.success) {
-                    entity.currentFlow.push(dataIdynPeak.data);
-                }
-                //ith_rms
-                const dataIthRms = await getCurrentFlowById(entity.oldCurrentTransformerInfo.ith_rms);
-                if (dataIthRms.success) {
-                    entity.currentFlow.push(dataIthRms.data);
-                }
-                //ith_duration
-                const dataDuration = await getSecondById(entity.oldCurrentTransformerInfo.ith_duration);
-                if (dataDuration.success) {
-                    entity.seconds.push(dataDuration.data);
-                }
-                //sys_voltage
-                const dataSysVoltage = await getVoltageById(entity.oldCurrentTransformerInfo.system_voltage);
-                if (dataSysVoltage.success) {
-                    entity.voltage.push(dataSysVoltage.data);
-                }
-                
-                //bil
-                const dataBil = await getVoltageById(entity.oldCurrentTransformerInfo.bil);
-                if (dataBil.success) {
-                    entity.voltage.push(dataBil.data);
-                }
-                //rating_factor_temp
-                const dataRatingFactorTemp = await getTemperatureById(entity.oldCurrentTransformerInfo.rating_factor_temp);
-                if (dataRatingFactorTemp.success) {
-                    entity.temperature.push(dataRatingFactorTemp.data);
-                }
-
-                
-
-               
                 
                 return {
                     success: true,

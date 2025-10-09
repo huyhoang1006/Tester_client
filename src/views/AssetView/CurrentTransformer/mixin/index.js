@@ -52,7 +52,8 @@ export default {
         },
 
         loadData(data) {
-            this.currentTransformer_old = JSON.parse(JSON.stringify(data));
+            // SỬA LỖI: Gán dữ liệu cũ vào đúng biến 'old_data'
+            this.old_data = JSON.parse(JSON.stringify(data));
             this.currentTransformer = data;
             if (data.attachment && data.attachment.path) {
                 this.attachmentData = JSON.parse(data.attachment.path)

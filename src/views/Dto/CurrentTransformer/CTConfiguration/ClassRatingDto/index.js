@@ -6,7 +6,6 @@ class ClassRatingDto {
         this.class = '';
         this.wr = {mrid: '', value: '', unit:UnitSymbol.ohm};
         this.kx = '';
-        this.re20lsn = '';
         this.k = '';
         this.fs = '';
         this.kssc = '';
@@ -35,6 +34,7 @@ class ClassRatingDto {
         this.burdenCos = '';
         this.operatingBurden = {mrid: '', value: '', unit:UnitSymbol.VA};
         this.operatingBurdenCos = '';
+        this.core_index = 1;
     }
 }
 
