@@ -896,7 +896,9 @@ export default {
                                 burden: { mrid: '', value: '', unit: UnitSymbol.VA },
                                 burdenCos: '',
                                 operatingBurden: { mrid: '', value: '', unit: UnitSymbol.VA },
-                                operatingBurdenCos: ''
+                                operatingBurdenCos: '',
+                                core_index: i + 1
+
                             }
                         },
                         mainTap: {
@@ -919,7 +921,8 @@ export default {
                                         burden: {mrid: '', value: '', unit:UnitSymbol.VA},
                                         burdenCos: '',
                                         operatingBurden: {mrid: '', value: '', unit:UnitSymbol.VA},
-                                        operatingBurdenCos: ''
+                                        operatingBurdenCos: '',
+                                        core_index: i + 1
 
                                     }
                                 }
@@ -945,7 +948,8 @@ export default {
                                         burden: {mrid: '', value: '', unit:UnitSymbol.VA},
                                         burdenCos: '',
                                         operatingBurden: {mrid: '', value: '', unit:UnitSymbol.VA},
-                                        operatingBurdenCos: ''
+                                        operatingBurdenCos: '',
+                                        core_index: i + 1
 
                                     }
                                 }
@@ -1007,7 +1011,8 @@ export default {
                                     burden: { mrid: '', value: '', unit: UnitSymbol.VA },
                                     burdenCos: '',
                                     operatingBurden: { mrid: '', value: '', unit: UnitSymbol.VA },
-                                    operatingBurdenCos: ''
+                                    operatingBurdenCos: '',
+                                    core_index: i + 1
                                 }
                             },
                             mainTap: {
@@ -1031,8 +1036,9 @@ export default {
                                             burden: {mrid: '', value: '', unit:UnitSymbol.VA},
                                             burdenCos: '',
                                             operatingBurden: {mrid: '', value: '', unit:UnitSymbol.VA},
-                                            operatingBurdenCos: ''
-
+                                            operatingBurdenCos: '',
+                                            core_index: i + 1
+                                            
                                         }
                                     }
                                 ]
@@ -1057,7 +1063,8 @@ export default {
                                             burden: {mrid: '', value: '', unit:UnitSymbol.VA},
                                             burdenCos: '',
                                             operatingBurden: {mrid: '', value: '', unit:UnitSymbol.VA},
-                                            operatingBurdenCos: ''
+                                            operatingBurdenCos: '',
+                                            core_index: i + 1
 
                                         }
                                     }
@@ -1186,7 +1193,8 @@ export default {
                                 burden: {mrid: '', value: '', unit:UnitSymbol.VA},
                             burdenCos: '',
                                 operatingBurden: {mrid: '', value: '', unit:UnitSymbol.VA},
-                            operatingBurdenCos: ''
+                            operatingBurdenCos: '',
+                            core_index: i + 1
 
                         }
 
@@ -1222,7 +1230,8 @@ export default {
                                 burden: {mrid: '', value: '', unit:UnitSymbol.VA},
                             burdenCos: '',
                                 operatingBurden: {mrid: '', value: '', unit:UnitSymbol.VA},
-                            operatingBurdenCos: ''
+                            operatingBurdenCos: '',
+                            core_index: i + 1
 
                         }
 
