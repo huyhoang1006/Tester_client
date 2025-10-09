@@ -6,7 +6,6 @@ class ClassRatingDto {
         this.class = '';
         this.wr = {mrid: '', value: '', unit:UnitSymbol.ohm};
         this.kx = '';
-        this.re20lsn = '';
         this.k = '';
         this.fs = '';
         this.kssc = '';
