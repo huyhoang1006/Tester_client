@@ -105,7 +105,7 @@ export const mapDtoToEntity = (dto) => {
     const newRatingFactorTemp = new Temperature();
     mappingUnit(newRatingFactorTemp, dto.ratings.rating_factor_temp);
     entity.temperature.push(newRatingFactorTemp);
-    
+
     // Xử lý CT Configuration
     entity.oldCurrentTransformerInfo.core_count = dto.ctConfiguration.cores;
     dto.ctConfiguration.dataCT.forEach((coreDto, index) => {
@@ -121,8 +121,7 @@ export const mapDtoToEntity = (dto) => {
         coreInfo.core_class = fullTapClassRating.class;
         coreInfo.fs = fullTapClassRating.fs;
         coreInfo.alf = fullTapClassRating.alf;
-        
-        // SỬA LỖI: Xử lý winding_resistance và push vào entity
+
         coreInfo.winding_resistance = fullTapClassRating.wr.mrid;
         const newResistance = new Resistance();
         mappingUnit(newResistance, fullTapClassRating.wr);
@@ -144,11 +143,13 @@ export const mapDtoToEntity = (dto) => {
         coreInfo.iai = fullTapClassRating.lal;
         coreInfo.tp = fullTapClassRating.tp;
         // ... gán các trường còn lại ...
-        
+
         entity.CtCoreInfo.push(coreInfo);
 
-        // SỬA LỖI: Hàm trợ giúp đã được sửa lại hoàn toàn
         const createTapInfo = (tapTableData, tapClassRatingData, type) => {
+            // Chỉ tạo tap info nếu có dữ liệu ipn hoặc isn
+            if (!tapTableData.ipn.value && !tapTableData.isn.value) return;
+
             const tapInfo = new CtTapInfo();
             tapInfo.mrid = tapTableData.mrid || '';
             tapInfo.tap_name = tapTableData.name;
@@ -166,7 +167,7 @@ export const mapDtoToEntity = (dto) => {
             const newIsn = new CurrentFlow();
             mappingUnit(newIsn, tapTableData.isn);
             entity.currentFlow.push(newIsn);
-            
+
             tapInfo.rated_burden = tapClassRatingData.rated_burden.mrid;
             const newRatedBurden = new ApparentPower();
             mappingUnit(newRatedBurden, tapClassRatingData.rated_burden);
@@ -181,20 +182,19 @@ export const mapDtoToEntity = (dto) => {
             const newOpBurden = new ApparentPower();
             mappingUnit(newOpBurden, tapClassRatingData.operatingBurden);
             entity.apparentPower.push(newOpBurden);
-            
+
             tapInfo.extended_burden = tapClassRatingData.extended_burden;
             tapInfo.burden_power_factor = tapClassRatingData.burdenCos;
             tapInfo.operating_burden_power_factor = tapClassRatingData.operatingBurdenCos;
-            
+
             entity.CtTapInfo.push(tapInfo);
         };
 
-        // SỬA LỖI: Cách gọi hàm createTapInfo
         createTapInfo(coreDto.fullTap.table, coreDto.fullTap.classRating, 'fulltap');
         coreDto.mainTap.data.forEach(tap => createTapInfo(tap.table, tap.classRating, 'maintap'));
         coreDto.interTap.data.forEach(tap => createTapInfo(tap.table, tap.classRating, 'intertap'));
     });
-   
+
     return entity;
 }
 
@@ -231,7 +231,7 @@ export const mapEntityToDto = (entity) => {
     //ratings 
     dto.ratings.standard.value = entity.oldCurrentTransformerInfo.standard || '';
     const findUnitValue = (collection, mrid) => (collection.find(item => item && item.mrid === mrid) || {}).value;
-    
+
     dto.ratings.rated_frequency.mrid = entity.oldCurrentTransformerInfo.rated_frequency || '';
     dto.ratings.rated_frequency.value = findUnitValue(entity.frequency, dto.ratings.rated_frequency.mrid);
 
@@ -239,7 +239,7 @@ export const mapEntityToDto = (entity) => {
 
     dto.ratings.um_rms.mrid = entity.oldCurrentTransformerInfo.um_rms || '';
     dto.ratings.um_rms.value = findUnitValue(entity.voltage, dto.ratings.um_rms.mrid);
-    
+
     dto.ratings.u_withstand_rms.mrid = entity.oldCurrentTransformerInfo.u_withstand_rms || '';
     dto.ratings.u_withstand_rms.value = findUnitValue(entity.voltage, dto.ratings.u_withstand_rms.mrid);
 
@@ -265,7 +265,7 @@ export const mapEntityToDto = (entity) => {
 
     dto.ratings.bil.mrid = entity.oldCurrentTransformerInfo.bil || '';
     dto.ratings.bil.value = findUnitValue(entity.voltage, dto.ratings.bil.mrid);
-    
+
     dto.ratings.rating_factor = entity.oldCurrentTransformerInfo.rating_factor || '';
 
     dto.ratings.rating_factor_temp.mrid = entity.oldCurrentTransformerInfo.rating_factor_temp || '';
@@ -281,6 +281,12 @@ export const mapEntityToDto = (entity) => {
         core.mrid = coreInfo.mrid;
         core.taps = (coreInfo.tap_count || '2').toString();
         core.commonTap = (coreInfo.common_tap || '1').toString();
+
+        // === FIX START ===
+        // Xóa dữ liệu giữ chỗ được tạo bởi constructor
+        core.mainTap.data = [];
+        core.interTap.data = [];
+        // === FIX END ===
 
         const tapsForThisCore = (entity.CtTapInfo || []).filter(t => t.ct_core_info_id === coreInfo.mrid);
 
@@ -342,9 +348,6 @@ export const mapEntityToDto = (entity) => {
                 core.interTap.data.push(tapObject);
             }
         });
-
-        if (core.mainTap.data.length === 0) core.mainTap.data = [];
-        if (core.interTap.data.length === 0) core.interTap.data = [];
 
         dto.ctConfiguration.dataCT.push(core);
     });
