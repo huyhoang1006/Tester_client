@@ -1,10 +1,10 @@
 <template>
-    <div id="overview">
+    <div style="width: 100%;">
         <!-- Properties -->
-        <el-row :gutter="20">
-            <el-col :span="8">
-                <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
-                    <span class="bolder">Properties</span>
+        <el-row style="width: 100%;" :gutter="20">
+            <el-col style="width: 50%;">
+                <el-form :inline-message="true" size="mini" :label-width="labelWidth" label-position="left">
+                    <span style="font-size: 12px;" class="bolder">Properties</span>
                     <el-divider></el-divider>
                     <el-form-item label="Name">
                         <el-input v-model="propertiesData.name"></el-input>
@@ -59,12 +59,13 @@
                     </el-form-item>
                 </el-form>
             </el-col>
-            <el-col :span="8">
+            <el-col style="width: 50%;">
                 <el-form :label-width="labelWidth" size="mini" label-position="left">
-                    <span class="bolder">Summary</span>
+                    <span style="font-size: 12px;" class="bolder">Summary</span>
                     <el-divider></el-divider>
-                    <el-input v-model="propertiesData.summary" type="textarea" :rows="11"></el-input>
+                    <el-input v-model="propertiesData.summary" type="textarea" :rows="5"></el-input>
                 </el-form>
+                <Attachment :attachment_="this.attachmentData" title="Overview" height="120px" @data-attachment="getDataAttachment"></Attachment>
             </el-col>
         </el-row>
 
@@ -72,31 +73,31 @@
         <div id="location" class="mgy-5">
             <el-row>
                 <el-col :span="24">
-                    <div class="header-toggle">Location</div>
+                    <div style="font-size: 12px;" class="header-toggle">Location</div>
                 </el-col>
             </el-row>
 
             <div class="content-toggle">
-                <el-row :gutter="20">
-                    <el-col :span="8">
+                <el-row style="width: inherit;">
+                    <el-col>
                         <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
-                            <el-form-item label="Name">
-                                {{ location.name }}
+                            <el-form-item class="asset-item" label="Name">
+                                <span class="asset-name">{{ location.name }}</span>
                             </el-form-item>
-                            <el-form-item label="Address">
-                                {{ location.address }}
+                            <el-form-item class="asset-item" label="Address">
+                                <span class="asset-name">{{ location.address }}</span>
                             </el-form-item>
-                            <el-form-item label="City">
-                                {{ location.city }}
+                            <el-form-item class="asset-item" label="City">
+                                <span class="asset-name">{{ location.city }}</span>
                             </el-form-item>
-                            <el-form-item label="State/Province">
-                                {{ location.state_province }}
+                            <el-form-item class="asset-item" label="State/Province">
+                                <span class="asset-name">{{ location.state_province }}</span>
                             </el-form-item>
-                            <el-form-item label="Postal code">
-                                {{ location.postal_code }}
+                            <el-form-item class="asset-item" label="Postal code">
+                                <span class="asset-name">{{ location.postal_code }}</span>
                             </el-form-item>
-                            <el-form-item label="Country">
-                                {{ location.country }}
+                            <el-form-item class="asset-item" label="Country">
+                                <span class="asset-name">{{ location.country }}</span>
                             </el-form-item>
                         </el-form>
                     </el-col>
@@ -111,22 +112,21 @@
                     <div class="header-toggle">Asset</div>
                 </el-col>
             </el-row>
-
             <div class="content-toggle">
-                <el-row :gutter="20">
-                    <el-col :span="8">
+                <el-row style="width: inherit;">
+                    <el-col>
                         <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
-                            <el-form-item label="Asset">
-                                {{ asset.asset }}
+                            <el-form-item class="asset-item" label="Asset">
+                                <span class="asset-name">{{ asset.asset }}</span>
                             </el-form-item>
-                            <el-form-item label="Asset type">
-                                {{ asset.asset_type }}
+                            <el-form-item class="asset-item" label="Asset type">
+                                <span class="asset-name">{{ asset.asset_type }}</span>
                             </el-form-item>
-                            <el-form-item label="Serial number">
-                                {{ asset.serial_no }}
+                            <el-form-item class="asset-item" label="Serial number">
+                                <span class="asset-name">{{ asset.serial_no }}</span>
                             </el-form-item>
-                            <el-form-item label="Manufacturer">
-                                {{ asset.manufacturer }}
+                            <el-form-item class="asset-item" label="Manufacturer">
+                                <span class="asset-name">{{ asset.manufacturer }}</span>
                             </el-form-item>
                         </el-form>
                     </el-col>
@@ -137,7 +137,11 @@
 </template>
 
 <script>
+import Attachment from '@/views/Common/Attachment.vue'
 export default {
+    components: {
+        Attachment
+    },
     data() {
         return {
             labelWidth: `${200}px`
@@ -201,11 +205,40 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 #overview {
     width: calc(100vw - 145px);
     height: calc(100vh - 150px);
     overflow-y: auto;
     overflow-x: hidden;
 }
+
+.asset-item >>> .el-form-item__label {
+    font-size: 12px;
+    border-right: 1px solid #dcdfe6;
+    border-bottom: 1px solid #dcdfe6;
+    border-top: 1px solid #dcdfe6;
+    border-left: 1px solid #dcdfe6;
+    padding-left: 5px;
+    box-sizing: border-box;
+    height: 30px;
+}
+
+.asset-item >>> .el-form-item__content {
+    font-size: 12px;
+    font-weight: bold;
+    border-right: 1px solid #dcdfe6;
+    border-bottom: 1px solid #dcdfe6;
+    border-top: 1px solid #dcdfe6;
+    padding-left: 5px;
+    box-sizing: border-box;
+    height: 30px;
+}
+
+.asset-name {
+  font-weight: bold;
+  font-size: 12px;
+}
+
+
 </style>

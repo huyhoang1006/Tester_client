@@ -1,6 +1,6 @@
 'use strict'
-import {ipcMain} from 'electron'
-import {entityFunc} from "@/function"
+import { ipcMain } from 'electron'
+import { entityFunc } from "@/function"
 
 export const insertBushingEntity = () => {
     ipcMain.handle('insertBushingEntity', async function (event, data) {
@@ -10,7 +10,7 @@ export const insertBushingEntity = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data : rs.data
+                    data: rs.data
                 }
             }
             else {
@@ -37,7 +37,7 @@ export const getBushingEntityByMrid = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data : rs.data
+                    data: rs.data
                 }
             }
             else {
@@ -66,7 +66,7 @@ export const deleteBushingEntity = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data : data
+                    data: data
                 }
             }
             else {

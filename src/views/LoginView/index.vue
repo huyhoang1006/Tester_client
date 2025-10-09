@@ -58,8 +58,8 @@ export default {
         return {
             formLabelWidth: '140px',
             model: {
-                username: '',
-                password: ''
+                username: 'sonnh',
+                password: '1122'
             },
             remember: true,
             loadingLogin: false,
@@ -105,6 +105,17 @@ export default {
             otherQuery: {}
         }
     },
+    //  created() {
+    //     // Auto login nếu đã có authInfo
+    //     const savedAuth = localStorage.getItem('authInfo')
+    //     if (savedAuth) {
+    //         const response = JSON.parse(savedAuth)
+    //         this.$helper.afterLogin(true, response)
+    //         if (this.$route.path === '/login') {
+    //             this.$router.push('/')
+    //         }
+    //     }
+    // },
     watch: {
         $route: {
             handler: function (route) {
@@ -130,6 +141,9 @@ export default {
                 .then((response) => {
                     response.name = this.model.username
                     this.$message.success('Login successfully')
+                    // Save to localStorage để auto login lần sau
+                    localStorage.setItem('authInfo', JSON.stringify(response))
+
                     this.$helper.afterLogin(this.remember, response)
                     this.$router.push({path: this.redirect || '/', query: this.otherQuery})
                 })

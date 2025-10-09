@@ -105,6 +105,7 @@ export function mapDtoToEntity(dto) {
     const newConductorSize = new Area();
     mappingUnit(newConductorSize, dto.datasData.conductor.conductor_size);
     entity.area.push(newConductorSize);
+
     if (dto.datasData.conductor.conductor_material.value !== "Custom") {
         entity.concentricNeutral.material = dto.datasData.conductor.conductor_material.value || null;
     }
