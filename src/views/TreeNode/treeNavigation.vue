@@ -664,6 +664,8 @@ import PowerCable from '@/views/AssetView/PowerCable'
 import VoltageTransformer from '@/views/AssetView/VoltageTransformer'
 
 import JobSurgeArrester from '@/views/JobView/SurgeArrester/index.vue'
+import JobPowerCable from '@/views/JobView/PowerCable/index.vue'
+
 import * as rotatingMachineMapping from "@/views/Mapping/RotatingMachine/index"
 import RotatingMachine from '@/views/AssetView/RotatingMachine/index.vue'
 import mixin from './mixin'
@@ -695,6 +697,7 @@ export default {
         RotatingMachine,
 
         JobSurgeArrester,
+        JobPowerCable,
     },
     data() {
         return {
@@ -3301,6 +3304,13 @@ export default {
                     }
                     this.checkJobType = 'JobSurgeArrester'
                     this.signJob = true;
+                }
+                else if(node.asset == 'Power cable'){
+                    this.checkJobType = 'JobPowerCable'
+                    this.signJob = true;
+                }
+                else {
+                    this.$message.error("This asset type not support for job")
                 }
                 this.$nextTick(() => {
                     const job = this.$refs.jobData;

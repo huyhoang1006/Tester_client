@@ -1,26 +1,7 @@
 <template>
     <div id="job">
-        <el-row id="top-bar">
-            <el-col :span="24">
-                <el-button @click="backToManage" style="box-sizing: border-box; border-right: 1px solid #aeb6bf">
-                    <i class="fa-solid fa-circle-arrow-left display-block fa-2x"></i>
-                    <div class="mgt-10">Manage</div>
-                </el-button>
-                <el-button @click="saveJob">
-                    <i class="fa-solid fa-floppy-disk display-block fa-2x"></i>
-                    <div class="mgt-10">Save job</div>
-                </el-button>
-                <el-button @click="$router.go(-1)" style="box-sizing: border-box">
-                    <i class="fa-solid fa-ban display-block fa-2x"></i>
-                    <div class="mgt-10">Cancel</div>
-                </el-button>
-                <el-button style="float: right; text-align: right; width: fit-content; cursor: default">
-                    <img src="@/assets/images/logo.png" style="max-height: 40px" />
-                </el-button>
-            </el-col>
-        </el-row>
-        <el-row :gutter="20" id="main-content" style="padding: 0">
-            <el-tabs tab-position="left" type="border-card" class="w-100 h-100">
+        <el-row :gutter="20"  style="padding: 0">
+            <el-tabs  type="card">
                 <!-- Overview -->
                 <el-tab-pane style="width: 100%;">
                     <span slot="label"><i class="fa-solid fa-book"></i> Overview</span>
@@ -38,6 +19,13 @@
                         :attachmentArr.sync="attachmentArr"
                         :testconditionArr.sync="testconditionArr"
                         ></select-test>
+                </el-tab-pane>
+
+                <el-tab-pane>
+                    <span slot="label"><i class="fa-solid fa-list-check"></i> Testing equipment</span>
+                    <div>
+                        <testingEquipment></testingEquipment>
+                    </div>
                 </el-tab-pane>
 
                 <!-- Tests -->
@@ -74,7 +62,7 @@ import Mixtestcondition from './mixin/Mixtestcondition'
 import overview from './components/Overview'
 import SelectTest from './components/SelectTest'
 import testInformation from '@/views/Common/testInformation.vue'
-
+import testingEquipment from './components/TestingEquipment/index.vue'
 import InsulationResistance from './components/InsulationResistance.vue'
 import DcVoltageOverSheath from './components/DcVoltageOverSheath.vue'
 import AcVoltageInsulation from './components/AcVoltageInsulation.vue'
@@ -91,6 +79,7 @@ export default {
         overview,
         SelectTest,
         testInformation,
+        testingEquipment,
         InsulationResistance,
         DcVoltageOverSheath,
         AcVoltageInsulation,
@@ -114,6 +103,11 @@ export default {
     },
     mounted() {},
     methods: {
+         updateAttachmentOverView(attachment) {
+            this.attachmentData = attachment
+        },
+        loadMapForView() {
+        },
     },
 }
 </script>
@@ -123,6 +117,19 @@ export default {
     width: 100%;
     height: 100%;
 }
+
+::v-deep(.el-tabs__item) {
+  font-size: 12px !important;
+  font-weight: bold !important;
+}
+
+::v-deep(.el-tabs__item.is-active) {
+  color: #fff !important;
+  background-color: var(--el-color-primary, #012596) !important;
+  border-radius: 4px 4px 0 0;
+  font-size: 12px !important;
+}
+
 
 #tests,
 #job__health-index {

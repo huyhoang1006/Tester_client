@@ -1,23 +1,23 @@
 <template>
     <div id="select-test">
         <el-row :gutter="20">
-            <el-col :span="10" style="border-right: groove">
+            <el-col :span="11" >
                 <table class="mgt-5 w-100 table-strip-input-data">
                     <thead>
                         <tr>
-                            <th class="no-col">No</th>
+                            <th style="width: 20px;">No</th>
                             <th>Test type</th>
-                            <th class="action-col"></th>
+                            <th style="width: 25px;"></th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="(item, index) in testTypeList" :key="index">
-                            <td>{{ index + 1 }}</td>
+                            <td style="font-weight: bold;">{{ index + 1 }}</td>
                             <td>
                                 {{ item.name }}
                             </td>
                             <td>
-                                <el-button size="mini" type="primary" class="w-100" @click="addTest(item)">
+                                <el-button size="mini" type="primary" style="width: 25px; display: flex; align-items: center; justify-content: center;" @click="addTest(item)">
                                     <i class="fas fa-plus"></i>
                                 </el-button>
                             </td>
@@ -25,14 +25,14 @@
                     </tbody>
                 </table>
             </el-col>
-            <el-col :span="14">
+            <el-col style="border-left: groove" :span="13">
                 <table class="mgt-5 w-100 table-strip-input-data">
                     <thead>
                         <tr>
-                            <th class="no-col">No</th>
-                            <th style="width: 300px">Test type</th>
+                            <th style="width: 20px;">No</th>
+                            <th style="width: 150px">Test type</th>
                             <th>Test name</th>
-                            <th class="action-col"></th>
+                            <th style="width: 25px ;"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -45,7 +45,7 @@
                                 <el-input size="mini" type="text" v-model="item.name"></el-input>
                             </td>
                             <td>
-                                <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
+                                 <el-button size="mini" type="danger" style="width: 25px; display: flex; align-items: center; justify-content: center;" @click="deleteTest(index)">
                                     <i class="fas fa-trash"></i>
                                 </el-button>
                             </td>
@@ -60,7 +60,7 @@
 <script>
 /* eslint-disable */
 import mixin from './mixin'
-import loader from "@/utils/preload"
+// import loader from "@/utils/preload"
 import { mapState } from 'vuex'
 
 export default {
@@ -232,33 +232,8 @@ export default {
                 cancelButtonText: 'Cancel',
                 type: 'warning'
             })
-                .then(async () => {
-                    loader.loaderStart()
-                    const test = this.testListData[index]
-                    const testId = test.id
-
-                    // goi api delete test
-                    // testId khác 0 được lấy từ db
-                    if (testId != this.$uuid.EMPTY) {
-                        await window.electronAPI.deletePowerCableTest(testId)
-                    }
-
-                    if (this.testListData.length == 1) {
-                        this.objActiveNameData.activeName = null
-                        this.testListData.splice(index, 1)
-                        this.testconditionArray.splice(index, 1)
-                        this.attachmentArray.splice(index, 1)
-                    } else {
-                        const voltageTest = this.testListData[index]
-                        const {tabId} = voltageTest
-                        this.testconditionArray.splice(index, 1)
-                        this.attachmentArray.splice(index, 1)
-                        this.testListData.splice(index, 1)
-                        if (tabId == this.objActiveNameData.activeName) {
-                            this.objActiveNameData.activeName = this.testListData[0].tabId
-                        }
-                    }
-                    loader.loaderEnd()
+                   .then(async () => {
+                    this.testListData.splice(index, 1)
                 })
                 .catch(() => {})
         }

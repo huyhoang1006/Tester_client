@@ -1,6 +1,6 @@
 'use strict'
-import {ipcMain} from 'electron'
-import {cimFunc} from "@/function"
+import { ipcMain } from 'electron'
+import { cimFunc } from "@/function"
 
 export const getSurgeArresterByMrid = () => {
     ipcMain.handle('getSurgeArresterByMrid', async function (event, mrid) {
@@ -65,7 +65,7 @@ export const updateSurgeArresterByMrid = () => {
                 return {
                     success: true,
                     message: rs.message || "Success",
-                    data : rs.data
+                    data: rs.data
                 }
             }
             else {
