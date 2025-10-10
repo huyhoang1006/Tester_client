@@ -439,7 +439,31 @@ export const deleteCurrentTransformerEntity = async (data) => {
                         await deleteFrequencyByIdTransaction(frequency.mrid, db);
                     }
                 }
-               
+                console.log('12')
+                for (const resistance of data.resistance) {
+                    if (resistance.mrid) {
+                        await deleteResistanceByIdTransaction(resistance.mrid, db);
+                    }
+                }
+                console.log('13')
+                for (const percent of data.percent) {
+                    if (percent.mrid) {
+                        await deletePercentByIdTransaction(percent.mrid, db);
+                    }
+                }
+                console.log('14')
+                for (const apparentPower of data.apparentPower) {
+                    if (apparentPower.mrid) {
+                        await deleteApparentPowerByIdTransaction(apparentPower.mrid, db);
+                    }
+                }
+                console.log('15')
+                for (const temperature of data.temperature) {
+                    if (temperature.mrid) {
+                        await deleteTemperatureByIdTransaction(temperature.mrid, db);
+                    }
+                }
+                console.log('16')
 
                 // 8. Commit transaction để lưu tất cả thay đổi
                 await runAsync('COMMIT');
