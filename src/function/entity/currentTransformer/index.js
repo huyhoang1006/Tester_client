@@ -13,17 +13,16 @@ import { insertTemperatureTransaction, getTemperatureById, deleteTemperatureById
 import { insertCtCoreInfoTransaction, deleteCtCoreInfoByCurrentTransformerInfoIdTransaction, getCtCoreInfoByCurrentTransformerInfoId } from "@/function/cim/ctCoreInfo";
 import { insertCtTapInfoTransaction, deleteCtTapInfoByCtCoreInfoIdTransaction, getCtTapInfoByCtCoreInfoId } from "@/function/cim/ctTapInfo";
 import { insertAssetTransaction, getAssetById, deleteAssetByIdTransaction } from "@/function/cim/asset";
-import { insertAssetPsrTransaction, getAssetPsrById, deleteAssetPsrByIdTransaction, getAssetPsrByAssetIdAndPsrId } from "@/function/entity/assetPsr";
+import { insertAssetPsrTransaction, getAssetPsrById, deleteAssetPsrByIdTransaction, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from "@/function/entity/assetPsr";
 import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction } from "@/function/cim/lifecycleDate";
 import CurrentTransformerEntity from "@/views/Entity/CurrentTransformer";
-import { getAssetInfoById } from "@/function/cim/assetInfo";
-import { getAttachmentByForeignIdAndType } from "@/function/entity/attachment";
-import { insertAssetInfoTransaction } from "@/function/cim/assetInfo";
+import { getAssetInfoById, insertAssetInfoTransaction, deleteAssetInfoByIdTransaction } from "@/function/cim/assetInfo";
+import { getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction } from "@/function/entity/attachment";
 
 
 export const insertCurrentTransformerEntity = async (old_entity, entity) => {
 
-    try {
+    try {   
         if (entity.asset.mrid === null || entity.asset.mrid === '') {
             const result = {
                 success: false,
@@ -228,7 +227,7 @@ export const getCurrentTransformerEntityById = async (id, psrId) => {
             const dataCurrentTransformer = await getAssetById(id)
             if (dataCurrentTransformer.success) {
                 entity.asset = dataCurrentTransformer.data
-                
+
                 const dataLifecycleDate = await getLifecycleDateById(entity.asset.lifecycle_date)
                 if (dataLifecycleDate.success) {
                     entity.lifecycleDate = dataLifecycleDate.data
@@ -322,7 +321,7 @@ export const getCurrentTransformerEntityById = async (id, psrId) => {
                         if (windingResistance.success) addUnique(entity.resistance, windingResistance.data);
                         if (vb.success) addUnique(entity.voltage, vb.data);
                         if (ratioError.success) addUnique(entity.percent, ratioError.data);
-                        
+
                         // Lấy CtTapInfo liên quan
                         const dataCtTapInfo = await getCtTapInfoByCtCoreInfoId(ctCoreInfo.mrid);
                         if (dataCtTapInfo.success && dataCtTapInfo.data) {
@@ -346,7 +345,7 @@ export const getCurrentTransformerEntityById = async (id, psrId) => {
                         }
                     }
                 }
-                
+
                 return {
                     success: true,
                     data: entity,
@@ -361,6 +360,101 @@ export const getCurrentTransformerEntityById = async (id, psrId) => {
     } catch (error) {
         console.error("Error retrieving Current Transformer entity by ID:", error);
         return { success: false, error, message: 'Error retrieving Current Transformer entity by ID' };
+    }
+}
+
+export const deleteCurrentTransformerEntity = async (data) => {
+    try {
+        console.log('Delete current transformer entity in function')
+        if (data.oldCurrentTransformerInfo == null || data.oldCurrentTransformerInfo.mrid == null || data.oldCurrentTransformerInfo.mrid === '') {
+            return { success: false, error: new Error('Invalid ID') };
+        } else {
+            try {
+                await runAsync('BEGIN TRANSACTION');
+                console.log('1')
+                if (data.attachment && data.attachment.id) {
+                    const pathData = JSON.parse(data.attachment.path || '[]')
+                    if (Array.isArray(pathData) && pathData.length > 0) {
+                        syncFilesWithDeletion(pathData, null, data.mrid);
+                    }
+                }
+                if (data.attachment.id) {
+                    await deleteAttachmentByIdTransaction(data.attachment.id, db);
+                }
+                if (data.assetPsr && data.assetPsr.mrid) {
+                    await deleteAssetPsrTransaction(data.assetPsr.mrid, db);
+                }
+                // 4. Xóa từ dưới lên: CtTapInfo -> CtCoreInfo
+                // Xóa tất cả CtTapInfo liên quan đến từng CtCoreInfo
+                if (data.CtCoreInfo && data.CtCoreInfo.length > 0) {
+                    for (const core of data.CtCoreInfo) {
+                        if (core.mrid) {
+                            await deleteCtTapInfoByCtCoreInfoIdTransaction(core.mrid, db);
+                        }
+                    }
+                }
+                // Xóa tất cả CtCoreInfo liên quan đến CurrentTransformerInfo
+                if (data.oldCurrentTransformerInfo && data.oldCurrentTransformerInfo.mrid) {
+                    await deleteCtCoreInfoByCurrentTransformerInfoIdTransaction(data.oldCurrentTransformerInfo.mrid, db);
+                }
+
+                // 5. Xóa Asset. Hàm này sẽ xóa IdentifiedObject, và CSDL sẽ tự động xóa bản ghi trong bảng 'asset' do có ràng buộc khóa ngoại.
+                await deleteAssetByIdTransaction(data.asset.mrid, db);
+                console.log('5')
+                // 6. Xóa AssetInfo. Thao tác này sẽ tự động xóa (cascade) các bản ghi trong 'current_transformer_info' và 'old_current_transformer_info'
+                // do đã thiết lập 'ON DELETE CASCADE' trong schema CSDL.
+                if (data.assetInfo && data.assetInfo.mrid) {
+                    await deleteAssetInfoByIdTransaction(data.assetInfo.mrid, db);
+                }
+                console.log('6')
+                // 7. Xóa các đối tượng CIM liên quan khác
+                if (data.productAssetModel && data.productAssetModel.mrid) {
+                    await deleteProductAssetModelByIdTransaction(data.productAssetModel.mrid, db);
+                }
+                console.log('7')
+                if (data.lifecycleDate && data.lifecycleDate.mrid) {
+                    await deleteLifecycleDateByIdTransaction(data.lifecycleDate.mrid, db);
+                }
+                console.log('8')
+                for (const voltage of data.voltage) {
+                    if (voltage.mrid) {
+                        await deleteVoltageByIdTransaction(voltage.mrid, db);
+                    }
+                }
+                console.log('9')
+                for (const currentFlow of data.currentFlow) {
+                    if (currentFlow.mrid) {
+                        await deleteCurrentFlowByIdTransaction(currentFlow.mrid, db);
+                    }
+                }
+                console.log('10')
+                for (const seconds of data.seconds) {
+                    if (seconds.mrid) {
+                        await deleteSecondsByIdTransaction(seconds.mrid, db);
+                    }
+                }
+                console.log('11')
+                for (const frequency of data.frequency) {
+                    if (frequency.mrid) {
+                        await deleteFrequencyByIdTransaction(frequency.mrid, db);
+                    }
+                }
+               
+
+                // 8. Commit transaction để lưu tất cả thay đổi
+                await runAsync('COMMIT');
+                console.log('17')
+                return { success: true, message: 'Current Transformer entity deleted successfully' };
+
+            } catch (error) {
+                await runAsync('ROLLBACK');
+                console.error('Error deleting Current Transformer entity:', error);
+                return { success: false, error, message: 'Error deleting Current Transformer entity' };
+            }
+        }
+    } catch (error) {
+        console.error('Error deleting Current Transformer entity:', error);
+        return { success: false, error, message: 'Error deleting Current Transformer entity' };
     }
 }
 
