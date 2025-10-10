@@ -4,5 +4,6 @@ export const currentTransformerEntityPreload = () => {
     return {
         insertCurrentTransformerEntity: (old_data, data) => ipcRenderer.invoke('insertCurrentTransformerEntity', old_data, data),
         getCurrentTransformerEntityByMrid: (mrid, psr_id) => ipcRenderer.invoke('getCurrentTransformerEntityByMrid', mrid, psr_id),
+        deleteCurrentTransformerEntity: (data) => ipcRenderer.invoke('deleteCurrentTransformerEntity', data),
     }
 }
