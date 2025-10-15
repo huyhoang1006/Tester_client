@@ -67,4 +67,3 @@ const ipcMain = Object.assign(userAPI, transformerAPI, fmecaAPI, conditionAPI, c
 contextBridge.exposeInMainWorld('electronAPI',
     ipcMain
 )
-    
