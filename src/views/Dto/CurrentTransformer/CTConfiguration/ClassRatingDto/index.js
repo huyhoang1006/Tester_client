@@ -11,7 +11,7 @@ class ClassRatingDto {
         this.kssc = '';
         this.ktd = '';
         this.duty = '';
-        this.vb = '';
+        this.vb = {mrid: '', value: '', unit:UnitSymbol.V};
         this.alf = '';
         this.ts = '';
         this.ek = '';
@@ -35,6 +35,7 @@ class ClassRatingDto {
         this.operatingBurden = {mrid: '', value: '', unit:UnitSymbol.VA};
         this.operatingBurdenCos = '';
         this.core_index = 1;
+        this.ratio_error = {mrid: '', value: '', unit:UnitSymbol.percent};
     }
 }
 
