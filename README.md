@@ -22,3 +22,13 @@ npm run electron:serve
 #build
 npm run electron:build
 ```
+
+```
+#Clear data db
+1.PRAGMA foreign_keys = OFF;
+2.SELECT 'DELETE FROM "' || name || '";' 
+FROM sqlite_master 
+WHERE type='table' 
+AND name NOT LIKE 'sqlite_%';
+3. PRAGMA foreign_keys = ON;
+```
