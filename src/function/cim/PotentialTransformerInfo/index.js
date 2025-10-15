@@ -110,22 +110,52 @@ export const updatePotentialTransformerInfoTransaction = async (mrid, info, dbsq
 
 // Xóa potentialTransformerInfo (transaction)
 export const deletePotentialTransformerInfoTransaction = async (mrid, dbsql) => {
-    console.log("Deleting PotentialTransformerInfo:", mrid);
-
     return new Promise(async (resolve, reject) => {
         try {
-            const assetInfoResult = await AssetInfoFunc.deleteAssetInfoByIdTransaction(mrid, dbsql)
-            if (!assetInfoResult.success) {
-                return reject({ success: false, message: 'Delete assetInfo failed', err: assetInfoResult.err })
-            }
-            dbsql.run("DELETE FROM potential_transformer_info WHERE mrid=?", [mrid], function (err) {
+            // 1️⃣ Xóa bản ghi trong potential_transformer_info trước
+            dbsql.run("DELETE FROM potential_transformer_info WHERE mrid=?", [mrid], async function (err) {
                 if (err) {
-                    return reject({ success: false, err, message: 'Delete potentialTransformerInfo failed' })
+                    return reject({
+                        success: false,
+                        err,
+                        message: 'Delete potentialTransformerInfo failed'
+                    });
                 }
-                return resolve({ success: true, data: mrid, message: 'Delete potentialTransformerInfo completed' })
-            })
+
+                console.log('✅ Deleted potentialTransformerInfo:', mrid);
+
+                try {
+                    // 2️⃣ Sau khi xóa thành công, mới gọi xóa asset_info
+                    const assetInfoResult = await AssetInfoFunc.deleteAssetInfoByIdTransaction(mrid, dbsql);
+                    if (!assetInfoResult.success) {
+                        return reject({
+                            success: false,
+                            message: 'Delete assetInfo failed',
+                            err: assetInfoResult.err
+                        });
+                    }
+
+                    console.log('✅ Deleted assetInfo:', mrid);
+
+                    return resolve({
+                        success: true,
+                        data: mrid,
+                        message: 'Delete potentialTransformerInfo + assetInfo completed'
+                    });
+                } catch (innerErr) {
+                    return reject({
+                        success: false,
+                        err: innerErr,
+                        message: 'Delete assetInfo transaction failed'
+                    });
+                }
+            });
         } catch (err) {
-            return reject({ success: false, err, message: 'Delete potentialTransformerInfo transaction failed' })
+            return reject({
+                success: false,
+                err,
+                message: 'Delete potentialTransformerInfo transaction failed'
+            });
         }
-    })
-}
+    });
+};

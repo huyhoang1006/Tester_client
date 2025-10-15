@@ -105,22 +105,50 @@ export const updateOldPotentialTransformerInfoTransaction = async (mrid, info, d
 
 // Xóa oldPotentialTransformerInfo (transaction)
 export const deleteOldPotentialTransformerInfoTransaction = async (mrid, dbsql) => {
-    console.log("Deleting OldPotentialTransformerInfo:", mrid);
 
     return new Promise(async (resolve, reject) => {
         try {
-            const ptInfoResult = await PotentialTransformerInfoFunc.deletePotentialTransformerInfoTransaction(mrid, dbsql)
-            if (!ptInfoResult.success) {
-                return reject({ success: false, message: 'Delete potentialTransformerInfo failed', err: ptInfoResult.err })
-            }
-            dbsql.run("DELETE FROM old_potential_transformer_info WHERE mrid=?", [mrid], function (err) {
+            // 1️⃣ Xóa bản ghi trong old_potential_transformer_info trước
+            dbsql.run("DELETE FROM old_potential_transformer_info WHERE mrid=?", [mrid], async function (err) {
                 if (err) {
-                    return reject({ success: false, err, message: 'Delete oldPotentialTransformerInfo failed' })
+                    return reject({
+                        success: false,
+                        err,
+                        message: 'Delete oldPotentialTransformerInfo failed'
+                    });
                 }
-                return resolve({ success: true, data: mrid, message: 'Delete oldPotentialTransformerInfo completed' })
-            })
+                console.log('✅ Deleted oldPotentialTransformerInfo:', mrid);
+
+                try {
+                    // 2️⃣ Sau khi xóa thành công, mới xóa potential_transformer_info
+                    const ptInfoResult = await PotentialTransformerInfoFunc.deletePotentialTransformerInfoTransaction(mrid, dbsql);
+                    if (!ptInfoResult.success) {
+                        return reject({
+                            success: false,
+                            message: 'Delete potentialTransformerInfo failed',
+                            err: ptInfoResult.err
+                        });
+                    }
+
+                    return resolve({
+                        success: true,
+                        data: mrid,
+                        message: 'Delete oldPotentialTransformerInfo + potentialTransformerInfo completed'
+                    });
+                } catch (innerErr) {
+                    return reject({
+                        success: false,
+                        err: innerErr,
+                        message: 'Delete potentialTransformerInfo transaction failed'
+                    });
+                }
+            });
         } catch (error) {
-            return reject({ success: false, err: error, message: 'Delete oldPotentialTransformerInfo transaction failed' })
+            return reject({
+                success: false,
+                err: error,
+                message: 'Delete oldPotentialTransformerInfo transaction failed'
+            });
         }
-    })
-}
+    });
+};
