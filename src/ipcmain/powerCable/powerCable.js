@@ -1,7 +1,7 @@
 'use strict'
-import {ipcMain} from 'electron'
+import { ipcMain } from 'electron'
 import { NIL as EMPTY } from 'uuid'
-import {powerCableFunc, locationFunc, powerCableJobFunc, conditionFunc, attachmentFunc} from "@/function"
+import { powerCableFunc, locationFunc, powerCableJobFunc, conditionFunc, attachmentFunc } from "@/function"
 const pathUpload = path.join(__dirname, `/../attachment`)
 var fs = require('fs')
 import path from 'path'
@@ -32,7 +32,7 @@ export const getPowerCableByLocationId = () => {
             return {
                 success: true,
                 message: "Success",
-                data : rs.data
+                data: rs.data
             }
         }
         else {
@@ -51,7 +51,7 @@ export const getPowerCableById = () => {
             return {
                 success: true,
                 message: "Success",
-                data : rs.data
+                data: rs.data
             }
         }
         else {
@@ -66,17 +66,17 @@ export const getPowerCableById = () => {
 export const deletePowerCable = () => {
     ipcMain.handle('deletePowerCable', async function (event, ids) {
         try {
-            for(let k in ids) {
+            for (let k in ids) {
                 let element = ids[k]
                 let jobs = await powerCableJobFunc.getJobByAssetId(element)
-                for(let i in jobs) {
+                for (let i in jobs) {
                     let jobId = jobs[i].id
                     let testList = await powerCableJobFunc.getTestByJobId(jobId)
-                    for(let j in testList) {
+                    for (let j in testList) {
                         await conditionFunc.deleteTestingCondition(testList[j].id)
                         const rs = await attachmentFunc.getAllAttachment(testList[j].id, "test")
-                        if(rs.length != 0) {
-                            for(let n in rs) {
+                        if (rs.length != 0) {
+                            for (let n in rs) {
                                 JSON.parse(rs[n].name).forEach(e => {
                                     let pathFile = path.join(pathUpload, `/${e.path}`)
                                     fs.unlinkSync(pathFile)
@@ -93,7 +93,7 @@ export const deletePowerCable = () => {
                 message: "",
                 data: null
             }
-        } catch(error) {
+        } catch (error) {
             return {
                 success: false,
                 message: error,
@@ -182,8 +182,8 @@ export const insertJobPowerCable = () => {
                 const jobId = await powerCableJobFunc.insertJob(assetId, properties)
 
                 //insert test
-                if(!(testConditionArr == undefined) && !(attachmentArr == undefined)) {
-                    for(const item of testList) {
+                if (!(testConditionArr == undefined) && !(attachmentArr == undefined)) {
+                    for (const item of testList) {
                         const testId = await powerCableJobFunc.insertTest(jobId, item)
                         await conditionFunc.insertTestingCondition(testId, testConditionArr[i])
                         await attachmentFunc.uploadAttachment(testId, "test", attachmentArr[i])
@@ -191,7 +191,7 @@ export const insertJobPowerCable = () => {
                     }
                 }
                 else {
-                    for(const item of testList) {
+                    for (const item of testList) {
                         await powerCableJobFunc.insertTest(jobId, item)
                     }
                 }
@@ -250,27 +250,27 @@ export const updateJobPowerCable = () => {
                     let testId = item.id
 
                     // testId khác 0 là test cũ nên cập nhật vào db, ngược lại thêm vào db
-                    if (testId != EMPTY ) {
+                    if (testId != EMPTY) {
                         await powerCableJobFunc.updateTest(item)
                         const rs = await conditionFunc.getTestingCondition(testId)
-                        if(rs.length !== 0) {
+                        if (rs.length !== 0) {
                             await conditionFunc.updateTestingCondition(testId, testConditionArr[index])
                         } else {
                             await conditionFunc.insertTestingCondition(testId, testConditionArr[index])
                         }
                         const rt = await attachmentFunc.getAllAttachment(testId, "test")
-                        if(rt.length !== 0) {
+                        if (rt.length !== 0) {
                             await attachmentFunc.updateAttachment(testId, attachmentArr[index])
                         }
                         else {
-                            await attachmentFunc.uploadAttachment(testId,"test",attachmentArr[index])
+                            await attachmentFunc.uploadAttachment(testId, "test", attachmentArr[index])
                         }
                     }
                     else {
                         let id = await powerCableJobFunc.insertTest(jobId, item)
                         await conditionFunc.insertTestingCondition(id, testConditionArr[index])
-                        await attachmentFunc.uploadAttachment(id,"test",attachmentArr[index])
-                        
+                        await attachmentFunc.uploadAttachment(id, "test", attachmentArr[index])
+
                     }
 
                 })
@@ -295,7 +295,7 @@ export const getJobPowerCableById = () => {
             const job = await powerCableJobFunc.getJobById(id)
             const job_id = job.id
             let testList = await powerCableJobFunc.getTestByJobId(id)
-            testList = testList.map((test) => ({...test, job_id}))
+            testList = testList.map((test) => ({ ...test, job_id }))
             return {
                 success: true,
                 message: "",
@@ -322,15 +322,15 @@ export const deleteJobPowerCable = () => {
                 testIds.forEach(async (element) => {
                     const testId = element.id
                     const rs = await attachmentFunc.getAllAttachment(testId, "test")
-                        if(rs.length !== 0) {
-                            rs.forEach(element => {
-                                JSON.parse(element.name).forEach(e => {
-                                    let pathFile = path.join(pathUpload, `/${e.path}`)
-                                    fs.unlinkSync(pathFile)
-                                })
+                    if (rs.length !== 0) {
+                        rs.forEach(element => {
+                            JSON.parse(element.name).forEach(e => {
+                                let pathFile = path.join(pathUpload, `/${e.path}`)
+                                fs.unlinkSync(pathFile)
                             })
-                            await attachmentFunc.deleteAttachment(testId)
-                        }
+                        })
+                        await attachmentFunc.deleteAttachment(testId)
+                    }
                     await conditionFunc.deleteTestingCondition(testId)
                 })
                 await powerCableJobFunc.deleteJob(jobId)
@@ -355,11 +355,11 @@ export const deletePowerCableTest = () => {
             await conditionFunc.deleteTestingCondition(id)
             let fileData = await attachmentFunc.getAllAttachment(id, 'test')
             await attachmentFunc.deleteAttachment(id)
-            for(let i in fileData) {
+            for (let i in fileData) {
                 let name = JSON.parse(fileData[i].name)
-                for(let j in name) {
+                for (let j in name) {
                     let pathFile = path.join(pathUpload, `/${name[j].path}`)
-                    if(fs.existsSync(pathFile)) {
+                    if (fs.existsSync(pathFile)) {
                         fs.unlinkSync(pathFile)
                     }
                 }
@@ -392,4 +392,4 @@ export const relocatePowerCable = () => {
             }
         }
     })
-    }
+}

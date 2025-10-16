@@ -11,9 +11,9 @@ import { v4 as newUuid } from 'uuid'
 import { NIL as EMPTY } from 'uuid'
 import { parse } from 'csv-parse'
 import { userFunc, locationFunc, assetFunc, jobFunc, importHavec1pha1capFunc, importHavec3pha1capFunc, importHavec3pha2capFunc } from '@/function'
-import {circuitFunc, jobAssetFunc, jobCircuitFunc, currentTransFunc, voltageTransFunc, disconnectorFunc, surgeArresterFunc, powerCableFunc} from "@/function"
-import {currentTransJobFunc, voltageTransJobFunc, disconnectorJobFunc, surgeArresterJobFunc, powerCableJobFunc} from '@/function'
-import {ipcCircuit, ipcJobCircuit, ipcTransformer, ipcCurrentTrans, ipcVoltageTrans, ipcDisconnector, ipcSurgeArrester, ipcPowerCable} from '@/ipcmain'
+import { circuitFunc, jobAssetFunc, jobCircuitFunc, currentTransFunc, voltageTransFunc, disconnectorFunc, surgeArresterFunc, powerCableFunc } from "@/function"
+import { currentTransJobFunc, voltageTransJobFunc, disconnectorJobFunc, surgeArresterJobFunc, powerCableJobFunc } from '@/function'
+import { ipcCircuit, ipcJobCircuit, ipcTransformer, ipcCurrentTrans, ipcVoltageTrans, ipcDisconnector, ipcSurgeArrester, ipcPowerCable } from '@/ipcmain'
 import { ipcJobCurrent, ipcJobVoltage, ipcJobDisconnector, ipcJobSurge, ipcJobPower, ipcJobTransformer } from '@/ipcmain'
 import { ipcUploadCustom, ipcUpdateManu, ipcOwner } from '@/ipcmain'
 import { ipcCim, ipcEntity } from '@/ipcmain'
@@ -21,7 +21,7 @@ let win;
 
 const nameDB = 'database.db'
 const pathDB = path.join(__dirname, `/../database/${nameDB}`)
-const pathTemplate = path.join(__dirname,`/../template`)
+const pathTemplate = path.join(__dirname, `/../template`)
 const pathUpload = path.join(__dirname, `/../attachment`)
 const db = new sqlite3.Database(pathDB);
 db.run("PRAGMA foreign_keys=ON");
@@ -62,7 +62,7 @@ async function createWindow() {
         }
     })
 
-    
+
 
     // full screen
     adjustWindowSize()
@@ -477,27 +477,27 @@ const importHavec1pha1cap = async (location_id, filePath) => {
 const uploadAttachment = async (id_foreign, type, info) => {
     return new Promise((resolve, reject) => {
         db.run('INSERT INTO attachment(id, id_foreign, type, name)' +
-        ' VALUES(?, ?, ?, ?)',
-        [
-            newUuid(), id_foreign , type, JSON.stringify(info)
-        ], function (err) {
-            if (err) reject(err)
-            resolve(true)
-        }) 
+            ' VALUES(?, ?, ?, ?)',
+            [
+                newUuid(), id_foreign, type, JSON.stringify(info)
+            ], function (err) {
+                if (err) reject(err)
+                resolve(true)
+            })
     });
 }
 
 const updateAttachment = async (id, info) => {
     return new Promise((resolve, reject) => {
         db.run('UPDATE attachment' +
-        ' SET name = ?' +
-        ' WHERE id_foreign = ?',
-        [
-            JSON.stringify(info), id,
-        ], function (err) {
-            if (err) reject(err)
-            resolve(true)
-        })
+            ' SET name = ?' +
+            ' WHERE id_foreign = ?',
+            [
+                JSON.stringify(info), id,
+            ], function (err) {
+                if (err) reject(err)
+                resolve(true)
+            })
     })
 }
 
@@ -533,27 +533,27 @@ const getTestingCondition = (id_foreign) => {
 const insertTestingCondition = (id_foreign, info) => {
     return new Promise((resolve, reject) => {
         db.run('INSERT INTO testing_condition(id, id_foreign, condition, equipment, comment)' +
-        ' VALUES(?, ?, ?, ?, ?)',
-        [
-            newUuid(), id_foreign , JSON.stringify(info.condition), JSON.stringify(info.equipment), info.comment
-        ], function (err) {
-            if (err) reject(err)
-            resolve(true)
-        }) 
+            ' VALUES(?, ?, ?, ?, ?)',
+            [
+                newUuid(), id_foreign, JSON.stringify(info.condition), JSON.stringify(info.equipment), info.comment
+            ], function (err) {
+                if (err) reject(err)
+                resolve(true)
+            })
     });
 }
 
 const updateTestingCondition = async (id_foreign, info) => {
     return new Promise((resolve, reject) => {
         db.run('UPDATE testing_condition' +
-        ' SET condition = ?, equipment=?, comment=?' +
-        ' WHERE id_foreign = ?',
-        [
-            JSON.stringify(info.condition), JSON.stringify(info.equipment) ,info.comment, id_foreign
-        ], function (err) {
-            if (err) reject(err)
-            resolve(true)
-        })
+            ' SET condition = ?, equipment=?, comment=?' +
+            ' WHERE id_foreign = ?',
+            [
+                JSON.stringify(info.condition), JSON.stringify(info.equipment), info.comment, id_foreign
+            ], function (err) {
+                if (err) reject(err)
+                resolve(true)
+            })
     })
 }
 
@@ -581,7 +581,7 @@ const updateFmeca = (fmeca) => {
             ' SET table_fmeca = ?, table_calculate = ?, total = ?, name=?' +
             ' WHERE id = ?',
             [
-                JSON.stringify(fmeca.table_fmeca),  JSON.stringify(fmeca.table_calculate), JSON.stringify(fmeca.total), fmeca.name, fmeca.id
+                JSON.stringify(fmeca.table_fmeca), JSON.stringify(fmeca.table_calculate), JSON.stringify(fmeca.total), fmeca.name, fmeca.id
             ], function (err) {
                 if (err) reject(err)
                 resolve(true)
@@ -595,7 +595,7 @@ const updateFmecaByName = (fmeca, name) => {
             ' SET table_fmeca = ?, table_calculate = ?, total = ?' +
             ' WHERE name = ?',
             [
-                JSON.stringify(fmeca.table_fmeca),  JSON.stringify(fmeca.table_calculate), JSON.stringify(fmeca.total), name,
+                JSON.stringify(fmeca.table_fmeca), JSON.stringify(fmeca.table_calculate), JSON.stringify(fmeca.total), name,
             ], function (err) {
                 if (err) reject(err)
                 resolve(true)
@@ -685,7 +685,7 @@ const updateOnlineMonitoringData = (online_monitoring) => {
             ' SET ageing_insulation = ?, moisture_insulation = ?, bushings_online = ?, patital_discharge = ?, dga = ?, bushing_df_worst = ?,  bushing_df_average= ?, bushing_c_worst   = ?, bushing_c_average = ?, condition_mois    = ?, health_index      = ?, weight_bushing_df = ?, weight_bushing_c  = ?, weight_mois = ?' +
             ' WHERE asset_id = ?',
             [
-                JSON.stringify(online_monitoring.aois),  JSON.stringify(online_monitoring.moip), JSON.stringify(online_monitoring.bushings), JSON.stringify(online_monitoring.pd), JSON.stringify(online_monitoring.dga), online_monitoring.bushing_df_worst, online_monitoring.bushing_df_average, online_monitoring.bushing_c_worst, online_monitoring.bushing_c_average, online_monitoring.condition_mois, online_monitoring.health_index,  online_monitoring.weight_bushing_df, online_monitoring.weight_bushing_c, online_monitoring.weight_mois, online_monitoring.asset_id
+                JSON.stringify(online_monitoring.aois), JSON.stringify(online_monitoring.moip), JSON.stringify(online_monitoring.bushings), JSON.stringify(online_monitoring.pd), JSON.stringify(online_monitoring.dga), online_monitoring.bushing_df_worst, online_monitoring.bushing_df_average, online_monitoring.bushing_c_worst, online_monitoring.bushing_c_average, online_monitoring.condition_mois, online_monitoring.health_index, online_monitoring.weight_bushing_df, online_monitoring.weight_bushing_c, online_monitoring.weight_mois, online_monitoring.asset_id
             ], function (err) {
                 if (err) reject(err)
                 resolve(true)
@@ -698,10 +698,10 @@ const insertOnlineMonitoringData = (assetId, online_monitoring) => {
     return new Promise((resolve, reject) => {
         db.run('INSERT INTO online_monitor(id, asset_id, ageing_insulation, moisture_insulation, bushings_online, patital_discharge, dga, bushing_df_worst, bushing_df_average, bushing_c_worst, bushing_c_average, condition_mois, health_index, weight_bushing_df, weight_bushing_c, weight_mois, created_on, created_by, updated_on, updated_by )' +
             ' VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )',
-            [online_monitoring.id,assetId,
-                JSON.stringify(online_monitoring.aois), JSON.stringify(online_monitoring.moip), JSON.stringify(online_monitoring.bushings), JSON.stringify(online_monitoring.pd), JSON.stringify(online_monitoring.dga), online_monitoring.bushing_df_worst,
-                online_monitoring.bushing_df_average, online_monitoring.bushing_c_worst, online_monitoring.bushing_c_average, online_monitoring.condition_mois, online_monitoring.health_index, online_monitoring.weight_bushing_df, online_monitoring.weight_bushing_c, online_monitoring.weight_mois,
-                online_monitoring.created_on, online_monitoring.created_by, online_monitoring.updated_on, online_monitoring.updated_by
+            [online_monitoring.id, assetId,
+            JSON.stringify(online_monitoring.aois), JSON.stringify(online_monitoring.moip), JSON.stringify(online_monitoring.bushings), JSON.stringify(online_monitoring.pd), JSON.stringify(online_monitoring.dga), online_monitoring.bushing_df_worst,
+            online_monitoring.bushing_df_average, online_monitoring.bushing_c_worst, online_monitoring.bushing_c_average, online_monitoring.condition_mois, online_monitoring.health_index, online_monitoring.weight_bushing_df, online_monitoring.weight_bushing_c, online_monitoring.weight_mois,
+            online_monitoring.created_on, online_monitoring.created_by, online_monitoring.updated_on, online_monitoring.updated_by
             ], function (err) {
                 if (err) reject(err)
                 resolve(true)
@@ -754,7 +754,7 @@ const objectToXls = (data) => {
 
 const csvToObject = (csvData) => {
     return new Promise((resolve, reject) => {
-        parse(csvData, {columns: true, delimiter: ','}, function (err, data_) {
+        parse(csvData, { columns: true, delimiter: ',' }, function (err, data_) {
             if (err) reject(err)
             else {
                 var data = JSON.stringify(data_, null, 2)
@@ -778,7 +778,7 @@ const importAssetXls = (locationId, data) => {
     return new Promise((resolve, reject) => {
         db.run(
             'INSERT INTO assets(id, location_id, serial_no, feeder, manufacturer, manufacturing_year, manufacturer_type, apparatus_id, asset_system_code, rated_frequency, comment, unsupported_vector_group, phases, base_power, base_voltage, ref_temp, max_short_circuit_current_ka, insulation_weight,  insulation_volume, total_weight, category, tank_type, insulation_medium, asset, asset_type, vector_group, voltage_ratings, power_ratings, current_ratings, prim_sec, prim_tert, sec_tert, winding)' +
-                ' VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            ' VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [
                 data.Id,
                 locationId,
@@ -826,7 +826,7 @@ export const importBushingXls = (assetId, data) => {
     return new Promise((resolve, reject) => {
         db.run(
             'INSERT INTO bushings(id, asset_id, asset_type, serial_no, manufacturer, manufacturer_type, manufacturer_year, insull_level, voltage_gr, max_sys_voltage, rate_current, df_c1, cap_c1, df_c2, cap_c2, insulation_type)' +
-                ' VALUES( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            ' VALUES( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [
                 data.Id,
                 assetId,
@@ -853,11 +853,11 @@ export const importBushingXls = (assetId, data) => {
     })
 }
 
- const importTapChangersXls = (asset_id, data) => {
+const importTapChangersXls = (asset_id, data) => {
     return new Promise((resolve, reject) => {
         db.run(
             'INSERT INTO tap_changers(id, asset_id, mode, serial_no, manufacturer, manufacturer_type, winding, tap_scheme, no_of_taps, voltage_table)' +
-                ' VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            ' VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [
                 data.Id,
                 asset_id,
@@ -878,7 +878,7 @@ export const importBushingXls = (assetId, data) => {
     })
 }
 
- const xlsToObject = (xlsData) => {
+const xlsToObject = (xlsData) => {
     return new Promise((resolve, reject) => {
         var data = String(xlsData).split('\n')
         var data_arr = []
@@ -915,7 +915,7 @@ app.on('ready', async () => {
     await updateModule.updateLocationTable()
     await updateModule.insertTestType()
     await updateModule.active()
-    
+
     ipcMain.handle('login', async function (event, user) {
         const _user = await userFunc.getUser(user)
         if (_user === undefined) return false
@@ -942,7 +942,7 @@ app.on('ready', async () => {
     ipcMain.handle('updateAttachment', async function (event, id, info, type) {
         const rt = await getAllAttachment(id, type)
         let rs
-        if(rt.length === 0) {
+        if (rt.length === 0) {
             rs = await uploadAttachment(id, type, info)
         }
         else {
@@ -952,7 +952,7 @@ app.on('ready', async () => {
             return {
                 success: true,
                 message: "Success",
-                data : rs
+                data: rs
             }
         }
     })
@@ -1032,7 +1032,7 @@ app.on('ready', async () => {
             return {
                 success: true,
                 message: "Success",
-                data : rs
+                data: rs
             }
         }
     })
@@ -1069,7 +1069,7 @@ app.on('ready', async () => {
             return {
                 success: true,
                 message: "Success",
-                data : rs.data
+                data: rs.data
             }
         }
         else {
@@ -1086,7 +1086,7 @@ app.on('ready', async () => {
             return {
                 success: true,
                 message: "Success",
-                data : rs.data
+                data: rs.data
             }
         }
         else {
@@ -1099,17 +1099,17 @@ app.on('ready', async () => {
 
     ipcMain.handle('deleteCircuit', async function (event, ids) {
         try {
-            for(let k in ids) {
+            for (let k in ids) {
                 let element = ids[k]
                 let jobs = await jobCircuitFunc.getJobByAssetId(element)
-                for(let i in jobs) {
+                for (let i in jobs) {
                     let jobId = jobs[i].id
                     let testList = await jobCircuitFunc.getTestByJobId(jobId)
-                    for(let j in testList) {
+                    for (let j in testList) {
                         await deleteTestingCondition(testList[j].id)
                         const rs = await getAllAttachment(testList[j].id, "test")
-                        if(rs.length != 0) {
-                            for(let n in rs) {
+                        if (rs.length != 0) {
+                            for (let n in rs) {
                                 JSON.parse(rs[n].name).forEach(e => {
                                     let pathFile = path.join(pathUpload, `/${e.path}`)
                                     fs.unlinkSync(pathFile)
@@ -1126,7 +1126,7 @@ app.on('ready', async () => {
                 message: "",
                 data: null
             }
-        } catch(error) {
+        } catch (error) {
             return {
                 success: false,
                 message: error,
@@ -1174,7 +1174,7 @@ app.on('ready', async () => {
     ipcJobCircuit.saveJobCircuit()
     ipcJobCircuit.saveTestCircuit()
     ipcJobCircuit.getTestCircuitByJobId()
-    
+
     ipcTransformer.exportEtrc()
 
     //current Trans
@@ -1568,7 +1568,7 @@ app.on('ready', async () => {
                 await locationFunc.deleteLocation(id)
                 const atm = await getAllAttachment(id, "location")
                 const condi = await getTestingCondition(id)
-                if(atm.length !== 0) {
+                if (atm.length !== 0) {
                     atm.forEach(element => {
                         JSON.parse(element.name).forEach((e) => {
                             fs.unlinkSync(path.join(pathUpload, `/${e.path}`))
@@ -1576,7 +1576,7 @@ app.on('ready', async () => {
                     })
                     await deleteAttachment(id)
                 }
-                if(condi.length !== 0) {
+                if (condi.length !== 0) {
                     await deleteTestingCondition(id)
                 }
 
@@ -1752,27 +1752,27 @@ app.on('ready', async () => {
             properties: ['openFile']
         })
 
-            try {
-                 if (!rs.canceled) {
-                     const jsonStr = fs.readFileSync(rs.filePaths[0].toString(), {encoding: 'utf-8'})
-                     const locations = JSON.parse(jsonStr)
-                     console.log(locations)
-                     locations.forEach(async (location, index, arr) => {
-                        try {
-                            await locationFunc.importLocation(userId, location)
-                        } catch (error) {}
-                     })
+        try {
+            if (!rs.canceled) {
+                const jsonStr = fs.readFileSync(rs.filePaths[0].toString(), { encoding: 'utf-8' })
+                const locations = JSON.parse(jsonStr)
+                console.log(locations)
+                locations.forEach(async (location, index, arr) => {
+                    try {
+                        await locationFunc.importLocation(userId, location)
+                    } catch (error) { }
+                })
 
-                     return {
-                         success: true,
-                         message: ''
-                     }
-                 } else {
-                     return {
-                         success: false,
-                         message: 'Import cancel'
-                     }
-                 }   
+                return {
+                    success: true,
+                    message: ''
+                }
+            } else {
+                return {
+                    success: false,
+                    message: 'Import cancel'
+                }
+            }
         } catch (error) {
             return {
                 success: false,
@@ -1796,26 +1796,26 @@ app.on('ready', async () => {
 
         try {
             if (!rs.canceled) {
-                const jsonStr = fs.readFileSync(rs.filePaths[0].toString(), {encoding: 'utf-8'})
+                const jsonStr = fs.readFileSync(rs.filePaths[0].toString(), { encoding: 'utf-8' })
                 const fullAssets = JSON.parse(jsonStr)
                 fullAssets.forEach(async (fullAsset, index, arr) => {
                     try {
-                        const {asset, bushing, tap_changer} = fullAsset
-                        if(asset.asset == "Transformer") {
+                        const { asset, bushing, tap_changer } = fullAsset
+                        if (asset.asset == "Transformer") {
                             const assetId = await assetFunc.importAsset(locationId, asset)
                             await assetFunc.importBushing(bushing, assetId)
                             await assetFunc.importTapChanger(tap_changer, assetId)
-                        } else if(asset.asset == "Circuit breaker") {
+                        } else if (asset.asset == "Circuit breaker") {
                             circuitFunc.importAsset(asset, locationId)
-                        } else if(asset.asset == "Current transformer") {
+                        } else if (asset.asset == "Current transformer") {
                             currentTransFunc.importAsset(asset, locationId)
-                        } else if(asset.asset == "Voltage transformer") {
+                        } else if (asset.asset == "Voltage transformer") {
                             voltageTransFunc.importAsset(asset, locationId)
-                        } else if(asset.asset == "Disconnector") {
+                        } else if (asset.asset == "Disconnector") {
                             disconnectorFunc.importAsset(asset, locationId)
-                        } else if(asset.asset == "Surge arrester") {
+                        } else if (asset.asset == "Surge arrester") {
                             surgeArresterFunc.importAsset(asset, locationId)
-                        } else if(asset.asset == "Power cable") {
+                        } else if (asset.asset == "Power cable") {
                             powerCableFunc.importAsset(asset, locationId)
                         }
                     } catch (error) { }
@@ -1841,37 +1841,37 @@ app.on('ready', async () => {
 
     ipcMain.handle('getAllTestByJobId', async function (event, jobId) {
         try {
-                    const testList = await jobFunc.getAllTestByJobId(jobId)
-                    return {
-                        success: true,
-                        message: '',
-                        data: testList
-                    }
-                } catch (error) {
-                    return {
-                        success: false,
-                        message: error.message,
-                        data: null
-                    }
-                }
+            const testList = await jobFunc.getAllTestByJobId(jobId)
+            return {
+                success: true,
+                message: '',
+                data: testList
+            }
+        } catch (error) {
+            return {
+                success: false,
+                message: error.message,
+                data: null
+            }
+        }
     })
 
     ipcMain.handle('getTestByJobId', async function (event, jobId) {
         try {
-                    let testList = await jobFunc.getTestByJobId(jobId)
-                    testList = testList.map((test) => ({...test, job_id: jobId}))
-                    return {
-                        success: true,
-                        message: '',
-                        data: testList
-                    }
-                } catch (error) {
-                    return {
-                        success: false,
-                        message: error.message,
-                        data: null
-                    }
-                }
+            let testList = await jobFunc.getTestByJobId(jobId)
+            testList = testList.map((test) => ({ ...test, job_id: jobId }))
+            return {
+                success: true,
+                message: '',
+                data: testList
+            }
+        } catch (error) {
+            return {
+                success: false,
+                message: error.message,
+                data: null
+            }
+        }
     })
 
     ipcMain.handle('getAssets', async function (event, locationId) {
@@ -2098,8 +2098,8 @@ app.on('ready', async () => {
                 const jobId = await jobFunc.insertJob(assetId, properties)
 
                 //insert test
-                if(!(testConditionArr == undefined) && !(attachmentArr == undefined)) {
-                    for(const item of testList) {
+                if (!(testConditionArr == undefined) && !(attachmentArr == undefined)) {
+                    for (const item of testList) {
                         const testId = await jobFunc.insertTest(jobId, item)
                         await insertTestingCondition(testId, testConditionArr[i])
                         await uploadAttachment(testId, "test", attachmentArr[i])
@@ -2107,7 +2107,7 @@ app.on('ready', async () => {
                     }
                 }
                 else {
-                    for(const item of testList) {
+                    for (const item of testList) {
                         await jobFunc.insertTest(jobId, item)
                     }
                 }
@@ -2133,15 +2133,15 @@ app.on('ready', async () => {
                 testIds.forEach(async (element) => {
                     const testId = element.id
                     const rs = await getAllAttachment(testId, "test")
-                        if(rs.length !== 0) {
-                            rs.forEach(element => {
-                                JSON.parse(element.name).forEach(e => {
-                                    let pathFile = path.join(pathUpload, `/${e.path}`)
-                                    fs.unlinkSync(pathFile)
-                                })
+                    if (rs.length !== 0) {
+                        rs.forEach(element => {
+                            JSON.parse(element.name).forEach(e => {
+                                let pathFile = path.join(pathUpload, `/${e.path}`)
+                                fs.unlinkSync(pathFile)
                             })
-                            await deleteAttachment(testId)
-                        }
+                        })
+                        await deleteAttachment(testId)
+                    }
                     await deleteTestingCondition(testId)
                 })
                 await jobFunc.deleteJob(jobId)
@@ -2156,14 +2156,14 @@ app.on('ready', async () => {
                 message: error
             }
         }
-    }) 
+    })
 
     ipcMain.handle('getJobById', async function (event, id) {
         try {
             const job = await jobFunc.getJobById(id)
             const job_id = job.id
             let testList = await jobFunc.getTestByJobId(id)
-            testList = testList.map((test) => ({...test, job_id}))
+            testList = testList.map((test) => ({ ...test, job_id }))
             return {
                 success: true,
                 message: "",
@@ -2200,26 +2200,26 @@ app.on('ready', async () => {
                     let testId = item.id
 
                     // testId khác 0 là test cũ nên cập nhật vào db, ngược lại thêm vào db
-                    if (testId != EMPTY ) {
+                    if (testId != EMPTY) {
                         await jobFunc.updateTest(item)
                         const rs = await getTestingCondition(testId)
-                        if(rs.length !== 0) {
+                        if (rs.length !== 0) {
                             await updateTestingCondition(testId, testConditionArr[index])
                         } else {
                             await insertTestingCondition(testId, testConditionArr[index])
                         }
                         const rt = await getAllAttachment(testId, "test")
-                        if(rt.length !== 0) {
+                        if (rt.length !== 0) {
                             await updateAttachment(testId, attachmentArr[index])
                         }
                         else {
-                            await uploadAttachment(testId,"test",attachmentArr[index])
+                            await uploadAttachment(testId, "test", attachmentArr[index])
                         }
                     }
                     else {
                         let id = await jobFunc.insertTest(jobId, item)
                         await insertTestingCondition(id, testConditionArr[index])
-                        await uploadAttachment(id,"test",attachmentArr[index])
+                        await uploadAttachment(id, "test", attachmentArr[index])
                     }
 
                 })
@@ -2243,11 +2243,11 @@ app.on('ready', async () => {
             await deleteTestingCondition(id)
             let fileData = await getAllAttachment(id, 'test')
             await deleteAttachment(id)
-            for(let i in fileData) {
+            for (let i in fileData) {
                 let name = fileData[i].name
-                for(let j in name) {
+                for (let j in name) {
                     let path = name[j].path
-                    if(fs.existsSync(path)) {
+                    if (fs.existsSync(path)) {
                         fs.unlinkSync(path)
                     }
                 }
@@ -2317,28 +2317,28 @@ app.on('ready', async () => {
                 const jobId = properties.id
                 await jobCircuitFunc.updateJob(properties)
 
-                for(let i in testList) {
+                for (let i in testList) {
                     let testId = testList[i].id
-                    if (testId != EMPTY ) {
+                    if (testId != EMPTY) {
                         await jobCircuitFunc.updateTest(testList[i])
                         const rs = await getTestingCondition(testId)
-                        if(rs.length !== 0) {
+                        if (rs.length !== 0) {
                             await updateTestingCondition(testId, testConditionArr[i])
                         } else {
                             await insertTestingCondition(testId, testConditionArr[i])
                         }
 
                         const rt = await getAllAttachment(testId, "test")
-                        if(rt.length !== 0) {
+                        if (rt.length !== 0) {
                             await updateAttachment(testId, attachmentArr[i])
                         }
                         else {
-                            await uploadAttachment(testId,"test",attachmentArr[i])
+                            await uploadAttachment(testId, "test", attachmentArr[i])
                         }
                     } else {
                         let id = await jobCircuitFunc.insertTest(jobId, testList[i])
                         await insertTestingCondition(id, testConditionArr[i])
-                        await uploadAttachment(id,"test",attachmentArr[i])
+                        await uploadAttachment(id, "test", attachmentArr[i])
                     }
                 }
 
@@ -2367,7 +2367,7 @@ app.on('ready', async () => {
                 //         await jobCircuitFunc.insertTest(jobId, item)
                 //         await insertTestingCondition(testId, testConditionArr[index])
                 //         await uploadAttachment(testId,"test",attachmentArr[index])
-                        
+
                 //     }
 
                 // })
@@ -2430,7 +2430,7 @@ app.on('ready', async () => {
             const job = await jobCircuitFunc.getJobById(id)
             const job_id = job.id
             let testList = await jobCircuitFunc.getTestByJobId(id)
-            testList = testList.map((test) => ({...test, job_id}))
+            testList = testList.map((test) => ({ ...test, job_id }))
             return {
                 success: true,
                 message: "",
@@ -2454,15 +2454,15 @@ app.on('ready', async () => {
                 testIds.forEach(async (element) => {
                     const testId = element.id
                     const rs = await getAllAttachment(testId, "test")
-                        if(rs.length !== 0) {
-                            rs.forEach(element => {
-                                JSON.parse(element.name).forEach(e => {
-                                    let pathFile = path.join(pathUpload, `/${e.path}`)
-                                    fs.unlinkSync(pathFile)
-                                })
+                    if (rs.length !== 0) {
+                        rs.forEach(element => {
+                            JSON.parse(element.name).forEach(e => {
+                                let pathFile = path.join(pathUpload, `/${e.path}`)
+                                fs.unlinkSync(pathFile)
                             })
-                            await deleteAttachment(testId)
-                        }
+                        })
+                        await deleteAttachment(testId)
+                    }
                     await deleteTestingCondition(testId)
                 })
                 await jobCircuitFunc.deleteJob(jobId)
@@ -2479,7 +2479,7 @@ app.on('ready', async () => {
             }
         }
     })
-    
+
     ipcMain.handle('importJobCSV', async function (event, assetId, assetType) {
         const rs = await dialog.showOpenDialog({
             title: 'Select the file to be uploaded',
@@ -2494,47 +2494,47 @@ app.on('ready', async () => {
 
         try {
             if (!rs.canceled) {
-                const jsonStr = fs.readFileSync(rs.filePaths[0].toString(), {encoding: 'utf-8'})
+                const jsonStr = fs.readFileSync(rs.filePaths[0].toString(), { encoding: 'utf-8' })
                 const fullJobs = JSON.parse(jsonStr)
                 fullJobs.forEach(async (fullJob) => {
                     const { job, tests } = fullJob
-                    if(assetType == "Transformer") {
+                    if (assetType == "Transformer") {
                         const jobId = await jobFunc.importJob(assetId, job)
                         tests.forEach(async (test) => {
                             await jobFunc.importTest(jobId, test)
                         })
-                    } else if(assetType == "Circuit breaker") {
+                    } else if (assetType == "Circuit breaker") {
                         await jobAssetFunc.insertJobasset(assetId, job.id)
                         const jobId = await jobCircuitFunc.insertJob(assetId, job)
                         tests.forEach(async (test) => {
                             test.data = JSON.parse(test.data)
                             await jobCircuitFunc.insertTest(jobId, test)
                         })
-                    } else if(assetType == "Current transformer") {
+                    } else if (assetType == "Current transformer") {
                         const jobId = await currentTransJobFunc.insertJob(assetId, job)
                         tests.forEach(async (test) => {
                             test.data = JSON.parse(test.data)
                             await currentTransJobFunc.insertTest(jobId, test)
                         })
-                    } else if(assetType == "Voltage transformer") {
+                    } else if (assetType == "Voltage transformer") {
                         const jobId = await voltageTransJobFunc.insertJob(assetId, job)
                         tests.forEach(async (test) => {
                             test.data = JSON.parse(test.data)
                             await voltageTransJobFunc.insertTest(jobId, test)
                         })
-                    } else if(assetType == "Disconnector") {
+                    } else if (assetType == "Disconnector") {
                         const jobId = await disconnectorJobFunc.insertJob(assetId, job)
                         tests.forEach(async (test) => {
                             test.data = JSON.parse(test.data)
                             await disconnectorJobFunc.insertTest(jobId, test)
                         })
-                    } else if(assetType == "Surge arrester") {
+                    } else if (assetType == "Surge arrester") {
                         const jobId = await surgeArresterJobFunc.insertJob(assetId, job)
                         tests.forEach(async (test) => {
                             test.data = JSON.parse(test.data)
                             await surgeArresterJobFunc.insertTest(jobId, test)
                         })
-                    } else if(assetType == "Power cable") {
+                    } else if (assetType == "Power cable") {
                         const jobId = await powerCableJobFunc.insertJob(assetId, job)
                         tests.forEach(async (test) => {
                             test.data = JSON.parse(test.data)
@@ -2584,7 +2584,7 @@ app.on('ready', async () => {
                 success: true,
                 message: "Success"
             }
-        }catch (error) {
+        } catch (error) {
             return {
                 success: false,
                 message: error
@@ -2599,7 +2599,7 @@ app.on('ready', async () => {
                 success: true,
                 message: "Success"
             }
-        }catch (error) {
+        } catch (error) {
             return {
                 success: false,
                 message: error
@@ -2624,75 +2624,75 @@ app.on('ready', async () => {
         }
     }),
 
-    ipcMain.handle('getFmecaName', async function (event) {
-        try {
-            const fmeca = await getFmecaName()
-            return {
-                success: true,
-                message: "",
-                fmeca
-            }
-        } catch (error) {
-            return {
-                success: false,
-                message: error,
-                data: null
-            }
-        }
-    }),
-
-    ipcMain.handle('getFmeca', async function (event, id) {
-        try {
-            const fmeca = await getFmeca(id)
-            return {
-                success: true,
-                message: "",
-                data: {
+        ipcMain.handle('getFmecaName', async function (event) {
+            try {
+                const fmeca = await getFmecaName()
+                return {
+                    success: true,
+                    message: "",
                     fmeca
                 }
-            }
-        } catch (error) {
-            return {
-                success: false,
-                message: error,
-                data: null
-            }
-        }
-    }),
-
-    ipcMain.handle('checkFmecaExist', async function (event) {
-        try {
-            const fmeca = await checkFmecaExist()
-            return {
-                success: true,
-                message: "",
-                data: {
-                    fmeca
+            } catch (error) {
+                return {
+                    success: false,
+                    message: error,
+                    data: null
                 }
             }
-        } catch (error) {
-            return {
-                success: false,
-                message: error,
-                data: null
-            }
-        }
-    }),
+        }),
 
-    ipcMain.handle('insertFmeca', async function (event, fmeca) {
-        try {
-            await insertFmeca(fmeca)
-            return {
-                success: true,
-                message: "Success"
+        ipcMain.handle('getFmeca', async function (event, id) {
+            try {
+                const fmeca = await getFmeca(id)
+                return {
+                    success: true,
+                    message: "",
+                    data: {
+                        fmeca
+                    }
+                }
+            } catch (error) {
+                return {
+                    success: false,
+                    message: error,
+                    data: null
+                }
             }
-        }catch (error) {
-            return {
-                success: false,
-                message: error
+        }),
+
+        ipcMain.handle('checkFmecaExist', async function (event) {
+            try {
+                const fmeca = await checkFmecaExist()
+                return {
+                    success: true,
+                    message: "",
+                    data: {
+                        fmeca
+                    }
+                }
+            } catch (error) {
+                return {
+                    success: false,
+                    message: error,
+                    data: null
+                }
             }
-        }
-    })
+        }),
+
+        ipcMain.handle('insertFmeca', async function (event, fmeca) {
+            try {
+                await insertFmeca(fmeca)
+                return {
+                    success: true,
+                    message: "Success"
+                }
+            } catch (error) {
+                return {
+                    success: false,
+                    message: error
+                }
+            }
+        })
 
     ipcMain.handle('deleteFmeca', async function (event, id) {
         try {
@@ -2701,7 +2701,7 @@ app.on('ready', async () => {
                 success: true,
                 message: "Success"
             }
-        }catch (error) {
+        } catch (error) {
             return {
                 success: false,
                 message: error
@@ -2716,7 +2716,7 @@ app.on('ready', async () => {
                 success: true,
                 message: "Success"
             }
-        }catch (error) {
+        } catch (error) {
             return {
                 success: false,
                 message: error
@@ -2731,7 +2731,7 @@ app.on('ready', async () => {
                 success: true,
                 message: "Success"
             }
-        }catch (error) {
+        } catch (error) {
             return {
                 success: false,
                 message: error
@@ -2746,7 +2746,7 @@ app.on('ready', async () => {
                 success: true,
                 message: "Success"
             }
-        }catch (error) {
+        } catch (error) {
             return {
                 success: false,
                 message: error
@@ -2771,28 +2771,28 @@ app.on('ready', async () => {
         }
     }),
 
-    ipcMain.handle('insertOnlineMonitoringData', async function (event, assetId, online_monitoring) {
-        try {
-            await insertOnlineMonitoringData(assetId, online_monitoring)
-            return {
-                success: true,
-                message: "Success"
+        ipcMain.handle('insertOnlineMonitoringData', async function (event, assetId, online_monitoring) {
+            try {
+                await insertOnlineMonitoringData(assetId, online_monitoring)
+                return {
+                    success: true,
+                    message: "Success"
+                }
+            } catch (error) {
+                return {
+                    success: false,
+                    message: error
+                }
             }
-        }catch (error) {
-            return {
-                success: false,
-                message: error
-            }
-        }
-    }),
+        }),
 
-    ipcMain.on("closeApp", () => {
-        db.close()
-        app.quit()
-    });
+        ipcMain.on("closeApp", () => {
+            db.close()
+            app.quit()
+        });
 
     ipcMain.on("minimizeApp", () => {
-        
+
         win.minimize()
     });
 

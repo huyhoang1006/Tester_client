@@ -30,7 +30,8 @@ import * as valueToAliasFunc from './valueToAlias/index.js'
 import * as valueAliasSetFunc from './valueAliasSet/index.js'
 import * as bushingFunc from './bushing/index.js'
 
-export {identifiedObjectFunc, substationFunc, electronicAddressFunc, locationFunc,
+export {
+    identifiedObjectFunc, substationFunc, electronicAddressFunc, locationFunc,
     personFunc, personRoleFunc, psrTypeFunc, streetAddressFunc, streetDetailFunc,
     townDetailFunc, telephoneNumberFunc, organisationFunc, parentOrganizationFunc,
     activityRecordFunc, configurationEventFunc, positionPointFunc, voltageFunc, baseVoltageFunc,

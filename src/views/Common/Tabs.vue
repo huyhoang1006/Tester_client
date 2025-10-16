@@ -321,6 +321,38 @@ export default {
                             this.$message.error("Failed to load surge arrester job data");
                         }
                     }
+                    else if( tab.job === 'Power cable') {
+                        const dataTestType = await window.electronAPI.getAllTestTypePowerCable();
+                        if (dataTestType.success) {
+                            this.testTypeListData = dataTestType.data
+                        } else {
+                            this.testTypeListData = []
+                        }
+                        const dataPowerCable = await window.electronAPI.getPowerCableByMrid(tab.parentId)
+                        if (dataPowerCable.success) {
+                            this.assetData = dataPowerCable.data
+                        } else {
+                            this.assetData = {}
+                        }
+                        this.checkJobType = 'JobPowerCable'
+                        this.signJob = true;
+                        const data = await window.electronAPI.getPowerCableJobByMrid(tab.mrid)
+                        if (data.success) {
+                            const powerCableJobDto = PowerCableMapper.JobEntityToDto(data.data)
+                            for (const test of powerCableJobDto.testList) {
+                                for (const type of this.testTypeListData) {
+                                    if (test.testTypeCode === type.code) {
+                                        test.testTypeName = type.name
+                                        test.testTypeId = type.mrid
+                                        break
+                                    }
+                                }
+                            }
+                            this.$refs.componentLoadData[index].loadData(powerCableJobDto)
+                        } else {
+                            this.$message.error("Failed to load power cable job data");
+                        }
+                    }
                 } else {
                     this.$message.error("Unsupported tab mode");
                 }

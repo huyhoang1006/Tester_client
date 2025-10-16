@@ -2,6 +2,7 @@ import { userPreload, transformerPreload, fmecaPreload, conditionPreload, circui
 import { uploadCustomPreload, manufacturerPreload } from '@/preload/index.js'
 import { disconnectorPreload, surgeArresterPreload, powerCablePreload, ownerPreload } from '@/preload/index.js'
 import { entityPreload, cimPreload } from '@/preload/index.js'
+
 const { contextBridge } = require('electron')
 
 const userAPI = userPreload.userPreload()
@@ -42,6 +43,8 @@ const surgeArresterAPI = cimPreload.SurgeArresterPreload.surgeArresterPreload()
 const productAssetModelAPI = cimPreload.productAssetModelPreload.productAssetModelPreload()
 const testTypeSurgeArresterAPI = entityPreload.testTypePreload.testTypeSurgeArresterPreload.testTypeSurgeArresterPreload()
 const surgeArresterJobAPI = entityPreload.jobEntityPreload.surgeArresterJob.surgeArresterJobPreload()
+const powerCableJobAPI = entityPreload.jobEntityPreload.powerCableJob.powerCableJobPreload()
+const testTypePowerCableAPI = entityPreload.testTypePreload.testTypePowerCablePreload.testTypePowerCablePreload()
 const oldWorkAPI = cimPreload.oldWorkPreload.oldWorkPreload()
 const assetAPI = cimPreload.assetPreload.assetPreload()
 const analogAPI = cimPreload.analogPreload.analogPreload()
@@ -61,9 +64,9 @@ const ipcMain = Object.assign(userAPI, transformerAPI, fmecaAPI, conditionAPI, c
     manufacturerAPI, ownerAPI, parentOrganizationAPI, substationAPI, locationAPI, streetAddressAPI, streetDetailAPI, townDetailAPI,
     electronicAddressAPI, personAPI, personRoleAPI, telephoneNumberAPI, configurationEventAPI, substationEntityAPI, parentOrganizationEntityAPI,
     positionPointAPI, voltageLevelEntityAPI, voltageLevelAPI, bayEntityAPI, bayAPI, powerSystemResourceAPI, surgeArresterEntityAPI,
-    productAssetModelAPI, testTypeSurgeArresterAPI, surgeArresterJobAPI, oldWorkAPI, assetAPI, transformerEntityAPI, analogAPI,
+    productAssetModelAPI, testTypeSurgeArresterAPI, surgeArresterJobAPI, powerCableJobAPI, oldWorkAPI, assetAPI, transformerEntityAPI, analogAPI,
     stringMeasurementAPI, discreteAPI, valueToAliasAPI, valueAliasSetAPI, powerCableEntityAPI, voltageTransformerEntityAPI, bushingEntityAPI,
-    bushingAPI, disconnectorEntityAPI, rotatingMachineEntityAPI, currentTransformerEntityAPI)
+    bushingAPI, disconnectorEntityAPI, rotatingMachineEntityAPI, currentTransformerEntityAPI, testTypePowerCableAPI)
 contextBridge.exposeInMainWorld('electronAPI',
     ipcMain
 )
