@@ -4,8 +4,10 @@ export default {
     data() {
         return {}
     },
-    computed: mapState(['selectedAsset', 'selectedJob']),
-    async beforeMount() {},
+    computed: {
+        ...mapState(['selectedAsset', 'selectedJob'])
+    },
+    async beforeMount() { },
     methods: {
         async initTest(testTypeCode) {
             let data = null
@@ -44,225 +46,241 @@ export default {
         async initInsulationResistance() {
             let table = [
                 {
-                    measurement : "Phase A-(B+C+GND)",
-                    test_voltage : '',
-                    beforeHv : "",
-                    afterHv : "",
-                    assessment : '',
-                    condition_indicator : ''
+                    measurement: "Phase A-(B+C+GND)",
+                    test_voltage: '',
+                    beforeHv: "",
+                    afterHv: "",
+                    assessment: '',
+                    condition_indicator: ''
                 },
                 {
-                    measurement : "Phase B-(A+C+GND)",
-                    test_voltage : '',
-                    beforeHv : "",
-                    afterHv : "",
-                    assessment : '',
-                    condition_indicator : ''
+                    measurement: "Phase B-(A+C+GND)",
+                    test_voltage: '',
+                    beforeHv: "",
+                    afterHv: "",
+                    assessment: '',
+                    condition_indicator: ''
                 },
                 {
-                    measurement : "Phase C-(A+B+GND)",
-                    test_voltage : '',
-                    beforeHv : "",
-                    afterHv : "",
-                    assessment : '',
-                    condition_indicator : ''
+                    measurement: "Phase C-(A+B+GND)",
+                    test_voltage: '',
+                    beforeHv: "",
+                    afterHv: "",
+                    assessment: '',
+                    condition_indicator: ''
                 }
             ]
             return {
+                row_data: [],
+                measurementProcedure: [],
                 table
             }
         },
         async initDcVoltageOverSheath() {
             let table = [
                 {
-                    measurement : "Phase A-(B+C+GND)",
-                    test_voltage : '',
-                    duration : '',
-                    assessment : '',
-                    condition_indicator : ''
+                    measurement: "Phase A-(B+C+GND)",
+                    test_voltage: '',
+                    duration: '',
+                    assessment: '',
+                    condition_indicator: ''
                 },
                 {
-                    measurement : "Phase B-(A+C+GND)",
-                    test_voltage : '',
-                    duration : '',
-                    assessment : '',
-                    condition_indicator : ''
+                    measurement: "Phase B-(A+C+GND)",
+                    test_voltage: '',
+                    duration: '',
+                    assessment: '',
+                    condition_indicator: ''
                 },
                 {
-                    measurement : "Phase C-(A+B+GND)",
-                    test_voltage : '',
-                    duration : '',
-                    assessment : '',
-                    condition_indicator : ''
+                    measurement: "Phase C-(A+B+GND)",
+                    test_voltage: '',
+                    duration: '',
+                    assessment: '',
+                    condition_indicator: ''
                 }
             ]
             return {
+                row_data: [],
+                measurementProcedure: [],
                 table
             }
         },
         async initAcVoltageInsulation() {
             let table = [
                 {
-                    measurement : "Phase A-(B+C+GND)",
-                    test_voltage : '',
-                    frequency : '',
-                    duration : '',
-                    assessment : '',
-                    condition_indicator : ''
+                    measurement: "Phase A-(B+C+GND)",
+                    test_voltage: '',
+                    frequency: '',
+                    duration: '',
+                    assessment: '',
+                    condition_indicator: ''
                 },
                 {
-                    measurement : "Phase B-(A+C+GND)",
-                    test_voltage : '',
-                    frequency : '',
-                    duration : '',
-                    assessment : '',
-                    condition_indicator : ''
+                    measurement: "Phase B-(A+C+GND)",
+                    test_voltage: '',
+                    frequency: '',
+                    duration: '',
+                    assessment: '',
+                    condition_indicator: ''
                 },
                 {
-                    measurement : "Phase C-(A+B+GND)",
-                    test_voltage : '',
-                    frequency : '',
-                    duration : '',
-                    assessment : '',
-                    condition_indicator : ''
+                    measurement: "Phase C-(A+B+GND)",
+                    test_voltage: '',
+                    frequency: '',
+                    duration: '',
+                    assessment: '',
+                    condition_indicator: ''
                 }
             ]
             return {
+                row_data: [],
+                measurementProcedure: [],
                 table
             }
         },
         async initDcVoltageInsulation() {
             let table = [
                 {
-                    measurement : "Phase A-(B+C+GND)",
-                    test_voltage : '',
-                    leakage : '',
-                    duration : '',
-                    assessment : '',
-                    condition_indicator : ''
+                    measurement: "Phase A-(B+C+GND)",
+                    test_voltage: '',
+                    leakage: '',
+                    duration: '',
+                    assessment: '',
+                    condition_indicator: ''
                 },
                 {
-                    measurement : "Phase B-(A+C+GND)",
-                    test_voltage : '',
-                    leakage : '',
-                    duration : '',
-                    assessment : '',
-                    condition_indicator : ''
+                    measurement: "Phase B-(A+C+GND)",
+                    test_voltage: '',
+                    leakage: '',
+                    duration: '',
+                    assessment: '',
+                    condition_indicator: ''
                 },
                 {
-                    measurement : "Phase C-(A+B+GND)",
-                    test_voltage : '',
-                    leakage : '',
-                    duration : '',
-                    assessment : '',
-                    condition_indicator : ''
+                    measurement: "Phase C-(A+B+GND)",
+                    test_voltage: '',
+                    leakage: '',
+                    duration: '',
+                    assessment: '',
+                    condition_indicator: ''
                 }
             ]
             return {
+                row_data: [],
+                measurementProcedure: [],
                 table
             }
         },
         async initVlfTest() {
             let table = [
                 {
-                    measurement : "Phase A-(B+C+GND)",
-                    test_voltage : '',
-                    leakage : '',
-                    assessment : '',
-                    condition_indicator : ''
+                    measurement: "Phase A-(B+C+GND)",
+                    test_voltage: '',
+                    leakage: '',
+                    assessment: '',
+                    condition_indicator: ''
                 },
                 {
-                    measurement : "Phase B-(A+C+GND)",
-                    test_voltage : '',
-                    leakage : '',
-                    assessment : '',
-                    condition_indicator : ''
+                    measurement: "Phase B-(A+C+GND)",
+                    test_voltage: '',
+                    leakage: '',
+                    assessment: '',
+                    condition_indicator: ''
                 },
                 {
-                    measurement : "Phase C-(A+B+GND)",
-                    test_voltage : '',
-                    leakage : '',
-                    assessment : '',
-                    condition_indicator : ''
+                    measurement: "Phase C-(A+B+GND)",
+                    test_voltage: '',
+                    leakage: '',
+                    assessment: '',
+                    condition_indicator: ''
                 }
             ]
             return {
-                vlfSetting : {},
+                row_data: [],
+                measurementProcedure: [],
+                vlfSetting: {},
                 table
             }
         },
         async initTandeltaVlfSource() {
             let table = []
-            for(let i= 0; i<9; i++) {
+            for (let i = 0; i < 9; i++) {
                 let data = {
-                    measurement : "Phase A-(B+C+GND)",
-                    test_voltage_label : "0.5",
-                    test_voltage : '',
-                    capacitance : '',
-                    mtd : '',
-                    dtd_eachstep : '',
-                    dtdu : '',
-                    tdts : '',
-                    assessment : '',
-                    condition_indicator : ''
+                    measurement: "Phase A-(B+C+GND)",
+                    test_voltage_label: "0.5",
+                    test_voltage: '',
+                    capacitance: '',
+                    mtd: '',
+                    dtd_eachstep: '',
+                    dtdu: '',
+                    tdts: '',
+                    assessment: '',
+                    condition_indicator: ''
                 }
-                if(i%3==0) {
+                if (i % 3 == 0) {
                     data.test_voltage_label = '0.5'
-                } else if(i%3==1) {
+                } else if (i % 3 == 1) {
                     data.test_voltage_label = '1.0'
                 } else {
                     data.test_voltage_label = '1.5'
                 }
-                if(i/3==1) {
+                if (i / 3 == 1) {
                     data.measurement = "Phase B-(A+C+GND)"
                 }
-                else if(i/3 == 2) {
+                else if (i / 3 == 2) {
                     data.measurement = "Phase C-(A+B+GND)"
                 }
                 table.push(data)
             }
             return {
-                vlfSetting : {},
+                row_data: [],
+                measurementProcedure: [],
+                vlfSetting: {},
                 table
             }
         },
         async initTandeltaPowerAcSource() {
             let table = [
                 {
-                    measurement : "Phase A-(B+C+GND)",
-                    test_voltage : '',
-                    frequency : '',
-                    duration : '',
-                    tandelta : '',
-                    assessment : '',
-                    condition_indicator : ''
+                    measurement: "Phase A-(B+C+GND)",
+                    test_voltage: '',
+                    frequency: '',
+                    duration: '',
+                    tandelta: '',
+                    assessment: '',
+                    condition_indicator: ''
                 },
                 {
-                    measurement : "Phase B-(A+C+GND)",
-                    test_voltage : '',
-                    frequency : '',
-                    duration : '',
-                    tandelta : '',
-                    assessment : '',
-                    condition_indicator : ''
+                    measurement: "Phase B-(A+C+GND)",
+                    test_voltage: '',
+                    frequency: '',
+                    duration: '',
+                    tandelta: '',
+                    assessment: '',
+                    condition_indicator: ''
                 },
                 {
-                    measurement : "Phase C-(A+B+GND)",
-                    test_voltage : '',
-                    frequency : '',
-                    duration : '',
-                    tandelta : '',
-                    assessment : '',
-                    condition_indicator : ''
+                    measurement: "Phase C-(A+B+GND)",
+                    test_voltage: '',
+                    frequency: '',
+                    duration: '',
+                    tandelta: '',
+                    assessment: '',
+                    condition_indicator: ''
                 }
             ]
             return {
+                row_data: [],
+                measurementProcedure: [],
                 table
             }
         },
         async initParticalDischarge() {
             let table = []
             return {
+                row_data: [],
+                measurementProcedure: [],
                 table
             }
         },
@@ -271,12 +289,14 @@ export default {
             const data = ['Nameplate', 'Installation check', 'Insulation surface', 'Ground frame', 'Terminal box', 'Marking of terminals', 'Oil check']
             data.forEach(element => {
                 table.push({
-                    items : element,
-                    assessment : '',
-                    condition_indicator : ''
+                    items: element,
+                    assessment: '',
+                    condition_indicator: ''
                 })
             })
             return {
+                row_data: [],
+                measurementProcedure: [],
                 table
             }
         }

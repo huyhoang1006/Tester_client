@@ -2,10 +2,10 @@
 import { ipcMain } from 'electron'
 import { cimFunc } from "@/function"
 
-export const getSurgeArresterByMrid = () => {
-    ipcMain.handle('getSurgeArresterByMrid', async function (event, mrid) {
+export const getPowerCableByMrid = () => {
+    ipcMain.handle('getPowerCableByMrid', async function (event, mrid) {
         try {
-            const rs = await cimFunc.surgeArresterFunc.getSurgeArresterById(mrid)
+            const rs = await cimFunc.powerCableFunc.getPowerCableById(mrid)
             if (rs.success === true) {
                 return {
                     success: true,
@@ -29,10 +29,10 @@ export const getSurgeArresterByMrid = () => {
     })
 }
 
-export const insertSurgeArrester = () => {
-    ipcMain.handle('insertSurgeArrester', async function (event, data) {
+export const insertPowerCable = () => {
+    ipcMain.handle('insertPowerCable', async function (event, data) {
         try {
-            const rs = await cimFunc.surgeArresterFunc.insertSurgeArrester(data)
+            const rs = await cimFunc.powerCableFunc.insertPowerCable(data)
             if (rs.success === true) {
                 return {
                     success: true,
@@ -57,10 +57,10 @@ export const insertSurgeArrester = () => {
 }
 
 
-export const updateSurgeArresterByMrid = () => {
-    ipcMain.handle('updateSurgeArresterByMrid', async function (event, mrid, data) {
+export const updatePowerCableByMrid = () => {
+    ipcMain.handle('updatePowerCableByMrid', async function (event, mrid, data) {
         try {
-            const rs = await cimFunc.surgeArresterFunc.updateSurgeArrester(mrid, data)
+            const rs = await cimFunc.powerCableFunc.updatePowerCable(mrid, data)
             if (rs.success == true) {
                 return {
                     success: true,
@@ -85,10 +85,10 @@ export const updateSurgeArresterByMrid = () => {
     })
 }
 
-export const deleteSurgeArresterByMrid = () => {
-    ipcMain.handle('deleteSurgeArresterByMrid', async function (event, mrid) {
+export const deletePowerCableByMrid = () => {
+    ipcMain.handle('deletePowerCableByMrid', async function (event, mrid) {
         try {
-            const rs = await cimFunc.surgeArresterFunc.deleteSurgeArresterById(mrid)
+            const rs = await cimFunc.powerCableFunc.deletePowerCableById(mrid)
             if (rs.success == true) {
                 return {
                     success: true,
@@ -111,10 +111,10 @@ export const deleteSurgeArresterByMrid = () => {
     })
 }
 
-export const getSurgeArresterByPsrId = () => {
-    ipcMain.handle('getSurgeArresterByPsrId', async function (event, psrId) {
+export const getPowerCableByPsrId = () => {
+    ipcMain.handle('getPowerCableByPsrId', async function (event, psrId) {
         try {
-            const rs = await cimFunc.surgeArresterFunc.getSurgeArresterByPsrId(psrId)
+            const rs = await cimFunc.powerCableFunc.getPowerCableByPsrId(psrId)
             if (rs.success == true) {
                 return {
                     success: true,
@@ -139,9 +139,9 @@ export const getSurgeArresterByPsrId = () => {
 }
 
 export const active = () => {
-    getSurgeArresterByMrid()
-    getSurgeArresterByPsrId()
-    insertSurgeArrester()
-    updateSurgeArresterByMrid()
-    deleteSurgeArresterByMrid()
+    getPowerCableByMrid()
+    getPowerCableByPsrId()
+    insertPowerCable()
+    updatePowerCableByMrid()
+    deletePowerCableByMrid()
 }

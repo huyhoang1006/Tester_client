@@ -17,12 +17,13 @@ export default {
     methods: {
         async saveJob() {
             try {
-                if(!this.surgeArresterJobDto.properties.name || this.surgeArresterJobDto.properties.name === '') {
+                if (!this.surgeArresterJobDto.properties.name || this.surgeArresterJobDto.properties.name === '') {
                     this.$message.error('Name is required');
                 } else {
                     const dto = JSON.parse(JSON.stringify(this.surgeArresterJobDto));
                     const resultDto = await this.checkJob(dto);
                     const entity = surgeArresterJobMapping.jobDtoToEntity(resultDto);
+                    console.log('Entity to save:', entity);
                     const old_entity = surgeArresterJobMapping.jobDtoToEntity(this.surgeArresterJobDtoOld);
                     const rs = await window.electronAPI.insertSurgeArresterJob(old_entity, entity)
                     if (rs.success) {
@@ -65,8 +66,8 @@ export default {
         },
 
         async loadData(data) {
-            for(const test of data.testList) {
-                if(test.data.row_data.length == 0) {
+            for (const test of data.testList) {
+                if (test.data.row_data.length == 0) {
                     const initTest = await this.initTest(test.testTypeCode, this.assetData);
                     test.data.row_data = initTest.row_data;
                 }
@@ -97,7 +98,7 @@ export default {
         },
 
         checkAttachment(data) {
-            if(data.attachmentId === null || data.attachmentId === '') {
+            if (data.attachmentId === null || data.attachmentId === '') {
                 if (data.attachmentData.length > 0) {
                     data.attachmentId = uuid.newUuid()
                     data.attachment.id = data.attachmentId
@@ -106,17 +107,17 @@ export default {
                     data.attachment.type = 'job'
                     data.attachment.id_foreign = data.properties.mrid
                 }
-            } 
+            }
         },
 
         checkTestingEquipment(data) {
             const arr = [];
-            for(const item of data.testingEquipmentData) {
+            for (const item of data.testingEquipmentData) {
                 if (item.mrid === '' || item.mrid === null || item.mrid === this.$constant.ROOT) {
                     item.mrid = uuid.newUuid();
-                    item.work_id =  data.properties.mrid;
+                    item.work_id = data.properties.mrid;
                 }
-                for(const test_type_id of item.test_type_surge_arrester_id) {
+                for (const test_type_id of item.test_type_surge_arrester_id) {
                     arr.push({
                         mrid: uuid.newUuid(),
                         testing_equipment_id: item.mrid,
@@ -148,7 +149,7 @@ export default {
         },
 
         async checkTestList(data) {
-            for(const item of data.testList) {
+            for (const item of data.testList) {
                 if (item.mrid === '' || item.mrid === null || item.mrid === this.$constant.ROOT) {
                     item.mrid = uuid.newUuid();
                 }
@@ -156,28 +157,28 @@ export default {
                     item.testCondition.mrid = uuid.newUuid();
                 }
 
-                if(item.testCondition.condition) {
-                    if(item.testCondition.condition.top_oil_temperature.mrid === null || item.testCondition.condition.top_oil_temperature.mrid === '') {
+                if (item.testCondition.condition) {
+                    if (item.testCondition.condition.top_oil_temperature.mrid === null || item.testCondition.condition.top_oil_temperature.mrid === '') {
                         item.testCondition.condition.top_oil_temperature.mrid = uuid.newUuid();
                     }
-                    if(item.testCondition.condition.bottom_oil_temperature.mrid === null || item.testCondition.condition.bottom_oil_temperature.mrid === '') {
+                    if (item.testCondition.condition.bottom_oil_temperature.mrid === null || item.testCondition.condition.bottom_oil_temperature.mrid === '') {
                         item.testCondition.condition.bottom_oil_temperature.mrid = uuid.newUuid();
                     }
-                    if(item.testCondition.condition.winding_temperature.mrid === null || item.testCondition.condition.winding_temperature.mrid === '') {
+                    if (item.testCondition.condition.winding_temperature.mrid === null || item.testCondition.condition.winding_temperature.mrid === '') {
                         item.testCondition.condition.winding_temperature.mrid = uuid.newUuid();
                     }
-                    if(item.testCondition.condition.reference_temperature.mrid === null || item.testCondition.condition.reference_temperature.mrid === '') {
+                    if (item.testCondition.condition.reference_temperature.mrid === null || item.testCondition.condition.reference_temperature.mrid === '') {
                         item.testCondition.condition.reference_temperature.mrid = uuid.newUuid();
                     }
-                    if(item.testCondition.condition.ambient_temperature.mrid === null || item.testCondition.condition.ambient_temperature.mrid === '') {
+                    if (item.testCondition.condition.ambient_temperature.mrid === null || item.testCondition.condition.ambient_temperature.mrid === '') {
                         item.testCondition.condition.ambient_temperature.mrid = uuid.newUuid();
                     }
-                    if(item.testCondition.condition.humidity.mrid === null || item.testCondition.condition.humidity.mrid === '') {
+                    if (item.testCondition.condition.humidity.mrid === null || item.testCondition.condition.humidity.mrid === '') {
                         item.testCondition.condition.humidity.mrid = uuid.newUuid();
                     }
                 }
 
-                if(item.testCondition.attachment.id === null || item.testCondition.attachment.id === '') {
+                if (item.testCondition.attachment.id === null || item.testCondition.attachment.id === '') {
                     if (item.testCondition.attachmentData.length > 0) {
                         item.testCondition.attachment.id = uuid.newUuid()
                         item.testCondition.attachment.name = null
@@ -189,11 +190,11 @@ export default {
 
                 const dataStringMeasurement = item.data.row_data.filter(i => i.type === 'string')
                 const dataStringMeasurementSet = await window.electronAPI.getAllStringMeasurementByProcedure(item.testTypeId)
-                if(dataStringMeasurementSet.success) {
-                    for(const stringMeasurement of dataStringMeasurement) {
+                if (dataStringMeasurementSet.success) {
+                    for (const stringMeasurement of dataStringMeasurement) {
                         let matched = false;
-                        for(const data of dataStringMeasurementSet.data) {
-                            if(stringMeasurement.code === data.alias_name) {
+                        for (const data of dataStringMeasurementSet.data) {
+                            if (stringMeasurement.code === data.alias_name) {
                                 stringMeasurement.mrid = data.mrid;
                                 matched = true;
                                 break;
@@ -209,8 +210,8 @@ export default {
                         }
                     }
                 } else {
-                    if(dataStringMeasurementSet.data && dataStringMeasurementSet.data.length == 0) {
-                        for(const stringMeasurement of dataStringMeasurement) {
+                    if (dataStringMeasurementSet.data && dataStringMeasurementSet.data.length == 0) {
+                        for (const stringMeasurement of dataStringMeasurement) {
                             stringMeasurement.mrid = uuid.newUuid();
                             const measurementProcedure = new MeasurementProcedure();
                             measurementProcedure.mrid = uuid.newUuid();
@@ -223,11 +224,11 @@ export default {
 
                 const dataAnalog = item.data.row_data.filter(i => i.type === 'analog')
                 const dataAnalogSet = await window.electronAPI.getAllAnalogByProcedure(item.testTypeId);
-                if(dataAnalogSet.success) {
-                    for(const analog of dataAnalog) {
+                if (dataAnalogSet.success) {
+                    for (const analog of dataAnalog) {
                         let matched = false;
-                        for(const data of dataAnalogSet.data) {
-                            if(analog.code === data.alias_name) {
+                        for (const data of dataAnalogSet.data) {
+                            if (analog.code === data.alias_name) {
                                 analog.mrid = data.mrid;
                                 matched = true;
                                 break;
@@ -243,8 +244,8 @@ export default {
                         }
                     }
                 } else {
-                    if(dataAnalogSet.data && dataAnalogSet.data.length == 0) {
-                        for(const analog of dataAnalog) {
+                    if (dataAnalogSet.data && dataAnalogSet.data.length == 0) {
+                        for (const analog of dataAnalog) {
                             analog.mrid = uuid.newUuid();
                             const measurementProcedure = new MeasurementProcedure();
                             measurementProcedure.mrid = uuid.newUuid();
@@ -259,41 +260,41 @@ export default {
                 //lấy tất cả discrete của procedure
                 const dataDiscreteSet = await window.electronAPI.getAllDiscreteByProcedure(item.testTypeId);
                 //nếu thành công
-                if(dataDiscreteSet.success) {
+                if (dataDiscreteSet.success) {
                     //vòng lặp for để duyệt từng discrete trong dataDiscrete
                     // để kiểm tra xem dataDiscreteSet và dataDiscrete có trùng nhau không
-                    for(const discrete of dataDiscrete) {
+                    for (const discrete of dataDiscrete) {
                         let matched = false;
-                        for(const data of dataDiscreteSet.data) {
+                        for (const data of dataDiscreteSet.data) {
                             //những discrete có code trùng với alias_name trong dataDiscreteSet
-                            if(discrete.code === data.alias_name) {
+                            if (discrete.code === data.alias_name) {
                                 discrete.mrid = data.mrid;
                                 matched = true;
                                 //nếu trùng thì lấy kiểm tra xem value_alias_set đã tồn tại hay chưa
-                                if(data.value_alias_set === null || data.value_alias_set === '') {
+                                if (data.value_alias_set === null || data.value_alias_set === '') {
                                     discrete.pool.mrid = uuid.newUuid();
-                                    for(const item of discrete.pool.valueToAlias) {
+                                    for (const item of discrete.pool.valueToAlias) {
                                         item.mrid = uuid.newUuid();
                                     }
                                 } else {
                                     discrete.pool.mrid = data.value_alias_set
                                     const dataDiscreteSetAndAlias = await window.electronAPI.getValueAliasSetAndValueToAliasByMrid(discrete.pool.mrid);
-                                    if(dataDiscreteSetAndAlias.success) {
-                                        for(const item of discrete.pool.valueToAlias) {
+                                    if (dataDiscreteSetAndAlias.success) {
+                                        for (const item of discrete.pool.valueToAlias) {
                                             let matchedAlias = false;
-                                            for(const old of dataDiscreteSetAndAlias.data.value_to_aliases) {
-                                                if(item.alias_name === old.alias_name) {
+                                            for (const old of dataDiscreteSetAndAlias.data.value_to_aliases) {
+                                                if (item.alias_name === old.alias_name) {
                                                     item.mrid = old.mrid;
                                                     matchedAlias = true;
                                                     break;
                                                 }
                                             }
-                                            if(!matchedAlias) {
+                                            if (!matchedAlias) {
                                                 item.mrid = uuid.newUuid();
                                             }
                                         }
                                     } else {
-                                        for(const item of discrete.pool.valueToAlias) {
+                                        for (const item of discrete.pool.valueToAlias) {
                                             item.mrid = uuid.newUuid();
                                         }
                                     }
@@ -310,14 +311,14 @@ export default {
                             measurementProcedure.measurement_id = discrete.mrid;
                             item.data.measurementProcedure.push(measurementProcedure);
                             discrete.pool.mrid = uuid.newUuid();
-                            for(const item of discrete.pool.valueToAlias) {
+                            for (const item of discrete.pool.valueToAlias) {
                                 item.mrid = uuid.newUuid();
                             }
                         }
                     }
                 } else {
-                    if(dataDiscreteSet.data && dataDiscreteSet.data.length == 0) {
-                        for(const discrete of dataDiscrete) {
+                    if (dataDiscreteSet.data && dataDiscreteSet.data.length == 0) {
+                        for (const discrete of dataDiscrete) {
                             discrete.mrid = uuid.newUuid();
                             const measurementProcedure = new MeasurementProcedure();
                             measurementProcedure.mrid = uuid.newUuid();
@@ -325,14 +326,14 @@ export default {
                             measurementProcedure.measurement_id = discrete.mrid;
                             item.data.measurementProcedure.push(measurementProcedure);
                             discrete.pool.mrid = uuid.newUuid();
-                            for(const item of discrete.pool.valueToAlias) {
+                            for (const item of discrete.pool.valueToAlias) {
                                 item.mrid = uuid.newUuid();
                             }
                         }
                     }
                 }
-                if(item.data.table && item.data.table.length > 0) {
-                    for(const data of item.data.table) {
+                if (item.data.table && item.data.table.length > 0) {
+                    for (const data of item.data.table) {
                         if (data.mrid === '' || data.mrid === null || data.mrid === this.$constant.ROOT) {
                             data.mrid = uuid.newUuid();
                         }
@@ -345,7 +346,7 @@ export default {
                             }
                         }
                     }
-                }                
+                }
             }
         },
     }

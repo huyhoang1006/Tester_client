@@ -2,10 +2,10 @@
 import { ipcMain } from 'electron'
 import { entityFunc } from "@/function"
 
-export const insertBushingEntity = () => {
-    ipcMain.handle('insertBushingEntity', async function (event, data) {
+export const insertPowerCableJob = () => {
+    ipcMain.handle('insertPowerCableJob', async function (event, old_data, data) {
         try {
-            const rs = await entityFunc.bushingEntityFunc.insertBushingEntity(data)
+            const rs = await entityFunc.jobEntityFunc.powerCableJob.insertPowerCableJobEntity(old_data, data)
             if (rs.success == true) {
                 return {
                     success: true,
@@ -29,10 +29,10 @@ export const insertBushingEntity = () => {
     })
 }
 
-export const getBushingEntityByMrid = () => {
-    ipcMain.handle('getBushingEntityByMrid', async function (event, mrid, psrId) {
+export const getPowerCableJobByMrid = () => {
+    ipcMain.handle('getPowerCableJobByMrid', async function (event, mrid) {
         try {
-            const rs = await entityFunc.bushingEntityFunc.getBushingEntityById(mrid, psrId)
+            const rs = await entityFunc.jobEntityFunc.powerCableJob.getPowerCableJobEntity(mrid)
             if (rs.success == true) {
                 return {
                     success: true,
@@ -47,7 +47,6 @@ export const getBushingEntityByMrid = () => {
                 }
             }
         } catch (error) {
-            console.error("Error retrieving Bushing entity by MRID:", error);
             return {
                 error: error,
                 success: false,
@@ -57,11 +56,10 @@ export const getBushingEntityByMrid = () => {
     })
 }
 
-export const deleteBushingEntity = () => {
-    ipcMain.handle('deleteBushingEntity', async function (event, data) {
+export const deletePowerCableJobByMrid = () => {
+    ipcMain.handle('deletePowerCableJobByMrid', async function (event, data) {
         try {
-            const rs = await entityFunc.bushingEntityFunc.deleteBushingEntity(data)
-            console.log("Delete bushing entity", rs)
+            const rs = await entityFunc.jobEntityFunc.powerCableJob.deletePowerCableJobEntity(data)
             if (rs.success == true) {
                 return {
                     success: true,
@@ -87,7 +85,7 @@ export const deleteBushingEntity = () => {
 
 
 export const active = () => {
-    insertBushingEntity()
-    getBushingEntityByMrid()
-    deleteBushingEntity()
+    insertPowerCableJob()
+    getPowerCableJobByMrid()
+    deletePowerCableJobByMrid()
 }
