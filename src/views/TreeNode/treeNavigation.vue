@@ -2356,44 +2356,50 @@ export default {
                 console.error(error)
             }
         },
-
-        async handleJobConfirm() {
+       async handleJobConfirm() {
             try {
-                const job = this.$refs.jobData
-                if (job) {
-                    const { success, data } = await job.saveJob();
-                    if (success) {
-                        this.$message.success("Job saved successfully")
-                        this.signJob = false
-                        let newRows = []
-                        if (this.organisationClientList && this.organisationClientList.length > 0) {
-                            const newRow = {
-                                mrid: data.oldWork.mrid,
-                                name: data.oldWork.name,
-                                parentId: this.parentOrganization.mrid,
-                                parentName: this.parentOrganization.name,
-                                parentArr: this.parentOrganization.parentArr || [],
-                                mode: 'job',
-                                job: 'Surge arrester',
-                            }
-                            newRows.push(newRow);
-                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
-                            if (node) {
-                                const children = Array.isArray(node.children) ? node.children : [];
-                                Vue.set(node, "children", [...children, ...newRows]);
-                            } else {
-                                this.$message.error("Parent node not found in tree");
-                            }
-                        }
+        const job = this.$refs.jobData
+        if (job) {
+            const { success, data } = await job.saveJob();
+            if (success) {
+                this.$message.success("Job saved successfully")
+                this.signJob = false
+                let newRows = []
+                if (this.organisationClientList && this.organisationClientList.length > 0) {
+                    let jobType = '';
+                    // Xác định loại job, ví dụ dựa vào checkJobType hoặc assetData
+                    if (this.checkJobType === 'JobSurgeArrester') {
+                        jobType = 'Surge arrester';
+                    } else if (this.checkJobType === 'JobPowerCable') {
+                        jobType = 'Power cable';
+                    }
+                    const newRow = {
+                        mrid: data.oldWork.mrid,
+                        name: data.oldWork.name,
+                        parentId: this.parentOrganization.mrid,
+                        parentName: this.parentOrganization.name,
+                        parentArr: this.parentOrganization.parentArr || [],
+                        mode: 'job',
+                        job: jobType,
+                    }
+                    newRows.push(newRow);
+                    const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                    if (node) {
+                        const children = Array.isArray(node.children) ? node.children : [];
+                        Vue.set(node, "children", [...children, ...newRows]);
                     } else {
-                        this.$message.error("Failed to save Job")
+                        this.$message.error("Parent node not found in tree");
                     }
                 }
-            } catch (error) {
-                this.$message.error("Some error occur")
-                console.error(error)
+            } else {
+                this.$message.error("Failed to save Job")
             }
-        },
+        }
+    } catch (error) {
+        this.$message.error("Some error occur")
+        console.error(error)
+    }
+},
 
         async downloadFromServer() {
 
@@ -3306,6 +3312,12 @@ export default {
                     this.signJob = true;
                 }
                 else if(node.asset == 'Power cable'){
+                    const dataTestType = await window.electronAPI.getAllTestTypePowerCable();
+                    if (dataTestType.success) {
+                        this.testTypeListData = dataTestType.data
+                    } else {
+                        this.testTypeListData = []
+                    }
                     this.checkJobType = 'JobPowerCable'
                     this.signJob = true;
                 }

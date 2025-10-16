@@ -9,12 +9,11 @@
                     <th>Calibration date</th>
                     <th>Test used</th>
                     <th @click="add()" class="action-col"><i class="fa-solid fa-plus pointer"></i></th>
-                    <th @click="removeAll()" cSlass="action-col"><i class="fa-solid fa-trash pointer"></i></th>
+                    <th @click="removeAll()" class="action-col"><i class="fa-solid fa-trash pointer"></i></th>
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testingEquipmentListData">
-                    <tr :key="index">
+                <tr v-for="(item, index) in testingEquipmentListData" :key="index">
                         <td style="font-weight: bold;">
                             {{ index + 1 }}
                         </td>
@@ -36,7 +35,7 @@
                             </el-date-picker>
                         </td>
                         <td>
-                            <el-select multiple collapse-tags size="mini" v-model="item.test_type_surge_arrester_id" placeholder="Select test type">
+                            <el-select multiple collapse-tags size="mini" v-model="item.test_type_power_cable_id" placeholder="Select test type">
                                 <el-option
                                     v-for="test in testTypeListData"
                                     :key="test.mrid"
@@ -56,7 +55,6 @@
                             </el-button>
                         </td>
                     </tr>
-                </template>
             </tbody>
         </table>
     </div>
@@ -93,7 +91,7 @@ export default {
                 serial_number: '',
                 calibration_date: '',
                 work_id: '',
-                test_type_surge_arrester_id: []
+                test_type_power_cable_id: []
             }
             this.testingEquipmentListData.push(data);
         },
@@ -104,7 +102,7 @@ export default {
                 serial_number: '',
                 calibration_date: '',
                 work_id : '',
-                test_type_surge_arrester_id: []
+                test_type_power_cable_id: []
             }
             this.testingEquipmentListData.splice(index + 1, 0, data);
         },

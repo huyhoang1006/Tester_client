@@ -1,3 +1,3 @@
 import * as surgeArresterTestTypeFunc from './surgeArrester/index.js'
-
-export { surgeArresterTestTypeFunc }
+import * as powerCableTestTypeFunc from './powerCable/index.js'
+export { surgeArresterTestTypeFunc, powerCableTestTypeFunc }

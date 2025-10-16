@@ -65,7 +65,7 @@
                     <el-divider></el-divider>
                     <el-input v-model="propertiesData.summary" type="textarea" :rows="5"></el-input>
                 </el-form>
-                <Attachment :attachment_="this.attachmentData" title="Overview" height="120px" @data-attachment="getDataAttachment"></Attachment>
+                <Attachment :attachment_="attachmentData" title="Overview" height="120px" @data-attachment="getDataAttachment"></Attachment>
             </el-col>
         </el-row>
 
@@ -82,22 +82,22 @@
                     <el-col>
                         <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                             <el-form-item class="asset-item" label="Name">
-                                <span class="asset-name">{{ location.name }}</span>
+                                <span class="asset-name">{{ locationData.name }}</span>
                             </el-form-item>
                             <el-form-item class="asset-item" label="Address">
-                                <span class="asset-name">{{ location.address }}</span>
+                                <span class="asset-name">{{ locationData.address }}</span>
                             </el-form-item>
                             <el-form-item class="asset-item" label="City">
-                                <span class="asset-name">{{ location.city }}</span>
+                                <span class="asset-name">{{ locationData.city }}</span>
                             </el-form-item>
                             <el-form-item class="asset-item" label="State/Province">
-                                <span class="asset-name">{{ location.state_province }}</span>
+                                <span class="asset-name">{{ locationData.state_province }}</span>
                             </el-form-item>
                             <el-form-item class="asset-item" label="Postal code">
-                                <span class="asset-name">{{ location.postal_code }}</span>
+                                <span class="asset-name">{{ locationData.postal_code }}</span>
                             </el-form-item>
                             <el-form-item class="asset-item" label="Country">
-                                <span class="asset-name">{{ location.country }}</span>
+                                <span class="asset-name">{{ locationData.country }}</span>
                             </el-form-item>
                         </el-form>
                     </el-col>
@@ -117,16 +117,16 @@
                     <el-col>
                         <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                             <el-form-item class="asset-item" label="Asset">
-                                <span class="asset-name">{{ asset.asset }}</span>
+                                <span class="asset-name">{{ assetData.kind }}</span>
                             </el-form-item>
                             <el-form-item class="asset-item" label="Asset type">
-                                <span class="asset-name">{{ asset.asset_type }}</span>
+                                <span class="asset-name">{{ assetData.asset_type }}</span>
                             </el-form-item>
                             <el-form-item class="asset-item" label="Serial number">
-                                <span class="asset-name">{{ asset.serial_no }}</span>
+                                <span class="asset-name">{{ assetData.serial_number }}</span>
                             </el-form-item>
                             <el-form-item class="asset-item" label="Manufacturer">
-                                <span class="asset-name">{{ asset.manufacturer }}</span>
+                                <span class="asset-name">{{ productAssetModelData.manufacturer }}</span>
                             </el-form-item>
                         </el-form>
                     </el-col>
@@ -150,7 +150,7 @@ export default {
     props: {
         data: {
             type: Object,
-            require: true,
+            required: true,
             default() {
                 return {
                     id: '',
@@ -168,38 +168,55 @@ export default {
                 }
             }
         },
-        location: {
-            type: Object,
-            require: true,
-            default() {
-                return {
-                    id: '',
-                    name: '',
-                    address: '',
-                    city: '',
-                    state_province: '',
-                    postal_code: '',
-                    country: ''
-                }
-            }
+        attachmentData: {
+            type: Array,
+            required: true,
+            default: () => []
         },
-        asset: {
+        locationData: {
             type: Object,
-            require: true,
-            default() {
-                return {
-                    id: '',
-                    asset: '',
-                    asset_type: '',
-                    serial_number: '',
-                    manufacturer: ''
-                }
-            }
+            required: true,
+            default: () => ({
+                id: '',
+                name: '',
+                address: '',
+                city: '',
+                state_province: '',
+                postal_code: '',
+                country: ''
+            })
+        },
+        assetData: {
+            type: Object,
+            required: true,
+            default: () => ({
+                id: '',
+                asset: '',
+                asset_type: '',
+                serial_number: '',
+                manufacturer: ''
+            })
+        },
+        productAssetModelData: {
+            type: Object,
+            required: true,
+            default: () => ({})
+        },
+        parentOrganization: {
+            type: Object,
+            required: true,
+            default: () => ({})
         }
     },
+    
     computed: {
         propertiesData() {
-            return this.data
+            return this.data || this.properties;
+        }
+    },
+    methods: {
+        getDataAttachment(attachment) {
+            this.$emit('update-attachment', attachment);
         }
     }
 }

@@ -5,26 +5,35 @@
                 <!-- Overview -->
                 <el-tab-pane style="width: 100%;">
                     <span slot="label"><i class="fa-solid fa-book"></i> Overview</span>
-                    <overview :data="properties" :location="location" :asset="asset"></overview>
+<overview 
+    :data="powerCableJobDto.properties" 
+    @update-attachment="updateAttachmentOverView" 
+    :attachmentData.sync="powerCableJobDto.attachmentData" 
+    :locationData="locationData" 
+    :assetData="assetData" 
+    :productAssetModelData="productAssetModelData" 
+    :parentOrganization="parentOrganization">
+</overview>
+
                 </el-tab-pane>
 
                 <!-- Select test -->
                 <el-tab-pane>
-                    <span slot="label"><i class="fa-solid fa-list-check"></i> Select test</span>
+                    <span slot="label"><i class="fa-solid fa-list-check"></i> Test settings</span>
                     <select-test style="width: 100%;"
-                        :mode="mode" 
-                        :data="testList" 
-                        :asset="asset" 
+                        :data="powerCableJobDto.testList"
+                        :testTypeListData="testTypeListData"
+                        :assetData="assetData"
                         :obj-active-name="objActiveName"
-                        :attachmentArr.sync="attachmentArr"
-                        :testconditionArr.sync="testconditionArr"
+                        :attachment-arr="attachmentArr"
+                        :testcondition-arr="testconditionArr"
                         ></select-test>
                 </el-tab-pane>
 
                 <el-tab-pane>
                     <span slot="label"><i class="fa-solid fa-list-check"></i> Testing equipment</span>
                     <div>
-                        <testingEquipment></testingEquipment>
+                        <testing-equipment :data="powerCableJobDto.testingEquipmentData" :testTypeListData="testTypeListData"></testing-equipment>
                     </div>
                 </el-tab-pane>
 
@@ -33,17 +42,17 @@
                     <span slot="label"><i class="fa-solid fa-calculator"></i> Tests</span>
                     <div id="tests" style="width: 100%;">
                         <el-tabs v-model="objActiveName.activeName" type="card" class="w-100 h-100">
-                            <el-tab-pane v-for="(item, index) in testList" :key="index" :label="item.name" :name="item.tabId">
+                            <el-tab-pane v-for="(item, index) in powerCableJobDto.testList" :key="index" :label="item.name" :name="item.name + index">
                                 <test-information
-                                title="Test"
-                                :testCondition.sync="testconditionArr[index]"
-                                :attachment.sync="attachmentArr[index]"
-                                >
+                                    :title="item.name"
+                                    :data="item.testCondition"
+                                    :assetData="assetData"
+                                    :attachment="item.testCondition.attachmentData">
                                 </test-information>
                                 <component
                                     :is="item.testTypeCode" 
                                     :data="item.data" 
-                                    :asset="asset" 
+                                    :asset="assetData"
                                     >
                                 </component>
                             </el-tab-pane>
@@ -58,7 +67,6 @@
 <script>
 /* eslint-disable */
 import mixin from './mixin'
-import Mixtestcondition from './mixin/Mixtestcondition'
 import overview from './components/Overview'
 import SelectTest from './components/SelectTest'
 import testInformation from '@/views/Common/testInformation.vue'
@@ -90,12 +98,31 @@ export default {
         ParticalDischarge,
         GeneralInspection
     },
-    mixins: [mixin, Mixtestcondition],
+    props: {
+        locationData: {
+            type: Object,
+            default: () => ({})
+        },
+        assetData: {
+            type: Object,
+            default: () => ({})
+        },
+        productAssetModelData: {
+            type: Object,
+            default: () => ({})
+        },
+        parentOrganization: {
+            type: Object,
+            default: () => ({})
+        },
+        testTypeListData: {
+            type: Array,
+            default: () => []
+        }
+    },
+    mixins: [mixin],
     data() {
         return {
-            mode: this.$constant.ADD,
-            job_id: null,
-            saved: false,
             objActiveName: {
                 activeName: null
             }
@@ -103,19 +130,17 @@ export default {
     },
     mounted() {},
     methods: {
-         updateAttachmentOverView(attachment) {
-            this.attachmentData = attachment
+        updateAttachmentOverView(attachment) {
+            this.powerCableJobDto.attachmentData = attachment
         },
         loadMapForView() {
         },
     },
 }
 </script>
-
 <style lang="scss" scoped>
 #job {
     width: 100%;
-    height: 100%;
 }
 
 ::v-deep(.el-tabs__item) {
@@ -130,11 +155,9 @@ export default {
   font-size: 12px !important;
 }
 
-
 #tests,
 #job__health-index {
     width: calc(100vw - 145px);
-    height: calc(100vh - 150px);
     overflow-y: auto;
     overflow-x: hidden;
 }

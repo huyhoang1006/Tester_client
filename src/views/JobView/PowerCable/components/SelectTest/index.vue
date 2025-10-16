@@ -1,7 +1,7 @@
 <template>
     <div id="select-test">
         <el-row :gutter="20">
-            <el-col :span="11" >
+            <el-col :span="11">
                 <table class="mgt-5 w-100 table-strip-input-data">
                     <thead>
                         <tr>
@@ -11,12 +11,13 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <!-- changed: iterate available test types, not selected tests -->
                         <tr v-for="(item, index) in testTypeList" :key="index">
                             <td style="font-weight: bold;">{{ index + 1 }}</td>
-                            <td>
+                            <td class="ellipsis-cell" style="font-weight: bold;">
                                 {{ item.name }}
                             </td>
-                            <td>
+                            <td style="">
                                 <el-button size="mini" type="primary" style="width: 25px; display: flex; align-items: center; justify-content: center;" @click="addTest(item)">
                                     <i class="fas fa-plus"></i>
                                 </el-button>
@@ -30,22 +31,22 @@
                     <thead>
                         <tr>
                             <th style="width: 20px;">No</th>
-                            <th style="width: 150px">Test type</th>
+                            <th style="width: 150px;">Test type</th>
                             <th>Test name</th>
-                            <th style="width: 25px ;"></th>
+                            <th style="width: 25px;"></th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="(item, index) in testListData" :key="index">
-                            <td>{{ index + 1 }}</td>
-                            <td>
-                                {{ item.testTypeName }}
+                            <td style="font-weight: bold;">{{ index + 1 }}</td>
+                            <td class="ellipsis-cell">
+                                {{ item.name }}
                             </td>
                             <td>
                                 <el-input size="mini" type="text" v-model="item.name"></el-input>
                             </td>
                             <td>
-                                 <el-button size="mini" type="danger" style="width: 25px; display: flex; align-items: center; justify-content: center;" @click="deleteTest(index)">
+                                <el-button size="mini" type="danger" style="width: 25px; display: flex; align-items: center; justify-content: center;" @click="deleteTest(index)">
                                     <i class="fas fa-trash"></i>
                                 </el-button>
                             </td>
@@ -59,8 +60,10 @@
 
 <script>
 /* eslint-disable */
+import Attachment from '@/views/Entity/Attachment'
+import { UnitMultiplier } from '@/views/Enum/UnitMultiplier'
+import { UnitSymbol } from '@/views/Enum/UnitSymbol'
 import mixin from './mixin'
-// import loader from "@/utils/preload"
 import { mapState } from 'vuex'
 
 export default {
@@ -132,19 +135,36 @@ export default {
                     activeName: null
                 }
             }
-        }
+        },
+        testTypeListData: {
+            type: Array,
+            required: false,
+            default() { return [] }
+        },
     },
     data() {
         return {
-            testTypeList: []
+            testTypeList: [], // <-- ensure available types stored here
+            unitMultiplier: UnitMultiplier,
+            unitSymbol: UnitSymbol,
         }
     },
-    async beforeMount() { 
-        await this.getTestTypes()
+    mounted() {
+        // initialize available test types from prop (or fetch)
+        if (this.testTypeListData && this.testTypeListData.length > 0) {
+            this.testTypeList = this.testTypeListData
+        } else {
+            // optional: fetch from preload if prop not provided
+            this.getTestTypes().then(() => {}).catch(()=>{})
+        }
     },
-    mounted() {},
+    watch: {
+        // keep local list in sync if parent updates prop
+        testTypeListData(newVal) {
+            this.testTypeList = newVal || []
+        }
+    },
     computed: {
-
         ...mapState(['selectedLocation', 'selectedAsset']),
         testListData: function () {
             return this.data
@@ -159,7 +179,7 @@ export default {
             return this.testconditionArr
         }
     },
-    methods: {
+   methods: {
         async getTestTypes() {
             const rs = await window.electronAPI.getTestPowerCableTypes()
             if (rs.success) {
@@ -177,52 +197,86 @@ export default {
             return count
         },
         async addTest(testType) {
-            const count = await this.countTest(testType.id)
-            const initData = await this.initTest(testType.code)
-            const tabId = this.$uuid.newUuid()
+            const count = await this.countTest(testType.mrid)
+            const initData = await this.initTest(testType.code, this.assetData)
             const name = count == 0 ? testType.name : `${testType.name} (${count + 1})`
             this.testListData.push({
-                id: this.$uuid.EMPTY,
-                testTypeId: testType.id,
+                mrid: this.$uuid.EMPTY,
+                testTypeId: testType.mrid,
                 testTypeCode: testType.code,
                 testTypeName: testType.name,
                 name,
                 data: initData,
-                tabId,
-                worst_score: null,
-                worst_score_df: null,
-                worst_score_c: null,
-                average_score: null,
-                average_score_df: null,
-                average_score_c: null,
-                weighting_factor: null,
-                total_average_score: null,
-                total_worst_score: null,
-                created_on: new Date().getTime()
+                testCondition: {
+                    mrid: '',
+                    condition: {
+                        top_oil_temperature: {
+                            mrid: '',
+                            value: '',
+                            unit: ''
+                        },
+                        bottom_oil_temperature: {
+                            mrid: '',
+                            value: '',
+                            unit: ''
+                        },
+                        winding_temperature: {
+                            mrid: '',
+                            value: '',
+                            unit: ''
+                        },
+                        reference_temperature: {
+                            mrid: '',
+                            value: '',
+                            unit: ''
+                        },
+                        ambient_temperature: {
+                            mrid: '',
+                            value: '',
+                            unit: ''
+                        },
+                        humidity: {
+                            mrid: '',
+                            value: '',
+                            unit: ''
+                        }
+                    },
+                    equipment: [{
+                        model: "",
+                        serial_no: "",
+                        calibration_date: ""
+                    }],
+                    comment: "",
+                    attachment: {
+                        id: '',
+                        name: '',
+                        path: '',
+                        type: 'test',
+                        id_foreign: ''
+                    },
+                    attachmentData: []
+                }
             })
-            this.attachmentArray.push(
-                []
-            )
+            this.attachmentArray.push([])
             this.testconditionArray.push({
-                condition : { 
-                    top_oil_temperature : "",
-                    bottom_oil_temperature : "",
-                    winding_temperature : "",
-                    reference_temperature : "",
-                    ambient_temperature : "",
-                    humidity : "",
-                    weather : ""
+                condition: { 
+                    top_oil_temperature: "",
+                    bottom_oil_temperature: "",
+                    winding_temperature: "",
+                    reference_temperature: "",
+                    ambient_temperature: "",
+                    humidity: "",
+                    weather: ""
                 },
-                equipment : [{
-                    model : "",
-                    serial_no : "",
-                    calibration_date : ""
-            
+                equipment: [{
+                    model: "",
+                    serial_no: "",
+                    calibration_date: ""
                 }],
-                comment : "",
+                comment: "",
             })
             if (this.testListData.length == 1) {
-                this.objActiveNameData.activeName = tabId
+                this.objActiveNameData.activeName = name + '0'
             }
         },
         deleteTest(index) {
@@ -232,7 +286,7 @@ export default {
                 cancelButtonText: 'Cancel',
                 type: 'warning'
             })
-                   .then(async () => {
+            .then(async () => {
                     this.testListData.splice(index, 1)
                 })
                 .catch(() => {})
@@ -243,9 +297,19 @@ export default {
 
 <style lang="scss" scoped>
 #select-test {
-    width: calc(100vw - 145px);
-    height: calc(100vh - 150px);
     overflow-y: auto;
     overflow-x: hidden;
 }
+td, th {
+    font-size: 12px;
+}
+
+.ellipsis-cell {
+  font-weight: bold;
+  max-width: 150px; /* hoặc theo <th> */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 </style>
