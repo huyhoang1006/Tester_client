@@ -50,3 +50,13 @@ export const getResistanceById = async (mrid) => {
         return { success: false, err, message: 'Get resistance by id failed' }
     }
 }
+
+export const deleteResistanceByIdTransaction = async (mrid, dbsql) => {
+    return new Promise((resolve, reject) => {
+        dbsql.run("DELETE FROM resistance WHERE mrid=?", [mrid], function (err) {
+            if (err) return reject({ success: false, err, message: 'Delete resistance failed' })
+            if (this.changes === 0) return resolve({ success: false, data: null, message: 'Resistance not found' })
+            return resolve({ success: true, data: null, message: 'Delete resistance completed' })
+        })
+    })
+}
