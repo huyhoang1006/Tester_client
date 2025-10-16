@@ -13,6 +13,7 @@ import * as ipcBushing from './bushing/index.js'
 import * as ipcDisconnector from './disconnector/index.js'
 import * as ipcRotatingMachine from './rotatingMachine/index.js'
 import * as ipcCurrentTransformer from './currentTransformer/index.js'
+
 export const active = () => {
     ipcSubstation.active()
     ipcAttachment.active()
@@ -29,4 +30,5 @@ export const active = () => {
     ipcDisconnector.active()
     ipcRotatingMachine.active()
     ipcCurrentTransformer.active()
+
 }

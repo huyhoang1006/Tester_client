@@ -1,220 +1,354 @@
-import {mapState} from 'vuex'
-import loader from "@/utils/preload"
-
+/* eslint-disable */
+import uuid from "@/utils/uuid";
+import * as powerCableJobMapping from "@/views/Mapping/PowerCableJob/index"
+import PowerCableJobDto from "@/views/Dto/Job/PowerCable/index";
+import mixins from '../components/SelectTest/mixin'
+import testConditionMixin from './Mixtestcondition'
+import MeasurementProcedure from "@/views/Cim/MeasurementProcedure";
+import ValueAliasSet from "@/views/Cim/ValueAliasSet";
 
 export default {
+    mixins: [mixins, testConditionMixin],
     data() {
         return {
-            properties: {
-                id: '',
-                name: '',
-                work_order: '',
-                creation_date: '',
-                execution_date: '',
-                tested_by: '',
-                approved_by: '',
-                approval_date: '',
-                summary: '',
-                ambient_condition: '',
-                testing_method: '',
-                standard: ''
-            },
-            location: {
-                id: '',
-                name: '',
-                address: '',
-                city: '',
-                state_province: '',
-                postal_code: '',
-                country: ''
-            },
-            asset: {
-                id: '',
-                asset: '',
-                asset_type: '',
-                serial_number: '',
-                manufacturer: ''
-            },
-            testList: [],
-            listHeal : [],
+            powerCableJobDto: new PowerCableJobDto(),
+            powerCableJobDtoOld: new PowerCableJobDto()
         }
-    },
-    computed: {
-        ...mapState(['selectedAsset', 'selectedJob']),
-    },
-    async beforeMount() {
-        loader.loaderStart()
-        await this.getLocationAssetByIdPowerCable()
-        this.mode = this.$route.query.mode
-        if (this.mode === this.$constant.EDIT || this.mode === this.$constant.DUP) {
-            this.job_id = this.$route.query.job_id
-            const rs = await window.electronAPI.getJobPowerCableById(this.job_id)
-            console.log(rs)
-            if (rs.success) {
-                const data = rs.data
-                const {job, testList} = data
-                if (this.mode === this.$constant.DUP) {
-                    job.id = ''
-                    job.name = ''
-                }
-                this.properties = job
-                testList.forEach(async (element) => {
-                    element.data = JSON.parse(element.data)
-                    let condition = await window.electronAPI.getTestingCondition(element.id)
-                    let attachment = await window.electronAPI.getAllAttachment(element.id, "test")
-                    if(condition.data.length === 0) {
-                        this.testconditionArr.push({
-                            condition : { 
-                                top_oil_temperature : "",
-                                bottom_oil_temperature : "",
-                                winding_temperature : "",
-                                reference_temperature : "",
-                                ambient_temperature : "",
-                                humidity : "",
-                                weather : ""
-                            },
-                            equipment : [{
-                                model : "",
-                                serial_no : "",
-                                calibration_date : ""
-                        
-                            }],
-                            comment : "",
-                        })
-                    }
-                    else {
-                        condition.data.forEach(async (e) => {
-                            e.condition = await JSON.parse(e.condition)
-                            e.equipment = await JSON.parse(e.equipment)
-                            if (this.mode == this.$constant.DUP) {
-                                e.id = this.$uuid.EMPTY
-                            }
-                            this.testconditionArr.push(e)
-                        });
-                    }
-                    if(attachment.data.length === 0) {
-                        this.attachmentArr.push([])
-                    }
-                    else {
-                        attachment.data.forEach(async (e) => {
-                            e.name = await JSON.parse(e.name)
-                            if (this.mode == this.$constant.DUP) {
-                                e.id = this.$uuid.EMPTY
-                            }
-                            this.attachmentArr.push(e.name)
-                        })
-                    }
-                    if (this.mode == this.$constant.DUP) {
-                        element.id = this.$uuid.EMPTY
-                    }
-                })
-                this.testList = testList
-            }
-        }
-        loader.loaderEnd()
     },
     methods: {
-        async getLocationAssetByIdPowerCable() {
-            const assetId = this.selectedAsset[0].id
-            const rs = await window.electronAPI.getLocationAssetByIdPowerCable(assetId)
-            if (rs.success) {
-                const data = rs.data
-                const {asset, location} = data
-                this.location = location
-                this.asset = Object.assign(asset,(JSON.parse(asset.properties)))
-                       
-            } else {
-                this.$message.error(rs.message)
-            }
-        },
-        backToManage() {
-            this.$confirm('Do you want to exit?', 'Warning', {
-                confirmButtonText: 'OK',
-                cancelButtonText: 'Cancel',
-                type: 'warning'
-            })
-                .then(async () => {
-                    this.$router.push({name: 'manage'})
-                })
-                .catch(() => {
-                    return
-                })
-        },
         async saveJob() {
-            if (this.mode === this.$constant.ADD || this.mode === this.$constant.DUP) {
-                await this.insertJobdata()
-            } else {
-                this.updateJobPowerCable()
-            }
-        },
-        async insertJobdata() {
-            loader.loaderStart()
-            const rs = await window.electronAPI.insertJobPowerCable(
-                this.selectedAsset[0].id, this.properties, this.testList, this.testconditionArr, this.attachmentArr)
-            loader.loaderEnd()
-            if (rs.success) {
-                this.$message({
-                    type: 'success',
-                    message: 'Insert completed'
-                })
-                this.$router.push({name: 'manage'})
-            } else {
-                this.$message.error(rs.message)
-            }
-        },
-        async updateJobPowerCable() {
-            loader.loaderStart()
-            const rs = await window.electronAPI.updateJobPowerCable(this.properties, this.testList, this.testconditionArr, this.attachmentArr)
-            if (rs.success) {
-                this.$message({
-                    type: 'success',
-                    message: 'Update completed'
-                })
-                const rs = await window.electronAPI.getJobPowerCableById(this.job_id)
-                if (rs.success) {
-                    const data = rs.data
-                    const {testList} = data
-                    this.testconditionArr = []
-                    testList.forEach(async (element) => {
-                        element.data = JSON.parse(element.data)
-                        let condition = await window.electronAPI.getTestingCondition(element.id)
-                        if(condition.data.length === 0) {
-                            this.testconditionArr.push({
-                                condition : { 
-                                    top_oil_temperature : "",
-                                    bottom_oil_temperature : "",
-                                    winding_temperature : "",
-                                    reference_temperature : "",
-                                    ambient_temperature : "",
-                                    humidity : "",
-                                    weather : ""
-                                },
-                                equipment : [{
-                                    model : "",
-                                    serial_no : "",
-                                    calibration_date : ""
-                            
-                                }],
-                                comment : "",
-                            })
-                            this.attachmentArr.push([])
-                        }
-                        else {
-                            condition.data.forEach(async (e) => {
-                                e.condition = await JSON.parse(e.condition)
-                                e.equipment = await JSON.parse(e.equipment)
-                                this.testconditionArr.push(e)
-                            });
-                        }
-                    })
-                    this.testList = testList
+            try {
+                if (!this.powerCableJobDto.properties.name || this.powerCableJobDto.properties.name === '') {
+                    this.$message.error('Name is required');
                 } else {
-                    this.$message.error(rs.message)
+                    const dto = JSON.parse(JSON.stringify(this.powerCableJobDto));
+                    const resultDto = await this.checkJob(dto);
+                    const entity = powerCableJobMapping.jobDtoToEntity(resultDto);
+                    console.log('Saving job:', entity);
+                    const old_entity = powerCableJobMapping.jobDtoToEntity(this.powerCableJobDtoOld);
+                    const rs = await window.electronAPI.insertPowerCableJob(old_entity, entity)
+                    if (rs.success) {
+                        return {
+                            success: true,
+                            data: rs.data,
+                            message: 'Job saved successfully'
+                        }
+                    } else {
+                        return {
+                            success: false,
+                            data: rs.data,
+                            message: 'Failed to save job'
+                        }
+                    }
                 }
-            } else {
-                this.$message.error(rs.message)
+            } catch (error) {
+                console.error('Error saving job:', error);
+                return {
+                    success: false,
+                    data: null,
+                    message: 'Failed to save job'
+                }
             }
-            loader.loaderEnd()
-        }
+        },
+
+        async saveCtrS() {
+            const result = await this.saveJob()
+            if (result.success) {
+                const dto = powerCableJobMapping.JobEntityToDto(result.data);
+                this.loadData(dto);
+                this.$message.success(result.message);
+            } else {
+                this.$message.error(result.message);
+            }
+        },
+
+        async resetForm() {
+            this.powerCableJobDto = new PowerCableJobDto();
+        },
+
+        async loadData(data) {
+            for (const test of data.testList) {
+                if (test.data.row_data.length == 0) {
+                    const initTest = await this.initTest(test.testTypeCode, this.assetData);
+                    test.data.row_data = initTest.row_data;
+                }
+            }
+            this.powerCableJobDto = data
+            this.powerCableJobDtoOld = JSON.parse(JSON.stringify(data));
+        },
+
+        async checkJob(data) {
+            this.checkProperties(data);
+            this.checkAssetId(data);
+            this.checkAttachment(data);
+            this.checkTestingEquipment(data);
+            await this.checkTestList(data);
+            return data;
+        },
+
+        checkProperties(data) {
+            if (data.properties.mrid === '' || data.properties.mrid === null) {
+                data.properties.mrid = uuid.newUuid();
+            }
+        },
+
+        checkAssetId(data) {
+            if (data.properties.asset_id === '' || data.properties.asset_id === null) {
+                data.properties.asset_id = this.assetData.mrid;
+            }
+        },
+
+        checkAttachment(data) {
+            if (data.attachmentId === null || data.attachmentId === '') {
+                if (data.attachmentData.length > 0) {
+                    data.attachmentId = uuid.newUuid()
+                    data.attachment.id = data.attachmentId
+                    data.attachment.name = null
+                    data.attachment.path = JSON.stringify(data.attachmentData)
+                    data.attachment.type = 'job'
+                    data.attachment.id_foreign = data.properties.mrid
+                }
+            }
+        },
+
+        checkTestingEquipment(data) {
+            const arr = [];
+            for (const item of data.testingEquipmentData) {
+                if (item.mrid === '' || item.mrid === null || item.mrid === this.$constant.ROOT) {
+                    item.mrid = uuid.newUuid();
+                    item.work_id = data.properties.mrid;
+                }
+                for (const test_type_id of item.test_type_power_cable_id) {
+                    arr.push({
+                        mrid: uuid.newUuid(),
+                        testing_equipment_id: item.mrid,
+                        test_type_id: test_type_id
+                    });
+                }
+            }
+
+            // Thêm các phần tử mới vào data.powerCableTestingEquipmentTestType nếu chưa có
+            for (const current of arr) {
+                const existed = data.powerCableTestingEquipmentTestType.some(
+                    old =>
+                        old.testing_equipment_id === current.testing_equipment_id &&
+                        old.test_type_id === current.test_type_id
+                );
+                if (!existed) {
+                    data.powerCableTestingEquipmentTestType.push(current);
+                }
+            }
+
+            // Xóa các phần tử quá khứ không còn trong hiện tại
+            data.powerCableTestingEquipmentTestType = data.powerCableTestingEquipmentTestType.filter(
+                old => arr.some(
+                    current =>
+                        old.testing_equipment_id === current.testing_equipment_id &&
+                        old.test_type_id === current.test_type_id
+                )
+            );
+        },
+
+        async checkTestList(data) {
+            for (const item of data.testList) {
+                if (item.mrid === '' || item.mrid === null || item.mrid === this.$constant.ROOT) {
+                    item.mrid = uuid.newUuid();
+                }
+                if (item.testCondition.mrid === '' || item.testCondition.mrid === null) {
+                    item.testCondition.mrid = uuid.newUuid();
+                }
+
+                if (item.testCondition.condition) {
+                    if (item.testCondition.condition.top_oil_temperature.mrid === null || item.testCondition.condition.top_oil_temperature.mrid === '') {
+                        item.testCondition.condition.top_oil_temperature.mrid = uuid.newUuid();
+                    }
+                    if (item.testCondition.condition.bottom_oil_temperature.mrid === null || item.testCondition.condition.bottom_oil_temperature.mrid === '') {
+                        item.testCondition.condition.bottom_oil_temperature.mrid = uuid.newUuid();
+                    }
+                    if (item.testCondition.condition.winding_temperature.mrid === null || item.testCondition.condition.winding_temperature.mrid === '') {
+                        item.testCondition.condition.winding_temperature.mrid = uuid.newUuid();
+                    }
+                    if (item.testCondition.condition.reference_temperature.mrid === null || item.testCondition.condition.reference_temperature.mrid === '') {
+                        item.testCondition.condition.reference_temperature.mrid = uuid.newUuid();
+                    }
+                    if (item.testCondition.condition.ambient_temperature.mrid === null || item.testCondition.condition.ambient_temperature.mrid === '') {
+                        item.testCondition.condition.ambient_temperature.mrid = uuid.newUuid();
+                    }
+                    if (item.testCondition.condition.humidity.mrid === null || item.testCondition.condition.humidity.mrid === '') {
+                        item.testCondition.condition.humidity.mrid = uuid.newUuid();
+                    }
+                }
+
+                if (item.testCondition.attachment.id === null || item.testCondition.attachment.id === '') {
+                    if (item.testCondition.attachmentData.length > 0) {
+                        item.testCondition.attachment.id = uuid.newUuid()
+                        item.testCondition.attachment.name = null
+                        item.testCondition.attachment.path = JSON.stringify(item.testCondition.attachmentData)
+                        item.testCondition.attachment.type = 'test'
+                        item.testCondition.attachment.id_foreign = item.mrid
+                    }
+                }
+
+                const dataStringMeasurement = item.data.row_data.filter(i => i.type === 'string')
+                const dataStringMeasurementSet = await window.electronAPI.getAllStringMeasurementByProcedure(item.testTypeId)
+                if (dataStringMeasurementSet.success) {
+                    for (const stringMeasurement of dataStringMeasurement) {
+                        let matched = false;
+                        for (const data of dataStringMeasurementSet.data) {
+                            if (stringMeasurement.code === data.alias_name) {
+                                stringMeasurement.mrid = data.mrid;
+                                matched = true;
+                                break;
+                            }
+                        }
+                        if (!matched) {
+                            stringMeasurement.mrid = uuid.newUuid();
+                            const measurementProcedure = new MeasurementProcedure();
+                            measurementProcedure.mrid = uuid.newUuid();
+                            measurementProcedure.procedure_id = item.testTypeId;
+                            measurementProcedure.measurement_id = stringMeasurement.mrid;
+                            item.data.measurementProcedure.push(measurementProcedure);
+                        }
+                    }
+                } else {
+                    if (dataStringMeasurementSet.data && dataStringMeasurementSet.data.length == 0) {
+                        for (const stringMeasurement of dataStringMeasurement) {
+                            stringMeasurement.mrid = uuid.newUuid();
+                            const measurementProcedure = new MeasurementProcedure();
+                            measurementProcedure.mrid = uuid.newUuid();
+                            measurementProcedure.procedure_id = item.testTypeId;
+                            measurementProcedure.measurement_id = stringMeasurement.mrid;
+                            item.data.measurementProcedure.push(measurementProcedure);
+                        }
+                    }
+                }
+
+                const dataAnalog = item.data.row_data.filter(i => i.type === 'analog')
+                const dataAnalogSet = await window.electronAPI.getAllAnalogByProcedure(item.testTypeId);
+                if (dataAnalogSet.success) {
+                    for (const analog of dataAnalog) {
+                        let matched = false;
+                        for (const data of dataAnalogSet.data) {
+                            if (analog.code === data.alias_name) {
+                                analog.mrid = data.mrid;
+                                matched = true;
+                                break;
+                            }
+                        }
+                        if (!matched) {
+                            analog.mrid = uuid.newUuid();
+                            const measurementProcedure = new MeasurementProcedure();
+                            measurementProcedure.mrid = uuid.newUuid();
+                            measurementProcedure.procedure_id = item.testTypeId;
+                            measurementProcedure.measurement_id = analog.mrid;
+                            item.data.measurementProcedure.push(measurementProcedure);
+                        }
+                    }
+                } else {
+                    if (dataAnalogSet.data && dataAnalogSet.data.length == 0) {
+                        for (const analog of dataAnalog) {
+                            analog.mrid = uuid.newUuid();
+                            const measurementProcedure = new MeasurementProcedure();
+                            measurementProcedure.mrid = uuid.newUuid();
+                            measurementProcedure.procedure_id = item.testTypeId;
+                            measurementProcedure.measurement_id = analog.mrid;
+                            item.data.measurementProcedure.push(measurementProcedure);
+                        }
+                    }
+                }
+
+                const dataDiscrete = item.data.row_data.filter(i => i.type === 'discrete');
+                //lấy tất cả discrete của procedure
+                const dataDiscreteSet = await window.electronAPI.getAllDiscreteByProcedure(item.testTypeId);
+                //nếu thành công
+                if (dataDiscreteSet.success) {
+                    //vòng lặp for để duyệt từng discrete trong dataDiscrete
+                    // để kiểm tra xem dataDiscreteSet và dataDiscrete có trùng nhau không
+                    for (const discrete of dataDiscrete) {
+                        let matched = false;
+                        for (const data of dataDiscreteSet.data) {
+                            //những discrete có code trùng với alias_name trong dataDiscreteSet
+                            if (discrete.code === data.alias_name) {
+                                discrete.mrid = data.mrid;
+                                matched = true;
+                                //nếu trùng thì lấy kiểm tra xem value_alias_set đã tồn tại hay chưa
+                                if (data.value_alias_set === null || data.value_alias_set === '') {
+                                    discrete.pool.mrid = uuid.newUuid();
+                                    for (const item of discrete.pool.valueToAlias) {
+                                        item.mrid = uuid.newUuid();
+                                    }
+                                } else {
+                                    discrete.pool.mrid = data.value_alias_set
+                                    const dataDiscreteSetAndAlias = await window.electronAPI.getValueAliasSetAndValueToAliasByMrid(discrete.pool.mrid);
+                                    if (dataDiscreteSetAndAlias.success) {
+                                        for (const item of discrete.pool.valueToAlias) {
+                                            let matchedAlias = false;
+                                            for (const old of dataDiscreteSetAndAlias.data.value_to_aliases) {
+                                                if (item.alias_name === old.alias_name) {
+                                                    item.mrid = old.mrid;
+                                                    matchedAlias = true;
+                                                    break;
+                                                }
+                                            }
+                                            if (!matchedAlias) {
+                                                item.mrid = uuid.newUuid();
+                                            }
+                                        }
+                                    } else {
+                                        for (const item of discrete.pool.valueToAlias) {
+                                            item.mrid = uuid.newUuid();
+                                        }
+                                    }
+
+                                }
+                                break;
+                            }
+                        }
+                        if (!matched) {
+                            discrete.mrid = uuid.newUuid();
+                            const measurementProcedure = new MeasurementProcedure();
+                            measurementProcedure.mrid = uuid.newUuid();
+                            measurementProcedure.procedure_id = item.testTypeId;
+                            measurementProcedure.measurement_id = discrete.mrid;
+                            item.data.measurementProcedure.push(measurementProcedure);
+                            discrete.pool.mrid = uuid.newUuid();
+                            for (const item of discrete.pool.valueToAlias) {
+                                item.mrid = uuid.newUuid();
+                            }
+                        }
+                    }
+                } else {
+                    if (dataDiscreteSet.data && dataDiscreteSet.data.length == 0) {
+                        for (const discrete of dataDiscrete) {
+                            discrete.mrid = uuid.newUuid();
+                            const measurementProcedure = new MeasurementProcedure();
+                            measurementProcedure.mrid = uuid.newUuid();
+                            measurementProcedure.procedure_id = item.testTypeId;
+                            measurementProcedure.measurement_id = discrete.mrid;
+                            item.data.measurementProcedure.push(measurementProcedure);
+                            discrete.pool.mrid = uuid.newUuid();
+                            for (const item of discrete.pool.valueToAlias) {
+                                item.mrid = uuid.newUuid();
+                            }
+                        }
+                    }
+                }
+                if (item.data.table && item.data.table.length > 0) {
+                    for (const data of item.data.table) {
+                        if (data.mrid === '' || data.mrid === null || data.mrid === this.$constant.ROOT) {
+                            data.mrid = uuid.newUuid();
+                        }
+
+                        for (const [key, value] of Object.entries(data)) {
+                            if (value && typeof value === 'object') {
+                                if (value.mrid === '' || value.mrid === null) {
+                                    value.mrid = uuid.newUuid();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
     }
 }

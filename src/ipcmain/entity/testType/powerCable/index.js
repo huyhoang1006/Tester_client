@@ -1,81 +1,25 @@
 'use strict'
 import { ipcMain } from 'electron'
-import { cimFunc } from "@/function"
+import { entityFunc } from "@/function"
 
-export const getSurgeArresterByMrid = () => {
-    ipcMain.handle('getSurgeArresterByMrid', async function (event, mrid) {
+export const insertTestTypePowerCable = () => {
+    ipcMain.handle('insertTestTypePowerCable', async function (event, data) {
         try {
-            const rs = await cimFunc.surgeArresterFunc.getSurgeArresterById(mrid)
-            if (rs.success === true) {
-                return {
-                    success: true,
-                    message: rs.message || "Success",
-                    data: rs.data
-                }
-            } else {
-                return {
-                    success: false,
-                    message: rs.message || "fail",
-                }
-            }
-        } catch (error) {
-            console.log(error)
-            return {
-                error: error,
-                success: false,
-                message: (error && error.message) ? error.message : "Internal error",
-            }
-        }
-    })
-}
-
-export const insertSurgeArrester = () => {
-    ipcMain.handle('insertSurgeArrester', async function (event, data) {
-        try {
-            const rs = await cimFunc.surgeArresterFunc.insertSurgeArrester(data)
-            if (rs.success === true) {
-                return {
-                    success: true,
-                    message: rs.message || "Success",
-                    data: rs.data
-                }
-            } else {
-                return {
-                    success: false,
-                    message: rs.message || "fail",
-                }
-            }
-        } catch (error) {
-            console.log(error)
-            return {
-                error: error,
-                success: false,
-                message: (error && error.message) ? error.message : "Internal error",
-            }
-        }
-    })
-}
-
-
-export const updateSurgeArresterByMrid = () => {
-    ipcMain.handle('updateSurgeArresterByMrid', async function (event, mrid, data) {
-        try {
-            const rs = await cimFunc.surgeArresterFunc.updateSurgeArrester(mrid, data)
+            const rs = await entityFunc.TestTypeFunc.powerCableTestTypeFunc.insertTestTypePowerCable(data)
             if (rs.success == true) {
                 return {
                     success: true,
-                    message: rs.message || "Success",
+                    message: "Success",
                     data: rs.data
                 }
             }
             else {
                 return {
                     success: false,
-                    message: rs.message || "fail",
+                    message: "fail",
                 }
             }
         } catch (error) {
-            console.log(error)
             return {
                 error: error,
                 success: false,
@@ -85,50 +29,24 @@ export const updateSurgeArresterByMrid = () => {
     })
 }
 
-export const deleteSurgeArresterByMrid = () => {
-    ipcMain.handle('deleteSurgeArresterByMrid', async function (event, mrid) {
+export const getTestTypePowerCableByMrid = () => {
+    ipcMain.handle('getTestTypePowerCableByMrid', async function (event, mrid) {
         try {
-            const rs = await cimFunc.surgeArresterFunc.deleteSurgeArresterById(mrid)
+            const rs = await entityFunc.TestTypeFunc.powerCableTestTypeFunc.getTestTypePowerCableByMrid(mrid)
             if (rs.success == true) {
                 return {
                     success: true,
-                    message: rs.message || "Success",
-                }
-            } else {
-                return {
-                    success: false,
-                    message: rs.message || "fail",
-                }
-            }
-        } catch (error) {
-            console.log(error)
-            return {
-                error: error,
-                success: false,
-                message: (error && error.message) ? error.message : "Internal error",
-            }
-        }
-    })
-}
-
-export const getSurgeArresterByPsrId = () => {
-    ipcMain.handle('getSurgeArresterByPsrId', async function (event, psrId) {
-        try {
-            const rs = await cimFunc.surgeArresterFunc.getSurgeArresterByPsrId(psrId)
-            if (rs.success == true) {
-                return {
-                    success: true,
-                    message: rs.message || "Success",
+                    message: "Success",
                     data: rs.data
                 }
-            } else {
+            }
+            else {
                 return {
                     success: false,
-                    message: rs.message || "fail",
+                    message: "fail",
                 }
             }
         } catch (error) {
-            console.log(error)
             return {
                 error: error,
                 success: false,
@@ -138,10 +56,92 @@ export const getSurgeArresterByPsrId = () => {
     })
 }
 
+export const getAllTestTypePowerCable = () => {
+    ipcMain.handle('getAllTestTypePowerCable', async function (event) {
+        try {
+            const rs = await entityFunc.TestTypeFunc.powerCableTestTypeFunc.getAllTestTypePowerCable()
+            if (rs.success == true) {
+                return {
+                    success: true,
+                    message: "Success",
+                    data: rs.data
+                }
+            }
+            else {
+                return {
+                    success: false,
+                    message: "fail",
+                }
+            }
+        } catch (error) {
+            return {
+                error: error,
+                success: false,
+                message: (error && error.message) ? error.message : "Internal error",
+            }
+        }
+    })
+}
+
+export const updateTestTypePowerCableByMrid = () => {
+    ipcMain.handle('updateTestTypePowerCableByMrid', async function (event, mrid, data) {
+        try {
+            const rs = await entityFunc.TestTypeFunc.powerCableTestTypeFunc.updateTestTypePowerCableById(mrid, data)
+            if (rs.success == true) {
+                return {
+                    success: true,
+                    message: "Success",
+                    data: rs.data
+                }
+            }
+            else {
+                return {
+                    success: false,
+                    message: "fail",
+                }
+            }
+        } catch (error) {
+            return {
+                error: error,
+                success: false,
+                message: (error && error.message) ? error.message : "Internal error",
+            }
+        }
+    })
+}
+
+export const deleteTestTypePowerCableByMrid = () => {
+    ipcMain.handle('deleteTestTypePowerCableByMrid', async function (event, mrid) {
+        try {
+            const rs = await entityFunc.TestTypeFunc.powerCableTestTypeFunc.deleteTestTypePowerCableById(mrid)
+            if (rs.success == true) {
+                return {
+                    success: true,
+                    message: "Success",
+                    data: rs.data
+                }
+            }
+            else {
+                return {
+                    success: false,
+                    message: "fail",
+                }
+            }
+        } catch (error) {
+            return {
+                error: error,
+                success: false,
+                message: (error && error.message) ? error.message : "Internal error",
+            }
+        }
+    })
+}
+
+
 export const active = () => {
-    getSurgeArresterByMrid()
-    getSurgeArresterByPsrId()
-    insertSurgeArrester()
-    updateSurgeArresterByMrid()
-    deleteSurgeArresterByMrid()
+    insertTestTypePowerCable()
+    getTestTypePowerCableByMrid()
+    getAllTestTypePowerCable()
+    updateTestTypePowerCableByMrid()
+    deleteTestTypePowerCableByMrid()
 }
