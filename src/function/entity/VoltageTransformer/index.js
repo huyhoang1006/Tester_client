@@ -10,7 +10,7 @@ import { insertOldPotentialTransformerTransaction, getOldPotentialTransformerInf
 import { insertPotentialTransformerTable, deletePotentialTransformerTableByPotentialTransformerInfoId, getPotentialTransformerTableByPotentialTransformerInfoId } from '@/function/cim/PotentialTransformerTable/index.js'
 import { insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction, deleteAssetPsrByIdTransaction } from '@/function/entity/assetPsr'
 import VoltageTransformerEntity from '@/views/Entity/VoltageTransformer'
-import { getAssetInfoById } from '@/function/cim/assetInfo'
+import { getAssetInfoById , deleteAssetInfoByIdTransaction } from '@/function/cim/assetInfo'
 
 
 /**
@@ -230,54 +230,60 @@ export const getVoltageTransformerEntityById = async (id, psrId) => {
 export const deleteVoltageTransformerEntity = async (data) => {
     console.log('start deleteVoltageTransformerEntity');
     try {
-        if (!data.asset || !data.asset.mrid) {
+        if (!data.OldPotentialTransformerInfo || !data.OldPotentialTransformerInfo.mrid) {
             return { success: false, error: new Error('Invalid ID') };
         }
 
         try {
             await runAsync('BEGIN TRANSACTION');
 
+            console.log('1');
             // Xóa attachment
             if (data.attachment && data.attachment.id) {
-                const pathData = JSON.parse(data.attachment.path || '[]');
+                const pathData = JSON.parse(data.attachment.path || '[]')
                 if (Array.isArray(pathData) && pathData.length > 0) {
                     syncFilesWithDeletion(pathData, null, data.mrid);
                 }
+            }
+            console.log('2');
+            if (data.attachment.id) {
                 await deleteAttachmentByIdTransaction(data.attachment.id, db);
             }
-
-
-
+            console.log('3');
             // Xóa assetPsr
             if (data.assetPsr && data.assetPsr.mrid) {
                 await deleteAssetPsrTransaction(data.assetPsr.mrid, db);
             }
-            console.log('1');
 
+             console.log('8');
             if (data.asset && data.asset.mrid) {
                 await deleteAssetByIdTransaction(data.asset.mrid, db);
             }
-            console.log('2');
 
+
+                console.log('4');
+            // Xóa potentialTransformerTable
+            await deletePotentialTransformerTableByPotentialTransformerInfoId(data.OldPotentialTransformerInfo.mrid, db);
+
+                console.log('5');
+            // Xóa OldPotentialTransformerInfo
+            if (data.OldPotentialTransformerInfo && data.OldPotentialTransformerInfo.mrid) {
+               await deleteOldPotentialTransformerInfoTransaction(data.OldPotentialTransformerInfo.mrid, db);
+            }
+
+            console.log('6');
             // Xóa productAssetModel
             if (data.productAssetModel && data.productAssetModel.mrid) {
                 await deleteProductAssetModelByIdTransaction(data.productAssetModel.mrid, db);
             }
-            console.log('3');
 
+            console.log('7');
             // Xóa lifecycleDate
             if (data.lifecycleDate && data.lifecycleDate.mrid) {
                 await deleteLifecycleDateByIdTransaction(data.lifecycleDate.mrid, db);
             }
-            console.log('4');
+           
 
-            await deletePotentialTransformerTableByPotentialTransformerInfoId(data.OldPotentialTransformerInfo.mrid, db);
-            console.log('5');
-            // Xóa OldPotentialTransformerInfo
-            if (data.OldPotentialTransformerInfo && data.OldPotentialTransformerInfo.mrid) {
-                await deleteOldPotentialTransformerInfoTransaction(data.OldPotentialTransformerInfo.mrid, db);
-            }
-            console.log('6');
             // Collect voltage & apparentPower
             const arrVoltage = [];
             const arrApparentPower = [];
@@ -294,7 +300,7 @@ export const deleteVoltageTransformerEntity = async (data) => {
                 if (voltage && voltage.mrid) {
                     await deleteVoltageByIdTransaction(voltage.mrid, db);
                 }
-            }
+            }   
 
             // Xóa apparent power
             for (const apparentPower of arrApparentPower) {
@@ -318,7 +324,6 @@ export const deleteVoltageTransformerEntity = async (data) => {
                     }
                 }
             }
-
 
 
             await runAsync('COMMIT');

@@ -59,7 +59,36 @@ export const getCurrentTransformerEntityByMrid = () => {
         }
     })
 }
+
+export const deleteCurrentTransformerEntity = () => {
+    ipcMain.handle('deleteCurrentTransformerEntity', async function (event, data) {
+        try {
+            console.log('Delete current transformer entity in ipcMain')
+            const rs = await entityFunc.currentTransformerEntityFunc.deleteCurrentTransformerEntity(data)
+            if (rs.success == true) {
+                return {
+                    success: true,
+                    message: "Success",
+                    data : data
+                }
+            }else {
+                return {
+                    success: false,
+                    message: "fail",
+                }
+            }
+        } catch (error) {
+            return {
+                error: error,
+                success: false,
+                message: (error && error.message) ? error.message : "Internal error",
+            }
+        }
+    })
+}
+    
 export const active = () => {
     insertCurrentTransformerEntity()
     getCurrentTransformerEntityByMrid()
+    deleteCurrentTransformerEntity()
 }

@@ -173,7 +173,7 @@
                                                             v-if="['PX', 'TPS', 'TPX', 'TPY', 'TPZ', 'X'].includes(item.fullTap.classRating.class) || protectionData.PR.includes(item.fullTap.classRating.class)"
                                                             label="Winding resistance">
                                                             <el-input class="width-half" size="mini"
-                                                                v-model="item.fullTap.classRating.wr">
+                                                                v-model="item.fullTap.classRating.wr.value">
                                                                 <template slot="append">Ω</template>
                                                             </el-input>
                                                         </el-form-item>
@@ -874,7 +874,7 @@ export default {
                                 kssc: '',
                                 ktd: '',
                                 duty: '',
-                                vb: '',
+                                vb: {mrid: '', value: '', unit: UnitSymbol.V},
                                 alf: '',
                                 ts: '',
                                 ek: '',
@@ -897,7 +897,8 @@ export default {
                                 burdenCos: '',
                                 operatingBurden: { mrid: '', value: '', unit: UnitSymbol.VA },
                                 operatingBurdenCos: '',
-                                core_index: i + 1
+                                core_index: i + 1,
+                                ratio_error: {mrid: '', value: '', unit: UnitSymbol.percent}
 
                             }
                         },
@@ -989,7 +990,7 @@ export default {
                                     kssc: '',
                                     ktd: '',
                                     duty: '',
-                                    vb: '',
+                                    vb: {mrid: '', value: '', unit: UnitSymbol.V},
                                     alf: '',
                                     ts: '',
                                     ek: '',
@@ -1012,7 +1013,8 @@ export default {
                                     burdenCos: '',
                                     operatingBurden: { mrid: '', value: '', unit: UnitSymbol.VA },
                                     operatingBurdenCos: '',
-                                    core_index: i + 1
+                                    core_index: i + 1,
+                                    ratio_error: {mrid: '', value: '', unit: UnitSymbol.percent}
                                 }
                             },
                             mainTap: {
@@ -1064,7 +1066,8 @@ export default {
                                             burdenCos: '',
                                             operatingBurden: {mrid: '', value: '', unit:UnitSymbol.VA},
                                             operatingBurdenCos: '',
-                                            core_index: i + 1
+                                            core_index: i + 1,
+                                            ratio_error: {mrid: '', value: '', unit: UnitSymbol.percent}
 
                                         }
                                     }

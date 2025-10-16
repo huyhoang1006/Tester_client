@@ -10,6 +10,7 @@ import Resistance from "@/views/Cim/Resistance";
 import CtTapInfo from "@/views/Cim/CtTapInfo";
 import ApparentPower from "@/views/Cim/ApparentPower";
 import CoreDto from "@/views/Dto/CurrentTransformer/CTConfiguration/CoreDto";
+import Percent from "@/views/Cim/Percent";
 
 const mappingUnit = (map, unitDto) => {
     if (!map || !unitDto) return;
@@ -142,7 +143,18 @@ export const mapDtoToEntity = (dto) => {
         coreInfo.val = fullTapClassRating.val;
         coreInfo.iai = fullTapClassRating.lal;
         coreInfo.tp = fullTapClassRating.tp;
-        // ... gán các trường còn lại ...
+        coreInfo.vk = fullTapClassRating.vk;
+        coreInfo.ik = fullTapClassRating.lk;
+        coreInfo.vk1 = fullTapClassRating.vk1;
+        coreInfo.ik1 = fullTapClassRating.lk1;
+        coreInfo.vb = fullTapClassRating.vb.mrid;
+        const newVb = new Voltage();
+        mappingUnit(newVb, fullTapClassRating.vb);
+        entity.voltage.push(newVb);
+        coreInfo.ratio_error = fullTapClassRating.ratio_error.mrid;
+        const newRatioError = new Percent();
+        mappingUnit(newRatioError, fullTapClassRating.ratio_error);
+        entity.percent.push(newRatioError);
 
         entity.CtCoreInfo.push(coreInfo);
 
@@ -328,7 +340,7 @@ export const mapEntityToDto = (entity) => {
                 core.fullTap.classRating.fs = coreInfo.fs;
                 core.fullTap.classRating.alf = coreInfo.alf;
                 core.fullTap.classRating.wr = findAndMapUnit(coreInfo.winding_resistance, entity.resistance);
-                core.fullTap.classRating.vb = coreInfo.vb;
+                core.fullTap.classRating.vb = findAndMapUnit(coreInfo.vb, entity.voltage);
                 core.fullTap.classRating.kx = coreInfo.kx;
                 core.fullTap.classRating.k = coreInfo.k;
                 core.fullTap.classRating.kssc = coreInfo.kssc;
@@ -342,6 +354,12 @@ export const mapEntityToDto = (entity) => {
                 core.fullTap.classRating.val = coreInfo.val;
                 core.fullTap.classRating.lal = coreInfo.iai;
                 core.fullTap.classRating.tp = coreInfo.tp;
+                core.fullTap.classRating.vk = coreInfo.vk;
+                core.fullTap.classRating.lk = coreInfo.ik;
+                core.fullTap.classRating.vk1 = coreInfo.vk1;
+                core.fullTap.classRating.lk1 = coreInfo.ik1;
+                core.fullTap.classRating.ratio_error = findAndMapUnit(coreInfo.ratio_error, entity.percent);
+                core.fullTap.classRating.core_index = coreInfo.core_index;
             } else if (tapInfo.type === 'maintap') {
                 core.mainTap.data.push(tapObject);
             } else if (tapInfo.type === 'intertap') {
