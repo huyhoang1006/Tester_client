@@ -1294,7 +1294,7 @@ export default {
                             assetPowerCableReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
                                 row.mode = 'asset';
-                                row.asset = 'PowerCable';
+                                row.asset = 'Power Cable';
                                 let parentName = clickedRow.parentName + "/" + clickedRow.name
                                 row.parentName = parentName
                                 row.parentArr = [...clickedRow.parentArr || []]
