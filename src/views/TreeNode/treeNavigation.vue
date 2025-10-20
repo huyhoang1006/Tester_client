@@ -51,6 +51,7 @@
                         @show-addBushing="showAddBushing" @show-addSurgeArrester="showAddSurgeArrester"
                         @show-addCircuit="showAddCircuitBreaker" @show-addVt="showAddVt" @show-addCt="showAddCt"
                         @show-addPowerCable="showAddPowerCable" @show-addDisconnector="showAddDisconnector"
+                        @show-addCapacitor="showAddCapacitor"
                         @show-addRotatingMachine="showAddRotatingMachine" @show-addBay="showAddBay"
                         @show-data="showDataClient" ref="contextMenuClient">
                     </contextMenu>
@@ -602,6 +603,15 @@
                 <el-button size="small" type="primary" @click="handleRotatingConfirm">Save</el-button>
             </span>
         </el-dialog>
+        <el-dialog title="Add Capacitor" :visible.sync="signCapacitor" width="1000px"
+            @close="handleCapacitorCancel">
+            <Capacitor :locationId="locationId" :parent="parentOrganization" ref="capacitor">
+            </Capacitor>
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" type="danger" @click="handleCapacitorCancel">Cancel</el-button>
+                <el-button size="small" type="primary" @click="handleCapacitorConfirm">Save</el-button>
+            </span>
+        </el-dialog>
 
         <el-dialog title="Add Job" :visible.sync="signJob" width="1000px" @close="handleJobCancel">
             <component ref="jobData" :is="checkJobType" :locationData="locationData" :assetData="assetData"
@@ -659,10 +669,10 @@ import Bushing from '@/views/AssetView/Bushing'
 import SurgeArrester from '@/views/AssetView/SurgeArrester'
 import CircuitBreaker from '@/views/AssetView/CircuitBreaker'
 import CurrentTransformer from '@/views/AssetView/CurrentTransformer'
-import Disconnector from '@/views/AssetView/Disconnector'
+import Disconnector from '@/views/AssetView/Disconnector/index.vue'
 import PowerCable from '@/views/AssetView/PowerCable'
 import VoltageTransformer from '@/views/AssetView/VoltageTransformer'
-
+import Capacitor from '@/views/AssetView/Capacitor/index.vue'
 import JobSurgeArrester from '@/views/JobView/SurgeArrester/index.vue'
 import JobPowerCable from '@/views/JobView/PowerCable/index.vue'
 
@@ -695,7 +705,7 @@ export default {
         Disconnector,
         PowerCable,
         RotatingMachine,
-
+        Capacitor,
         JobSurgeArrester,
         JobPowerCable,
     },
@@ -726,6 +736,7 @@ export default {
             signDisconnector: false,
             signRotating: false,
             signJob: false,
+            signCapacitor: false,
             activeTab: {},
             activeTabClient: {},
             indexTabData: null,
@@ -1916,6 +1927,10 @@ export default {
             this.signRotating = false
         },
 
+        handleCapacitorCancel() {
+            this.signCapacitor = false
+        },
+
         handleJobCancel() {
             this.signJob = false
         },
@@ -2356,7 +2371,15 @@ export default {
                 console.error(error)
             }
         },
-       async handleJobConfirm() {
+
+        async handleCapacitorConfirm() {
+            this.$message.success("Transformer saved successfully")
+            // Cần thêm logic để cập nhật lại cây nếu cần thiết
+            // await this.$refs.transformer.saveAsset();
+            this.signCapacitor = false
+        },
+
+        async handleJobConfirm() {
             try {
         const job = this.$refs.jobData
         if (job) {
@@ -3147,6 +3170,29 @@ export default {
                     const surgeArrester = this.$refs.surgeArrester;
                     if (surgeArrester) {
                         surgeArrester.resetForm();
+                    }
+                });
+            } catch (error) {
+                this.parentOrganization = null
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
+        },
+
+        async showAddCapacitor(node) {
+            try {
+                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
+                if (dataLocation.success) {
+                    this.locationId = dataLocation.data.mrid
+                } else {
+                    this.locationId = null
+                }
+                this.parentOrganization = node
+                this.signCapacitor = true
+                this.$nextTick(() => {
+                    const capacitor = this.$refs.capacitor;
+                    if (capacitor) {
+                        capacitor.resetForm();
                     }
                 });
             } catch (error) {
