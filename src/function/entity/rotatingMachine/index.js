@@ -123,6 +123,7 @@ export const getRotatingMachineEntity = async (id, psrId) => {
         } else {
             const entity = new RotatingMachineEntity()
             const dataRotatingMachine = await getAssetById(id);
+            console.log('getAssetById result:', dataRotatingMachine);
             if (dataRotatingMachine.success) {
                 entity.asset = dataRotatingMachine.data
                 const dataLifecycleDate = await getLifecycleDateById(entity.asset.lifecycle_date);
@@ -131,6 +132,7 @@ export const getRotatingMachineEntity = async (id, psrId) => {
                 }
 
                 const dataRotatingMachineInfo = await getRotatingMachineInfoById(entity.asset.asset_info);
+                console.log('getRotatingMachineInfoById result:', dataRotatingMachineInfo);
                 if (dataRotatingMachineInfo.success) {
                     entity.rotatingMachine = dataRotatingMachineInfo.data;
                 }
@@ -165,41 +167,58 @@ export const getRotatingMachineEntity = async (id, psrId) => {
 
                 for (const key in rotating_arr) {
                     for (const item of rotating_arr[key]) {
-                        switch (key) {
-                            case 'voltage':
-                                voltage.push(entity.rotatingMachine[item]);
-                                break;
-                            case 'currentFlow':
-                                currentFlow.push(entity.rotatingMachine[item]);
-                                break;
-                            case 'frequency':
-                                frequency.push(entity.rotatingMachine[item]);
-                                break;
-                            case 'apparentPower':
-                                apparentPower.push(entity.rotatingMachine[item]);
-                                break;
+                        console.log(`Processing ${key}.${item}:`, entity.rotatingMachine[item]);
+                        if (entity.rotatingMachine[item]) {
+                            switch (key) {
+                                case 'voltage':
+                                    voltage.push(entity.rotatingMachine[item]);
+                                    break;
+                                case 'currentFlow':
+                                    currentFlow.push(entity.rotatingMachine[item]);
+                                    break;
+                                case 'frequency':
+                                    frequency.push(entity.rotatingMachine[item]);
+                                    break;
+                                case 'apparentPower':
+                                    apparentPower.push(entity.rotatingMachine[item]);
+                                    break;
+                            }
                         }
                     }
                 }
 
-                const dataVoltage = await getVoltageByIds(voltage);
-                if (dataVoltage.success) {
-                    entity.voltage = dataVoltage.data;
+                console.log('Collected IDs:', { voltage, currentFlow, frequency, apparentPower });
+
+                // Load voltage data
+                if (voltage.length > 0) {
+                    const dataVoltage = await getVoltageByIds(voltage);
+                    if (dataVoltage.success) {
+                        entity.voltage = dataVoltage.data;
+                    }
                 }
 
-                const dataCurrentFlow = await getCurrentFlowByIds(currentFlow);
-                if (dataCurrentFlow.success) {
-                    entity.currentFlow = dataCurrentFlow.data;
+                // Load currentFlow data
+                if (currentFlow.length > 0) {
+                    const dataCurrentFlow = await getCurrentFlowByIds(currentFlow);
+                    if (dataCurrentFlow.success) {
+                        entity.currentFlow = dataCurrentFlow.data;
+                    }
                 }
 
-                const dataFrequency = await getFrequencyByIds(frequency);
-                if (dataFrequency.success) {
-                    entity.frequency = dataFrequency.data;
+                // Load frequency data
+                if (frequency.length > 0) {
+                    const dataFrequency = await getFrequencyByIds(frequency);
+                    if (dataFrequency.success) {
+                        entity.frequency = dataFrequency.data;
+                    }
                 }
 
-                const dataApparentPower = await getApparentPowerByIds(apparentPower);
-                if (dataApparentPower.success) {
-                    entity.apparentPower = dataApparentPower.data;
+                // Load apparentPower data
+                if (apparentPower.length > 0) {
+                    const dataApparentPower = await getApparentPowerByIds(apparentPower);
+                    if (dataApparentPower.success) {
+                        entity.apparentPower = dataApparentPower.data;
+                    }
                 }
                 return {
                     success: true,

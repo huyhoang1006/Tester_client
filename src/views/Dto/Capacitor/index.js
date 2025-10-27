@@ -2,6 +2,8 @@ import { UnitSymbol } from '@/views/Enum/UnitSymbol'
 import { UnitMultiplier } from '@/views/Enum/UnitMultiplier'
 import Attachment from '@/views/Entity/Attachment'
 import PropertiesDto from './Properties'
+import CapacitanceDto from './Capacitance'
+import DissipationFactorDto from './DissipationFactor'
 
 class CapacitorsDTO {
     constructor() {
@@ -16,6 +18,7 @@ class CapacitorsDTO {
         this.attachmentId = ''
         this.assetInfoId = ''
         this.assetPsrId = ''
+        this.psrId = ''
 
         this.configsData = {
             phase: '1',
@@ -27,15 +30,9 @@ class CapacitorsDTO {
             rated_frequency: { mrid: '', value: '', unit: UnitSymbol.Hz }, // Hz
             rated_current: { mrid: '', value: '', unit: UnitSymbol.A }, // A
             rated_power: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.VAr }, // kVAr
-            capacitace: { mrid: '', value: '', unit: UnitMultiplier.n + '|' + UnitSymbol.F }, // nF
-            dissipation_factor: { mrid: '', value: '', unit: UnitSymbol.percent }, // %
-            capacitace_phase_A: { mrid: '', value: '', unit: UnitMultiplier.n + '|' + UnitSymbol.F }, // nF
-            capacitace_phase_B: { mrid: '', value: '', unit: UnitMultiplier.n + '|' + UnitSymbol.F }, // nF
-            capacitace_phase_C: { mrid: '', value: '', unit: UnitMultiplier.n + '|' + UnitSymbol.F }, // nF
-            dissipation_factor_A: { mrid: '', value: '', unit: UnitSymbol.percent }, // %
-            dissipation_factor_B: { mrid: '', value: '', unit: UnitSymbol.percent }, // %
-            dissipation_factor_C: { mrid: '', value: '', unit: UnitSymbol.percent }, // %
         }
+        this.capacitance = new CapacitanceDto()
+        this.dissipationFactor = new DissipationFactorDto()
 
         this.othersData = {
             insulation_type: '',

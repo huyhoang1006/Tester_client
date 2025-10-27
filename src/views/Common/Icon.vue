@@ -26,7 +26,7 @@ export default {
         assetDetail: {
             type: String,
             default: 'Unknown',
-            validator: (value) => ['Surge arrester', 'Disconnector', 'Power cable', 'Bushing', 'Voltage transformer', 'Rotating machine', 'Unknown', 'Current transformer'].includes(value)
+            validator: (value) => ['Surge arrester', 'Disconnector', 'Power cable', 'Bushing', 'Voltage transformer', 'Rotating machine', 'Unknown', 'Current transformer', 'Capacitor'].includes(value)
         }
     },
     computed: {
@@ -42,7 +42,8 @@ export default {
                     'Bushing' : "fa-solid fa-shield",
                     'Voltage transformer' : 'fa-solid fa-bolt-lightning',
                     'Rotating machine': 'fa-solid fa-group-arrows-rotate',
-                    'Current transformer' : 'fa-solid fa-bolt-lightning'
+                    'Current transformer' : 'fa-solid fa-bolt-lightning',
+                    'Capacitor' : 'fa-solid fa-bolt'
                 },
                 job: 'fa-solid fa-toolbox',
                 test: 'fa-solid fa-file-lines',

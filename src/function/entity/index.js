@@ -20,6 +20,7 @@ import * as voltageTransformerEntityFunc from './VoltageTransformer/index'
 import * as bushingEntityFunc from './Bushing/index'
 import * as disconnectorEntityFunc from "./disconnector/index"
 import * as rotatingMachineEntityFunc from "./rotatingMachine/index"
+import * as capacitorEntityFunc from "./capacitor/index"
 
 import * as currentTransformerEntityFunc from "./currentTransformer/index"
 
@@ -28,6 +29,6 @@ export {
     userFunc, userIdentifiedObjectFunc, substationEntityFunc, organisationPersonFunc,
     organisationPsrFunc, geoMapFunc, parentOrganizationEntityFunc, voltageLevelEntityFunc,
     bayEntityFunc, surgeArresterEntityFunc, transformerEntityFunc, TestTypeFunc, jobEntityFunc, powerCableEntityFunc,
-
+    capacitorEntityFunc,
     voltageTransformerEntityFunc, bushingEntityFunc, disconnectorEntityFunc, rotatingMachineEntityFunc, currentTransformerEntityFunc
 }

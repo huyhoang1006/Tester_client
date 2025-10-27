@@ -30,8 +30,10 @@
                     <el-form-item label="Manufacturing year">
                         <el-input v-model="propertiesData.manufacturing_year"></el-input>
                     </el-form-item>
-                    <el-form-item label="Asset system code">
-                        <el-input v-model="propertiesData.country_of_origin"></el-input>
+                    <el-form-item label="Country of origin">
+                        <el-select style="width: 100%;" filterable v-model="propertiesData.country_of_origin">
+                            <el-option v-for="item in countryData" :key="item" :label="item" :value="item"> </el-option>
+                        </el-select>
                     </el-form-item>
                     <el-form-item label="Apparatus ID">
                         <el-input v-model="propertiesData.apparatus_id"></el-input>
@@ -62,34 +64,56 @@ export default {
         Attachment,
     },
     props : {
-        manufact : {
-            require : true,
+        data: {
+            type: Object,
+            required: true,
+            default() {
+                return {}
+            }
         },
-        title : {
-            require : true
-        },
-        updateNew : {
-            require : true
-        },
-        update : {
-            require : true
+        attachment: {
+            type: Array,
+            default() {
+                return []
+            }
         }
     },
     data() {
         return {
             labelWidth : `200px`,
-            countryData : country.default,
-            manufacturerList : ['ABB', 'ALSTOM', 'General Electric', 'Mitsubishi Electric', 'Schneider Electric', 'Siemens', 'Toshiba', 'Westinghouse'],
+            countryData: [],
+            manufacturerList : ['ABB', 'ABB Sécheron', 'ACEC', 'Mitsubishi Electric', 'Aditya Vidyut Appliances Ltd', 'AEG', 'Alstohm Savoisienne', 'Alstom',
+        'ANSALDO', 'APEX', 'Areva', 'Areva Unido', 'Artrans - Los Conce', 'ASA Trafobau GmbH', 'ASEA', 'BBC', 'Bharat Bijilee Ltd.', 'Bharat Heavy Electricals, Ltd.',
+        'BHEL', 'Crompton Greaves', 'DAIHEN', 'DELTA STAR', 'DIAMOND POWER INFRASTRUCTURE LIMITED', 'EBG', 'EFACEC', 'EEMC', 'electroputere', 'Elettromeccania colombo',
+        'ELIN', 'ELTA', 'Emco Transformers Ltd.', 'Ferranti-Packard', 'Fuji Electric', 'FORTUNE ELECTRIC CO.,LTD.', 'FIRST PHILEC', 'FPE', 'Franco Transfo', 'GE PROLEC',
+        'General Electric','Getra', 'HAMMOND', 'HAVEC', 'HAWKER SIDDELEY', 'HEM', 'Helmke', 'HICO', 'Hitachi Energy', 'HOWARD', 'HYOSUNG', 'Hyundai', 'IEM', 'Imefy', 'Italtrafo',
+        'JAEPS', 'Jeumont-Schneider', 'JORDAN', 'JSHP', 'JSP', 'JST', 'KONČAR', 'Kuhlman', 'Leeper', 'Matelec', 'McGraw Edison', 'MF Trasformatori', 'MITSUBISHI', 'NGEF', 'OASA',
+        'Ocrev', 'Oerlikon', 'OFFICINE TRANSFORMATORI ELECTRICI', 'Parsons Peebles', 'PAUWELS', 'Peebles', 'PENNSYLVANIA TRANSFORMER', 'SAVOISIENNE', 'Schneider Electric', 
+        'Schorch', 'SGB', 'Siemens', 'SMIT', 'TAMINI', 'TBEA', 'TELK', 'TIRONI', 'TOSHIBA', 'TRAFO UNION', 'UNIDO', 'VEE', 'Waukesha', 'Westinghouse', 'Wilson transformer',
+        'ZTR'],
+            attachmentData : [],
         }
     },
-    methods: {
+    watch: {
+        attachment: {
+            handler(newVal) {
+                this.attachmentData = newVal
+            },
+            immediate: true
+        }
+    },
+    methods: { 
         getDataAttachment(rowData) {
-            this.$parent.attachmentData = rowData
+            this.attachmentData = rowData
+            this.$emit('update-attachment', this.attachmentData)
         },
     },
-    computed : {
-        propertiesData() {
-            return this.$parent.capacitor?.properties || {}
+    mounted() {
+        this.countryData = country.default
+    },
+    computed: {
+        propertiesData: function () {
+            return this.data
         }
     },
 }
