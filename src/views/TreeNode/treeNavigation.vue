@@ -1063,7 +1063,7 @@ export default {
                             window.electronAPI.getVoltageLevelBySubstationId(clickedRow.mrid),
                             window.electronAPI.getBayByVoltageBySubstationId(null, clickedRow.mrid)
                         ]);
-                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (voltageLevelReturn.success) {
                             voltageLevelReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
@@ -1190,6 +1190,17 @@ export default {
                             newRows.push(...assetRotatingMachineReturn.data);
                         }
 
+                        if (assetCapacitorReturn.success) {
+                            assetCapacitorReturn.data.forEach(row => {
+                                row.parentId = clickedRow.mrid;
+                                row.mode = 'asset';
+                                row.asset = 'Capacitor';
+                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                row.parentName = parentName
+                            });
+                            newRows.push(...assetCapacitorReturn.data);
+                        }
+
                         if (assetCurrentTransformerReturn.success) {
                             assetCurrentTransformerReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
@@ -1229,7 +1240,7 @@ export default {
 
                     } else if (node.mode == 'bay') {
                         const clickedRow = node;
-                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (assetSurgeReturn.success) {
                             assetSurgeReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
@@ -1336,6 +1347,16 @@ export default {
                             });
                             newRows.push(...assetRotatingMachineReturn.data);
                         }
+                        if (assetCapacitorReturn.success) {
+                            assetCapacitorReturn.data.forEach(row => {
+                                row.parentId = clickedRow.mrid;
+                                row.mode = 'asset';
+                                row.asset = 'Capacitor';
+                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                row.parentName = parentName
+                            });
+                            newRows.push(...assetCapacitorReturn.data);
+                        }
                     } else {
                         const clickedRow = node;
                         console.log('Loading organization data for:', clickedRow.name, clickedRow.mrid);
@@ -1391,17 +1412,18 @@ export default {
 
         async fetchAssetByPsr(psrId) {
             try {
-                const [responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer] = await Promise.all([
+                const [responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer, responseCapacitor] = await Promise.all([
                     window.electronAPI.getSurgeArresterByPsrId(psrId),
                     window.electronAPI.getBushingByPsrId(psrId),
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Voltage transformer'),
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Disconnector'),
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Power cable'),
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Rotating machine'),
-                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Current transformer')
+                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Current transformer'),
+                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Capacitor')
 
                 ])
-                return [responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer];
+                return [responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer, responseCapacitor];
             } catch (error) {
                 console.error("Error fetching asset by substation:", error);
                 return {
@@ -1443,7 +1465,7 @@ export default {
                             window.electronAPI.getVoltageLevelBySubstationId(clickedRow.mrid),
                             window.electronAPI.getBayByVoltageBySubstationId(null, clickedRow.mrid)
                         ]);
-                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (assetSurgeReturn.success) {
                             newRows.push(...assetSurgeReturn.data);
                         }
@@ -1472,6 +1494,10 @@ export default {
                             newRows.push(...assetCurrentTransformerReturn.data);
                         }
 
+                        if (assetCapacitorReturn.success) {
+                            newRows.push(...assetCapacitorReturn.data);
+                        }
+
                         if (voltageLevelReturn.success) {
                             newRows.push(...voltageLevelReturn.data);
                         }
@@ -1492,7 +1518,7 @@ export default {
 
                     } else if (node.mode == 'bay') {
                         const clickedRow = node;
-                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (assetSurgeReturn.success) {
                             newRows.push(...assetSurgeReturn.data);
                         }
@@ -1517,6 +1543,10 @@ export default {
 
                         if (assetCurrentTransformerReturn.success) {
                             newRows.push(...assetCurrentTransformerReturn.data);
+                        }
+
+                        if (assetCapacitorReturn.success) {
+                            newRows.push(...assetCapacitorReturn.data);
                         }
                     }
 
@@ -2373,10 +2403,42 @@ export default {
         },
 
         async handleCapacitorConfirm() {
-            this.$message.success("Transformer saved successfully")
-            // Cần thêm logic để cập nhật lại cây nếu cần thiết
-            // await this.$refs.transformer.saveAsset();
-            this.signCapacitor = false
+             try {
+                const capacitor = this.$refs.capacitor
+                if (capacitor) {
+                    const { success, data } = await capacitor.saveAsset();
+                    if (success) {
+                        this.$message.success("Capacitor saved successfully")
+                        this.signCapacitor = false
+                        let newRows = []
+                        if (this.organisationClientList && this.organisationClientList.length > 0) {
+                            const newRow = {
+                                mrid: data.asset.mrid,
+                                name: data.asset.name,
+                                serial_number: data.asset.serial_number,
+                                parentId: this.parentOrganization.mrid,
+                                parentName: this.parentOrganization.name,
+                                parentArr: this.parentOrganization.parentArr || [],
+                                mode: 'asset',
+                                asset: 'Capacitor',
+                            }
+                            newRows.push(newRow);
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            if (node) {
+                                const children = Array.isArray(node.children) ? node.children : [];
+                                Vue.set(node, "children", [...children, ...newRows]);
+                            } else {
+                                this.$message.error("Parent node not found in tree");
+                            }
+                        }
+                    } else {
+                        this.$message.error("Failed to save Capacitor")
+                    }
+                }
+            } catch (error) {
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
         },
 
         async handleJobConfirm() {
@@ -2887,6 +2949,32 @@ export default {
                                 }
                                 console.log('Rotating machine entity:', entity)
                                 const deleteSign = await window.electronAPI.deleteRotatingMachineEntity(entity.data);
+                                if (!deleteSign.success) {
+                                    this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
+                                    return;
+                                }
+                                // ✅ Xóa node khỏi cây organisationClientList
+                                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
+                                if (parentNode && Array.isArray(parentNode.children)) {
+                                    const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
+                                    if (index !== -1) {
+                                        parentNode.children.splice(index, 1); // Xóa khỏi mảng children
+                                        this.$message.success("Delete data successfully");
+                                    } else {
+                                        this.$message.warning("Node not found in tree structure");
+                                    }
+                                } else {
+                                    this.$message.warning("Parent node not found in tree");
+                                }
+                            }
+                            else if (node.asset === 'Capacitor') {
+                                const entity = await window.electronAPI.getCapacitorEntityByMrid(node.mrid, node.parentId);
+                                if (!entity.success) {
+                                    this.$message.error("Entity not found");
+                                    return;
+                                }
+                                console.log('Capacitor entity:', entity)
+                                const deleteSign = await window.electronAPI.deleteCapacitorEntity(entity.data);
                                 if (!deleteSign.success) {
                                     this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
                                     return;

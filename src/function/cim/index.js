@@ -29,6 +29,10 @@ import * as discreteFunc from './discrete/index.js'
 import * as valueToAliasFunc from './valueToAlias/index.js'
 import * as valueAliasSetFunc from './valueAliasSet/index.js'
 import * as bushingFunc from './bushing/index.js'
+import * as capacitorInfoFunc from './capacitorInfo/index.js'
+import * as capacitanceInfoFunc from './capacitanceInfo/index.js'
+import * as dissipationFactorInfoFunc from './dissipationFactorInfo/index.js'
+import * as reactivePowerFunc from './reactivePower/index.js'
 
 export {
     identifiedObjectFunc, substationFunc, electronicAddressFunc, locationFunc,
@@ -37,5 +41,5 @@ export {
     activityRecordFunc, configurationEventFunc, positionPointFunc, voltageFunc, baseVoltageFunc,
     bayFunc, voltageLevelFunc, PowerSystemResourceFunc, surgeArresterFunc, ProductAssetModelFunc,
     oldWorkFunc, assetFunc, analogFunc, stringMeasurementFunc, discreteFunc, valueToAliasFunc, valueAliasSetFunc,
-    bushingFunc
+    bushingFunc, capacitorInfoFunc, capacitanceInfoFunc, dissipationFactorInfoFunc, reactivePowerFunc
 }

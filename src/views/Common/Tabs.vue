@@ -57,6 +57,7 @@ import * as disconnectorMapper from '@/views/Mapping/Disconnector/index'
 import * as PowerCableMapper from '@/views/Mapping/PowerCable'
 import * as RotatingMachineMapper from '@/views/Mapping/RotatingMachine'
 import * as currentTransformerMapper from '@/views/Mapping/CurrentTransformer'
+import * as CapacitorMapper from '@/views/Mapping/Capacitor'
 
 import VoltageLevel from '@/views/VoltageLevel/index.vue'
 import Bay from '@/views/Bay/index.vue'
@@ -68,7 +69,7 @@ import Disconnector from '@/views/AssetView/Disconnector/index.vue'
 import PowerCable from '@/views/AssetView/PowerCable/index.vue'
 import RotatingMachine from '@/views/AssetView/RotatingMachine/index.vue'
 import CurrentTransformer from '@/views/AssetView/CurrentTransformer/index.vue'
-
+import Capacitor from '@/views/AssetView/Capacitor/index.vue'
 export default {
     name: "Tabs",
     components: {
@@ -85,7 +86,8 @@ export default {
         Disconnector,
         PowerCable,
         RotatingMachine,
-        CurrentTransformer
+        CurrentTransformer,
+        Capacitor
     },
     model: {
         prop: 'value',
@@ -263,6 +265,19 @@ export default {
                         } else {
                             this.$message.error("Failed to load Rotating Machine data");
                         }
+                    } else if(tab.asset === 'Capacitor') {
+                        this.parentOrganization = {
+                            mrid : tab.parentId
+                        }
+                        const data = await window.electronAPI.getCapacitorEntityByMrid(tab.mrid, tab.parentId)
+                        if(data.success) {
+                            const capacitorDto = CapacitorMapper.mapEntityToDto(data.data)
+                            this.$refs.componentLoadData[index].loadData(capacitorDto)
+                        }
+                        else {
+                            console.log("data : ", data)
+                            this.$message.error("Failed to load Capacitor data");
+                        }
                     }
                 } else if (tab.mode === 'job') {
                     const dataAsset = await window.electronAPI.getAssetByMrid(tab.parentId)
@@ -431,6 +446,8 @@ export default {
                     return 'RotatingMachine'
                 } else if (tab.asset === 'Current transformer') {
                     return 'CurrentTransformer'
+                } else if (tab.asset === 'Capacitor') {
+                    return 'Capacitor'
                 }
             } else if (tab.mode == 'job') {
                 if (tab.job === 'Surge arrester') {

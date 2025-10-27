@@ -13,11 +13,12 @@ import * as bushingEntityPreload from './bushing/index'
 import * as disconnectorEntityPreload from './disconnector/index'
 import * as rotatingMachineEntityPreload from './rotatingMachine/index.js'
 import * as currentTransformerEntityPreload from './currentTransformer/index.js'
+import * as capacitorEntityPreload from './capacitor/index.js'
 
 export {
     attachmentPreload, substationPreload, parentOrganizationPreload,
     voltageLevelPreload, bayPreload, surgeArresterEntityPreload, transformerEntityPreload,
     testTypePreload, jobEntityPreload, powerCableEntityPreload, voltageTransformerEntityPreload,
-    bushingEntityPreload, disconnectorEntityPreload, rotatingMachineEntityPreload, currentTransformerEntityPreload
+    bushingEntityPreload, disconnectorEntityPreload, rotatingMachineEntityPreload, currentTransformerEntityPreload, capacitorEntityPreload
 
 }
