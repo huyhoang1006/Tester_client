@@ -1,11 +1,12 @@
 
 import uuid from "@/utils/uuid";
-import * as Mapping from "@/views/Mapping/RotatingMachine/index"
+import * as Mapping from "@/views/Mapping/Capacitor/index";
 import CapacitorDTO from "@/views/Dto/Capacitor";
 export default {
     data() {
         return {
             capacitor: new CapacitorDTO,
+            capacitorOld: new CapacitorDTO,
             attachmentData: []
         }
     },
@@ -14,21 +15,22 @@ export default {
             try {
                 if (this.capacitor.properties.serial_no !== null && this.capacitor.properties.serial_no !== '') {
                     const data = JSON.parse(JSON.stringify(this.capacitor));
+                    console.log("Before mapping - phase_name:", data.configsData.phase_name);
                     const result = await this.checkCapacitorData(data);
+                    console.log("After check - phase_name:", result.configsData.phase_name);
+                    const oldResult = await this.checkCapacitorData(this.capacitorOld);
                     const resultEntity = Mapping.mapDtoToEntity(result);
-                    console.log("resultEntity", resultEntity)
-                    // let rs = await window.electronAPI.insertCapacitorEntity(resultEntity)
-                    let rs = {
-                        success: true,
-                        data: resultEntity,
-                    }
+                    console.log("After mapping - phase_name:", resultEntity.capacitor.phase_name);
+                    const oldResultEntity = Mapping.mapDtoToEntity(oldResult);
+                    console.log("resultCapacitor", resultEntity)
+                    let rs = await window.electronAPI.insertCapacitorEntity(oldResultEntity, resultEntity)
                     if (rs.success) {
                         return {
                             success: true,
                             data: rs.data,
                         };
                     } else {
-                        this.$message.error("Error saving Rotating Machine entity: " + rs.message);
+                        this.$message.error("Error saving Capacitor entity: " + rs.message);
                         return {
                             success: false,
                             error: rs.error,
@@ -66,10 +68,12 @@ export default {
 
         resetForm() {
             this.capacitor = new CapacitorDTO
+            this.capacitorOld = new CapacitorDTO
             this.attachmentData = [];
         },
 
         loadData(data) {
+            this.capacitorOld = JSON.parse(JSON.stringify(data)); // Lưu bản sao của dữ liệu cũ
             this.capacitor = data;
             if (data.attachment && data.attachment.path) {
                 this.attachmentData = JSON.parse(data.attachment.path)
@@ -90,6 +94,7 @@ export default {
                 this.checkAssetInfoId(data);
                 this.checkCapacitorTree(data);
                 this.checkProductAssetModelId(data);
+                this.checkCapacitanceAndDissipationFactor(data);
                 return data;
             } catch (error) {
                 console.error("Error checking rotating machine data:", error);
@@ -159,6 +164,17 @@ export default {
         checkAssetInfoId(data) {
             if (data.assetInfoId === null || data.assetInfoId === '') {
                 data.assetInfoId = uuid.newUuid()
+            }
+        },
+        checkCapacitanceAndDissipationFactor(data) {
+            // Đảm bảo capacitance có MRID
+            if (!data.capacitance.mrid || data.capacitance.mrid === '') {
+                data.capacitance.mrid = uuid.newUuid();
+            }
+
+            // Đảm bảo dissipationFactor có MRID
+            if (!data.dissipationFactor.mrid || data.dissipationFactor.mrid === '') {
+                data.dissipationFactor.mrid = uuid.newUuid();
             }
         },
 
