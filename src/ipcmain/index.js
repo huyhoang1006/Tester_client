@@ -18,6 +18,6 @@ import * as ipcOwner from './owner/owner'
 import * as ipcCim from './cim/index.js'
 import * as ipcEntity from './entity/index.js'
 
-export {ipcCircuit, ipcJobCircuit, ipcTransformer, ipcCurrentTrans, ipcVoltageTrans, ipcDisconnector, ipcSurgeArrester}
-export {ipcPowerCable, ipcUploadCustom, ipcJobCurrent, ipcJobVoltage, ipcJobDisconnector, ipcJobSurge, ipcJobPower, ipcJobTransformer}
-export {ipcUpdateManu, ipcOwner, ipcCim, ipcEntity}
+export { ipcCircuit, ipcJobCircuit, ipcTransformer, ipcCurrentTrans, ipcVoltageTrans, ipcDisconnector, ipcSurgeArrester }
+export { ipcPowerCable, ipcUploadCustom, ipcJobCurrent, ipcJobVoltage, ipcJobDisconnector, ipcJobSurge, ipcJobPower, ipcJobTransformer }
+export { ipcUpdateManu, ipcOwner, ipcCim, ipcEntity }

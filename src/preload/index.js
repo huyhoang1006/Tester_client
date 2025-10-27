@@ -15,6 +15,6 @@ import * as ownerPreload from './ownerPreload'
 import * as entityPreload from './entity/index'
 import * as cimPreload from './cim/index'
 
-export {userPreload, transformerPreload, fmecaPreload, conditionPreload, circuitPreload, currentTransPreload, voltageTransPreload}
-export {disconnectorPreload, surgeArresterPreload, powerCablePreload, uploadCustomPreload, manufacturerPreload, ownerPreload}
-export {entityPreload, cimPreload}
+export { userPreload, transformerPreload, fmecaPreload, conditionPreload, circuitPreload, currentTransPreload, voltageTransPreload }
+export { disconnectorPreload, surgeArresterPreload, powerCablePreload, uploadCustomPreload, manufacturerPreload, ownerPreload }
+export { entityPreload, cimPreload }
