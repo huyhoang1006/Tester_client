@@ -2,7 +2,7 @@ class PropertiesDto {
     constructor() {
         this.mrid = '';
         this.type = '';
-        this.kind = 'Surge Arrester';
+        this.kind = 'Circuit breaker';
         this.serial_no = '';
         this.manufacturer = '';
         this.manufacturer_type = '';

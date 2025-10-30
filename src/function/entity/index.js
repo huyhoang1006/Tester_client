@@ -21,7 +21,7 @@ import * as bushingEntityFunc from './Bushing/index'
 import * as disconnectorEntityFunc from "./disconnector/index"
 import * as rotatingMachineEntityFunc from "./rotatingMachine/index"
 import * as capacitorEntityFunc from "./capacitor/index"
-
+import * as breakerEntityFunc from "./breaker/index"
 import * as currentTransformerEntityFunc from "./currentTransformer/index"
 
 export {
@@ -29,6 +29,6 @@ export {
     userFunc, userIdentifiedObjectFunc, substationEntityFunc, organisationPersonFunc,
     organisationPsrFunc, geoMapFunc, parentOrganizationEntityFunc, voltageLevelEntityFunc,
     bayEntityFunc, surgeArresterEntityFunc, transformerEntityFunc, TestTypeFunc, jobEntityFunc, powerCableEntityFunc,
-    capacitorEntityFunc,
+    capacitorEntityFunc, breakerEntityFunc,
     voltageTransformerEntityFunc, bushingEntityFunc, disconnectorEntityFunc, rotatingMachineEntityFunc, currentTransformerEntityFunc
 }

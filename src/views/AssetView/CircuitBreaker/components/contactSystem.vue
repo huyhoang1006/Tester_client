@@ -14,17 +14,17 @@
                 <el-col :span="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Nominal total travel">
-                            <el-input v-model="contactSysData.nominalTravel">
+                            <el-input v-model="contactSysData.nominal_total_travel.value">
                                 <template slot="append">mm</template>
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Damping time">
-                            <el-input v-model="contactSysData.dampTime">
+                            <el-input v-model="contactSysData.damping_time.value">
                                 <template slot="append">ms</template>
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Nozzle length">
-                            <el-input v-model="contactSysData.nozzleLen">
+                            <el-input v-model="contactSysData.nozzle_length.value">
                                 <template slot="append">mm</template>
                             </el-input>
                         </el-form-item>
@@ -47,7 +47,7 @@ export default {
     data() {
         return {
             openContact : "true",
-            labelWidth : `300px`
+            labelWidth : `250px`
         }
     },
     computed: {

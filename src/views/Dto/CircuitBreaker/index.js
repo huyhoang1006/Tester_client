@@ -1,64 +1,22 @@
 import PropertiesDto from './Properties';
 import Attachment from "@/views/Entity/Attachment";
+import circuitBreakerDto from "./CircuitBreaker";
+import ratingsDto from  "./Ratings"
+import ContactSystemDto from "./ContactSystem";
+import OtherDto from "./Other";
+import OperatingDto from "./Operating/index";
+import AssessmentDto from "./AsssessmentLimits";
+
 class CircuitBreakerDto {
     constructor() {
         this.properties = new PropertiesDto();
         this.attachment = new Attachment();
-        this.numberOfPhases = '';
-
-        this.interruptersPerPhase = '';
-
-        this.poleOperation = '';
-
-        this.hasPIR = '';
-
-        this.pirValue = '';
-
-        this.hasGradingCapacitors = '';
-
-        this.capacitorValue = '';
-
-        this.interruptingMedium = '';
-
-        this.tankType = '';
-
-        this.ratedVoltageLL = '';
-
-        this.ratedCurrent = '';
-
-        this.ratedShortCircuitBreakingCurrent = '';
-
-        this.shortCircuitNominalDuration = '';
-
-        this.ratedInsulationLevel = '';
-
-        this.ratedInterruptingTime = '';
-
-        this.interruptingDutyCycle = '';
-
-        this.ratedPowerAtClosing = '';
-
-        this.ratedPowerAtOpening = '';
-
-        this.ratedPowerAtMotorCharge = '';
-
-        this.ratedFrequency = '';
-
-        this.nominalTotalTravel = '';
-
-        this.dampingTime = '';
-
-        this.nozzleLength = '';
-
-        this.totalWeightWithGas = '';
-
-        this.weightOfGas = '';
-
-        this.volumeOfGas = '';
-
-        this.ratedGasPressure = '';
-
-        this.ratedGasTemperature = '';
+        this.circuitBreaker = new circuitBreakerDto();
+        this.ratings = new ratingsDto();
+        this.contactSystem = new ContactSystemDto();
+        this.others = new OtherDto();
+        this.operating = new OperatingDto();
+        this.assessmentLimits = new AssessmentDto();
     }
 }
 

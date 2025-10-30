@@ -1063,7 +1063,8 @@ export default {
                             window.electronAPI.getVoltageLevelBySubstationId(clickedRow.mrid),
                             window.electronAPI.getBayByVoltageBySubstationId(null, clickedRow.mrid)
                         ]);
-                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, 
+                        assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetBreakerReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (voltageLevelReturn.success) {
                             voltageLevelReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
@@ -1217,6 +1218,38 @@ export default {
                             newRows.push(...assetCurrentTransformerReturn.data);
                         }
 
+                        if (assetCurrentTransformerReturn.success) {
+                            assetCurrentTransformerReturn.data.forEach(row => {
+                                row.parentId = clickedRow.mrid;
+                                row.mode = 'asset';
+                                row.asset = 'Current transformer';
+                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                row.parentName = parentName
+                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr.push({
+                                    mrid: clickedRow.mrid,
+                                    parent: clickedRow.name
+                                })
+                            });
+                            newRows.push(...assetCurrentTransformerReturn.data);
+                        }
+
+                        if (assetBreakerReturn.success) {
+                            assetBreakerReturn.data.forEach(row => {
+                                row.parentId = clickedRow.mrid;
+                                row.mode = 'asset';
+                                row.asset = 'Circuit breaker';
+                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                row.parentName = parentName
+                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr.push({
+                                    mrid: clickedRow.mrid,
+                                    parent: clickedRow.name
+                                })
+                            });
+                            newRows.push(...assetBreakerReturn.data);
+                        }
+
                     } else if (node.mode == 'voltageLevel') {
                         const clickedRow = node;
                         const [bayReturn] = await Promise.all([
@@ -1240,7 +1273,8 @@ export default {
 
                     } else if (node.mode == 'bay') {
                         const clickedRow = node;
-                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, 
+                        assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetBreakerReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (assetSurgeReturn.success) {
                             assetSurgeReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
@@ -1305,7 +1339,7 @@ export default {
                             assetPowerCableReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
                                 row.mode = 'asset';
-                                row.asset = 'Power Cable';
+                                row.asset = 'Power cable';
                                 let parentName = clickedRow.parentName + "/" + clickedRow.name
                                 row.parentName = parentName
                                 row.parentArr = [...clickedRow.parentArr || []]
@@ -1354,20 +1388,36 @@ export default {
                                 row.asset = 'Capacitor';
                                 let parentName = clickedRow.parentName + "/" + clickedRow.name
                                 row.parentName = parentName
+                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr.push({
+                                    mrid: clickedRow.mrid,
+                                    parent: clickedRow.name
+                                })
                             });
                             newRows.push(...assetCapacitorReturn.data);
                         }
+                        if (assetBreakerReturn.success) {
+                            assetBreakerReturn.data.forEach(row => {
+                                row.parentId = clickedRow.mrid;
+                                row.mode = 'asset';
+                                row.asset = 'Circuit breaker';
+                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                row.parentName = parentName
+                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr.push({
+                                    mrid: clickedRow.mrid,
+                                    parent: clickedRow.name
+                                })
+                            });
+                            newRows.push(...assetBreakerReturn.data);
+                        }
                     } else {
                         const clickedRow = node;
-                        console.log('Loading organization data for:', clickedRow.name, clickedRow.mrid);
                         const [organisationReturn, substationReturn] = await Promise.all([
                             window.electronAPI.getParentOrganizationByParentMrid(clickedRow.mrid),
                             window.electronAPI.getSubstationsInOrganisationForUser(clickedRow.mrid, this.$store.state.user.user_id)
                         ]);
-                        console.log('Organization API response:', organisationReturn);
-                        console.log('Substation API response:', substationReturn);
                         if (organisationReturn.success && organisationReturn.data && organisationReturn.data.length > 0) {
-                            console.log('Found organizations:', organisationReturn.data.length);
                             organisationReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
                                 row.mode = 'organisation';
@@ -1380,12 +1430,9 @@ export default {
                                 })
                             });
                             newRows.push(...organisationReturn.data);
-                        } else {
-                            console.log('No organizations found or API failed:', organisationReturn);
                         }
 
                         if (substationReturn.success && substationReturn.data && substationReturn.data.length > 0) {
-                            console.log('Found substations:', substationReturn.data.length);
                             substationReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
                                 row.mode = 'substation';
@@ -1412,7 +1459,7 @@ export default {
 
         async fetchAssetByPsr(psrId) {
             try {
-                const [responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer, responseCapacitor] = await Promise.all([
+                const [responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer, responseCapacitor, responseBreaker] = await Promise.all([
                     window.electronAPI.getSurgeArresterByPsrId(psrId),
                     window.electronAPI.getBushingByPsrId(psrId),
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Voltage transformer'),
@@ -1420,10 +1467,10 @@ export default {
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Power cable'),
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Rotating machine'),
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Current transformer'),
-                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Capacitor')
-
+                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Capacitor'),
+                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Circuit breaker')
                 ])
-                return [responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer, responseCapacitor];
+                return [responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer, responseCapacitor, responseBreaker];
             } catch (error) {
                 console.error("Error fetching asset by substation:", error);
                 return {
@@ -2193,18 +2240,43 @@ export default {
         },
 
         async handleCircuitConfirm() {
-            this.$message.success("Transformer saved successfully")
-            // Cần thêm logic để cập nhật lại cây nếu cần thiết
-            // await this.$refs.transformer.saveAsset();
-            this.signCircuit = false
+            try {
+                const breaker = this.$refs.circuitBreaker
+                if (breaker) {
+                    const { success, data } = await breaker.saveAsset();
+                    if (success) {
+                        this.$message.success("Circuit breaker saved successfully")
+                        this.signCircuit = false
+                        let newRows = []
+                        if (this.organisationClientList && this.organisationClientList.length > 0) {
+                            const newRow = {
+                                mrid: data.properties.mrid,
+                                name: data.properties.name,
+                                serial_number: data.properties.serial_number,
+                                parentId: this.parentOrganization.mrid,
+                                parentName: this.parentOrganization.name,
+                                parentArr: this.parentOrganization.parentArr || [],
+                                mode: 'asset',
+                                asset: 'Circuit breaker',
+                            }
+                            newRows.push(newRow);
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            if (node) {
+                                const children = Array.isArray(node.children) ? node.children : [];
+                                Vue.set(node, "children", [...children, ...newRows]);
+                            } else {
+                                this.$message.error("Parent node not found in tree");
+                            }
+                        }
+                    } else {
+                        this.$message.error("Failed to save Circuit breaker")
+                    }
+                }
+            } catch (error) {
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
         },
-
-        // async handleCtConfirm() {
-        //     this.$message.success("Current transformer saved successfully")
-        //     // Cần thêm logic để cập nhật lại cây nếu cần thiết
-        //     await this.$refs.currentTransformer.saveAsset();
-        //     this.signCt = false
-        // },
 
         async handleCtConfirm() {
             try {
@@ -2941,7 +3013,7 @@ export default {
                                 } else {
                                     this.$message.warning("Parent node not found in tree");
                                 }
-                            }else if (node.asset === 'Rotating machine') {
+                            } else if (node.asset === 'Rotating machine') {
                                 const entity = await window.electronAPI.getRotatingMachineEntityByMrid(node.mrid, node.parentId);
                                 if (!entity.success) {
                                     this.$message.error("Entity not found");
@@ -3018,7 +3090,7 @@ export default {
                                 } else {
                                     this.$message.warning("Parent node not found in tree");
                                 }
-                            }else if (node.asset === 'Current transformer') {
+                            } else if (node.asset === 'Current transformer') {
                                 const entity = await window.electronAPI.getCurrentTransformerEntityByMrid(node.mrid, node.parentId);
                                 if (!entity.success) {
                                     this.$message.error("Entity not found");
@@ -3026,6 +3098,31 @@ export default {
                                 }
                                 console.log('Current transformer entity:', entity)
                                 const deleteSign = await window.electronAPI.deleteCurrentTransformerEntity(entity.data);
+                                console.log('Delete sign:', deleteSign)
+                                if (!deleteSign.success) {
+                                    this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
+                                    return;
+                                }
+                                // ✅ Xóa node khỏi cây organisationClientList
+                                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
+                                if (parentNode && Array.isArray(parentNode.children)) {
+                                    const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
+                                    if (index !== -1) {
+                                        parentNode.children.splice(index, 1); // Xóa khỏi mảng children
+                                        this.$message.success("Delete data successfully");
+                                    } else {
+                                        this.$message.warning("Node not found in tree structure");
+                                    }
+                                } else {
+                                    this.$message.warning("Parent node not found in tree");
+                                }
+                            } else if (node.asset === 'Circuit breaker') {
+                                const entity = await window.electronAPI.getBreakerEntityByMrid(node.mrid, node.parentId);
+                                if (!entity.success) {
+                                    this.$message.error("Entity not found");
+                                    return;
+                                }
+                                const deleteSign = await window.electronAPI.deleteBreakerEntity(entity.data);
                                 console.log('Delete sign:', deleteSign)
                                 if (!deleteSign.success) {
                                     this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));

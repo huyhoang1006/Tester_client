@@ -123,10 +123,6 @@ export const insertCapacitorEntity = async (old_entity, entity) => {
                     await insertPercentTransaction(percent, db);
                 }
             }
-
-            console.log('=== Inserting CapacitorInfo ===');
-            console.log('entity.capacitor.phase_name:', entity.capacitor.phase_name);
-            console.log('entity.capacitor:', JSON.stringify(entity.capacitor, null, 2));
             await insertCapacitorInfoTransaction(entity.capacitor, db);
 
             // capacitanceInfo

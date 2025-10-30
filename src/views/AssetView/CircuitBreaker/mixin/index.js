@@ -1,163 +1,124 @@
+import circuitBreakerDto from "@/views/Dto/CircuitBreaker"
+import uuid from "@/utils/uuid";
+
 export default {
     data() {
         return {
-            id : "",
-            properties : {
-            },
-            circuitBreaker : {
-            },
-            ratings : {
-            },
-            contactSys : {
-            },
-            others : {},
-            operating : {
-                table : [[],[],{component : "Auxiliary circuits"},{component : "Motor"}]
-            },
-            assessmentLimits : {
-                limits : "Absolute",
-                contactSys : {
-                    abs : {},
-                    rel : {}
-                },
-                openTime: {
-                    abs : [{},{},{},{},{},{},{},{},{}],
-                    rel : [{},{},{},{},{},{},{},{},{}]
-                },
-                contactTravel : {
-                    abs : [{},{},{},{},{},{},{},{}],
-                    rel : [{},{},{},{},{},{},{},{}]
-                },
-                auxContact : {
-                    abs : {
-                        trip : [{},{},{},{},{},{}],
-                        close : [{},{},{},{},{},{}],
-                    },
-                    rel : {
-                        trip : [{},{},{},{},{},{}],
-                        close : [{},{},{},{},{},{}],
-                    }
-                }, 
-                miscell : {
-                    abs : [{},{},{},{}],
-                    rel : [{},{},{},{}], 
-                },
-                coilCharacter : {
-                    abs : [{},{},{},{},{},{},{},{}],
-                    rel : [{},{},{},{},{},{},{},{}], 
-                },
-                pickupVol : {
-                    abs : [{},{}],
-                    rel : [{},{}], 
-                },
-                motorChar : {
-                    abs : [{},{},{},{}],
-                    rel : [{},{},{},{}], 
-                },
-                underVoltageR : {
-                    abs : {},
-                    rel : {}
-                },
-                overcurrentR : {
-                    abs : {},
-                    rel : {}
-                }
-                
-            },
+            circuitBreakerDto : new circuitBreakerDto(),
+            oldCircuitBreakerDto : new circuitBreakerDto(),
             attachmentData : []
         }
     },
-    async beforeMount() {
-        if(this.$route.query.mode === "add") {
-            this.properties = this.$route.query.dataProperty
-        }
-        else if (this.$route.query.mode === "edit") {
-            /* eslint-disable */
-            const asset_id = this.$route.query.asset_id
-            const rs = await window.electronAPI.getCircuitId(asset_id)
-            const dataTable = rs.data[0]
-            if(rs.success) {
-                this.properties = JSON.parse(dataTable.properties)
-                this.circuitBreaker = JSON.parse(dataTable.circuitBreaker)
-                this.ratings = JSON.parse(dataTable.ratings)
-                this.contactSys = JSON.parse(dataTable.contactSys)
-                this.others = JSON.parse(dataTable.others)
-                this.operating = JSON.parse(dataTable.operating)
-                this.assessmentLimits = JSON.parse(dataTable.assessmentLimits)
-                this.id = dataTable.id
-            }
-        } else if(this.$route.query.mode === "dup") {
-            const asset_id = this.$route.query.asset_id
-            const rs = await window.electronAPI.getCircuitId(asset_id)
-            const dataTable = rs.data[0]
-            if(rs.success) {
-                this.properties = JSON.parse(dataTable.properties)
-                this.properties.serial_no = ""
-                this.circuitBreaker = JSON.parse(dataTable.circuitBreaker)
-                this.ratings = JSON.parse(dataTable.ratings)
-                this.contactSys = JSON.parse(dataTable.contactSys)
-                this.others = JSON.parse(dataTable.others)
-                this.operating = JSON.parse(dataTable.operating)
-                this.assessmentLimits = JSON.parse(dataTable.assessmentLimits)
-            }
-        }
-    },
     methods : {
-        saveAsset() {
-            if(this.$route.query.mode === "add" || this.$route.query.mode == "dup") {
-                this.insertCircuitBreaker()
-            }
-            else if(this.$route.query.mode === "edit") {
-                this.updateCircuitBreaker()
-            }
-        },
-        async insertCircuitBreaker() {
-            const locationId = this.$store.state.selectedLocation[0].id
-            const asset = {
-                circuit : {
-                    id : this.id,
-                    properties : this.properties,
-                    circuitBreaker : this.circuitBreaker,
-                    ratings : this.ratings,
-                    contactSys : this.contactSys,
-                    others : this.others,
-                },
-                operating : this.operating,
-                assessmentLimits : this.assessmentLimits
-            }
-            const rs = await window.electronAPI.insertCircuit(locationId, asset)
-            if (rs.success) {
-                this.$message({
-                    type: 'success',
-                    message: 'Insert completed'
-                })
-                this.$router.push({name: 'manage'})
-            } else {
-                this.$message.error(rs.message)
+        async saveAsset() {
+            try {
+                if (this.circuitBreakerDto.properties.serial_no !== null && this.circuitBreakerDto.properties.serial_no !== '') {
+                    const data = JSON.parse(JSON.stringify(this.circuitBreakerDto));
+                    const result = await this.checkBreakerData(data);
+                    console.log(result)
+                    // const oldResult = await this.checkBreakerData(this.oldCircuitBreakerDto);
+                } else {
+                    this.$message.error("Serial number is required");
+                    return {
+                        success: false,
+                    };
+                }
+            } catch (error) {
+                console.error("Error saving asset:", error);
+                this.$message.error("Error saving asset: " + error.message);
+                return {
+                    success: false,
+                };
             }
         },
-        async updateCircuitBreaker() {
-            const asset = {
-                circuit : {
-                    id : this.id,
-                    properties : this.properties,
-                    circuitBreaker : this.circuitBreaker,
-                    ratings : this.ratings,
-                    contactSys : this.contactSys,
-                    others : this.others,
-                },
-                operating : this.operating,
-                assessmentLimits : this.assessmentLimits
+        async checkBreakerData(data) {
+            try {
+                this.checkProperty(data);
+                this.checkLifecycleDate(data);
+                this.checkPsrId(data);
+                this.checkProductAssetModel(data);
+                await this.checkAssetPrs(data);
+                this.checkAttachment(data);
+                this.checkLocationId(data);
+                this.checkAssetInfoId(data);
+                this.checkBreakerTree(data);
+                this.checkProductAssetModelId(data);
+                return data;
+            } catch (error) {
+                console.error("Error checking rotating machine data:", error);
             }
-            const rs = await window.electronAPI.updateCircuit(asset)
-            if (rs.success) {
-                this.$message({
-                    type: 'success',
-                    message: 'Update completed'
-                })
-            } else {
-                this.$message.error(rs.message)
+        },
+        checkProperty(data) {
+            if (data.properties.mrid == null || data.properties.mrid == '') {
+                data.properties.mrid = uuid.newUuid();
             }
+        },
+        checkLifecycleDate(data) {
+            if (data.lifecycleDateId == null || data.lifecycleDateId == '') {
+                data.lifecycleDateId = uuid.newUuid();
+            }
+        },
+        checkPsrId(data) {
+            if (this.parentData.mrid !== null && this.parentData.mrid !== '' && this.parentData.mrid !== undefined) {
+                data.psrId = this.parentData.mrid
+            }
+        },
+        checkProductAssetModel(data) {
+            if (data.productAssetModelId === null || data.productAssetModelId === '') {
+                data.productAssetModelId = uuid.newUuid()
+            }
+        },
+
+        async checkAssetPrs(data) {
+            if (data.assetPsrId === null || data.assetPsrId === '') {
+                data.assetPsrId = uuid.newUuid();
+            }
+        },
+        checkProductAssetModelId(data) {
+            if (data.productAssetModelId === null || data.productAssetModelId === '') {
+                data.productAssetModelId = uuid.newUuid();
+            }
+        },
+        checkAttachment(data) {
+            if (data.attachmentId === null || data.attachmentId === '') {
+                if (this.attachmentData.length > 0) {
+                    data.attachmentId = uuid.newUuid()
+                    data.attachment.id = data.attachmentId
+                    data.attachment.name = null
+                    data.attachment.path = JSON.stringify(this.attachmentData)
+                    data.attachment.type = 'asset'
+                    data.attachment.id_foreign = data.properties.mrid
+                }
+            }
+        },
+        checkLocationId(data) {
+            if (data.locationId === null || data.locationId === '') {
+                data.locationId = this.locationId;
+            }
+        },
+
+        checkAssetInfoId(data) {
+            if (data.assetInfoId === null || data.assetInfoId === '') {
+                data.assetInfoId = uuid.newUuid()
+            }
+        },
+        checkBreakerTree(data) {
+            this.traverseAndFillMrid(data);
+        },
+        traverseAndFillMrid(obj) {
+            if (Array.isArray(obj)) {
+                obj.forEach(item => this.traverseAndFillMrid(item));
+            } else if (obj !== null && typeof obj === "object") {
+                // Nếu có thuộc tính mrid
+                if ("mrid" in obj) {
+                    if (!obj.mrid || obj.mrid === "") {
+                        obj.mrid = uuid.newUuid();
+                    }
+                }
+                // Duyệt tiếp các key con
+                Object.values(obj).forEach(val => this.traverseAndFillMrid(val));
+            }
+            return obj;
         }
     }
 }
