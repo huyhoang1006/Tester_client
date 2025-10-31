@@ -1,5 +1,6 @@
 import circuitBreakerDto from "@/views/Dto/CircuitBreaker"
 import uuid from "@/utils/uuid";
+import * as Mapping from "@/views/Mapping/Breaker/index";
 /* eslint-disable */
 export default {
     data() {
@@ -16,8 +17,21 @@ export default {
                     const data = JSON.parse(JSON.stringify(this.circuitBreakerDto));
                     const result = await this.checkBreakerData(data);
                     const oldResult = await this.checkBreakerData(this.oldCircuitBreakerDto);
-                    console.log(result)
-                    // const oldResult = await this.checkBreakerData(this.oldCircuitBreakerDto);
+                    const resultEntity = Mapping.mapDtoToEntity(result);
+                    const oldResultEntity = Mapping.mapDtoToEntity(oldResult);
+                    let rs = await window.electronAPI.insertBreakerEntity(oldResultEntity, resultEntity)
+                    if (rs.success) {
+                        return {
+                            success: true,
+                            data: rs.data,
+                        };
+                    } else {
+                        this.$message.error("Error saving Capacitor entity: " + rs.message);
+                        return {
+                            success: false,
+                            error: rs.error,
+                        };
+                    }
                 } else {
                     this.$message.error("Serial number is required");
                     return {

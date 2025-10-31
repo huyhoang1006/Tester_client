@@ -35,14 +35,15 @@ export const insertBreakerOtherInfoTransaction = async (info, dbsql) => {
     return new Promise((resolve, reject) => {
         dbsql.run(
             `INSERT INTO breaker_other_info(
-                mrid, breaker_info_id, total_weight_with_gas, weight_of_gas, rated_gas_pressure, rated_gas_temperature
-            ) VALUES (?, ?, ?, ?, ?, ?)
+                mrid, breaker_info_id, total_weight_with_gas, weight_of_gas, rated_gas_pressure, rated_gas_temperature, volume_of_gas
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(mrid) DO UPDATE SET
                 breaker_info_id = excluded.breaker_info_id,
                 total_weight_with_gas = excluded.total_weight_with_gas,
                 weight_of_gas = excluded.weight_of_gas,
                 rated_gas_pressure = excluded.rated_gas_pressure,
-                rated_gas_temperature = excluded.rated_gas_temperature
+                rated_gas_temperature = excluded.rated_gas_temperature,
+                volume_of_gas = excluded.volume_of_gas
             `,
             [
                 info.mrid,
@@ -50,7 +51,8 @@ export const insertBreakerOtherInfoTransaction = async (info, dbsql) => {
                 info.total_weight_with_gas,
                 info.weight_of_gas,
                 info.rated_gas_pressure,
-                info.rated_gas_temperature
+                info.rated_gas_temperature,
+                info.volume_of_gas
             ],
             function (err) {
                 if (err) return reject({ success: false, err, message: 'Insert breakerOtherInfo failed' })
@@ -69,7 +71,8 @@ export const updateBreakerOtherInfoTransaction = async (mrid, info, dbsql) => {
                 total_weight_with_gas = ?,
                 weight_of_gas = ?,
                 rated_gas_pressure = ?,
-                rated_gas_temperature = ?
+                rated_gas_temperature = ?,
+                volume_of_gas = ?
             WHERE mrid = ?`,
             [
                 info.breaker_info_id,
@@ -77,6 +80,7 @@ export const updateBreakerOtherInfoTransaction = async (mrid, info, dbsql) => {
                 info.weight_of_gas,
                 info.rated_gas_pressure,
                 info.rated_gas_temperature,
+                info.volume_of_gas,
                 mrid
             ],
             function (err) {
