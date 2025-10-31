@@ -11,11 +11,29 @@ class CircuitBreakerDto {
     constructor() {
         this.properties = new PropertiesDto();
         this.attachment = new Attachment();
+        this.lifecycleDateId = ''
+        this.productAssetModelId = ''
+        this.attachmentId = ''
+        this.assetInfoId = ''
+        this.assetPsrId = ''
+        this.psrId = ''
+
         this.circuitBreaker = new circuitBreakerDto();
+
+        this.breakerRatingInfoId = ''
         this.ratings = new ratingsDto();
+
+        this.breakerContactSystemInfoId = ''
         this.contactSystem = new ContactSystemDto();
+
+        this.breakerOtherInfoId = ''
         this.others = new OtherDto();
+
+        this.operatingMechanismId = ''
+        this.operatingMechanismInfoId = ''
         this.operating = new OperatingDto();
+
+        this.assessmentLimitBreakerInfoId = ''
         this.assessmentLimits = new AssessmentDto();
     }
 }

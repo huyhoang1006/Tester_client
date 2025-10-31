@@ -1,6 +1,6 @@
 import circuitBreakerDto from "@/views/Dto/CircuitBreaker"
 import uuid from "@/utils/uuid";
-
+/* eslint-disable */
 export default {
     data() {
         return {
@@ -15,6 +15,7 @@ export default {
                 if (this.circuitBreakerDto.properties.serial_no !== null && this.circuitBreakerDto.properties.serial_no !== '') {
                     const data = JSON.parse(JSON.stringify(this.circuitBreakerDto));
                     const result = await this.checkBreakerData(data);
+                    const oldResult = await this.checkBreakerData(this.oldCircuitBreakerDto);
                     console.log(result)
                     // const oldResult = await this.checkBreakerData(this.oldCircuitBreakerDto);
                 } else {
