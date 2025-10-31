@@ -8,8 +8,9 @@ import BreakerRatingInfo from '../../Cim/BreakerRatingInfo'
 import BreakerContactSystemInfo from '../../Cim/BreakerContactSystemInfo'
 import BreakerOtherInfo from '../../Cim/BreakerOtherInfo'
 import OldOperatingMechanism from '../../Cim/OldOperatingMechanism'
-import OperatingMechanismComponent from '../../Cim/OperatingMechanismComponent'
 import OldOperatingMechanismInfo from '../../Cim/OldOperatingMechanismInfo'
+import AssessmentLimitBreakerInfo from "../../Cim/AssessmentLimitBreakerInfo";
+import AuxiliaryContactsBreakerInfo from "../../Cim/AuxiliaryContactsBreakerInfo";
 
 class CircuitBreakerEntity {
     constructor() {
@@ -23,8 +24,33 @@ class CircuitBreakerEntity {
         this.breakerContactSystemInfo = new BreakerContactSystemInfo()
         this.breakerOtherInfo = new BreakerOtherInfo()
         this.oldOperatingMechanism = new OldOperatingMechanism()
-        this.operatingMechanismComponent = new OperatingMechanismComponent()
+        this.operatingMechanismComponent = []
         this.oldOperatingMechanismInfo = new OldOperatingMechanismInfo()
+        this.assessmentLimitBreakerInfo = new AssessmentLimitBreakerInfo()
+        this.contactResistanceBreakerInfo = []
+        this.operatingTimeBreakerInfo = []
+        this.contactTravelBreakerInfo = []
+        this.auxiliaryContactsBreakerInfo = new AuxiliaryContactsBreakerInfo()
+        this.tripOperation = []
+        this.closeOperation = []
+        this.miscellaneousBreakerInfo = []
+        this.coilCharacteristicsBreakerInfo = []
+        this.pickupVoltageBreakerInfo = []
+        this.motorCharacteristicsBreakerInfo = []
+        this.underVoltageReleaseBreakerInfo = []
+        this.overcurrentReleaseBreakerInfo = []
+        this.resistance = []
+        this.capacitance = []
+        this.voltage = []
+        this.currentFlow = []
+        this.second = []
+        this.activePower = []
+        this.length = []
+        this.mass = []
+        this.volume = []
+        this.temperature = []
+        this.frequency = []
+        this.quantity = []
     }
 }
 

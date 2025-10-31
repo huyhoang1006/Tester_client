@@ -6,8 +6,8 @@ class BreakerOtherInfo {
         this.weight_of_gas = null
         this.rated_gas_pressure = null
         this.rated_gas_temperature = null
+        this.volume_of_gas = null
     }
 }
 
 export default BreakerOtherInfo;
-// ...existing code...
