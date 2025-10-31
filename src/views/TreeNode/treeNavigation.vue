@@ -1445,8 +1445,6 @@ export default {
                                 })
                             });
                             newRows.push(...substationReturn.data);
-                        } else {
-                            console.log('No substations found or API failed:', substationReturn);
                         }
                     }
                     Vue.set(node, "children", newRows); // Đảm bảo Vue reactive
