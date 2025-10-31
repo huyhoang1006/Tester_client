@@ -5,6 +5,11 @@ import ProductAssetModel from '../../Cim/ProductAssetModel'
 import AssetPsr from '../AssetPsr'
 import OldBreakerInfo from '../../Cim/OldBreakerInfo'
 import BreakerRatingInfo from '../../Cim/BreakerRatingInfo'
+import BreakerContactSystemInfo from '../../Cim/BreakerContactSystemInfo'
+import BreakerOtherInfo from '../../Cim/BreakerOtherInfo'
+import OldOperatingMechanism from '../../Cim/OldOperatingMechanism'
+import OperatingMechanismComponent from '../../Cim/OperatingMechanismComponent'
+import OldOperatingMechanismInfo from '../../Cim/OldOperatingMechanismInfo'
 
 class CircuitBreakerEntity {
     constructor() {
@@ -15,6 +20,11 @@ class CircuitBreakerEntity {
         this.assetPsr = new AssetPsr()
         this.oldBreakerInfo = new OldBreakerInfo()
         this.breakerRatingInfo = new BreakerRatingInfo()
+        this.breakerContactSystemInfo = new BreakerContactSystemInfo()
+        this.breakerOtherInfo = new BreakerOtherInfo()
+        this.oldOperatingMechanism = new OldOperatingMechanism()
+        this.operatingMechanismComponent = new OperatingMechanismComponent()
+        this.oldOperatingMechanismInfo = new OldOperatingMechanismInfo()
     }
 }
 
