@@ -56,8 +56,8 @@ export const getTestTypeVTByMrid = () => {
     })
 }
 
-export const getAllTestTypeVTs = () => {
-    ipcMain.handle('getAllTestTypeVTs', async function (event) {
+export const getAllTestTypeVT = () => {
+    ipcMain.handle('getAllTestTypeVT', async function (event) {
         try {
             const rs = await entityFunc.TestTypeFunc.voltageTransformerTestTypeFunc.getAllTestTypeVT()
             if (rs.success == true) {
@@ -141,7 +141,7 @@ export const deleteTestTypeVTByMrid = () => {
 export const active = () => {
     insertTestTypeVT()
     getTestTypeVTByMrid()
-    getAllTestTypeVTs()
+    getAllTestTypeVT()
     updateTestTypeVTByMrid()
     deleteTestTypeVTByMrid()
 }

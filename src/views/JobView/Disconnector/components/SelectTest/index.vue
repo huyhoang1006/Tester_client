@@ -1,23 +1,23 @@
 <template>
     <div id="select-test">
         <el-row :gutter="20">
-            <el-col :span="10" style="border-right: groove">
+            <el-col :span="11">
                 <table class="mgt-5 w-100 table-strip-input-data">
                     <thead>
                         <tr>
-                            <th class="no-col">No</th>
+                            <th style="width: 20px;">No</th>
                             <th>Test type</th>
-                            <th class="action-col"></th>
+                            <th style="width: 25px;"></th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="(item, index) in testTypeList" :key="index">
-                            <td>{{ index + 1 }}</td>
-                            <td>
+                            <td style="font-weight: bold;">{{ index + 1 }}</td>
+                            <td class="ellipsis-cell" style="font-weight: bold;">
                                 {{ item.name }}
                             </td>
                             <td>
-                                <el-button size="mini" type="primary" class="w-100" @click="addTest(item)">
+                                <el-button size="mini" type="primary" style="width: 25px; display: flex; align-items: center; justify-content: center;" @click="addTest(item)">
                                     <i class="fas fa-plus"></i>
                                 </el-button>
                             </td>
@@ -25,27 +25,27 @@
                     </tbody>
                 </table>
             </el-col>
-            <el-col :span="14">
+            <el-col style="border-left: groove" :span="13">
                 <table class="mgt-5 w-100 table-strip-input-data">
                     <thead>
                         <tr>
-                            <th class="no-col">No</th>
-                            <th style="width: 300px">Test type</th>
+                            <th style="width: 20px;">No</th>
+                            <th style="width: 150px;">Test type</th>
                             <th>Test name</th>
-                            <th class="action-col"></th>
+                            <th style="width: 25px;"></th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="(item, index) in testListData" :key="index">
-                            <td>{{ index + 1 }}</td>
-                            <td>
+                            <td style="font-weight: bold;">{{ index + 1 }}</td>
+                            <td class="ellipsis-cell">
                                 {{ item.testTypeName }}
                             </td>
                             <td>
                                 <el-input size="mini" type="text" v-model="item.name"></el-input>
                             </td>
                             <td>
-                                <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
+                                <el-button size="mini" type="danger" style="width: 25px; display: flex; align-items: center; justify-content: center;" @click="deleteTest(index)">
                                     <i class="fas fa-trash"></i>
                                 </el-button>
                             </td>
@@ -60,7 +60,6 @@
 <script>
 /* eslint-disable */
 import mixin from './mixin'
-import loader from "@/utils/preload"
 import { mapState } from 'vuex'
 
 export default {
@@ -132,6 +131,20 @@ export default {
                     activeName: null
                 }
             }
+        },
+        testTypeListData: {
+            type: Array,
+            required: false,
+            default() { 
+                return [] 
+            }
+        },
+        assetData: {
+            type: Object,
+            required: false,
+            default() {
+                return {}
+            }
         }
     },
     data() {
@@ -139,10 +152,23 @@ export default {
             testTypeList: []
         }
     },
-    async beforeMount() { 
-        await this.getTestTypes()
+    mounted() {
+        // Initialize available test types from prop (or fetch)
+        if (this.testTypeListData && this.testTypeListData.length > 0) {
+            this.testTypeList = this.testTypeListData
+        } else {
+            // Fallback: fetch from preload if prop not provided
+            this.getTestTypes().then(() => {}).catch(() => {})
+        }
     },
-    mounted() {},
+    watch: {
+        // Keep local list in sync if parent updates prop
+        testTypeListData(newVal) {
+            if (newVal && newVal.length > 0) {
+                this.testTypeList = newVal
+            }
+        }
+    },
     computed: {
 
         ...mapState(['selectedLocation', 'selectedAsset']),
@@ -178,7 +204,7 @@ export default {
         },
         async addTest(testType) {
             const count = await this.countTest(testType.id)
-            const initData = await this.initTest(testType.code)
+            const initData = await this.initTest(testType.code, this.assetData)
             const tabId = this.$uuid.newUuid()
             const name = count == 0 ? testType.name : `${testType.name} (${count + 1})`
             this.testListData.push({
@@ -233,7 +259,6 @@ export default {
                 type: 'warning'
             })
                 .then(async () => {
-                    loader.loaderStart()
                     const test = this.testListData[index]
                     const testId = test.id
 
@@ -258,7 +283,6 @@ export default {
                             this.objActiveNameData.activeName = this.testListData[0].tabId
                         }
                     }
-                    loader.loaderEnd()
                 })
                 .catch(() => {})
         }
@@ -268,9 +292,19 @@ export default {
 
 <style lang="scss" scoped>
 #select-test {
-    width: calc(100vw - 145px);
-    height: calc(100vh - 150px);
     overflow-y: auto;
     overflow-x: hidden;
 }
+td, th {
+    font-size: 12px;
+}
+
+.ellipsis-cell {
+  font-weight: bold;
+  max-width: 150px; /* hoặc theo <th> */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 </style>

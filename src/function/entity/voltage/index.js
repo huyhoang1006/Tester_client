@@ -4,10 +4,10 @@ import { insertBaseVoltageTransaction, getBaseVoltageById, deleteBaseVoltageById
 import { insertVoltageLevelTransaction, getVoltageLevelById, deleteVoltageLevelByIdTransaction } from '@/function/cim/voltageLevel';
 export const insertVoltageLevelEntity = async (entity) => {
     try {
-        if(entity.voltageLevel.mrid) {
+        if (entity.voltageLevel.mrid) {
             await runAsync('BEGIN TRANSACTION');
-            if(entity.voltage && entity.voltage.length > 0) {
-                for(const voltage of entity.voltage) {
+            if (entity.voltage && entity.voltage.length > 0) {
+                for (const voltage of entity.voltage) {
                     await insertVoltageTransaction(voltage, db);
                 }
             }
@@ -16,42 +16,42 @@ export const insertVoltageLevelEntity = async (entity) => {
             await runAsync('COMMIT');
             return { success: true, data: entity, message: 'Voltage level entity inserted successfully' };
         } else {
-            return { success: false, message: 'Error retrieving voltage entity, id is required'};
+            return { success: false, message: 'Error retrieving voltage entity, id is required' };
         }
     } catch (error) {
         console.error('Error retrieving voltage entity:', error);
         await runAsync('ROLLBACK');
-        return { success: false, error, message: 'Error retrieving voltage entity'};
+        return { success: false, error, message: 'Error retrieving voltage entity' };
     }
 }
 
 export const getVoltageLevelEntity = async (id) => {
     const data = {
-        voltageLevel : null,
-        baseVoltage : null,
-        voltage : []
+        voltageLevel: null,
+        baseVoltage: null,
+        voltage: []
     };
     try {
         const dataVoltageLevel = await getVoltageLevelById(id);
         if (dataVoltageLevel.success) {
             data.voltageLevel = dataVoltageLevel.data;
             const baseVoltage = await getBaseVoltageById(dataVoltageLevel.data.base_voltage);
-            if(baseVoltage.success) {
+            if (baseVoltage.success) {
                 data.baseVoltage = baseVoltage.data;
                 const voltage = await getVoltageById(baseVoltage.data.nominal_voltage);
-                if(voltage.success) {
+                if (voltage.success) {
                     data.voltage.push(voltage.data);
                 }
             }
             const highVoltageLimitData = await getVoltageById(dataVoltageLevel.data.high_voltage_limit);
-            if(highVoltageLimitData.success) {
+            if (highVoltageLimitData.success) {
                 data.voltage.push(highVoltageLimitData.data);
             }
             const lowVoltageLimitData = await getVoltageById(dataVoltageLevel.data.low_voltage_limit);
-            if(lowVoltageLimitData.success) {
+            if (lowVoltageLimitData.success) {
                 data.voltage.push(lowVoltageLimitData.data);
             }
-            return { success: true, data : data, message: 'Voltage level entity retrieved successfully' };
+            return { success: true, data: data, message: 'Voltage level entity retrieved successfully' };
         } else {
             return { success: false, message: 'Error retrieving voltage level entity' };
         }

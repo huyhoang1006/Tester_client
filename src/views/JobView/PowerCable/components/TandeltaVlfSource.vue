@@ -93,19 +93,19 @@
                            {{ index/3 + 1 }}
                         </td>
                         <td v-if="index%3 == 0" rowspan="3">
-                            <el-input size="mini" type="text" v-model="item.measurement"></el-input>
+                            <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
                         </td>
                         <td>
-                            {{ item.test_voltage_label }} U<sub>0</sub>
+                            {{ item.test_voltage_label.value }} U<sub>0</sub>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.test_voltage"></el-input>
+                            <el-input size="mini" type="text" v-model="item.test_voltage.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.capacitance"></el-input>
+                            <el-input size="mini" type="text" v-model="item.capacitance.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.mtd"></el-input>
+                            <el-input size="mini" type="text" v-model="item.mtd.value"></el-input>
                         </td>
                         <td>
                             <el-input size="mini" type="text" v-model="item.dtd_eachstep"></el-input>

@@ -45,6 +45,9 @@ const testTypeSurgeArresterAPI = entityPreload.testTypePreload.testTypeSurgeArre
 const surgeArresterJobAPI = entityPreload.jobEntityPreload.surgeArresterJob.surgeArresterJobPreload()
 const powerCableJobAPI = entityPreload.jobEntityPreload.powerCableJob.powerCableJobPreload()
 const testTypePowerCableAPI = entityPreload.testTypePreload.testTypePowerCablePreload.testTypePowerCablePreload()
+const testTypeCurrentTransformerAPI = entityPreload.testTypePreload.testTypeCurrentTransformerPreload.testTypeCurrentTransformerPreload()
+const testTypeVoltageTransformerAPI = entityPreload.testTypePreload.testTypeVoltageTransformerPreload.testTypeVoltageTransformerPreload()
+const testTypeDisconnectorAPI = entityPreload.testTypePreload.testTypeDisconnectorPreload.testTypeDisconnectorPreload()
 const oldWorkAPI = cimPreload.oldWorkPreload.oldWorkPreload()
 const assetAPI = cimPreload.assetPreload.assetPreload()
 const analogAPI = cimPreload.analogPreload.analogPreload()
@@ -67,7 +70,7 @@ const ipcMain = Object.assign(userAPI, transformerAPI, fmecaAPI, conditionAPI, c
     positionPointAPI, voltageLevelEntityAPI, voltageLevelAPI, bayEntityAPI, bayAPI, powerSystemResourceAPI, surgeArresterEntityAPI,
     productAssetModelAPI, testTypeSurgeArresterAPI, surgeArresterJobAPI, powerCableJobAPI, oldWorkAPI, assetAPI, transformerEntityAPI, analogAPI,
     stringMeasurementAPI, discreteAPI, valueToAliasAPI, valueAliasSetAPI, powerCableEntityAPI, voltageTransformerEntityAPI, bushingEntityAPI,
-    bushingAPI, disconnectorEntityAPI, rotatingMachineEntityAPI, currentTransformerEntityAPI, testTypePowerCableAPI, capacitorEntityAPI)
+    bushingAPI, disconnectorEntityAPI, rotatingMachineEntityAPI, currentTransformerEntityAPI, testTypePowerCableAPI, testTypeCurrentTransformerAPI, testTypeVoltageTransformerAPI, testTypeDisconnectorAPI, capacitorEntityAPI)
 contextBridge.exposeInMainWorld('electronAPI',
     ipcMain
 )

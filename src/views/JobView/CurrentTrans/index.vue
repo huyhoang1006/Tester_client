@@ -1,43 +1,29 @@
 <template>
     <div id="job">
-        <el-row id="top-bar">
-            <el-col :span="24">
-                <el-button @click="backToManage" style="box-sizing: border-box; border-right: 1px solid #aeb6bf">
-                    <i class="fa-solid fa-circle-arrow-left display-block fa-2x"></i>
-                    <div class="mgt-10">Manage</div>
-                </el-button>
-                <el-button @click="saveJob">
-                    <i class="fa-solid fa-floppy-disk display-block fa-2x"></i>
-                    <div class="mgt-10">Save job</div>
-                </el-button>
-                <el-button @click="$router.go(-1)" style="box-sizing: border-box">
-                    <i class="fa-solid fa-ban display-block fa-2x"></i>
-                    <div class="mgt-10">Cancel</div>
-                </el-button>
-                <el-button style="float: right; text-align: right; width: fit-content; cursor: default">
-                    <img src="@/assets/images/logo.png" style="max-height: 40px" />
-                </el-button>
-            </el-col>
-        </el-row>
-        <el-row :gutter="20" id="main-content" style="padding: 0">
-            <el-tabs tab-position="left" type="border-card" class="w-100 h-100">
+        <el-row :gutter="20" style="padding: 0">
+            <el-tabs type="card" >
                 <!-- Overview -->
                 <el-tab-pane style="width: 100%;">
                     <span slot="label"><i class="fa-solid fa-book"></i> Overview</span>
-                    <overview :data="properties" :location="location" :asset="asset"></overview>
+                    <overview :data="currentTransformerJobDto.properties" @update-attachment="updateAttachmentOverView" :attachment.sync="currentTransformerJobDto.attachmentData" :locationData="locationData" :assetData="assetData" :productAssetModelData="productAssetModelData" :parentOrganization="parentOrganization"></overview>
                 </el-tab-pane>
 
                 <!-- Select test -->
                 <el-tab-pane>
                     <span slot="label"><i class="fa-solid fa-list-check"></i> Select test</span>
                     <select-test style="width: 100%;"
-                        :mode="mode" 
-                        :data="testList" 
-                        :asset="asset" 
+                        :data="currentTransformerJobDto.testList" 
+                        :assetData="assetData"
                         :obj-active-name="objActiveName"
-                        :attachmentArr.sync="attachmentArr"
-                        :testconditionArr.sync="testconditionArr"
+                        :testTypeListData="testTypeListData"
                         ></select-test>
+                </el-tab-pane>
+
+                <el-tab-pane>
+                    <span slot="label"><i class="fa-solid fa-list-check"></i> Testing equipment</span>
+                    <div>
+                        <testing-equipment :data="currentTransformerJobDto.testingEquipmentData" :testTypeListData="testTypeListData"></testing-equipment>
+                    </div>
                 </el-tab-pane>
 
                 <!-- Tests -->
@@ -45,18 +31,18 @@
                     <span slot="label"><i class="fa-solid fa-calculator"></i> Tests</span>
                     <div id="tests" style="width: 100%;">
                         <el-tabs v-model="objActiveName.activeName" type="card" class="w-100 h-100">
-                            <el-tab-pane v-for="(item, index) in testList" :key="index" :label="item.name" :name="item.tabId">
+                            <el-tab-pane v-for="(item, index) in currentTransformerJobDto.testList" :key="index" :label="item.name" :name="item.tabId || item.name + index">
                                 <test-information
-                                title="Test"
-                                :testCondition.sync="testconditionArr[index]"
-                                :attachment.sync="attachmentArr[index]"
+                                :title="item.name"
+                                :data="item.testCondition"
+                                :assetData="assetData"
+                                :attachment="item.testCondition && item.testCondition.attachmentData ? item.testCondition.attachmentData : attachmentArr[index]"
                                 >
                                 </test-information>
                                 <component
                                     :is="item.testTypeCode" 
                                     :data="item.data" 
-                                    :asset="asset"
-                                    :testCondition="testconditionArr[index]"
+                                    :asset="assetData"
                                     >
                                 </component>
                             </el-tab-pane>
@@ -81,6 +67,8 @@ import CTExcitation from './components/CTExcitation.vue'
 import CTWindingRes from './components/CTWindingRes.vue'
 import CTDfcap from './components/CTDfcap.vue'
 import GeneralInspection from './components/GeneralInspection.vue'
+import testingEquipment from './components/TestingEquipment/index.vue'
+
 
 
 export default {
@@ -94,14 +82,34 @@ export default {
         CTRatio,
         CTExcitation,
         CTWindingRes,
-        GeneralInspection
+        GeneralInspection,
+        testingEquipment
+    },
+    props: {
+        locationData: {
+            type: Object,
+            default: () => ({})
+        },
+        assetData: {
+            type: Object,
+            default: () => ({})
+        },
+        productAssetModelData: {
+            type: Object,
+            default: () => ({})
+        },
+        parentOrganization: {
+            type: Object,
+            default: () => ({})
+        },
+        testTypeListData: {
+            type: Array,
+            default: () => []
+        }
     },
     mixins: [mixin, Mixtestcondition],
     data() {
         return {
-            mode: this.$constant.ADD,
-            job_id: null,
-            saved: false,
             objActiveName: {
                 activeName: null
             }
@@ -109,20 +117,36 @@ export default {
     },
     mounted() {},
     methods: {
+        updateAttachmentOverView(attachment) {
+            this.currentTransformerJobDto.attachmentData = attachment
+        },
+        loadMapForView() {
+        },
     },
 }
 </script>
 
+
 <style lang="scss" scoped>
 #job {
     width: 100%;
-    height: 100%;
+}
+
+::v-deep(.el-tabs__item) {
+  font-size: 12px !important;
+  font-weight: bold !important;
+}
+
+::v-deep(.el-tabs__item.is-active) {
+  color: #fff !important;
+  background-color: var(--el-color-primary, #012596) !important;
+  border-radius: 4px 4px 0 0;
+  font-size: 12px !important;
 }
 
 #tests,
 #job__health-index {
     width: calc(100vw - 145px);
-    height: calc(100vh - 150px);
     overflow-y: auto;
     overflow-x: hidden;
 }
