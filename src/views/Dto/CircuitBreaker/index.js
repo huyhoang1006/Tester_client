@@ -31,6 +31,9 @@ class CircuitBreakerDto {
 
         this.operatingMechanismId = ''
         this.operatingMechanismInfoId = ''
+        this.operatingMechanismLifecycleDateId = ''
+        this.operatingMechanismProductAssetModelId = ''
+
         this.operating = new OperatingDto();
 
         this.assessmentLimitBreakerInfoId = ''

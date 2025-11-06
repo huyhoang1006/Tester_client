@@ -23,6 +23,52 @@ export const getOldOperatingMechanismById = async (mrid) => {
     }
 }
 
+export const getOldOperatingMechanismByAssetIdTransaction = async (assetId, dbsql) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const query = `
+                SELECT o.*, om.*, a.*, io.*
+                FROM old_operating_mechanism o
+                JOIN operating_mechanism om ON o.mrid = om.mrid
+                JOIN asset a ON om.mrid = a.mrid
+                JOIN identified_object io ON a.mrid = io.mrid
+                WHERE om.asset_id = ?
+            `;
+
+            dbsql.get(query, [assetId], (err, row) => {
+                if (err) {
+                    return reject({
+                        success: false,
+                        message: 'Get oldOperatingMechanism failed',
+                        err
+                    });
+                }
+
+                if (!row) {
+                    return resolve({
+                        success: true,
+                        data: null,
+                        message: 'No oldOperatingMechanism found for this asset'
+                    });
+                }
+
+                return resolve({
+                    success: true,
+                    data: row,
+                    message: 'Get oldOperatingMechanism successfully'
+                });
+            });
+        } catch (err) {
+            return reject({
+                success: false,
+                err,
+                message: 'Get oldOperatingMechanism transaction failed'
+            });
+        }
+    });
+};
+
+
 // Thêm mới oldOperatingMechanism (transaction)
 export const insertOldOperatingMechanismTransaction = async (info, dbsql) => {
     return new Promise(async (resolve, reject) => {

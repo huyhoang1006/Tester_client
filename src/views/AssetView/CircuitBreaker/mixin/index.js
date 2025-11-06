@@ -19,6 +19,7 @@ export default {
                     const oldResult = await this.checkBreakerData(this.oldCircuitBreakerDto);
                     const resultEntity = Mapping.mapDtoToEntity(result);
                     const oldResultEntity = Mapping.mapDtoToEntity(oldResult);
+                    console.log(resultEntity);
                     let rs = await window.electronAPI.insertBreakerEntity(oldResultEntity, resultEntity)
                     if (rs.success) {
                         return {
@@ -56,21 +57,39 @@ export default {
                 this.checkAttachment(data);
                 this.checkLocationId(data);
                 this.checkAssetInfoId(data);
+                this.checkAssessmentLimitBreakerInfoId(data)
+                this.checkBreakerRatingInfoId(data);
+                this.checkBreakerContactSystemInfoId(data);
+                this.checkBreakerOtherInfoId(data);
                 this.checkBreakerTree(data);
-                this.checkProductAssetModelId(data);
                 return data;
             } catch (error) {
                 console.error("Error checking rotating machine data:", error);
+            }
+        },
+        loadData(data) {
+            this.oldCircuitBreakerDto = JSON.parse(JSON.stringify(data));
+            this.circuitBreakerDto = data;
+            if (data.attachment && data.attachment.path) {
+                this.attachmentData = JSON.parse(data.attachment.path)
+            } else {
+                this.attachmentData = []
             }
         },
         checkProperty(data) {
             if (data.properties.mrid == null || data.properties.mrid == '') {
                 data.properties.mrid = uuid.newUuid();
             }
+            if(data.operatingMechanismId == null || data.operatingMechanismId == '') {
+                data.operatingMechanismId = uuid.newUuid();
+            }
         },
         checkLifecycleDate(data) {
             if (data.lifecycleDateId == null || data.lifecycleDateId == '') {
                 data.lifecycleDateId = uuid.newUuid();
+            }
+            if (data.operatingMechanismLifecycleDateId == null || data.operatingMechanismLifecycleDateId == '') {
+                data.operatingMechanismLifecycleDateId = uuid.newUuid();
             }
         },
         checkPsrId(data) {
@@ -82,16 +101,13 @@ export default {
             if (data.productAssetModelId === null || data.productAssetModelId === '') {
                 data.productAssetModelId = uuid.newUuid()
             }
+            if (data.operatingMechanismProductAssetModelId === null || data.operatingMechanismProductAssetModelId === '') {
+                data.operatingMechanismProductAssetModelId = uuid.newUuid()
+            }
         },
-
         async checkAssetPrs(data) {
             if (data.assetPsrId === null || data.assetPsrId === '') {
                 data.assetPsrId = uuid.newUuid();
-            }
-        },
-        checkProductAssetModelId(data) {
-            if (data.productAssetModelId === null || data.productAssetModelId === '') {
-                data.productAssetModelId = uuid.newUuid();
             }
         },
         checkAttachment(data) {
@@ -111,10 +127,32 @@ export default {
                 data.locationId = this.locationId;
             }
         },
-
         checkAssetInfoId(data) {
             if (data.assetInfoId === null || data.assetInfoId === '') {
                 data.assetInfoId = uuid.newUuid()
+            }
+            if (data.operatingMechanismInfoId === null || data.operatingMechanismInfoId === '') {
+                data.operatingMechanismInfoId = uuid.newUuid()
+            }
+        },
+        checkAssessmentLimitBreakerInfoId(data) {
+            if (data.assessmentLimitBreakerInfoId === null || data.assessmentLimitBreakerInfoId === '') {
+                data.assessmentLimitBreakerInfoId = uuid.newUuid()
+            }
+        },
+        checkBreakerRatingInfoId(data) {
+            if (data.breakerRatingInfoId === null || data.breakerRatingInfoId === '') {
+                data.breakerRatingInfoId = uuid.newUuid()
+            }
+        },
+        checkBreakerContactSystemInfoId(data) {
+            if (data.breakerContactSystemInfoId === null || data.breakerContactSystemInfoId === '') {
+                data.breakerContactSystemInfoId = uuid.newUuid()
+            }
+        },
+        checkBreakerOtherInfoId(data) {
+            if (data.breakerOtherInfoId === null || data.breakerOtherInfoId === '') {
+                data.breakerOtherInfoId = uuid.newUuid()
             }
         },
         checkBreakerTree(data) {

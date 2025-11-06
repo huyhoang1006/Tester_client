@@ -24,6 +24,8 @@ class CircuitBreakerEntity {
         this.breakerContactSystemInfo = new BreakerContactSystemInfo()
         this.breakerOtherInfo = new BreakerOtherInfo()
         this.oldOperatingMechanism = new OldOperatingMechanism()
+        this.operatingLifecycleDate = new LifecycleDate()
+        this.operatingProductAssetModel = new ProductAssetModel()
         this.operatingMechanismComponent = []
         this.oldOperatingMechanismInfo = new OldOperatingMechanismInfo()
         this.assessmentLimitBreakerInfo = new AssessmentLimitBreakerInfo()
@@ -51,6 +53,7 @@ class CircuitBreakerEntity {
         this.temperature = []
         this.frequency = []
         this.quantity = []
+        this.pressure = []
     }
 }
 

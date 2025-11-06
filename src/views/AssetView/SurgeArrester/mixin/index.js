@@ -18,7 +18,6 @@ export default {
                     const result = this.checkSurgeArresterData(data);
                     const oldResult = this.checkSurgeArresterData(this.surge_arrester_data_old);
                     const resultEntity = Mapping.mapDtoToEntity(result);
-                    console.log(resultEntity)
                     const oldResultEntity = Mapping.mapDtoToEntity(oldResult);
                     let rs = await window.electronAPI.insertSurgeArresterEntity(oldResultEntity, resultEntity)
                     if(rs.success) {
