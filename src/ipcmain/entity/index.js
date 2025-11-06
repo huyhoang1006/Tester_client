@@ -14,6 +14,7 @@ import * as ipcDisconnector from './disconnector/index.js'
 import * as ipcRotatingMachine from './rotatingMachine/index.js'
 import * as ipcCurrentTransformer from './currentTransformer/index.js'
 import * as ipcCapacitor from './capacitor/index.js'
+import * as ipcBreaker from './breaker/index.js'
 
 export const active = () => {
     ipcSubstation.active()
@@ -32,5 +33,5 @@ export const active = () => {
     ipcRotatingMachine.active()
     ipcCurrentTransformer.active()
     ipcCapacitor.active()
-
+    ipcBreaker.active()
 }
