@@ -675,6 +675,9 @@ import VoltageTransformer from '@/views/AssetView/VoltageTransformer'
 import Capacitor from '@/views/AssetView/Capacitor/index.vue'
 import JobSurgeArrester from '@/views/JobView/SurgeArrester/index.vue'
 import JobPowerCable from '@/views/JobView/PowerCable/index.vue'
+import JobDisconnector from '@/views/JobView/Disconnector/index.vue'
+import JobCurrentTransformer from '@/views/JobView/CurrentTrans/index.vue'
+import JobVoltageTransformer from '@/views/JobView/VoltageTransformer/index.vue'
 
 import * as rotatingMachineMapping from "@/views/Mapping/RotatingMachine/index"
 import RotatingMachine from '@/views/AssetView/RotatingMachine/index.vue'
@@ -708,6 +711,9 @@ export default {
         Capacitor,
         JobSurgeArrester,
         JobPowerCable,
+        JobDisconnector,
+        JobCurrentTransformer,
+        JobVoltageTransformer,
     },
     data() {
         return {
@@ -2457,6 +2463,13 @@ export default {
                         jobType = 'Surge arrester';
                     } else if (this.checkJobType === 'JobPowerCable') {
                         jobType = 'Power cable';
+                    }else if (this.checkJobType === 'JobDisconnector') {
+                        jobType = 'Disconnector';
+                    }else if (this.checkJobType === 'JobCurrentTransformer') {
+                        jobType = 'Current transformer';
+                    }
+                    else if (this.checkJobType === 'JobVoltageTransformer') {
+                        jobType = 'Voltage transformer';
                     }
                     const newRow = {
                         mrid: data.oldWork.mrid,
@@ -3479,6 +3492,36 @@ export default {
                         this.testTypeListData = []
                     }
                     this.checkJobType = 'JobPowerCable'
+                    this.signJob = true;
+                }
+                else if(node.asset == 'Disconnector'){
+                    const dataTestType = await window.electronAPI.getAllTestTypeDisconnector();
+                    if (dataTestType.success) {
+                        this.testTypeListData = dataTestType.data
+                    } else {
+                        this.testTypeListData = []
+                    }
+                    this.checkJobType = 'JobDisconnector'
+                    this.signJob = true;
+                }
+                else if(node.asset == 'Current transformer'){
+                    const dataTestType = await window.electronAPI.getAllTestTypeCT();
+                    if (dataTestType.success) {
+                        this.testTypeListData = dataTestType.data
+                    } else {
+                        this.testTypeListData = []
+                    }
+                    this.checkJobType = 'JobCurrentTransformer'
+                    this.signJob = true;
+                }
+                else if(node.asset == 'Voltage transformer'){
+                    const dataTestType = await window.electronAPI.getAllTestTypeVT();
+                    if (dataTestType.success) {
+                        this.testTypeListData = dataTestType.data
+                    } else {
+                        this.testTypeListData = []
+                    }
+                    this.checkJobType = 'JobVoltageTransformer'
                     this.signJob = true;
                 }
                 else {

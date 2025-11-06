@@ -98,27 +98,27 @@ export default {
                     condition : { 
                         top_oil_temperature : {
                             value: "",
-                            unit: this.unitSymbol.degC
+                            unit: UnitSymbol.degC
                         },
                         bottom_oil_temperature : {
                             value: "",
-                            unit: this.unitSymbol.degC
+                            unit: UnitSymbol.degC
                         },
                         winding_temperature : {
                             value: "",
-                            unit: this.unitSymbol.degC
+                            unit: UnitSymbol.degC
                         },
                         reference_temperature : {
                             value: "",
-                            unit: this.unitSymbol.degC
+                            unit: UnitSymbol.degC
                         },
                         ambient_temperature : {
                             value: "",
-                            unit: this.unitSymbol.degC
+                            unit: UnitSymbol.degC
                         },
                         humidity : {
                             value: "",
-                            unit: this.unitSymbol.percent
+                            unit: UnitSymbol.percent
                         },
                         weather : ""
                     },
