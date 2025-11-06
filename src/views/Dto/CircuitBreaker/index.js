@@ -1,64 +1,43 @@
 import PropertiesDto from './Properties';
 import Attachment from "@/views/Entity/Attachment";
+import circuitBreakerDto from "./CircuitBreaker";
+import ratingsDto from  "./Ratings"
+import ContactSystemDto from "./ContactSystem";
+import OtherDto from "./Other";
+import OperatingDto from "./Operating/index";
+import AssessmentDto from "./AsssessmentLimits";
+
 class CircuitBreakerDto {
     constructor() {
         this.properties = new PropertiesDto();
         this.attachment = new Attachment();
-        this.numberOfPhases = '';
+        this.lifecycleDateId = ''
+        this.productAssetModelId = ''
+        this.attachmentId = ''
+        this.assetInfoId = ''
+        this.assetPsrId = ''
+        this.psrId = ''
 
-        this.interruptersPerPhase = '';
+        this.circuitBreaker = new circuitBreakerDto();
 
-        this.poleOperation = '';
+        this.breakerRatingInfoId = ''
+        this.ratings = new ratingsDto();
 
-        this.hasPIR = '';
+        this.breakerContactSystemInfoId = ''
+        this.contactSystem = new ContactSystemDto();
 
-        this.pirValue = '';
+        this.breakerOtherInfoId = ''
+        this.others = new OtherDto();
 
-        this.hasGradingCapacitors = '';
+        this.operatingMechanismId = ''
+        this.operatingMechanismInfoId = ''
+        this.operatingMechanismLifecycleDateId = ''
+        this.operatingMechanismProductAssetModelId = ''
 
-        this.capacitorValue = '';
+        this.operating = new OperatingDto();
 
-        this.interruptingMedium = '';
-
-        this.tankType = '';
-
-        this.ratedVoltageLL = '';
-
-        this.ratedCurrent = '';
-
-        this.ratedShortCircuitBreakingCurrent = '';
-
-        this.shortCircuitNominalDuration = '';
-
-        this.ratedInsulationLevel = '';
-
-        this.ratedInterruptingTime = '';
-
-        this.interruptingDutyCycle = '';
-
-        this.ratedPowerAtClosing = '';
-
-        this.ratedPowerAtOpening = '';
-
-        this.ratedPowerAtMotorCharge = '';
-
-        this.ratedFrequency = '';
-
-        this.nominalTotalTravel = '';
-
-        this.dampingTime = '';
-
-        this.nozzleLength = '';
-
-        this.totalWeightWithGas = '';
-
-        this.weightOfGas = '';
-
-        this.volumeOfGas = '';
-
-        this.ratedGasPressure = '';
-
-        this.ratedGasTemperature = '';
+        this.assessmentLimitBreakerInfoId = ''
+        this.assessmentLimits = new AssessmentDto();
     }
 }
 

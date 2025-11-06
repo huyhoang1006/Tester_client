@@ -15,7 +15,6 @@ import DashboardView from '@/views/DashboardView'
 import FmecaView from '@/views/FmecaView'
 import OnlineMonitoringDataView from '@/views/OnlineMonitoringDataView'
 import loader from "@/utils/preload"
-import AssetChoosen from "@/views/AssetView/Property/propertyMain"
 import circuitBreaker from "@/views/AssetView/CircuitBreaker"
 import JobViewCircuitBreaker from '@/views/JobView/CircuitBreaker'
 import JobViewCurrentTrans from '@/views/JobView/CurrentTrans'
@@ -81,12 +80,6 @@ const routes = [
                 name: 'location',
                 meta: { title: 'Location' },
                 component: LocationView
-            },
-            {
-                path: '/property',
-                name: 'property',
-                meta: { title: 'Asset' },
-                component: AssetChoosen
             },
             {
                 path: '/circuit',

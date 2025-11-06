@@ -19,8 +19,8 @@
         </el-row>
         <div class="content-toggle" v-if="openContacRes">
             <el-row :gutter="20" class="content">
-                <el-col v-if="assessLimitsData.limits === 'Absolute'" :span="12" class="col-content">
-                    <table class="table-strip-input-data">
+                <el-col v-if="assessLimitsData.limits === 'Absolute'" :span="18" class="col-content">
+                    <table class="table-strip-input-data" style="width: 100% !important;">
                         <thead>
                             <tr>
                                 <th></th>
@@ -32,12 +32,12 @@
                             <tr>
                                 <td>Contact resistance</td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.contactSys.abs.rmin">
+                                    <el-input size="mini" v-model="assessLimitsData.contact_resistance.abs.r_min.value">
                                         <template slot="append">&#181;&#8486;</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.contactSys.abs.rmax" >
+                                    <el-input size="mini" v-model="assessLimitsData.contact_resistance.abs.r_max.value">
                                         <template slot="append">&#181;&#8486;</template>
                                     </el-input>
                                 </td>
@@ -45,8 +45,8 @@
                         </tbody>
                     </table>
                 </el-col>
-                <el-col v-else :span="12" class="col-content">
-                    <table class="table-strip-input-data">
+                <el-col v-else :span="18" class="col-content">
+                    <table class="table-strip-input-data" style="width: 100% !important;">
                         <thead>
                             <tr>
                                 <th></th>
@@ -58,12 +58,12 @@
                             <tr>
                                 <td>Contact resistance</td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.contactSys.rel.rref">
+                                    <el-input size="mini" v-model="assessLimitsData.contact_resistance.rel.r_ref.value">
                                         <template slot="append">&#181;&#8486;</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.contactSys.rel.rdev" >
+                                    <el-input size="mini" v-model="assessLimitsData.contact_resistance.rel.r_dev.value">
                                         <template slot="append">&#181;&#8486;</template>
                                     </el-input>
                                 </td>
@@ -85,8 +85,8 @@
         <div class="content-toggle" v-if="openOperatingTime">
             <el-row :gutter="20" class="content">
                 <transition>
-                <el-col v-if="assessLimitsData.limits === 'Absolute'" :span="12" class="col-content">
-                    <table class="table-strip-input-data">
+                <el-col v-if="assessLimitsData.limits === 'Absolute'" :span="18" class="col-content">
+                    <table class="table-strip-input-data" style="width: 100% !important;">
                         <thead>
                             <tr>
                                 <th></th>
@@ -96,14 +96,14 @@
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in opening_times" :key="index">
-                                <td>{{item}}</td>
+                                <td>{{item.label}}</td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.openTime.abs[index].tmin">
+                                    <el-input size="mini" v-model="assessLimitsData.operating_time.abs[item.value].t_min.value">
                                         <template slot="append">ms</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.openTime.abs[index].tmax" >
+                                    <el-input size="mini" v-model="assessLimitsData.operating_time.abs[item.value].t_max.value">
                                         <template slot="append">ms</template>
                                     </el-input>
                                 </td>
@@ -111,8 +111,8 @@
                         </tbody>
                     </table>
                 </el-col>
-                <el-col v-if="assessLimitsData.limits === 'Relative'" :span="12" class="col-content">
-                    <table class="table-strip-input-data">
+                <el-col v-if="assessLimitsData.limits === 'Relative'" :span="18" class="col-content">
+                    <table class="table-strip-input-data" style="width: 100% !important;">
                         <thead>
                             <tr>
                                 <th></th>
@@ -123,19 +123,19 @@
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in opening_times" :key="index">
-                                <td>{{item}}</td>
+                                <td>{{item.label}}</td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.openTime.rel[index].rref">
+                                    <el-input size="mini" v-model="assessLimitsData.operating_time.rel[item.value].t_ref.value">
                                         <template slot="append">ms</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.openTime.rel[index].tdevZ" >
+                                    <el-input size="mini" v-model="assessLimitsData.operating_time.rel[item.value].minus_t_dev.value">
                                         <template slot="append">ms</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.openTime.rel[index].tdevN" >
+                                    <el-input size="mini" v-model="assessLimitsData.operating_time.rel[item.value].plus_t_dev.value">
                                         <template slot="append">ms</template>
                                     </el-input>
                                 </td>
@@ -158,8 +158,8 @@
         <div class="content-toggle" v-if="openContactTravel">
             <el-row :gutter="20" class="content">
                 <transition>
-                <el-col v-if="assessLimitsData.limits === 'Absolute'" :span="12" class="col-content">
-                    <table class="table-strip-input-data">
+                <el-col v-if="assessLimitsData.limits === 'Absolute'" :span="18" class="col-content">
+                    <table class="table-strip-input-data" style="width: 100% !important;">
                         <thead>
                             <tr>
                                 <th></th>
@@ -169,14 +169,14 @@
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in contact_travel" :key="index">
-                                <td>{{item}}</td>
+                                <td>{{item.label}}</td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.contactTravel.abs[index].dmin">
+                                    <el-input size="mini" v-model="assessLimitsData.contact_travel.abs[item.value].d_min.value">
                                         <template slot="append">mm</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.contactTravel.abs[index].dmax" >
+                                    <el-input size="mini" v-model="assessLimitsData.contact_travel.abs[item.value].d_max.value">
                                         <template slot="append">mm</template>
                                     </el-input>
                                 </td>
@@ -184,8 +184,8 @@
                         </tbody>
                     </table>
                 </el-col>
-                <el-col v-if="assessLimitsData.limits === 'Relative'" :span="12" class="col-content">
-                    <table class="table-strip-input-data">
+                <el-col v-if="assessLimitsData.limits === 'Relative'" :span="18" class="col-content">
+                    <table class="table-strip-input-data" style="width: 100% !important;">
                         <thead>
                             <tr>
                                 <th></th>
@@ -195,14 +195,14 @@
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in contact_travel" :key="index">
-                                <td>{{item}}</td>
+                                <td>{{item.label}}</td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.contactTravel.rel[index].dref">
+                                    <el-input size="mini" v-model="assessLimitsData.contact_travel.rel[item.value].d_ref.value">
                                         <template slot="append">mm</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.contactTravel.rel[index].ddev" >
+                                    <el-input size="mini" v-model="assessLimitsData.contact_travel.rel[item.value].d_dev.value">
                                         <template slot="append">mm</template>
                                     </el-input>
                                 </td>
@@ -225,10 +225,10 @@
         <div class="content-toggle" v-if="openAuxContact">
             <el-row :gutter="20" class="content">
                 <transition>
-                <el-col v-if="assessLimitsData.limits === 'Absolute'" :span="12" class="col-content">
+                <el-col v-if="assessLimitsData.limits === 'Absolute'" :span="18" class="col-content">
                     <div style="margin-top: 3%;" class="bolder">Trip operation</div>
                     <el-divider></el-divider>
-                    <table class="table-strip-input-data">
+                    <table class="table-strip-input-data" style="width: 100% !important;">
                         <thead>
                             <tr>
                                 <th></th>
@@ -238,7 +238,7 @@
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in Auxiliary_contact" :key="index">
-                                <td>{{item}}
+                                <td>{{item.label}}
                                     <sub v-if="index===0">switch,a</sub>
                                     <sub v-if="index===1">a</sub>
                                     <sub v-if="index===2">switch,b</sub>
@@ -247,12 +247,12 @@
                                     <sub v-if="index===5">w</sub>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.auxContact.abs.trip[index].tmin">
+                                    <el-input size="mini" v-model="assessLimitsData.auxiliary_contacts.trip_operation.abs[item.value].t_min.value">
                                         <template slot="append">ms</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.auxContact.abs.trip[index].tmax" >
+                                    <el-input size="mini" v-model="assessLimitsData.auxiliary_contacts.trip_operation.abs[item.value].t_max.value">
                                         <template slot="append">ms</template>
                                     </el-input>
                                 </td>
@@ -260,10 +260,10 @@
                         </tbody>
                     </table>
                 </el-col>
-                <el-col v-if="assessLimitsData.limits === 'Relative'" :span="12" class="col-content">
+                <el-col v-if="assessLimitsData.limits === 'Relative'" :span="18" class="col-content">
                     <div style="margin-top: 3%;" class="bolder">Trip operation</div>
                     <el-divider></el-divider>
-                    <table class="table-strip-input-data">
+                    <table class="table-strip-input-data" style="width: 100% !important;">
                         <thead>
                             <tr>
                                 <th></th>
@@ -273,7 +273,7 @@
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in Auxiliary_contact" :key="index">
-                                <td>{{item}}
+                                <td>{{item.label}}
                                     <sub v-if="index===0">switch,a</sub>
                                     <sub v-if="index===1">a</sub>
                                     <sub v-if="index===2">switch,b</sub>
@@ -282,12 +282,12 @@
                                     <sub v-if="index===5">w</sub>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.auxContact.rel.trip[index].tref">
+                                    <el-input size="mini" v-model="assessLimitsData.auxiliary_contacts.trip_operation.rel[item.value].t_ref.value">
                                         <template slot="append">ms</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.auxContact.rel.trip[index].tdef" >
+                                    <el-input size="mini" v-model="assessLimitsData.auxiliary_contacts.trip_operation.rel[item.value].t_dev.value">
                                         <template slot="append">ms</template>
                                     </el-input>
                                 </td>
@@ -299,10 +299,10 @@
             </el-row>
             <el-row :gutter="20" class="content">
                 <transition>
-                <el-col v-if="assessLimitsData.limits === 'Absolute'" :span="12" class="col-content">
+                <el-col v-if="assessLimitsData.limits === 'Absolute'" :span="18" class="col-content">
                     <div style="margin-top: 3%;" class="bolder">Close operation</div>
                     <el-divider></el-divider>
-                    <table class="table-strip-input-data">
+                    <table class="table-strip-input-data" style="width: 100% !important;">
                         <thead>
                             <tr>
                                 <th></th>
@@ -312,7 +312,7 @@
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in Auxiliary_contact" :key="index">
-                                <td>{{item}}
+                                <td>{{item.label}}
                                     <sub v-if="index===0">switch,a</sub>
                                     <sub v-if="index===1">a</sub>
                                     <sub v-if="index===2">switch,b</sub>
@@ -321,12 +321,12 @@
                                     <sub v-if="index===5">w</sub>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.auxContact.abs.close[index].tmin">
+                                    <el-input size="mini" v-model="assessLimitsData.auxiliary_contacts.close_operation.abs[item.value].t_min.value">
                                         <template slot="append">ms</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.auxContact.abs.close[index].tmax" >
+                                    <el-input size="mini" v-model="assessLimitsData.auxiliary_contacts.close_operation.abs[item.value].t_max.value">
                                         <template slot="append">ms</template>
                                     </el-input>
                                 </td>
@@ -334,10 +334,10 @@
                         </tbody>
                     </table>
                 </el-col>
-                <el-col v-if="assessLimitsData.limits === 'Relative'" :span="12" class="col-content">
+                <el-col v-if="assessLimitsData.limits === 'Relative'" :span="18" class="col-content">
                     <div style="margin-top: 3%;" class="bolder">Close operation</div>
                     <el-divider></el-divider>
-                    <table class="table-strip-input-data">
+                    <table class="table-strip-input-data" style="width: 100% !important;">
                         <thead>
                             <tr>
                                 <th></th>
@@ -347,7 +347,7 @@
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in Auxiliary_contact" :key="index">
-                                <td>{{item}}
+                                <td>{{item.label}}
                                     <sub v-if="index===0">switch,a</sub>
                                     <sub v-if="index===1">a</sub>
                                     <sub v-if="index===2">switch,b</sub>
@@ -356,12 +356,12 @@
                                     <sub v-if="index===5">w</sub>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.auxContact.rel.close[index].tref">
+                                    <el-input size="mini" v-model="assessLimitsData.auxiliary_contacts.close_operation.rel[item.value].t_ref.value">
                                         <template slot="append">ms</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.auxContact.rel.close[index].tdev" >
+                                    <el-input size="mini" v-model="assessLimitsData.auxiliary_contacts.close_operation.rel[item.value].t_dev.value">
                                         <template slot="append">ms</template>
                                     </el-input>
                                 </td>
@@ -372,7 +372,7 @@
                 </transition>
             </el-row>
         </div>
-        <el-row style="margin-top: 2%;">
+        <el-row>
             <el-col :span="24">
                 <div class="header-toggle pointer font_size_12" @click="openMiscell = !openMiscell">
                     <i v-if="openMiscell" class="fa-solid fa-caret-up"></i>
@@ -384,8 +384,8 @@
         <div class="content-toggle" v-if="openMiscell">
             <el-row :gutter="20" class="content">
                 <transition>
-                <el-col v-if="assessLimitsData.limits === 'Absolute'" :span="12" class="col-content">
-                    <table class="table-strip-input-data">
+                <el-col v-if="assessLimitsData.limits === 'Absolute'" :span="18" class="col-content">
+                    <table class="table-strip-input-data" style="width: 100% !important;">
                         <thead>
                             <tr>
                                 <th></th>
@@ -395,18 +395,18 @@
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in miscellaneous" :key="index">
-                                <td>{{item}}</td>
+                                <td>{{item.label}}</td>
                                 <td>
-                                    <el-input v-if="index === 1" size="mini" v-model="assessLimitsData.miscell.abs[index].min">
+                                    <el-input v-if="index === 1" size="mini" v-model="assessLimitsData.miscellaneous.abs[item.value].min.value">
                                     </el-input>
-                                    <el-input v-else size="mini" v-model="assessLimitsData.miscell.abs[index].min">
+                                    <el-input v-else size="mini" v-model="assessLimitsData.miscellaneous.abs[item.value].min.value">
                                         <template slot="append">ms</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input v-if="index === 1" size="mini" v-model="assessLimitsData.miscell.abs[index].max">
+                                    <el-input v-if="index === 1" size="mini" v-model="assessLimitsData.miscellaneous.abs[item.value].max.value">
                                     </el-input>
-                                    <el-input v-else size="mini" v-model="assessLimitsData.miscell.abs[index].max" >
+                                    <el-input v-else size="mini" v-model="assessLimitsData.miscellaneous.abs[item.value].max.value">
                                         <template slot="append">ms</template>
                                     </el-input>
                                 </td>
@@ -414,8 +414,8 @@
                         </tbody>
                     </table>
                 </el-col>
-                <el-col v-if="assessLimitsData.limits === 'Relative'" :span="12" class="col-content">
-                    <table class="table-strip-input-data">
+                <el-col v-if="assessLimitsData.limits === 'Relative'" :span="18" class="col-content">
+                    <table class="table-strip-input-data" style="width: 100% !important;">
                         <thead>
                             <tr>
                                 <th></th>
@@ -425,18 +425,18 @@
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in miscellaneous" :key="index">
-                                <td>{{item}}</td>
+                                <td>{{item.label}}</td>
                                 <td>
-                                    <el-input v-if="index === 1" size="mini" v-model="assessLimitsData.miscell.rel[index].ref">
+                                    <el-input v-if="index === 1" size="mini" v-model="assessLimitsData.miscellaneous.rel[item.value].ref.value">
                                     </el-input>
-                                    <el-input v-else size="mini" v-model="assessLimitsData.miscell.rel[index].ref">
+                                    <el-input v-else size="mini" v-model="assessLimitsData.miscellaneous.rel[item.value].ref.value">
                                         <template v-if="item !== 1" slot="append">ms</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input v-if="index === 1" size="mini" v-model="assessLimitsData.miscell.rel[index].dev">
+                                    <el-input v-if="index === 1" size="mini" v-model="assessLimitsData.miscellaneous.rel[item.value].dev.value">
                                     </el-input>
-                                    <el-input v-else size="mini" v-model="assessLimitsData.miscell.rel[index].dev" >
+                                    <el-input v-else size="mini" v-model="assessLimitsData.miscellaneous.rel[item.value].dev.value">
                                         <template v-if="item !== 1" slot="append">ms</template>
                                     </el-input>
                                 </td>
@@ -447,7 +447,7 @@
                 </transition>
             </el-row>
         </div>
-        <el-row style="margin-top: 2%;">
+        <el-row>
             <el-col :span="24">
                 <div class="header-toggle pointer font_size_12" @click="openCoilChar = !openCoilChar">
                     <i v-if="openCoilChar" class="fa-solid fa-caret-up"></i>
@@ -459,8 +459,8 @@
         <div class="content-toggle" v-if="openCoilChar">
             <el-row :gutter="20" class="content">
                 <transition>
-                <el-col v-if="assessLimitsData.limits === 'Absolute'" :span="12" class="col-content">
-                    <table class="table-strip-input-data">
+                <el-col v-if="assessLimitsData.limits === 'Absolute'" :span="18" class="col-content">
+                    <table class="table-strip-input-data" style="width: 100% !important;">
                         <thead>
                             <tr>
                                 <th></th>
@@ -470,16 +470,16 @@
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in coilCharacteristics" :key="index">
-                                <td>{{item}}</td>
+                                <td>{{item.label}}</td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.coilCharacter.abs[index].min">
+                                    <el-input size="mini" v-model="assessLimitsData.coil_characteristics.abs[item.value].min.value">
                                         <template v-if="index <= 3" slot="append">A</template>
                                         <template v-else-if="3 < index && index <= 5" slot="append">V</template>
                                         <template v-else slot="append">&#8486;</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.coilCharacter.abs[index].max" >
+                                    <el-input size="mini" v-model="assessLimitsData.coil_characteristics.abs[item.value].max.value">
                                         <template v-if="index <= 3" slot="append">A</template>
                                         <template v-else-if="3 < index && index <= 5" slot="append">V</template>
                                         <template v-else slot="append">&#8486;</template>
@@ -489,8 +489,8 @@
                         </tbody>
                     </table>
                 </el-col>
-                <el-col v-if="assessLimitsData.limits === 'Relative'" :span="12" class="col-content">
-                    <table class="table-strip-input-data">
+                <el-col v-if="assessLimitsData.limits === 'Relative'" :span="18" class="col-content">
+                    <table class="table-strip-input-data" style="width: 100% !important;">
                         <thead>
                             <tr>
                                 <th></th>
@@ -501,21 +501,23 @@
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in coilCharacteristics" :key="index">
-                                <td>{{item}}</td>
-                                    <el-input size="mini" v-model="assessLimitsData.coilCharacter.rel[index].ref">
-                                        <template v-if="index <= 3" slot="append">A</template>
-                                        <template v-else-if="3 < index && index <= 5" slot="append">V</template>
-                                        <template v-else slot="append">&#8486;</template>
-                                    </el-input>
+                                <td>{{item.label}}</td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.coilCharacter.rel[index].devZ">
+                                    <el-input size="mini" v-model="assessLimitsData.coil_characteristics.rel[item.value].ref.value">
                                         <template v-if="index <= 3" slot="append">A</template>
                                         <template v-else-if="3 < index && index <= 5" slot="append">V</template>
                                         <template v-else slot="append">&#8486;</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.coilCharacter.rel[index].devN">
+                                    <el-input size="mini" v-model="assessLimitsData.coil_characteristics.rel[item.value].minus_dev.value">
+                                        <template v-if="index <= 3" slot="append">A</template>
+                                        <template v-else-if="3 < index && index <= 5" slot="append">V</template>
+                                        <template v-else slot="append">&#8486;</template>
+                                    </el-input>
+                                </td>
+                                <td>
+                                    <el-input size="mini" v-model="assessLimitsData.coil_characteristics.rel[item.value].plus_dev.value">
                                         <template v-if="index <= 3" slot="append">A</template>
                                         <template v-else-if="3 < index && index <= 5" slot="append">V</template>
                                         <template v-else slot="append">&#8486;</template>
@@ -528,7 +530,7 @@
                 </transition>
             </el-row>
         </div>
-        <el-row style="margin-top: 2%;">
+        <el-row>
             <el-col :span="24">
                 <div class="header-toggle pointer font_size_12" @click="openPickupVol = !openPickupVol">
                     <i v-if="openPickupVol" class="fa-solid fa-caret-up"></i>
@@ -540,8 +542,8 @@
         <div class="content-toggle" v-if="openPickupVol">
             <el-row :gutter="20" class="content">
                 <transition>
-                <el-col v-if="assessLimitsData.limits === 'Absolute'" :span="12" class="col-content">
-                    <table class="table-strip-input-data">
+                <el-col v-if="assessLimitsData.limits === 'Absolute'" :span="18" class="col-content">
+                    <table class="table-strip-input-data" style="width: 100% !important;">
                         <thead>
                             <tr>
                                 <th></th>
@@ -551,14 +553,14 @@
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in pickupVoltage" :key="index">
-                                <td>{{item}}</td>
+                                <td>{{item.label}}</td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.pickupVol.abs[index].vmin">
+                                    <el-input size="mini" v-model="assessLimitsData.pickup_voltage.abs[item.value].v_min.value">
                                         <template slot="append">V</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.pickupVol.abs[index].vmax" >
+                                    <el-input size="mini" v-model="assessLimitsData.pickup_voltage.abs[item.value].v_max.value">
                                         <template slot="append">V</template>
                                     </el-input>
                                 </td>
@@ -566,8 +568,8 @@
                         </tbody>
                     </table>
                 </el-col>
-                <el-col v-if="assessLimitsData.limits === 'Relative'" :span="12" class="col-content">
-                    <table class="table-strip-input-data">
+                <el-col v-if="assessLimitsData.limits === 'Relative'" :span="18" class="col-content">
+                    <table class="table-strip-input-data" style="width: 100% !important;">
                         <thead>
                             <tr>
                                 <th></th>
@@ -577,12 +579,14 @@
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in pickupVoltage" :key="index">
-                                <td>{{item}}</td>
-                                    <el-input size="mini" v-model="assessLimitsData.pickupVol.rel[index].vref">
-                                        <template slot="append">V</template>
-                                    </el-input>
+                                <td>{{item.label}}</td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.pickupVol.rel[index].vdev">
+                                <el-input size="mini" v-model="assessLimitsData.pickup_voltage.rel[item.value].v_ref.value">
+                                    <template slot="append">V</template>
+                                </el-input>
+                                </td>
+                                <td>
+                                    <el-input size="mini" v-model="assessLimitsData.pickup_voltage.rel[item.value].v_dev.value">
                                         <template slot="append">V</template>
                                     </el-input>
                                 </td>
@@ -593,7 +597,7 @@
                 </transition>
             </el-row>
         </div>
-        <el-row style="margin-top: 2%;">
+        <el-row>
             <el-col :span="24">
                 <div class="header-toggle pointer font_size_12" @click="openMotorChar = !openMotorChar">
                     <i v-if="openMotorChar" class="fa-solid fa-caret-up"></i>
@@ -605,8 +609,8 @@
         <div class="content-toggle" v-if="openMotorChar">
             <el-row :gutter="20" class="content">
                 <transition>
-                <el-col v-if="assessLimitsData.limits === 'Absolute'" :span="12" class="col-content">
-                    <table class="table-strip-input-data">
+                <el-col v-if="assessLimitsData.limits === 'Absolute'" :span="18" class="col-content">
+                    <table class="table-strip-input-data" style="width: 100% !important;">
                         <thead>
                             <tr>
                                 <th></th>
@@ -616,16 +620,16 @@
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in motorCharacteristics" :key="index">
-                                <td>{{item}}</td>
+                                <td>{{item.label}}</td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.motorChar.abs[index].min">
+                                    <el-input size="mini" v-model="assessLimitsData.motor_characteristics.abs[item.value].min.value">
                                         <template v-if="index === 1" slot="append">s</template>
                                         <template v-else-if="index === 3" slot="append">V</template>
                                         <template v-else slot="append">A</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.motorChar.abs[index].max" >
+                                    <el-input size="mini" v-model="assessLimitsData.motor_characteristics.abs[item.value].max.value">
                                         <template v-if="index === 1" slot="append">s</template>
                                         <template v-else-if="index === 3" slot="append">V</template>
                                         <template v-else slot="append">A</template>
@@ -635,8 +639,8 @@
                         </tbody>
                     </table>
                 </el-col>
-                <el-col v-if="assessLimitsData.limits === 'Relative'" :span="12" class="col-content">
-                    <table class="table-strip-input-data">
+                <el-col v-if="assessLimitsData.limits === 'Relative'" :span="18" class="col-content">
+                    <table class="table-strip-input-data" style="width: 100% !important;">
                         <thead>
                             <tr>
                                 <th></th>
@@ -646,14 +650,16 @@
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in motorCharacteristics" :key="index">
-                                <td>{{item}}</td>
-                                    <el-input size="mini" v-model="assessLimitsData.motorChar.rel[index].ref">
+                                <td>{{item.label}}</td>
+                                <td>
+                                    <el-input size="mini" v-model="assessLimitsData.motor_characteristics.rel[item.value].ref.value">
                                         <template v-if="index === 1" slot="append">s</template>
                                         <template v-else-if="index === 3" slot="append">V</template>
                                         <template v-else slot="append">A</template>
                                     </el-input>
+                                </td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.motorChar.rel[index].dev">
+                                    <el-input size="mini" v-model="assessLimitsData.motor_characteristics.rel[item.value].dev.value">
                                         <template v-if="index === 1" slot="append">s</template>
                                         <template v-else-if="index === 3" slot="append">V</template>
                                         <template v-else slot="append">A</template>
@@ -666,7 +672,7 @@
                 </transition>
             </el-row>
         </div>
-        <el-row style="margin-top: 2%;">
+        <el-row>
             <el-col :span="24">
                 <div class="header-toggle pointer font_size_12" @click="openUnderVoltageR = !openUnderVoltageR">
                     <i v-if="openUnderVoltageR" class="fa-solid fa-caret-up"></i>
@@ -677,8 +683,8 @@
         </el-row>
         <div class="content-toggle" v-if="openUnderVoltageR">
             <el-row :gutter="20" class="content">
-                <el-col v-if="assessLimitsData.limits === 'Absolute'" :span="12" class="col-content">
-                    <table class="table-strip-input-data">
+                <el-col v-if="assessLimitsData.limits === 'Absolute'" :span="18" class="col-content">
+                    <table class="table-strip-input-data" style="width: 100% !important;">
                         <thead>
                             <tr>
                                 <th></th>
@@ -690,12 +696,12 @@
                             <tr>
                                 <td>UV Coil Trip Voltage</td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.underVoltageR.abs.min">
+                                    <el-input size="mini" v-model="assessLimitsData.under_voltage_release.abs.uv_coil_trip_voltage.min.value">
                                         <template slot="append">V</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.underVoltageR.abs.max" >
+                                    <el-input size="mini" v-model="assessLimitsData.under_voltage_release.abs.uv_coil_trip_voltage.max.value">
                                         <template slot="append">V</template>
                                     </el-input>
                                 </td>
@@ -703,8 +709,8 @@
                         </tbody>
                     </table>
                 </el-col>
-                <el-col v-else :span="12" class="col-content">
-                    <table class="table-strip-input-data">
+                <el-col v-else :span="18" class="col-content">
+                    <table class="table-strip-input-data" style="width: 100% !important;">
                         <thead>
                             <tr>
                                 <th></th>
@@ -716,12 +722,12 @@
                             <tr>
                                 <td>UV Coil Trip Voltage</td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.underVoltageR.rel.ref">
+                                    <el-input size="mini" v-model="assessLimitsData.under_voltage_release.rel.uv_coil_trip_voltage.ref.value">
                                         <template slot="append">V</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.underVoltageR.rel.dev" >
+                                    <el-input size="mini" v-model="assessLimitsData.under_voltage_release.rel.uv_coil_trip_voltage.dev.value">
                                         <template slot="append">V</template>
                                     </el-input>
                                 </td>
@@ -731,19 +737,19 @@
                 </el-col>
             </el-row>
         </div>
-        <el-row style="margin-top: 2%;">
+        <el-row>
             <el-col :span="24">
                 <div class="header-toggle pointer font_size_12" @click="openOvercurrentR = !openOvercurrentR">
                     <i v-if="openOvercurrentR" class="fa-solid fa-caret-up"></i>
                     <i v-else class="fa-solid fa-caret-down"></i>
-                    Under-voltage release
+                    Overcurrent release
                 </div>
             </el-col>
         </el-row>
         <div class="content-toggle" v-if="openOvercurrentR">
             <el-row :gutter="20" class="content">
-                <el-col v-if="assessLimitsData.limits === 'Absolute'" :span="12" class="col-content">
-                    <table class="table-strip-input-data">
+                <el-col v-if="assessLimitsData.limits === 'Absolute'" :span="18" class="col-content">
+                    <table class="table-strip-input-data" style="width: 100% !important;">
                         <thead>
                             <tr>
                                 <th></th>
@@ -755,12 +761,12 @@
                             <tr>
                                 <td>OC Relay Trip Current</td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.overcurrentR.abs.min">
+                                    <el-input size="mini" v-model="assessLimitsData.overcurrent_release.abs.oc_replay_trip_current.min.value">
                                         <template slot="append">A</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.overcurrentR.abs.max" >
+                                    <el-input size="mini" v-model="assessLimitsData.overcurrent_release.abs.oc_replay_trip_current.max.value">
                                         <template slot="append">A</template>
                                     </el-input>
                                 </td>
@@ -768,8 +774,8 @@
                         </tbody>
                     </table>
                 </el-col>
-                <el-col v-else :span="12" class="col-content">
-                    <table class="table-strip-input-data">
+                <el-col v-else :span="18" class="col-content">
+                    <table class="table-strip-input-data" style="width: 100% !important;">
                         <thead>
                             <tr>
                                 <th></th>
@@ -781,12 +787,12 @@
                             <tr>
                                 <td>OC Relay Trip Current</td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.overcurrentR.rel.ref">
+                                    <el-input size="mini" v-model="assessLimitsData.overcurrent_release.rel.oc_replay_trip_current.ref.value">
                                         <template slot="append">A</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="assessLimitsData.overcurrentR.rel.dev" >
+                                    <el-input size="mini" v-model="assessLimitsData.overcurrent_release.rel.oc_replay_trip_current.dev.value" >
                                         <template slot="append">A</template>
                                     </el-input>
                                 </td>
@@ -823,59 +829,182 @@ export default {
             openOvercurrentR : "true",
             labelWidth : `300px`,
             opening_times : [
-                "Opening time",
-                "Opening sync. (contacts within a phase)",
-                "Opening sync. (between breaker phases)",
-                "Closing time",
-                "Closing sync. (contacts within a phase)",
-                "Closing sync. (between breaker phases)",
-                "Reclosing time",
-                "Open-Close time",
-                "Close-Open time",
+                {
+                    label : "Opening time",
+                    value : "opening_time"
+                },
+                {
+                    label : "Opening sync. (contacts within a phase)",
+                    value : "opening_sync_within_phase"
+                },
+                {
+                    label : "Opening sync. (between breaker phases)",
+                    value : "opening_sync_breaker_phase"
+                },
+                {
+                    label : "Closing time",
+                    value : "closing_time"
+                },
+                {
+                    label : "Closing sync. (contacts within a phase)",
+                    value : "closing_sync_within_phase"
+                },
+                {
+                    label : "Closing sync. (between breaker phases)",
+                    value : "closing_sync_breaker_phase"
+                },
+                {
+                    label : "Reclosing time",
+                    value : "reclosing_time"
+                },
+                {
+                    label : "Close-Open time",
+                    value : "close_open_time"
+                },
+                {
+                    label : "Open-Close time",
+                    value : "open_close_time"
+                },
             ],
             contact_travel : [
-                "Total travel, TT",
-                "Over travel (Trip), OT",
-                "Over travel (Close), OT",
-                "Rebound (Trip), RB",
-                "Rebound (Close), RB",
-                "Contact wipe (Trip), CW",
-                "Contact wipe (Close), CW",
-                "Damping distance"
+                {
+                    label : "Total travel, TT",
+                    value : "total_travel"
+                },
+                {
+                    label : "Over travel (Trip), OT",
+                    value : "over_travel_trip"
+                },
+                {
+                    label : "Over travel (Close), OT",
+                    value : "over_travel_close"
+                },
+                {
+                    label : "Rebound (Trip), RB",
+                    value : "rebound_trip"
+                },
+                {
+                    label : "Rebound (Close), RB",
+                    value : "rebound_close"
+                },
+                {
+                    label : "Contact wipe (Trip), CW",
+                    value : "contact_wipe_trip"
+                },
+                {
+                    label : "Contact wipe (Close), CW",
+                    value : "contact_wipe_close"
+                },
+                {
+                    label : "Damping distance",
+                    value : "damping_distance"
+                },
             ],
             Auxiliary_contact : [
-                "Switching time (a-type),t",
-                "diff. to main (a-type),Δt",
-                "Switching time (b-type),t",
-                "diff. to main (b-type),Δt",
-                "Switching time (wiper),t",
-                "Duration (wiper),Δt "
+                {
+                    label : "Switching time (a-type),t",
+                    value : "switching_time_type_a"
+                },
+                {
+                    label : "diff. to main (a-type),Δt",
+                    value : "diff_to_main_type_a"
+                },
+                {
+                    label : "Switching time (b-type),t",
+                    value : "switching_time_type_b"
+                },
+                {
+                    label : "diff. to main (b-type),Δt",
+                    value : "diff_to_main_type_b"
+                },
+                {
+                    label : "Switching time (wiper),t",
+                    value : "switching_time_wiper"
+                },
+                {
+                    label : "Duration (wiper),Δt ",
+                    value : "duration"
+                },
             ],
             miscellaneous : [
-                "Bounce time",
-                "Bounce count",
-                "PIR close time",
-                "Reaction time"
+                {
+                    label : "Bounce time",
+                    value : "bounce_time"
+                },
+                {
+                    label : "Bounce count",
+                    value : "bounce_count"
+                },
+                {
+                    label : "PIR close time",
+                    value : "pir_close_time"
+                },
+                {
+                    label : "Reaction time",
+                    value : "reaction_time"
+                },
             ],
             coilCharacteristics : [
-                "Peak close coil current",
-                "Peak trip coil current",
-                "Average close coil current",
-                "Average trip coil current",
-                "Average close coil voltage",
-                "Average trip coil voltage",
-                "Close coil resistance",
-                "Trip coil resistance",
+                {
+                    label : "Peak close coil current",
+                    value : "peak_close_coil_current"
+                },
+                {
+                    label : "Peak trip coil current",
+                    value : "peak_trip_coil_current"
+                },
+                {
+                    label : "Average close coil current",
+                    value : "average_close_coil_current"
+                },
+                {
+                    label : "Average trip coil current",
+                    value : "average_trip_coil_current"
+                },
+                {
+                    label : "Average close coil voltage",
+                    value : "average_close_coil_voltage"
+                },
+                {
+                    label : "Average trip coil voltage",
+                    value : "average_trip_coil_voltage"
+                },
+                {
+                    label : "Close coil resistance",
+                    value : "close_coil_resistance"
+                },
+                {
+                    label : "Trip coil resistance",
+                    value : "trip_coil_resistance"
+                },               
             ],
             pickupVoltage : [
-                "Minimum pickup voltage (close)",
-                "Minimum pickup voltage (trip)"
+                {
+                    label : "Minimum pickup voltage (close)",
+                    value : "min_pickup_voltage_close"
+                },
+                {
+                    label : "Minimum pickup voltage (trip)",
+                    value : "min_pickup_voltage_trip"
+                }
             ],
             motorCharacteristics : [
-                "Inrush current",
-                "Charging time",
-                "Charging current",
-                "Minimum voltage"
+                {
+                    label : "Inrush current",
+                    value : "inrush_current"
+                },
+                {
+                    label : "Charging time",
+                    value : "charging_time"
+                },
+                {
+                    label : "Charging current",
+                    value : "charging_current"
+                },
+                {
+                    label : "Minimum voltage",
+                    value : "minimum_voltage"
+                }
             ]
         }
     },

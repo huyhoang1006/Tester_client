@@ -25,12 +25,10 @@ export const getOldSwitchInfoById = async (mrid) => {
 export const insertOldSwitchInfoTransaction = async (info, dbsql) => {
     return new Promise(async (resolve, reject) => {
         try {
-            console.log('start insert old switch info : '+ info.mrid);
             const switchInfoResult = await SwitchInfoFunc.insertSwitchInfoTransaction(info, dbsql)
             if (!switchInfoResult.success) {
                 return reject({ success: false, message: 'Insert SwitchInfo failed', err: switchInfoResult.err })
             }
-            console.log('insert switch info completed' );
             dbsql.run(
                 `INSERT INTO old_switch_info (mrid, dielectric_strength, making_capacity, minimum_current, withstand_current, load_break, pole_count, remote)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -62,7 +60,6 @@ export const insertOldSwitchInfoTransaction = async (info, dbsql) => {
                     return resolve({ success: true, data: info, message: 'Insert OldSwitchInfo completed' })
                 }
             )
-            console.log('insert old switch info completed' );
         } catch (err) {
             return reject({ success: false, err, message: 'Insert OldSwitchInfo failed' })
         }

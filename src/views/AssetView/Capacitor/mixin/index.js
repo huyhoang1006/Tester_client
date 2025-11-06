@@ -15,14 +15,10 @@ export default {
             try {
                 if (this.capacitor.properties.serial_no !== null && this.capacitor.properties.serial_no !== '') {
                     const data = JSON.parse(JSON.stringify(this.capacitor));
-                    console.log("Before mapping - phase_name:", data.configsData.phase_name);
                     const result = await this.checkCapacitorData(data);
-                    console.log("After check - phase_name:", result.configsData.phase_name);
                     const oldResult = await this.checkCapacitorData(this.capacitorOld);
                     const resultEntity = Mapping.mapDtoToEntity(result);
-                    console.log("After mapping - phase_name:", resultEntity.capacitor.phase_name);
                     const oldResultEntity = Mapping.mapDtoToEntity(oldResult);
-                    console.log("resultCapacitor", resultEntity)
                     let rs = await window.electronAPI.insertCapacitorEntity(oldResultEntity, resultEntity)
                     if (rs.success) {
                         return {

@@ -14,35 +14,35 @@
                 <el-col :span="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Total Weight with gas">
-                            <el-input v-model="othersData.totalWithgas">
+                            <el-input v-model="othersData.total_weight_with_gas.value">
                                 <template slot="append">kg</template>
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Weight of gas">
-                            <el-input v-model="othersData.weightGas">
+                            <el-input v-model="othersData.weight_of_gas.value">
                                 <template slot="append">kg</template>
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Volume of gas">
-                            <el-input v-model="othersData.VolumeGas">
+                            <el-input v-model="othersData.volume_of_gas.value">
                                 <template slot="append">l</template>
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Rated gas pressure">
-                            <div style="width: 100%;">
-                                <el-col style="width: 45%;">
-                                    <el-input style="width: 100%;" v-model="othersData.pa">
+                            <div style="width: 100%; display: flex;">
+                                <div style="width: 45%;">
+                                    <el-input style="width: 100%;" v-model="othersData.rated_gas_pressure.value">
                                         <template slot="append">Pa</template>
                                     </el-input>
-                                </el-col>
-                                <el-col style="width: 10%;">
+                                </div>
+                                <div style="width: 10%;">
                                     <div>@</div>
-                                </el-col>
-                                <el-col style="width: 45%;">
-                                    <el-input v-model="othersData.Celsius">
+                                </div>
+                                <div style="width: 45%;">
+                                    <el-input v-model="othersData.rated_gas_temperature.value">
                                         <template slot="append">°C</template>
                                     </el-input>
-                                </el-col>
+                                </div>
                             </div>
                         </el-form-item>
                     </el-form>
@@ -64,7 +64,7 @@ export default {
     data() {
         return {
             openOthers : "true",
-            labelWidth : `300px`
+            labelWidth : `250px`
         }
     },
     computed: {
