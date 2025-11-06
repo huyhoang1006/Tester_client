@@ -2,8 +2,9 @@ class AssessmentLimitsDto {
     constructor() {
         this.limits = 'Absolute';
         this.contact_resistance = {
+            mrid: '',
+            name : "Contact resistance",
             abs: {
-                name : "Contact resistance",
                 r_min : {
                     mrid: '',
                     value: '',
@@ -16,7 +17,6 @@ class AssessmentLimitsDto {
                 }
             },
             rel: {
-                name : "Contact resistance",
                 r_ref : {
                     mrid: '',
                     value: '',
@@ -32,6 +32,7 @@ class AssessmentLimitsDto {
         this.operating_time = {
             abs : {
                 opening_time : {
+                    mrid: "",
                     t_min : {
                         mrid: '',
                         value: '',
@@ -44,6 +45,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 opening_sync_within_phase : {
+                    mrid: "",
                     t_min : {
                         mrid: '',
                         value: '',
@@ -56,6 +58,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 opening_sync_breaker_phase : {
+                    mrid: "",
                     t_min : {
                         mrid: '',
                         value: '',
@@ -68,6 +71,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 closing_time : {
+                    mrid: "",
                     t_min : {
                         mrid: '',
                         value: '',
@@ -80,6 +84,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 closing_sync_within_phase : {
+                    mrid: "",
                     t_min : {
                         mrid: '',
                         value: '',
@@ -92,6 +97,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 closing_sync_breaker_phase : {
+                    mrid: "",
                     t_min : {
                         mrid: '',
                         value: '',
@@ -104,6 +110,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 reclosing_time : {
+                    mrid: "",
                     t_min : {
                         mrid: '',
                         value: '',
@@ -116,6 +123,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 close_open_time : {
+                    mrid: "",
                     t_min : {
                         mrid: '',
                         value: '',
@@ -128,6 +136,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 open_close_time : {
+                    mrid: "",
                     t_min : {
                         mrid: '',
                         value: '',
@@ -142,6 +151,7 @@ class AssessmentLimitsDto {
             },
             rel : {
                 opening_time : {
+                    mrid: "",
                     t_ref : {
                         mrid: '',
                         value: '',
@@ -159,6 +169,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 opening_sync_within_phase : {
+                    mrid: "",
                     t_ref : {
                         mrid: '',
                         value: '',
@@ -176,6 +187,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 opening_sync_breaker_phase : {
+                    mrid: "",
                     t_ref : {
                         mrid: '',
                         value: '',
@@ -193,6 +205,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 closing_time : {
+                    mrid: "",
                     t_ref : {
                         mrid: '',
                         value: '',
@@ -210,6 +223,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 closing_sync_within_phase : {
+                    mrid: "",
                     t_ref : {
                         mrid: '',
                         value: '',
@@ -227,6 +241,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 closing_sync_breaker_phase : {
+                    mrid: "",
                     t_ref : {
                         mrid: '',
                         value: '',
@@ -244,6 +259,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 reclosing_time : {
+                    mrid: "",
                     t_ref : {
                         mrid: '',
                         value: '',
@@ -261,6 +277,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 close_open_time : {
+                    mrid: "",
                     t_ref : {
                         mrid: '',
                         value: '',
@@ -278,6 +295,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 open_close_time : {
+                    mrid: "",
                     t_ref : {
                         mrid: '',
                         value: '',
@@ -299,6 +317,7 @@ class AssessmentLimitsDto {
         this.contact_travel = {
             abs : {
                 total_travel : {
+                    mrid : '',
                     d_min : {
                         mrid: '',
                         value: '',
@@ -311,6 +330,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 over_travel_trip : {
+                    mrid : '',
                     d_min : {
                         mrid: '',
                         value: '',
@@ -323,6 +343,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 over_travel_close : {
+                    mrid : '',
                     d_min : {
                         mrid: '',
                         value: '',
@@ -335,6 +356,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 rebound_trip : {
+                    mrid : '',
                     d_min : {
                         mrid: '',
                         value: '',
@@ -347,6 +369,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 rebound_close : {
+                    mrid : '',
                     d_min : {
                         mrid: '',
                         value: '',
@@ -359,6 +382,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 contact_wipe_trip : {
+                    mrid : '',
                     d_min : {
                         mrid: '',
                         value: '',
@@ -371,6 +395,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 contact_wipe_close : {
+                    mrid : '',
                     d_min : {
                         mrid: '',
                         value: '',
@@ -383,6 +408,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 damping_distance : {
+                    mrid : '',
                     d_min : {
                         mrid: '',
                         value: '',
@@ -495,9 +521,11 @@ class AssessmentLimitsDto {
             }
         },
         this.auxiliary_contacts = {
+            mrid : '',
             trip_operation : {
                 abs : {
                     switching_time_type_a : {
+                        mrid : '',
                         t_min : {
                             mrid: '',
                             value: '',
@@ -510,6 +538,7 @@ class AssessmentLimitsDto {
                         }
                     },
                     diff_to_main_type_a : {
+                        mrid : '',
                         t_min : {
                             mrid: '',
                             value: '',
@@ -522,6 +551,7 @@ class AssessmentLimitsDto {
                         }
                     },
                     switching_time_type_b : {
+                        mrid : '',
                         t_min : {
                             mrid: '',
                             value: '',
@@ -534,6 +564,7 @@ class AssessmentLimitsDto {
                         }
                     },
                     diff_to_main_type_b : {
+                        mrid : '',
                         t_min : {
                             mrid: '',
                             value: '',
@@ -546,6 +577,7 @@ class AssessmentLimitsDto {
                         }
                     },
                     switching_time_wiper : {
+                        mrid : '',
                         t_min : {
                             mrid: '',
                             value: '',
@@ -558,6 +590,7 @@ class AssessmentLimitsDto {
                         }
                     },
                     duration : {
+                        mrid : '',
                         t_min : {
                             mrid: '',
                             value: '',
@@ -648,6 +681,7 @@ class AssessmentLimitsDto {
             close_operation : {
                 abs : {
                     switching_time_type_a : {
+                        mrid : '',
                         t_min : {
                             mrid: '',
                             value: '',
@@ -660,6 +694,7 @@ class AssessmentLimitsDto {
                         }
                     },
                     diff_to_main_type_a : {
+                        mrid : '',
                         t_min : {
                             mrid: '',
                             value: '',
@@ -672,6 +707,7 @@ class AssessmentLimitsDto {
                         }
                     },
                     switching_time_type_b : {
+                        mrid : '',
                         t_min : {
                             mrid: '',
                             value: '',
@@ -684,6 +720,7 @@ class AssessmentLimitsDto {
                         }
                     },
                     diff_to_main_type_b : {
+                        mrid : '',
                         t_min : {
                             mrid: '',
                             value: '',
@@ -696,6 +733,7 @@ class AssessmentLimitsDto {
                         }
                     },
                     switching_time_wiper : {
+                        mrid : '',
                         t_min : {
                             mrid: '',
                             value: '',
@@ -708,6 +746,7 @@ class AssessmentLimitsDto {
                         }
                     },
                     duration : {
+                        mrid : '',
                         t_min : {
                             mrid: '',
                             value: '',
@@ -799,6 +838,7 @@ class AssessmentLimitsDto {
         this.miscellaneous = {
             abs : {
                 bounce_time : {
+                    mrid: "",
                     min : {
                         mrid: '',
                         value: '',
@@ -811,14 +851,18 @@ class AssessmentLimitsDto {
                     }
                 },
                 bounce_count : {
+                    mrid: "",
                     min : {
+                        mrid : "",
                         value: ''
                     },
                     max : {
+                        mrid : "",
                         value: ''
                     }
                 },
                 pir_close_time : {
+                    mrid: "",
                     min : {
                         mrid: '',
                         value: '',
@@ -831,6 +875,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 reaction_time : {
+                    mrid: "",
                     min : {
                         mrid: '',
                         value: '',
@@ -858,9 +903,11 @@ class AssessmentLimitsDto {
                 },
                 bounce_count : {
                     ref : {
+                        mrid : "",
                         value: ''
                     },
                     dev : {
+                        mrid : "",
                         value: ''
                     }
                 },
@@ -893,6 +940,7 @@ class AssessmentLimitsDto {
         this.coil_characteristics = {
             abs : {
                 peak_close_coil_current : {
+                    mrid : "",
                     min : {
                         mrid: '',
                         value: '',
@@ -905,6 +953,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 peak_trip_coil_current : {
+                    mrid : "",
                     min : {
                         mrid: '',
                         value: '',
@@ -917,6 +966,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 average_close_coil_current : {
+                    mrid : "",
                     min : {
                         mrid: '',
                         value: '',
@@ -929,6 +979,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 average_trip_coil_current : {
+                    mrid : "",
                     min : {
                         mrid: '',
                         value: '',
@@ -941,6 +992,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 average_close_coil_voltage : {
+                    mrid : "",
                     min : {
                         mrid: '',
                         value: '',
@@ -953,6 +1005,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 average_trip_coil_voltage : {
+                    mrid : "",
                     min : {
                         mrid: '',
                         value: '',
@@ -965,6 +1018,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 close_coil_resistance : {
+                    mrid : "",
                     min : {
                         mrid: '',
                         value: '',
@@ -977,6 +1031,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 trip_coil_resistance : {
+                    mrid : "",
                     min : {
                         mrid: '',
                         value: '',
@@ -1131,6 +1186,7 @@ class AssessmentLimitsDto {
         this.pickup_voltage = {
             abs : {
                 min_pickup_voltage_close : {
+                    mrid : '',
                     v_min : {
                         mrid: '',
                         value: '',
@@ -1143,6 +1199,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 min_pickup_voltage_trip : {
+                    mrid : '',
                     v_min : {
                         mrid: '',
                         value: '',
@@ -1285,6 +1342,8 @@ class AssessmentLimitsDto {
             }
         }
         this.under_voltage_release = {
+            mrid : '',
+            name : "UV Coil Trip Voltage",
             abs : {
                 uv_coil_trip_voltage : {
                     min : {
@@ -1315,6 +1374,8 @@ class AssessmentLimitsDto {
             }
         },
         this.overcurrent_release = {
+            mrid : '',
+            name : "OC Relay Trip Current",
             abs : {
                 oc_replay_trip_current : {
                     min : {

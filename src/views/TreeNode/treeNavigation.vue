@@ -2248,9 +2248,9 @@ export default {
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
                             const newRow = {
-                                mrid: data.properties.mrid,
-                                name: data.properties.name,
-                                serial_number: data.properties.serial_number,
+                                mrid: data.asset.mrid,
+                                name: data.asset.name,
+                                serial_number: data.asset.serial_number,
                                 parentId: this.parentOrganization.mrid,
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
@@ -3094,7 +3094,6 @@ export default {
                                     this.$message.error("Entity not found");
                                     return;
                                 }
-                                console.log('Current transformer entity:', entity)
                                 const deleteSign = await window.electronAPI.deleteCurrentTransformerEntity(entity.data);
                                 console.log('Delete sign:', deleteSign)
                                 if (!deleteSign.success) {
@@ -3121,7 +3120,6 @@ export default {
                                     return;
                                 }
                                 const deleteSign = await window.electronAPI.deleteBreakerEntity(entity.data);
-                                console.log('Delete sign:', deleteSign)
                                 if (!deleteSign.success) {
                                     this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
                                     return;

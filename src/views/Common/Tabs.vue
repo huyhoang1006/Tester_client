@@ -58,6 +58,8 @@ import * as PowerCableMapper from '@/views/Mapping/PowerCable'
 import * as RotatingMachineMapper from '@/views/Mapping/RotatingMachine'
 import * as currentTransformerMapper from '@/views/Mapping/CurrentTransformer'
 import * as CapacitorMapper from '@/views/Mapping/Capacitor'
+import * as BreakerMapper from '@/views/Mapping/Breaker'
+
 
 import VoltageLevel from '@/views/VoltageLevel/index.vue'
 import Bay from '@/views/Bay/index.vue'
@@ -70,6 +72,8 @@ import PowerCable from '@/views/AssetView/PowerCable/index.vue'
 import RotatingMachine from '@/views/AssetView/RotatingMachine/index.vue'
 import CurrentTransformer from '@/views/AssetView/CurrentTransformer/index.vue'
 import Capacitor from '@/views/AssetView/Capacitor/index.vue'
+import CircuitBreaker from "@/views/AssetView/CircuitBreaker/index.vue"
+
 export default {
     name: "Tabs",
     components: {
@@ -87,7 +91,8 @@ export default {
         PowerCable,
         RotatingMachine,
         CurrentTransformer,
-        Capacitor
+        Capacitor,
+        CircuitBreaker
     },
     model: {
         prop: 'value',
@@ -275,9 +280,19 @@ export default {
                             this.$refs.componentLoadData[index].loadData(capacitorDto)
                         }
                         else {
-                            console.log("data : ", data)
                             this.$message.error("Failed to load Capacitor data");
                         }
+                    } else if(tab.asset === 'Circuit breaker') {
+                        this.parentOrganization = {
+                            mrid : tab.parentId
+                        }
+                        const data = await window.electronAPI.getBreakerEntityByMrid(tab.mrid, tab.parentId)
+                        if(data.success) {
+                            const breakerDto = BreakerMapper.mapEntityToDto(data.data)
+                            this.$refs.componentLoadData[index].loadData(breakerDto)
+                        } else {
+                            this.$message.error("Failed to load circuit breaker data");
+                        }    
                     }
                 } else if (tab.mode === 'job') {
                     const dataAsset = await window.electronAPI.getAssetByMrid(tab.parentId)
@@ -448,6 +463,8 @@ export default {
                     return 'CurrentTransformer'
                 } else if (tab.asset === 'Capacitor') {
                     return 'Capacitor'
+                } else if(tab.asset === 'Circuit breaker') {
+                    return 'CircuitBreaker'
                 }
             } else if (tab.mode == 'job') {
                 if (tab.job === 'Surge arrester') {
