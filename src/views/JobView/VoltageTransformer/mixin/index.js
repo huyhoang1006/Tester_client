@@ -1,5 +1,4 @@
-import {mapState} from 'vuex'
-import loader from "@/utils/preload"
+import { mapState } from 'vuex'
 
 
 export default {
@@ -36,93 +35,109 @@ export default {
                 manufacturer: ''
             },
             testList: [],
-            listHeal : [],
+            listHeal: [],
+            attachmentData: [],
+            testingEquipmentData: [],
         }
     },
     computed: {
         ...mapState(['selectedAsset', 'selectedJob']),
     },
     async beforeMount() {
-        loader.loaderStart()
-        await this.getLocationAssetByIdVoltageTrans()
-        this.mode = this.$route.query.mode
+        // Only fetch location/asset if we're in route mode (not dialog mode)
+        // In dialog mode, assetData and locationData are passed as props
+        if (this.$route && this.selectedAsset && this.selectedAsset.length > 0 && this.selectedAsset[0].id) {
+            await this.getLocationAssetByIdVoltageTrans()
+        }
+        // Only set mode from route if route exists (dialog mode doesn't have route)
+        if (this.$route && this.$route.query) {
+            this.mode = this.$route.query.mode
+        } else {
+            this.mode = this.$constant.ADD
+        }
         if (this.mode === this.$constant.EDIT || this.mode === this.$constant.DUP) {
-            this.job_id = this.$route.query.job_id
-            const rs = await window.electronAPI.getJobVoltageTransById(this.job_id)
-            console.log(rs)
-            if (rs.success) {
-                const data = rs.data
-                const {job, testList} = data
-                if (this.mode === this.$constant.DUP) {
-                    job.id = ''
-                    job.name = ''
+            if (this.$route && this.$route.query) {
+                this.job_id = this.$route.query.job_id
+            }
+            if (this.job_id) {
+                const rs = await window.electronAPI.getJobVoltageTransById(this.job_id)
+                console.log(rs)
+                if (rs.success) {
+                    const data = rs.data
+                    const { job, testList } = data
+                    if (this.mode === this.$constant.DUP) {
+                        job.id = ''
+                        job.name = ''
+                    }
+                    this.properties = job
+                    testList.forEach(async (element) => {
+                        element.data = JSON.parse(element.data)
+                        let condition = await window.electronAPI.getTestingCondition(element.id)
+                        let attachment = await window.electronAPI.getAllAttachment(element.id, "test")
+                        if (condition.data.length === 0) {
+                            this.testconditionArr.push({
+                                condition: {
+                                    top_oil_temperature: "",
+                                    bottom_oil_temperature: "",
+                                    winding_temperature: "",
+                                    reference_temperature: "",
+                                    ambient_temperature: "",
+                                    humidity: "",
+                                    weather: ""
+                                },
+                                equipment: [{
+                                    model: "",
+                                    serial_no: "",
+                                    calibration_date: ""
+
+                                }],
+                                comment: "",
+                            })
+                        }
+                        else {
+                            condition.data.forEach(async (e) => {
+                                e.condition = await JSON.parse(e.condition)
+                                e.equipment = await JSON.parse(e.equipment)
+                                if (this.mode == this.$constant.DUP) {
+                                    e.id = this.$uuid.EMPTY
+                                }
+                                this.testconditionArr.push(e)
+                            });
+                        }
+                        if (attachment.data.length === 0) {
+                            this.attachmentArr.push([])
+                        }
+                        else {
+                            attachment.data.forEach(async (e) => {
+                                e.name = await JSON.parse(e.name)
+                                if (this.mode == this.$constant.DUP) {
+                                    e.id = this.$uuid.EMPTY
+                                }
+                                this.attachmentArr.push(e.name)
+                            })
+                        }
+                        if (this.mode == this.$constant.DUP) {
+                            element.id = this.$uuid.EMPTY
+                        }
+                    })
+                    this.testList = testList
                 }
-                this.properties = job
-                testList.forEach(async (element) => {
-                    element.data = JSON.parse(element.data)
-                    let condition = await window.electronAPI.getTestingCondition(element.id)
-                    let attachment = await window.electronAPI.getAllAttachment(element.id, "test")
-                    if(condition.data.length === 0) {
-                        this.testconditionArr.push({
-                            condition : { 
-                                top_oil_temperature : "",
-                                bottom_oil_temperature : "",
-                                winding_temperature : "",
-                                reference_temperature : "",
-                                ambient_temperature : "",
-                                humidity : "",
-                                weather : ""
-                            },
-                            equipment : [{
-                                model : "",
-                                serial_no : "",
-                                calibration_date : ""
-                        
-                            }],
-                            comment : "",
-                        })
-                    }
-                    else {
-                        condition.data.forEach(async (e) => {
-                            e.condition = await JSON.parse(e.condition)
-                            e.equipment = await JSON.parse(e.equipment)
-                            if (this.mode == this.$constant.DUP) {
-                                e.id = this.$uuid.EMPTY
-                            }
-                            this.testconditionArr.push(e)
-                        });
-                    }
-                    if(attachment.data.length === 0) {
-                        this.attachmentArr.push([])
-                    }
-                    else {
-                        attachment.data.forEach(async (e) => {
-                            e.name = await JSON.parse(e.name)
-                            if (this.mode == this.$constant.DUP) {
-                                e.id = this.$uuid.EMPTY
-                            }
-                            this.attachmentArr.push(e.name)
-                        })
-                    }
-                    if (this.mode == this.$constant.DUP) {
-                        element.id = this.$uuid.EMPTY
-                    }
-                })
-                this.testList = testList
             }
         }
-        loader.loaderEnd()
     },
     methods: {
         async getLocationAssetByIdVoltageTrans() {
+            if (!this.selectedAsset || !this.selectedAsset.length || !this.selectedAsset[0] || !this.selectedAsset[0].id) {
+                return
+            }
             const assetId = this.selectedAsset[0].id
             const rs = await window.electronAPI.getLocationAssetByIdVoltageTrans(assetId)
             if (rs.success) {
                 const data = rs.data
-                const {asset, location} = data
+                const { asset, location } = data
                 this.location = location
-                this.asset = Object.assign(asset,(JSON.parse(asset.properties)))
-                       
+                this.asset = Object.assign(asset, (JSON.parse(asset.properties)))
+
             } else {
                 this.$message.error(rs.message)
             }
@@ -134,7 +149,7 @@ export default {
                 type: 'warning'
             })
                 .then(async () => {
-                    this.$router.push({name: 'manage'})
+                    this.$router.push({ name: 'manage' })
                 })
                 .catch(() => {
                     return
@@ -148,22 +163,22 @@ export default {
             }
         },
         async insertJobdata() {
-            loader.loaderStart()
+
             const rs = await window.electronAPI.insertJobVoltageTrans(
                 this.selectedAsset[0].id, this.properties, this.testList, this.testconditionArr, this.attachmentArr)
-            loader.loaderEnd()
+
             if (rs.success) {
                 this.$message({
                     type: 'success',
                     message: 'Insert completed'
                 })
-                this.$router.push({name: 'manage'})
+                this.$router.push({ name: 'manage' })
             } else {
                 this.$message.error(rs.message)
             }
         },
         async updateJobVoltageTrans() {
-            loader.loaderStart()
+
             const rs = await window.electronAPI.updateJobVoltageTrans(this.properties, this.testList, this.testconditionArr, this.attachmentArr)
             if (rs.success) {
                 this.$message({
@@ -173,29 +188,29 @@ export default {
                 const rs = await window.electronAPI.getJobVoltageTransById(this.job_id)
                 if (rs.success) {
                     const data = rs.data
-                    const {testList} = data
+                    const { testList } = data
                     this.testconditionArr = []
                     testList.forEach(async (element) => {
                         element.data = JSON.parse(element.data)
                         let condition = await window.electronAPI.getTestingCondition(element.id)
-                        if(condition.data.length === 0) {
+                        if (condition.data.length === 0) {
                             this.testconditionArr.push({
-                                condition : { 
-                                    top_oil_temperature : "",
-                                    bottom_oil_temperature : "",
-                                    winding_temperature : "",
-                                    reference_temperature : "",
-                                    ambient_temperature : "",
-                                    humidity : "",
-                                    weather : ""
+                                condition: {
+                                    top_oil_temperature: "",
+                                    bottom_oil_temperature: "",
+                                    winding_temperature: "",
+                                    reference_temperature: "",
+                                    ambient_temperature: "",
+                                    humidity: "",
+                                    weather: ""
                                 },
-                                equipment : [{
-                                    model : "",
-                                    serial_no : "",
-                                    calibration_date : ""
-                            
+                                equipment: [{
+                                    model: "",
+                                    serial_no: "",
+                                    calibration_date: ""
+
                                 }],
-                                comment : "",
+                                comment: "",
                             })
                             this.attachmentArr.push([])
                         }
@@ -214,7 +229,28 @@ export default {
             } else {
                 this.$message.error(rs.message)
             }
-            loader.loaderEnd()
+        },
+        async resetForm() {
+            this.properties = {
+                id: '',
+                name: '',
+                work_order: '',
+                creation_date: '',
+                execution_date: '',
+                tested_by: '',
+                approved_by: '',
+                approval_date: '',
+                summary: '',
+                ambient_condition: '',
+                testing_method: '',
+                standard: ''
+            };
+            this.testList = [];
+            this.listHeal = [];
+            this.testconditionArr = [];
+            this.attachmentArr = [];
+            this.attachmentData = [];
+            this.testingEquipmentData = [];
         }
     }
 }

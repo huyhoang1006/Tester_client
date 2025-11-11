@@ -39,24 +39,24 @@
                 <template v-for="(item, index) in testData.table">
                     <tr :key="index">
                         <td>
-                            <el-input size="mini" type="text" v-model="item.name"></el-input>
+                            <el-input size="mini" type="text" v-model="item.name.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.iknee"></el-input>
+                            <el-input size="mini" type="text" v-model="item.iknee.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.vknee"></el-input>
+                            <el-input size="mini" type="text" v-model="item.vknee.value"></el-input>
                         </td>
                         <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment">
+                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
                                 <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                                 <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
-                            <span v-if="item.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini" v-model="item.condition_indicator">
+                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
                             </el-input>
                         </td>
                         <td>
@@ -116,11 +116,37 @@ export default {
     methods: {
         add() {
             this.testData.table.push({
-                name : "",
-                iknee : '',
-                vknee : '',
-                assessment : '',
-                condition_indicator : ''
+                mrid : "",
+                name : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                iknee : {
+                    mrid : "",
+                    value : "",
+                    unit : "A",
+                    type : "analog"
+                },
+                vknee : {
+                    mrid : "",
+                    value : "",
+                    unit : "V",
+                    type : "analog"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                }
             })
         },
         removeAll() {
@@ -139,11 +165,37 @@ export default {
         },
         addTest(index) {
             const data = {
-                name : "",
-                iknee : '',
-                vknee : '',
-                assessment : '',
-                condition_indicator : ''
+                mrid : "",
+                name : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                iknee : {
+                    mrid : "",
+                    value : "",
+                    unit : "A",
+                    type : "analog"
+                },
+                vknee : {
+                    mrid : "",
+                    value : "",
+                    unit : "V",
+                    type : "analog"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                }
             }
             this.testData.table.splice(index+1, 0, data)
         },

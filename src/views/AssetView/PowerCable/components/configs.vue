@@ -7,8 +7,8 @@
                         <span class="bolder">Phase</span>
                         <el-divider></el-divider>
                         <el-radio-group style="margin-top: 20px;" v-model="configsData.phases.value">
-                            <el-radio style="margin-right: 100px;" label="1"></el-radio>
-                            <el-radio label="3"></el-radio>
+                            <el-radio style="margin-right: 100px;" :label="1"></el-radio>
+                            <el-radio :label="3"></el-radio>
                         </el-radio-group>
                     </el-form>
                     <el-form style="margin-top: 50px;" :inline-message="true" :label-width="labelWidth" size="mini"

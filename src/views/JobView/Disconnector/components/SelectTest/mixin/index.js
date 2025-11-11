@@ -5,9 +5,9 @@ export default {
         return {}
     },
     computed: mapState(['selectedAsset', 'selectedJob']),
-    async beforeMount() {},
+    async beforeMount() { },
     methods: {
-        async initTest(testTypeCode) {
+        async initTest(testTypeCode, assetData) {
             let data = null
             switch (testTypeCode) {
                 case 'InsulationResistance':
@@ -31,6 +31,12 @@ export default {
                 case 'GeneralInspection':
                     data = await this.initGeneralInspection()
                     break
+                case 'LeakageCurrent':
+                    data = await this.initLeakageCurrent(assetData || {})
+                    break
+                case 'PowerFrequency':
+                    data = await this.initPowerFrequency(assetData || {})
+                    break
             }
 
             return data
@@ -38,28 +44,28 @@ export default {
         async initInsulationResistance() {
             let table = [
                 {
-                    measurement : "Phase A-(B+C+GND)",
-                    test_voltage : '',
-                    r60s : '',
-                    assessment : '',
-                    condition_indicator : ''
+                    measurement: "Phase A-(B+C+GND)",
+                    test_voltage: '',
+                    r60s: '',
+                    assessment: '',
+                    condition_indicator: ''
                 },
                 {
-                    measurement : "Phase B-(A+C+GND)",
-                    test_voltage : '',
-                    r60s : '',
-                    assessment : '',
-                    condition_indicator : ''
+                    measurement: "Phase B-(A+C+GND)",
+                    test_voltage: '',
+                    r60s: '',
+                    assessment: '',
+                    condition_indicator: ''
                 },
                 {
-                    measurement : "Phase C-(A+B+GND)",
-                    test_voltage : '',
-                    r60s : '',
-                    assessment : '',
-                    condition_indicator : ''
+                    measurement: "Phase C-(A+B+GND)",
+                    test_voltage: '',
+                    r60s: '',
+                    assessment: '',
+                    condition_indicator: ''
                 }
             ]
-            
+
             return {
                 table
             }
@@ -67,25 +73,25 @@ export default {
         async initContactResistance() {
             let table = [
                 {
-                    measurement : "Main contact",
-                    itest : "",
-                    contactResistance : "",
-                    assessment : "",
-                    condition_indicator : ""
+                    measurement: "Main contact",
+                    itest: "",
+                    contactResistance: "",
+                    assessment: "",
+                    condition_indicator: ""
                 },
                 {
-                    measurement : "Earth switch",
-                    itest : "",
-                    contactResistance : "",
-                    assessment : "",
-                    condition_indicator : ""
+                    measurement: "Earth switch",
+                    itest: "",
+                    contactResistance: "",
+                    assessment: "",
+                    condition_indicator: ""
                 }
             ]
             return {
                 table
             }
         },
-        
+
         async initInsulationResMotor() {
             let table = []
             return {
@@ -94,22 +100,22 @@ export default {
         },
         async initDcWindingMotor() {
             return {
-                table : []
+                table: []
             }
         },
         async initOperatingTest() {
             let table = [
                 {
-                    measurement : "Main contact",
-                    workingTime : "",
-                    assessment : "",
-                    condition_indicator : ""
+                    measurement: "Main contact",
+                    workingTime: "",
+                    assessment: "",
+                    condition_indicator: ""
                 },
                 {
-                    measurement : "Earth switch",
-                    workingTime : "",
-                    assessment : "",
-                    condition_indicator : ""
+                    measurement: "Earth switch",
+                    workingTime: "",
+                    assessment: "",
+                    condition_indicator: ""
                 }
             ]
             return {
@@ -118,7 +124,7 @@ export default {
         },
         async initControlCheck() {
             return {
-                table : []
+                table: []
             }
         },
         async initGeneralInspection() {
@@ -126,9 +132,9 @@ export default {
             const data = ['Nameplate', 'Installation check', 'Insulation surface', 'Ground frame', 'Terminal box', 'Marking of terminals', 'Oil check']
             data.forEach(element => {
                 table.push({
-                    items : element,
-                    assessment : '',
-                    condition_indicator : ''
+                    items: element,
+                    assessment: '',
+                    condition_indicator: ''
                 })
             })
             return {

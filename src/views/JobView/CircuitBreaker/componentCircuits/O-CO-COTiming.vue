@@ -461,8 +461,10 @@ export default {
                 })
                 .then( () => {
                     this.testData.table = []
-                }
-            )
+                })
+                .catch( () => {
+                    // User cancelled, do nothing
+                })
         },
         deleteTest(index) {
             this.testData.table.splice(index, 1)

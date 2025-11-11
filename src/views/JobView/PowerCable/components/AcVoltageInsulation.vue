@@ -44,27 +44,27 @@
                            {{ index + 1 }}
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.measurement"></el-input>
+                            <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.test_voltage"></el-input>
+                            <el-input size="mini" type="text" v-model="item.test_voltage.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.frequency"></el-input>
+                            <el-input size="mini" type="text" v-model="item.frequency.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.duration"></el-input>
+                            <el-input size="mini" type="text" v-model="item.test_duration.value"></el-input>
                         </td>
                         <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment">
+                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
                                 <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                                 <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
-                            <span v-if="item.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini" v-model="item.condition_indicator">
+                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
                             </el-input>
                         </td>
                         <td>
@@ -124,12 +124,43 @@ export default {
     methods: {
         add() {
             this.testData.table.push({
-                measurement : "",
-                test_voltage : '',
-                frequency : '',
-                duration : '',
-                assessment : '',
-                condition_indicator : ''
+                mrid : "",
+                measurement : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                test_voltage : {
+                    mrid : "",
+                    value : "",
+                    unit : "k|V",
+                    type : "analog"
+                },
+                frequency : {
+                    mrid : "",
+                    value : "",
+                    unit : "Hz",
+                    type : "analog"
+                },
+                test_duration : {
+                    mrid : "",
+                    value : "",
+                    unit : "min",
+                    type : "analog"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                }
             })
         },
         removeAll() {
@@ -148,12 +179,43 @@ export default {
         },
         addTest(index) {
             const data = {
-                measurement : "",
-                test_voltage : '',
-                frequency : '',
-                duration : '',
-                assessment : '',
-                condition_indicator : ''
+                mrid : "",
+                measurement : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                test_voltage : {
+                    mrid : "",
+                    value : "",
+                    unit : "k|V",
+                    type : "analog"
+                },
+                frequency : {
+                    mrid : "",
+                    value : "",
+                    unit : "Hz",
+                    type : "analog"
+                },
+                test_duration : {
+                    mrid : "",
+                    value : "",
+                    unit : "min",
+                    type : "analog"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                }
             }
             this.testData.table.splice(index+1, 0, data)
         },
