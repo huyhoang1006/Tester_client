@@ -120,11 +120,37 @@ export default {
     methods: {
         add() {
             this.testData.table.push({
-                measurement : "",
-                test_voltage : '',
-                r60s : '',
-                assessment : '',
-                condition_indicator : ''
+                mrid : "",
+                measurement : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                test_voltage : {
+                    mrid : "",
+                    value : "",
+                    unit : "V",
+                    type : "analog"
+                },
+                r60s : {
+                    mrid : "",
+                    value : "",
+                    unit : "mΩ",
+                    type : "analog"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                }
             })
         },
         removeAll() {
@@ -143,11 +169,37 @@ export default {
         },
         addTest(index) {
             const data = {
-                measurement : "",
-                test_voltage : '',
-                r60s : '',
-                assessment : '',
-                condition_indicator : ''
+                mrid : "",
+                measurement : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },  
+                test_voltage : {
+                    mrid : "",
+                    value : "",
+                    unit : "V",
+                    type : "analog"
+                },
+                r60s : {
+                    mrid : "",
+                    value : "",
+                    unit : "mΩ",
+                    type : "analog"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                }
             }
             this.testData.table.splice(index+1, 0, data)
         },

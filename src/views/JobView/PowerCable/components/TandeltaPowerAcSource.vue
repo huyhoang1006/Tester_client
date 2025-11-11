@@ -128,13 +128,49 @@ export default {
     methods: {
         add() {
             this.testData.table.push({
-                measurement : "",
-                test_voltage : '',
-                frequency : '',
-                duration : '',
-                tandelta : '',
-                assessment : '',
-                condition_indicator : ''
+                mrid : "",
+                measurement : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                test_voltage : {
+                    mrid : "",
+                    value : "",
+                    unit : "kV",
+                    type : "analog"
+                },
+                frequency : {
+                    mrid : "",
+                    value : "",
+                    unit : "Hz",
+                    type : "analog"
+                },
+                test_duration : {
+                    mrid : "",
+                    value : "",
+                    unit : "s",
+                    type : "analog"
+                },
+                tan_delta : {
+                    mrid : "",
+                    value : "",
+                    unit : "10-3",
+                    type : "analog"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                }
             })
         },
         removeAll() {
@@ -153,13 +189,49 @@ export default {
         },
         addTest(index) {
             const data = {
-                measurement : "",
-                test_voltage : '',
-                frequency : '',
-                duration : '',
-                tandelta : '',
-                assessment : '',
-                condition_indicator : ''
+                mrid : "",  
+                measurement : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                test_voltage : {
+                    mrid : "",
+                    value : "",
+                    unit : "kV",
+                    type : "analog"
+                },
+                frequency : {
+                    mrid : "",
+                    value : "",
+                    unit : "Hz",
+                    type : "analog"
+                },
+                test_duration : {
+                    mrid : "",
+                    value : "",
+                    unit : "s",
+                    type : "analog"
+                },
+                tan_delta : {
+                    mrid : "",
+                    value : "",
+                    unit : "10-3",
+                    type : "analog"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                }
             }
             this.testData.table.splice(index+1, 0, data)
         },

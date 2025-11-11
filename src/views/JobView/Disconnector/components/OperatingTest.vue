@@ -115,10 +115,31 @@ export default {
     methods: {
         add() {
             this.testData.table.push({
-                measurement : "",
-                workingTime : "",
-                assessment : '',
-                condition_indicator : ''
+                mrid : "",
+                measurement : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                workingTime : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "analog"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                }
             })
         },
         removeAll() {
@@ -137,10 +158,31 @@ export default {
         },
         addTest(index) {
             const data = {
-                measurement : "",
-                workingTime : "",
-                assessment : '',
-                condition_indicator : ''
+                mrid : "",
+                measurement : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                workingTime : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "analog"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                }
             }
             this.testData.table.splice(index+1, 0, data)
         },

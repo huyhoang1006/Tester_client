@@ -131,13 +131,49 @@ export default {
     methods: {
         add() {
             this.testData.table.push({
-                name : "",
-                rmeas : '',
-                rref : '',
-                rcorr : '',
-                rdev : '',
-                assessment : '',
-                condition_indicator : ''
+                mrid : "",
+                name : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                rmeas : {
+                    mrid : "",
+                    value : "",
+                    unit : "Ω",
+                    type : "analog"
+                },
+                rref : {
+                    mrid : "",
+                    value : "",
+                    unit : "Ω",
+                    type : "analog"
+                },
+                rcorr : {
+                    mrid : "",
+                    value : "",
+                    unit : "Ω",
+                    type : "analog"
+                },
+                rdev : {
+                    mrid : "",
+                    value : "",
+                    unit : "%",
+                    type : "analog"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                }
             })
         },
         removeAll() {
@@ -156,13 +192,49 @@ export default {
         },
         addTest(index) {
             const data = {
-                name : "",
-                rmeas : '',
-                rref : '',
-                rcorr : '',
-                rdev : '',
-                assessment : '',
-                condition_indicator : ''
+                mrid : "",
+                name : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                rmeas : {
+                    mrid : "",
+                    value : "",
+                    unit : "Ω",
+                    type : "analog"
+                },
+                rref : {
+                    mrid : "",
+                    value : "",
+                    unit : "Ω",
+                    type : "analog"
+                },
+                rcorr : {
+                    mrid : "",
+                    value : "",
+                    unit : "Ω",
+                    type : "analog"
+                },
+                rdev : {
+                    mrid : "",
+                    value : "",
+                    unit : "%",
+                    type : "analog"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                }
             }
             this.testData.table.splice(index+1, 0, data)
         },

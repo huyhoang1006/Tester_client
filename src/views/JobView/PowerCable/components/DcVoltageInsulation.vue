@@ -53,7 +53,7 @@
                             <el-input size="mini" type="text" v-model="item.test_duration.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.leakage_current. value"></el-input>
+                            <el-input size="mini" type="text" v-model="item.leakage_current.value"></el-input>
                         </td>
                         <td>
                             <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -124,12 +124,43 @@ export default {
     methods: {
         add() {
             this.testData.table.push({
-                measurement : "",
-                test_voltage : '',
-                leakage : '',
-                duration : '',
-                assessment : '',
-                condition_indicator : ''
+                mrid : "",
+                measurement : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                test_voltage : {
+                    mrid : "",
+                    value : "",
+                    unit : "k|V",
+                    type : "analog"
+                },
+                test_duration : {
+                    mrid : "",
+                    value : "",
+                    unit : "min",
+                    type : "analog"
+                },
+                leakage_current : {
+                    mrid : "",
+                    value : "",
+                    unit : "mA",
+                    type : "analog"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                }
             })
         },
         removeAll() {
@@ -148,12 +179,44 @@ export default {
         },
         addTest(index) {
             const data = {
-                measurement : "",
-                test_voltage : '',
-                leakage : '',
-                duration : '',
-                assessment : '',
-                condition_indicator : ''
+                mrid : "",
+                measurement : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                test_voltage : {
+                    mrid : "",
+                    value : "",
+                    unit : "k|V",
+                    type : "analog"
+                },
+                
+                test_duration : {
+                    mrid : "",
+                    value : "",
+                    unit : "min",
+                    type : "analog"
+                },
+                leakage_current : {
+                    mrid : "",
+                    value : "",
+                    unit : "mA",
+                    type : "analog"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
             }
             this.testData.table.splice(index+1, 0, data)
         },
@@ -164,11 +227,11 @@ export default {
         clear() {
             this.testData.table.forEach((element) => {
                 element.measurement = "",
-                element.test_voltage = '',
-                element.leakage = '',
-                element.duration = '',
-                element.assessment = '',
-                element.condition_indicator = ''
+                element.test_voltage = "",
+                element.leakage_current = "",
+                element.test_duration = "",
+                element.assessment = "",
+                element.condition_indicator = ""
             })
         },
         nameColor(data) {

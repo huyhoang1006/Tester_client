@@ -64,6 +64,7 @@ const rotatingMachineEntityAPI = entityPreload.rotatingMachineEntityPreload.rota
 const capacitorEntityAPI = entityPreload.capacitorEntityPreload.capacitorEntityPreload()
 const currentTransformerEntityAPI = entityPreload.currentTransformerEntityPreload.currentTransformerEntityPreload()
 const breakerEntityAPI = entityPreload.breakerEntityPreload.breakerEntityPreload()
+const testTypeCircuitBreakerAPI = entityPreload.testTypePreload.testTypeCircuitBreakerPreload.testTypeCircuitBreakerPreload()
 
 
 
@@ -75,7 +76,7 @@ const ipcMain = Object.assign(userAPI, transformerAPI, fmecaAPI, conditionAPI, c
     productAssetModelAPI, testTypeSurgeArresterAPI, surgeArresterJobAPI, powerCableJobAPI, oldWorkAPI, assetAPI, transformerEntityAPI, analogAPI,
     stringMeasurementAPI, discreteAPI, valueToAliasAPI, valueAliasSetAPI, powerCableEntityAPI, voltageTransformerEntityAPI, bushingEntityAPI,
     bushingAPI, disconnectorEntityAPI, rotatingMachineEntityAPI, currentTransformerEntityAPI, testTypePowerCableAPI, capacitorEntityAPI,
-    breakerEntityAPI)
+    breakerEntityAPI, testTypeVoltageTransformerAPI, testTypeDisconnectorAPI, testTypeCurrentTransformerAPI, testTypeVoltageTransformerAPI, testTypeCircuitBreakerAPI)
 contextBridge.exposeInMainWorld('electronAPI',
     ipcMain
 )
