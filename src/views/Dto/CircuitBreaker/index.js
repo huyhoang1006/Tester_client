@@ -17,6 +17,7 @@ class CircuitBreakerDto {
         this.assetInfoId = ''
         this.assetPsrId = ''
         this.psrId = ''
+        this.locationId = ''
 
         this.circuitBreaker = new circuitBreakerDto();
 

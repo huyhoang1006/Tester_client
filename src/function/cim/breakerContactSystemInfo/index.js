@@ -19,7 +19,7 @@ export const getBreakerContactSystemInfoById = async (mrid) => {
 // Lấy các bản ghi theo breaker_info_id
 export const getBreakerContactSystemInfoByBreakerInfoId = async (breakerInfoId) => {
     return new Promise((resolve, reject) => {
-        db.all(
+        db.get(
             `SELECT * FROM breaker_contact_system_info WHERE breaker_info_id = ?`,
             [breakerInfoId],
             (err, rows) => {

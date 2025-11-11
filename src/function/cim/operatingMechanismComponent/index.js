@@ -1,3 +1,4 @@
+import db from '../../datacontext/index'
 // Lấy operatingMechanismComponent theo mrid
 export const getOperatingMechanismComponentById = async (mrid) => {
     return new Promise((resolve, reject) => {

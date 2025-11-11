@@ -47,7 +47,7 @@ export const getBreakerEntityByMrid = () => {
                 }
             }
         } catch (error) {
-            console.error("Error retrieving Power Cable entity by MRID:", error);
+            console.error("Error retrieving circuit breaker entity by MRID:", error);
             return {
                 error: error,
                 success: false,
@@ -62,7 +62,6 @@ export const deleteBreakerEntity = () => {
     ipcMain.handle('deleteBreakerEntity', async function (event, data) {
         try {
             const rs = await entityFunc.breakerEntityFunc.deleteBreakerEntity(data)
-            console.log("Delete capacitor entity", rs)
             if (rs.success == true) {
                 return {
                     success: true,

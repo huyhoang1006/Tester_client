@@ -1031,7 +1031,6 @@ export default {
                     if (rs.success) {
                         this.organisationClientList = [rs.data] || []
                     } else {
-                        console.log(rs)
                         this.$message.error("Cannot load root organisation")
                     }
                 } catch (error) {
@@ -1373,7 +1372,6 @@ export default {
                             });
                             newRows.push(...assetCurrentTransformerReturn.data);
                         }
-
                         if (assetRotatingMachineReturn.success) {
                             assetRotatingMachineReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
@@ -2333,7 +2331,6 @@ export default {
                         this.signVt = false
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
-                            console.log(data.asset)
                             const newRow = {
                                 mrid: data.asset.mrid,
                                 name: data.asset.name,
@@ -2883,7 +2880,6 @@ export default {
                                 return;
                             }
                             const deleteSign = await window.electronAPI.deleteParentOrganizationEntity(entity.data);
-                            console.log(deleteSign)
                             if (!deleteSign.success) {
                                 this.$message.error("Delete data failed");
                                 return;
@@ -2959,7 +2955,6 @@ export default {
                                     this.$message.error("Entity not found");
                                     return;
                                 }
-                                console.log(entity)
                                 const deleteSign = await window.electronAPI.deleteSurgeArresterEntity(entity.data);
                                 if (!deleteSign.success) {
                                     this.$message.error("Delete data failed");
@@ -2978,14 +2973,12 @@ export default {
                                 } else {
                                     this.$message.warning("Parent node not found in tree");
                                 }
-                            }
-                            else if (node.asset === 'Power cable') {
+                            } else if (node.asset === 'Power cable') {
                                 const entity = await window.electronAPI.getPowerCableEntityByMrid(node.mrid, node.parentId);
                                 if (!entity.success) {
                                     this.$message.error("Entity not found");
                                     return;
                                 }
-                                console.log('Power cable entity:', entity)
                                 const deleteSign = await window.electronAPI.deletePowerCableEntity(entity.data);
                                 if (!deleteSign.success) {
                                     this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
@@ -3010,7 +3003,6 @@ export default {
                                     this.$message.error("Entity not found");
                                     return;
                                 }
-                                console.log('Disconnector entity:', entity)
                                 const deleteSign = await window.electronAPI.deleteDisconnectorEntity(entity.data);
                                 if (!deleteSign.success) {
                                     this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
@@ -3035,7 +3027,6 @@ export default {
                                     this.$message.error("Entity not found");
                                     return;
                                 }
-                                console.log('Rotating machine entity:', entity)
                                 const deleteSign = await window.electronAPI.deleteRotatingMachineEntity(entity.data);
                                 if (!deleteSign.success) {
                                     this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
@@ -3054,14 +3045,12 @@ export default {
                                 } else {
                                     this.$message.warning("Parent node not found in tree");
                                 }
-                            }
-                            else if (node.asset === 'Capacitor') {
+                            } else if (node.asset === 'Capacitor') {
                                 const entity = await window.electronAPI.getCapacitorEntityByMrid(node.mrid, node.parentId);
                                 if (!entity.success) {
                                     this.$message.error("Entity not found");
                                     return;
                                 }
-                                console.log('Capacitor entity:', entity)
                                 const deleteSign = await window.electronAPI.deleteCapacitorEntity(entity.data);
                                 if (!deleteSign.success) {
                                     this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
@@ -3080,14 +3069,12 @@ export default {
                                 } else {
                                     this.$message.warning("Parent node not found in tree");
                                 }
-                            }
-                             else if (node.asset === 'Voltage transformer') {
+                            } else if (node.asset === 'Voltage transformer') {
                                 const entity = await window.electronAPI.getVoltageTransformerEntityByMrid(node.mrid, node.parentId);
                                 if (!entity.success) {
                                     this.$message.error("Entity not found");
                                     return;
                                 }
-                                console.log('Voltage transformer entity:', entity)
                                 const deleteSign = await window.electronAPI.deleteVoltageTransformerEntity(entity.data);
                                 if (!deleteSign.success) {
                                     this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
@@ -3113,7 +3100,6 @@ export default {
                                     return;
                                 }
                                 const deleteSign = await window.electronAPI.deleteCurrentTransformerEntity(entity.data);
-                                console.log('Delete sign:', deleteSign)
                                 if (!deleteSign.success) {
                                     this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
                                     return;
@@ -3435,7 +3421,6 @@ export default {
                 this.parentOrganization = node
                 this.signVt = true
                 this.$nextTick(() => {
-                    console.log("Check var :  ", this.parentOrganization)
                     const voltageTransformer = this.$refs.voltageTransformer;
                     if (voltageTransformer) {
                         voltageTransformer.resetForm();

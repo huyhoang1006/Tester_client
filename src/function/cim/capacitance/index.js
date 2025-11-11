@@ -15,6 +15,31 @@ export const getCapacitanceById = async (mrid) => {
     })
 }
 
+export const getCapacitanceByIds = async (mrids) => {
+    return new Promise((resolve, reject) => {
+        if (!mrids || mrids.length === 0) {
+            return resolve({ success: false, data: [], message: 'No mrids provided' })
+        }
+
+        // Tạo chuỗi placeholder (?, ?, ?) tùy theo số lượng mrid
+        const placeholders = mrids.map(() => '?').join(',')
+
+        db.all(
+            `SELECT * FROM capacitance WHERE mrid IN (${placeholders})`,
+            mrids,
+            (err, rows) => {
+                if (err) {
+                    return reject({ success: false, err: err, message: 'Get capacitances by ids failed' })
+                }
+                if (!rows || rows.length === 0) {
+                    return resolve({ success: false, data: [], message: 'Capacitances not found' })
+                }
+                return resolve({ success: true, data: rows, message: 'Get capacitances by ids completed' })
+            }
+        )
+    })
+}
+
 // Thêm mới capacitance (transaction)
 export const insertCapacitanceTransaction = async (capacitance, dbsql) => {
     return new Promise((resolve, reject) => {

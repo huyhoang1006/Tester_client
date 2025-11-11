@@ -23,7 +23,7 @@ export const getOldOperatingMechanismById = async (mrid) => {
     }
 }
 
-export const getOldOperatingMechanismByAssetIdTransaction = async (assetId, dbsql) => {
+export const getOldOperatingMechanismByAssetIdTransaction = async (assetId) => {
     return new Promise(async (resolve, reject) => {
         try {
             const query = `
@@ -35,7 +35,7 @@ export const getOldOperatingMechanismByAssetIdTransaction = async (assetId, dbsq
                 WHERE om.asset_id = ?
             `;
 
-            dbsql.get(query, [assetId], (err, row) => {
+            db.get(query, [assetId], (err, row) => {
                 if (err) {
                     return reject({
                         success: false,

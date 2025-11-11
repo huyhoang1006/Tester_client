@@ -53,7 +53,7 @@ export const getAssetByLocationId = async (locationId) => {
 export const getAssetByPsrIdAndKind = (psrId, kind) => {
     return new Promise((resolve, reject) => {
         const query = `
-            SELECT a.* 
+            SELECT DISTINCT a.* 
             FROM asset a
             INNER JOIN asset_psr ap ON a.mrid = ap.asset_id
             WHERE ap.psr_id = ?
