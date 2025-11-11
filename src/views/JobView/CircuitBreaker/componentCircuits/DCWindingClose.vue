@@ -41,21 +41,21 @@
                             {{ index + 1 }}
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.closeCoilNo"></el-input>
+                            <el-input size="mini" type="text" v-model="item.closeCoilNo.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.rmeas"></el-input>
+                            <el-input size="mini" type="text" v-model="item.rmeas.value"></el-input>
                         </td>
                         <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment">
+                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
                                 <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                                 <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
-                            <span v-if="item.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini" v-model="item.condition_indicator">
+                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
                             </el-input>
                         </td>
                         <td>
@@ -200,7 +200,40 @@ export default {
             return this.data
         },
         assetData() {
-            return JSON.parse(this.asset.assessmentLimits)
+            if (!this.asset || !this.asset.assessmentLimits) {
+                return {
+                    coilCharacter: {
+                        abs: Array(8).fill(null).map(() => ({ min: '', max: '' })),
+                        rel: Array(8).fill(null).map(() => ({ ref: '', devZ: '', devN: '' }))
+                    }
+                }
+            }
+            try {
+                const parsed = JSON.parse(this.asset.assessmentLimits)
+                // Ensure coilCharacter structure exists
+                if (!parsed.coilCharacter) {
+                    parsed.coilCharacter = {
+                        abs: Array(8).fill(null).map(() => ({ min: '', max: '' })),
+                        rel: Array(8).fill(null).map(() => ({ ref: '', devZ: '', devN: '' }))
+                    }
+                }
+                // Ensure abs and rel arrays have 8 items
+                if (!parsed.coilCharacter.abs || parsed.coilCharacter.abs.length !== 8) {
+                    parsed.coilCharacter.abs = Array(8).fill(null).map(() => ({ min: '', max: '' }))
+                }
+                if (!parsed.coilCharacter.rel || parsed.coilCharacter.rel.length !== 8) {
+                    parsed.coilCharacter.rel = Array(8).fill(null).map(() => ({ ref: '', devZ: '', devN: '' }))
+                }
+                return parsed
+            } catch (error) {
+                console.error('Error parsing assessmentLimits:', error)
+                return {
+                    coilCharacter: {
+                        abs: Array(8).fill(null).map(() => ({ min: '', max: '' })),
+                        rel: Array(8).fill(null).map(() => ({ ref: '', devZ: '', devN: '' }))
+                    }
+                }
+            }
         }
     },
     watch : {
@@ -235,10 +268,31 @@ export default {
         },
         add() {
             this.testData.table.push({
-                closeCoilNo: '',
-                rmeas: '',
-                assessment: '',
-                condition_indicator: ''
+                mrid: '',
+                closeCoilNo: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                rmeas: {
+                    mrid: '',
+                    value: '',
+                    unit: 'Ω',
+                    type: 'analog'
+                },
+                assessment: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'discrete'
+                },
+                condition_indicator: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'discrete'
+                }
             })
         },
         removeAll() {
@@ -255,10 +309,31 @@ export default {
         },
         addTest(index) {
             const data = {
-                closeCoilNo: '',
-                rmeas: '',
-                assessment: '',
-                condition_indicator: ''
+                mrid: '',
+                closeCoilNo: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                rmeas: {
+                    mrid: '',
+                    value: '',
+                    unit: 'Ω',
+                    type: 'analog'
+                },
+                assessment: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'discrete'
+                },
+                condition_indicator: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'discrete'
+                }
             }
             this.testData.table.splice(index + 1, 0, data)
         },

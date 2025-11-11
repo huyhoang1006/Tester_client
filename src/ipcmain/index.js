@@ -13,6 +13,7 @@ import * as ipcJobDisconnector from "./disconnector/jobDisconnector"
 import * as ipcJobSurge from "./surgeArrester/jobSurge"
 import * as ipcJobPower from "./powerCable/jobPower"
 import * as ipcJobTransformer from "./transformer/jobTransformer"
+import * as ipcJobCircuitBreaker from "./cirCuitBreaker/jobCircuit"
 import * as ipcUpdateManu from './manufacturer/manufacturer'
 import * as ipcOwner from './owner/owner'
 import * as ipcCim from './cim/index.js'
@@ -20,4 +21,4 @@ import * as ipcEntity from './entity/index.js'
 
 export { ipcCircuit, ipcJobCircuit, ipcTransformer, ipcCurrentTrans, ipcVoltageTrans, ipcDisconnector, ipcSurgeArrester }
 export { ipcPowerCable, ipcUploadCustom, ipcJobCurrent, ipcJobVoltage, ipcJobDisconnector, ipcJobSurge, ipcJobPower, ipcJobTransformer }
-export { ipcUpdateManu, ipcOwner, ipcCim, ipcEntity }
+export { ipcUpdateManu, ipcOwner, ipcCim, ipcEntity, ipcJobCircuitBreaker }

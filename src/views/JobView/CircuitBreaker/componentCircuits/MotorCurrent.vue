@@ -40,27 +40,27 @@
                 <template v-for="(item, index) in testData.table">
                     <tr :key="index">
                         <td>
-                            <el-input size="mini" type="text" v-model="item.inrushCurrent"></el-input>
+                            <el-input size="mini" type="text" v-model="item.inrushCurrent.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.charging"></el-input>
+                            <el-input size="mini" type="text" v-model="item.charging.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.chargingCurrent"></el-input>
+                            <el-input size="mini" type="text" v-model="item.chargingCurrent.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.miniVoltage"></el-input>
+                            <el-input size="mini" type="text" v-model="item.miniVoltage.value"></el-input>
                         </td>
                         <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment">
+                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
                                 <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                                 <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
-                            <span v-if="item.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini" v-model="item.condition_indicator">
+                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
                             </el-input>
                         </td>
                         <td>
@@ -196,7 +196,15 @@ export default {
             return this.data
         },
         assetData() {
-            return JSON.parse(this.asset.assessmentLimits)
+            if (!this.asset || !this.asset.assessmentLimits) {
+                return {}
+            }
+            try {
+                return JSON.parse(this.asset.assessmentLimits)
+            } catch (error) {
+                console.error('Error parsing assessmentLimits:', error)
+                return {}
+            }
         }
     },
     methods: {
@@ -222,12 +230,43 @@ export default {
         },
         add() {
             this.testData.table.push({
-                inrushCurrent: '',
-                charging: '',
-                chargingCurrent: '',
-                miniVoltage: '',
-                assessment: '',
-                condition_indicator: ''
+                mrid: '',
+                inrushCurrent: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                charging: {
+                    mrid: '',
+                    value: '',
+                    unit: 's',
+                    type: 'analog'
+                },
+                chargingCurrent: {
+                    mrid: '',
+                    value: '',
+                    unit: 'A',
+                    type: 'analog'
+                },
+                miniVoltage: {
+                    mrid: '',
+                    value: '',
+                    unit: 'V',
+                    type: 'analog'
+                },
+                assessment: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'discrete'
+                },
+                condition_indicator: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'discrete'
+                }
             })
         },
         removeAll() {
@@ -238,20 +277,53 @@ export default {
                 })
                 .then( () => {
                     this.testData.table = []
-                }
-            )
+                })
+                .catch( () => {
+                    // User cancelled, do nothing
+                })
         },
         deleteTest(index) {
             this.testData.table.splice(index, 1)
         },
         addTest(index) {
             const data = {
-                inrushCurrent: '',
-                charging: '',
-                chargingCurrent: '',
-                miniVoltage: '',
-                assessment: '',
-                condition_indicator: ''
+                mrid: '',
+                inrushCurrent: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                charging: {
+                    mrid: '',
+                    value: '',
+                    unit: 's',
+                    type: 'analog'
+                },
+                chargingCurrent: {
+                    mrid: '',
+                    value: '',
+                    unit: 'A',
+                    type: 'analog'
+                },
+                miniVoltage: {
+                    mrid: '',
+                    value: '',
+                    unit: 'V',
+                    type: 'analog'
+                },
+                assessment: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'discrete'
+                },
+                condition_indicator: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'discrete'
+                }
             }
             this.testData.table.splice(index+1, 0, data)
         },

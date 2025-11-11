@@ -43,18 +43,18 @@
                             {{index + 1}}
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.decomSf6"></el-input>
+                            <el-input size="mini" type="text" v-model="item.decomSf6.value"></el-input>
                         </td>
                         <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment">
+                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
                                 <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                                 <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
-                            <span v-if="item.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini" v-model="item.condition_indicator">
+                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
                             </el-input>
                         </td>
                         <td>
@@ -91,18 +91,18 @@
                             {{index + 1}}
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.so2Sof2"></el-input>
+                            <el-input size="mini" type="text" v-model="item.so2Sof2.value"></el-input>
                         </td>
                         <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment">
+                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
                                 <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                                 <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
-                            <span v-if="item.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini" v-model="item.condition_indicator">
+                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
                             </el-input>
                         </td>
                         <td>
@@ -139,18 +139,18 @@
                             {{index + 1}}
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.hf"></el-input>
+                            <el-input size="mini" type="text" v-model="item.hf.value"></el-input>
                         </td>
                         <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment">
+                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
                                 <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                                 <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
-                            <span v-if="item.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini" v-model="item.condition_indicator">
+                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
                             </el-input>
                         </td>
                         <td>
@@ -198,7 +198,15 @@ export default {
             return this.data
         },
         assetData() {
-            return JSON.parse(this.asset.assessmentLimits)
+            if (!this.asset || !this.asset.assessmentLimits) {
+                return {}
+            }
+            try {
+                return JSON.parse(this.asset.assessmentLimits)
+            } catch (error) {
+                console.error('Error parsing assessmentLimits:', error)
+                return {}
+            }
         }
     },
     watch : {
@@ -214,24 +222,72 @@ export default {
         add(label) {
             if(label === 'decomSf6Table') {
                 let data = {
-                    decomSf6 : "",
-                    assessment : "",
-                    condition_indicator : ""
+                    mrid: '',   
+                    decomSf6 : {
+                        mrid: '',
+                        value: '',
+                        unit: 'ppm',
+                        type: 'analog'
+                    },
+                    assessment : {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
+                    },
+                    condition_indicator : {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
+                    }
                 }
                 this.testData.table[label].push(data)
            }
            else if(label === 'so2Sof2Table') {
                 let data = {
-                    so2Sof2 : "",
-                    assessment : "",
-                    condition_indicator : ""
+                    mrid: '',
+                    so2Sof2 : {
+                        mrid: '',
+                        value: '',
+                        unit: 'ppm',
+                        type: 'analog'
+                    },
+                    assessment : {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
+                    },
+                    condition_indicator : {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
+                    }
                 }
                 this.testData.table[label].push(data)
            } else {
                 let data = {
-                    hf : "",
-                    assessment : "",
-                    condition_indicator : ""
+                    mrid: '',
+                    hf : {
+                        mrid: '',
+                        value: '',
+                        unit: 'ppm',
+                        type: 'analog'
+                    },
+                    assessment : {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
+                    },
+                    condition_indicator : {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
+                    }
                 }
                 this.testData.table[label].push(data)
            }
@@ -244,8 +300,10 @@ export default {
                 })
                 .then( () => {
                     this.testData.table[label] = []
-                }
-            )
+                })
+                .catch( () => {
+                    // User cancelled, do nothing
+                })
         },
         deleteTest(index, label) {
             this.testData.table[label].splice(index, 1)
@@ -253,24 +311,72 @@ export default {
         addTest(index, label) {
            if(label === 'decomSf6Table') {
                 let data = {
-                    decomSf6 : "",
-                    assessment : "",
-                    condition_indicator : ""
+                    mrid: '',
+                    decomSf6 : {
+                        mrid: '',
+                        value: '',
+                        unit: 'ppm',
+                        type: 'analog'
+                    },
+                    assessment : {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
+                    },
+                    condition_indicator : {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
+                    }
                 }
                 this.testData.table[label].splice(index+1, 0, data)
            }
            else if(label === 'so2Sof2Table') {
                 let data = {
-                    so2Sof2 : "",
-                    assessment : "",
-                    condition_indicator : ""
+                    mrid: '',
+                    so2Sof2 : {
+                        mrid: '',
+                        value: '',
+                        unit: 'ppm',
+                        type: 'analog'
+                    },
+                    assessment : {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
+                    },
+                    condition_indicator : {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
+                    }
                 }
                 this.testData.table[label].splice(index+1, 0, data)
            } else {
             let data = {
-                    hf : "",
-                    assessment : "",
-                    condition_indicator : ""
+                    mrid: '',
+                    hf : {
+                        mrid: '',
+                        value: '',
+                        unit: 'ppm',
+                        type: 'analog'
+                    },
+                    assessment : {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
+                    },
+                    condition_indicator : {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
+                    }
                 }
                 this.testData.table[label].splice(index+1, 0, data)
            }

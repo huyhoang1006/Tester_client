@@ -49,12 +49,12 @@
                         </td>
                         <td>
                             <div style="display: flex;width: 100%;">   
-                                <el-input style="width: 80px;" size="mini" type="text" v-model="item.measurement"></el-input>
+                                <el-input style="width: 80px;" size="mini" type="text" v-model="item.measurement.value"></el-input>
                                 <div :class="{colorTableRed : index%3==0, colorTableYellow : index%3==1, colorTableBlue : index%3==2}"></div>
                             </div>
                         </td>
                         <td>
-                            <el-select size="mini" v-model="item.testMode">
+                            <el-select size="mini" v-model="item.testMode.value">
                                 <el-option label="GST" value="GST"></el-option>
                                 <el-option label="GSTg-A" value="GSTg-A"></el-option>
                                 <el-option label="GSTg-B" value="GSTg-B"></el-option>
@@ -65,33 +65,33 @@
                             </el-select>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.test_voltage"></el-input>
+                            <el-input size="mini" type="text" v-model="item.test_voltage.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.dfref"></el-input>
+                            <el-input size="mini" type="text" v-model="item.dfref.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.cref"></el-input>
+                            <el-input size="mini" type="text" v-model="item.cref.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.dfmeas"></el-input>
+                            <el-input size="mini" type="text" v-model="item.dfmeas.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.cmeas"></el-input>
+                            <el-input size="mini" type="text" v-model="item.cmeas.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.ccal"></el-input>
+                            <el-input size="mini" type="text" v-model="item.ccal.value"></el-input>
                         </td>
                         <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment">
+                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
                                 <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                                 <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
-                            <span v-if="item.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini" v-model="item.condition_indicator">
+                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
                             </el-input>
                         </td>
                         <td>
@@ -151,16 +151,67 @@ export default {
     methods: {
         add() {
             this.testData.table.push({
-                measurement : "C H-G",
-                testMode : '',
-                test_voltage : '',
-                dfref : '',
-                cref : '',
-                dfmeas : '',
-                cmeas : '',
-                ccal : '',
-                assessment : '',
-                condition_indicator : ''
+                mrid : "",
+                measurement : {
+                    mrid : "",
+                    value : "C H-G",
+                    unit : "",
+                    type : "string"
+                },
+                testMode : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                test_voltage : {
+                    mrid : "",
+                    value : "",
+                    unit : "kV",
+                    type : "analog"
+                },
+                dfref : {
+                    mrid : "",
+                    value : "",
+                    unit : "%",
+                    type : "analog"
+                },
+                cref : {
+                    mrid : "",
+                    value : "",
+                    unit : "pF",
+                    type : "analog"
+                },
+                dfmeas : {
+                    mrid : "",
+                    value : "",
+                    unit : "%",
+                    type : "analog"
+                },
+                cmeas : {
+                    mrid : "",
+                    value : "",
+                    unit : "pF",
+                    type : "analog"
+                },
+                ccal : {
+                    mrid : "",
+                    value : "",
+                    unit : "%",
+                    type : "analog"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                }
             })
         },
         removeAll() {
@@ -179,16 +230,62 @@ export default {
         },
         addTest(index) {
             const data = {
-                measurement : "C H-G",
-                testMode : '',
-                test_voltage : '',
-                dfref : '',
-                cref : '',
-                dfmeas : '',
+                mrid : "",
+                measurement : {
+                    mrid : "",
+                    value : "C H-G",
+                    unit : "",
+                    type : "string"
+                },
+                testMode : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                test_voltage : {
+                    mrid : "",
+                    value : "",
+                    unit : "kV",
+                    type : "analog"
+                },
+                dfref : {
+                    mrid : "",
+                    value : "",
+                    unit : "%",
+                    type : "analog"
+                },
+                cref : {
+                    mrid : "",
+                    value : "",
+                    unit : "pF",
+                    type : "analog"
+                },
+                dfmeas : {
+                    mrid : "",
+                    value : "",
+                    unit : "%",
+                    type : "analog"
+                },
                 cmeas : '',
-                ccal : '',
-                assessment : '',
-                condition_indicator : ''
+                ccal : {
+                    mrid : "",
+                    value : "",
+                    unit : "%",
+                    type : "analog"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                }
             }
             this.testData.table.splice(index+1, 0, data)
         },

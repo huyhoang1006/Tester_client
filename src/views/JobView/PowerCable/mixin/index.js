@@ -5,7 +5,7 @@ import PowerCableJobDto from "@/views/Dto/Job/PowerCable/index";
 import mixins from '../components/SelectTest/mixin'
 import testConditionMixin from './Mixtestcondition'
 import MeasurementProcedure from "@/views/Cim/MeasurementProcedure";
-import ValueAliasSet from "@/views/Cim/ValueAliasSet";
+
 
 export default {
     mixins: [mixins, testConditionMixin],

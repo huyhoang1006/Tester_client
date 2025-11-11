@@ -112,9 +112,25 @@ export default {
     methods: {
         add() {
             this.testData.table.push({
-                rmeas : '',
-                assessment : '',
-                condition_indicator : ''
+                mrid : "",
+                rmeas : {
+                    mrid : "",
+                    value : "",
+                    unit : "Ω",
+                    type : "analog"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                }
             })
         },
         removeAll() {
@@ -133,9 +149,25 @@ export default {
         },
         addTest(index) {
             const data = {
-                rmeas : '',
-                assessment : '',
-                condition_indicator : ''
+                mrid : "",
+                rmeas : {
+                    mrid : "",
+                    value : "",
+                    unit : "Ω",
+                    type : "analog"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                }
             }
             this.testData.table.splice(index+1, 0, data)
         },

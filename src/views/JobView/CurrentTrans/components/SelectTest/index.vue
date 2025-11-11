@@ -1,23 +1,29 @@
 <template>
     <div id="select-test">
         <el-row :gutter="20">
-            <el-col :span="10" style="border-right: groove">
+            <el-col :span="11">
                 <table class="mgt-5 w-100 table-strip-input-data">
                     <thead>
                         <tr>
-                            <th class="no-col">No</th>
+                            <th style="width: 20px;">No</th>
                             <th>Test type</th>
-                            <th class="action-col"></th>
+                            <th style="width: 25px;"></th>
                         </tr>
                     </thead>
                     <tbody>
+                        <tr v-if="testTypeList.length === 0">
+                            <td colspan="3" style="text-align: center; padding: 20px;">
+                                <span v-if="testTypeListData.length === 0">No test types available. Please add test types to the database.</span>
+                                <span v-else>Loading test types...</span>
+                            </td>
+                        </tr>
                         <tr v-for="(item, index) in testTypeList" :key="index">
-                            <td>{{ index + 1 }}</td>
-                            <td>
+                            <td style="font-weight: bold;">{{ index + 1 }}</td>
+                            <td class="ellipsis-cell" style="font-weight: bold;">
                                 {{ item.name }}
                             </td>
-                            <td>
-                                <el-button size="mini" type="primary" class="w-100" @click="addTest(item)">
+                            <td style="">
+                                <el-button size="mini" type="primary" style="width: 25px; display: flex; align-items: center; justify-content: center;" @click="addTest(item)">
                                     <i class="fas fa-plus"></i>
                                 </el-button>
                             </td>
@@ -25,27 +31,27 @@
                     </tbody>
                 </table>
             </el-col>
-            <el-col :span="14">
+            <el-col style="border-left: groove" :span="13">
                 <table class="mgt-5 w-100 table-strip-input-data">
                     <thead>
                         <tr>
-                            <th class="no-col">No</th>
-                            <th style="width: 300px">Test type</th>
+                            <th style="width: 20px;">No</th>
+                            <th style="width: 150px;">Test type</th>
                             <th>Test name</th>
-                            <th class="action-col"></th>
+                            <th style="width: 25px;"></th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="(item, index) in testListData" :key="index">
-                            <td>{{ index + 1 }}</td>
-                            <td>
+                            <td style="font-weight: bold;">{{ index + 1 }}</td>
+                            <td class="ellipsis-cell">
                                 {{ item.testTypeName }}
                             </td>
                             <td>
                                 <el-input size="mini" type="text" v-model="item.name"></el-input>
                             </td>
                             <td>
-                                <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
+                                <el-button size="mini" type="danger" style="width: 25px; display: flex; align-items: center; justify-content: center;" @click="deleteTest(index)">
                                     <i class="fas fa-trash"></i>
                                 </el-button>
                             </td>
@@ -59,92 +65,41 @@
 
 <script>
 /* eslint-disable */
+import Attachment from '@/views/Entity/Attachment'
+import { UnitMultiplier } from '@/views/Enum/UnitMultiplier'
+import { UnitSymbol } from '@/views/Enum/UnitSymbol'
 import mixin from './mixin'
-import loader from "@/utils/preload"
 import { mapState } from 'vuex'
 
 export default {
     mixins: [mixin],
     props: {
-        mode: {
-            type: String,
-            require: true,
-            default() {
-                return 'add'
-            }
-        },
-        attachmentArr: {
-            type: Array,
-            required: true,
-            default() {
-                return []
-            } 
-        },
-        testconditionArr: {
-            type: Array,
-            required: true,
-            default() {
-                return []
-            } 
-        },
         data: {
             type: Array,
-            required: true,
             default() {
                 return []
             }
         },
-        tapChangers: {
+        assetData: {
             type: Object,
-            require: true,
             default() {
-                return {
-                    id: null,
-                    mode: null,
-                    serial_no: null,
-                    manufacturer: null,
-                    manufacturer_type: null,
-                    winding: null,
-                    tap_scheme: null,
-                    no_of_taps: null,
-                    voltage_table: []
-                }
+                return {}
             }
         },
-        asset: {
-            type: Object,
-            require: true,
-            default() {
-                return {
-                    id: '',
-                    asset: '',
-                    asset_type: '',
-                    serial_number: '',
-                    manufacturer: ''
-                }
-            }
-        },
-        objActiveName: {
-            type: Object,
-            require: true,
-            default() {
-                return {
-                    activeName: null
-                }
-            }
+        testTypeListData: {
+            type: Array,
+            default: () => []
         }
     },
     data() {
         return {
-            testTypeList: []
+            testTypeListDefault: [],
+            unitMultiplier: UnitMultiplier,
+            unitSymbol: UnitSymbol,
         }
-    },
-    async beforeMount() { 
-        await this.getTestTypes()
     },
     mounted() {},
     computed: {
-
         ...mapState(['selectedLocation', 'selectedAsset']),
         testListData: function () {
             return this.data
@@ -152,23 +107,11 @@ export default {
         objActiveNameData: function () {
             return this.objActiveName
         },
-        attachmentArray : function() {
-            return this.attachmentArr
-        },
-        testconditionArray : function() {
-            return this.testconditionArr
+        testTypeList: function () {
+            return this.testTypeListData && this.testTypeListData.length > 0 ? this.testTypeListData : this.testTypeListDefault
         }
     },
     methods: {
-        async getTestTypes() {
-            const rs = await window.electronAPI.getTestCurrentVoltageTypes()
-            if (rs.success) {
-                const data = rs.data
-                this.testTypeList = data
-            } else {
-                this.$message.error(rs.message)
-            }
-        },
         async countTest(testTypeId) {
             let count = 0
             this.testListData.forEach((element) => {
@@ -177,18 +120,55 @@ export default {
             return count
         },
         async addTest(testType) {
-            const count = await this.countTest(testType.id)
-            const initData = await this.initTest(testType.code)
-            const tabId = this.$uuid.newUuid()
-            const name = count == 0 ? testType.name : `${testType.name} (${count + 1})`
+            const count = await this.countTest(testType.mrid)
+            const initData = await this.initTest(testType.code, this.assetData)
+            const name = count == 0 ? testType.name : `${testType.name} (${count})`
             this.testListData.push({
-                id: this.$uuid.EMPTY,
-                testTypeId: testType.id,
+                mrid: this.$uuid.EMPTY,
+                testTypeId: testType.mrid,
                 testTypeCode: testType.code,
                 testTypeName: testType.name,
                 name,
                 data: initData,
-                tabId,
+                testCondition : {
+                    mrid : '',
+                    condition: {
+                        top_oil_temperature: {
+                            mrid: '',
+                            value: "",
+                            unit: this.unitSymbol.degC
+                        },
+                        bottom_oil_temperature: {
+                            mrid: '',
+                            value: "",
+                            unit: this.unitSymbol.degC
+                        },
+                        winding_temperature: {
+                            mrid: '',
+                            value: "",
+                            unit: this.unitSymbol.degC
+                        },
+                        reference_temperature: {
+                            mrid: '',
+                            value: "",
+                            unit: this.unitSymbol.degC
+                        },
+                        ambient_temperature: {
+                            mrid: '',
+                            value: "",
+                            unit: this.unitSymbol.degC
+                        },
+                        humidity: {
+                            mrid: '',
+                            value: "",
+                            unit: this.unitSymbol.percent
+                        },
+                        weather: ""
+                    },
+                    comment: "",
+                    attachment : new Attachment(),
+                    attachmentData : []
+                },
                 worst_score: null,
                 worst_score_df: null,
                 worst_score_c: null,
@@ -200,30 +180,6 @@ export default {
                 total_worst_score: null,
                 created_on: new Date().getTime()
             })
-            this.attachmentArray.push(
-                []
-            )
-            this.testconditionArray.push({
-                condition : { 
-                    top_oil_temperature : "",
-                    bottom_oil_temperature : "",
-                    winding_temperature : "",
-                    reference_temperature : "",
-                    ambient_temperature : "",
-                    humidity : "",
-                    weather : ""
-                },
-                equipment : [{
-                    model : "",
-                    serial_no : "",
-                    calibration_date : ""
-            
-                }],
-                comment : "",
-            })
-            if (this.testListData.length == 1) {
-                this.objActiveNameData.activeName = tabId
-            }
         },
         deleteTest(index) {
             /* eslint-disable */
@@ -233,32 +189,7 @@ export default {
                 type: 'warning'
             })
                 .then(async () => {
-                    loader.loaderStart()
-                    const test = this.testListData[index]
-                    const testId = test.id
-
-                    // goi api delete test
-                    // testId khác 0 được lấy từ db
-                    if (testId != this.$uuid.EMPTY) {
-                        await window.electronAPI.deleteCurrentVoltageTest(testId)
-                    }
-
-                    if (this.testListData.length == 1) {
-                        this.objActiveNameData.activeName = null
-                        this.testListData.splice(index, 1)
-                        this.testconditionArray.splice(index, 1)
-                        this.attachmentArray.splice(index, 1)
-                    } else {
-                        const currentTest = this.testListData[index]
-                        const {tabId} = currentTest
-                        this.testconditionArray.splice(index, 1)
-                        this.attachmentArray.splice(index, 1)
-                        this.testListData.splice(index, 1)
-                        if (tabId == this.objActiveNameData.activeName) {
-                            this.objActiveNameData.activeName = this.testListData[0].tabId
-                        }
-                    }
-                    loader.loaderEnd()
+                    this.testListData.splice(index, 1)
                 })
                 .catch(() => {})
         }
@@ -268,9 +199,19 @@ export default {
 
 <style lang="scss" scoped>
 #select-test {
-    width: calc(100vw - 145px);
-    height: calc(100vh - 150px);
     overflow-y: auto;
     overflow-x: hidden;
 }
+td, th {
+    font-size: 12px;
+}
+
+.ellipsis-cell {
+  font-weight: bold;
+  max-width: 150px; /* hoặc theo <th> */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 </style>
