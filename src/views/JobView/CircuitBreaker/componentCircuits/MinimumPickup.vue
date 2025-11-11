@@ -44,30 +44,30 @@
                             {{ index + 1 }}
                         </td>
                         <td>
-                            <el-select size="mini" v-model="item.operation">
+                            <el-select size="mini" v-model="item.operation.value">
                                 <el-option value="Trip">Trip</el-option>
                                 <el-option value="Close">Close</el-option>
                             </el-select>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.tripCoilNo"></el-input>
+                            <el-input size="mini" type="text" v-model="item.tripCoilNo.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.closeCoilNo"></el-input>
+                            <el-input size="mini" type="text" v-model="item.closeCoilNo.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.vPickup"></el-input>
+                            <el-input size="mini" type="text" v-model="item.vPickup.value"></el-input>
                         </td>
                         <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment">
+                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
                                 <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                                 <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
-                            <span v-if="item.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini" v-model="item.condition_indicator">
+                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
                             </el-input>
                         </td>
                         <td>
@@ -162,7 +162,18 @@ export default {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
-            asset_ : {},
+            asset_ : {
+                pickupVol: {
+                    abs: [
+                        { vmin: '', vmax: '' },
+                        { vmin: '', vmax: '' }
+                    ],
+                    rel: [
+                        { vref: '', vdev: '' },
+                        { vref: '', vdev: '' }
+                    ]
+                }
+            },
             back_asset: {},
             pickupVoltage : [
                 "Minimum pickup voltage (close)",
@@ -185,7 +196,40 @@ export default {
             return this.data
         },
         assetData() {
-            return JSON.parse(this.asset.assessmentLimits)
+            return this.asset
+        },
+        assessLimitsData() {
+            if (!this.asset || !this.asset.assessmentLimits) {
+                return {
+                    pickupVol: {
+                        abs: [
+                            { vmin: '', vmax: '' },
+                            { vmin: '', vmax: '' }
+                        ],
+                        rel: [
+                            { vref: '', vdev: '' },
+                            { vref: '', vdev: '' }
+                        ]
+                    }
+                }
+            }
+            try {
+                return JSON.parse(this.asset.assessmentLimits)
+            } catch (error) {
+                console.error('Error parsing assessmentLimits:', error)
+                return {
+                    pickupVol: {
+                        abs: [
+                            { vmin: '', vmax: '' },
+                            { vmin: '', vmax: '' }
+                        ],
+                        rel: [
+                            { vref: '', vdev: '' },
+                            { vref: '', vdev: '' }
+                        ]
+                    }
+                }
+            }
         }
     },
     beforeMount(){
@@ -219,12 +263,43 @@ export default {
         },
         add() {
             this.testData.table.push({
-                operation: '',
-                tripCoilNo: '',
-                closeCoilNo: '',
-                vPickup: '',
-                assessment: '',
-                condition_indicator: ''
+                mrid: '',
+                operation: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                tripCoilNo: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                closeCoilNo: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                vPickup: {
+                    mrid: '',
+                    value: '',
+                    unit: 'V',
+                    type: 'string'
+                },
+                assessment: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'discrete'
+                },
+                condition_indicator: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'discrete'
+                }
             })
         },
         removeAll() {
@@ -235,24 +310,61 @@ export default {
                 })
                 .then( () => {
                     this.testData.table = []
-                }
-            )
+                })
+                .catch( () => {
+                    // User cancelled, do nothing
+                })
         },
         deleteTest(index) {
             this.testData.table.splice(index, 1)
         },
         addTest(index) {
             const data = {
-                operation: '',
-                tripCoilNo: '',
-                closeCoilNo: '',
-                vPickup: '',
-                assessment: '',
-                condition_indicator: ''
+                mrid: '',
+                operation: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                tripCoilNo: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                closeCoilNo: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                vPickup: {
+                    mrid: '',
+                    value: '',
+                    unit: 'V',
+                    type: 'string'
+                },
+                assessment: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'discrete'
+                },
+                condition_indicator: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'discrete'
+                }
             }
             this.testData.table.splice(index+1, 0, data)
         },
         calculator() {
+            if (!this.asset_ || !this.asset_.pickupVol) {
+                this.$message.error('Assessment limits not configured')
+                return
+            }
             this.$message.success('Calculating successfully')
             this.testData.table.forEach(item => {
                 console.log(this.testData.limits)
@@ -260,13 +372,17 @@ export default {
                 console.log(item.vPickup)
                 if (this.testData.limits === 'Absolute'){
                     if (item.operation === 'Trip'){
-                        if (parseFloat(item.vPickup) >= parseFloat(this.asset_.pickupVol.abs[1].vmin) && parseFloat(item.vPickup) <= parseFloat(this.asset_.pickupVol.abs[1].vmax)){
+                        if (this.asset_.pickupVol.abs && this.asset_.pickupVol.abs[1] && 
+                            parseFloat(item.vPickup) >= parseFloat(this.asset_.pickupVol.abs[1].vmin) && 
+                            parseFloat(item.vPickup) <= parseFloat(this.asset_.pickupVol.abs[1].vmax)){
                             item.assessment = 'Pass';
                         }
                         else item.assessment = 'Fail';
                     }
                     if (item.operation === 'Close'){
-                        if (parseFloat(item.vPickup) >= parseFloat(this.asset_.pickupVol.abs[0].vmin) && parseFloat(item.vPickup) <= parseFloat(this.asset_.pickupVol.abs[0].vmax)){
+                        if (this.asset_.pickupVol.abs && this.asset_.pickupVol.abs[0] &&
+                            parseFloat(item.vPickup) >= parseFloat(this.asset_.pickupVol.abs[0].vmin) && 
+                            parseFloat(item.vPickup) <= parseFloat(this.asset_.pickupVol.abs[0].vmax)){
                             item.assessment = 'Pass';
                         }
                         else item.assessment = 'Fail';
@@ -274,13 +390,15 @@ export default {
                 }
                 if(this.testData.limits === 'Relative'){
                     if (item.operation === 'Trip'){
-                        if (Math.abs(parseFloat(this.asset_.pickupVol.rel[1].vref) - parseFloat(item.vPickup)) <= parseFloat(this.asset_.pickupVol.rel[1].vdev)){
+                        if (this.asset_.pickupVol.rel && this.asset_.pickupVol.rel[1] &&
+                            Math.abs(parseFloat(this.asset_.pickupVol.rel[1].vref) - parseFloat(item.vPickup)) <= parseFloat(this.asset_.pickupVol.rel[1].vdev)){
                             item.assessment = 'Pass';
                         }
                         else item.assessment = 'Fail';
                     }
                     if (item.operation === 'Close'){
-                        if (Math.abs(parseFloat(this.asset_.pickupVol.rel[0].vref) - parseFloat(item.vPickup)) <= parseFloat(this.asset_.pickupVol.rel[0].vdev)){
+                        if (this.asset_.pickupVol.rel && this.asset_.pickupVol.rel[0] &&
+                            Math.abs(parseFloat(this.asset_.pickupVol.rel[0].vref) - parseFloat(item.vPickup)) <= parseFloat(this.asset_.pickupVol.rel[0].vdev)){
                             item.assessment = 'Pass';
                         }
                         else item.assessment = 'Fail';
@@ -315,7 +433,7 @@ export default {
         }
     },
     watch : {
-        assetData : {
+        assessLimitsData : {
             deep : true,
             immediate : true,
             handler : function(newVal) {

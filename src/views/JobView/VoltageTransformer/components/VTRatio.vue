@@ -128,14 +128,55 @@ export default {
     methods: {
         add() {
             this.testData.table.push({
-                name : "",
-                upr : '',
-                usr : '',
-                ratio_meas : '',
-                ratio_dev : '',
-                polarity : '',
-                assessment : '',
-                condition_indicator : ''
+                mrid : "",
+                name : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                upr : {
+                    mrid : "",
+                    value : "",
+                    unit : "A",
+                    type : "analog"
+                },
+                usr : {
+                    mrid : "",
+                    value : "",
+                    unit : "A",
+                    type : "analog"
+                },
+                ratio_meas : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                ratio_dev : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                polarity : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                }
             })
         },
         removeAll() {
@@ -154,14 +195,55 @@ export default {
         },
         addTest(index) {
             const data = {
-                name : "",
-                upr : '',
-                usr : '',
-                ratio_meas : '',
-                ratio_dev : '',
-                polarity : '',
-                assessment : '',
-                condition_indicator : ''
+                mrid : "",
+                name : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                upr : {
+                    mrid : "",
+                    value : "",
+                    unit : "A",
+                    type : "analog"
+                },
+                usr : {
+                    mrid : "",
+                    value : "",
+                    unit : "A",
+                    type : "analog"
+                },
+                ratio_meas : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                ratio_dev : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                polarity : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                }
             }
             this.testData.table.splice(index+1, 0, data)
         },

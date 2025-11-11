@@ -116,11 +116,37 @@ export default {
     methods: {
         add() {
             this.testData.table.push({
-                name : "",
-                iknee : '',
-                vknee : '',
-                assessment : '',
-                condition_indicator : ''
+                mrid : "",
+                name : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                iknee : {
+                    mrid : "",
+                    value : "",
+                    unit : "A",
+                    type : "analog"
+                },
+                vknee : {
+                    mrid : "",
+                    value : "",
+                    unit : "V",
+                    type : "analog"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                }
             })
         },
         removeAll() {
@@ -139,11 +165,37 @@ export default {
         },
         addTest(index) {
             const data = {
-                name : "",
-                iknee : '',
-                vknee : '',
-                assessment : '',
-                condition_indicator : ''
+                mrid : "",
+                name : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                iknee : {
+                    mrid : "",
+                    value : "",
+                    unit : "A",
+                    type : "analog"
+                },
+                vknee : {
+                    mrid : "",
+                    value : "",
+                    unit : "V",
+                    type : "analog"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                }
             }
             this.testData.table.splice(index+1, 0, data)
         },

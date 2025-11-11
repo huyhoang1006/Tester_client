@@ -678,6 +678,7 @@ import JobPowerCable from '@/views/JobView/PowerCable/index.vue'
 import JobDisconnector from '@/views/JobView/Disconnector/index.vue'
 import JobCurrentTransformer from '@/views/JobView/CurrentTrans/index.vue'
 import JobVoltageTransformer from '@/views/JobView/VoltageTransformer/index.vue'
+import JobCircuitBreaker from '@/views/JobView/CircuitBreaker/index.vue'
 
 import * as rotatingMachineMapping from "@/views/Mapping/RotatingMachine/index"
 import RotatingMachine from '@/views/AssetView/RotatingMachine/index.vue'
@@ -714,6 +715,7 @@ export default {
         JobDisconnector,
         JobCurrentTransformer,
         JobVoltageTransformer,
+        JobCircuitBreaker,
     },
     data() {
         return {
@@ -2541,6 +2543,9 @@ export default {
                     else if (this.checkJobType === 'JobVoltageTransformer') {
                         jobType = 'Voltage transformer';
                     }
+                    else if (this.checkJobType === 'JobCircuitBreaker') {
+                        jobType = 'Circuit breaker';
+                    }
                     const newRow = {
                         mrid: data.oldWork.mrid,
                         name: data.oldWork.name,
@@ -3615,6 +3620,16 @@ export default {
                         this.testTypeListData = []
                     }
                     this.checkJobType = 'JobVoltageTransformer'
+                    this.signJob = true;
+                }
+                else if(node.asset == 'Circuit breaker'){
+                    const dataTestType = await window.electronAPI.getAllTestTypeCircuitBreaker();
+                    if (dataTestType.success) {
+                        this.testTypeListData = dataTestType.data
+                    } else {
+                        this.testTypeListData = []
+                    }
+                    this.checkJobType = 'JobCircuitBreaker'
                     this.signJob = true;
                 }
                 else {

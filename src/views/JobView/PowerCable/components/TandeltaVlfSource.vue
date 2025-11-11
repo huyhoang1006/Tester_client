@@ -108,24 +108,24 @@
                             <el-input size="mini" type="text" v-model="item.mtd.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.dtd_eachstep"></el-input>
+                            <el-input size="mini" type="text" v-model="item.dtd_eachstep.value"></el-input>
                         </td>
                         <td v-if="index%3 == 0" rowspan="3">
-                            <el-input size="mini" type="text" v-model="item.dtdu"></el-input>
+                            <el-input size="mini" type="text" v-model="item.dtdu.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.tdts"></el-input>
+                            <el-input size="mini" type="text" v-model="item.tdts.value"></el-input>
                         </td>
                         <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment">
+                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
                                 <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                                 <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
-                            <span v-if="item.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator)" type="text" size="mini" v-model="item.condition_indicator">
+                            <el-input :class="nameColor(item.condition_indicator.value)" type="text" size="mini" v-model="item.condition_indicator.value">
                             </el-input>
                         </td>
                         <td v-if="index%3 == 0" rowspan="3">
@@ -187,16 +187,67 @@ export default {
         add() {
             for(let i=0; i<3; i++) {
                 this.testData.table.push({
-                    measurement : "",
-                    test_voltage_label : (0.5 * (i+1)).toFixed(1),
-                    test_voltage : '',
-                    capacitance : '',
-                    mtd : '',
-                    dtd_eachstep : '',
-                    dtdu : '',
-                    tdts : '',
-                    assessment : '',
-                    condition_indicator : ''
+                    mrid : "",
+                    measurement : {
+                        mrid : "",
+                        value : "",
+                        unit : "",
+                        type : "string"
+                    },
+                    test_voltage_label : {
+                        mrid : "",
+                        value : (0.5 * (i+1)).toFixed(1),
+                        unit : "",
+                        type : "string"
+                    },
+                    test_voltage : {
+                        mrid : "",
+                        value : "",
+                        unit : "kV",
+                        type : "analog"
+                    },
+                    capacitance : {
+                        mrid : "",
+                        value : "",
+                        unit : "μF",
+                        type : "analog"
+                    },
+                    mtd : {
+                        mrid : "",
+                        value : "",
+                        unit : "10-3",
+                        type : "analog"
+                    },
+                    dtd_eachstep : {
+                        mrid : "",
+                        value : "",
+                        unit : "10-3",
+                        type : "analog"
+                    },
+                    dtdu : {
+                        mrid : "",
+                        value : "",
+                        unit : "10-3",
+                        type : "analog"
+                    },
+                    tdts : {
+                        mrid : "",
+                        value : "",
+                        unit : "10-3",
+                        type : "analog"
+                    },
+                    assessment : {
+                        mrid : "",
+                        value : "",
+                        unit : "",
+                        type : "discrete"
+                    },
+                    condition_indicator : {
+                        mrid : "",
+                        value : "",
+                        unit : "",
+                        type : "discrete"
+                    }
                 })
             }
         },
@@ -221,16 +272,66 @@ export default {
         addTest(index) {
             for(let i=0; i<3; i++) {
                 let data = {
-                    measurement : "",
-                    test_voltage_label : (0.5 * (i+1)).toFixed(1),
-                    test_voltage : '',
-                    capacitance : '',
-                    mtd : '',
-                    dtd_eachstep : '',
-                    dtdu : '',
-                    tdts : '',
-                    assessment : '',
-                    condition_indicator : ''
+                    measurement : {
+                        mrid : "",
+                        value : "",
+                        unit : "",
+                        type : "string"
+                    },
+                    test_voltage_label : {
+                        mrid : "",
+                        value : (0.5 * (i+1)).toFixed(1),
+                        unit : "",
+                        type : "string"
+                    },
+                    test_voltage : {
+                        mrid : "",
+                        value : "",
+                        unit : "kV",
+                        type : "analog"
+                    },
+                    capacitance : {
+                        mrid : "",
+                        value : "",
+                        unit : "μF",
+                        type : "analog"
+                    },
+                    mtd : {
+                        mrid : "",
+                        value : "",
+                        unit : "10-3",
+                        type : "analog"
+                    },
+                    dtd_eachstep : {
+                        mrid : "",
+                        value : "",
+                        unit : "10-3",
+                        type : "analog"
+                    },
+                    dtdu : {
+                        mrid : "",
+                        value : "",
+                        unit : "10-3",
+                        type : "analog"
+                    },
+                    tdts : {
+                        mrid : "",
+                        value : "",
+                        unit : "10-3",
+                        type : "analog"
+                    },
+                    assessment : {
+                        mrid : "",
+                        value : "",
+                        unit : "",
+                        type : "discrete"
+                    },
+                    condition_indicator : {
+                        mrid : "",
+                        value : "",
+                        unit : "",
+                        type : "discrete"
+                    }
                 }
                 this.testData.table.splice(index+3 + i, 0, data)
             }

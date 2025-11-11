@@ -112,9 +112,25 @@ export default {
     methods: {
         add() {
             this.testData.table.push({
-                items : '',
-                assessment : '',
-                condition_indicator : ''
+                mrid : "",
+                item : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                }
             })
         },
         removeAll() {
@@ -133,9 +149,25 @@ export default {
         },
         addTest(index) {
             const data = {
-                items : '',
-                assessment : '',
-                condition_indicator : ''
+                mrid : "",
+                item : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                }
             }
             this.testData.table.splice(index+1, 0, data)
         },
@@ -145,7 +177,7 @@ export default {
 
         clear() {
             this.testData.table.forEach((element) => {
-                element.items = '',
+                element.item = '',
                 element.assessment = '',
                 element.condition_indicator = ''
             })

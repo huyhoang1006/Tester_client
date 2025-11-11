@@ -57,7 +57,7 @@
                         </td>
                         <td>
                             <el-select class="assessment" size="mini" v-model="item.assessment.value">
-                              s  <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                                <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                                 <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
                             <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
@@ -124,12 +124,43 @@ export default {
     methods: {
         add() {
             this.testData.table.push({
-                measurement : "",
-                test_voltage : '',
-                frequency : '',
-                duration : '',
-                assessment : '',
-                condition_indicator : ''
+                mrid : "",
+                measurement : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                test_voltage : {
+                    mrid : "",
+                    value : "",
+                    unit : "k|V",
+                    type : "analog"
+                },
+                frequency : {
+                    mrid : "",
+                    value : "",
+                    unit : "Hz",
+                    type : "analog"
+                },
+                test_duration : {
+                    mrid : "",
+                    value : "",
+                    unit : "min",
+                    type : "analog"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                }
             })
         },
         removeAll() {
@@ -148,12 +179,43 @@ export default {
         },
         addTest(index) {
             const data = {
-                measurement : "",
-                test_voltage : '',
-                frequency : '',
-                duration : '',
-                assessment : '',
-                condition_indicator : ''
+                mrid : "",
+                measurement : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "string"
+                },
+                test_voltage : {
+                    mrid : "",
+                    value : "",
+                    unit : "k|V",
+                    type : "analog"
+                },
+                frequency : {
+                    mrid : "",
+                    value : "",
+                    unit : "Hz",
+                    type : "analog"
+                },
+                test_duration : {
+                    mrid : "",
+                    value : "",
+                    unit : "min",
+                    type : "analog"
+                },
+                assessment : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                },
+                condition_indicator : {
+                    mrid : "",
+                    value : "",
+                    unit : "",
+                    type : "discrete"
+                }
             }
             this.testData.table.splice(index+1, 0, data)
         },

@@ -42,24 +42,24 @@
                             {{ index + 1 }}
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.tripCoilNo"></el-input>
+                            <el-input size="mini" type="text" v-model="item.tripCoilNo.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.testVoltage"></el-input>
+                            <el-input size="mini" type="text" v-model="item.testVoltage.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.r60s"></el-input>
+                            <el-input size="mini" type="text" v-model="item.r60s.value"></el-input>
                         </td>
                         <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment">
+                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
                                 <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                                 <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
-                            <span v-if="item.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini" v-model="item.condition_indicator">
+                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
                             </el-input>
                         </td>
                         <td>
@@ -120,7 +120,15 @@ export default {
             return this.data
         },
         assetData() {
-            return JSON.parse(this.asset.assessmentLimits)
+            if (!this.asset || !this.asset.assessmentLimits) {
+                return {}
+            }
+            try {
+                return JSON.parse(this.asset.assessmentLimits)
+            } catch (error) {
+                console.error('Error parsing assessmentLimits:', error)
+                return {}
+            }
         }
     },
     watch : {
@@ -148,16 +156,51 @@ export default {
             }
         },
         resetAssessment() {
-            this.asset_ = JSON.parse(this.asset.assessmentLimits)
+            if (!this.asset || !this.asset.assessmentLimits) {
+                this.asset_ = {}
+            } else {
+                try {
+                    this.asset_ = JSON.parse(this.asset.assessmentLimits)
+                } catch (error) {
+                    console.error('Error parsing assessmentLimits:', error)
+                    this.asset_ = {}
+                }
+            }
             this.openAssessmentDialog = false
         },
         add() {
             this.testData.table.push({
-                tripCoilNo: '',
-                testVoltage : '',
-                r60s: '',
-                assessment: '',
-                condition_indicator: ''
+                mrid: '',
+                tripCoilNo: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                testVoltage : {
+                    mrid: '',
+                    value: '',
+                    unit: 'V',
+                    type: 'analog'
+                },
+                r60s: {
+                    mrid: '',
+                    value: '',
+                    unit: 'MΩ',
+                    type: 'analog'
+                },
+                assessment: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'discrete'
+                },
+                condition_indicator: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'discrete'
+                }
             })
         },
         removeAll() {
@@ -174,11 +217,37 @@ export default {
         },
         addTest(index) {
             const data = {
-                tripCoilNo: '',
-                testVoltage : '',
-                r60s: '',
-                assessment: '',
-                condition_indicator: ''
+                mrid: '',
+                tripCoilNo: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                testVoltage : {
+                    mrid: '',
+                    value: '',
+                    unit: 'V',
+                    type: 'analog'
+                },
+                r60s: {
+                    mrid: '',
+                    value: '',
+                    unit: 'MΩ',
+                    type: 'analog'
+                },
+                assessment: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'discrete'
+                },
+                condition_indicator: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'discrete'
+                }
             }
             this.testData.table.splice(index + 1, 0, data)
         },
