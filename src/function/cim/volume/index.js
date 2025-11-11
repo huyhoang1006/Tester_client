@@ -10,6 +10,31 @@ export const getVolumeById = async (mrid) => {
     })
 }
 
+export const getVolumeByIds = async (mrids) => {
+    return new Promise((resolve, reject) => {
+        if (!mrids || mrids.length === 0) {
+            return resolve({ success: false, data: [], message: 'No mrids provided' })
+        }
+
+        // Tạo chuỗi placeholder (?, ?, ?) tùy theo số lượng mrid
+        const placeholders = mrids.map(() => '?').join(',')
+
+        db.all(
+            `SELECT * FROM volume WHERE mrid IN (${placeholders})`,
+            mrids,
+            (err, rows) => {
+                if (err) {
+                    return reject({ success: false, err: err, message: 'Get volume by ids failed' })
+                }
+                if (!rows || rows.length === 0) {
+                    return resolve({ success: false, data: [], message: 'Volume not found' })
+                }
+                return resolve({ success: true, data: rows, message: 'Get volume by ids completed' })
+            }
+        )
+    })
+}
+
 export const insertVolume = async (volume) => {
     return new Promise((resolve, reject) => {
         db.run(

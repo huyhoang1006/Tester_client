@@ -236,6 +236,7 @@ export default {
             if(this.operatingData.trip_coil_component.length == 0) {
                 for(let i=0; i< data; i++) {
                     this.operatingData.trip_coil_component.push({
+                        mrid: '',
                         component : "Trip coil " + `${i + 1}`,
                         rated_current: {
                             mrid: '',
@@ -259,6 +260,7 @@ export default {
                 if(this.operatingData.trip_coil_component.length < data) {
                     for(let i=this.operatingData.trip_coil_component.length; i< data; i++) {
                         this.operatingData.trip_coil_component.push({
+                            mrid: '',
                             component : "Trip coil " + `${i + 1}`,
                             rated_voltage : {
                                 mrid: '',
@@ -289,6 +291,7 @@ export default {
             if(this.operatingData.close_coil_component.length == 0) {
                 for(let i=0; i< data; i++) {
                     this.operatingData.close_coil_component.push({
+                        mrid: '',
                         component : "Close coil " + `${i + 1}`,
                         rated_voltage : {
                             mrid: '',
@@ -312,6 +315,7 @@ export default {
                 if(this.operatingData.close_coil_component.length < data) {
                     for(let i=this.operatingData.close_coil_component.length; i< data; i++) {
                         this.operatingData.close_coil_component.push({
+                            mrid: '',
                             component : "Close coil " + `${i + 1}`,
                             rated_voltage : {
                                 mrid: '',

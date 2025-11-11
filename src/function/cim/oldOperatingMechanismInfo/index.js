@@ -1,6 +1,7 @@
 import db from '../../datacontext/index'
 import * as OperatingMechanismInfoFunc from '../operatingMechanismInfo/index.js'
 
+// ...existing code...
 // Lấy oldOperatingMechanismInfo theo mrid
 export const getOldOperatingMechanismInfoById = async (mrid) => {
     try {
@@ -40,8 +41,10 @@ export const insertOldOperatingMechanismInfoTransaction = async (info, dbsql) =>
                     rated_auxiliary_circuit_current,
                     rated_auxiliary_circuit_voltage,
                     auxiliary_circuit_power_type,
-                    rated_auxiliary_circuit_frequency
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    rated_auxiliary_circuit_frequency,
+                    rated_operating_pressure,
+                    rated_operating_pressure_temperature
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(mrid) DO UPDATE SET
                     rated_motor_current = excluded.rated_motor_current,
                     rated_motor_voltage = excluded.rated_motor_voltage,
@@ -50,7 +53,9 @@ export const insertOldOperatingMechanismInfoTransaction = async (info, dbsql) =>
                     rated_auxiliary_circuit_current = excluded.rated_auxiliary_circuit_current,
                     rated_auxiliary_circuit_voltage = excluded.rated_auxiliary_circuit_voltage,
                     auxiliary_circuit_power_type = excluded.auxiliary_circuit_power_type,
-                    rated_auxiliary_circuit_frequency = excluded.rated_auxiliary_circuit_frequency
+                    rated_auxiliary_circuit_frequency = excluded.rated_auxiliary_circuit_frequency,
+                    rated_operating_pressure = excluded.rated_operating_pressure,
+                    rated_operating_pressure_temperature = excluded.rated_operating_pressure_temperature
                 `,
                 [
                     info.mrid,
@@ -61,7 +66,9 @@ export const insertOldOperatingMechanismInfoTransaction = async (info, dbsql) =>
                     info.rated_auxiliary_circuit_current,
                     info.rated_auxiliary_circuit_voltage,
                     info.auxiliary_circuit_power_type,
-                    info.rated_auxiliary_circuit_frequency
+                    info.rated_auxiliary_circuit_frequency,
+                    info.rated_operating_pressure,
+                    info.rated_operating_pressure_temperature
                 ],
                 function (err) {
                     if (err) return reject({ success: false, err, message: 'Insert oldOperatingMechanismInfo failed' })
@@ -90,7 +97,9 @@ export const updateOldOperatingMechanismInfoTransaction = async (mrid, info, dbs
                     rated_auxiliary_circuit_current = ?,
                     rated_auxiliary_circuit_voltage = ?,
                     auxiliary_circuit_power_type = ?,
-                    rated_auxiliary_circuit_frequency = ?
+                    rated_auxiliary_circuit_frequency = ?,
+                    rated_operating_pressure = ?,
+                    rated_operating_pressure_temperature = ?
                 WHERE mrid = ?`,
                 [
                     info.rated_motor_current,
@@ -101,6 +110,8 @@ export const updateOldOperatingMechanismInfoTransaction = async (mrid, info, dbs
                     info.rated_auxiliary_circuit_voltage,
                     info.auxiliary_circuit_power_type,
                     info.rated_auxiliary_circuit_frequency,
+                    info.rated_operating_pressure,
+                    info.rated_operating_pressure_temperature,
                     mrid
                 ],
                 function (err) {
@@ -134,3 +145,4 @@ export const deleteOldOperatingMechanismInfoTransaction = async (mrid, dbsql) =>
         }
     })
 }
+// ...existing code...

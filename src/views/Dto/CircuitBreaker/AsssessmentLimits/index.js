@@ -1242,6 +1242,7 @@ class AssessmentLimitsDto {
         this.motor_characteristics = {
             abs : {
                 inrush_current : {
+                    mrid: '',
                     max : {
                         mrid: '',
                         value: '',
@@ -1254,6 +1255,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 charging_time : {
+                    mrid: '',
                     max : {
                         mrid: '',
                         value: '',
@@ -1266,6 +1268,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 charging_current : {
+                    mrid: '',
                     max : {
                         mrid: '',
                         value: '',
@@ -1278,6 +1281,7 @@ class AssessmentLimitsDto {
                     }
                 },
                 minimum_voltage : {
+                    mrid: '',
                     max : {
                         mrid: '',
                         value: '',

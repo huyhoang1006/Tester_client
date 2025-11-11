@@ -2,31 +2,32 @@
 import db from '../../datacontext/index'
 import path from 'path'
 import * as attachmentContext from '../../attachmentcontext/index'
+import circuitBreakerEntity from '@/views/Entity/CircuitBreaker'
 import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, deleteDirectory } from '@/function/entity/attachment'
 import { insertVoltageTransaction, getVoltageByIds, deleteVoltageByIdTransaction } from '@/function/cim/voltage';
 import { insertCurrentFlowTransaction, getCurrentFlowByIds, deleteCurrentFlowByIdTransaction } from '@/function/cim/currentFlow';
 import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction } from '@/function/cim/lifecycleDate';
 import { insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction } from '@/function/cim/productAssetModel';
 import { insertAssetPsrTransaction, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
-import { insertFrequencyTransaction, getFrequencyById, deleteFrequencyByIdTransaction } from '@/function/cim/frequency';
+import { insertFrequencyTransaction, getFrequencyById, getFrequencyByIds, deleteFrequencyByIdTransaction } from '@/function/cim/frequency';
 import { insertAssetTransaction, getAssetById, deleteAssetByIdTransaction, insertAsset } from '@/function/cim/asset';
-import { insertResistanceTransaction, getResistanceById, deleteResistanceByIdTransaction } from '@/function/cim/resistance';
-import {insertLengthTransaction, getLengthById, deleteLengthByIdTransaction} from '@/function/cim/length'
-import {insertMassTransaction, getMassById, deleteMassByIdTransaction} from '@/function/cim/mass'
-import {insertVolumeTransaction, getVolumeById, deleteVolumeByIdTransaction} from '@/function/cim/volume'
-import {insertPressureTransaction, getPressureById, deletePressureByIdTransaction} from '@/function/cim/pressure'
-import {insertTemperatureTransaction, getTemperatureById, deleteTemperatureByIdTransaction} from '@/function/cim/temperature'
-import {insertQuantityValueTransaction, getQuantityValueById, deleteQuantityValueTransaction} from '@/function/cim/quantityValue'
-import {insertCapacitanceTransaction, getCapacitanceById, deleteCapacitanceByIdTransaction} from '@/function/cim/capacitance'
-import {insertSecondsTransaction, getSecondById, deleteSecondsByIdTransaction } from '@/function/cim/seconds'
-import {insertActivePowerTransaction, getActivePowerById, deleteActivePowerByIdTransaction} from '@/function/cim/activePower'
+import { insertResistanceTransaction, getResistanceById, getResistanceByIds, deleteResistanceByIdTransaction } from '@/function/cim/resistance';
+import {insertLengthTransaction, getLengthById, getLengthByIds, deleteLengthByIdTransaction} from '@/function/cim/length'
+import {insertMassTransaction, getMassById, getMassByIds, deleteMassByIdTransaction} from '@/function/cim/mass'
+import {insertVolumeTransaction, getVolumeById, getVolumeByIds, deleteVolumeByIdTransaction} from '@/function/cim/volume'
+import {insertPressureTransaction, getPressureById, getPressureByIds, deletePressureByIdTransaction} from '@/function/cim/pressure'
+import {insertTemperatureTransaction, getTemperatureById, getTemperatureByIds, deleteTemperatureByIdTransaction} from '@/function/cim/temperature'
+import {insertQuantityValueTransaction, getQuantityValueById, getQuantityValueByIds, deleteQuantityValueTransaction} from '@/function/cim/quantityValue'
+import {insertCapacitanceTransaction, getCapacitanceById, getCapacitanceByIds, deleteCapacitanceByIdTransaction} from '@/function/cim/capacitance'
+import {insertSecondsTransaction, getSecondById, getSecondByIds, deleteSecondsByIdTransaction } from '@/function/cim/seconds'
+import {insertActivePowerTransaction, getActivePowerById, getActivePowerByIds, deleteActivePowerByIdTransaction} from '@/function/cim/activePower'
 import {insertOldBreakerInfoTransaction, getOldBreakerInfoById, deleteOldBreakerInfoTransaction } from '@/function/cim/oldBreakerInfo'
 import {insertBreakerContactSystemInfoTransaction, getBreakerContactSystemInfoById, deleteBreakerContactSystemInfoTransaction, getBreakerContactSystemInfoByBreakerInfoId } from '@/function/cim/breakerContactSystemInfo'
 import {insertBreakerRatingInfoTransaction, getBreakerRatingInfoById, deleteBreakerRatingInfoTransaction, getBreakerRatingInfoByBreakerInfoId} from '@/function/cim/breakerRatingInfo'
 import {insertBreakerOtherInfoTransaction, getBreakerOtherInfoById, deleteBreakerOtherInfoTransaction, getBreakerOtherInfoByBreakerInfoId} from '@/function/cim/breakerOtherInfo'
 import {insertOldOperatingMechanismTransaction, getOldOperatingMechanismByAssetIdTransaction ,getOldOperatingMechanismById, deleteOldOperatingMechanismTransaction} from '@/function/cim/oldOperatingMechanism'
 import {insertOldOperatingMechanismInfoTransaction, getOldOperatingMechanismInfoById, deleteOldOperatingMechanismInfoTransaction} from '@/function/cim/oldOperatingMechanismInfo'
-import {insertOperatingMechanismComponentTransaction, getOperatingMechanismComponentById, deleteOperatingMechanismComponentTransaction} from '@/function/cim/operatingMechanismComponent'
+import {insertOperatingMechanismComponentTransaction, getOperatingMechanismComponentById, deleteOperatingMechanismComponentTransaction, getOperatingMechanismComponentByOperatingMechanismId} from '@/function/cim/operatingMechanismComponent'
 import { insertAssessmentLimitBreakerInfoTransaction, getAssessmentLimitBreakerInfoById, getAssessmentLimitBreakerInfoByBreakerInfoId, deleteAssessmentLimitBreakerInfoByIdTransaction} from '@/function/cim/assessmentLimitBreakerInfo'
 import { insertAuxiliaryContactsBreakerInfoTransaction, getAuxiliaryContactsBreakerInfoById, getAuxiliaryContactsBreakerInfoByAssessmentLimitId, deleteAuxiliaryContactsBreakerInfoTransaction} from '@/function/cim/auxiliaryContactsBreakerInfo'
 import { insertTripOperationTransaction, getTripOperationById, getTripOperationByAuxiliaryContactsId, deleteTripOperationTransaction} from '@/function/cim/tripOperation'
@@ -114,6 +115,11 @@ export const insertBreakerEntity = async (old_entity, entity) => {
 
             //operatingMechanism
             await insertOldOperatingMechanismTransaction(entity.oldOperatingMechanism, db);
+
+            //operatingMechanismComponent
+            for(const component of entity.operatingMechanismComponent) {
+                await insertOperatingMechanismComponentTransaction(component, db);
+            }
             
             //Assessment
             await insertAssessmentLimitBreakerInfoTransaction(entity.assessmentLimitBreakerInfo, db);
@@ -178,12 +184,345 @@ export const insertBreakerEntity = async (old_entity, entity) => {
 }
 
 export const getBreakerEntity = async (id, psrId) => {
+    try {
+        if(id == null || id === '') {
+            return { success: false, error: new Error('Invalid ID') };
+        } else {
+            var resistanceIds = []
+            var capacitanceIds = []
+            var voltageIds = []
+            var currentFlowIds = []
+            var secondIds = []
+            var activePowerIds = []
+            var lengthIds = []
+            var massIds = []
+            var volumeIds = []
+            var temperatureIds = []
+            var frequencyIds = []
+            var quantityIds = []
+            var pressureIds = []
 
-    return {
-        success: true,
-        data: [],
-        message: 'get Breaker entity successfully',
-    };
+            const entity = new circuitBreakerEntity()
+            const dataBreaker = await getAssetById(id);
+            if(dataBreaker.success) {
+                entity.asset = dataBreaker.data;
+
+                const dataAssetPsr = await getAssetPsrByAssetIdAndPsrId(entity.asset.mrid, psrId);
+                if(dataAssetPsr.success) {
+                    entity.assetPsr = dataAssetPsr.data;
+                }
+
+                const dataLifecycleDate = await getLifecycleDateById(entity.asset.lifecycle_date);
+                if(dataLifecycleDate.success) {
+                    entity.lifecycleDate = dataLifecycleDate.data;
+                }
+
+                const dataAttachment = await getAttachmentByForeignIdAndType(entity.asset.mrid, 'asset');
+                if (dataAttachment.success) {
+                    entity.attachment = dataAttachment.data;
+                }
+
+                const dataOldBreakerInfo = await getOldBreakerInfoById(entity.asset.asset_info);
+                if(dataOldBreakerInfo.success) {
+                    entity.oldBreakerInfo = dataOldBreakerInfo.data;
+                }
+
+                const productAssetModelId = entity.oldBreakerInfo.product_asset_model;
+                const dataProductAssetModel = await getProductAssetModelById(productAssetModelId);
+                if(dataProductAssetModel.success) {
+                    entity.productAssetModel = dataProductAssetModel.data;
+                }
+
+                resistanceIds.push(entity.oldBreakerInfo.pir_value)
+                capacitanceIds.push(entity.oldBreakerInfo.capacitor_value)
+                frequencyIds.push(entity.oldBreakerInfo.rated_frequency)
+                voltageIds.push(entity.oldBreakerInfo.rated_voltage)
+                currentFlowIds.push(entity.oldBreakerInfo.rated_current)
+
+                const dataBreakerRatingInfo = await getBreakerRatingInfoByBreakerInfoId(entity.oldBreakerInfo.mrid);
+                if(dataBreakerRatingInfo.success) {
+                    entity.breakerRatingInfo = dataBreakerRatingInfo.data;
+                }
+
+                currentFlowIds.push(entity.breakerRatingInfo.rated_short_circuit_breaking_current)
+                activePowerIds.push(entity.breakerRatingInfo.rated_power_opening)
+                activePowerIds.push(entity.breakerRatingInfo.rated_power_closing)
+                secondIds.push(entity.breakerRatingInfo.short_circuit_nominal_duration)
+                secondIds.push(entity.oldBreakerInfo.rated_interrupting_time)
+                activePowerIds.push(entity.breakerRatingInfo.rated_power_motor_charge)
+                voltageIds.push(entity.breakerRatingInfo.rated_insulation_level)
+
+                const dataBreakerContactSystemInfo = await getBreakerContactSystemInfoByBreakerInfoId(entity.oldBreakerInfo.mrid);
+                if(dataBreakerContactSystemInfo.success) {
+                    entity.breakerContactSystemInfo = dataBreakerContactSystemInfo.data;
+                }
+
+                secondIds.push(entity.breakerContactSystemInfo.damping_time)
+                lengthIds.push(entity.breakerContactSystemInfo.nominal_total_travel)
+                lengthIds.push(entity.breakerContactSystemInfo.nozzle_length)
+
+                const dataBreakerOtherInfo = await getBreakerOtherInfoByBreakerInfoId(entity.oldBreakerInfo.mrid);
+                if(dataBreakerOtherInfo.success) {
+                    entity.breakerOtherInfo = dataBreakerOtherInfo.data;
+                }
+
+                pressureIds.push(entity.breakerOtherInfo.rated_gas_pressure)
+                massIds.push(entity.breakerOtherInfo.weight_of_gas)
+                massIds.push(entity.breakerOtherInfo.total_weight_with_gas)
+                volumeIds.push(entity.breakerOtherInfo.volume_of_gas)
+                temperatureIds.push(entity.breakerOtherInfo.rated_gas_temperature)
+
+                const dataOldOperatingMechanism = await getOldOperatingMechanismByAssetIdTransaction(entity.asset.mrid);
+                if(dataOldOperatingMechanism.success) {
+                    entity.oldOperatingMechanism = dataOldOperatingMechanism.data;
+                }
+
+                const dataLifecycleDateOperatingMechanism = await getLifecycleDateById(entity.oldOperatingMechanism.lifecycle_date);
+                if(dataLifecycleDateOperatingMechanism.success) {
+                    entity.operatingLifecycleDate = dataLifecycleDateOperatingMechanism.data;
+                }
+
+                const dataOperatingProductAssetModel = await getProductAssetModelById(entity.oldOperatingMechanism.product_asset_model);
+                if(dataOperatingProductAssetModel.success) {
+                    entity.operatingProductAssetModel = dataOperatingProductAssetModel.data;
+                }
+
+                const dataOldOperatingMechanismInfo = await getOldOperatingMechanismInfoById(entity.oldOperatingMechanism.asset_info);
+                if(dataOldOperatingMechanismInfo.success) {
+                    entity.oldOperatingMechanismInfo = dataOldOperatingMechanismInfo.data;
+                }
+
+                voltageIds.push(entity.oldOperatingMechanismInfo.rated_auxiliary_circuit_voltage)
+                currentFlowIds.push(entity.oldOperatingMechanismInfo.rated_auxiliary_circuit_current)
+                frequencyIds.push(entity.oldOperatingMechanismInfo.rated_auxiliary_circuit_frequency)
+                voltageIds.push(entity.oldOperatingMechanismInfo.rated_motor_voltage)
+                currentFlowIds.push(entity.oldOperatingMechanismInfo.rated_motor_current)
+                frequencyIds.push(entity.oldOperatingMechanismInfo.rated_motor_frequency)
+                pressureIds.push(entity.oldOperatingMechanismInfo.rated_operating_pressure)
+                temperatureIds.push(entity.oldOperatingMechanismInfo.rated_operating_pressure_temperature)
+
+                const dataOperatingMechanismComponent = await getOperatingMechanismComponentByOperatingMechanismId(entity.oldOperatingMechanism.mrid);
+                if(dataOperatingMechanismComponent.success) {
+                    entity.operatingMechanismComponent = dataOperatingMechanismComponent.data;
+                    for(const component of entity.operatingMechanismComponent) {
+                        frequencyIds.push(component.rated_frequency)
+                        voltageIds.push(component.rated_voltage)
+                        currentFlowIds.push(component.rated_current)
+                    }
+                }
+
+                const dataAssessmentLimitBreakerInfo = await getAssessmentLimitBreakerInfoByBreakerInfoId(entity.oldBreakerInfo.mrid);
+                if(dataAssessmentLimitBreakerInfo.success) {
+                    entity.assessmentLimitBreakerInfo = dataAssessmentLimitBreakerInfo.data;
+                }
+
+                const dataAuxiliaryContactsBreakerInfo = await getAuxiliaryContactsBreakerInfoByAssessmentLimitId(entity.assessmentLimitBreakerInfo.mrid);
+                if(dataAuxiliaryContactsBreakerInfo.success) {
+                    entity.auxiliaryContactsBreakerInfo = dataAuxiliaryContactsBreakerInfo.data;
+                }
+
+                const dataContactResistance = await getContactResistanceBreakerInfoByAssessmentLimitBreakerInfoId(entity.assessmentLimitBreakerInfo.mrid);
+                if(dataContactResistance.success) {
+                    entity.contactResistanceBreakerInfo = dataContactResistance.data;
+                    for(const resistance of entity.contactResistanceBreakerInfo) {
+                        resistanceIds.push(resistance.r_min)
+                        resistanceIds.push(resistance.r_max)
+                        resistanceIds.push(resistance.r_ref)
+                        resistanceIds.push(resistance.r_dev)
+                    }
+                }
+
+                const dataOperatingTime = await getOperatingTimeBreakerInfoByAssessmentLimitBreakerInfoId(entity.assessmentLimitBreakerInfo.mrid);
+                if(dataOperatingTime.success) {
+                    entity.operatingTimeBreakerInfo = dataOperatingTime.data;
+                    for(const time of entity.operatingTimeBreakerInfo) {
+                        secondIds.push(time.t_min)
+                        secondIds.push(time.t_max)
+                        secondIds.push(time.t_ref)
+                        secondIds.push(time.t_dev_position)
+                        secondIds.push(time.t_dev_negative)
+                    }
+                }
+
+                const dataContactTravel = await getContactTravelBreakerInfoByAssessmentLimitBreakerInfoId(entity.assessmentLimitBreakerInfo.mrid);
+                if(dataContactTravel.success) {
+                    entity.contactTravelBreakerInfo = dataContactTravel.data;
+                    for(const travel of entity.contactTravelBreakerInfo) {
+                        lengthIds.push(travel.d_min)
+                        lengthIds.push(travel.d_max)
+                        lengthIds.push(travel.d_ref)
+                        lengthIds.push(travel.d_dev)
+                    }
+                }
+
+                const dataTripOperation = await getTripOperationByAuxiliaryContactsId(entity.auxiliaryContactsBreakerInfo.mrid);
+                if(dataTripOperation.success) {
+                    entity.tripOperation = dataTripOperation.data;
+                    for(const trip of entity.tripOperation) {
+                        secondIds.push(trip.t_min)
+                        secondIds.push(trip.t_max)
+                        secondIds.push(trip.t_ref)
+                        secondIds.push(trip.t_dev)
+                    }
+                }
+
+                const dataCloseOperation = await getCloseOperationByAuxiliaryContactsId(entity.auxiliaryContactsBreakerInfo.mrid);
+                if(dataCloseOperation.success) {
+                    entity.closeOperation = dataCloseOperation.data;
+                    for(const close of entity.closeOperation) {
+                        secondIds.push(close.t_min)
+                        secondIds.push(close.t_max)
+                        secondIds.push(close.t_ref)
+                        secondIds.push(close.t_dev)
+                    }
+                }
+
+                const dataMiscellaneous = await getMiscellaneousBreakerInfoByAssessmentLimitId(entity.assessmentLimitBreakerInfo.mrid);
+                if(dataMiscellaneous.success) {
+                    entity.miscellaneousBreakerInfo = dataMiscellaneous.data;
+                    for(const misc of entity.miscellaneousBreakerInfo) {
+                        quantityIds.push(misc.min)
+                        quantityIds.push(misc.max)
+                        quantityIds.push(misc.ref)
+                        quantityIds.push(misc.dev)
+                    }
+                }
+
+                const dataCoilCharacteristics = await getCoilCharacteristicsBreakerInfoByAssessmentLimitId(entity.assessmentLimitBreakerInfo.mrid)
+                if(dataCoilCharacteristics.success) {
+                    entity.coilCharacteristicsBreakerInfo = dataCoilCharacteristics.data;
+                    for(const coil of entity.coilCharacteristicsBreakerInfo) {
+                        quantityIds.push(coil.min)
+                        quantityIds.push(coil.max)
+                        quantityIds.push(coil.ref)
+                        quantityIds.push(coil.dev_negative)
+                        quantityIds.push(coil.dev_positive)
+                    
+                    }
+                }
+
+                const dataPickupVoltage = await getPickupVoltageBreakerInfoByAssessmentLimitId(entity.assessmentLimitBreakerInfo.mrid)
+                if(dataPickupVoltage.success) {
+                    entity.pickupVoltageBreakerInfo = dataPickupVoltage.data;
+                    for(const pickup of entity.pickupVoltageBreakerInfo) {
+                        voltageIds.push(pickup.v_min)
+                        voltageIds.push(pickup.v_max)
+                        voltageIds.push(pickup.v_ref)
+                        voltageIds.push(pickup.v_dev)
+                    }
+                }
+
+                const dataMotorCharacteristics = await getMotorCharacteristicsBreakerInfoByAssessmentLimitId(entity.assessmentLimitBreakerInfo.mrid)
+                if(dataMotorCharacteristics.success) {
+                    entity.motorCharacteristicsBreakerInfo = dataMotorCharacteristics.data;
+                    for(const motor of entity.motorCharacteristicsBreakerInfo) {
+                        quantityIds.push(motor.min)
+                        quantityIds.push(motor.max)
+                        quantityIds.push(motor.ref)
+                        quantityIds.push(motor.dev)
+                    }
+                }
+
+                const dataUnderVoltageRelease = await getUnderVoltageReleaseBreakerInfoByAssessmentLimitId(entity.assessmentLimitBreakerInfo.mrid)
+                if(dataUnderVoltageRelease.success) {
+                    entity.underVoltageReleaseBreakerInfo = dataUnderVoltageRelease.data;
+                    for(const under of entity.underVoltageReleaseBreakerInfo) {
+                        voltageIds.push(under.min)
+                        voltageIds.push(under.max)
+                        voltageIds.push(under.ref)
+                        voltageIds.push(under.dev)
+                    }
+                }
+
+                const dataOvercurrentRelease = await getOvercurrentReleaseBreakerInfoByAssessmentLimitId(entity.assessmentLimitBreakerInfo.mrid)
+                if(dataOvercurrentRelease.success) {
+                    entity.overcurrentReleaseBreakerInfo = dataOvercurrentRelease.data;
+                    for(const over of entity.overcurrentReleaseBreakerInfo) {
+                        currentFlowIds.push(over.min)
+                        currentFlowIds.push(over.max)
+                        currentFlowIds.push(over.ref)
+                        currentFlowIds.push(over.dev)
+                    }
+                }
+
+                const dataVoltage = await getVoltageByIds(voltageIds);
+                if(dataVoltage.success) {
+                    entity.voltage = dataVoltage.data;
+                }
+
+                const dataCurrentFlow = await getCurrentFlowByIds(currentFlowIds);
+                if(dataCurrentFlow.success) {
+                    entity.currentFlow = dataCurrentFlow.data;
+                }
+
+                const dataSecond = await getSecondByIds(secondIds);
+                if(dataSecond.success) {
+                    entity.second = dataSecond.data;
+                }
+
+                const dataResistance = await getResistanceByIds(resistanceIds);
+                if(dataResistance.success) {
+                    entity.resistance = dataResistance.data;
+                }
+
+                const dataCapacitance = await getCapacitanceByIds(capacitanceIds);
+                if(dataCapacitance.success) {
+                    entity.capacitance = dataCapacitance.data;
+                }
+
+                const dataActivePower = await getActivePowerByIds(activePowerIds);
+                if(dataActivePower.success) {
+                    entity.activePower = dataActivePower.data;
+                }
+
+                const dataLength = await getLengthByIds(lengthIds);
+                if(dataLength.success) {
+                    entity.length = dataLength.data;
+                }
+
+                const dataMass = await getMassByIds(massIds);
+                if(dataMass.success) {
+                    entity.mass = dataMass.data;
+                }
+
+                const dataVolume = await getVolumeByIds(volumeIds);
+                if(dataVolume.success) {
+                    entity.volume = dataVolume.data;
+                }
+
+                const dataTemperature = await getTemperatureByIds(temperatureIds);
+                if(dataTemperature.success) {
+                    entity.temperature = dataTemperature.data;
+                }
+
+                const dataFrequency = await getFrequencyByIds(frequencyIds);
+                if(dataFrequency.success) {
+                    entity.frequency = dataFrequency.data;
+                }
+
+                const dataQuantity = await getQuantityValueByIds(quantityIds);
+                if(dataQuantity.success) {
+                    entity.quantity = dataQuantity.data;
+                }
+
+                const dataPressure = await getPressureByIds(pressureIds);
+                if(dataPressure.success) {
+                    entity.pressure = dataPressure.data;
+                }
+
+                return {
+                    success: true,
+                    data: entity,
+                    message: 'Breaker entity retrieved successfully'
+                }
+            } else {
+                return { success: false, error: dataBreaker.error, message: dataBreaker.message };
+            }
+        }
+    } catch (error) {
+        console.error("Error retrieving breaker entity by ID:", error);
+        return { success: false, error, message: 'Error retrieving breaker entity by ID' };
+    }
 }
 
 export const deleteBreakerEntity = async (entity) => {

@@ -79,7 +79,6 @@ export default {
         },
         loadMapForView() {
         },
-        async resetForm() {},
     }
 }
 </script>

@@ -19,7 +19,7 @@ export const getBreakerOtherInfoById = async (mrid) => {
 // Lấy danh sách theo breaker_info_id
 export const getBreakerOtherInfoByBreakerInfoId = async (breakerInfoId) => {
     return new Promise((resolve, reject) => {
-        db.all(
+        db.get(
             `SELECT * FROM breaker_other_info WHERE breaker_info_id = ?`,
             [breakerInfoId],
             (err, rows) => {

@@ -19,7 +19,6 @@ export default {
                     const oldResult = await this.checkBreakerData(this.oldCircuitBreakerDto);
                     const resultEntity = Mapping.mapDtoToEntity(result);
                     const oldResultEntity = Mapping.mapDtoToEntity(oldResult);
-                    console.log(resultEntity);
                     let rs = await window.electronAPI.insertBreakerEntity(oldResultEntity, resultEntity)
                     if (rs.success) {
                         return {
@@ -27,7 +26,7 @@ export default {
                             data: rs.data,
                         };
                     } else {
-                        this.$message.error("Error saving Capacitor entity: " + rs.message);
+                        this.$message.error("Error saving Breaker entity: " + rs.message);
                         return {
                             success: false,
                             error: rs.error,
@@ -74,6 +73,25 @@ export default {
                 this.attachmentData = JSON.parse(data.attachment.path)
             } else {
                 this.attachmentData = []
+            }
+        },
+        async resetForm() {
+            this.circuitBreakerDto = new circuitBreakerDto(),
+            this.oldCircuitBreakerDto = new circuitBreakerDto(),
+            this.attachmentData = []
+        },
+        async saveCtrS() {
+            const data = await this.saveAsset()
+            if (data && data.success) {
+                // Load back the saved entity so the UI shows exactly what was stored
+                if (data.data) {
+                    // Convert Entity -> DTO before binding to UI
+                    const dto = Mapping.mapEntityToDto(data.data)
+                    this.loadData(dto)
+                }
+                this.$message.success("Asset saved successfully")
+            } else {
+                this.$message.error("Failed to save asset")
             }
         },
         checkProperty(data) {

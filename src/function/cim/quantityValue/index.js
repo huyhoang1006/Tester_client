@@ -15,6 +15,31 @@ export const getQuantityValueById = async (mrid) => {
     })
 }
 
+export const getQuantityValueByIds = async (mrids) => {
+    return new Promise((resolve, reject) => {
+        if (!mrids || mrids.length === 0) {
+            return resolve({ success: false, data: [], message: 'No mrids provided' })
+        }
+
+        // Tạo chuỗi placeholder (?, ?, ?) tùy theo số lượng mrid
+        const placeholders = mrids.map(() => '?').join(',')
+
+        db.all(
+            `SELECT * FROM quantity_value WHERE mrid IN (${placeholders})`,
+            mrids,
+            (err, rows) => {
+                if (err) {
+                    return reject({ success: false, err: err, message: 'Get quantity value by ids failed' })
+                }
+                if (!rows || rows.length === 0) {
+                    return resolve({ success: false, data: [], message: 'Quantity value not found' })
+                }
+                return resolve({ success: true, data: rows, message: 'Get quantity value by ids completed' })
+            }
+        )
+    })
+}
+
 // Thêm mới QuantityValue (transaction)
 export const insertQuantityValueTransaction = async (info, dbsql) => {
     return new Promise((resolve, reject) => {
