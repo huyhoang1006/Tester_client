@@ -685,6 +685,7 @@ import RotatingMachine from '@/views/AssetView/RotatingMachine/index.vue'
 import mixin from './mixin'
 import Attachment from '../Common/Attachment.vue';
 import * as demoAPI from '@/api/demo'
+import * as BreakerMapping from '@/views/Mapping/Breaker/index'
 
 
 export default {
@@ -3609,6 +3610,14 @@ export default {
                 }
                 else if(node.asset == 'Circuit breaker'){
                     const dataTestType = await window.electronAPI.getAllTestTypeCircuitBreaker();
+                    const dataBreakerEntity = await window.electronAPI.getBreakerEntityByMrid(node.mrid);
+                    const dto = BreakerMapping.mapEntityToDto(dataBreakerEntity.data);
+                    console.log("dto", dto)
+                    if (dataBreakerEntity.success) {
+                        this.assetData = dto
+                    } else {
+                        this.assetData = {}
+                    }
                     if (dataTestType.success) {
                         this.testTypeListData = dataTestType.data
                     } else {

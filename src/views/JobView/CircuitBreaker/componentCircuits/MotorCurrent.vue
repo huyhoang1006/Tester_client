@@ -23,7 +23,7 @@
             </el-row>
         </div>
 
-        <table class="table-strip-input-data" style="width: 70%">
+        <table class="table-strip-input-data" style="width: 100%; font-size: 12px;">
             <thead>
                 <tr>
                     <th>Inrush current (A)</th>
@@ -79,7 +79,7 @@
         </table>
 
         <!-- Assessment settings -->
-        <el-dialog class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px">
+        <el-dialog class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px" append-to-body>
 
                 <el-radio-group v-model="testData.limits">
                     <el-radio label="Absolute" value="Absolute"></el-radio>
@@ -163,7 +163,13 @@ export default {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
-            asset_ : {},
+            asset_ : {
+                motorChar: {
+                    abs: Array(4).fill(null).map(() => ({ min: '', max: '', mrid: '' })),
+                    rel: Array(4).fill(null).map(() => ({ ref: '', dev: '', mrid: '' }))
+                },
+                limits: 'Absolute'
+            },
             back_asset : {},
             motorCharacteristics : [
                 "Inrush current",
@@ -174,12 +180,9 @@ export default {
         }
     },
     beforeMount(){
-        const asset = {
-            id : this.asset.id,
-            assessmentLimits : this.asset_
-        }
-        const dataTemp = JSON.parse(JSON.stringify(asset))
-        this.back_asset = dataTemp.assessmentLimits
+        // Store backup for reset - will be updated by watcher
+        const dataTemp = JSON.parse(JSON.stringify(this.asset_ || {}))
+        this.back_asset = dataTemp
     },
     props: {
         data: {
@@ -199,16 +202,31 @@ export default {
             if (!this.asset || !this.asset.assessmentLimits) {
                 return {}
             }
-            try {
-                return JSON.parse(this.asset.assessmentLimits)
-            } catch (error) {
-                console.error('Error parsing assessmentLimits:', error)
-                return {}
+            
+            // If it's already an object, return it directly
+            if (typeof this.asset.assessmentLimits === 'object') {
+                return this.asset.assessmentLimits
             }
+            
+            // If it's a string, try to parse it
+            if (typeof this.asset.assessmentLimits === 'string') {
+                try {
+                    return JSON.parse(this.asset.assessmentLimits)
+                } catch (error) {
+                    console.warn('Error parsing assessmentLimits:', error)
+                    return {}
+                }
+            }
+            
+            return {}
         }
     },
     methods: {
         async updateAssessment() {
+            // Sync testData.limits to asset_.limits before saving
+            if (this.testData.limits) {
+                this.asset_.limits = this.testData.limits
+            }
             const asset = {
                 id : this.asset.id,
                 assessmentLimits : this.asset_
@@ -225,7 +243,11 @@ export default {
             }
         },
         resetAssessment() {
-            this.asset_ = this.back_asset
+            this.asset_ = JSON.parse(JSON.stringify(this.back_asset))
+            // Sync limits back to testData after reset
+            if (this.asset_.limits && this.testData) {
+                this.$set(this.testData, 'limits', this.asset_.limits)
+            }
             this.openAssessmentDialog = false
         },
         add() {
@@ -367,15 +389,14 @@ export default {
                 }
             })
         },
-
         clear() {
             this.testData.table.forEach((element) => {
-                element.inrushCurrent= '',
-                element.charging= '',
-                element.chargingCurrent= '',
-                element.miniVoltage= '',
-                element.assessment= '',
-                element.condition_indicator= ''
+                if (element.inrushCurrent) element.inrushCurrent.value = ''
+                if (element.charging) element.charging.value = ''
+                if (element.chargingCurrent) element.chargingCurrent.value = ''
+                if (element.miniVoltage) element.miniVoltage.value = ''
+                if (element.assessment) element.assessment.value = ''
+                if (element.condition_indicator) element.condition_indicator.value = ''
             })
         },
         nameColor(data) {
@@ -394,6 +415,125 @@ export default {
             else {
                 return;
             }
+        },
+        normalizeMotorAssessmentLimits(data) {
+            if (!data || typeof data !== 'object') {
+                data = {}
+            }
+            
+            let normalized = {}
+            try {
+                normalized = JSON.parse(JSON.stringify(data))
+            } catch (e) {
+                normalized = {}
+            }
+            
+            // Always initialize motorChar structure
+            if (!normalized.motorChar) {
+                normalized.motorChar = {
+                    abs: Array(4).fill(null).map(() => ({ min: '', max: '', mrid: '' })),
+                    rel: Array(4).fill(null).map(() => ({ ref: '', dev: '', mrid: '' }))
+                }
+            }
+            
+            // Normalize from motor_characteristics structure if exists
+            if (data.motor_characteristics) {
+                const motorChar = data.motor_characteristics
+                const motorMapping = [
+                    'inrush_current',
+                    'charging_time',
+                    'charging_current',
+                    'minimum_voltage'
+                ]
+                
+                // Helper function to extract value safely
+                const getValue = (obj) => {
+                    if (!obj) return ''
+                    if (typeof obj === 'string' || typeof obj === 'number') return String(obj)
+                    if (typeof obj === 'object' && obj.value !== undefined) return String(obj.value || '')
+                    return ''
+                }
+                
+                // Normalize abs
+                if (motorChar.abs) {
+                    motorMapping.forEach((key, index) => {
+                        const item = motorChar.abs[key]
+                        if (item) {
+                            normalized.motorChar.abs[index] = {
+                                min: getValue(item.min) || '',
+                                max: getValue(item.max) || '',
+                                mrid: item.mrid || ''
+                            }
+                        }
+                    })
+                }
+                
+                // Normalize rel
+                if (motorChar.rel) {
+                    motorMapping.forEach((key, index) => {
+                        const item = motorChar.rel[key]
+                        if (item) {
+                            normalized.motorChar.rel[index] = {
+                                ref: getValue(item.ref) || '',
+                                dev: getValue(item.dev) || '',
+                                mrid: item.mrid || ''
+                            }
+                        }
+                    })
+                }
+            }
+            
+            // Ensure motorChar has proper structure
+            if (!normalized.motorChar.abs || normalized.motorChar.abs.length < 4) {
+                normalized.motorChar.abs = Array(4).fill(null).map((_, index) => 
+                    normalized.motorChar.abs && normalized.motorChar.abs[index] 
+                        ? normalized.motorChar.abs[index] 
+                        : { min: '', max: '', mrid: '' }
+                )
+            }
+            
+            if (!normalized.motorChar.rel || normalized.motorChar.rel.length < 4) {
+                normalized.motorChar.rel = Array(4).fill(null).map((_, index) => 
+                    normalized.motorChar.rel && normalized.motorChar.rel[index] 
+                        ? normalized.motorChar.rel[index] 
+                        : { ref: '', dev: '', mrid: '' }
+                )
+            }
+            
+            // Ensure limits property exists
+            if (!normalized.limits) {
+                normalized.limits = data.limits || 'Absolute'
+            }
+            
+            // Final pass: ensure all values are strings/numbers, not objects
+            const ensureStringValue = (obj, key) => {
+                if (obj && obj[key] !== undefined) {
+                    const val = obj[key]
+                    if (typeof val === 'object' && val !== null && val.value !== undefined) {
+                        obj[key] = String(val.value || '')
+                    } else if (typeof val !== 'string' && typeof val !== 'number') {
+                        obj[key] = String(val || '')
+                    }
+                }
+            }
+            
+            // Normalize motorChar values
+            if (normalized.motorChar) {
+                normalized.motorChar.abs.forEach(item => {
+                    if (item) {
+                        ensureStringValue(item, 'min')
+                        ensureStringValue(item, 'max')
+                    }
+                })
+                normalized.motorChar.rel.forEach(item => {
+                    if (item) {
+                        ensureStringValue(item, 'ref')
+                        ensureStringValue(item, 'dev')
+                    }
+                })
+            }
+            
+            return normalized
         }
     },
     watch : {
@@ -401,7 +541,33 @@ export default {
             deep : true,
             immediate : true,
             handler : function(newVal) {
-                this.asset_ = newVal
+                if (newVal && Object.keys(newVal).length > 0) {
+                    this.asset_ = this.normalizeMotorAssessmentLimits(newVal)
+                    // Update backup for reset
+                    const dataTemp = JSON.parse(JSON.stringify(this.asset_ || {}))
+                    this.back_asset = dataTemp
+                    // Sync limits to testData
+                    if (this.asset_.limits && this.testData) {
+                        this.$set(this.testData, 'limits', this.asset_.limits)
+                    }
+                }
+            }
+        },
+        'asset_.limits': {
+            immediate: true,
+            handler: function(newVal) {
+                // Sync asset_.limits to testData.limits
+                if (newVal && this.testData) {
+                    this.$set(this.testData, 'limits', newVal)
+                }
+            }
+        },
+        openAssessmentDialog: {
+            handler: function(newVal) {
+                // When opening dialog, sync limits from asset_ to testData
+                if (newVal && this.asset_ && this.asset_.limits && this.testData) {
+                    this.$set(this.testData, 'limits', this.asset_.limits)
+                }
             }
         }
     }
@@ -412,6 +578,14 @@ export default {
 
 table, th, tr, td {
     white-space: nowrap;
+}
+.table-strip-input-data {
+    th, td {
+        border-right: 1px solid #fff;
+        &:last-child {
+            border-right: none;
+        }
+    }
 }
 .flex-container {
     display: flex;

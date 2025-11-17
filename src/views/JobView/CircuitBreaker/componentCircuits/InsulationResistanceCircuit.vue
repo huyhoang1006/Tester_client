@@ -22,7 +22,7 @@
         </el-row>
         </div>
 
-        <table class="table-strip-input-data" style="width: 80%">
+        <table class="table-strip-input-data" style="width: 80% ; font-size: 12px;">
             <thead>
                 <tr>
                     <th>No</th>
@@ -78,7 +78,7 @@
         </table>
 
         <!-- Assessment settings -->
-        <el-dialog class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog" width="50%">
+        <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog" width="50%">
             <el-radio-group v-model="testData.limits">
                 <el-radio label="Absolute" value="Absolute"></el-radio>
                 <el-radio label="Relative" value="Relative"></el-radio>
@@ -160,7 +160,20 @@ export default {
             return this.data
         },
         assetData() {
-            return JSON.parse(this.asset.assessmentLimits)
+            if (!this.asset || !this.asset.assessmentLimits) {
+                return {}
+            }
+            try {
+                if (typeof this.asset.assessmentLimits === 'string') {
+                    return JSON.parse(this.asset.assessmentLimits)
+                } else if (typeof this.asset.assessmentLimits === 'object') {
+                    return this.asset.assessmentLimits
+                }
+                return {}
+            } catch (error) {
+                console.error('Error parsing assessmentLimits:', error)
+                return {}
+            }
         }
     },
     watch : {
@@ -169,11 +182,33 @@ export default {
             immediate : true,
             handler : function(newVal) {
                 this.asset_ = newVal
+                // Sync limits to testData if asset_ has limits
+                if (this.asset_ && this.asset_.limits && this.testData) {
+                    this.$set(this.testData, 'limits', this.asset_.limits)
+                }
+            }
+        },
+        openAssessmentDialog: {
+            handler: function(newVal) {
+                // When opening dialog, sync limits from asset_ to testData if available
+                if (newVal && this.asset_ && this.asset_.limits && this.testData) {
+                    this.$set(this.testData, 'limits', this.asset_.limits)
+                } else if (newVal && this.testData && !this.testData.limits) {
+                    // Initialize limits if not set
+                    this.$set(this.testData, 'limits', 'Absolute')
+                }
             }
         }
     },
     methods: {
         async updateAssessment() {
+            // Sync testData.limits to asset_ if testData.limits exists
+            if (this.testData && this.testData.limits) {
+                if (!this.asset_) {
+                    this.asset_ = {}
+                }
+                this.asset_.limits = this.testData.limits
+            }
             const asset = {
                 id : this.asset.id,
                 assessmentLimits : this.asset_
@@ -188,7 +223,27 @@ export default {
             }
         },
         resetAssessment() {
-            this.asset_ = JSON.parse(this.asset.assessmentLimits)
+            if (!this.asset || !this.asset.assessmentLimits) {
+                this.asset_ = {}
+                this.openAssessmentDialog = false
+                return
+            }
+            try {
+                if (typeof this.asset.assessmentLimits === 'string') {
+                    this.asset_ = JSON.parse(this.asset.assessmentLimits)
+                } else if (typeof this.asset.assessmentLimits === 'object') {
+                    this.asset_ = JSON.parse(JSON.stringify(this.asset.assessmentLimits))
+                } else {
+                    this.asset_ = {}
+                }
+                // Sync limits back to testData after reset
+                if (this.asset_ && this.asset_.limits && this.testData) {
+                    this.$set(this.testData, 'limits', this.asset_.limits)
+                }
+            } catch (error) {
+                console.error('Error parsing assessmentLimits in resetAssessment:', error)
+                this.asset_ = {}
+            }
             this.openAssessmentDialog = false
         },
         add() {

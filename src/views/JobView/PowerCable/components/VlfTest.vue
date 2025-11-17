@@ -24,7 +24,7 @@
         </div>
 
         <el-row class="mgb-10">
-            <el-col :span="12">
+            <el-col :span="15">
                 <span class="bolder">VLF settings</span>
                 <el-divider></el-divider>
                 <el-row :gutter="20">
@@ -68,7 +68,7 @@
             </el-col>
         </el-row>
 
-        <table class="table-strip-input-data" style="width: 80%">
+        <table class="table-strip-input-data" style="width: 100%; font-size: 12px;">
             <thead>
                 <tr>
                     <th>No.</th>
