@@ -23,7 +23,7 @@
         </el-row>
         </div>
 
-        <table class="table-strip-input-data" style="width: 80%">
+        <table class="table-strip-input-data" style="width: 100%; font-size: 12px;">
             <thead>
                 <tr>
                     <th>No</th>
@@ -86,7 +86,7 @@
         </table>
 
         <!-- Assessment settings -->
-        <el-dialog class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px">
+        <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px">
 
                 <el-radio-group v-model="testData.limits">
                     <el-radio label="Absolute" value="Absolute"></el-radio>
@@ -129,9 +129,11 @@
                         <tbody>
                             <tr v-for="(item, index) in pickupVoltage" :key="index">
                                 <td>{{item}}</td>
+                                <td>
                                     <el-input size="mini" v-model="asset_.pickupVol.rel[index].vref">
                                         <template slot="append">V</template>
                                     </el-input>
+                                </td>
                                 <td>
                                     <el-input size="mini" v-model="asset_.pickupVol.rel[index].vdev">
                                         <template slot="append">V</template>
@@ -213,21 +215,43 @@ export default {
                     }
                 }
             }
-            try {
-                return JSON.parse(this.asset.assessmentLimits)
-            } catch (error) {
-                console.error('Error parsing assessmentLimits:', error)
-                return {
-                    pickupVol: {
-                        abs: [
-                            { vmin: '', vmax: '' },
-                            { vmin: '', vmax: '' }
-                        ],
-                        rel: [
-                            { vref: '', vdev: '' },
-                            { vref: '', vdev: '' }
-                        ]
+            
+            // If it's already an object, return it directly
+            if (typeof this.asset.assessmentLimits === 'object') {
+                return this.asset.assessmentLimits
+            }
+            
+            // If it's a string, try to parse it
+            if (typeof this.asset.assessmentLimits === 'string') {
+                try {
+                    return JSON.parse(this.asset.assessmentLimits)
+                } catch (error) {
+                    console.warn('Error parsing assessmentLimits:', error)
+                    return {
+                        pickupVol: {
+                            abs: [
+                                { vmin: '', vmax: '' },
+                                { vmin: '', vmax: '' }
+                            ],
+                            rel: [
+                                { vref: '', vdev: '' },
+                                { vref: '', vdev: '' }
+                            ]
+                        }
                     }
+                }
+            }
+            
+            return {
+                pickupVol: {
+                    abs: [
+                        { vmin: '', vmax: '' },
+                        { vmin: '', vmax: '' }
+                    ],
+                    rel: [
+                        { vref: '', vdev: '' },
+                        { vref: '', vdev: '' }
+                    ]
                 }
             }
         }
@@ -241,7 +265,174 @@ export default {
         this.back_asset = dataTemp.assessmentLimits
     },
     methods: {
+        normalizeAssessmentLimits(data) {
+            if (!data || typeof data !== 'object') {
+                data = {}
+            }
+            
+            let normalized = {}
+            try {
+                normalized = JSON.parse(JSON.stringify(data))
+            } catch (e) {
+                normalized = {}
+            }
+            
+            // Helper function to extract value safely
+            const getValue = (obj) => {
+                if (!obj) return ''
+                if (typeof obj === 'string' || typeof obj === 'number') return String(obj)
+                if (typeof obj === 'object' && obj.value !== undefined) return String(obj.value || '')
+                return ''
+            }
+            
+            // Always initialize pickupVol structure first
+            normalized.pickupVol = {
+                abs: [
+                    { vmin: '', vmax: '' },
+                    { vmin: '', vmax: '' }
+                ],
+                rel: [
+                    { vref: '', vdev: '' },
+                    { vref: '', vdev: '' }
+                ]
+            }
+            
+            // Normalize from pickup_voltage structure (from backend DTO)
+            if (data.pickup_voltage) {
+                const pickupVol = data.pickup_voltage
+                
+                if (pickupVol.abs) {
+                    // Handle min_pickup_voltage_close (index 0)
+                    if (pickupVol.abs.min_pickup_voltage_close) {
+                        const close = pickupVol.abs.min_pickup_voltage_close
+                        normalized.pickupVol.abs[0] = {
+                            vmin: getValue(close.v_min) || getValue(close.vmin) || '',
+                            vmax: getValue(close.v_max) || getValue(close.vmax) || ''
+                        }
+                    }
+                    // Handle min_pickup_voltage_trip (index 1)
+                    if (pickupVol.abs.min_pickup_voltage_trip) {
+                        const trip = pickupVol.abs.min_pickup_voltage_trip
+                        normalized.pickupVol.abs[1] = {
+                            vmin: getValue(trip.v_min) || getValue(trip.vmin) || '',
+                            vmax: getValue(trip.v_max) || getValue(trip.vmax) || ''
+                        }
+                    }
+                    // Fallback: handle old structure with close/trip
+                    if (pickupVol.abs.close) {
+                        normalized.pickupVol.abs[0] = {
+                            vmin: getValue(pickupVol.abs.close.v_min) || getValue(pickupVol.abs.close.vmin) || '',
+                            vmax: getValue(pickupVol.abs.close.v_max) || getValue(pickupVol.abs.close.vmax) || ''
+                        }
+                    }
+                    if (pickupVol.abs.trip) {
+                        normalized.pickupVol.abs[1] = {
+                            vmin: getValue(pickupVol.abs.trip.v_min) || getValue(pickupVol.abs.trip.vmin) || '',
+                            vmax: getValue(pickupVol.abs.trip.v_max) || getValue(pickupVol.abs.trip.vmax) || ''
+                        }
+                    }
+                }
+                
+                if (pickupVol.rel) {
+                    // Handle min_pickup_voltage_close (index 0)
+                    if (pickupVol.rel.min_pickup_voltage_close) {
+                        const close = pickupVol.rel.min_pickup_voltage_close
+                        normalized.pickupVol.rel[0] = {
+                            vref: getValue(close.v_ref) || getValue(close.vref) || '',
+                            vdev: getValue(close.v_dev) || getValue(close.vdev) || ''
+                        }
+                    }
+                    // Handle min_pickup_voltage_trip (index 1)
+                    if (pickupVol.rel.min_pickup_voltage_trip) {
+                        const trip = pickupVol.rel.min_pickup_voltage_trip
+                        normalized.pickupVol.rel[1] = {
+                            vref: getValue(trip.v_ref) || getValue(trip.vref) || '',
+                            vdev: getValue(trip.v_dev) || getValue(trip.vdev) || ''
+                        }
+                    }
+                    // Fallback: handle old structure with close/trip
+                    if (pickupVol.rel.close) {
+                        normalized.pickupVol.rel[0] = {
+                            vref: getValue(pickupVol.rel.close.v_ref) || getValue(pickupVol.rel.close.vref) || '',
+                            vdev: getValue(pickupVol.rel.close.v_dev) || getValue(pickupVol.rel.close.vdev) || ''
+                        }
+                    }
+                    if (pickupVol.rel.trip) {
+                        normalized.pickupVol.rel[1] = {
+                            vref: getValue(pickupVol.rel.trip.v_ref) || getValue(pickupVol.rel.trip.vref) || '',
+                            vdev: getValue(pickupVol.rel.trip.v_dev) || getValue(pickupVol.rel.trip.vdev) || ''
+                        }
+                    }
+                }
+            } else if (data.pickupVol) {
+                // Keep pickupVol structure but ensure values are normalized
+                normalized.pickupVol = {
+                    abs: [
+                        {
+                            vmin: getValue(data.pickupVol.abs?.[0]?.vmin) || '',
+                            vmax: getValue(data.pickupVol.abs?.[0]?.vmax) || ''
+                        },
+                        {
+                            vmin: getValue(data.pickupVol.abs?.[1]?.vmin) || '',
+                            vmax: getValue(data.pickupVol.abs?.[1]?.vmax) || ''
+                        }
+                    ],
+                    rel: [
+                        {
+                            vref: getValue(data.pickupVol.rel?.[0]?.vref) || '',
+                            vdev: getValue(data.pickupVol.rel?.[0]?.vdev) || ''
+                        },
+                        {
+                            vref: getValue(data.pickupVol.rel?.[1]?.vref) || '',
+                            vdev: getValue(data.pickupVol.rel?.[1]?.vdev) || ''
+                        }
+                    ]
+                }
+            }
+            
+            if (!normalized.limits) {
+                normalized.limits = data.limits || 'Absolute'
+            }
+            
+            // Final pass: ensure all values are strings/numbers, not objects
+            const ensureStringValue = (obj, key) => {
+                if (obj && obj[key] !== undefined) {
+                    const val = obj[key]
+                    if (typeof val === 'object' && val !== null && val.value !== undefined) {
+                        obj[key] = String(val.value || '')
+                    } else if (typeof val !== 'string' && typeof val !== 'number') {
+                        obj[key] = String(val || '')
+                    }
+                }
+            }
+            
+            // Normalize pickupVol values
+            if (normalized.pickupVol) {
+                if (normalized.pickupVol.abs) {
+                    normalized.pickupVol.abs.forEach(item => {
+                        if (item) {
+                            ensureStringValue(item, 'vmin')
+                            ensureStringValue(item, 'vmax')
+                        }
+                    })
+                }
+                if (normalized.pickupVol.rel) {
+                    normalized.pickupVol.rel.forEach(item => {
+                        if (item) {
+                            ensureStringValue(item, 'vref')
+                            ensureStringValue(item, 'vdev')
+                        }
+                    })
+                }
+            }
+            
+            return normalized
+        },
         async updateAssessment() {
+            // Sync testData.limits to asset_.limits before saving
+            if (this.testData.limits) {
+                this.asset_.limits = this.testData.limits
+            }
             const asset = {
                 id : this.asset.id,
                 assessmentLimits : this.asset_
@@ -258,7 +449,11 @@ export default {
             }
         },
         resetAssessment() {
-            this.asset_ = this.back_asset
+            this.asset_ = JSON.parse(JSON.stringify(this.back_asset))
+            // Sync limits back to testData after reset
+            if (this.asset_.limits && this.testData) {
+                this.$set(this.testData, 'limits', this.asset_.limits)
+            }
             this.openAssessmentDialog = false
         },
         add() {
@@ -437,7 +632,33 @@ export default {
             deep : true,
             immediate : true,
             handler : function(newVal) {
-                this.asset_ = newVal
+                if (newVal && Object.keys(newVal).length > 0) {
+                    this.asset_ = this.normalizeAssessmentLimits(newVal)
+                    // Update backup for reset
+                    const dataTemp = JSON.parse(JSON.stringify(this.asset_ || {}))
+                    this.back_asset = dataTemp
+                    // Sync limits to testData
+                    if (this.asset_.limits && this.testData) {
+                        this.$set(this.testData, 'limits', this.asset_.limits)
+                    }
+                }
+            }
+        },
+        'asset_.limits': {
+            immediate: true,
+            handler: function(newVal) {
+                // Sync asset_.limits to testData.limits
+                if (newVal && this.testData) {
+                    this.$set(this.testData, 'limits', newVal)
+                }
+            }
+        },
+        openAssessmentDialog: {
+            handler: function(newVal) {
+                // When opening dialog, sync limits from asset_ to testData
+                if (newVal && this.asset_ && this.asset_.limits && this.testData) {
+                    this.$set(this.testData, 'limits', this.asset_.limits)
+                }
             }
         }
     }

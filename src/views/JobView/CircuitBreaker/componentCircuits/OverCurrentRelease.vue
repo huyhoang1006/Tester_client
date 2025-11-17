@@ -23,7 +23,7 @@
         </el-row>
         </div>
 
-        <table class="table-strip-input-data" style="width: 60%">
+        <table class="table-strip-input-data" style="width: 100%; font-size: 12px;">
             <thead>
                 <tr>
                     <th>No.</th>
@@ -75,7 +75,7 @@
         </table>
 
         <!-- Assessment settings -->
-        <el-dialog title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px">
+        <el-dialog append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px">
         </el-dialog>
     </div>
 </template>
