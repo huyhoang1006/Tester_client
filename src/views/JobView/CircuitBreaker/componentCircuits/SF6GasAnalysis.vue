@@ -25,7 +25,7 @@
 
         <div style="font-weight: bold; margin-top: 5%;"> Decomposition of SF<sub>6</sub> (ppm)</div>
         <br />
-        <table class="table-strip-input-data" style="width: 50%">
+        <table class="table-strip-input-data" style="width: 80%; font-size: 12px;">
             <thead>
                 <tr>
                     <th>No</th>
@@ -73,7 +73,7 @@
         </table>
         <div style="font-weight: bold; margin-top: 5%;"> SO<sub>2</sub> + SOF<sub>2</sub> (ppm)</div>
         <br />
-        <table class="table-strip-input-data" style="width: 50%">
+        <table class="table-strip-input-data" style="width: 80%; font-size: 12px;">
             <thead>
                 <tr>
                     <th>No</th>
@@ -121,7 +121,7 @@
         </table>
         <div style="font-weight: bold; margin-top: 5%;"> HF (ppm)</div>
         <br />
-        <table class="table-strip-input-data" style="width: 50%">
+        <table class="table-strip-input-data" style="width: 80%; font-size: 12px;">
             <thead>
                 <tr>
                     <th>No</th>
@@ -168,7 +168,7 @@
             </tbody>
         </table>
         <!-- Assessment settings -->
-        <el-dialog title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px">
+        <el-dialog append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px">
         </el-dialog>
     </div>
 </template>
@@ -202,7 +202,12 @@ export default {
                 return {}
             }
             try {
-                return JSON.parse(this.asset.assessmentLimits)
+                if (typeof this.asset.assessmentLimits === 'string') {
+                    return JSON.parse(this.asset.assessmentLimits)
+                } else if (typeof this.asset.assessmentLimits === 'object') {
+                    return this.asset.assessmentLimits
+                }
+                return {}
             } catch (error) {
                 console.error('Error parsing assessmentLimits:', error)
                 return {}
