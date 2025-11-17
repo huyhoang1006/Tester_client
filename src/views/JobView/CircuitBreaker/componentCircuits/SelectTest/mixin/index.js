@@ -7,35 +7,77 @@ export default {
     computed: mapState(['selectedAsset', 'selectedJob']),
     async beforeMount() { },
     methods: {
-        async initTest(testTypeCode) {
+        getAssetData(assetData = null) {
+            // Extract circuitBreaker and operating from assetData
+            // Similar to how SurgeArrester handles assetData directly
+            let circuitBreaker = null
+            let operating = null
+
+            if (assetData) {
+                // Handle case where circuitBreaker might be a string that needs parsing
+                if (assetData.circuitBreaker) {
+                    circuitBreaker = typeof assetData.circuitBreaker === 'string'
+                        ? JSON.parse(assetData.circuitBreaker)
+                        : assetData.circuitBreaker
+                } else if (assetData.oldBreakerInfo && assetData.oldBreakerInfo.circuitBreaker) {
+                    circuitBreaker = typeof assetData.oldBreakerInfo.circuitBreaker === 'string'
+                        ? JSON.parse(assetData.oldBreakerInfo.circuitBreaker)
+                        : assetData.oldBreakerInfo.circuitBreaker
+                }
+
+                // Handle case where operating might be a string that needs parsing
+                if (assetData.operating) {
+                    operating = typeof assetData.operating === 'string'
+                        ? JSON.parse(assetData.operating)
+                        : assetData.operating
+                } else if (assetData.oldOperatingMechanism) {
+                    operating = typeof assetData.oldOperatingMechanism === 'string'
+                        ? JSON.parse(assetData.oldOperatingMechanism)
+                        : assetData.oldOperatingMechanism
+                }
+            }
+
+            // Default values if not found
+            circuitBreaker = circuitBreaker || {
+                numberOfPhase: 3,
+                numberOfInterruptPhase: 1
+            }
+            operating = operating || {
+                numberTripCoil: 1,
+                numberCloseCoil: 1
+            }
+
+            return { circuitBreaker, operating }
+        },
+        async initTest(testTypeCode, assetData) {
             let data = null
             switch (testTypeCode) {
                 case 'motorCurrent':
                     data = this.initmotorCurrent()
                     break
                 case 'cTiming':
-                    data = await this.initcTiming()
+                    data = await this.initcTiming(assetData)
                     break
                 case 'oTiming':
-                    data = await this.initoTiming()
+                    data = await this.initoTiming(assetData)
                     break
                 case 'ocTiming':
-                    data = await this.initocTiming()
+                    data = await this.initocTiming(assetData)
                     break
                 case 'coTiming':
-                    data = await this.initcoTiming()
+                    data = await this.initcoTiming(assetData)
                     break
                 case 'ocoTiming':
-                    data = await this.initocoTiming()
+                    data = await this.initocoTiming(assetData)
                     break
                 case 'cocoTiming':
-                    data = await this.initcocoTiming()
+                    data = await this.initcocoTiming(assetData)
                     break
                 case 'ococoTiming':
-                    data = await this.initococoTiming()
+                    data = await this.initococoTiming(assetData)
                     break
                 case 'contactResistance':
-                    data = await this.initcontactResistance()
+                    data = await this.initcontactResistance(assetData)
                     break
                 case 'minimumPickup':
                     data = await this.initminimumPickup()
@@ -202,9 +244,8 @@ export default {
                 measurementProcedure
             }
         },
-        async initcTiming() {
-            let circuitBreaker = JSON.parse(this.selectedAsset[0].circuitBreaker)
-            let operating = JSON.parse(this.selectedAsset[0].operating)
+        async initcTiming(assetData = null) {
+            const { circuitBreaker, operating } = this.getAssetData(assetData)
             let table = []
             let phase = ["A", "B", "C"]
             for (let i = 0; i < operating.numberCloseCoil; i++) {
@@ -248,9 +289,8 @@ export default {
                 table: table
             }
         },
-        async initoTiming() {
-            let circuitBreaker = JSON.parse(this.selectedAsset[0].circuitBreaker)
-            let operating = JSON.parse(this.selectedAsset[0].operating)
+        async initoTiming(assetData = null) {
+            const { circuitBreaker, operating } = this.getAssetData(assetData)
             let table = []
             let phase = ["A", "B", "C"]
             for (let i = 0; i < operating.numberTripCoil; i++) {
@@ -294,7 +334,8 @@ export default {
                 table: table
             }
         },
-        async initocTiming() {
+        async initocTiming(assetData = null) {
+            const { circuitBreaker, operating } = this.getAssetData(assetData)
             async function getTable(table) {
                 let phase = ["A", "B", "C"]
                 for (let i = 0; i < operating.numberTripCoil; i++) {
@@ -312,8 +353,6 @@ export default {
                 })
                 return table
             }
-            let circuitBreaker = JSON.parse(this.selectedAsset[0].circuitBreaker)
-            let operating = JSON.parse(this.selectedAsset[0].operating)
             let table = []
             table = await getTable(table)
             return {
@@ -343,9 +382,8 @@ export default {
                 table: table
             }
         },
-        async initcoTiming() {
-            let circuitBreaker = JSON.parse(this.selectedAsset[0].circuitBreaker)
-            let operating = JSON.parse(this.selectedAsset[0].operating)
+        async initcoTiming(assetData = null) {
+            const { circuitBreaker, operating } = this.getAssetData(assetData)
             let phase = ["A", "B", "C"]
             let table = []
             for (let i = 0; i < operating.numberCloseCoil; i++) {
@@ -388,7 +426,8 @@ export default {
                 table: table
             }
         },
-        async initocoTiming() {
+        async initocoTiming(assetData = null) {
+            const { circuitBreaker, operating } = this.getAssetData(assetData)
             async function getTable(table) {
                 let phase = ["A", "B", "C"]
                 for (let i = 0; i < operating.numberTripCoil; i++) {
@@ -406,8 +445,6 @@ export default {
                 })
                 return table
             }
-            let circuitBreaker = JSON.parse(this.selectedAsset[0].circuitBreaker)
-            let operating = JSON.parse(this.selectedAsset[0].operating)
             let table = []
             table = await getTable(table)
             return {
@@ -437,8 +474,8 @@ export default {
                 table: table
             }
         },
-        async initcocoTiming() {
-            let circuitBreaker = JSON.parse(this.selectedAsset[0].circuitBreaker)
+        async initcocoTiming(assetData = null) {
+            const { circuitBreaker } = this.getAssetData(assetData)
             let table = []
             let phase = ["A", "B", "C"]
             for (let i = 0; i < circuitBreaker.numberOfPhase; i++) {
@@ -474,8 +511,8 @@ export default {
                 table: table
             }
         },
-        async initococoTiming() {
-            let circuitBreaker = JSON.parse(this.selectedAsset[0].circuitBreaker)
+        async initococoTiming(assetData = null) {
+            const { circuitBreaker } = this.getAssetData(assetData)
             let table = []
             let phase = ["A", "B", "C"]
             for (let i = 0; i < circuitBreaker.numberOfPhase; i++) {
@@ -511,8 +548,8 @@ export default {
                 table: table
             }
         },
-        async initcontactResistance() {
-            let circuitBreaker = JSON.parse(this.selectedAsset[0].circuitBreaker)
+        async initcontactResistance(assetData = null) {
+            const { circuitBreaker } = this.getAssetData(assetData)
             let table = []
             let phase = ["A", "B", "C"]
             for (let i = 0; i < circuitBreaker.numberOfPhase; i++) {
@@ -833,8 +870,8 @@ export default {
                 table: table
             }
         },
-        async initinsulationResistanceCircuit() {
-            let circuitBreaker = JSON.parse(this.selectedAsset[0].circuitBreaker)
+        async initinsulationResistanceCircuit(assetData = null) {
+            const { circuitBreaker } = this.getAssetData(assetData)
             let table = []
             for (let i = 0; i < circuitBreaker.numberOfPhase; i++) {
                 if (i % circuitBreaker.numberOfPhase === 0) {

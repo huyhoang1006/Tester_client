@@ -22,7 +22,7 @@
         </el-row>
         </div>
 
-        <table class="table-strip-input-data" style="width: 50%">
+        <table class="table-strip-input-data" style="width: 80%; font-size: 12px;">
             <thead>
                 <tr>
                     <th>No</th>
@@ -70,7 +70,7 @@
         </table>
 
         <!-- Assessment settings -->
-        <el-dialog class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog" width="50%">
+        <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog" width="50%">
             <el-radio-group v-model="testData.limits">
                 <el-radio label="Absolute" value="Absolute"></el-radio>
                 <el-radio label="Relative" value="Relative"></el-radio>
@@ -159,7 +159,14 @@ export default {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
-            asset_ : {},
+            asset_ : {
+                coilCharacter: {
+                    abs: Array(8).fill(null).map(() => ({ min: '', max: '', mrid: '' })),
+                    rel: Array(8).fill(null).map(() => ({ ref: '', devZ: '', devN: '', mrid: '' }))
+                },
+                limits: 'Absolute'
+            },
+            back_asset: {},
             coilCharacteristics : [
                 "Peak close coil current",
                 "Peak trip coil current",
@@ -190,35 +197,51 @@ export default {
             if (!this.asset || !this.asset.assessmentLimits) {
                 return {
                     coilCharacter: {
-                        abs: Array(8).fill(null).map(() => ({ min: '', max: '' })),
-                        rel: Array(8).fill(null).map(() => ({ ref: '', devZ: '', devN: '' }))
+                        abs: Array(8).fill(null).map(() => ({ min: '', max: '', mrid: '' })),
+                        rel: Array(8).fill(null).map(() => ({ ref: '', devZ: '', devN: '', mrid: '' }))
                     }
                 }
             }
-            try {
-                const parsed = JSON.parse(this.asset.assessmentLimits)
-                // Ensure coilCharacter structure exists
-                if (!parsed.coilCharacter) {
-                    parsed.coilCharacter = {
-                        abs: Array(8).fill(null).map(() => ({ min: '', max: '' })),
-                        rel: Array(8).fill(null).map(() => ({ ref: '', devZ: '', devN: '' }))
+            
+            // If it's already an object, return it directly
+            if (typeof this.asset.assessmentLimits === 'object') {
+                return this.asset.assessmentLimits
+            }
+            
+            // If it's a string, try to parse it
+            if (typeof this.asset.assessmentLimits === 'string') {
+                try {
+                    const parsed = JSON.parse(this.asset.assessmentLimits)
+                    // Ensure coilCharacter structure exists
+                    if (!parsed.coilCharacter) {
+                        parsed.coilCharacter = {
+                            abs: Array(8).fill(null).map(() => ({ min: '', max: '', mrid: '' })),
+                            rel: Array(8).fill(null).map(() => ({ ref: '', devZ: '', devN: '', mrid: '' }))
+                        }
+                    }
+                    // Ensure abs and rel arrays have 8 items
+                    if (!parsed.coilCharacter.abs || parsed.coilCharacter.abs.length !== 8) {
+                        parsed.coilCharacter.abs = Array(8).fill(null).map(() => ({ min: '', max: '', mrid: '' }))
+                    }
+                    if (!parsed.coilCharacter.rel || parsed.coilCharacter.rel.length !== 8) {
+                        parsed.coilCharacter.rel = Array(8).fill(null).map(() => ({ ref: '', devZ: '', devN: '', mrid: '' }))
+                    }
+                    return parsed
+                } catch (error) {
+                    console.warn('Error parsing assessmentLimits:', error)
+                    return {
+                        coilCharacter: {
+                            abs: Array(8).fill(null).map(() => ({ min: '', max: '', mrid: '' })),
+                            rel: Array(8).fill(null).map(() => ({ ref: '', devZ: '', devN: '', mrid: '' }))
+                        }
                     }
                 }
-                // Ensure abs and rel arrays have 8 items
-                if (!parsed.coilCharacter.abs || parsed.coilCharacter.abs.length !== 8) {
-                    parsed.coilCharacter.abs = Array(8).fill(null).map(() => ({ min: '', max: '' }))
-                }
-                if (!parsed.coilCharacter.rel || parsed.coilCharacter.rel.length !== 8) {
-                    parsed.coilCharacter.rel = Array(8).fill(null).map(() => ({ ref: '', devZ: '', devN: '' }))
-                }
-                return parsed
-            } catch (error) {
-                console.error('Error parsing assessmentLimits:', error)
-                return {
-                    coilCharacter: {
-                        abs: Array(8).fill(null).map(() => ({ min: '', max: '' })),
-                        rel: Array(8).fill(null).map(() => ({ ref: '', devZ: '', devN: '' }))
-                    }
+            }
+            
+            return {
+                coilCharacter: {
+                    abs: Array(8).fill(null).map(() => ({ min: '', max: '', mrid: '' })),
+                    rel: Array(8).fill(null).map(() => ({ ref: '', devZ: '', devN: '', mrid: '' }))
                 }
             }
         }
@@ -228,12 +251,175 @@ export default {
             deep : true,
             immediate : true,
             handler : function(newVal) {
-                this.asset_ = newVal
+                if (newVal && Object.keys(newVal).length > 0) {
+                    this.asset_ = this.normalizeAssessmentLimits(newVal)
+                    // Update backup for reset
+                    const dataTemp = JSON.parse(JSON.stringify(this.asset_ || {}))
+                    this.back_asset = dataTemp
+                    // Sync limits to testData
+                    if (this.asset_.limits && this.testData) {
+                        this.$set(this.testData, 'limits', this.asset_.limits)
+                    }
+                }
+            }
+        },
+        'asset_.limits': {
+            immediate: true,
+            handler: function(newVal) {
+                // Sync asset_.limits to testData.limits
+                if (newVal && this.testData) {
+                    this.$set(this.testData, 'limits', newVal)
+                }
+            }
+        },
+        openAssessmentDialog: {
+            handler: function(newVal) {
+                // When opening dialog, sync limits from asset_ to testData
+                if (newVal && this.asset_ && this.asset_.limits && this.testData) {
+                    this.$set(this.testData, 'limits', this.asset_.limits)
+                }
             }
         }
     },
     methods: {
+        normalizeAssessmentLimits(data) {
+            if (!data || typeof data !== 'object') {
+                data = {}
+            }
+            
+            let normalized = {}
+            try {
+                normalized = JSON.parse(JSON.stringify(data))
+            } catch (e) {
+                normalized = {}
+            }
+            
+            // Helper function to extract value safely
+            const getValue = (obj) => {
+                if (!obj) return ''
+                if (typeof obj === 'string' || typeof obj === 'number') return String(obj)
+                if (typeof obj === 'object' && obj.value !== undefined) return String(obj.value || '')
+                return ''
+            }
+            
+            // Normalize coilCharacter from coil_characteristics structure if exists
+            if (data.coil_characteristics) {
+                const coilChar = data.coil_characteristics
+                const coilMapping = [
+                    'peak_close_coil_current', 'peak_trip_coil_current', 'average_close_coil_current',
+                    'average_trip_coil_current', 'average_close_coil_voltage', 'average_trip_coil_voltage',
+                    'close_coil_resistance', 'trip_coil_resistance'
+                ]
+                normalized.coilCharacter = {
+                    abs: Array(8).fill(null).map(() => ({ min: '', max: '', mrid: '' })),
+                    rel: Array(8).fill(null).map(() => ({ ref: '', devZ: '', devN: '', mrid: '' }))
+                }
+                
+                if (coilChar.abs) {
+                    coilMapping.forEach((key, index) => {
+                        const item = coilChar.abs[key]
+                        if (item) {
+                            normalized.coilCharacter.abs[index] = {
+                                min: getValue(item.min) || '',
+                                max: getValue(item.max) || '',
+                                mrid: item.mrid || ''
+                            }
+                        }
+                    })
+                }
+                
+                if (coilChar.rel) {
+                    coilMapping.forEach((key, index) => {
+                        const item = coilChar.rel[key]
+                        if (item) {
+                            normalized.coilCharacter.rel[index] = {
+                                ref: getValue(item.ref) || '',
+                                devZ: getValue(item.minus_dev) || getValue(item.devZ) || '',
+                                devN: getValue(item.plus_dev) || getValue(item.devN) || '',
+                                mrid: item.mrid || ''
+                            }
+                        }
+                    })
+                }
+            } else if (data.coilCharacter) {
+                // Keep coilCharacter structure but ensure values are normalized
+                normalized.coilCharacter = {
+                    abs: Array(8).fill(null).map((_, index) => ({
+                        min: getValue(data.coilCharacter.abs?.[index]?.min) || '',
+                        max: getValue(data.coilCharacter.abs?.[index]?.max) || '',
+                        mrid: data.coilCharacter.abs?.[index]?.mrid || ''
+                    })),
+                    rel: Array(8).fill(null).map((_, index) => ({
+                        ref: getValue(data.coilCharacter.rel?.[index]?.ref) || '',
+                        devZ: getValue(data.coilCharacter.rel?.[index]?.devZ) || '',
+                        devN: getValue(data.coilCharacter.rel?.[index]?.devN) || '',
+                        mrid: data.coilCharacter.rel?.[index]?.mrid || ''
+                    }))
+                }
+            } else {
+                // Initialize default coilCharacter structure
+                normalized.coilCharacter = {
+                    abs: Array(8).fill(null).map(() => ({ min: '', max: '', mrid: '' })),
+                    rel: Array(8).fill(null).map(() => ({ ref: '', devZ: '', devN: '', mrid: '' }))
+                }
+            }
+            
+            // Ensure abs and rel arrays have 8 items
+            if (!normalized.coilCharacter.abs || normalized.coilCharacter.abs.length !== 8) {
+                normalized.coilCharacter.abs = Array(8).fill(null).map((_, index) => 
+                    normalized.coilCharacter.abs && normalized.coilCharacter.abs[index] 
+                        ? normalized.coilCharacter.abs[index] 
+                        : { min: '', max: '', mrid: '' }
+                )
+            }
+            if (!normalized.coilCharacter.rel || normalized.coilCharacter.rel.length !== 8) {
+                normalized.coilCharacter.rel = Array(8).fill(null).map((_, index) => 
+                    normalized.coilCharacter.rel && normalized.coilCharacter.rel[index] 
+                        ? normalized.coilCharacter.rel[index] 
+                        : { ref: '', devZ: '', devN: '', mrid: '' }
+                )
+            }
+            
+            if (!normalized.limits) {
+                normalized.limits = data.limits || 'Absolute'
+            }
+            
+            // Final pass: ensure all values are strings/numbers, not objects
+            const ensureStringValue = (obj, key) => {
+                if (obj && obj[key] !== undefined) {
+                    const val = obj[key]
+                    if (typeof val === 'object' && val !== null && val.value !== undefined) {
+                        obj[key] = String(val.value || '')
+                    } else if (typeof val !== 'string' && typeof val !== 'number') {
+                        obj[key] = String(val || '')
+                    }
+                }
+            }
+            
+            // Normalize coilCharacter values
+            if (normalized.coilCharacter) {
+                normalized.coilCharacter.abs.forEach(item => {
+                    if (item) {
+                        ensureStringValue(item, 'min')
+                        ensureStringValue(item, 'max')
+                    }
+                })
+                normalized.coilCharacter.rel.forEach(item => {
+                    if (item) {
+                        ensureStringValue(item, 'ref')
+                        ensureStringValue(item, 'devZ')
+                        ensureStringValue(item, 'devN')
+                    }
+                })
+            }
+            
+            return normalized
+        },
         async updateAssessment() {
+            // Sync testData.limits to asset_.limits before saving
+            if (this.testData.limits) {
+                this.asset_.limits = this.testData.limits
+            }
             const asset = {
                 id : this.asset.id,
                 assessmentLimits : this.asset_
@@ -248,25 +434,10 @@ export default {
             }
         },
         resetAssessment() {
-            if (!this.asset || !this.asset.assessmentLimits) {
-                this.asset_ = {
-                    coilCharacter: {
-                        abs: Array(8).fill(null).map(() => ({ min: '', max: '' })),
-                        rel: Array(8).fill(null).map(() => ({ ref: '', devZ: '', devN: '' }))
-                    }
-                }
-            } else {
-                try {
-                    this.asset_ = JSON.parse(this.asset.assessmentLimits)
-                } catch (error) {
-                    console.error('Error parsing assessmentLimits:', error)
-                    this.asset_ = {
-                        coilCharacter: {
-                            abs: Array(8).fill(null).map(() => ({ min: '', max: '' })),
-                            rel: Array(8).fill(null).map(() => ({ ref: '', devZ: '', devN: '' }))
-                        }
-                    }
-                }
+            this.asset_ = JSON.parse(JSON.stringify(this.back_asset))
+            // Sync limits back to testData after reset
+            if (this.asset_.limits && this.testData) {
+                this.$set(this.testData, 'limits', this.asset_.limits)
             }
             this.openAssessmentDialog = false
         },
