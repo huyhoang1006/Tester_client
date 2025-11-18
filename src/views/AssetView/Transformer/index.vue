@@ -18,7 +18,7 @@
                 <rating :properties="this.transformerDto.properties" :data="this.transformerDto.ratings" style="font-size: 12px !important;"></rating>
 
                 <!-- Impedances -->
-                <impedance :tapChangers="this.transformerDto.tap_changers" :data="this.transformerDto.impedances" :properties="this.transformerDto.properties" style="font-size: 12px !important;"></impedance>
+                <impedance @add="addShortCircuitTest" @remove="removeShortCircuitTest" @removeArr="removeShortCircuitTestArr" :tapChangers="this.transformerDto.tap_changers" :data="this.transformerDto.impedances" :properties="this.transformerDto.properties" style="font-size: 12px !important;"></impedance>
 
                 <!-- Others -->
                 <other :data="this.transformerDto.others" :properties="this.transformerDto.properties" style="font-size: 12px;"></other>
@@ -35,14 +35,14 @@
                     :asset_type="this.transformerDto.properties.type"
                     :asset_phase="this.transformerDto.winding_configuration.phases"
                     :asset_winding_config="this.transformerDto.winding_configuration.vector_group"
-                    :bushing_data="this.bushing_data"
+                    :bushing_data="this.transformerDto.bushing_data"
                     @input-bushing="onInputBushing">
                 </bushing>
             </div>
 
             <!-- Surge Arrester -->
             <div v-else-if="this.switch == 'Surge Arrester'">
-                <surge-arrester :data="this.surge_arrester" :properties="this.transformerDto.properties" style="font-size: 12px !important;"></surge-arrester>
+                <surge-arrester :data="this.transformerDto.surge_arrester" :properties="this.transformerDto.properties" style="font-size: 12px !important;"></surge-arrester>
             </div>
 
         </div>
@@ -69,6 +69,15 @@ export default {
             type: Object,
             default: () => ({})
         },
+        organisationId: {
+            type: String,
+            default: ''
+        },
+
+        locationId: {
+            type: String,
+            default: ''
+        },
     },
     components: {
         WindingConfiguration,
@@ -85,7 +94,8 @@ export default {
     data() {
         return {
             title : 'transformer',
-            switch : 'Transformer'
+            switch : 'Transformer',
+            parentData : JSON.parse(JSON.stringify(this.parent)),
         }
     },
     methods: {
@@ -98,7 +108,8 @@ export default {
         updateAttachment(attachment) {
             this.attachmentData = attachment
         },
-        async resetForm() {},
+        loadMapForView() {
+        },
     }
 }
 </script>

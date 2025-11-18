@@ -1,121 +1,46 @@
 /* eslint-disable */
-import TransformerDto from "@/views/Dto/Transformer"
-import TapChangersDto from "@/views/Dto/TapChanger"
+import TransformerDataDto from "@/views/Dto/Transformer"
 import uuid from "@/utils/uuid"
 import * as transformerMapping from "@/views/Mapping/Transformer"
 import OldTransformerEndInfo from "@/views/Cim/OldTransformerEndInfo"
 import { WindingConnection } from "@/views/Enum/WindingConnection"
 import { PhaseCode } from "@/views/Enum/PhaseCode"
-import BushingDto from "@/views/Dto/Bushing"
 export default {
     data() {
         return {
-            transformerDto: {
-                properties: new TransformerDto().properties,
-                winding_configuration: new TransformerDto().winding_configuration,
-                ratings: new TransformerDto().ratings,
-                impedances: new TransformerDto().impedances,
-                others: new TransformerDto().others,
-                tap_changers: new TapChangersDto(),
-                productAssetModelId: '',
-                lifecycleDateId: '',
-                assetPsrId: '',
-                psrId: '',
-                oldPowerTransformerInfoId: '',
-                oldTransformerEndInfo: [],
-                shortCircuitTestTransformerEndInfo: [],
-            },
-            oldTransformerDto: {
-                properties: new TransformerDto().properties,
-                winding_configuration: new TransformerDto().winding_configuration,
-                ratings: new TransformerDto().ratings,
-                impedances: new TransformerDto().impedances,
-                others: new TransformerDto().others,
-                tap_changers: new TapChangersDto(),
-                productAssetModelId: '',
-                lifecycleDateId: '',
-                assetPsrId: '',
-                psrId: '',
-                oldPowerTransformerInfoId: '',
-                oldTransformerEndInfo: [],
-                shortCircuitTestTransformerEndInfo: [],
-            },
-
+            transformerDto: new TransformerDataDto(),
+            oldTransformerDto: new TransformerDataDto(),
             attachmentData : [],
-            bushing_data: new BushingDto(),
-            surge_arrester: {
-                prim: [],
-                sec: [],
-                tert: []
-            },
-            disabled : false
         }
     },
     watch: {
         'transformerDto.winding_configuration.vector_group': {
             deep : true,
             immediate: true,
-            handler: 'changeDataBushing'
+            handler() {
+                this.changeDataBushing()
+            }
         },
         'transformerDto.properties.type': {
             deep : true,
             immediate: true,
-            handler: 'changeDataBushing'
+            handler() {
+                this.changeDataBushing()
+            }
         },
 
         'transformerDto.winding_configuration.phases': {
             deep : true,
             immediate: true,
-            handler: 'changeDataBushing'
+            handler() {
+                this.changeDataBushing()
+            }
         },
 
     },
     methods: {
-        getAssetType(data) {
-            if(data.NameOfPos == undefined || data.DataShow == undefined ) {
-                if(data.NameOfPos == undefined) {
-                    let temp = {
-                        NameOfPos : {
-                            prim : {},
-                            sec : {},
-                            tert : {}
-                        }
-                    }
-                    data = Object.assign(data, temp)
-                }
-                if(data.DataShow == undefined) {
-                    let dataShow = {
-                        DataShow : {
-                            prim : {
-                                fi : true,
-                                se : true,
-                                th : false,
-                                fo : false
-                            },
-                            sec : {
-                                fi : true,
-                                se : false,
-                                th : false,
-                                fo : false
-                            },
-                            tert : {
-                                fi : false,
-                                se : false,
-                                th : false,
-                                fo : false
-                            }
-                        }
-                    }
-                    data = Object.assign(data, dataShow)
-                }
-                return data
-            } else {
-                return data
-            }
-        },
-
         onChangeAssetType(value) {
-            this.transformerDto.winding_configuration = new TransformerDto().winding_configuration
+            this.transformerDto.winding_configuration = new TransformerDataDto().winding_configuration
             for (let [index, item] of this.transformerDto.ratings.voltage_ratings.entries()) {
                 if(item.winding === this.$constant.TERT) {
                     if(value !== this.$constant.THREE_WINDING) {
@@ -158,7 +83,7 @@ export default {
 
         async saveAsset() {
             try {
-                if(this.transformerDto.properties.type && this.transformerDto.properties.kind) {
+                if(this.transformerDto.properties.type && this.transformerDto.properties.kind && this.transformerDto.properties.serial_no) {
                     const data = JSON.parse(JSON.stringify(this.transformerDto));
                     const result = this.checkTransformerDto(data);
                     const oldResult = this.checkTransformerDto(this.oldTransformerDto);
@@ -181,7 +106,7 @@ export default {
                 } else {
                     this.$message({
                         type: 'warning',
-                        message: "Please select the type and kind of Asset before saving."
+                        message: "Please select the type and kind of Asset and serial number before saving."
                     });
                     return {
                         success: false,
@@ -197,13 +122,47 @@ export default {
             }
         },
 
+        loadData(data) {
+            this.oldTransformerDto = JSON.parse(JSON.stringify(data));
+            this.transformerDto = data;
+            if (data.attachment && data.attachment.path) {
+                this.attachmentData = JSON.parse(data.attachment.path)
+            } else {
+                this.attachmentData = []
+            }
+        },
+
+        async saveCtrS() {
+            const data = await this.saveAsset()
+            if (data && data.success) {
+                // Load back the saved entity so the UI shows exactly what was stored
+                if (data.data) {
+                    // Convert Entity -> DTO before binding to UI
+                    const dto = transformerMapping.transformerEntityToDto(data.data)
+                    this.loadData(dto)
+                }
+                this.$message.success("Asset saved successfully")
+            } else {
+                this.$message.error("Failed to save asset")
+            }
+        },
+
+        async resetForm() {
+            this.transformerDto = new TransformerDataDto(),
+            this.oldTransformerDto = new TransformerDataDto(),
+            this.attachmentData = []
+        },
+
         checkTransformerDto(data) {
-            this.checkPsrId()
+            this.checkPsrId(data)
             this.checkOldTransformerEndInfo(data)
             this.checkAsset(data)
             this.checkLifecycleDate(data)
             this.checkAssetInfo(data)
+            this.checkLocationId(data)
+            this.checkAssetPrs(data)
             this.checkProductAssetModel(data)
+            this.checkAttachment(data);
             this.checkVoltageRating(data)
             this.checkPowerRating(data)
             this.checkCurrentRating(data)
@@ -216,9 +175,15 @@ export default {
             return data;
         },
 
-        checkPsrId() {
-            if(this.parent.mrid !== null && this.parent.mrid !== '') {
-                this.transformerDto.psrId = this.parent.mrid
+        checkPsrId(data) {
+            if (this.parentData.mrid !== null && this.parentData.mrid !== '' && this.parentData.mrid !== undefined) {
+                data.psrId = this.parentData.mrid
+            }
+        },
+
+        async checkAssetPrs(data) {
+            if (data.assetPsrId === null || data.assetPsrId === '') {
+                data.assetPsrId = uuid.newUuid();
             }
         },
 
@@ -260,6 +225,12 @@ export default {
             }
         },
 
+        checkLocationId(data) {
+            if (data.locationId === null || data.locationId === '') {
+                data.locationId = this.locationId;
+            }
+        },
+
         checkAsset(data) {
             if(data.properties.mrid === null || data.properties.mrid === '') {
                 data.properties.mrid = uuid.newUuid()
@@ -281,6 +252,19 @@ export default {
         checkProductAssetModel(data) {
             if(data.productAssetModelId === null || data.productAssetModelId === '') {
                 data.productAssetModelId = uuid.newUuid()
+            }
+        },
+
+        checkAttachment(data) {
+            if (data.attachmentId === null || data.attachmentId === '') {
+                if (this.attachmentData.length > 0) {
+                    data.attachmentId = uuid.newUuid()
+                    data.attachment.id = data.attachmentId
+                    data.attachment.name = null
+                    data.attachment.path = JSON.stringify(this.attachmentData)
+                    data.attachment.type = 'asset'
+                    data.attachment.id_foreign = data.properties.mrid
+                }
             }
         },
 
@@ -539,157 +523,157 @@ export default {
             }
             if(this.transformerDto.properties.type === this.$constant.TWO_WINDING) {
                 if(this.transformerDto.winding_configuration.phases === '1') {
-                    this.bushing_data.tert = []
-                    if(this.bushing_data.prim.length === 0) {
+                    this.transformerDto.bushing_data.tert = []
+                    if(this.transformerDto.bushing_data.prim.length === 0) {
                         for(let i = 1; i <= 2; i++) {
                             const bushing = Object.assign({}, bushingTemplate);
                             bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                            this.bushing_data.prim.push(bushing);
+                            this.transformerDto.bushing_data.prim.push(bushing);
                         }
                     } else {
-                        if(this.bushing_data.prim.length < 2) {
-                            for(let i = this.bushing_data.prim.length + 1; i <= 2; i++) {
+                        if(this.transformerDto.bushing_data.prim.length < 2) {
+                            for(let i = this.transformerDto.bushing_data.prim.length + 1; i <= 2; i++) {
                                 const bushing = Object.assign({}, bushingTemplate);
                                 bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.prim.push(bushing);
+                                this.transformerDto.bushing_data.prim.push(bushing);
                             }
-                        } else if(this.bushing_data.prim.length > 2) {
-                            for(let i = 3; i <= this.bushing_data.prim.length; i++) {
-                                this.bushing_data.prim.splice(i-1,1);
+                        } else if(this.transformerDto.bushing_data.prim.length > 2) {
+                            for(let i = 3; i <= this.transformerDto.bushing_data.prim.length; i++) {
+                                this.transformerDto.bushing_data.prim.splice(i-1,1);
                             }
                         }
-                        for(let i = 1; i <= this.bushing_data.prim.length; i++) {
-                            this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        for(let i = 1; i <= this.transformerDto.bushing_data.prim.length; i++) {
+                            this.transformerDto.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                         }
                     }
-                    if(this.bushing_data.sec.length === 0) {
+                    if(this.transformerDto.bushing_data.sec.length === 0) {
                         for(let i = 1; i <= 2; i++) {
                             const bushing = Object.assign({}, bushingTemplate);
                             bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                            this.bushing_data.sec.push(bushing);
+                            this.transformerDto.bushing_data.sec.push(bushing);
                         }
                     } else {
-                        if(this.bushing_data.sec.length < 2) {
-                            for(let i = this.bushing_data.sec.length + 1; i <= 2; i++) {
+                        if(this.transformerDto.bushing_data.sec.length < 2) {
+                            for(let i = this.transformerDto.bushing_data.sec.length + 1; i <= 2; i++) {
                                 const bushing = Object.assign({}, bushingTemplate);
                                 bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.sec.push(bushing);
+                                this.transformerDto.bushing_data.sec.push(bushing);
                             }
-                        } else if(this.bushing_data.sec.length > 2) {
-                            for(let i = 3; i <= this.bushing_data.sec.length; i++) {
-                                this.bushing_data.sec.splice(i-1,1);
+                        } else if(this.transformerDto.bushing_data.sec.length > 2) {
+                            for(let i = 3; i <= this.transformerDto.bushing_data.sec.length; i++) {
+                                this.transformerDto.bushing_data.sec.splice(i-1,1);
                             }
                         }
-                        for(let i = 1; i <= this.bushing_data.sec.length; i++) {
-                            this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        for(let i = 1; i <= this.transformerDto.bushing_data.sec.length; i++) {
+                            this.transformerDto.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                         }
                     }
                 } else if(this.transformerDto.winding_configuration.phases === '3') {
-                    this.bushing_data.tert = []
-                    if(this.bushing_data.prim.length === 0) {
+                    this.transformerDto.bushing_data.tert = []
+                    if(this.transformerDto.bushing_data.prim.length === 0) {
                         if(this.transformerDto.winding_configuration.vector_group.prim === WindingConnection.Yn) {
                             for(let i = 1; i <= 4; i++) {
                                 const bushing = Object.assign({}, bushingTemplate);
                                 bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.prim.push(bushing);
+                                this.transformerDto.bushing_data.prim.push(bushing);
                             }
                         } else {
                             for(let i = 1; i <= 3; i++) {
                                 const bushing = Object.assign({}, bushingTemplate);
                                 bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.prim.push(bushing);
+                                this.transformerDto.bushing_data.prim.push(bushing);
                             }
                         }
                     } else {
                         if(this.transformerDto.winding_configuration.vector_group.prim === WindingConnection.Yn || this.transformerDto.winding_configuration.vector_group.prim === '') {
-                            if(this.bushing_data.prim.length < 4) {
-                                for(let i = this.bushing_data.prim.length + 1; i <= 4; i++) {
+                            if(this.transformerDto.bushing_data.prim.length < 4) {
+                                for(let i = this.transformerDto.bushing_data.prim.length + 1; i <= 4; i++) {
                                     const bushing = Object.assign({}, bushingTemplate);
                                     bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                    this.bushing_data.prim.push(bushing);
+                                    this.transformerDto.bushing_data.prim.push(bushing);
                                 }
-                                for(let i = 1; i <= this.bushing_data.prim.length; i++) {
-                                    this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                for(let i = 1; i <= this.transformerDto.bushing_data.prim.length; i++) {
+                                    this.transformerDto.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                                 }
                             } else {
-                                for(let i = 1; i <= this.bushing_data.prim.length; i++) {
-                                    this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                for(let i = 1; i <= this.transformerDto.bushing_data.prim.length; i++) {
+                                    this.transformerDto.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                                 }
                             }
                         } else {
-                            if(this.bushing_data.prim.length < 3) {
-                                for(let i = this.bushing_data.prim.length + 1; i <= 3; i++) {
+                            if(this.transformerDto.bushing_data.prim.length < 3) {
+                                for(let i = this.transformerDto.bushing_data.prim.length + 1; i <= 3; i++) {
                                     const bushing = Object.assign({}, bushingTemplate);
                                     bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                    this.bushing_data.prim.push(bushing);
+                                    this.transformerDto.bushing_data.prim.push(bushing);
                                 }
-                                for(let i = 1; i <= this.bushing_data.prim.length; i++) {
-                                    this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                for(let i = 1; i <= this.transformerDto.bushing_data.prim.length; i++) {
+                                    this.transformerDto.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                                 }
                             } else {
-                                if(this.bushing_data.prim.length === 3) {
-                                    for(let i = 1; i <= this.bushing_data.prim.length; i++) {
-                                        this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                if(this.transformerDto.bushing_data.prim.length === 3) {
+                                    for(let i = 1; i <= this.transformerDto.bushing_data.prim.length; i++) {
+                                        this.transformerDto.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                                     }
                                 } else {
                                     for(let i = 1; i <= 3; i++) {
-                                        this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                        this.transformerDto.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                                     }
-                                    this.bushing_data.prim.splice(3,1);
+                                    this.transformerDto.bushing_data.prim.splice(3,1);
                                 }
                             }
                         }
                     }
-                    if(this.bushing_data.sec.length === 0) {
+                    if(this.transformerDto.bushing_data.sec.length === 0) {
                         if(this.transformerDto.winding_configuration.vector_group.sec.i === WindingConnection.Yn) {
                             for(let i = 1; i <= 4; i++) {
                                 const bushing = Object.assign({}, bushingTemplate);
                                 bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.sec.push(bushing);
+                                this.transformerDto.bushing_data.sec.push(bushing);
                             }
                         } else {
                             for(let i = 1; i <= 3; i++) {
                                 const bushing = Object.assign({}, bushingTemplate);
                                 bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.sec.push(bushing);
+                                this.transformerDto.bushing_data.sec.push(bushing);
                             }
                         }
                     } else {
                         if(this.transformerDto.winding_configuration.vector_group.sec.i === WindingConnection.Yn || this.transformerDto.winding_configuration.vector_group.sec.i === '') {
-                            if(this.bushing_data.sec.length < 4) {
-                                for(let i = this.bushing_data.sec.length + 1; i <= 4; i++) {
+                            if(this.transformerDto.bushing_data.sec.length < 4) {
+                                for(let i = this.transformerDto.bushing_data.sec.length + 1; i <= 4; i++) {
                                     const bushing = Object.assign({}, bushingTemplate);
                                     bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                    this.bushing_data.sec.push(bushing);
+                                    this.transformerDto.bushing_data.sec.push(bushing);
                                 }
-                                for(let i = 1; i <= this.bushing_data.sec.length; i++) {
-                                    this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                for(let i = 1; i <= this.transformerDto.bushing_data.sec.length; i++) {
+                                    this.transformerDto.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                                 }
                             } else {
-                                for(let i = 1; i <= this.bushing_data.sec.length; i++) {
-                                    this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                for(let i = 1; i <= this.transformerDto.bushing_data.sec.length; i++) {
+                                    this.transformerDto.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                                 }
                             }
                         } else {
-                            if(this.bushing_data.sec.length < 3) {
-                                for(let i = this.bushing_data.sec.length + 1; i <= 3; i++) {
+                            if(this.transformerDto.bushing_data.sec.length < 3) {
+                                for(let i = this.transformerDto.bushing_data.sec.length + 1; i <= 3; i++) {
                                     const bushing = Object.assign({}, bushingTemplate);
                                     bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                    this.bushing_data.sec.push(bushing);
+                                    this.transformerDto.bushing_data.sec.push(bushing);
                                 }
-                                for(let i = 1; i <= this.bushing_data.sec.length; i++) {
-                                    this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                for(let i = 1; i <= this.transformerDto.bushing_data.sec.length; i++) {
+                                    this.transformerDto.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                                 }
                             } else {
-                                if(this.bushing_data.sec.length === 3) {
-                                    for(let i = 1; i <= this.bushing_data.sec.length; i++) {
-                                        this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                if(this.transformerDto.bushing_data.sec.length === 3) {
+                                    for(let i = 1; i <= this.transformerDto.bushing_data.sec.length; i++) {
+                                        this.transformerDto.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                                     }
                                 } else {
                                     for(let i = 1; i <= 3; i++) {
-                                        this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                        this.transformerDto.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                                     }
-                                    this.bushing_data.sec.splice(3,1);
+                                    this.transformerDto.bushing_data.sec.splice(3,1);
                                 }
                             }
                         }
@@ -697,223 +681,223 @@ export default {
                 }
             } else if(this.transformerDto.properties.type === this.$constant.THREE_WINDING) {
                 if(this.transformerDto.winding_configuration.phases === '1') {
-                    if(this.bushing_data.prim.length === 0) {   
+                    if(this.transformerDto.bushing_data.prim.length === 0) {   
                         for(let i = 1; i <= 2; i++) {
                             const bushing = Object.assign({}, bushingTemplate);
                             bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                            this.bushing_data.prim.push(bushing);
+                            this.transformerDto.bushing_data.prim.push(bushing);
                         }
                     } else {
-                        if(this.bushing_data.prim.length < 2) {
-                            for(let i = this.bushing_data.prim.length + 1; i <= 2; i++) {
+                        if(this.transformerDto.bushing_data.prim.length < 2) {
+                            for(let i = this.transformerDto.bushing_data.prim.length + 1; i <= 2; i++) {
                                 const bushing = Object.assign({}, bushingTemplate);
                                 bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.prim.push(bushing);
+                                this.transformerDto.bushing_data.prim.push(bushing);
                             }
-                        } else if(this.bushing_data.prim.length > 2) {
-                            for(let i = 3; i <= this.bushing_data.prim.length; i++) {
-                                this.bushing_data.prim.splice(i-1,1);
+                        } else if(this.transformerDto.bushing_data.prim.length > 2) {
+                            for(let i = 3; i <= this.transformerDto.bushing_data.prim.length; i++) {
+                                this.transformerDto.bushing_data.prim.splice(i-1,1);
                             }
                         }
-                        for(let i = 1; i <= this.bushing_data.prim.length; i++) {
-                            this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        for(let i = 1; i <= this.transformerDto.bushing_data.prim.length; i++) {
+                            this.transformerDto.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                         }
                     }
-                    if(this.bushing_data.sec.length === 0) {
+                    if(this.transformerDto.bushing_data.sec.length === 0) {
                         for(let i = 1; i <= 2; i++) {
                             const bushing = Object.assign({}, bushingTemplate);
                             bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                            this.bushing_data.sec.push(bushing);
+                            this.transformerDto.bushing_data.sec.push(bushing);
                         }
                     }
                     else {
-                        if(this.bushing_data.sec.length < 2) {
-                            for(let i = this.bushing_data.sec.length + 1; i <= 2; i++) {
+                        if(this.transformerDto.bushing_data.sec.length < 2) {
+                            for(let i = this.transformerDto.bushing_data.sec.length + 1; i <= 2; i++) {
                                 const bushing = Object.assign({}, bushingTemplate);
                                 bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.sec.push(bushing);
+                                this.transformerDto.bushing_data.sec.push(bushing);
                             }
-                        } else if(this.bushing_data.sec.length > 2) {
-                            for(let i = 3; i <= this.bushing_data.sec.length; i++) {
-                                this.bushing_data.sec.splice(i-1,1);
+                        } else if(this.transformerDto.bushing_data.sec.length > 2) {
+                            for(let i = 3; i <= this.transformerDto.bushing_data.sec.length; i++) {
+                                this.transformerDto.bushing_data.sec.splice(i-1,1);
                             }
                         }
-                        for(let i = 1; i <= this.bushing_data.sec.length; i++) {
-                            this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        for(let i = 1; i <= this.transformerDto.bushing_data.sec.length; i++) {
+                            this.transformerDto.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                         }
                     }
-                    if(this.bushing_data.tert.length === 0) {
+                    if(this.transformerDto.bushing_data.tert.length === 0) {
                         for(let i = 1; i <= 2; i++) {
                             const bushing = Object.assign({}, bushingTemplate);
                             bushing.pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                            this.bushing_data.tert.push(bushing);
+                            this.transformerDto.bushing_data.tert.push(bushing);
                         }
                     }
                     else {
-                        if(this.bushing_data.tert.length < 2) {
-                            for(let i = this.bushing_data.tert.length + 1; i <= 2; i++) {
+                        if(this.transformerDto.bushing_data.tert.length < 2) {
+                            for(let i = this.transformerDto.bushing_data.tert.length + 1; i <= 2; i++) {
                                 const bushing = Object.assign({}, bushingTemplate);
                                 bushing.pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.tert.push(bushing);
+                                this.transformerDto.bushing_data.tert.push(bushing);
                             }
-                        } else if(this.bushing_data.tert.length > 2) {
-                            for(let i = 3; i <= this.bushing_data.tert.length; i++) {
-                                this.bushing_data.tert.splice(i-1,1);
+                        } else if(this.transformerDto.bushing_data.tert.length > 2) {
+                            for(let i = 3; i <= this.transformerDto.bushing_data.tert.length; i++) {
+                                this.transformerDto.bushing_data.tert.splice(i-1,1);
                             }
                         }
-                        for(let i = 1; i <= this.bushing_data.tert.length; i++) {
-                            this.bushing_data.tert[i-1].pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        for(let i = 1; i <= this.transformerDto.bushing_data.tert.length; i++) {
+                            this.transformerDto.bushing_data.tert[i-1].pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                         }
                     }
                 } else if(this.transformerDto.winding_configuration.phases === '3') {
-                    if(this.bushing_data.prim.length === 0) {
+                    if(this.transformerDto.bushing_data.prim.length === 0) {
                         if(this.transformerDto.winding_configuration.vector_group.prim === WindingConnection.Yn) {
                             for(let i = 1; i <= 4; i++) {
                                 const bushing = Object.assign({}, bushingTemplate);
                                 bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.prim.push(bushing);
+                                this.transformerDto.bushing_data.prim.push(bushing);
                             }
                         } else {
                             for(let i = 1; i <= 3; i++) {
                                 const bushing = Object.assign({}, bushingTemplate);
                                 bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.prim.push(bushing);
+                                this.transformerDto.bushing_data.prim.push(bushing);
                             }
                         }
                     } else {
                         if(this.transformerDto.winding_configuration.vector_group.prim === WindingConnection.Yn || this.transformerDto.winding_configuration.vector_group.prim === '') {
-                            if(this.bushing_data.prim.length < 4) {
-                                for(let i = this.bushing_data.prim.length + 1; i <= 4; i++) {
+                            if(this.transformerDto.bushing_data.prim.length < 4) {
+                                for(let i = this.transformerDto.bushing_data.prim.length + 1; i <= 4; i++) {
                                     const bushing = Object.assign({}, bushingTemplate);
                                     bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                    this.bushing_data.prim.push(bushing);
+                                    this.transformerDto.bushing_data.prim.push(bushing);
                                 }
                             }
-                            for(let i = 1; i <= this.bushing_data.prim.length; i++) {
-                                this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                            for(let i = 1; i <= this.transformerDto.bushing_data.prim.length; i++) {
+                                this.transformerDto.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                             }
                         } else {
-                            if(this.bushing_data.prim.length < 3) {
-                                for(let i = this.bushing_data.prim.length + 1; i <= 3; i++) {
+                            if(this.transformerDto.bushing_data.prim.length < 3) {
+                                for(let i = this.transformerDto.bushing_data.prim.length + 1; i <= 3; i++) {
                                     const bushing = Object.assign({}, bushingTemplate);
                                     bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                    this.bushing_data.prim.push(bushing);
+                                    this.transformerDto.bushing_data.prim.push(bushing);
                                 }
-                                for(let i = 1; i <= this.bushing_data.prim.length; i++) {
-                                    this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                for(let i = 1; i <= this.transformerDto.bushing_data.prim.length; i++) {
+                                    this.transformerDto.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                                 }
                             } else {
-                                if(this.bushing_data.prim.length === 3) {
-                                    for(let i = 1; i <= this.bushing_data.prim.length; i++) {
-                                        this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                if(this.transformerDto.bushing_data.prim.length === 3) {
+                                    for(let i = 1; i <= this.transformerDto.bushing_data.prim.length; i++) {
+                                        this.transformerDto.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                                     }
                                 } else {
                                     for(let i = 1; i <= 3; i++) {
-                                        this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                        this.transformerDto.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                                     }
-                                    this.bushing_data.prim.splice(3,1);
+                                    this.transformerDto.bushing_data.prim.splice(3,1);
                                 }
                             }
                         }
                     }
-                    if(this.bushing_data.sec.length === 0) {
+                    if(this.transformerDto.bushing_data.sec.length === 0) {
                         if(this.transformerDto.winding_configuration.vector_group.sec.i === WindingConnection.Yn || this.transformerDto.winding_configuration.vector_group.sec.i === '' || this.transformerDto.winding_configuration.vector_group.sec.i === WindingConnection.Zn) {
                             for(let i = 1; i <= 4; i++) {
                                 const bushing = Object.assign({}, bushingTemplate);
                                 bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.sec.push(bushing);
+                                this.transformerDto.bushing_data.sec.push(bushing);
                             }
                         } else {
                             for(let i = 1; i <= 3; i++) {
                                 const bushing = Object.assign({}, bushingTemplate);
                                 bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.sec.push(bushing);
+                                this.transformerDto.bushing_data.sec.push(bushing);
                             }
                         }
                     }
                     else {
                         if(this.transformerDto.winding_configuration.vector_group.sec.i === WindingConnection.Yn || this.transformerDto.winding_configuration.vector_group.prim === '' || this.transformerDto.winding_configuration.vector_group.sec.i === WindingConnection.Zn) {
-                            if(this.bushing_data.sec.length < 4) {
-                                for(let i = this.bushing_data.sec.length + 1; i <= 4; i++) {
+                            if(this.transformerDto.bushing_data.sec.length < 4) {
+                                for(let i = this.transformerDto.bushing_data.sec.length + 1; i <= 4; i++) {
                                     const bushing = Object.assign({}, bushingTemplate);
                                     bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                    this.bushing_data.sec.push(bushing);
+                                    this.transformerDto.bushing_data.sec.push(bushing);
                                 }
                             }
-                            for(let i = 1; i <= this.bushing_data.sec.length; i++) {
-                                this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                            for(let i = 1; i <= this.transformerDto.bushing_data.sec.length; i++) {
+                                this.transformerDto.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                             }
                         } else {
-                            if(this.bushing_data.sec.length < 3) {
-                                for(let i = this.bushing_data.sec.length + 1; i <= 3; i++) {
+                            if(this.transformerDto.bushing_data.sec.length < 3) {
+                                for(let i = this.transformerDto.bushing_data.sec.length + 1; i <= 3; i++) {
                                     const bushing = Object.assign({}, bushingTemplate);
                                     bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                    this.bushing_data.sec.push(bushing);
+                                    this.transformerDto.bushing_data.sec.push(bushing);
                                 }
-                                for(let i = 1; i <= this.bushing_data.sec.length; i++) {
-                                    this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                for(let i = 1; i <= this.transformerDto.bushing_data.sec.length; i++) {
+                                    this.transformerDto.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                                 }
                             } else {
-                                if(this.bushing_data.sec.length === 3) {
-                                    for(let i = 1; i <= this.bushing_data.sec.length; i++) {
-                                        this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                if(this.transformerDto.bushing_data.sec.length === 3) {
+                                    for(let i = 1; i <= this.transformerDto.bushing_data.sec.length; i++) {
+                                        this.transformerDto.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                                     }
                                 } else {
                                     for(let i = 1; i <= 3; i++) {
-                                        this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                        this.transformerDto.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                                     }
-                                    this.bushing_data.sec.splice(3,1);
+                                    this.transformerDto.bushing_data.sec.splice(3,1);
                                 }
                             }
                         }
                     }
-                    if(this.bushing_data.tert.length === 0) {
+                    if(this.transformerDto.bushing_data.tert.length === 0) {
                         if(this.transformerDto.winding_configuration.vector_group.tert.i === WindingConnection.Yn || this.transformerDto.winding_configuration.vector_group.tert.i === '' || this.transformerDto.winding_configuration.vector_group.tert.i === WindingConnection.Zn) {
                             for(let i = 1; i <= 4; i++) {
                                 const bushing = Object.assign({}, bushingTemplate);
                                 bushing.pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.tert.push(bushing);
+                                this.transformerDto.bushing_data.tert.push(bushing);
                             }
                         } else {
                             for(let i = 1; i <= 3; i++) {
                                 const bushing = Object.assign({}, bushingTemplate);
                                 bushing.pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.tert.push(bushing);
+                                this.transformerDto.bushing_data.tert.push(bushing);
                             }
                         }
                     }
                     else {
                         if(this.transformerDto.winding_configuration.vector_group.tert.i === WindingConnection.Yn || this.transformerDto.winding_configuration.vector_group.tert.i === '' || this.transformerDto.winding_configuration.vector_group.tert.i === WindingConnection.Zn) {
-                            if(this.bushing_data.tert.length < 4) {
-                                for(let i = this.bushing_data.tert.length + 1; i <= 4; i++) {
+                            if(this.transformerDto.bushing_data.tert.length < 4) {
+                                for(let i = this.transformerDto.bushing_data.tert.length + 1; i <= 4; i++) {
                                     const bushing = Object.assign({}, bushingTemplate);
                                     bushing.pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                    this.bushing_data.tert.push(bushing);
+                                    this.transformerDto.bushing_data.tert.push(bushing);
                                 }
                             }
-                            for(let i = 1; i <= this.bushing_data.tert.length; i++) {
-                                this.bushing_data.tert[i-1].pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                            for(let i = 1; i <= this.transformerDto.bushing_data.tert.length; i++) {
+                                this.transformerDto.bushing_data.tert[i-1].pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                             }
                         } else {
-                            if(this.bushing_data.tert.length < 3) {
-                                for(let i = this.bushing_data.tert.length + 1; i <= 3; i++) {
+                            if(this.transformerDto.bushing_data.tert.length < 3) {
+                                for(let i = this.transformerDto.bushing_data.tert.length + 1; i <= 3; i++) {
                                     const bushing = Object.assign({}, bushingTemplate);
                                     bushing.pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                    this.bushing_data.tert.push(bushing);
+                                    this.transformerDto.bushing_data.tert.push(bushing);
                                 }
-                                for(let i = 1; i <= this.bushing_data.tert.length; i++) {
-                                    this.bushing_data.tert[i-1].pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                for(let i = 1; i <= this.transformerDto.bushing_data.tert.length; i++) {
+                                    this.transformerDto.bushing_data.tert[i-1].pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                                 }
                             } else {
-                                if(this.bushing_data.tert.length === 3) {
-                                    for(let i = 1; i <= this.bushing_data.tert.length; i++) {
-                                        this.bushing_data.tert[i-1].pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                if(this.transformerDto.bushing_data.tert.length === 3) {
+                                    for(let i = 1; i <= this.transformerDto.bushing_data.tert.length; i++) {
+                                        this.transformerDto.bushing_data.tert[i-1].pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                                     }
                                 } else {
                                     for(let i = 1; i <= 3; i++) {
-                                        this.bushing_data.tert[i-1].pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                        this.transformerDto.bushing_data.tert[i-1].pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                                     }
-                                    this.bushing_data.tert.splice(3,1);
+                                    this.transformerDto.bushing_data.tert.splice(3,1);
                                 }
                             }
                         }
@@ -921,245 +905,249 @@ export default {
                 }
             } else if(this.transformerDto.properties.type === this.$constant.WITH_TERT) {
                 if(this.transformerDto.winding_configuration.phases === '1') {
-                    if(this.bushing_data.prim.length === 0) {
+                    if(this.transformerDto.bushing_data.prim.length === 0) {
                         for(let i = 1; i <= 2; i++) {
                             const bushing = Object.assign({}, bushingTemplate);
                             bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                            this.bushing_data.prim.push(bushing);
+                            this.transformerDto.bushing_data.prim.push(bushing);
                         }
                     } else {
-                        if(this.bushing_data.prim.length < 2) {
-                            for(let i = this.bushing_data.prim.length + 1; i <= 2; i++) {
+                        if(this.transformerDto.bushing_data.prim.length < 2) {
+                            for(let i = this.transformerDto.bushing_data.prim.length + 1; i <= 2; i++) {
                                 const bushing = Object.assign({}, bushingTemplate);
                                 bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.prim.push(bushing);
+                                this.transformerDto.bushing_data.prim.push(bushing);
                             }
-                        } else if(this.bushing_data.prim.length > 2) {
-                            for(let i = 3; i <= this.bushing_data.prim.length; i++) {
-                                this.bushing_data.prim.splice(i-1,1);
+                        } else if(this.transformerDto.bushing_data.prim.length > 2) {
+                            for(let i = 3; i <= this.transformerDto.bushing_data.prim.length; i++) {
+                                this.transformerDto.bushing_data.prim.splice(i-1,1);
                             }
                         }
-                        for(let i = 1; i <= this.bushing_data.prim.length; i++) {
-                            this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        for(let i = 1; i <= this.transformerDto.bushing_data.prim.length; i++) {
+                            this.transformerDto.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                         }
                     }
-                    if(this.bushing_data.sec.length === 0) {
+                    if(this.transformerDto.bushing_data.sec.length === 0) {
                         for(let i = 1; i <= 1; i++) {
                             const bushing = Object.assign({}, bushingTemplate);
                             bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                            this.bushing_data.sec.push(bushing);
+                            this.transformerDto.bushing_data.sec.push(bushing);
                         }
                     } else {
-                        if(this.bushing_data.sec.length < 1) {
-                            for(let i = this.bushing_data.sec.length + 1; i <= 1; i++) {
+                        if(this.transformerDto.bushing_data.sec.length < 1) {
+                            for(let i = this.transformerDto.bushing_data.sec.length + 1; i <= 1; i++) {
                                 const bushing = Object.assign({}, bushingTemplate);
                                 bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.sec.push(bushing);
+                                this.transformerDto.bushing_data.sec.push(bushing);
                             }
-                        } else if(this.bushing_data.sec.length > 1) {
-                            for(let i = 2; i <= this.bushing_data.sec.length; i++) {
-                                this.bushing_data.sec.splice(i-1,1);
+                        } else if(this.transformerDto.bushing_data.sec.length > 1) {
+                            for(let i = 2; i <= this.transformerDto.bushing_data.sec.length; i++) {
+                                this.transformerDto.bushing_data.sec.splice(i-1,1);
                             }
                         }
-                        for(let i = 1; i <= this.bushing_data.sec.length; i++) {
-                            this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        for(let i = 1; i <= this.transformerDto.bushing_data.sec.length; i++) {
+                            this.transformerDto.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                         }
                     }
-                    if(this.bushing_data.tert.length === 0) {
+                    if(this.transformerDto.bushing_data.tert.length === 0) {
                         for(let i = 1; i <= 2; i++) {
                             const bushing = Object.assign({}, bushingTemplate);
                             bushing.pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                            this.bushing_data.tert.push(bushing);
+                            this.transformerDto.bushing_data.tert.push(bushing);
                         }
                     }
                     else {
-                        if(this.bushing_data.tert.length < 2) {
-                            for(let i = this.bushing_data.tert.length + 1; i <= 2; i++) {
+                        if(this.transformerDto.bushing_data.tert.length < 2) {
+                            for(let i = this.transformerDto.bushing_data.tert.length + 1; i <= 2; i++) {
                                 const bushing = Object.assign({}, bushingTemplate);
                                 bushing.pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.tert.push(bushing);
+                                this.transformerDto.bushing_data.tert.push(bushing);
                             }
-                        } else if(this.bushing_data.tert.length > 2) {
-                            for(let i = 3; i <= this.bushing_data.tert.length; i++) {
-                                this.bushing_data.tert.splice(i-1,1);
+                        } else if(this.transformerDto.bushing_data.tert.length > 2) {
+                            for(let i = 3; i <= this.transformerDto.bushing_data.tert.length; i++) {
+                                this.transformerDto.bushing_data.tert.splice(i-1,1);
                             }
                         }
-                        for(let i = 1; i <= this.bushing_data.tert.length; i++) {
-                            this.bushing_data.tert[i-1].pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        for(let i = 1; i <= this.transformerDto.bushing_data.tert.length; i++) {
+                            this.transformerDto.bushing_data.tert[i-1].pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                         }
                     }
                 } else if(this.transformerDto.winding_configuration.phases === '3') {
-                    if(this.bushing_data.prim.length === 0) {
+                    if(this.transformerDto.bushing_data.prim.length === 0) {
                         for(let i = 1; i <= 4; i++) {
                             const bushing = Object.assign({}, bushingTemplate);
                             bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                            this.bushing_data.prim.push(bushing);
+                            this.transformerDto.bushing_data.prim.push(bushing);
                         }
                     } else {
-                        if(this.bushing_data.prim.length < 4) {
-                            for(let i = this.bushing_data.prim.length + 1; i <= 4; i++) {
+                        if(this.transformerDto.bushing_data.prim.length < 4) {
+                            for(let i = this.transformerDto.bushing_data.prim.length + 1; i <= 4; i++) {
                                 const bushing = Object.assign({}, bushingTemplate);
                                 bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.prim.push(bushing);
+                                this.transformerDto.bushing_data.prim.push(bushing);
                             }
                         }
-                        for(let i = 1; i <= this.bushing_data.prim.length; i++) {
-                            this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        for(let i = 1; i <= this.transformerDto.bushing_data.prim.length; i++) {
+                            this.transformerDto.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                         }
                     }
-                    if(this.bushing_data.sec.length === 0) {
+                    if(this.transformerDto.bushing_data.sec.length === 0) {
                         for(let i = 1; i <= 3; i++) {
                             const bushing = Object.assign({}, bushingTemplate);
                             bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                            this.bushing_data.sec.push(bushing);
+                            this.transformerDto.bushing_data.sec.push(bushing);
                         }
                     } else {
-                        if(this.bushing_data.sec.length < 3) {
-                            for(let i = this.bushing_data.sec.length + 1; i <= 3; i++) {
+                        if(this.transformerDto.bushing_data.sec.length < 3) {
+                            for(let i = this.transformerDto.bushing_data.sec.length + 1; i <= 3; i++) {
                                 const bushing = Object.assign({}, bushingTemplate);
                                 bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.sec.push(bushing);
+                                this.transformerDto.bushing_data.sec.push(bushing);
                             }
-                        } else if(this.bushing_data.sec.length > 3) {
-                            for(let i = 4; i <= this.bushing_data.sec.length; i++) {
-                                this.bushing_data.sec.splice(i-1,1);
+                        } else if(this.transformerDto.bushing_data.sec.length > 3) {
+                            for(let i = 4; i <= this.transformerDto.bushing_data.sec.length; i++) {
+                                this.transformerDto.bushing_data.sec.splice(i-1,1);
                             }
                         }
-                        for(let i = 1; i <= this.bushing_data.sec.length; i++) {
-                            this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        for(let i = 1; i <= this.transformerDto.bushing_data.sec.length; i++) {
+                            this.transformerDto.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                         }
                     }
-                    if(this.bushing_data.tert.length === 0) {
+                    if(this.transformerDto.bushing_data.tert.length === 0) {
                         if(this.transformerDto.winding_configuration.vector_group.tert.i === WindingConnection.Yn || this.transformerDto.winding_configuration.vector_group.tert.i === '' || this.transformerDto.winding_configuration.vector_group.tert.i === WindingConnection.Zn) {
                             for(let i = 1; i <= 4; i++) {
                                 const bushing = Object.assign({}, bushingTemplate);
                                 bushing.pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.tert.push(bushing);
+                                this.transformerDto.bushing_data.tert.push(bushing);
                             }
                         }
                     } else {
                         if(this.transformerDto.winding_configuration.vector_group.tert.i === WindingConnection.Yn || this.transformerDto.winding_configuration.vector_group.tert.i === '' || this.transformerDto.winding_configuration.vector_group.tert.i === WindingConnection.Zn) {
                             for(let i = 1; i <= 4; i++) {
-                                const bushing = Object.assign({}, bushingTemplate);
-                                bushing.pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.tert.push(bushing);
-                            }
-                        } else {
-                            if(this.bushing_data.tert.length < 3) {
-                                for(let i = this.bushing_data.tert.length + 1; i <= 3; i++) {
+                                if(i > this.transformerDto.bushing_data.tert.length) {
                                     const bushing = Object.assign({}, bushingTemplate);
                                     bushing.pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                    this.bushing_data.tert.push(bushing);
+                                    this.transformerDto.bushing_data.tert.push(bushing);
+                                } else {
+                                    this.transformerDto.bushing_data.tert[i-1].pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                                 }
-                            } else if(this.bushing_data.tert.length > 3) {
-                                for(let i = 4; i <= this.bushing_data.tert.length; i++) {
-                                    this.bushing_data.tert.splice(i-1,1);
+                            }
+                        } else {
+                            if(this.transformerDto.bushing_data.tert.length < 3) {
+                                for(let i = this.transformerDto.bushing_data.tert.length + 1; i <= 3; i++) {
+                                    const bushing = Object.assign({}, bushingTemplate);
+                                    bushing.pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                                    this.transformerDto.bushing_data.tert.push(bushing);
+                                }
+                            } else if(this.transformerDto.bushing_data.tert.length > 3) {
+                                for(let i = 4; i <= this.transformerDto.bushing_data.tert.length; i++) {
+                                    this.transformerDto.bushing_data.tert.splice(i-1,1);
                                 }
                             }
                         }
-                        for(let i = 1; i <= this.bushing_data.tert.length; i++) {
-                            this.bushing_data.tert[i-1].pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        for(let i = 1; i <= this.transformerDto.bushing_data.tert.length; i++) {
+                            this.transformerDto.bushing_data.tert[i-1].pos = this.bushingPosReturn(i, 'tert', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                         }
                     }
                 }
             } else if(this.transformerDto.properties.type === this.$constant.WITHOUT_TERT) {
                 if(this.transformerDto.winding_configuration.phases === '1') {
-                    this.bushing_data.tert = [];
-                    if(this.bushing_data.prim.length === 0) {
+                    this.transformerDto.bushing_data.tert = [];
+                    if(this.transformerDto.bushing_data.prim.length === 0) {
                         for(let i = 1; i <= 2; i++) {
                             const bushing = Object.assign({}, bushingTemplate);
                             bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                            this.bushing_data.prim.push(bushing);
+                            this.transformerDto.bushing_data.prim.push(bushing);
                         }
 
                     } else {
-                        if(this.bushing_data.prim.length < 2) {
-                            for(let i = this.bushing_data.prim.length + 1; i <= 2; i++) {
+                        if(this.transformerDto.bushing_data.prim.length < 2) {
+                            for(let i = this.transformerDto.bushing_data.prim.length + 1; i <= 2; i++) {
                                 const bushing = Object.assign({}, bushingTemplate);
                                 bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.prim.push(bushing);
+                                this.transformerDto.bushing_data.prim.push(bushing);
                             }
-                        } else if(this.bushing_data.prim.length > 2) {
-                            for(let i = 3; i <= this.bushing_data.prim.length; i++) {
-                                this.bushing_data.prim.splice(i-1,1);
+                        } else if(this.transformerDto.bushing_data.prim.length > 2) {
+                            for(let i = 3; i <= this.transformerDto.bushing_data.prim.length; i++) {
+                                this.transformerDto.bushing_data.prim.splice(i-1,1);
                             }
                         }
-                        for(let i = 1; i <= this.bushing_data.prim.length; i++) {
-                            this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        for(let i = 1; i <= this.transformerDto.bushing_data.prim.length; i++) {
+                            this.transformerDto.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                         }
                     }
-                    if(this.bushing_data.sec.length === 0) {
+                    if(this.transformerDto.bushing_data.sec.length === 0) {
                         for(let i = 1; i <= 1; i++) {
                             const bushing = Object.assign({}, bushingTemplate);
                             bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                            this.bushing_data.sec.push(bushing);
+                            this.transformerDto.bushing_data.sec.push(bushing);
                         }
                     } else {
-                        if(this.bushing_data.sec.length < 1) {
-                            for(let i = this.bushing_data.sec.length + 1; i <= 1; i++) {
+                        if(this.transformerDto.bushing_data.sec.length < 1) {
+                            for(let i = this.transformerDto.bushing_data.sec.length + 1; i <= 1; i++) {
                                 const bushing = Object.assign({}, bushingTemplate);
                                 bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.sec.push(bushing);
+                                this.transformerDto.bushing_data.sec.push(bushing);
                             }
-                        } else if(this.bushing_data.sec.length > 1) {
-                            for(let i = 2; i <= this.bushing_data.sec.length; i++) {
-                                this.bushing_data.sec.splice(i-1,1);
+                        } else if(this.transformerDto.bushing_data.sec.length > 1) {
+                            for(let i = 2; i <= this.transformerDto.bushing_data.sec.length; i++) {
+                                this.transformerDto.bushing_data.sec.splice(i-1,1);
                             }
                         }
-                        for(let i = 1; i <= this.bushing_data.sec.length; i++) {
-                            this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        for(let i = 1; i <= this.transformerDto.bushing_data.sec.length; i++) {
+                            this.transformerDto.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                         }
                     }
                 } else if(this.transformerDto.winding_configuration.phases === '3') {
-                    this.bushing_data.tert = [];
-                    if(this.bushing_data.prim.length === 0) {
+                    this.transformerDto.bushing_data.tert = [];
+                    if(this.transformerDto.bushing_data.prim.length === 0) {
                         for(let i = 1; i <= 4; i++) {
                             const bushing = Object.assign({}, bushingTemplate);
                             bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                            this.bushing_data.prim.push(bushing);
+                            this.transformerDto.bushing_data.prim.push(bushing);
                         }
 
                     } else {
-                        if(this.bushing_data.prim.length < 4) {
-                            for(let i = this.bushing_data.prim.length + 1; i <= 4; i++) {
+                        if(this.transformerDto.bushing_data.prim.length < 4) {
+                            for(let i = this.transformerDto.bushing_data.prim.length + 1; i <= 4; i++) {
                                 const bushing = Object.assign({}, bushingTemplate);
                                 bushing.pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.prim.push(bushing);
+                                this.transformerDto.bushing_data.prim.push(bushing);
                             }
-                        } else if(this.bushing_data.prim.length > 4) {
-                            for(let i = 5; i <= this.bushing_data.prim.length; i++) {
-                                this.bushing_data.prim.splice(i-1,1);
+                        } else if(this.transformerDto.bushing_data.prim.length > 4) {
+                            for(let i = 5; i <= this.transformerDto.bushing_data.prim.length; i++) {
+                                this.transformerDto.bushing_data.prim.splice(i-1,1);
                             }
                         }
-                        for(let i = 1; i <= this.bushing_data.prim.length; i++) {
-                            this.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        for(let i = 1; i <= this.transformerDto.bushing_data.prim.length; i++) {
+                            this.transformerDto.bushing_data.prim[i-1].pos = this.bushingPosReturn(i, 'prim', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                         }
                     }
-                    if(this.bushing_data.sec.length === 0) {
+                    if(this.transformerDto.bushing_data.sec.length === 0) {
                         for(let i = 1; i <= 3; i++) {
                             const bushing = Object.assign({}, bushingTemplate);
                             bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                            this.bushing_data.sec.push(bushing);
+                            this.transformerDto.bushing_data.sec.push(bushing);
                         }
                     } else {
-                        if(this.bushing_data.sec.length < 3) {
-                            for(let i = this.bushing_data.sec.length + 1; i <= 3; i++) {
+                        if(this.transformerDto.bushing_data.sec.length < 3) {
+                            for(let i = this.transformerDto.bushing_data.sec.length + 1; i <= 3; i++) {
                                 const bushing = Object.assign({}, bushingTemplate);
                                 bushing.pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
-                                this.bushing_data.sec.push(bushing);
+                                this.transformerDto.bushing_data.sec.push(bushing);
                             }
-                        } else if(this.bushing_data.sec.length > 3) {
-                            for(let i = 4; i <= this.bushing_data.sec.length; i++) {
-                                this.bushing_data.sec.splice(i-1,1);
+                        } else if(this.transformerDto.bushing_data.sec.length > 3) {
+                            for(let i = 4; i <= this.transformerDto.bushing_data.sec.length; i++) {
+                                this.transformerDto.bushing_data.sec.splice(i-1,1);
                             }
                         }
-                        for(let i = 1; i <= this.bushing_data.sec.length; i++) {
-                            this.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
+                        for(let i = 1; i <= this.transformerDto.bushing_data.sec.length; i++) {
+                            this.transformerDto.bushing_data.sec[i-1].pos = this.bushingPosReturn(i, 'sec', this.transformerDto.properties.type, this.transformerDto.winding_configuration.phases);
                         }
                     }
                 }
             }
-
+        
             this.changeSurgeArresterData();
         },
 
@@ -1599,74 +1587,94 @@ export default {
                 }
             }
             //primary
-            if(this.surge_arrester.prim.length === 0) {
-                for(let i = 0; i < this.bushing_data.prim.length; i++) {
+            if(this.transformerDto.surge_arrester.prim.length === 0) {
+                for(let i = 0; i < this.transformerDto.bushing_data.prim.length; i++) {
                     const surgeArresterPrim = JSON.parse(JSON.stringify(surgeArresterTemplate))
-                    surgeArresterPrim.ratings.pos = this.bushing_data.prim[i].pos;
-                    this.surge_arrester.prim.push(surgeArresterPrim)
+                    surgeArresterPrim.ratings.pos = this.transformerDto.bushing_data.prim[i].pos;
+                    this.transformerDto.surge_arrester.prim.push(surgeArresterPrim)
                 }
             } else {
-                if(this.surge_arrester.prim.length < this.bushing_data.prim.length) {
-                    for(let i = this.surge_arrester.prim.length; i < this.bushing_data.prim.length; i++) {
+                if(this.transformerDto.surge_arrester.prim.length < this.transformerDto.bushing_data.prim.length) {
+                    for(let i = this.transformerDto.surge_arrester.prim.length; i < this.transformerDto.bushing_data.prim.length; i++) {
                         const surgeArresterPrim = JSON.parse(JSON.stringify(surgeArresterTemplate))
-                        surgeArresterPrim.ratings.pos = this.bushing_data.prim[i].pos;
-                        this.surge_arrester.prim.push(surgeArresterPrim)
+                        surgeArresterPrim.ratings.pos = this.transformerDto.bushing_data.prim[i].pos;
+                        this.transformerDto.surge_arrester.prim.push(surgeArresterPrim)
                     }
-                } else if(this.surge_arrester.prim.length > this.bushing_data.prim.length) {
-                    for(let i = this.bushing_data.prim.length; i < this.surge_arrester.prim.length; i++) {
-                        this.surge_arrester.prim.splice(i, 1);
+                } else if(this.transformerDto.surge_arrester.prim.length > this.transformerDto.bushing_data.prim.length) {
+                    for(let i = this.transformerDto.bushing_data.prim.length; i < this.transformerDto.surge_arrester.prim.length; i++) {
+                        this.transformerDto.surge_arrester.prim.splice(i, 1);
                     }
                 }
-                for(let i = 0; i < this.surge_arrester.prim.length; i++) {
-                    this.surge_arrester.prim[i].ratings.pos = this.bushing_data.prim[i].pos;
+                for(let i = 0; i < this.transformerDto.surge_arrester.prim.length; i++) {
+                    this.transformerDto.surge_arrester.prim[i].ratings.pos = this.transformerDto.bushing_data.prim[i].pos;
                 }
             }
             //secondary
-            if(this.surge_arrester.sec.length === 0) {
-                for(let i = 0; i < this.bushing_data.sec.length; i++) {
+            if(this.transformerDto.surge_arrester.sec.length === 0) {
+                for(let i = 0; i < this.transformerDto.bushing_data.sec.length; i++) {
                     const surgeArresterSec = JSON.parse(JSON.stringify(surgeArresterTemplate))
-                    surgeArresterSec.ratings.pos = this.bushing_data.sec[i].pos;
-                    this.surge_arrester.sec.push(surgeArresterSec)
+                    surgeArresterSec.ratings.pos = this.transformerDto.bushing_data.sec[i].pos;
+                    this.transformerDto.surge_arrester.sec.push(surgeArresterSec)
                 }
             } else {
-                if(this.surge_arrester.sec.length < this.bushing_data.sec.length) {
-                    for(let i = this.surge_arrester.sec.length; i < this.bushing_data.sec.length; i++) {
+                if(this.transformerDto.surge_arrester.sec.length < this.transformerDto.bushing_data.sec.length) {
+                    for(let i = this.transformerDto.surge_arrester.sec.length; i < this.transformerDto.bushing_data.sec.length; i++) {
                         const surgeArresterSec = Object.assign({}, surgeArresterTemplate);
-                        surgeArresterSec.ratings.pos = this.bushing_data.sec[i].pos;
-                        this.surge_arrester.sec.push(surgeArresterSec)
+                        surgeArresterSec.ratings.pos = this.transformerDto.bushing_data.sec[i].pos;
+                        this.transformerDto.surge_arrester.sec.push(surgeArresterSec)
                     }
-                } else if(this.surge_arrester.sec.length > this.bushing_data.sec.length) {
-                    for(let i = this.bushing_data.sec.length; i < this.surge_arrester.sec.length; i++) {
-                        this.surge_arrester.sec.splice(i, 1);
+                } else if(this.transformerDto.surge_arrester.sec.length > this.transformerDto.bushing_data.sec.length) {
+                    for(let i = this.transformerDto.bushing_data.sec.length; i < this.transformerDto.surge_arrester.sec.length; i++) {
+                        this.transformerDto.surge_arrester.sec.splice(i, 1);
                     }
                 }
-                for(let i = 0; i < this.surge_arrester.sec.length; i++) {
-                    this.surge_arrester.sec[i].ratings.pos = this.bushing_data.sec[i].pos;
+                for(let i = 0; i < this.transformerDto.surge_arrester.sec.length; i++) {
+                    this.transformerDto.surge_arrester.sec[i].ratings.pos = this.transformerDto.bushing_data.sec[i].pos;
                 }
             }
             //tertiary
-            if(this.surge_arrester.tert.length === 0) {
-                for(let i = 0; i < this.bushing_data.tert.length; i++) {
+            if(this.transformerDto.surge_arrester.tert.length === 0) {
+                for(let i = 0; i < this.transformerDto.bushing_data.tert.length; i++) {
                     const surgeArresterTert = JSON.parse(JSON.stringify(surgeArresterTemplate))
-                    surgeArresterTert.ratings.pos = this.bushing_data.tert[i].pos;
-                    this.surge_arrester.tert.push(surgeArresterTert)
+                    surgeArresterTert.ratings.pos = this.transformerDto.bushing_data.tert[i].pos;
+                    this.transformerDto.surge_arrester.tert.push(surgeArresterTert)
                 }
             } else {
-                if(this.surge_arrester.tert.length < this.bushing_data.tert.length) {
-                    for(let i = this.surge_arrester.tert.length; i < this.bushing_data.tert.length; i++) {
+                if(this.transformerDto.surge_arrester.tert.length < this.transformerDto.bushing_data.tert.length) {
+                    for(let i = this.transformerDto.surge_arrester.tert.length; i < this.transformerDto.bushing_data.tert.length; i++) {
                         const surgeArresterTert = JSON.parse(JSON.stringify(surgeArresterTemplate))
-                        surgeArresterTert.ratings.pos = this.bushing_data.tert[i].pos;
-                        this.surge_arrester.tert.push(surgeArresterTert)
+                        surgeArresterTert.ratings.pos = this.transformerDto.bushing_data.tert[i].pos;
+                        this.transformerDto.surge_arrester.tert.push(surgeArresterTert)
                     }
-                } else if(this.surge_arrester.tert.length > this.bushing_data.tert.length) {
-                    for(let i = this.bushing_data.tert.length; i < this.surge_arrester.tert.length; i++) {
-                        this.surge_arrester.tert.splice(i, 1);
+                } else if(this.transformerDto.surge_arrester.tert.length > this.transformerDto.bushing_data.tert.length) {
+                    for(let i = this.transformerDto.bushing_data.tert.length; i < this.transformerDto.surge_arrester.tert.length; i++) {
+                        this.transformerDto.surge_arrester.tert.splice(i, 1);
                     }
                 }
-                for(let i = 0; i < this.surge_arrester.tert.length; i++) {
-                    this.surge_arrester.tert[i].ratings.pos = this.bushing_data.tert[i].pos;
+                for(let i = 0; i < this.transformerDto.surge_arrester.tert.length; i++) {
+                    this.transformerDto.surge_arrester.tert[i].ratings.pos = this.transformerDto.bushing_data.tert[i].pos;
                 }
             }
+        },
+
+        removeShortCircuitTest(mrid) {
+            for(let index in this.transformerDto.shortCircuitTestTransformerEndInfo) {
+                if(this.transformerDto.shortCircuitTestTransformerEndInfo[index].short_circuit_test_id === mrid) {
+                    this.transformerDto.shortCircuitTestTransformerEndInfo.splice(index, 1);
+                }
+            }
+        },
+
+        removeShortCircuitTestArr(mrids) {
+            this.transformerDto.shortCircuitTestTransformerEndInfo = this.transformerDto.shortCircuitTestTransformerEndInfo.filter(item => !mrids.includes(item.short_circuit_test_id));
+        },
+
+        addShortCircuitTest(mrid) {
+            this.transformerDto.shortCircuitTestTransformerEndInfo.push({
+                mrid : uuid.newUuid(),
+                short_circuit_test_id : mrid,
+                transformer_end_info_id : ''
+            })
         },
 
     }

@@ -7,6 +7,7 @@ class OldTransformerEndInfo extends TransformerEndInfo {
         this.spare = null; // Reference to the spare status of the transformer end
         this.accessibility = null; // Reference to the accessibility of the transformer end
         this.power_transformer_info_id = null; // Reference to the associated power transformer info
+        this.phase = null; // Reference to the phase of the transformer end
     }
 }
 
