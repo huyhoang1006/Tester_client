@@ -73,7 +73,7 @@ export function mapDtoToEntity(dto) {
     entity.resistance.push(resistance);
 
     entity.oldBreakerInfo.grading_capacitors = dto.circuitBreaker.hasGradingCapacitors || null
-    
+
     entity.oldBreakerInfo.capacitor_value = dto.circuitBreaker.capacitorValue.mrid || null;
     const capacitance = new Capacitance()
     mappingUnit(capacitance, dto.circuitBreaker.capacitorValue);
@@ -85,7 +85,7 @@ export function mapDtoToEntity(dto) {
     //rating
     entity.breakerRatingInfo.mrid = dto.breakerRatingInfoId || null
     entity.oldBreakerInfo.rated_frequency = dto.ratings.rated_frequency.mrid || null;
-    if(dto.ratings.rated_frequency.value != 'Custom') {
+    if (dto.ratings.rated_frequency.value != 'Custom') {
         const frequency = new Frequency()
         mappingUnit(frequency, dto.ratings.rated_frequency);
         entity.frequency.push(frequency);
@@ -150,7 +150,7 @@ export function mapDtoToEntity(dto) {
     const nominalTotalTravel = new Length()
     mappingUnit(nominalTotalTravel, dto.contactSystem.nominal_total_travel);
     entity.length.push(nominalTotalTravel);
-    
+
     entity.breakerContactSystemInfo.damping_time = dto.contactSystem.damping_time.mrid || null
     const dampingTime = new Seconds()
     mappingUnit(dampingTime, dto.contactSystem.damping_time);
@@ -253,7 +253,7 @@ export function mapDtoToEntity(dto) {
     mappingUnit(ratedOperatingPressureTemperature, dto.operating.rated_operating_pressure_temperature);
     entity.temperature.push(ratedOperatingPressureTemperature);
 
-    for(const i in dto.operating.trip_coil_component) {
+    for (const i in dto.operating.trip_coil_component) {
         const tripCoilComponent = new OperatingMechanismComponent()
         tripCoilComponent.mrid = dto.operating.trip_coil_component[i].mrid || null
         tripCoilComponent.operating_mechanism_id = dto.operatingMechanismId || null
@@ -278,7 +278,7 @@ export function mapDtoToEntity(dto) {
         entity.operatingMechanismComponent.push(tripCoilComponent);
     }
 
-    for(const i in dto.operating.close_coil_component) {
+    for (const i in dto.operating.close_coil_component) {
         const closeCoilComponent = new OperatingMechanismComponent()
         closeCoilComponent.mrid = dto.operating.close_coil_component[i].mrid || null
         closeCoilComponent.operating_mechanism_id = dto.operatingMechanismId || null
@@ -306,7 +306,7 @@ export function mapDtoToEntity(dto) {
     entity.assessmentLimitBreakerInfo.mrid = dto.assessmentLimitBreakerInfoId || null
     entity.assessmentLimitBreakerInfo.breaker_info_id = dto.assetInfoId || null
     entity.assessmentLimitBreakerInfo.limit_type = dto.assessmentLimits.limits || null
-    
+
     //contact resistance
     const contactResistanceBreakerInfo = new ContactResistanceBreakerInfo()
     contactResistanceBreakerInfo.mrid = dto.assessmentLimits.contact_resistance.mrid || null
@@ -331,7 +331,7 @@ export function mapDtoToEntity(dto) {
     entity.contactResistanceBreakerInfo.push(contactResistanceBreakerInfo);
 
     //operating time
-    for(const i in breaker_constant.opening_times) {
+    for (const i in breaker_constant.opening_times) {
         const operatingTimeBreakerInfo = new OperatingTimeBreakerInfo()
         operatingTimeBreakerInfo.mrid = dto.assessmentLimits.operating_time.abs[breaker_constant.opening_times[i].value].mrid || null
         operatingTimeBreakerInfo.parameter_name = breaker_constant.opening_times[i].label || null
@@ -361,7 +361,7 @@ export function mapDtoToEntity(dto) {
     }
 
     //Contact travel
-    for(const i in breaker_constant.contact_travel) {
+    for (const i in breaker_constant.contact_travel) {
         const contactTravelBreakerInfo = new ContactTravelBreakerInfo()
         contactTravelBreakerInfo.mrid = dto.assessmentLimits.contact_travel.abs[breaker_constant.contact_travel[i].value].mrid || null
         contactTravelBreakerInfo.parameter_name = breaker_constant.contact_travel[i].label || null
@@ -391,7 +391,7 @@ export function mapDtoToEntity(dto) {
     entity.auxiliaryContactsBreakerInfo.assessment_limit_breaker_info_id = dto.assessmentLimitBreakerInfoId || null
 
     //Trip operation
-    for(const i in breaker_constant.auxiliary_contact) {
+    for (const i in breaker_constant.auxiliary_contact) {
         const tripOperation = new TripOperation()
         tripOperation.mrid = dto.assessmentLimits.auxiliary_contacts.trip_operation.abs[breaker_constant.auxiliary_contact[i].value].mrid || null
         tripOperation.parameter_name = breaker_constant.auxiliary_contact[i].label || null
@@ -416,7 +416,7 @@ export function mapDtoToEntity(dto) {
     }
 
     //close trip
-    for(const i in breaker_constant.auxiliary_contact) {
+    for (const i in breaker_constant.auxiliary_contact) {
         const closeOperation = new CloseOperation()
         closeOperation.mrid = dto.assessmentLimits.auxiliary_contacts.close_operation.abs[breaker_constant.auxiliary_contact[i].value].mrid || null
         closeOperation.parameter_name = breaker_constant.auxiliary_contact[i].label || null
@@ -441,7 +441,7 @@ export function mapDtoToEntity(dto) {
     }
 
     //Miscellaneous
-    for(const i in breaker_constant.miscellaneous) {
+    for (const i in breaker_constant.miscellaneous) {
         const miscellaneousBreakerInfo = new MiscellaneousBreakerInfo()
         miscellaneousBreakerInfo.mrid = dto.assessmentLimits.miscellaneous.abs[breaker_constant.miscellaneous[i].value].mrid || null
         miscellaneousBreakerInfo.parameter_name = breaker_constant.miscellaneous[i].label || null
@@ -466,7 +466,7 @@ export function mapDtoToEntity(dto) {
     }
 
     //Coil Characteristics
-    for(const i in breaker_constant.coil_characteristics) {
+    for (const i in breaker_constant.coil_characteristics) {
         const coilCharacteristicsBreakerInfo = new CoilCharacteristicsBreakerInfo()
         coilCharacteristicsBreakerInfo.mrid = dto.assessmentLimits.coil_characteristics.abs[breaker_constant.coil_characteristics[i].value].mrid || null
         coilCharacteristicsBreakerInfo.parameter_name = breaker_constant.coil_characteristics[i].label || null
@@ -496,7 +496,7 @@ export function mapDtoToEntity(dto) {
     }
 
     //Pickup voltage
-    for(const i in breaker_constant.pickup_voltage) {
+    for (const i in breaker_constant.pickup_voltage) {
         const pickupVoltageBreakerInfo = new PickupVoltageBreakerInfo()
         pickupVoltageBreakerInfo.mrid = dto.assessmentLimits.pickup_voltage.abs[breaker_constant.pickup_voltage[i].value].mrid || null
         pickupVoltageBreakerInfo.parameter_name = breaker_constant.pickup_voltage[i].label || null
@@ -522,7 +522,7 @@ export function mapDtoToEntity(dto) {
     }
 
     //Motor characteristics
-    for(const i in breaker_constant.motor_characteristics) {
+    for (const i in breaker_constant.motor_characteristics) {
         const motorCharacteristicsBreakerInfo = new MotorCharacteristicsBreakerInfo()
         motorCharacteristicsBreakerInfo.mrid = dto.assessmentLimits.motor_characteristics.abs[breaker_constant.motor_characteristics[i].value].mrid || null
         motorCharacteristicsBreakerInfo.parameter_name = breaker_constant.motor_characteristics[i].label || null
@@ -635,21 +635,21 @@ export function mapEntityToDto(entity) {
     }
 
     dto.circuitBreaker.pirValue.mrid = entity.oldBreakerInfo.pir_value || ''
-    for(const data of entity.resistance) {
-        if(data.mrid == dto.circuitBreaker.pirValue.mrid) {
+    for (const data of entity.resistance) {
+        if (data.mrid == dto.circuitBreaker.pirValue.mrid) {
             dto.circuitBreaker.pirValue.value = data.value || ''
             break
         }
     }
-    
+
     if (entity.oldBreakerInfo.grading_capacitors == 1) {
         dto.circuitBreaker.hasGradingCapacitors = true;
     } else {
         dto.circuitBreaker.hasGradingCapacitors = false;
     }
     dto.circuitBreaker.capacitorValue.mrid = entity.oldBreakerInfo.capacitor_value || ''
-    for(const data of entity.capacitance) {
-        if(data.mrid == dto.circuitBreaker.capacitorValue.mrid) {
+    for (const data of entity.capacitance) {
+        if (data.mrid == dto.circuitBreaker.capacitorValue.mrid) {
             dto.circuitBreaker.capacitorValue.value = data.value || ''
             break
         }
@@ -660,9 +660,9 @@ export function mapEntityToDto(entity) {
     dto.breakerRatingInfoId = entity.breakerRatingInfo.mrid || ''
     dto.ratings.rated_frequency.mrid = entity.oldBreakerInfo.rated_frequency || ''
     dto.ratings.rated_frequency_custom.mrid = entity.oldBreakerInfo.rated_frequency || ''
-    for(const data of entity.frequency) {
-        if(data.mrid == dto.ratings.rated_frequency.mrid) {
-            if(['50', '60', '16.7'].includes(data.value)) {
+    for (const data of entity.frequency) {
+        if (data.mrid == dto.ratings.rated_frequency.mrid) {
+            if (['50', '60', '16.7'].includes(data.value)) {
                 dto.ratings.rated_frequency.value = data.value || ''
             } else {
                 dto.ratings.rated_frequency_custom.value = data.value || ''
@@ -671,90 +671,90 @@ export function mapEntityToDto(entity) {
         }
     }
     dto.ratings.rated_voltage_ll.mrid = entity.oldBreakerInfo.rated_voltage || ''
-    for(const data of entity.voltage) {
-        if(data.mrid == dto.ratings.rated_voltage_ll.mrid) {
+    for (const data of entity.voltage) {
+        if (data.mrid == dto.ratings.rated_voltage_ll.mrid) {
             dto.ratings.rated_voltage_ll.value = data.value
             break
         }
     }
     dto.ratings.rated_current.mrid = entity.oldBreakerInfo.rated_current
-    for(const data of entity.currentFlow) {
-        if(data.mrid == dto.ratings.rated_current.mrid) {
+    for (const data of entity.currentFlow) {
+        if (data.mrid == dto.ratings.rated_current.mrid) {
             dto.ratings.rated_current.value = data.value
             break
         }
     }
     dto.ratings.rated_short_circuit_breaking_current.mrid = entity.breakerRatingInfo.rated_short_circuit_breaking_current
-    for(const data of entity.currentFlow) {
-        if(data.mrid == dto.ratings.rated_short_circuit_breaking_current.mrid) {
+    for (const data of entity.currentFlow) {
+        if (data.mrid == dto.ratings.rated_short_circuit_breaking_current.mrid) {
             dto.ratings.rated_short_circuit_breaking_current.value = data.value
             break
         }
     }
     dto.ratings.short_circuit_nominal_duration.mrid = entity.breakerRatingInfo.short_circuit_nominal_duration
-    for(const data of entity.second) {
-        if(data.mrid == dto.ratings.short_circuit_nominal_duration.mrid) {
+    for (const data of entity.second) {
+        if (data.mrid == dto.ratings.short_circuit_nominal_duration.mrid) {
             dto.ratings.short_circuit_nominal_duration.value = data.value
             break
         }
     }
     dto.ratings.rated_insulation_level.mrid = entity.breakerRatingInfo.rated_insulation_level
-    for(const data of entity.voltage) {
-        if(data.mrid == dto.ratings.rated_insulation_level.mrid) {
+    for (const data of entity.voltage) {
+        if (data.mrid == dto.ratings.rated_insulation_level.mrid) {
             dto.ratings.rated_insulation_level.value = data.value
             break
         }
     }
     dto.ratings.rated_interrupting_time.mrid = entity.oldBreakerInfo.rated_interrupting_time
-    for(const data of entity.second) {
-        if(data.mrid == dto.ratings.rated_interrupting_time.mrid) {
+    for (const data of entity.second) {
+        if (data.mrid == dto.ratings.rated_interrupting_time.mrid) {
             dto.ratings.rated_interrupting_time.value = data.value
             break
         }
     }
     dto.ratings.interrupting_duty_cycle = entity.breakerRatingInfo.interrupting_duty_cycle
     dto.ratings.rated_power_at_closing.mrid = entity.breakerRatingInfo.rated_power_closing
-    for(const data of entity.activePower) {
-        if(data.mrid == dto.ratings.rated_power_at_closing.mrid) {
+    for (const data of entity.activePower) {
+        if (data.mrid == dto.ratings.rated_power_at_closing.mrid) {
             dto.ratings.rated_power_at_closing.value = data.value
             break
         }
     }
     dto.ratings.rated_power_at_opening.mrid = entity.breakerRatingInfo.rated_power_opening
-    for(const data of entity.activePower) {
-        if(data.mrid == dto.ratings.rated_power_at_opening.mrid) {
+    for (const data of entity.activePower) {
+        if (data.mrid == dto.ratings.rated_power_at_opening.mrid) {
             dto.ratings.rated_power_at_opening.value = data.value
             break
         }
     }
 
     dto.ratings.rated_power_at_motor_charge.mrid = entity.breakerRatingInfo.rated_power_motor_charge
-    for(const data of entity.activePower) {
-        if(data.mrid == dto.ratings.rated_power_at_motor_charge.mrid) {
+    for (const data of entity.activePower) {
+        if (data.mrid == dto.ratings.rated_power_at_motor_charge.mrid) {
             dto.ratings.rated_power_at_motor_charge.value = data.value
             break
         }
     }
     dto.breakerContactSystemInfoId = entity.breakerContactSystemInfo.mrid
     dto.contactSystem.nominal_total_travel.mrid = entity.breakerContactSystemInfo.nominal_total_travel
-    for(const data of entity.length) {
-        if(data.mrid == dto.contactSystem.nominal_total_travel.mrid) {
+    for (const data of entity.length) {
+        if (data.mrid == dto.contactSystem.nominal_total_travel.mrid) {
             dto.contactSystem.nominal_total_travel.value = data.value
             break
         }
     }
 
     dto.contactSystem.damping_time.mrid = entity.breakerContactSystemInfo.damping_time
-    for(const data of entity.second) {
-        if(data.mrid == dto.contactSystem.damping_time.mrid) {
+    for (const data of entity.second) {
+        if (data.mrid == dto.contactSystem.damping_time.mrid) {
             dto.contactSystem.damping_time.value = data.value
             break
         }
     }
 
     dto.contactSystem.nozzle_length.mrid = entity.breakerContactSystemInfo.nozzle_length
-    for(const data of entity.length) {
-        if(data.mrid == dto.contactSystem.nozzle_length.mrid) {
+    for (const data of entity.length) {
+        if (data.mrid == dto.contactSystem.nozzle_length.mrid) {
             dto.contactSystem.nozzle_length.value = data.value
             break
         }
@@ -762,36 +762,36 @@ export function mapEntityToDto(entity) {
 
     dto.breakerOtherInfoId = entity.breakerOtherInfo.mrid
     dto.others.total_weight_with_gas.mrid = entity.breakerOtherInfo.total_weight_with_gas
-    for(const data of entity.mass) {
-        if(data.mrid == dto.others.total_weight_with_gas.mrid) {
+    for (const data of entity.mass) {
+        if (data.mrid == dto.others.total_weight_with_gas.mrid) {
             dto.others.total_weight_with_gas.value = data.value
             break
         }
     }
     dto.others.weight_of_gas.mrid = entity.breakerOtherInfo.weight_of_gas
-    for(const data of entity.mass) {
-        if(data.mrid == dto.others.weight_of_gas.mrid) {
+    for (const data of entity.mass) {
+        if (data.mrid == dto.others.weight_of_gas.mrid) {
             dto.others.weight_of_gas.value = data.value
             break
         }
     }
     dto.others.volume_of_gas.mrid = entity.breakerOtherInfo.volume_of_gas
-    for(const data of entity.volume) {
-        if(data.mrid == dto.others.volume_of_gas.mrid) {
+    for (const data of entity.volume) {
+        if (data.mrid == dto.others.volume_of_gas.mrid) {
             dto.others.volume_of_gas.value = data.value
             break
         }
     }
     dto.others.rated_gas_pressure.mrid = entity.breakerOtherInfo.rated_gas_pressure
-    for(const data of entity.pressure) {
-        if(data.mrid == dto.others.rated_gas_pressure.mrid) {
+    for (const data of entity.pressure) {
+        if (data.mrid == dto.others.rated_gas_pressure.mrid) {
             dto.others.rated_gas_pressure.value = data.value
             break
         }
     }
     dto.others.rated_gas_temperature.mrid = entity.breakerOtherInfo.rated_gas_temperature
-    for(const data of entity.temperature) {
-        if(data.mrid == dto.others.rated_gas_temperature.mrid) {
+    for (const data of entity.temperature) {
+        if (data.mrid == dto.others.rated_gas_temperature.mrid) {
             dto.others.rated_gas_temperature.value = data.value
             break
         }
@@ -810,65 +810,65 @@ export function mapEntityToDto(entity) {
     dto.operating.number_of_close_coil = entity.oldOperatingMechanism.number_of_close_coil
 
     dto.operating.auxiliary_circuits.rated_voltage.mrid = entity.oldOperatingMechanismInfo.rated_auxiliary_circuit_voltage
-    for(const data of entity.voltage) {
-        if(data.mrid == dto.operating.auxiliary_circuits.rated_voltage.mrid) {
+    for (const data of entity.voltage) {
+        if (data.mrid == dto.operating.auxiliary_circuits.rated_voltage.mrid) {
             dto.operating.auxiliary_circuits.rated_voltage.value = data.value
             break
         }
     }
     dto.operating.auxiliary_circuits.rated_current.mrid = entity.oldOperatingMechanismInfo.rated_auxiliary_circuit_current
-    for(const data of entity.currentFlow) {
-        if(data.mrid == dto.operating.auxiliary_circuits.rated_current.mrid) {
+    for (const data of entity.currentFlow) {
+        if (data.mrid == dto.operating.auxiliary_circuits.rated_current.mrid) {
             dto.operating.auxiliary_circuits.rated_current.value = data.value
             break
         }
     }
     dto.operating.auxiliary_circuits.frequency.mrid = entity.oldOperatingMechanismInfo.rated_auxiliary_circuit_frequency
-    for(const data of entity.frequency) {
-        if(data.mrid == dto.operating.auxiliary_circuits.frequency.mrid) {
+    for (const data of entity.frequency) {
+        if (data.mrid == dto.operating.auxiliary_circuits.frequency.mrid) {
             dto.operating.auxiliary_circuits.frequency.value = data.value
             break
         }
     }
     dto.operating.auxiliary_circuits.power = entity.oldOperatingMechanismInfo.auxiliary_circuit_power_type
     dto.operating.motor.rated_voltage.mrid = entity.oldOperatingMechanismInfo.rated_motor_voltage
-    for(const data of entity.voltage) {
-        if(data.mrid == dto.operating.motor.rated_voltage.mrid) {
+    for (const data of entity.voltage) {
+        if (data.mrid == dto.operating.motor.rated_voltage.mrid) {
             dto.operating.motor.rated_voltage.value = data.value
             break
         }
     }
     dto.operating.motor.rated_current.mrid = entity.oldOperatingMechanismInfo.rated_motor_current
-    for(const data of entity.currentFlow) {
-        if(data.mrid == dto.operating.motor.rated_current.mrid) {
+    for (const data of entity.currentFlow) {
+        if (data.mrid == dto.operating.motor.rated_current.mrid) {
             dto.operating.motor.rated_current.value = data.value
             break
         }
     }
     dto.operating.motor.frequency.mrid = entity.oldOperatingMechanismInfo.rated_motor_frequency
-    for(const data of entity.frequency) {
-        if(data.mrid == dto.operating.motor.frequency.mrid) {
+    for (const data of entity.frequency) {
+        if (data.mrid == dto.operating.motor.frequency.mrid) {
             dto.operating.motor.frequency.value = data.value
             break
         }
     }
     dto.operating.motor.power = entity.oldOperatingMechanismInfo.motor_power_type
-    for(const data of entity.operatingMechanismComponent) {
+    for (const data of entity.operatingMechanismComponent) {
         const dataComponent = {
             mrid: '',
-            component : "",
-            rated_voltage : {
+            component: "",
+            rated_voltage: {
                 mrid: '',
                 value: '',
                 unit: 'V'
             },
-            rated_current : {
+            rated_current: {
                 mrid: '',
                 value: '',
                 unit: 'A'
             },
-            power : "",
-            frequency : {
+            power: "",
+            frequency: {
                 mrid: '',
                 value: '',
                 unit: 'Hz'
@@ -877,28 +877,28 @@ export function mapEntityToDto(entity) {
         dataComponent.mrid = data.mrid
         dataComponent.component = data.component
         dataComponent.rated_voltage.mrid = data.rated_voltage
-        for(const data2 of entity.voltage) {
-            if(data2.mrid == dataComponent.rated_voltage.mrid) {
+        for (const data2 of entity.voltage) {
+            if (data2.mrid == dataComponent.rated_voltage.mrid) {
                 dataComponent.rated_voltage.value = data2.value
                 break
             }
         }
         dataComponent.rated_current.mrid = data.rated_current
-        for(const data2 of entity.currentFlow) {
-            if(data2.mrid == dataComponent.rated_current.mrid) {
+        for (const data2 of entity.currentFlow) {
+            if (data2.mrid == dataComponent.rated_current.mrid) {
                 dataComponent.rated_current.value = data2.value
                 break
             }
         }
         dataComponent.power = data.power_type
         dataComponent.frequency.mrid = data.rated_frequency
-        for(const data2 of entity.frequency) {
-            if(data2.mrid == dataComponent.frequency.mrid) {
+        for (const data2 of entity.frequency) {
+            if (data2.mrid == dataComponent.frequency.mrid) {
                 dataComponent.frequency.value = data2.value
                 break
             }
         }
-        if(dataComponent.component.includes("trip")) {
+        if (dataComponent.component.includes("trip")) {
             dto.operating.trip_coil_component.push(dataComponent)
         } else {
             dto.operating.close_coil_component.push(dataComponent)
@@ -906,15 +906,15 @@ export function mapEntityToDto(entity) {
     }
 
     dto.operating.rated_operating_pressure.mrid = entity.oldOperatingMechanismInfo.rated_operating_pressure
-    for(const data of entity.pressure) {
-        if(data.mrid == dto.operating.rated_operating_pressure.mrid) {
+    for (const data of entity.pressure) {
+        if (data.mrid == dto.operating.rated_operating_pressure.mrid) {
             dto.operating.rated_operating_pressure.value = data.value
             break
         }
     }
     dto.operating.rated_operating_pressure_temperature.mrid = entity.oldOperatingMechanismInfo.rated_operating_pressure_temperature
-    for(const data of entity.temperature) {
-        if(data.mrid == dto.operating.rated_operating_pressure_temperature.mrid) {
+    for (const data of entity.temperature) {
+        if (data.mrid == dto.operating.rated_operating_pressure_temperature.mrid) {
             dto.operating.rated_operating_pressure_temperature.value = data.value
             break
         }
@@ -922,112 +922,112 @@ export function mapEntityToDto(entity) {
 
     dto.assessmentLimitBreakerInfoId = entity.assessmentLimitBreakerInfo.mrid
     dto.assessmentLimits.limits = entity.assessmentLimitBreakerInfo.limit_type
-    for(const data of entity.contactResistanceBreakerInfo) {
+    for (const data of entity.contactResistanceBreakerInfo) {
         dto.assessmentLimits.contact_resistance.mrid = data.mrid
         dto.assessmentLimits.contact_resistance.name = data.parameter_name
         dto.assessmentLimits.contact_resistance.abs.r_min.mrid = data.r_min
-        for(const data2 of entity.resistance) {
-            if(data2.mrid == dto.assessmentLimits.contact_resistance.abs.r_min.mrid) {
+        for (const data2 of entity.resistance) {
+            if (data2.mrid == dto.assessmentLimits.contact_resistance.abs.r_min.mrid) {
                 dto.assessmentLimits.contact_resistance.abs.r_min.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.contact_resistance.abs.r_max.mrid = data.r_max
-        for(const data2 of entity.resistance) {
-            if(data2.mrid == dto.assessmentLimits.contact_resistance.abs.r_max.mrid) {
+        for (const data2 of entity.resistance) {
+            if (data2.mrid == dto.assessmentLimits.contact_resistance.abs.r_max.mrid) {
                 dto.assessmentLimits.contact_resistance.abs.r_max.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.contact_resistance.rel.r_ref.mrid = data.r_ref
-        for(const data2 of entity.resistance) {
-            if(data2.mrid == dto.assessmentLimits.contact_resistance.rel.r_ref.mrid) {
+        for (const data2 of entity.resistance) {
+            if (data2.mrid == dto.assessmentLimits.contact_resistance.rel.r_ref.mrid) {
                 dto.assessmentLimits.contact_resistance.rel.r_ref.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.contact_resistance.rel.r_dev.mrid = data.r_dev
-        for(const data2 of entity.resistance) {
-            if(data2.mrid == dto.assessmentLimits.contact_resistance.rel.r_dev.mrid) {
+        for (const data2 of entity.resistance) {
+            if (data2.mrid == dto.assessmentLimits.contact_resistance.rel.r_dev.mrid) {
                 dto.assessmentLimits.contact_resistance.rel.r_dev.value = data2.value
                 break
             }
         }
     }
-    
-    for(const data of entity.operatingTimeBreakerInfo) {
+
+    for (const data of entity.operatingTimeBreakerInfo) {
         const found = breaker_constant.opening_times.find(
             item => item.label === data.parameter_name
         );
         const value = found ? found.value : null;
         dto.assessmentLimits.operating_time.abs[value].mrid = data.mrid
         dto.assessmentLimits.operating_time.abs[value].t_min.mrid = data.t_min
-        for(const data2 of entity.second) {
-            if(data2.mrid == dto.assessmentLimits.operating_time.abs[value].t_min.mrid) {
+        for (const data2 of entity.second) {
+            if (data2.mrid == dto.assessmentLimits.operating_time.abs[value].t_min.mrid) {
                 dto.assessmentLimits.operating_time.abs[value].t_min.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.operating_time.abs[value].t_max.mrid = data.t_max
-        for(const data2 of entity.second) {
-            if(data2.mrid == dto.assessmentLimits.operating_time.abs[value].t_max.mrid) {
+        for (const data2 of entity.second) {
+            if (data2.mrid == dto.assessmentLimits.operating_time.abs[value].t_max.mrid) {
                 dto.assessmentLimits.operating_time.abs[value].t_max.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.operating_time.rel[value].t_ref.mrid = data.t_ref
-        for(const data2 of entity.second) {
-            if(data2.mrid == dto.assessmentLimits.operating_time.rel[value].t_ref.mrid) {
+        for (const data2 of entity.second) {
+            if (data2.mrid == dto.assessmentLimits.operating_time.rel[value].t_ref.mrid) {
                 dto.assessmentLimits.operating_time.rel[value].t_ref.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.operating_time.rel[value].plus_t_dev.mrid = data.t_dev_position
-        for(const data2 of entity.second) {
-            if(data2.mrid == dto.assessmentLimits.operating_time.rel[value].plus_t_dev.mrid) {
+        for (const data2 of entity.second) {
+            if (data2.mrid == dto.assessmentLimits.operating_time.rel[value].plus_t_dev.mrid) {
                 dto.assessmentLimits.operating_time.rel[value].plus_t_dev.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.operating_time.rel[value].minus_t_dev.mrid = data.t_dev_negative
-        for(const data2 of entity.second) {
-            if(data2.mrid == dto.assessmentLimits.operating_time.rel[value].minus_t_dev.mrid) {
+        for (const data2 of entity.second) {
+            if (data2.mrid == dto.assessmentLimits.operating_time.rel[value].minus_t_dev.mrid) {
                 dto.assessmentLimits.operating_time.rel[value].minus_t_dev.value = data2.value
                 break
             }
         }
     }
 
-    for(const data of entity.contactTravelBreakerInfo) {
+    for (const data of entity.contactTravelBreakerInfo) {
         const found = breaker_constant.contact_travel.find(
             item => item.label === data.parameter_name
         );
         const value = found ? found.value : null;
         dto.assessmentLimits.contact_travel.abs[value].mrid = data.mrid
         dto.assessmentLimits.contact_travel.abs[value].d_min.mrid = data.d_min
-        for(const data2 of entity.length) {
-            if(data2.mrid == dto.assessmentLimits.contact_travel.abs[value].d_min.mrid) {
+        for (const data2 of entity.length) {
+            if (data2.mrid == dto.assessmentLimits.contact_travel.abs[value].d_min.mrid) {
                 dto.assessmentLimits.contact_travel.abs[value].d_min.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.contact_travel.abs[value].d_max.mrid = data.d_max
-        for(const data2 of entity.length) {
-            if(data2.mrid == dto.assessmentLimits.contact_travel.abs[value].d_max.mrid) {
+        for (const data2 of entity.length) {
+            if (data2.mrid == dto.assessmentLimits.contact_travel.abs[value].d_max.mrid) {
                 dto.assessmentLimits.contact_travel.abs[value].d_max.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.contact_travel.rel[value].d_ref.mrid = data.d_ref
-        for(const data2 of entity.length) {
-            if(data2.mrid == dto.assessmentLimits.contact_travel.rel[value].d_ref.mrid) {
+        for (const data2 of entity.length) {
+            if (data2.mrid == dto.assessmentLimits.contact_travel.rel[value].d_ref.mrid) {
                 dto.assessmentLimits.contact_travel.rel[value].d_ref.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.contact_travel.rel[value].d_dev.mrid = data.d_dev
-        for(const data2 of entity.length) {
-            if(data2.mrid == dto.assessmentLimits.contact_travel.rel[value].d_dev.mrid) {
+        for (const data2 of entity.length) {
+            if (data2.mrid == dto.assessmentLimits.contact_travel.rel[value].d_dev.mrid) {
                 dto.assessmentLimits.contact_travel.rel[value].d_dev.value = data2.value
                 break
             }
@@ -1035,116 +1035,116 @@ export function mapEntityToDto(entity) {
     }
 
     dto.assessmentLimits.auxiliary_contacts.mrid = entity.auxiliaryContactsBreakerInfo.mrid
-    
-    for(const data of entity.tripOperation) {
+
+    for (const data of entity.tripOperation) {
         const found = breaker_constant.auxiliary_contact.find(
             item => item.label === data.parameter_name
         );
         const value = found ? found.value : null;
         dto.assessmentLimits.auxiliary_contacts.trip_operation.abs[value].mrid = data.mrid
         dto.assessmentLimits.auxiliary_contacts.trip_operation.abs[value].t_min.mrid = data.t_min
-        for(const data2 of entity.second) {
-            if(data2.mrid == dto.assessmentLimits.auxiliary_contacts.trip_operation.abs[value].t_min.mrid) {
+        for (const data2 of entity.second) {
+            if (data2.mrid == dto.assessmentLimits.auxiliary_contacts.trip_operation.abs[value].t_min.mrid) {
                 dto.assessmentLimits.auxiliary_contacts.trip_operation.abs[value].t_min.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.auxiliary_contacts.trip_operation.abs[value].t_max.mrid = data.t_max
-        for(const data2 of entity.second) {
-            if(data2.mrid == dto.assessmentLimits.auxiliary_contacts.trip_operation.abs[value].t_max.mrid) {
+        for (const data2 of entity.second) {
+            if (data2.mrid == dto.assessmentLimits.auxiliary_contacts.trip_operation.abs[value].t_max.mrid) {
                 dto.assessmentLimits.auxiliary_contacts.trip_operation.abs[value].t_max.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.auxiliary_contacts.trip_operation.rel[value].t_ref.mrid = data.t_ref
-        for(const data2 of entity.second) {
-            if(data2.mrid == dto.assessmentLimits.auxiliary_contacts.trip_operation.rel[value].t_ref.mrid) {
+        for (const data2 of entity.second) {
+            if (data2.mrid == dto.assessmentLimits.auxiliary_contacts.trip_operation.rel[value].t_ref.mrid) {
                 dto.assessmentLimits.auxiliary_contacts.trip_operation.rel[value].t_ref.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.auxiliary_contacts.trip_operation.rel[value].t_dev.mrid = data.t_dev
-        for(const data2 of entity.second) {
-            if(data2.mrid == dto.assessmentLimits.auxiliary_contacts.trip_operation.rel[value].t_dev.mrid) {
+        for (const data2 of entity.second) {
+            if (data2.mrid == dto.assessmentLimits.auxiliary_contacts.trip_operation.rel[value].t_dev.mrid) {
                 dto.assessmentLimits.auxiliary_contacts.trip_operation.rel[value].t_dev.value = data2.value
                 break
             }
         }
     }
 
-    for(const data of entity.closeOperation) {
+    for (const data of entity.closeOperation) {
         const found = breaker_constant.auxiliary_contact.find(
             item => item.label === data.parameter_name
         );
         const value = found ? found.value : null;
         dto.assessmentLimits.auxiliary_contacts.close_operation.abs[value].mrid = data.mrid
         dto.assessmentLimits.auxiliary_contacts.close_operation.abs[value].t_min.mrid = data.t_min
-        for(const data2 of entity.second) {
-            if(data2.mrid == dto.assessmentLimits.auxiliary_contacts.close_operation.abs[value].t_min.mrid) {
+        for (const data2 of entity.second) {
+            if (data2.mrid == dto.assessmentLimits.auxiliary_contacts.close_operation.abs[value].t_min.mrid) {
                 dto.assessmentLimits.auxiliary_contacts.close_operation.abs[value].t_min.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.auxiliary_contacts.close_operation.abs[value].t_max.mrid = data.t_max
-        for(const data2 of entity.second) {
-            if(data2.mrid == dto.assessmentLimits.auxiliary_contacts.close_operation.abs[value].t_max.mrid) {
+        for (const data2 of entity.second) {
+            if (data2.mrid == dto.assessmentLimits.auxiliary_contacts.close_operation.abs[value].t_max.mrid) {
                 dto.assessmentLimits.auxiliary_contacts.close_operation.abs[value].t_max.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.auxiliary_contacts.close_operation.rel[value].t_ref.mrid = data.t_ref
-        for(const data2 of entity.second) {
-            if(data2.mrid == dto.assessmentLimits.auxiliary_contacts.close_operation.rel[value].t_ref.mrid) {
+        for (const data2 of entity.second) {
+            if (data2.mrid == dto.assessmentLimits.auxiliary_contacts.close_operation.rel[value].t_ref.mrid) {
                 dto.assessmentLimits.auxiliary_contacts.close_operation.rel[value].t_ref.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.auxiliary_contacts.close_operation.rel[value].t_dev.mrid = data.t_dev
-        for(const data2 of entity.second) {
-            if(data2.mrid == dto.assessmentLimits.auxiliary_contacts.close_operation.rel[value].t_dev.mrid) {
+        for (const data2 of entity.second) {
+            if (data2.mrid == dto.assessmentLimits.auxiliary_contacts.close_operation.rel[value].t_dev.mrid) {
                 dto.assessmentLimits.auxiliary_contacts.close_operation.rel[value].t_dev.value = data2.value
                 break
             }
         }
     }
 
-    for(const data of entity.miscellaneousBreakerInfo) {
+    for (const data of entity.miscellaneousBreakerInfo) {
         const found = breaker_constant.miscellaneous.find(
             item => item.label === data.parameter_name
         );
         const value = found ? found.value : null;
         dto.assessmentLimits.miscellaneous.abs[value].mrid = data.mrid
         dto.assessmentLimits.miscellaneous.abs[value].min.mrid = data.min
-        for(const data2 of entity.quantity) {
-            if(data2.mrid == dto.assessmentLimits.miscellaneous.abs[value].min.mrid) {
+        for (const data2 of entity.quantity) {
+            if (data2.mrid == dto.assessmentLimits.miscellaneous.abs[value].min.mrid) {
                 dto.assessmentLimits.miscellaneous.abs[value].min.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.miscellaneous.abs[value].max.mrid = data.max
-        for(const data2 of entity.quantity) {
-            if(data2.mrid == dto.assessmentLimits.miscellaneous.abs[value].max.mrid) {
+        for (const data2 of entity.quantity) {
+            if (data2.mrid == dto.assessmentLimits.miscellaneous.abs[value].max.mrid) {
                 dto.assessmentLimits.miscellaneous.abs[value].max.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.miscellaneous.rel[value].ref.mrid = data.ref
-        for(const data2 of entity.quantity) {
-            if(data2.mrid == dto.assessmentLimits.miscellaneous.rel[value].ref.mrid) {
+        for (const data2 of entity.quantity) {
+            if (data2.mrid == dto.assessmentLimits.miscellaneous.rel[value].ref.mrid) {
                 dto.assessmentLimits.miscellaneous.rel[value].ref.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.miscellaneous.rel[value].dev.mrid = data.dev
-        for(const data2 of entity.quantity) {
-            if(data2.mrid == dto.assessmentLimits.miscellaneous.rel[value].dev.mrid) {
+        for (const data2 of entity.quantity) {
+            if (data2.mrid == dto.assessmentLimits.miscellaneous.rel[value].dev.mrid) {
                 dto.assessmentLimits.miscellaneous.rel[value].dev.value = data2.value
                 break
             }
         }
     }
 
-    for(const data of entity.coilCharacteristicsBreakerInfo) {
+    for (const data of entity.coilCharacteristicsBreakerInfo) {
         const found = breaker_constant.coil_characteristics.find(
             item => item.label === data.parameter_name
         );
@@ -1152,174 +1152,174 @@ export function mapEntityToDto(entity) {
         dto.assessmentLimits.coil_characteristics.abs[value].mrid = data.mrid
 
         dto.assessmentLimits.coil_characteristics.abs[value].min.mrid = data.min
-        for(const data2 of entity.quantity) {
-            if(data2.mrid == dto.assessmentLimits.coil_characteristics.abs[value].min.mrid) {
+        for (const data2 of entity.quantity) {
+            if (data2.mrid == dto.assessmentLimits.coil_characteristics.abs[value].min.mrid) {
                 dto.assessmentLimits.coil_characteristics.abs[value].min.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.coil_characteristics.abs[value].max.mrid = data.max
-        for(const data2 of entity.quantity) {
-            if(data2.mrid == dto.assessmentLimits.coil_characteristics.abs[value].max.mrid) {
+        for (const data2 of entity.quantity) {
+            if (data2.mrid == dto.assessmentLimits.coil_characteristics.abs[value].max.mrid) {
                 dto.assessmentLimits.coil_characteristics.abs[value].max.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.coil_characteristics.rel[value].ref.mrid = data.ref
-        for(const data2 of entity.quantity) {
-            if(data2.mrid == dto.assessmentLimits.coil_characteristics.rel[value].ref.mrid) {
+        for (const data2 of entity.quantity) {
+            if (data2.mrid == dto.assessmentLimits.coil_characteristics.rel[value].ref.mrid) {
                 dto.assessmentLimits.coil_characteristics.rel[value].ref.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.coil_characteristics.rel[value].plus_dev.mrid = data.dev_positive
-        for(const data2 of entity.quantity) {
-            if(data2.mrid == dto.assessmentLimits.coil_characteristics.rel[value].plus_dev.mrid) {
+        for (const data2 of entity.quantity) {
+            if (data2.mrid == dto.assessmentLimits.coil_characteristics.rel[value].plus_dev.mrid) {
                 dto.assessmentLimits.coil_characteristics.rel[value].plus_dev.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.coil_characteristics.rel[value].minus_dev.mrid = data.dev_negative
-        for(const data2 of entity.quantity) {
-            if(data2.mrid == dto.assessmentLimits.coil_characteristics.rel[value].minus_dev.mrid) {
+        for (const data2 of entity.quantity) {
+            if (data2.mrid == dto.assessmentLimits.coil_characteristics.rel[value].minus_dev.mrid) {
                 dto.assessmentLimits.coil_characteristics.rel[value].minus_dev.value = data2.value
                 break
             }
         }
     }
-    
-    for(const data of entity.pickupVoltageBreakerInfo) {
+
+    for (const data of entity.pickupVoltageBreakerInfo) {
         const found = breaker_constant.pickup_voltage.find(
             item => item.label === data.parameter_name
         );
         const value = found ? found.value : null;
         dto.assessmentLimits.pickup_voltage.abs[value].mrid = data.mrid
         dto.assessmentLimits.pickup_voltage.abs[value].v_min.mrid = data.v_min
-        for(const data2 of entity.voltage) {
-            if(data2.mrid == dto.assessmentLimits.pickup_voltage.abs[value].v_min.mrid) {
+        for (const data2 of entity.voltage) {
+            if (data2.mrid == dto.assessmentLimits.pickup_voltage.abs[value].v_min.mrid) {
                 dto.assessmentLimits.pickup_voltage.abs[value].v_min.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.pickup_voltage.abs[value].v_max.mrid = data.v_max
-        for(const data2 of entity.voltage) {
-            if(data2.mrid == dto.assessmentLimits.pickup_voltage.abs[value].v_max.mrid) {
+        for (const data2 of entity.voltage) {
+            if (data2.mrid == dto.assessmentLimits.pickup_voltage.abs[value].v_max.mrid) {
                 dto.assessmentLimits.pickup_voltage.abs[value].v_max.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.pickup_voltage.rel[value].v_ref.mrid = data.v_ref
-        for(const data2 of entity.voltage) {
-            if(data2.mrid == dto.assessmentLimits.pickup_voltage.rel[value].v_ref.mrid) {
+        for (const data2 of entity.voltage) {
+            if (data2.mrid == dto.assessmentLimits.pickup_voltage.rel[value].v_ref.mrid) {
                 dto.assessmentLimits.pickup_voltage.rel[value].v_ref.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.pickup_voltage.rel[value].v_dev.mrid = data.v_dev
-        for(const data2 of entity.voltage) {
-            if(data2.mrid == dto.assessmentLimits.pickup_voltage.rel[value].v_dev.mrid) {
+        for (const data2 of entity.voltage) {
+            if (data2.mrid == dto.assessmentLimits.pickup_voltage.rel[value].v_dev.mrid) {
                 dto.assessmentLimits.pickup_voltage.rel[value].v_dev.value = data2.value
                 break
             }
         }
     }
 
-    for(const data of entity.motorCharacteristicsBreakerInfo) {
+    for (const data of entity.motorCharacteristicsBreakerInfo) {
         const found = breaker_constant.motor_characteristics.find(
             item => item.label === data.parameter_name
         );
         const value = found ? found.value : null;
         dto.assessmentLimits.motor_characteristics.abs[value].mrid = data.mrid
         dto.assessmentLimits.motor_characteristics.abs[value].min.mrid = data.min
-        for(const data2 of entity.quantity) {
-            if(data2.mrid == dto.assessmentLimits.motor_characteristics.abs[value].min.mrid){
+        for (const data2 of entity.quantity) {
+            if (data2.mrid == dto.assessmentLimits.motor_characteristics.abs[value].min.mrid) {
                 dto.assessmentLimits.motor_characteristics.abs[value].min.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.motor_characteristics.abs[value].max.mrid = data.max
-        for(const data2 of entity.quantity) {
-            if(data2.mrid == dto.assessmentLimits.motor_characteristics.abs[value].max.mrid) {
+        for (const data2 of entity.quantity) {
+            if (data2.mrid == dto.assessmentLimits.motor_characteristics.abs[value].max.mrid) {
                 dto.assessmentLimits.motor_characteristics.abs[value].max.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.motor_characteristics.rel[value].ref.mrid = data.ref
-        for(const data2 of entity.quantity) {
-            if(data2.mrid == dto.assessmentLimits.motor_characteristics.rel[value].ref.mrid) {
+        for (const data2 of entity.quantity) {
+            if (data2.mrid == dto.assessmentLimits.motor_characteristics.rel[value].ref.mrid) {
                 dto.assessmentLimits.motor_characteristics.rel[value].ref.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.motor_characteristics.rel[value].dev.mrid = data.dev
-        for(const data2 of entity.quantity) {
-            if(data2.mrid == dto.assessmentLimits.motor_characteristics.rel[value].dev.mrid) {
+        for (const data2 of entity.quantity) {
+            if (data2.mrid == dto.assessmentLimits.motor_characteristics.rel[value].dev.mrid) {
                 dto.assessmentLimits.motor_characteristics.rel[value].dev.value = data2.value
                 break
             }
         }
     }
-    
-    for(const data of entity.underVoltageReleaseBreakerInfo) {
+
+    for (const data of entity.underVoltageReleaseBreakerInfo) {
         dto.assessmentLimits.under_voltage_release.mrid = data.mrid
         dto.assessmentLimits.under_voltage_release.name = data.parameter_name
         dto.assessmentLimits.under_voltage_release.abs.uv_coil_trip_voltage.min.mrid = data.min
-        for(const data2 of entity.voltage) {
-            if(data2.mrid == dto.assessmentLimits.under_voltage_release.abs.uv_coil_trip_voltage.min.mrid) {
+        for (const data2 of entity.voltage) {
+            if (data2.mrid == dto.assessmentLimits.under_voltage_release.abs.uv_coil_trip_voltage.min.mrid) {
                 dto.assessmentLimits.under_voltage_release.abs.uv_coil_trip_voltage.min.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.under_voltage_release.abs.uv_coil_trip_voltage.max.mrid = data.max
-        for(const data2 of entity.voltage) {
-            if(data2.mrid == dto.assessmentLimits.under_voltage_release.abs.uv_coil_trip_voltage.max.mrid) {
+        for (const data2 of entity.voltage) {
+            if (data2.mrid == dto.assessmentLimits.under_voltage_release.abs.uv_coil_trip_voltage.max.mrid) {
                 dto.assessmentLimits.under_voltage_release.abs.uv_coil_trip_voltage.max.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.under_voltage_release.rel.uv_coil_trip_voltage.ref.mrid = data.ref
-        for(const data2 of entity.voltage) {
-            if(data2.mrid == dto.assessmentLimits.under_voltage_release.rel.uv_coil_trip_voltage.ref.mrid) {
+        for (const data2 of entity.voltage) {
+            if (data2.mrid == dto.assessmentLimits.under_voltage_release.rel.uv_coil_trip_voltage.ref.mrid) {
                 dto.assessmentLimits.under_voltage_release.rel.uv_coil_trip_voltage.ref.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.under_voltage_release.rel.uv_coil_trip_voltage.dev.mrid = data.dev
-        for(const data2 of entity.voltage) {
-            if(data2.mrid == dto.assessmentLimits.under_voltage_release.rel.uv_coil_trip_voltage.dev.mrid) {
+        for (const data2 of entity.voltage) {
+            if (data2.mrid == dto.assessmentLimits.under_voltage_release.rel.uv_coil_trip_voltage.dev.mrid) {
                 dto.assessmentLimits.under_voltage_release.rel.uv_coil_trip_voltage.dev.value = data2.value
                 break
             }
         }
     }
 
-    for(const data of entity.overcurrentReleaseBreakerInfo) {
+    for (const data of entity.overcurrentReleaseBreakerInfo) {
         dto.assessmentLimits.overcurrent_release.mrid = data.mrid
         dto.assessmentLimits.overcurrent_release.name = data.parameter_name
         dto.assessmentLimits.overcurrent_release.abs.oc_replay_trip_current.min.mrid = data.min
-        for(const data2 of entity.currentFlow) {
-            if(data2.mrid == dto.assessmentLimits.overcurrent_release.abs.oc_replay_trip_current.min.mrid) {
+        for (const data2 of entity.currentFlow) {
+            if (data2.mrid == dto.assessmentLimits.overcurrent_release.abs.oc_replay_trip_current.min.mrid) {
                 dto.assessmentLimits.overcurrent_release.abs.oc_replay_trip_current.min.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.overcurrent_release.abs.oc_replay_trip_current.max.mrid = data.max
-        for(const data2 of entity.currentFlow) {
-            if(data2.mrid == dto.assessmentLimits.overcurrent_release.abs.oc_replay_trip_current.max.mrid) {
+        for (const data2 of entity.currentFlow) {
+            if (data2.mrid == dto.assessmentLimits.overcurrent_release.abs.oc_replay_trip_current.max.mrid) {
                 dto.assessmentLimits.overcurrent_release.abs.oc_replay_trip_current.max.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.overcurrent_release.rel.oc_replay_trip_current.ref.mrid = data.ref
-        for(const data2 of entity.currentFlow) {
-            if(data2.mrid == dto.assessmentLimits.overcurrent_release.rel.oc_replay_trip_current.ref.mrid) {
+        for (const data2 of entity.currentFlow) {
+            if (data2.mrid == dto.assessmentLimits.overcurrent_release.rel.oc_replay_trip_current.ref.mrid) {
                 dto.assessmentLimits.overcurrent_release.rel.oc_replay_trip_current.ref.value = data2.value
                 break
             }
         }
         dto.assessmentLimits.overcurrent_release.rel.oc_replay_trip_current.dev.mrid = data.dev
-        for(const data2 of entity.currentFlow) {
-            if(data2.mrid == dto.assessmentLimits.overcurrent_release.rel.oc_replay_trip_current.dev.mrid) {
+        for (const data2 of entity.currentFlow) {
+            if (data2.mrid == dto.assessmentLimits.overcurrent_release.rel.oc_replay_trip_current.dev.mrid) {
                 dto.assessmentLimits.overcurrent_release.rel.oc_replay_trip_current.dev.value = data2.value
                 break
             }

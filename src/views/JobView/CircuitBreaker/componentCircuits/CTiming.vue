@@ -22,7 +22,7 @@
         </el-row>
         </div>
 
-        <div v-if="assetData.circuitBreaker.numberOfInterruptPhase === 1">  
+        <div v-if="assetData.circuitBreaker.interruptersPerPhase === 1">  
             <div v-for="items in testData.table.length" :key="items" style="margin-top: 2%">
                 <div style="font-weight: bold ;font-size: 12px;" >Close coil no. {{ items }}</div>
                 <br />
@@ -44,10 +44,10 @@
                                 <el-input size="mini" v-model="item.closingTime"></el-input>
                             </td>
                             <td
-                                v-if="index % (assetData.circuitBreaker.numberOfInterruptPhase * assetData.circuitBreaker.numberOfPhase) === 0"
-                                :rowspan="assetData.circuitBreaker.numberOfInterruptPhase * assetData.circuitBreaker.numberOfPhase">
+                                v-if="index % (assetData.circuitBreaker.interruptersPerPhase * assetData.circuitBreaker.numberOfPhases) === 0"
+                                :rowspan="assetData.circuitBreaker.interruptersPerPhase * assetData.circuitBreaker.numberOfPhases">
                                 <el-input
-                                    :rows="assetData.circuitBreaker.numberOfInterruptPhase * assetData.circuitBreaker.numberOfPhase"
+                                    :rows="assetData.circuitBreaker.interruptersPerPhase * assetData.circuitBreaker.numberOfPhases"
                                     type="textarea"
                                     size="mini"
                                     v-model="item.closingSyncPhase"></el-input>
@@ -69,7 +69,7 @@
             </div>
         </div>
 
-        <div v-if="assetData.circuitBreaker.numberOfInterruptPhase > 1">
+        <div v-if="assetData.circuitBreaker.interruptersPerPhase > 1">
             <div v-for="items in testData.table.length" :key="items" style="margin-top: 2%">
                 <div style="font-weight: bold ;font-size: 12px;" >Close coil no. {{ items }}</div>
                 <br />
@@ -85,7 +85,7 @@
                     </thead>
                     <tbody>
                         <tr v-for="(item, index) in testData.table[items - 1]" :key="index">
-                            <td v-if="index % assetData.circuitBreaker.numberOfInterruptPhase === 0" :rowspan="assetData.circuitBreaker.numberOfInterruptPhase">
+                            <td v-if="index % assetData.circuitBreaker.interruptersPerPhase === 0" :rowspan="assetData.circuitBreaker.interruptersPerPhase">
                                 <div style="display: flex; width: 100%;">
                                     <el-input size="mini" v-model="item.phase"></el-input>
                                     <div :class="{colorTableRed : item.phase=='A', colorTableYellow : item.phase=='B', colorTableBlue : item.phase=='C'}"></div>
@@ -97,14 +97,14 @@
                             <td>
                                 <el-input size="mini" v-model="item.closingTime"></el-input>
                             </td>
-                            <td v-if="index % assetData.circuitBreaker.numberOfInterruptPhase === 0" :rowspan="assetData.circuitBreaker.numberOfInterruptPhase">
-                                <el-input :rows="assetData.circuitBreaker.numberOfInterruptPhase" type="textarea" v-model="item.closingSyncInterrupt"></el-input>
+                            <td v-if="index % assetData.circuitBreaker.interruptersPerPhase === 0" :rowspan="assetData.circuitBreaker.interruptersPerPhase">
+                                <el-input :rows="assetData.circuitBreaker.interruptersPerPhase" type="textarea" v-model="item.closingSyncInterrupt"></el-input>
                             </td>
                             <td
-                                v-if="index % (assetData.circuitBreaker.numberOfInterruptPhase * assetData.circuitBreaker.numberOfPhase) === 0"
-                                :rowspan="assetData.circuitBreaker.numberOfInterruptPhase * assetData.circuitBreaker.numberOfPhase">
+                                v-if="index % (assetData.circuitBreaker.interruptersPerPhase * assetData.circuitBreaker.numberOfPhases) === 0"
+                                :rowspan="assetData.circuitBreaker.interruptersPerPhase * assetData.circuitBreaker.numberOfPhases">
                                 <el-input
-                                    :rows="assetData.circuitBreaker.numberOfInterruptPhase * assetData.circuitBreaker.numberOfPhase"
+                                    :rows="assetData.circuitBreaker.interruptersPerPhase * assetData.circuitBreaker.numberOfPhases"
                                     type="textarea"
                                     v-model="item.closingSyncPhase"></el-input>
                             </td>
@@ -488,8 +488,8 @@ export default {
         },
         assetData() {
             let circuitBreaker = {
-                numberOfInterruptPhase: 1,
-                numberOfPhase: 3
+                interruptersPerPhase: 1,
+                numberOfPhases: 3
             }
             let operating = {
                 numberCloseCoil: 1,
@@ -510,15 +510,25 @@ export default {
             }
             
             if (this.asset && this.asset.operating) {
+                let parsedOperating = {}
                 if (typeof this.asset.operating === 'string') {
                     try {
-                        const parsed = JSON.parse(this.asset.operating)
-                        operating = { ...operating, ...parsed }
+                        parsedOperating = JSON.parse(this.asset.operating)
                     } catch (e) {
                         console.warn('Failed to parse operating:', e)
                     }
                 } else {
-                    operating = { ...operating, ...this.asset.operating }
+                    parsedOperating = this.asset.operating
+                }
+                
+                // Map from DTO property names (snake_case) to camelCase
+                operating = {
+                    ...operating,
+                    ...parsedOperating,
+                    // Map number_of_close_coil to numberCloseCoil
+                    numberCloseCoil: parsedOperating.number_of_close_coil || parsedOperating.numberCloseCoil || operating.numberCloseCoil,
+                    // Map number_of_trip_coil to numberTripCoil
+                    numberTripCoil: parsedOperating.number_of_trip_coil || parsedOperating.numberTripCoil || operating.numberTripCoil
                 }
             }
             
@@ -1080,9 +1090,12 @@ export default {
         initializeTable() {
             if (!this.data) return
             
-            const numCloseCoil = this.assetData?.operating?.numberCloseCoil || 1
-            const numPhase = this.assetData?.circuitBreaker?.numberOfPhase || 3
-            const numInterruptPhase = this.assetData?.circuitBreaker?.numberOfInterruptPhase || 1
+            // Get numberCloseCoil from either camelCase or snake_case
+            const numCloseCoil = this.assetData?.operating?.numberCloseCoil || 
+                                 this.assetData?.operating?.number_of_close_coil || 
+                                 1
+            const numPhase = this.assetData?.circuitBreaker?.numberOfPhases || 3
+            const numInterruptPhase = this.assetData?.circuitBreaker?.interruptersPerPhase || 1
             const phase = ["A", "B", "C"]
             
             if (!this.data.table) {
@@ -1146,23 +1159,23 @@ export default {
                 if (this.testData.limits === 'Absolute'){
                     element.forEach((e, index) => {
                         //Closing Sync Phase la [5]
-                        if(index%(circuitBreaker_.numberOfInterruptPhase * circuitBreaker_.numberOfPhase)==0) {
+                        if(index%(circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases)==0) {
                             if (parseFloat(e.closingSyncPhase) < parseFloat(this.asset_.openTime.abs[5].tmin) || parseFloat(e.closingSyncPhase) > parseFloat(this.asset_.openTime.abs[5].tmax) && e.closingSyncPhase){
-                                for(let j=0; j<circuitBreaker_.numberOfInterruptPhase*circuitBreaker_.numberOfPhase; j++) {
+                                for(let j=0; j<circuitBreaker_.interruptersPerPhase*circuitBreaker_.numberOfPhases; j++) {
                                     this.testData.table[i][index+j].assessment= 'Fail'
                                 }
                             }
                             else {
-                                for(let j=0; j<circuitBreaker_.numberOfInterruptPhase*circuitBreaker_.numberOfPhase; j++) {
+                                for(let j=0; j<circuitBreaker_.interruptersPerPhase*circuitBreaker_.numberOfPhases; j++) {
                                     this.testData.table[i][index+j].assessment= 'Pass'
                                 }
                             }
                         }
                         //Closing Interrupt la [4]
                         if(e.assessment !== 'Fail'){
-                            if(index%(circuitBreaker_.numberOfInterruptPhase)==0){
+                            if(index%(circuitBreaker_.interruptersPerPhase)==0){
                                 if(parseFloat(e.closingSyncInterrupt) < parseFloat(this.asset_.openTime.abs[4].tmin) || parseFloat(e.closingSyncInterrupt) > parseFloat(this.asset_.openTime.abs[4].tmax)){
-                                    for (let j=0; j<circuitBreaker_.numberOfInterruptPhase; j++){
+                                    for (let j=0; j<circuitBreaker_.interruptersPerPhase; j++){
                                         this.testData.table[i][index+j].assessment = 'Fail'
                                     }
                                 }
@@ -1186,16 +1199,16 @@ export default {
                 else if (this.testData.limits === 'Relative'){
                     element.forEach((e, index) => {
                         //Closing Sync la [5]
-                        if(index%(circuitBreaker_.numberOfInterruptPhase * circuitBreaker_.numberOfPhase)==0) {
+                        if(index%(circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases)==0) {
                             if (parseFloat(e.closingSyncPhase) < parseFloat(this.asset_.openTime.rel[5].rref)){
                                 if (parseFloat(e.closingSyncPhase) < (parseFloat(this.asset_.openTime.rel[5].rref) - parseFloat(this.asset_.openTime.rel[5].tdevZ)))
                                 {
-                                    for(let j=0; j<circuitBreaker_.numberOfInterruptPhase*circuitBreaker_.numberOfPhase; j++) {
+                                    for(let j=0; j<circuitBreaker_.interruptersPerPhase*circuitBreaker_.numberOfPhases; j++) {
                                     this.testData.table[i][index+j].assessment= 'Fail'
                                     }
                                 }
                                 else {
-                                for(let j=0; j<circuitBreaker_.numberOfInterruptPhase*circuitBreaker_.numberOfPhase; j++) {
+                                for(let j=0; j<circuitBreaker_.interruptersPerPhase*circuitBreaker_.numberOfPhases; j++) {
                                     this.testData.table[i][index+j].assessment= 'Pass'
                                     }
                                 }
@@ -1203,12 +1216,12 @@ export default {
                             else if (parseFloat(e.closingSyncPhase) >= parseFloat(this.asset_.openTime.rel[5].rref)){
                                 if (parseFloat(e.closingSyncPhase) > (parseFloat(this.asset_.openTime.rel[5].rref) + parseFloat(this.asset_.openTime.rel[5].tdevN)))
                                 {
-                                    for(let j=0; j<circuitBreaker_.numberOfInterruptPhase*circuitBreaker_.numberOfPhase; j++) {
+                                    for(let j=0; j<circuitBreaker_.interruptersPerPhase*circuitBreaker_.numberOfPhases; j++) {
                                     this.testData.table[i][index+j].assessment= 'Fail'
                                     }
                                 }
                                 else {
-                                for(let j=0; j<circuitBreaker_.numberOfInterruptPhase*circuitBreaker_.numberOfPhase; j++) {
+                                for(let j=0; j<circuitBreaker_.interruptersPerPhase*circuitBreaker_.numberOfPhases; j++) {
                                     this.testData.table[i][index+j].assessment= 'Pass'
                                     }
                                 }
@@ -1216,11 +1229,11 @@ export default {
                         }
                         //Closing Interrupt la [4]
                         if(e.assessment !== 'Fail'){
-                            if(index%(circuitBreaker_.numberOfInterruptPhase)==0){
+                            if(index%(circuitBreaker_.interruptersPerPhase)==0){
                                 if (parseFloat(e.closingSyncInterrupt) < parseFloat(this.asset_.openTime.rel[4].rref)){
                                     if (parseFloat(e.closingSyncInterrupt) < (parseFloat(this.asset_.openTime.rel[4].rref) - parseFloat(this.asset_.openTime.rel[4].tdevZ)))
                                     {
-                                        for(let j=0; j<circuitBreaker_.numberOfInterruptPhase; j++) {
+                                        for(let j=0; j<circuitBreaker_.interruptersPerPhase; j++) {
                                         this.testData.table[i][index+j].assessment= 'Fail'
                                         }
                                     }
@@ -1228,7 +1241,7 @@ export default {
                                 else if (parseFloat(e.closingSyncInterrupt) >= parseFloat(this.asset_.openTime.rel[4].rref)){
                                     if (parseFloat(e.closingSyncInterrupt) > (parseFloat(this.asset_.openTime.rel[4].rref) + parseFloat(this.asset_.openTime.rel[4].tdevN)))
                                     {
-                                        for(let j=0; j<circuitBreaker_.numberOfInterruptPhase; j++) {
+                                        for(let j=0; j<circuitBreaker_.interruptersPerPhase; j++) {
                                         this.testData.table[i][index+j].assessment= 'Fail'
                                         }
                                     }
