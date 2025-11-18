@@ -1,13 +1,12 @@
 /* eslint-disable */
 import TransformerDto from "@/views/Dto/Transformer"
 import TransformerEntity from "@/views/Entity/Transformer"
-import VoltageRating from "@/views/Entity/VoltageRating"
-import PowerRating from "@/views/Entity/PowerRating"
+import VoltageRating from "@/views/Cim/VoltageRating"
 import Voltage from "@/views/Cim/Voltage"
 import ApparentPower from "@/views/Cim/ApparentPower"
 import Frequency from "@/views/Cim/Frequency"
 import CoolingPowerRating from "@/views/Cim/CoolingPowerRating"
-import CurrentRating from "@/views/Entity/CurrentRating"
+import CurrentRating from "@/views/Cim/CurrentRating"
 import CurrentFlow from "@/views/Cim/CurrentFlow"
 import Seconds from "@/views/Cim/Seconds"
 import Temperature from "@/views/Cim/Temperature"
@@ -22,6 +21,7 @@ import Volume from "@/views/Cim/Volume"
 import Mass from "@/views/Cim/Mass"
 
 export const transformerDtoToEntity = (dto) => {
+    console.log(dto);
     // const dto = new TransformerDto();
     const entity = new TransformerEntity();
 
@@ -33,6 +33,8 @@ export const transformerDtoToEntity = (dto) => {
     entity.asset.asset_info = dto.oldPowerTransformerInfoId || null;
     entity.productAssetModel.manufacturer = dto.properties.manufacturer || null;
     entity.oldPowerTransformerInfo.manufacturer_type = dto.properties.manufacturer_type || null;
+    entity.asset.product_asset_model = dto.productAssetModelId || null;
+    entity.productAssetModel.mrid = dto.productAssetModelId || null;
     
     //lifecycleDate
     entity.lifecycleDate.manufactured_date = dto.properties.manufacturer_year || null;
@@ -43,6 +45,10 @@ export const transformerDtoToEntity = (dto) => {
     entity.assetPsr.mrid = dto.assetPsrId || null;
     entity.assetPsr.asset_id = dto.properties.mrid || null;
     entity.assetPsr.psr_id = dto.psrId || null;
+
+    /** ---------- attachment ---------- */
+    entity.attachment.mrid = dto.attachmentId || null;
+    entity.attachment = dto.attachment || null;
 
     entity.asset.country_of_origin = dto.properties.country_of_origin || null;
     entity.oldPowerTransformerInfo.mrid = dto.oldPowerTransformerInfoId || null;
@@ -76,18 +82,25 @@ export const transformerDtoToEntity = (dto) => {
             if(dto.winding_configuration.vector_group.prim.includes('Spare I')) {
                 item.connection_kind = 'I';
                 item.spare = true ;
+            } else {
+                if(["IA", "IB", "IC", "IBC", "IAB", "IAC"].includes(dto.winding_configuration.vector_group.prim)) {
+                    item.connection_kind = 'I';
+                    item.phase = dto.winding_configuration.vector_group.prim.substring(1)
+                } else {
+                    item.connection_kind = dto.winding_configuration.vector_group.prim || null;
+                }
             }
             item.material = dto.others.winding.prim || null;
-            item.connection_kind = dto.winding_configuration.vector_group.prim || null;
             entity.oldTransformerEndInfo.push(item);
         } else if(item.end_number === 2) {
             item.power_transformer_info_id = entity.oldPowerTransformerInfo.mrid || null;
             if(dto.winding_configuration.vector_group.sec.i.includes('Spare I')) {
                 item.connection_kind = 'I';
                 item.spare = true ;
+            } else {
+                item.connection_kind = dto.winding_configuration.vector_group.sec.i || null;
             }
             item.material = dto.others.winding.sec || null;
-            item.connection_kind = dto.winding_configuration.vector_group.sec.i || null;
             item.phase_angle_clock = dto.winding_configuration.vector_group.sec.value || null;
             entity.oldTransformerEndInfo.push(item);
         } else if(item.end_number === 3) {
@@ -95,37 +108,33 @@ export const transformerDtoToEntity = (dto) => {
             if(dto.winding_configuration.vector_group.tert.i.includes('Spare I')) {
                 item.connection_kind = 'I';
                 item.spare = true ;
+            } else {
+                item.connection_kind = dto.winding_configuration.vector_group.tert.i || null;
             }
             item.material = dto.others.winding.tert || null;
-            item.connection_kind = dto.winding_configuration.vector_group.tert.i || null;
             item.phase_angle_clock = dto.winding_configuration.vector_group.tert.value || null;
-            item.accessibility = dto.winding_configuration.vector_group.tert.accessibility || null;
+            item.accessibility = dto.winding_configuration.vector_group.tert.accessible || null;
             entity.oldTransformerEndInfo.push(item);
         }
     }
 
     //rated frequency
-    if(dto.ratings.rated_frequency.value) {
-        if(dto.ratings.rated_frequency.value === 'Custom') {
-            const frequency = new Frequency();
-            frequency.mrid = dto.ratings.rated_frequency.mrid || null;
-            entity.oldPowerTransformerInfo.rated_frequency = dto.ratings.rated_frequency.mrid || null;
-            const unitParts = (dto.ratings.rated_frequency.unit || '').split('|');
-            frequency.multiplier = unitParts.length > 1 ? unitParts[0] : null;
-            frequency.unit = unitParts.length > 1 ? unitParts[1] : unitParts[0] || null;
-            frequency.value = dto.ratings.rated_frequency.custom_value || null;
-            entity.frequency.push(frequency);
-        } else {
-            const frequency = new Frequency();
-            frequency.mrid = dto.ratings.rated_frequency.mrid || null;
-            entity.oldPowerTransformerInfo.rated_frequency = dto.ratings.rated_frequency.mrid || null;
-            const unitParts = (dto.ratings.rated_frequency.unit || '').split('|');
-            frequency.multiplier = unitParts.length > 1 ? unitParts[0] : null;
-            frequency.unit = unitParts.length > 1 ? unitParts[1] : unitParts[0] || null;
-            frequency.value = dto.ratings.rated_frequency.value || null;
-            entity.frequency.push(frequency);
-        }
+    if(dto.ratings.rated_frequency.value === 'Custom') {
+        const frequency = new Frequency();
+        frequency.mrid = dto.ratings.rated_frequency.mrid || null;
+        entity.oldPowerTransformerInfo.rated_frequency = dto.ratings.rated_frequency.mrid || null;
+        const unitParts = (dto.ratings.rated_frequency.unit || '').split('|');
+        frequency.multiplier = unitParts.length > 1 ? unitParts[0] : null;
+        frequency.unit = unitParts.length > 1 ? unitParts[1] : unitParts[0] || null;
+        frequency.value = dto.ratings.rated_frequency.custom_value || null;
+        entity.frequency.push(frequency);
+    } else {
+        entity.oldPowerTransformerInfo.rated_frequency = dto.ratings.rated_frequency.mrid || null;
+        const frequency = new Frequency();
+        mappingUnit(frequency, dto.ratings.rated_frequency)
+        entity.frequency.push(frequency);
     }
+    
 
     //Voltage ratings
     for (let item of dto.ratings.voltage_ratings) {
@@ -138,16 +147,14 @@ export const transformerDtoToEntity = (dto) => {
                     break;
                 }
             }
-        }
-        if(item.winding == 'Sec') {
+        } else if(item.winding == 'Sec') {
             for(let i = 0; i< dto.oldTransformerEndInfo.length; i++) {
                 if(dto.oldTransformerEndInfo[i].end_number === 2) {
                     voltageRating.transformer_end_id = dto.oldTransformerEndInfo[i].mrid || null;
                     break;
                 }
             }
-        }
-        if(item.winding == 'Tert') {
+        } else if(item.winding == 'Tert') {
             for(let i = 0; i< dto.oldTransformerEndInfo.length; i++) {
                 if(dto.oldTransformerEndInfo[i].end_number === 3) {
                     voltageRating.transformer_end_id = dto.oldTransformerEndInfo[i].mrid || null;
@@ -158,67 +165,50 @@ export const transformerDtoToEntity = (dto) => {
         //voltage_ll
         voltageRating.rated_u = item.voltage_ll.mrid || null
         let voltage = new Voltage();
-        let unitParts = (item.voltage_ll.unit || '').split('|');
-        voltage.multiplier = unitParts.length > 1 ? unitParts[0] : null;
-        voltage.unit = unitParts.length > 1 ? unitParts[1] : unitParts[0] || null;
-        voltage.value = item.voltage_ll.value || null;
-        voltage.mrid = item.voltage_ll.mrid || null
+        mappingUnit(voltage, item.voltage_ll)
         entity.voltage.push(voltage);
 
         //voltage_ln
         voltageRating.rated_ln = item.voltage_ln.mrid || null
         voltage = new Voltage();
-        unitParts = (item.voltage_ln.unit || '').split('|');
-        voltage.multiplier = unitParts.length > 1 ? unitParts[0] : null;
-        voltage.unit = unitParts.length > 1 ? unitParts[1] : unitParts[0] || null;
-        voltage.value = item.voltage_ln.value || null;
-        voltage.mrid = item.voltage_ln.mrid || null
+        mappingUnit(voltage, item.voltage_ln)
         entity.voltage.push(voltage);
 
         //insulation bil
         voltageRating.insulation_u = item.insul_level_ll.mrid || null
         voltage = new Voltage();
-        unitParts = (item.insul_level_ll.unit || '').split('|');
-        voltage.multiplier = unitParts.length > 1 ? unitParts[0] : null;
-        voltage.unit = unitParts.length > 1 ? unitParts[1] : unitParts[0] || null;
-        voltage.value = item.insul_level_ll.value || null;
-        voltage.mrid = item.insul_level_ll.mrid || null
+        mappingUnit(voltage, item.insul_level_ll)
         entity.voltage.push(voltage);
 
         //insulation class
         voltageRating.insulation_c = item.insulation_class || null
+
         voltageRating.regulation = item.voltage_regulation || null
         entity.voltageRating.push(voltageRating);
     }
 
     //Power ratings
     for (let item of dto.ratings.power_ratings) {
-        const powerRating = new PowerRating();
+        const powerRating = new CoolingPowerRating();
         powerRating.mrid = item.mrid || null;
         powerRating.power_transformer_info_id = entity.oldPowerTransformerInfo.mrid || null;
-        powerRating.rated_power = item.mrid
 
         //rated_power
-        powerRating.rated_power = item.rated_power.mrid || null
+        powerRating.power_rating = item.rated_power.mrid || null
         let apparentPower = new ApparentPower();
-        let unitParts = (item.rated_power.unit || '').split('|');
-        apparentPower.multiplier = unitParts.length > 1 ? unitParts[0] : null;
-        apparentPower.unit = unitParts.length > 1 ? unitParts[1] : unitParts[0] || null;
-        apparentPower.value = item.rated_power.value || null;
-        apparentPower.mrid = item.rated_power.mrid || null
+        mappingUnit(apparentPower, item.rated_power)
         entity.apparentPower.push(apparentPower);
 
         //cooling class
-        powerRating.cooling_class = item.cooling_class.mrid || null;
-        let coolingClass = new CoolingPowerRating();
-        coolingClass.mrid = item.cooling_class.mrid || null;
-        coolingClass.value = item.cooling_class.value || null;
-        entity.coolingPowerRating.push(coolingClass);
+        powerRating.cooling_kind = item.cooling_class || null
 
         //temp_rise_wind
-        powerRating.temp_rise_wind = item.temp_rise_wind || null
+        powerRating.temp = item.temp_rise_wind.mrid || null
+        let temperatureWind = new Temperature();
+        mappingUnit(temperatureWind, item.temp_rise_wind)
+        entity.temperature.push(temperatureWind);
 
-        entity.powerRating.push(powerRating);
+        entity.coolingPowerRating.push(powerRating);
     }
 
     //Current ratings
@@ -233,15 +223,12 @@ export const transformerDtoToEntity = (dto) => {
                     break;
                 }
             }
-            currentRatingPrim.rated_current = dto.ratings.power_ratings[index].rated_power.mrid || null;
-            entity.currentRating.push(currentRatingPrim);
+            currentRatingPrim.rated_power = dto.ratings.power_ratings[index].rated_power.mrid || null;
+            currentRatingPrim.value = item.prim.data.mrid
             let currentFlow = new CurrentFlow();
-            let unitParts = (item.prim.data.unit || '').split('|');
-            currentFlow.multiplier = unitParts.length > 1 ? unitParts[0] : null;
-            currentFlow.unit = unitParts.length > 1 ? unitParts[1] : unitParts[0] || null;
-            currentFlow.value = item.prim.data.value || null;
-            currentFlow.mrid = item.prim.data.mrid || null;
+            mappingUnit(currentFlow, item.prim.data)
             entity.currentFlow.push(currentFlow);
+            entity.currentRating.push(currentRatingPrim);
         }
 
         if(item.sec.mrid && item.sec.mrid !== '') {
@@ -254,14 +241,11 @@ export const transformerDtoToEntity = (dto) => {
                 }
             }
             currentRatingSec.rated_current = dto.ratings.power_ratings[index].rated_power.mrid || null;
-            entity.currentRating.push(currentRatingSec);
+            currentRatingSec.value = item.sec.data.mrid
             let currentFlow = new CurrentFlow();
-            let unitParts = (item.sec.data.unit || '').split('|');
-            currentFlow.multiplier = unitParts.length > 1 ? unitParts[0] : null;
-            currentFlow.unit = unitParts.length > 1 ? unitParts[1] : unitParts[0] || null;
-            currentFlow.value = item.sec.data.value || null;
-            currentFlow.mrid = item.sec.data.mrid || null;
+            mappingUnit(currentFlow, item.sec.data)
             entity.currentFlow.push(currentFlow);
+            entity.currentRating.push(currentRatingSec);
         }
 
         if(item.tert.mrid && item.tert.mrid !== '') {
@@ -274,14 +258,11 @@ export const transformerDtoToEntity = (dto) => {
                 }
             }
             currentRatingTert.rated_current = dto.ratings.power_ratings[index].rated_power.mrid || null;
-            entity.currentRating.push(currentRatingTert);
+            currentRatingTert.value = item.tert.data.mrid
             let currentFlow = new CurrentFlow();
-            let unitParts = (item.tert.data.unit || '').split('|');
-            currentFlow.multiplier = unitParts.length > 1 ? unitParts[0] : null;
-            currentFlow.unit = unitParts.length > 1 ? unitParts[1] : unitParts[0] || null;
-            currentFlow.value = item.tert.data.value || null;
-            currentFlow.mrid = item.tert.data.mrid || null;
+            mappingUnit(currentFlow, item.tert.data)
             entity.currentFlow.push(currentFlow);
+            entity.currentRating.push(currentRatingTert)
         }
     }
 
@@ -292,21 +273,13 @@ export const transformerDtoToEntity = (dto) => {
         if(dto.ratings.short_circuit.ka.mrid && dto.ratings.short_circuit.ka.mrid !== '') {
             entity.shortCircuitRating.short_circuit_current = dto.ratings.short_circuit.ka.mrid || null;
             const currentFlow = new CurrentFlow();
-            let unitParts = (dto.ratings.short_circuit.ka.unit || '').split('|');
-            currentFlow.multiplier = unitParts.length > 1 ? unitParts[0] : null;
-            currentFlow.unit = unitParts.length > 1 ? unitParts[1] : unitParts[0] || null;
-            currentFlow.value = dto.ratings.short_circuit.ka.value || null;
-            currentFlow.mrid = dto.ratings.short_circuit.ka.mrid || null;
+            mappingUnit(currentFlow, dto.ratings.short_circuit.ka)
             entity.currentFlow.push(currentFlow);
         }
         if(dto.ratings.short_circuit.s.mrid && dto.ratings.short_circuit.s.mrid !== '') {
             entity.shortCircuitRating.duration_seconds = dto.ratings.short_circuit.s.mrid || null;
             const second = new Seconds();
-            let unitParts = (dto.ratings.short_circuit.s.unit || '').split('|');
-            second.multiplier = unitParts.length > 1 ? unitParts[0] : null;
-            second.unit = unitParts.length > 1 ? unitParts[1] : unitParts[0] || null;
-            second.value = dto.ratings.short_circuit.s.value || null;
-            second.mrid = dto.ratings.short_circuit.s.mrid || null;
+            mappingUnit(second, dto.ratings.short_circuit.s)
             entity.seconds.push(second);
         }
     }
@@ -315,12 +288,30 @@ export const transformerDtoToEntity = (dto) => {
     if(dto.impedances.ref_temp.value) {
         entity.oldPowerTransformerInfo.impedance_temperature = dto.impedances.ref_temp.mrid || null;
         const temperature = new Temperature();
-        temperature.mrid = dto.impedances.ref_temp.mrid || null;
-        const unitParts = (dto.impedances.ref_temp.unit || '').split('|');
-        temperature.multiplier = unitParts.length > 1 ? unitParts[0] : null;
-        temperature.unit = unitParts.length > 1 ? unitParts[1] : unitParts[0] || null;
-        temperature.value = dto.impedances.ref_temp.value || null;
+        mappingUnit(temperature, dto.impedances.ref_temp)
         entity.temperature.push(temperature);
+    }
+
+    let transformer_end_info_prim_id = null;
+    for(let i = 0; i< dto.oldTransformerEndInfo.length; i++) {
+        if(dto.oldTransformerEndInfo[i].end_number == 1) {
+            transformer_end_info_prim_id = dto.oldTransformerEndInfo[i].mrid || null;
+            break;
+        }
+    }
+    let transformer_end_info_second_id = null;
+    for(let i = 0; i< dto.oldTransformerEndInfo.length; i++) {
+        if(dto.oldTransformerEndInfo[i].end_number == 2) {
+            transformer_end_info_second_id = dto.oldTransformerEndInfo[i].mrid || null;
+            break;
+        }
+    }
+    let transformer_end_info_third_id = null;
+    for(let i = 0; i< dto.oldTransformerEndInfo.length; i++) {
+        if(dto.oldTransformerEndInfo[i].end_number == 3) {
+            transformer_end_info_third_id = dto.oldTransformerEndInfo[i].mrid || null;
+            break;
+        }
     }
     
     //short-circuit test
@@ -328,26 +319,15 @@ export const transformerDtoToEntity = (dto) => {
         for(let item of dto.impedances.prim_sec) {
             const shortCircuitTest = new ShortCircuitTest();
             shortCircuitTest.mrid = item.mrid || null;
-            for(let i = 0; i< dto.oldTransformerEndInfo.length; i++) {
-                if(dto.oldTransformerEndInfo[i].end_number === 1) {
-                    shortCircuitTest.energised_end = dto.oldTransformerEndInfo[i].mrid || null;
-                    break;
-                }
-            }
-            for(let i = 0; i< dto.oldTransformerEndInfo.length; i++) {
-                if(dto.oldTransformerEndInfo[i].end_number === 2) {
+            shortCircuitTest.energised_end = transformer_end_info_prim_id || null;
+
+            for(let j=0; j<dto.shortCircuitTestTransformerEndInfo.length; j++) {
+                if(dto.shortCircuitTestTransformerEndInfo[j].short_circuit_test_id === item.mrid) {
                     const shortCircuitTestTransformerEndInfo = new ShortCircuitTestTransformerEndInfo();
-                    for(let j=0; j<dto.shortCircuitTestTransformerEndInfo.length; j++) {
-                        if(dto.shortCircuitTestTransformerEndInfo[j].transformer_end_info_id === dto.oldTransformerEndInfo[i].mrid
-                            && dto.shortCircuitTestTransformerEndInfo[j].short_circuit_test_id === item.mrid
-                        ) {
-                            shortCircuitTestTransformerEndInfo.mrid = dto.shortCircuitTestTransformerEndInfo[j].mrid || null;
-                            shortCircuitTestTransformerEndInfo.transformer_end_info_id = dto.shortCircuitTestTransformerEndInfo[j].transformer_end_info_id || null;
-                            shortCircuitTestTransformerEndInfo.short_circuit_test_id = dto.shortCircuitTestTransformerEndInfo[j].short_circuit_test_id || null;
-                            entity.shortCircuitTestTransformerEndInfo.push(shortCircuitTestTransformerEndInfo);
-                            break;
-                        }
-                    }
+                    shortCircuitTestTransformerEndInfo.mrid = dto.shortCircuitTestTransformerEndInfo[j].mrid || null;
+                    shortCircuitTestTransformerEndInfo.transformer_end_info_id = transformer_end_info_second_id || null;
+                    shortCircuitTestTransformerEndInfo.short_circuit_test_id = dto.shortCircuitTestTransformerEndInfo[j].short_circuit_test_id || null;
+                    entity.shortCircuitTestTransformerEndInfo.push(shortCircuitTestTransformerEndInfo);
                     break;
                 }
             }
@@ -357,11 +337,7 @@ export const transformerDtoToEntity = (dto) => {
             basePower.mrid = item.base_power.mrid || null;
             basePower.base_power = item.base_power.data.mrid || null;
             const apparentPower = new ApparentPower();
-            let unitParts = (item.base_power.data.unit || '').split('|');
-            apparentPower.multiplier = unitParts.length > 1 ? unitParts[0] : null;
-            apparentPower.unit = unitParts.length > 1 ? unitParts[1] : unitParts[0] || null;
-            apparentPower.value = item.base_power.data.value || null;
-            apparentPower.mrid = item.base_power.data.mrid || null;
+            mappingUnit(apparentPower, item.base_power.data)
             entity.basePower.push(basePower);
             entity.apparentPower.push(apparentPower);
 
@@ -370,30 +346,18 @@ export const transformerDtoToEntity = (dto) => {
             baseVoltage.mrid = item.base_voltage.mrid || null;
             baseVoltage.nominal_voltage = item.base_voltage.data.mrid || null;
             const voltage = new Voltage();
-            let unitPartsV = (item.base_voltage.data.unit || '').split('|');
-            voltage.multiplier = unitPartsV.length > 1 ? unitPartsV[0] : null;
-            voltage.unit = unitPartsV.length > 1 ? unitPartsV[1] : unitPartsV[0] || null;
-            voltage.value = item.base_voltage.data.value || null;
-            voltage.mrid = item.base_voltage.data.mrid || null;
+            mappingUnit(voltage, item.base_voltage.data)
             entity.baseVoltage.push(baseVoltage);
             entity.voltage.push(voltage);
 
             shortCircuitTest.voltage = item.short_circuit_impedances_uk.mrid || null;
             const percent = new Percent();
-            let unitPartsUk = (item.short_circuit_impedances_uk.unit || '').split('|');
-            percent.multiplier = unitPartsUk.length > 1 ? unitPartsUk[0] : null;
-            percent.unit = unitPartsUk.length > 1 ? unitPartsUk[1] : unitPartsUk[0] || null;
-            percent.value = item.short_circuit_impedances_uk.value || null;
-            percent.mrid = item.short_circuit_impedances_uk.mrid || null;
+            mappingUnit(percent, item.short_circuit_impedances_uk)
             entity.percent.push(percent);
 
             shortCircuitTest.loss = item.load_losses_pk.mrid || null;
             const activePower = new ActivePower();
-            let unitPartsLoss = (item.load_losses_pk.unit || '').split('|');
-            activePower.multiplier = unitPartsLoss.length > 1 ? unitPartsLoss[0] : null;
-            activePower.unit = unitPartsLoss.length > 1 ? unitPartsLoss[1] : unitPartsLoss[0] || null;
-            activePower.value = item.load_losses_pk.value || null;
-            activePower.mrid = item.load_losses_pk.mrid || null;
+            mappingUnit(activePower, item.load_losses_pk)
             entity.activePower.push(activePower);
 
             shortCircuitTest.temperature = dto.impedances.ref_temp.mrid || null;
@@ -405,26 +369,15 @@ export const transformerDtoToEntity = (dto) => {
         for(let item of dto.impedances.sec_tert) {
             const shortCircuitTest = new ShortCircuitTest();
             shortCircuitTest.mrid = item.mrid || null;
-            for(let i = 0; i< dto.oldTransformerEndInfo.length; i++) {
-                if(dto.oldTransformerEndInfo[i].end_number === 2) {
-                    shortCircuitTest.energised_end = dto.oldTransformerEndInfo[i].mrid || null;
-                    break;
-                }
-            }
-            for(let i = 0; i< dto.oldTransformerEndInfo.length; i++) {
-                if(dto.oldTransformerEndInfo[i].end_number === 3) {
+            shortCircuitTest.energised_end = transformer_end_info_second_id || null;
+
+            for(let j=0; j<dto.shortCircuitTestTransformerEndInfo.length; j++) {
+                if(dto.shortCircuitTestTransformerEndInfo[j].short_circuit_test_id === item.mrid) {
                     const shortCircuitTestTransformerEndInfo = new ShortCircuitTestTransformerEndInfo();
-                    for(let j=0; j<dto.shortCircuitTestTransformerEndInfo.length; j++) {
-                        if(dto.shortCircuitTestTransformerEndInfo[j].transformer_end_info_id === dto.oldTransformerEndInfo[i].mrid
-                            && dto.shortCircuitTestTransformerEndInfo[j].short_circuit_test_id === item.mrid
-                        ) {
-                            shortCircuitTestTransformerEndInfo.mrid = dto.shortCircuitTestTransformerEndInfo[j].mrid || null;
-                            shortCircuitTestTransformerEndInfo.transformer_end_info_id = dto.shortCircuitTestTransformerEndInfo[j].transformer_end_info_id || null;
-                            shortCircuitTestTransformerEndInfo.short_circuit_test_id = dto.shortCircuitTestTransformerEndInfo[j].short_circuit_test_id || null;
-                            entity.shortCircuitTestTransformerEndInfo.push(shortCircuitTestTransformerEndInfo);
-                            break;
-                        }
-                    }
+                    shortCircuitTestTransformerEndInfo.mrid = dto.shortCircuitTestTransformerEndInfo[j].mrid || null;
+                    shortCircuitTestTransformerEndInfo.transformer_end_info_id = transformer_end_info_third_id || null;
+                    shortCircuitTestTransformerEndInfo.short_circuit_test_id = dto.shortCircuitTestTransformerEndInfo[j].short_circuit_test_id || null;
+                    entity.shortCircuitTestTransformerEndInfo.push(shortCircuitTestTransformerEndInfo);
                     break;
                 }
             }
@@ -434,11 +387,7 @@ export const transformerDtoToEntity = (dto) => {
             basePower.mrid = item.base_power.mrid || null;
             basePower.base_power = item.base_power.data.mrid || null;
             const apparentPower = new ApparentPower();
-            let unitParts = (item.base_power.data.unit || '').split('|');
-            apparentPower.multiplier = unitParts.length > 1 ? unitParts[0] : null;
-            apparentPower.unit = unitParts.length > 1 ? unitParts[1] : unitParts[0] || null;
-            apparentPower.value = item.base_power.data.value || null;
-            apparentPower.mrid = item.base_power.data.mrid || null;
+            mappingUnit(apparentPower, item.base_power.data)
             entity.basePower.push(basePower);
             entity.apparentPower.push(apparentPower);
 
@@ -447,30 +396,18 @@ export const transformerDtoToEntity = (dto) => {
             baseVoltage.mrid = item.base_voltage.mrid || null;
             baseVoltage.nominal_voltage = item.base_voltage.data.mrid || null;
             const voltage = new Voltage();
-            let unitPartsV = (item.base_voltage.data.unit || '').split('|');
-            voltage.multiplier = unitPartsV.length > 1 ? unitPartsV[0] : null;
-            voltage.unit = unitPartsV.length > 1 ? unitPartsV[1] : unitPartsV[0] || null;
-            voltage.value = item.base_voltage.data.value || null;
-            voltage.mrid = item.base_voltage.data.mrid || null;
+            mappingUnit(voltage, item.base_voltage.data)
             entity.baseVoltage.push(baseVoltage);
             entity.voltage.push(voltage);
 
             shortCircuitTest.voltage = item.short_circuit_impedances_uk.mrid || null;
             const percent = new Percent();
-            let unitPartsUk = (item.short_circuit_impedances_uk.unit || '').split('|');
-            percent.multiplier = unitPartsUk.length > 1 ? unitPartsUk[0] : null;
-            percent.unit = unitPartsUk.length > 1 ? unitPartsUk[1] : unitPartsUk[0] || null;
-            percent.value = item.short_circuit_impedances_uk.value || null;
-            percent.mrid = item.short_circuit_impedances_uk.mrid || null;
+            mappingUnit(percent, item.short_circuit_impedances_uk)
             entity.percent.push(percent);
 
             shortCircuitTest.loss = item.load_losses_pk.mrid || null;
             const activePower = new ActivePower();
-            let unitPartsLoss = (item.load_losses_pk.unit || '').split('|');
-            activePower.multiplier = unitPartsLoss.length > 1 ? unitPartsLoss[0] : null;
-            activePower.unit = unitPartsLoss.length > 1 ? unitPartsLoss[1] : unitPartsLoss[0] || null;
-            activePower.value = item.load_losses_pk.value || null;
-            activePower.mrid = item.load_losses_pk.mrid || null;
+            mappingUnit(activePower, item.load_losses_pk)
             entity.activePower.push(activePower);
 
             shortCircuitTest.temperature = dto.impedances.ref_temp.mrid || null;
@@ -482,26 +419,15 @@ export const transformerDtoToEntity = (dto) => {
         for(let item of dto.impedances.prim_tert) {
             const shortCircuitTest = new ShortCircuitTest();
             shortCircuitTest.mrid = item.mrid || null;
-            for(let i = 0; i< dto.oldTransformerEndInfo.length; i++) {
-                if(dto.oldTransformerEndInfo[i].end_number === 1) {
-                    shortCircuitTest.energised_end = dto.oldTransformerEndInfo[i].mrid || null;
-                    break;
-                }
-            }
-            for(let i = 0; i< dto.oldTransformerEndInfo.length; i++) {
-                if(dto.oldTransformerEndInfo[i].end_number === 3) {
+            shortCircuitTest.energised_end = transformer_end_info_prim_id || null;
+
+            for(let j=0; j<dto.shortCircuitTestTransformerEndInfo.length; j++) {
+                if(dto.shortCircuitTestTransformerEndInfo[j].short_circuit_test_id === item.mrid) {
                     const shortCircuitTestTransformerEndInfo = new ShortCircuitTestTransformerEndInfo();
-                    for(let j=0; j<dto.shortCircuitTestTransformerEndInfo.length; j++) {
-                        if(dto.shortCircuitTestTransformerEndInfo[j].transformer_end_info_id === dto.oldTransformerEndInfo[i].mrid
-                            && dto.shortCircuitTestTransformerEndInfo[j].short_circuit_test_id === item.mrid
-                        ) {
-                            shortCircuitTestTransformerEndInfo.mrid = dto.shortCircuitTestTransformerEndInfo[j].mrid || null;
-                            shortCircuitTestTransformerEndInfo.transformer_end_info_id = dto.shortCircuitTestTransformerEndInfo[j].transformer_end_info_id || null;
-                            shortCircuitTestTransformerEndInfo.short_circuit_test_id = dto.shortCircuitTestTransformerEndInfo[j].short_circuit_test_id || null;
-                            entity.shortCircuitTestTransformerEndInfo.push(shortCircuitTestTransformerEndInfo);
-                            break;
-                        }
-                    }
+                    shortCircuitTestTransformerEndInfo.mrid = dto.shortCircuitTestTransformerEndInfo[j].mrid || null;
+                    shortCircuitTestTransformerEndInfo.transformer_end_info_id = transformer_end_info_third_id || null;
+                    shortCircuitTestTransformerEndInfo.short_circuit_test_id = dto.shortCircuitTestTransformerEndInfo[j].short_circuit_test_id || null;
+                    entity.shortCircuitTestTransformerEndInfo.push(shortCircuitTestTransformerEndInfo);
                     break;
                 }
             }
@@ -511,11 +437,7 @@ export const transformerDtoToEntity = (dto) => {
             basePower.mrid = item.base_power.mrid || null;
             basePower.base_power = item.base_power.data.mrid || null;
             const apparentPower = new ApparentPower();
-            let unitParts = (item.base_power.data.unit || '').split('|');
-            apparentPower.multiplier = unitParts.length > 1 ? unitParts[0] : null;
-            apparentPower.unit = unitParts.length > 1 ? unitParts[1] : unitParts[0] || null;
-            apparentPower.value = item.base_power.data.value || null;
-            apparentPower.mrid = item.base_power.data.mrid || null;
+            mappingUnit(apparentPower, item.base_power.data)
             entity.basePower.push(basePower);
             entity.apparentPower.push(apparentPower);
 
@@ -524,30 +446,18 @@ export const transformerDtoToEntity = (dto) => {
             baseVoltage.mrid = item.base_voltage.mrid || null;
             baseVoltage.nominal_voltage = item.base_voltage.data.mrid || null;
             const voltage = new Voltage();
-            let unitPartsV = (item.base_voltage.data.unit || '').split('|');
-            voltage.multiplier = unitPartsV.length > 1 ? unitPartsV[0] : null;
-            voltage.unit = unitPartsV.length > 1 ? unitPartsV[1] : unitPartsV[0] || null;
-            voltage.value = item.base_voltage.data.value || null;
-            voltage.mrid = item.base_voltage.data.mrid || null;
+            mappingUnit(voltage, item.base_voltage.data)
             entity.baseVoltage.push(baseVoltage);
             entity.voltage.push(voltage);
 
             shortCircuitTest.voltage = item.short_circuit_impedances_uk.mrid || null;
             const percent = new Percent();
-            let unitPartsUk = (item.short_circuit_impedances_uk.unit || '').split('|');
-            percent.multiplier = unitPartsUk.length > 1 ? unitPartsUk[0] : null;
-            percent.unit = unitPartsUk.length > 1 ? unitPartsUk[1] : unitPartsUk[0] || null;
-            percent.value = item.short_circuit_impedances_uk.value || null;
-            percent.mrid = item.short_circuit_impedances_uk.mrid || null;
+            mappingUnit(percent, item.short_circuit_impedances_uk)
             entity.percent.push(percent);
 
             shortCircuitTest.loss = item.load_losses_pk.mrid || null;
             const activePower = new ActivePower();
-            let unitPartsLoss = (item.load_losses_pk.unit || '').split('|');
-            activePower.multiplier = unitPartsLoss.length > 1 ? unitPartsLoss[0] : null;
-            activePower.unit = unitPartsLoss.length > 1 ? unitPartsLoss[1] : unitPartsLoss[0] || null;
-            activePower.value = item.load_losses_pk.value || null;
-            activePower.mrid = item.load_losses_pk.mrid || null;
+            mappingUnit(activePower, item.load_losses_pk)
             entity.activePower.push(activePower);
 
             shortCircuitTest.temperature = dto.impedances.ref_temp.mrid || null;
@@ -564,23 +474,15 @@ export const transformerDtoToEntity = (dto) => {
     basePower.mrid = dto.impedances.zero_sequence_impedance.base_power.mrid || null;
     basePower.base_power = dto.impedances.zero_sequence_impedance.base_power.data.mrid || null;
     const apparentPower = new ApparentPower();
-    let unitParts = (dto.impedances.zero_sequence_impedance.base_power.data.unit || '').split('|');
-    apparentPower.multiplier = unitParts.length > 1 ? unitParts[0] : null;
-    apparentPower.unit = unitParts.length > 1 ? unitParts[1] : unitParts[0] || null;
-    apparentPower.value = dto.impedances.zero_sequence_impedance.base_power.data.value || null;
-    apparentPower.mrid = dto.impedances.zero_sequence_impedance.base_power.data.mrid || null;
+    mappingUnit(apparentPower, dto.impedances.zero_sequence_impedance.base_power.data)
     entity.basePower.push(basePower);
     entity.apparentPower.push(apparentPower);
 
     const baseVoltage = new BaseVoltage();
     baseVoltage.mrid = dto.impedances.zero_sequence_impedance.base_voltage.mrid || null;
     baseVoltage.nominal_voltage = dto.impedances.zero_sequence_impedance.base_voltage.data.mrid || null;
-    let unitPartsV = (dto.impedances.zero_sequence_impedance.base_voltage.data.unit || '').split('|');
     const voltage = new Voltage();
-    voltage.multiplier = unitPartsV.length > 1 ? unitPartsV[0] : null;
-    voltage.unit = unitPartsV.length > 1 ? unitPartsV[1] : unitPartsV[0] || null;
-    voltage.value = dto.impedances.zero_sequence_impedance.base_voltage.data.value || null;
-    voltage.mrid = dto.impedances.zero_sequence_impedance.base_voltage.data.mrid || null;
+    mappingUnit(voltage, dto.impedances.zero_sequence_impedance.base_voltage.data)
     entity.baseVoltage.push(baseVoltage);
     entity.voltage.push(voltage);
 
@@ -606,11 +508,7 @@ export const transformerDtoToEntity = (dto) => {
             }
         }
         const percent = new Percent();
-        let unitParts = (dto.impedances.zero_sequence_impedance.zero_percent[key].data.unit || '').split('|');
-        percent.multiplier = unitParts.length > 1 ? unitParts[0] : null;
-        percent.unit = unitParts.length > 1 ? unitParts[1] : unitParts[0] || null;
-        percent.value = dto.impedances.zero_sequence_impedance.zero_percent[key].data.value || null;
-        percent.mrid = dto.impedances.zero_sequence_impedance.zero_percent[key].data.mrid || null;
+        mappingUnit(percent, dto.impedances.zero_sequence_impedance.zero_percent[key].data)
         entity.percent.push(percent);
         entity.zeroSequenceImpedanceTable.push(zeroSequenceImpedanceTable);
     }
@@ -624,21 +522,35 @@ export const transformerDtoToEntity = (dto) => {
     entity.other.insulation_volume = dto.others.insulation.volume.mrid || null;
     entity.other.power_transformer_info_id = entity.oldPowerTransformerInfo.mrid || null;
     const volume = new Volume();
-    let unitPartsInsulationV = (dto.others.insulation.volume.unit || '').split('|');
-    volume.multiplier = unitPartsInsulationV.length > 1 ? unitPartsInsulationV[0] : null;
-    volume.unit = unitPartsInsulationV.length > 1 ? unitPartsInsulationV[1] : unitPartsInsulationV[0] || null;
-    volume.value = dto.others.insulation.volume.value || null;
-    volume.mrid = dto.others.insulation.volume.mrid || null;
+    mappingUnit(volume, dto.others.insulation.volume)
     entity.volume.push(volume);
+    
     entity.other.insulation_weight = dto.others.insulation.weight.mrid || null;
     const mass = new Mass();
-    let unitPartsInsulationW = (dto.others.insulation.weight.unit || '').split('|');
-    mass.multiplier = unitPartsInsulationW.length > 1 ? unitPartsInsulationW[0] : null;
-    mass.unit = unitPartsInsulationW.length > 1 ? unitPartsInsulationW[1] : unitPartsInsulationW[0] || null;
-    mass.value = dto.others.insulation.weight.value || null;
-    mass.mrid = dto.others.insulation.weight.mrid || null;
+    mappingUnit(mass, dto.others.insulation.weight)
     entity.mass.push(mass);
 
+    entity.productAssetModel.weight_total = dto.others.total_weight.mrid || null;
+    const weightMass = new Mass();
+    mappingUnit(weightMass, dto.others.total_weight)
+    entity.mass.push(weightMass);
+
+    console.log(entity);
     return entity
     
 }
+
+export const transformerEntityToDto = (entity) => {
+    // const entity = new TransformerEntity();
+    const dto = new TransformerDto();
+    return dto;
+}
+
+const mappingUnit = (map, unitDto) => {
+    if (!map || !unitDto) return;
+    map.mrid = unitDto.mrid || null;
+    map.value = unitDto.value || null;
+    const unitParts = (unitDto.unit || '').split('|'); // ví dụ "k|V"
+    map.multiplier = unitParts.length > 1 ? unitParts[0] : null;
+    map.unit = unitParts.length > 1 ? unitParts[1] : unitParts[0] || null;
+};

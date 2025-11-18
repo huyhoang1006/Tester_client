@@ -1071,7 +1071,7 @@ export default {
                             window.electronAPI.getVoltageLevelBySubstationId(clickedRow.mrid),
                             window.electronAPI.getBayByVoltageBySubstationId(null, clickedRow.mrid)
                         ]);
-                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, 
+                        const [assetTransformerReturn, assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, 
                         assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetBreakerReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (voltageLevelReturn.success) {
                             voltageLevelReturn.data.forEach(row => {
@@ -1101,6 +1101,22 @@ export default {
                                 })
                             });
                             newRows.push(...bayReturn.data);
+                        }
+
+                        if (assetTransformerReturn.success) {
+                            assetTransformerReturn.data.forEach(row => {
+                                row.parentId = clickedRow.mrid;
+                                row.mode = 'asset';
+                                row.asset = 'Transformer';
+                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                row.parentName = parentName
+                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr.push({
+                                    mrid: clickedRow.mrid,
+                                    parent: clickedRow.name
+                                })
+                            });
+                            newRows.push(...assetTransformerReturn.data);
                         }
 
                         if (assetSurgeReturn.success) {
@@ -1281,8 +1297,23 @@ export default {
 
                     } else if (node.mode == 'bay') {
                         const clickedRow = node;
-                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, 
+                        const [assetTransformerReturn, assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, 
                         assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetBreakerReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                        if (assetTransformerReturn.success) {
+                            assetTransformerReturn.data.forEach(row => {
+                                row.parentId = clickedRow.mrid;
+                                row.mode = 'asset';
+                                row.asset = 'Transformer';
+                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                row.parentName = parentName
+                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr.push({
+                                    mrid: clickedRow.mrid,
+                                    parent: clickedRow.name
+                                })
+                            });
+                            newRows.push(...assetTransformerReturn.data);
+                        }
                         if (assetSurgeReturn.success) {
                             assetSurgeReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
@@ -1464,7 +1495,8 @@ export default {
 
         async fetchAssetByPsr(psrId) {
             try {
-                const [responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer, responseCapacitor, responseBreaker] = await Promise.all([
+                const [responseTransformer, responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer, responseCapacitor, responseBreaker] = await Promise.all([
+                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Transformer'),
                     window.electronAPI.getSurgeArresterByPsrId(psrId),
                     window.electronAPI.getBushingByPsrId(psrId),
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Voltage transformer'),
@@ -1475,7 +1507,7 @@ export default {
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Capacitor'),
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Circuit breaker')
                 ])
-                return [responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer, responseCapacitor, responseBreaker];
+                return [responseTransformer, responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer, responseCapacitor, responseBreaker];
             } catch (error) {
                 console.error("Error fetching asset by substation:", error);
                 return {
@@ -2160,10 +2192,42 @@ export default {
         },
 
         async handleTransformerConfirm() {
-            this.$message.success("Transformer saved successfully")
-            // Cần thêm logic để cập nhật lại cây nếu cần thiết
-            await this.$refs.transformer.saveAsset();
-            // this.signTransformer = false
+            try {
+                const transformer = this.$refs.transformer
+                if (transformer) {
+                    const { success, data } = await transformer.saveAsset()
+                    if (success) {
+                        this.$message.success("Transformer saved successfully")
+                        this.signTransformer = false
+                        let newRows = []
+                        if (this.organisationClientList && this.organisationClientList.length > 0) {
+                            const newRow = {
+                                mrid: data.asset.mrid,
+                                name: data.asset.name,
+                                serial_number: data.asset.serial_number,
+                                parentId: this.parentOrganization.mrid,
+                                parentName: this.parentOrganization.name,
+                                parentArr: this.parentOrganization.parentArr || [],
+                                mode: 'asset',
+                                asset: 'Transformer',
+                            }
+                            newRows.push(newRow);
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            if (node) {
+                                const children = Array.isArray(node.children) ? node.children : [];
+                                Vue.set(node, "children", [...children, ...newRows]);
+                            } else {
+                                this.$message.error("Parent node not found in tree");
+                            }
+                        }
+                    } else {
+                        this.$message.error("Failed to save transformer")
+                    }
+                }
+            } catch (error) {
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
         },
 
         async handleBushingConfirm() {

@@ -1,4 +1,5 @@
 import Asset from '../../Cim/Asset'
+import Attachment from "../../Entity/Attachment";
 import Manufacturer from '@/views/Cim/Manufacturer'
 import ProductAssetModel from '@/views/Cim/ProductAssetModel'
 import OldPowerTransformerInfo from '@/views/Cim/OldPowerTransformerInfo'
@@ -11,11 +12,11 @@ class TransformerEntity {
     constructor() {
         this.asset = new Asset
         this.assetPsr = new AssetPsr() // Reference to the PSR asset
+        this.attachment = new Attachment()
         this.manufacturer = new Manufacturer
         this.productAssetModel = new ProductAssetModel
         this.oldPowerTransformerInfo = new OldPowerTransformerInfo() // Reference to the power transformer info
         this.oldTransformerEndInfo = [] // Reference to the transformer end info
-        this.powerRating = []  // Reference to the cooling power rating
         this.shortCircuitTest = [] // Reference to the short circuit test
         this.lifecycleDate = new LifecycleDate() // Reference to the lifecycle date
         this.frequency = [] // Reference to the frequency

@@ -32,7 +32,7 @@ export const insertTransformerEntity = () => {
 export const getTransformerEntityByMrid = () => {
     ipcMain.handle('getTransformerEntityByMrid', async function (event, mrid, psrId) {
         try {
-            const rs = await entityFunc.surgeArresterEntityFunc.getSurgeArresterEntityById(mrid, psrId)
+            const rs = await entityFunc.transformerEntityFunc.getTransformerEntityById(mrid, psrId)
             if (rs.success == true) {
                 return {
                     success: true,
@@ -57,8 +57,37 @@ export const getTransformerEntityByMrid = () => {
     })
 }
 
+export const deleteTransformerEntity = () => {
+    ipcMain.handle('deleteTransformerEntity', async function (event, data) {
+        try {
+            const rs = await entityFunc.transformerEntityFunc.deleteTransformerEntity(data)
+            if (rs.success == true) {
+                return {
+                    success: true,
+                    message: "Success",
+                    data : rs.data
+                }
+            }
+            else {
+                return {
+                    success: false,
+                    message: "fail",
+                }
+            }
+        } catch (error) {
+            console.error("Error retrieving Transformer entity by MRID:", error);
+            return {
+                error: error,
+                success: false,
+                message: (error && error.message) ? error.message : "Internal error",
+            }
+        }
+    })
+}
+
 
 export const active = () => {
     insertTransformerEntity()
     getTransformerEntityByMrid()
+    deleteTransformerEntity()
 }

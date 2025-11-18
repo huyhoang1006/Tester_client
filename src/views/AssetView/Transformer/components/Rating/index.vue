@@ -181,7 +181,7 @@
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-select size="mini" v-model="item.cooling_class.value">
+                                    <el-select size="mini" v-model="item.cooling_class">
                                         <el-option label="ONAN" value="ONAN"></el-option>
                                         <el-option label="ONAF" value="ONAF"></el-option>
                                         <el-option label="OFAF" value="OFAF"></el-option>
@@ -200,7 +200,7 @@
                                     </el-select>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="item.temp_rise_wind"> </el-input>
+                                    <el-input size="mini" v-model="item.temp_rise_wind.value"> </el-input>
                                 </td>
                                 <td>
                                     <el-button size="mini" type="danger" class="w-100" @click="deletePowerRating(index)">
@@ -447,11 +447,12 @@ export default {
                     value: '',
                     unit: 'm|VA'
                 },
-                cooling_class: {
+                cooling_class: '',
+                temp_rise_wind: {
                     mrid: '',
-                    value: ''
-                },
-                temp_rise_wind: ''
+                    value: '',
+                    unit: '°C'
+                }
             })
             this.ratingsData.current_ratings.push({
                 mrid: '',

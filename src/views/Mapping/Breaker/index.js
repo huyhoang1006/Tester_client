@@ -608,6 +608,7 @@ export function mapDtoToEntity(dto) {
 }
 
 export function mapEntityToDto(entity) {
+    console.log(entity)
     const dto = new CircuitBreakerDto()
     dto.properties.mrid = entity.asset.mrid || ''
     dto.properties.kind = entity.asset.kind || ''

@@ -44,7 +44,6 @@
 
 import LocationViewData from '@/views/LocationInsert/locationLevelView.vue'
 import OwnerView from '@/views/OwnerViewData/index.vue'
-import Transformer from '@/views/AssetView/Transformer'
 import OrganisationView from '@/views/Organisation/index.vue'
 import * as subsMapper from '@/views/Mapping/Substation/index'
 import * as orgMapper from '@/views/Mapping/Organisation/index'
@@ -59,6 +58,7 @@ import * as RotatingMachineMapper from '@/views/Mapping/RotatingMachine'
 import * as currentTransformerMapper from '@/views/Mapping/CurrentTransformer'
 import * as CapacitorMapper from '@/views/Mapping/Capacitor'
 import * as BreakerMapper from '@/views/Mapping/Breaker'
+import * as transformerMapper from '@/views/Mapping/Transformer'
 
 
 import VoltageLevel from '@/views/VoltageLevel/index.vue'
@@ -73,6 +73,7 @@ import RotatingMachine from '@/views/AssetView/RotatingMachine/index.vue'
 import CurrentTransformer from '@/views/AssetView/CurrentTransformer/index.vue'
 import Capacitor from '@/views/AssetView/Capacitor/index.vue'
 import CircuitBreaker from "@/views/AssetView/CircuitBreaker/index.vue"
+import Transformer from '@/views/AssetView/Transformer/index.vue'
 
 export default {
     name: "Tabs",
@@ -92,7 +93,8 @@ export default {
         RotatingMachine,
         CurrentTransformer,
         Capacitor,
-        CircuitBreaker
+        CircuitBreaker,
+        Transformer
     },
     model: {
         prop: 'value',
@@ -229,7 +231,6 @@ export default {
                             mrid: tab.parentId
                         }
                         const data = await window.electronAPI.getVoltageTransformerEntityByMrid(tab.mrid, tab.parentId)
-                        console.log("data : ", data)
                         if (data.success) {
                             const vtDto = vtMapper.mapEntityToDto(data.data)
                             console.log("entityToDto : ", vtDto)
@@ -292,6 +293,17 @@ export default {
                             this.$refs.componentLoadData[index].loadData(breakerDto)
                         } else {
                             this.$message.error("Failed to load circuit breaker data");
+                        }    
+                    } else if(tab.asset === 'Transformer') {
+                        this.parentOrganization = {
+                            mrid : tab.parentId
+                        }
+                        const data = await window.electronAPI.getTransformerEntityByMrid(tab.mrid, tab.parentId)
+                        if(data.success) {
+                            const transformerDto = transformerMapper.transformerEntityToDto(data.data)
+                            this.$refs.componentLoadData[index].loadData(transformerDto)
+                        } else {
+                            this.$message.error("Failed to load transformer data");
                         }    
                     }
                 } else if (tab.mode === 'job') {
@@ -465,6 +477,8 @@ export default {
                     return 'Capacitor'
                 } else if(tab.asset === 'Circuit breaker') {
                     return 'CircuitBreaker'
+                } else if(tab.asset === 'Transformer') {
+                    return 'Transformer'
                 }
             } else if (tab.mode == 'job') {
                 if (tab.job === 'Surge arrester') {
