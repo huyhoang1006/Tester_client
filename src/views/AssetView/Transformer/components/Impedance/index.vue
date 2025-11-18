@@ -356,6 +356,7 @@
 /* eslint-disable */
 import { UnitMultiplier } from '@/views/Enum/UnitMultiplier'
 import { UnitSymbol } from '@/views/Enum/UnitSymbol'
+import uuid from "@/utils/uuid"
 export default {
     name: 'Impedance',
     props: {
@@ -471,8 +472,9 @@ export default {
     mounted() {},
     methods: {
         addPrimSec() {
+            const mrid = uuid.newUuid();
             this.impedancesData.prim_sec.push({
-                mrid: '',
+                mrid: mrid,
                 short_circuit_impedances_uk: {
                     mrid: '',
                     value: '',
@@ -502,10 +504,12 @@ export default {
                 oltc_position: '',
                 detc_position: ''
             })
+            this.$emit("add", mrid)
         },
         addPrimTert() {
+            const mrid = uuid.newUuid();
             this.impedancesData.prim_tert.push({
-                mrid: '',
+                mrid: mrid,
                 short_circuit_impedances_uk: {
                     mrid: '',
                     value: '',
@@ -535,10 +539,12 @@ export default {
                 oltc_position: '',
                 detc_position: ''
             })
+            this.$emit("add", mrid)
         },
         addSecTert() {
+            const mrid = uuid.newUuid();
             this.impedancesData.sec_tert.push({
-                mrid: '',
+                mrid: mrid,
                 short_circuit_impedances_uk: {
                     mrid: '',
                     value: '',
@@ -568,23 +574,30 @@ export default {
                 oltc_position: '',
                 detc_position: ''
             })
+            this.$emit("add", mrid)
         },
         removeAllPrimSec() {
+            this.$emit("removeArr", JSON.parse(JSON.stringify(this.impedancesData.prim_sec.map(item => item.mrid))))
             this.impedancesData.prim_sec = []
         },
         removeAllPrimTert() {
+            this.$emit("removeArr", JSON.parse(JSON.stringify(this.impedancesData.prim_tert.map(item => item.mrid))))
             this.impedancesData.prim_tert = []
         },
         removeAllSecTert() {
+            this.$emit("removeArr", JSON.parse(JSON.stringify(this.impedancesData.sec_tert.map(item => item.mrid))))
             this.impedancesData.sec_tert = []
         },
         deletePrimSec(index) {
+            this.$emit("remove", JSON.parse(JSON.stringify(this.impedancesData.prim_sec[index].mrid)))
             this.impedancesData.prim_sec.splice(index, 1)
         },
         deletePrimTert(index) {
+            this.$emit("remove", JSON.parse(JSON.stringify(this.impedancesData.prim_tert[index].mrid)))
             this.impedancesData.prim_tert.splice(index, 1)
         },
         deleteSecTert(index) {
+            this.$emit("removeArr", JSON.parse(JSON.stringify(this.impedancesData.sec_tert[index].mrid)))
             this.impedancesData.sec_tert.splice(index, 1)
         }
     }

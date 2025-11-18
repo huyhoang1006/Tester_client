@@ -11,5 +11,4 @@ class TapChangersDto {
         this.voltage_table = [];
     }
 }
-
 export default TapChangersDto;

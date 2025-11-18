@@ -8,111 +8,159 @@ export const getOldTransformerEndInfoById = async (mrid) => {
         if (!baseResult.success) {
             return { success: false, data: null, message: 'TransformerEndInfo not found' }
         }
-        return new Promise((resolve, reject) => {
+
+        const row = await new Promise((resolve, reject) => {
             db.get(
                 `SELECT * FROM old_transformer_end_info WHERE mrid=?`,
                 [mrid],
-                (err, row) => {
-                    if (err) return reject({ success: false, err, message: 'Get oldTransformerEndInfo by id failed' })
-                    if (!row) return resolve({ success: false, data: null, message: 'OldTransformerEndInfo not found' })
-                    return resolve({ success: true, data: { ...baseResult.data, ...row }, message: 'Get oldTransformerEndInfo by id completed' })
-                }
+                (err, row) => (err ? reject(err) : resolve(row))
             )
         })
+
+        if (!row) {
+            return { success: false, data: null, message: 'OldTransformerEndInfo not found' }
+        }
+
+        return {
+            success: true,
+            data: { ...baseResult.data, ...row },
+            message: 'Get oldTransformerEndInfo by id completed'
+        }
+
     } catch (err) {
         return { success: false, err, message: 'Get oldTransformerEndInfo by id failed' }
     }
 }
 
+// Lấy danh sách oldTransformerEndInfo theo power_transformer_info_id, gồm toàn bộ thông tin kế thừa
+export const getOldTransformerEndInfoByPowerTransformerInfoId = async (powerTransformerInfoId) => {
+    try {
+        const rows = await new Promise((resolve, reject) => {
+            db.all(
+                `
+                SELECT 
+                    *
+                FROM old_transformer_end_info otei
+                LEFT JOIN transformer_end_info tei ON otei.mrid = tei.mrid
+                LEFT JOIN asset_info ai ON tei.mrid = ai.mrid
+                LEFT JOIN identified_object i ON ai.mrid = i.mrid
+
+                WHERE otei.power_transformer_info_id = ?
+                `,
+                [powerTransformerInfoId],
+                (err, rows) => (err ? reject(err) : resolve(rows))
+            )
+        })
+
+        if (!rows || rows.length === 0) {
+            return { success: false, data: [], message: 'No OldTransformerEndInfo found for this powerTransformerInfoId' }
+        }
+        return {
+            success: true,
+            data: rows,
+            message: 'Get oldTransformerEndInfo by powerTransformerInfoId completed'
+        }
+
+    } catch (err) {
+        console.error('Error in getOldTransformerEndInfoByPowerTransformerInfoId:', err)
+        return { success: false, err, message: 'Get oldTransformerEndInfo by powerTransformerInfoId failed' }
+    }
+}
+
+
 // Thêm mới oldTransformerEndInfo (transaction)
 export const insertOldTransformerEndInfoTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            const baseResult = await TransformerEndInfoFunc.insertTransformerEndInfoTransaction(info, dbsql)
-            if (!baseResult.success) {
-                return reject({ success: false, message: 'Insert transformerEndInfo failed', err: baseResult.err })
-            }
+    try {
+        const baseResult = await TransformerEndInfoFunc.insertTransformerEndInfoTransaction(info, dbsql)
+        if (!baseResult.success) {
+            throw baseResult.err || new Error('Insert transformerEndInfo failed')
+        }
+
+        await new Promise((resolve, reject) => {
             dbsql.run(
                 `INSERT INTO old_transformer_end_info(
-                    mrid, material, spare, accessibility, power_transformer_info_id
-                ) VALUES (?, ?, ?, ?, ?)
+                    mrid, material, spare, accessibility, power_transformer_info_id,
+                    phase
+                ) VALUES (?, ?, ?, ?, ?, ?)
                 ON CONFLICT(mrid) DO UPDATE SET
                     material = excluded.material,
                     spare = excluded.spare,
                     accessibility = excluded.accessibility,
-                    power_transformer_info_id = excluded.power_transformer_info_id
+                    power_transformer_info_id = excluded.power_transformer_info_id,
+                    phase = excluded.phase
                 `,
                 [
                     info.mrid,
                     info.material,
                     info.spare,
                     info.accessibility,
-                    info.power_transformer_info_id
+                    info.power_transformer_info_id,
+                    info.phase
                 ],
-                function (err) {
-                    if (err) {
-                        return reject({ success: false, err, message: 'Insert oldTransformerEndInfo failed' })
-                    }
-                    return resolve({ success: true, data: info, message: 'Insert oldTransformerEndInfo completed' })
-                }
+                (err) => (err ? reject(err) : resolve())
             )
-        } catch (err) {
-            return reject({ success: false, err, message: 'Insert oldTransformerEndInfo transaction failed' })
-        }
-    })
+        })
+
+        return { success: true, data: info, message: 'Insert oldTransformerEndInfo completed' }
+
+    } catch (err) {
+        return { success: false, err, message: 'Insert oldTransformerEndInfo transaction failed' }
+    }
 }
 
 // Cập nhật oldTransformerEndInfo (transaction)
 export const updateOldTransformerEndInfoTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            const baseResult = await TransformerEndInfoFunc.updateTransformerEndInfoTransaction(mrid, info, dbsql)
-            if (!baseResult.success) {
-                return reject({ success: false, message: 'Update transformerEndInfo failed', err: baseResult.err })
-            }
+    try {
+        const baseResult = await TransformerEndInfoFunc.updateTransformerEndInfoTransaction(mrid, info, dbsql)
+        if (!baseResult.success) {
+            throw baseResult.err || new Error('Update transformerEndInfo failed')
+        }
+
+        await new Promise((resolve, reject) => {
             dbsql.run(
                 `UPDATE old_transformer_end_info SET
                     material = ?,
                     spare = ?,
                     accessibility = ?,
-                    power_transformer_info_id = ?
+                    power_transformer_info_id = ?,
+                    phase = ?
                 WHERE mrid = ?`,
                 [
                     info.material,
                     info.spare,
                     info.accessibility,
                     info.power_transformer_info_id,
+                    info.phase,
                     mrid
                 ],
-                function (err) {
-                    if (err) {
-                        return reject({ success: false, err, message: 'Update oldTransformerEndInfo failed' })
-                    }
-                    return resolve({ success: true, data: info, message: 'Update oldTransformerEndInfo completed' })
-                }
+                (err) => (err ? reject(err) : resolve())
             )
-        } catch (err) {
-            return reject({ success: false, err, message: 'Update oldTransformerEndInfo transaction failed' })
-        }
-    })
+        })
+
+        return { success: true, data: info, message: 'Update oldTransformerEndInfo completed' }
+
+    } catch (err) {
+        return { success: false, err, message: 'Update oldTransformerEndInfo transaction failed' }
+    }
 }
 
 // Xóa oldTransformerEndInfo (transaction)
 export const deleteOldTransformerEndInfoTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            const baseResult = await TransformerEndInfoFunc.deleteTransformerEndInfoTransaction(mrid, dbsql)
-            if (!baseResult.success) {
-                return reject({ success: false, message: 'Delete transformerEndInfo failed', err: baseResult.err })
-            }
-            dbsql.run("DELETE FROM old_transformer_end_info WHERE mrid=?", [mrid], function (err) {
-                if (err) {
-                    return reject({ success: false, err, message: 'Delete oldTransformerEndInfo failed' })
-                }
-                return resolve({ success: true, data: mrid, message: 'Delete oldTransformerEndInfo completed' })
-            })
-        } catch (err) {
-            return reject({ success: false, err, message: 'Delete oldTransformerEndInfo transaction failed' })
+    try {
+        const baseResult = await TransformerEndInfoFunc.deleteTransformerEndInfoTransaction(mrid, dbsql)
+        if (!baseResult.success) {
+            throw baseResult.err || new Error('Delete transformerEndInfo failed')
         }
-    })
+
+        await new Promise((resolve, reject) => {
+            dbsql.run(`DELETE FROM old_transformer_end_info WHERE mrid=?`, [mrid], (err) =>
+                err ? reject(err) : resolve()
+            )
+        })
+
+        return { success: true, data: mrid, message: 'Delete oldTransformerEndInfo completed' }
+
+    } catch (err) {
+        return { success: false, err, message: 'Delete oldTransformerEndInfo transaction failed' }
+    }
 }
