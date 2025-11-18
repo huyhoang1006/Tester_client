@@ -28,7 +28,7 @@ import {insertBreakerOtherInfoTransaction, getBreakerOtherInfoById, deleteBreake
 import {insertOldOperatingMechanismTransaction, getOldOperatingMechanismByAssetIdTransaction ,getOldOperatingMechanismById, deleteOldOperatingMechanismTransaction} from '@/function/cim/oldOperatingMechanism'
 import {insertOldOperatingMechanismInfoTransaction, getOldOperatingMechanismInfoById, deleteOldOperatingMechanismInfoTransaction} from '@/function/cim/oldOperatingMechanismInfo'
 import {insertOperatingMechanismComponentTransaction, getOperatingMechanismComponentById, deleteOperatingMechanismComponentTransaction, getOperatingMechanismComponentByOperatingMechanismId} from '@/function/cim/operatingMechanismComponent'
-import { insertAssessmentLimitBreakerInfoTransaction, getAssessmentLimitBreakerInfoById, getAssessmentLimitBreakerInfoByBreakerInfoId, deleteAssessmentLimitBreakerInfoByIdTransaction} from '@/function/cim/assessmentLimitBreakerInfo'
+import { insertAssessmentLimitBreakerInfoTransaction, getAssessmentLimitBreakerInfoById, getAssessmentLimitBreakerInfoByBreakerInfoId, deleteAssessmentLimitBreakerInfoTransaction} from '@/function/cim/assessmentLimitBreakerInfo'
 import { insertAuxiliaryContactsBreakerInfoTransaction, getAuxiliaryContactsBreakerInfoById, getAuxiliaryContactsBreakerInfoByAssessmentLimitId, deleteAuxiliaryContactsBreakerInfoTransaction} from '@/function/cim/auxiliaryContactsBreakerInfo'
 import { insertTripOperationTransaction, getTripOperationById, getTripOperationByAuxiliaryContactsId, deleteTripOperationTransaction} from '@/function/cim/tripOperation'
 import { insertCloseOperationTransaction, getCloseOperationById, getCloseOperationByAuxiliaryContactsId, deleteCloseOperationTransaction} from '@/function/cim/closeOperation'
@@ -50,7 +50,7 @@ export const insertBreakerEntity = async (old_entity, entity) => {
         if (entity.asset.mrid === null || entity.asset.mrid === '') {
             return {
                 success: false,
-                error: new Error("MRID is required for Capacitor Entity"),
+                error: new Error("MRID is required for circuit breaker Entity"),
                 message: '',
             };
         } else {
@@ -61,7 +61,7 @@ export const insertBreakerEntity = async (old_entity, entity) => {
                 deleteBackupFiles(null, entity.asset.mrid);
                 return {
                     success: false,
-                    error: new Error("MRID is required for Rotating Machine Entity"),
+                    error: new Error("MRID is required for circuit breaker Entity"),
                     message: '',
                 };
             }
@@ -526,11 +526,232 @@ export const getBreakerEntity = async (id, psrId) => {
 }
 
 export const deleteBreakerEntity = async (entity) => {
-    return {
-        success: true,
-        data: entity,
-        message: 'delete Breaker entity successfully',
-    };
+    try {
+        await runAsync('BEGIN TRANSACTION');
+        // 1. Xóa attachment trước (thứ tự ngược với insert)
+        if (entity.attachment && entity.attachment.id) {
+            await deleteAttachmentByIdTransaction(entity.attachment.id, db);
+            if (entity.asset && entity.asset.mrid) {
+                const dirPath = path.join(attachmentContext.getAttachmentDir(), entity.asset.mrid);
+                deleteDirectory(dirPath);
+            }
+        }
+
+        // 2. Xóa assetPsr
+        if (entity.assetPsr && entity.assetPsr.mrid) {
+            await deleteAssetPsrTransaction(entity.assetPsr.mrid, db);
+        }
+
+        for(const data of entity.contactResistanceBreakerInfo) {
+            if(data.mrid) {
+                await deleteContactResistanceBreakerInfoTransaction(data.mrid, db);
+            }
+        }
+
+        for(const data of entity.operatingTimeBreakerInfo) {
+            if(data.mrid) {
+                await deleteOperatingTimeBreakerInfoTransaction(data.mrid, db);
+            }
+        }
+
+        for(const data of entity.contactTravelBreakerInfo) {
+            if(data.mrid) {
+                await deleteContactTravelBreakerInfoTransaction(data.mrid, db);
+            }
+        }
+
+        for(const data of entity.tripOperation) {
+            if(data.mrid) {
+                await deleteTripOperationTransaction(data.mrid, db);
+            }
+        }
+
+        for(const data of entity.closeOperation) {
+            if(data.mrid) {
+                await deleteCloseOperationTransaction(data.mrid, db);
+            }
+        }
+
+        if(entity.auxiliaryContactsBreakerInfo && entity.auxiliaryContactsBreakerInfo.mrid) {
+            await deleteAuxiliaryContactsBreakerInfoTransaction(entity.auxiliaryContactsBreakerInfo.mrid, db);
+        }
+
+        for(const data of entity.miscellaneousBreakerInfo) {
+            if(data.mrid) {
+                await deleteMiscellaneousBreakerInfoTransaction(data.mrid, db);
+            }
+        }
+
+        for(const data of entity.coilCharacteristicsBreakerInfo) {
+            if(data.mrid) {
+                await deleteCoilCharacteristicsBreakerInfoTransaction(data.mrid, db);
+            }
+        }
+
+        for(const data of entity.pickupVoltageBreakerInfo) {
+            if(data.mrid) {
+                await deletePickupVoltageBreakerInfoTransaction(data.mrid, db);
+            }
+        }
+
+        for(const data of entity.motorCharacteristicsBreakerInfo) {
+            if(data.mrid) {
+                await deleteMotorCharacteristicsBreakerInfoTransaction(data.mrid, db);
+            }
+        }
+
+        for(const data of entity.underVoltageReleaseBreakerInfo) {
+            if(data.mrid) {
+                await deleteUnderVoltageReleaseBreakerInfoTransaction(data.mrid, db);
+            }
+        }
+
+        for(const data of entity.overcurrentReleaseBreakerInfo) {
+            if(data.mrid) {
+                await deleteOvercurrentReleaseBreakerInfoTransaction(data.mrid, db);
+            }
+        }
+
+        if(entity.assessmentLimitBreakerInfo && entity.assessmentLimitBreakerInfo.mrid) {
+            await deleteAssessmentLimitBreakerInfoTransaction(entity.assessmentLimitBreakerInfo.mrid, db);
+        }
+
+        for(const data of entity.operatingMechanismComponent) {
+            if(data.mrid) {
+                await deleteOperatingMechanismComponentTransaction(data.mrid, db)
+            }
+        }
+
+        if(entity.oldOperatingMechanism && entity.oldOperatingMechanism.mrid) {
+            await deleteOldOperatingMechanismTransaction(entity.oldOperatingMechanism.mrid, db);
+        }
+
+        if(entity.operatingLifecycleDate && entity.operatingLifecycleDate.mrid) {
+            await deleteLifecycleDateByIdTransaction(entity.operatingLifecycleDate.mrid, db);
+        }
+
+        if(entity.oldOperatingMechanismInfo && entity.oldOperatingMechanismInfo.mrid) {
+            await deleteOldOperatingMechanismInfoTransaction(entity.oldOperatingMechanismInfo.mrid, db);
+        }
+
+        if(entity.operatingProductAssetModel && entity.operatingProductAssetModel.mrid) {
+            await deleteProductAssetModelByIdTransaction(entity.operatingProductAssetModel.mrid, db);
+        }
+
+        if(entity.breakerOtherInfo && entity.breakerOtherInfo.mrid) {
+            deleteBreakerOtherInfoTransaction(entity.breakerOtherInfo.mrid, db);
+        }
+
+        if(entity.breakerContactSystemInfo && entity.breakerContactSystemInfo.mrid) {
+            deleteBreakerContactSystemInfoTransaction(entity.breakerContactSystemInfo.mrid, db);
+        }
+
+        if(entity.breakerRatingInfo && entity.breakerRatingInfo.mrid) {
+            deleteBreakerRatingInfoTransaction(entity.breakerRatingInfo.mrid, db);
+        }
+
+        if(entity.asset && entity.asset.mrid) {
+            await deleteAssetByIdTransaction(entity.asset.mrid, db);
+        }
+
+        if(entity.lifecycleDate && entity.lifecycleDate.mrid) {
+            await deleteLifecycleDateByIdTransaction(entity.lifecycleDate.mrid, db);
+        }
+
+        if(entity.oldBreakerInfo && entity.oldBreakerInfo.mrid) {
+            await deleteOldBreakerInfoTransaction(entity.oldBreakerInfo.mrid, db);
+        }
+
+        if(entity.productAssetModel && entity.productAssetModel.mrid) {
+            await deleteProductAssetModelByIdTransaction(entity.productAssetModel.mrid, db);
+        }
+
+        for(const data of entity.voltage) {
+            if(data.mrid) {
+                await deleteVoltageByIdTransaction(data.mrid, db);
+            }
+        }
+
+        for(const data of entity.currentFlow) {
+            if(data.mrid) {
+                await deleteCurrentFlowByIdTransaction(data.mrid, db);
+            }
+        }
+
+        for(const data of entity.second) {
+            if(data.mrid) {
+                await deleteSecondsByIdTransaction(data.mrid, db);
+            }
+        }
+
+        for(const data of entity.resistance) {
+            if(data.mrid) {
+                await deleteResistanceByIdTransaction(data.mrid, db);
+            }
+        }
+
+        for(const data of entity.capacitance) {
+            if(data.mrid) {
+                await deleteCapacitanceByIdTransaction(data.mrid, db);
+            }
+        }
+
+        for(const data of entity.activePower) {
+            if(data.mrid) {
+                await deleteActivePowerByIdTransaction(data.mrid, db);
+            }
+        }
+
+        for(const data of entity.length) {
+            if(data.mrid) {
+                await deleteLengthByIdTransaction(data.mrid, db);
+            }
+        }
+
+        for(const data of entity.mass) {
+            if(data.mrid) {
+                await deleteMassByIdTransaction(data.mrid, db);
+            }
+        }
+
+        for(const data of entity.volume) {
+            if(data.mrid) {
+                await deleteVolumeByIdTransaction(data.mrid, db);
+            }
+        }
+
+        for(const data of entity.temperature) {
+            if(data.mrid) {
+                await deleteTemperatureByIdTransaction(data.mrid, db);
+            }
+        }
+
+        for(const data of entity.frequency) {
+            if(data.mrid) {
+                await deleteFrequencyByIdTransaction(data.mrid, db);
+            }
+        }
+
+        for(const data of entity.quantity) {
+            if(data.mrid) {
+                await deleteQuantityValueTransaction(data.mrid, db);
+            }
+        }
+
+        for(const data of entity.pressure) {
+            if(data.mrid) {
+                await deletePressureByIdTransaction(data.mrid, db);
+            }
+        }
+
+        await runAsync('COMMIT');
+        return { success: true, message: 'Breaker entity deleted successfully' };
+        
+    } catch (error) {
+        await runAsync('ROLLBACK');
+        console.error('Error deleting Breaker entity:', error);
+        return { success: false, error, message: 'Error deleting Breaker entity' };
+    }
 }
 
 const insertUnit = async (unit, data, dbsql) => {

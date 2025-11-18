@@ -8,16 +8,31 @@ import {insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId
 import {insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction} from '@/function/cim/productAssetModel';
 import {insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction} from '@/function/cim/lifecycleDate';
 import { insertSecondsTransaction, getSecondById, deleteSecondsByIdTransaction } from '@/function/cim/seconds';
-import {insertCurrentFlowTransaction, getCurrentFlowById, deleteCurrentFlowByIdTransaction} from '@/function/cim/currentFlow';
+import {insertCurrentFlowTransaction, getCurrentFlowById, deleteCurrentFlowByIdTransaction, } from '@/function/cim/currentFlow';
 import {insertVoltageTransaction, getVoltageById, deleteVoltageByIdTransaction} from '@/function/cim/voltage';
+import {insertPercentTransaction, getPercentById, deletePercentByIdTransaction} from "@/function/cim/percent"
+import {insertActivePowerTransaction, getActivePowerById, deleteActivePowerByIdTransaction} from '@/function/cim/activePower';
+import {insertApparentPowerTransaction, getApparentPowerById, deleteApparentPowerByIdTransaction} from '@/function/cim/apparentPower';
 import {insertFrequencyTransaction, getFrequencyById, deleteFrequencyByIdTransaction} from '@/function/cim/frequency';
 import {insertMassTransaction, deleteMassByIdTransaction, getMassById} from '@/function/cim/mass'
 import {insertVolumeTransaction, deleteVolumeByIdTransaction, getVolumeById} from '@/function/cim/volume'
+import {insertTemperatureTransaction, deleteTemperatureByIdTransaction, getTemperatureById} from '@/function/cim/temperature'
 import {insertAssetTransaction, deleteAssetByIdTransaction, getAssetById} from '@/function/cim/asset'
+import {insertZeroSequenceImpedanceTransaction, getZeroSequenceImpedanceById, deleteZeroSequenceImpedanceByIdTransaction} from '@/function/cim/zeroSequenceImpedance'
+import {insertZeroSequenceImpedanceTableTransaction, getZeroSequenceImpedanceTableById, deleteZeroSequenceImpedanceTableTransaction} from '@/function/cim/zeroSequenceImpedanceTable'
+import {insertVoltageRatingTransaction, getVoltageRatingById, deleteVoltageRatingByIdTransaction} from "@/function/cim/voltageRating"
+import {insertCoolingPowerRatingTransaction, getCoolingPowerRatingById, deleteCoolingPowerRatingTransaction} from "@/function/cim/coolingPowerRating"
+import {insertCurrentRatingTransaction, getCurrentRatingById, deleteCurrentRatingByIdTransaction} from "@/function/cim/currentRating"
+import {insertBaseVoltageTransaction, getBaseVoltageById, deleteBaseVoltageByIdTransaction} from "@/function/cim/baseVoltage"
+import {insertBasePowerTransaction, getBasePowerById, deleteBasePowerByIdTransaction} from "@/function/cim/basePower"
+import {insertShortCircuitTestTransaction, getShortCircuitTestById, deleteShortCircuitTestByIdTransaction} from "@/function/cim/shortCircuitTest"
+import {insertSCTTransformerEndInfoTransaction, getSCTTransformerEndInfoById, getSCTTransformerEndInfoByShortCircuitTestId, deleteSCTTransformerEndInfoByIdTransaction} from "@/function/cim/shortCircuitTestTransformerEndInfo"
 
-import SurgeArresterEntity from '@/views/Entity/SurgeArrester';
+import TransformerEntity from '@/views/Entity/Transformer/index';
 
 export const insertTransformerEntity = async (old_entity,entity) => {
+    const unitTypes = ['percent', 'voltage', 'currentFlow', 'seconds', 'activePower', 'apparentPower', 'mass', 'volume', 'temperature', 'frequency', 'baseVoltage', 'basePower']
+    const tableTypes = ['oldTransformerEndInfo', 'voltageRating', 'coolingPowerRating', 'currentRating', 'shortCircuitTest', 'shortCircuitTestTransformerEndInfo', 'zeroSequenceImpedanceTable']
     try {
         if(entity.asset.mrid === null || entity.asset.mrid === '') {
             const result = {
@@ -31,7 +46,6 @@ export const insertTransformerEntity = async (old_entity,entity) => {
             const syncResult = syncFilesWithDeletion(JSON.parse(entity.attachment.path), null, entity.asset.mrid);
             if (!syncResult.success) {
                 restoreFiles(null, null, entity.asset.mrid);
-                deleteBackupFiles(null, entity.asset.mrid);
                 const result = {
                     success: false,
                     error: new Error("MRID is required for Transformer Entity"),
@@ -40,117 +54,29 @@ export const insertTransformerEntity = async (old_entity,entity) => {
                 return result;
             }
             await runAsync('BEGIN TRANSACTION');
+            const toDeleteUnit = {}
+            for(const unitType of unitTypes) {
+                const newIds = entity[unitType].map(v => v.mrid).filter(id => id); // bỏ null/empty
+                const oldIds = old_entity[unitType].map(v => v.mrid).filter(id => id);
 
-            //voltage
-            // const newIds = entity.voltage.map(v => v.mrid).filter(id => id); // bỏ null/empty
-            // const oldIds = old_entity.voltage.map(v => v.mrid).filter(id => id);
-
-            // const toAdd = entity.voltage.filter(v => v.mrid && !oldIds.includes(v.mrid));
-            // const toDelete = old_entity.voltage.filter(v => v.mrid && !newIds.includes(v.mrid));
-            // const toUpdate = entity.voltage.filter(v => v.mrid && oldIds.includes(v.mrid));
-            // for (const voltage of toAdd) {
-            //     await insertVoltageTransaction(voltage, db);
-            // }
-            // for (const voltage of toUpdate) {
-            //     await insertVoltageTransaction(voltage, db);
-            // }
-
-            //frequency
-            // const newFrequencyIds = entity.frequency.map(f => f.mrid).filter(id => id);
-            // const oldFrequencyIds = old_entity.frequency.map(f => f.mrid).filter(id => id);
-
-            // const toAddFrequency = entity.frequency.filter(f => f.mrid && !oldFrequencyIds.includes(f.mrid));
-            // const toDeleteFrequency = old_entity.frequency.filter(f => f.mrid && !newFrequencyIds.includes(f.mrid));
-            // const toUpdateFrequency = entity.frequency.filter(f => f.mrid && oldFrequencyIds.includes(f.mrid));
-            // for (const frequency of toAddFrequency) {
-            //     await insertFrequencyTransaction(frequency, db);
-            // }
-            // for (const frequency of toUpdateFrequency) {
-            //     await insertFrequencyTransaction(frequency, db);
-            // }
-
-            //seconds
-            // const newSecondsIds = entity.seconds.map(s => s.mrid).filter(id => id);
-            // const oldSecondsIds = old_entity.seconds.map(s => s.mrid).filter(id => id);
-
-            // const toAddSeconds = entity.seconds.filter(s => s.mrid && !oldSecondsIds.includes(s.mrid));
-            // const toDeleteSeconds = old_entity.seconds.filter(s => s.mrid && !newSecondsIds.includes(s.mrid));
-            // const toUpdateSeconds = entity.seconds.filter(s => s.mrid && oldSecondsIds.includes(s.mrid));
-            // for (const seconds of toAddSeconds) {
-            //     await insertSecondsTransaction(seconds, db);
-            // }
-            // for (const seconds of toUpdateSeconds) {
-            //     await insertSecondsTransaction(seconds, db);
-            // }
-
-            //currentFlow
-            // const newCurrentFlowIds = entity.currentFlow.map(c => c.mrid).filter(id => id);
-            // const oldCurrentFlowIds = old_entity.currentFlow.map(c => c.mrid).filter(id => id);
-
-            // const toAddCurrentFlow = entity.currentFlow.filter(c => c.mrid && !oldCurrentFlowIds.includes(c.mrid));
-            // const toDeleteCurrentFlow = old_entity.currentFlow.filter(c => c.mrid && !newCurrentFlowIds.includes(c.mrid));
-            // const toUpdateCurrentFlow = entity.currentFlow.filter(c => c.mrid && oldCurrentFlowIds.includes(c.mrid));
-            // for (const currentFlow of toAddCurrentFlow) {
-            //     await insertCurrentFlowTransaction(currentFlow, db);
-            // }
-
-            // for (const currentFlow of toUpdateCurrentFlow) {
-            //     await insertCurrentFlowTransaction(currentFlow, db);
-            // }
-
-            //mass
-            // const newMassIds = entity.mass.map(c => c.mrid).filter(id => id);
-            // const oldMassIds = old_entity.mass.map(c => c.mrid).filter(id => id);
-
-            // const toAddMass = entity.mass.filter(c => c.mrid && !oldMassIds.includes(c.mrid));
-            // const toDeleteMass = old_entity.mass.filter(c => c.mrid && !newMassIds.includes(c.mrid));
-            // const toUpdateMass = entity.mass.filter(c => c.mrid && oldMassIds.includes(c.mrid));
-            // for (const mass of toAddMass) {
-            //     await insertMassTransaction(mass, db);
-            // }
-
-            // for (const mass of toUpdateMass) {
-            //     await insertMassTransaction(mass, db);
-            // }
-
-            //volume
-            // const newVolumeIds = entity.volume.map(c => c.mrid).filter(id => id);
-            // const oldVolumeIds = old_entity.volume.map(c => c.mrid).filter(id => id);
-
-            // const toAddVolume = entity.volume.filter(c => c.mrid && !oldVolumeIds.includes(c.mrid));
-            // const toDeleteVolume = old_entity.volume.filter(c => c.mrid && !newVolumeIds.includes(c.mrid));
-            // const toUpdateVolume = entity.volume.filter(c => c.mrid && oldVolumeIds.includes(c.mrid));
-            // for (const volume of toAddVolume) {
-            //     await insertVolumeTransaction(volume, db);
-            // }
-
-            // for (const volume of toUpdateVolume) {
-            //     await insertVolumeTransaction(volume, db);
-            // }
-
-
+                const toAdd = entity[unitType].filter(v => v.mrid && !oldIds.includes(v.mrid));
+                const toDelete = old_entity[unitType].filter(v => v.mrid && !newIds.includes(v.mrid));
+                toDeleteUnit[unitType] = toDelete;
+                const toUpdate = entity[unitType].filter(v => v.mrid && oldIds.includes(v.mrid));
+                for (const unit of toAdd) {
+                    await insertUnit(unitType, unit, db);
+                }
+                for (const unit of toUpdate) {
+                    await insertUnit(unitType, unit, db);
+                }
+            }
+            await insertOldPowerTransformerInfoTransaction(entity.oldPowerTransformerInfo, db);
             await insertLifecycleDateTransaction(entity.lifecycleDate, db);
             await insertProductAssetModelTransaction(entity.productAssetModel, db);
             await insertAssetTransaction(entity.asset, db);
             await insertAssetPsrTransaction(entity.assetPsr, db);
-            // await insertOldTransformerEndInfoTransaction(entity.oldPowerTransformerInfo, db);
+            await insertZeroSequenceImpedanceTransaction(entity.zeroSequenceImpedance, db);
 
-
-            //oldPowerTransformerInfo
-            // const newOldTransformerEndInfoIds = entity.oldTransformerEndInfo.map(o => o.mrid).filter(id => id);
-            // const oldOldTransformerEndInfoIds = old_entity.oldTransformerEndInfo.map(o => o.mrid).filter(id => id);
-
-            // const toAddOldTransformerEndInfo = entity.oldTransformerEndInfo.filter(o => o.mrid && !oldOldTransformerEndInfoIds.includes(o.mrid));
-            // const toDeleteOldTransformerEndInfo = old_entity.oldTransformerEndInfo.filter(o => o.mrid && !newOldTransformerEndInfoIds.includes(o.mrid));
-            // const toUpdateOldTransformerEndInfo = entity.oldTransformerEndInfo.filter(o => o.mrid && oldOldTransformerEndInfoIds.includes(o.mrid));
-
-            // for (const oldTransformerEndInfo of toAddOldTransformerEndInfo) {
-            //     await insertOldTransformerEndInfoTransaction(oldTransformerEndInfo, db);
-            // }
-
-            // for (const oldTransformerEndInfo of toUpdateOldTransformerEndInfo) {
-            //     await insertOldTransformerEndInfoTransaction(oldTransformerEndInfo, db);
-            // }
 
             if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
                 const pathData = JSON.parse(entity.attachment.path);
@@ -164,72 +90,73 @@ export const insertTransformerEntity = async (old_entity,entity) => {
                 await uploadAttachmentTransaction(entity.attachment, db);
             }
 
-            //delete
-            for (const oldTransformerEndInfo of toDeleteOldTransformerEndInfo) {
-                await deleteOldTransformerEndInfoTransaction(oldTransformerEndInfo.mrid, db);
+            //table
+            let toDeleteTable = {}
+            for(const tableType of tableTypes) {
+                const newIds = entity[tableType].map(v => v.mrid).filter(id => id); // bỏ null/empty
+                const oldIds = old_entity[tableType].map(v => v.mrid).filter(id => id);
+
+                const toAdd = entity[tableType].filter(v => v.mrid && !oldIds.includes(v.mrid));
+                const toDelete = old_entity[tableType].filter(v => v.mrid && !newIds.includes(v.mrid));
+                toDeleteTable[tableType] = toDelete;
+                const toUpdate = entity[tableType].filter(v => v.mrid && oldIds.includes(v.mrid));
+                for (const table of toAdd) {
+                    await insertTable(tableType, table, db);
+                }
+                for (const table of toUpdate) {
+                    await insertTable(tableType, table, db);
+                }
             }
 
-            for (const mass of toDeleteMass) {
-                await deleteMassByIdTransaction(mass.mrid, db);
+            for(const tableType of [...tableTypes].reverse()) {
+                for(const t of toDeleteTable[tableType]) {
+                    await deleteTable(tableType, t.mrid, db);
+                }
             }
 
-            for (const volume of toDeleteVolume) {
-                await deleteVolumeByIdTransaction(volume.mrid, db);
-            }
-
-            for (const frequency of toDeleteFrequency) {
-                await deleteFrequencyByIdTransaction(frequency.mrid, db);
-            }
-
-            for (const voltage of toDelete) {
-                await deleteVoltageByIdTransaction(voltage.mrid, db);
-            }
-            
-            for (const seconds of toDeleteSeconds) {
-                await deleteSecondsByIdTransaction(seconds.mrid, db);
-            }
-
-            for (const currentFlow of toDeleteCurrentFlow) {
-                await deleteCurrentFlowByIdTransaction(currentFlow.mrid, db);
+            for(const unitType of [...unitTypes].reverse()) {
+                for(const u of toDeleteUnit[unitType]) {
+                    await deleteUnit(unitType, u.mrid, db);
+                }
             }
 
             await runAsync('COMMIT');
-            deleteBackupFiles(null, entity.surgeArrester.mrid);
-            return { success: true, data: entity, message: 'Surge Arrester entity inserted successfully' };
+            deleteBackupFiles(null, entity.asset.mrid);
+            return { success: true, data: entity, message: 'Transformer entity inserted successfully' };
         }
     } catch (error) {
-        restoreFiles(null, null, entity.surgeArrester.mrid);
-        deleteBackupFiles(null, entity.surgeArrester.mrid);
-        console.error('Error retrieving surge arrester entity:', error);
+        restoreFiles(null, null, entity.asset.mrid);
+        deleteBackupFiles(null, entity.asset.mrid);
+        console.error('Error retrieving transformer entity:', error);
         await runAsync('ROLLBACK');
-        return { success: false, error, message: 'Error retrieving surge arrester entity' };
+        return { success: false, error, message: 'Error retrieving transformer entity' };
     }
 }
 
-export const getSurgeArresterEntityById = async (id, psrId) => {
+export const getTransformerEntityById = async (id, psrId) => {
     try {
         if(id == null || id === '') {
             return { success: false, error: new Error('Invalid ID') };
         } else {
-            const entity = new SurgeArresterEntity()
-            const dataSurgeArrester = await getAssetById(id);
-            if(dataSurgeArrester.success) {
+            const entity = new TransformerEntity()
+            const dataTransformer = await getAssetById(id);
+            if(dataTransformer.success) {
                 return {
                     success: true,
                     data: entity,
-                    message: 'Surge Arrester entity retrieved successfully'
+                    message: 'Transformer entity retrieved successfully'
                 }
             } else {
-                return { success: false, error: dataSurgeArrester.error, message: dataSurgeArrester.message };
+                return { success: false, error: dataTransformer.error, message: dataTransformer.message };
             }
         }
     } catch (error) {
-        console.error("Error retrieving Surge Arrester entity by ID:", error);
-        return { success: false, error, message: 'Error retrieving Surge Arrester entity by ID' };
+        console.error("Error retrieving Transformer entity by ID:", error);
+        return { success: false, error, message: 'Error retrieving Transformer entity by ID' };
     }
 }
 
-export const deleteSurgeArresterEntity = async (data) => {
+export const deleteTransformerEntity = async (data) => {
     try {
         if(data.surgeArrester == null || data.surgeArrester.mrid == null || data.surgeArrester.mrid === '') {
             return { success: false, error: new Error('Invalid ID') };
@@ -302,3 +229,95 @@ const runAsync = (sql, params = []) => {
         });
     });
 };
+
+const insertUnit = async (unit, data, dbsql) => {
+    if(unit == 'voltage') {
+        await insertVoltageTransaction(data, dbsql);
+    } else if(unit == 'currentFlow') {
+        await insertCurrentFlowTransaction(data, dbsql);
+    } else if(unit == 'second') {
+        await insertSecondsTransaction(data, dbsql);
+    } else if(unit == 'activePower') {
+        await insertActivePowerTransaction(data, dbsql);
+    } else if(unit == 'apparentPower') {
+        await insertApparentPowerTransaction(data, dbsql);
+    } else if(unit == 'mass') {
+        await insertMassTransaction(data, dbsql);
+    } else if(unit == 'volume') {
+        await insertVolumeTransaction(data, dbsql);
+    } else if(unit == 'temperature') {
+        await insertTemperatureTransaction(data, dbsql);
+    } else if(unit == 'frequency') {
+        await insertFrequencyTransaction(data, dbsql);
+    } else if(unit == 'baseVoltage') {
+        await insertBaseVoltageTransaction(data, dbsql)
+    } else if(unit == 'basePower') {
+        await insertBasePowerTransaction(data, dbsql)
+    } else if(unit == 'percent') {
+        await insertPercentTransaction(data, dbsql)
+    }
+}
+
+const deleteUnit = async (unit, data, dbsql) => {
+    if(unit == 'voltage') {
+        await deleteVoltageByIdTransaction(data, dbsql);
+    } else if(unit == 'currentFlow') {
+        await deleteCurrentFlowByIdTransaction(data, dbsql);
+    } else if(unit == 'second') {
+        await deleteSecondsByIdTransaction(data, dbsql);
+    } else if(unit == 'activePower') {
+        await deleteActivePowerByIdTransaction(data, dbsql);
+    } else if(unit == 'apparentPower') {
+        await deleteApparentPowerByIdTransaction(data, dbsql);
+    } else if(unit == 'mass') {
+        await deleteMassByIdTransaction(data, dbsql);
+    } else if(unit == 'volume') {
+        await deleteVolumeByIdTransaction(data, dbsql);
+    } else if(unit == 'temperature') {
+        await deleteTemperatureByIdTransaction(data, dbsql);
+    } else if(unit == 'frequency') {
+        await deleteFrequencyByIdTransaction(data, dbsql);
+    } else if(unit == 'baseVoltage') {
+        await deleteBaseVoltageByIdTransaction(data, dbsql)
+    } else if(unit == 'basePower') {
+        await deleteBasePowerByIdTransaction(data, dbsql)
+    } else if(unit == 'percent') {
+        await deletePercentByIdTransaction(data, dbsql)
+    }
+}
+
+const insertTable = async (table, data, dbsql) => {
+    if(table == 'oldTransformerEndInfo') {
+        await insertOldTransformerEndInfoTransaction(data, dbsql);
+    }else if(table == 'voltageRating') {
+        await insertVoltageRatingTransaction(data, dbsql);
+    }else if(table == 'coolingPowerRating') {
+        await insertCoolingPowerRatingTransaction(data, dbsql);
+    }else if(table == 'currentRating') {
+        await insertCurrentRatingTransaction(data, dbsql);
+    }else if(table == 'shortCircuitTest') {
+        await insertShortCircuitTestTransaction(data, dbsql);
+    }else if(table == 'shortCircuitTestTransformerEndInfo') {
+        await insertSCTTransformerEndInfoTransaction(data, dbsql);
+    }else if(table == 'zeroSequenceImpedanceTable') {
+        await insertZeroSequenceImpedanceTableTransaction(data, dbsql);
+    }
+}
+
+const deleteTable = async (table, data, dbsql) => {
+    if(table == 'oldTransformerEndInfo') {
+        await deleteOldTransformerEndInfoTransaction(data, dbsql);
+    }else if(table == 'voltageRating') {
+        await deleteVoltageRatingByIdTransaction(data, dbsql);
+    }else if(table == 'coolingPowerRating') {
+        await deleteCoolingPowerRatingTransaction(data, dbsql)
+    }else if(table == 'currentRating') {
+        await deleteCurrentRatingByIdTransaction(data, dbsql);
+    }else if(table == 'shortCircuitTest') {
+        await deleteShortCircuitTestByIdTransaction(data, dbsql);
+    }else if(table == 'shortCircuitTestTransformerEndInfo') {
+        await deleteSCTTransformerEndInfoByIdTransaction(data, dbsql);
+    }else if(table == 'zeroSequenceImpedanceTable') {
+        await deleteZeroSequenceImpedanceTableTransaction(data, dbsql);
+    }
+}
