@@ -59,6 +59,7 @@ async function createWindow() {
             contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
             preload: path.join(__dirname, 'preload.js'),
             devTools: true,
+            webSecurity: false
         }
     })
 
