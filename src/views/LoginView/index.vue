@@ -22,31 +22,8 @@
                 </el-form>
             </el-card>
         </div>
-        <!-- <div class="footer">
-            <div>
-                <div class="links">
-                    <span>
-                        <a href="#">
-                            <img src="@/assets/images/website.png" style="max-height: 32px" />
-                        </a>
-                    </span>
-                    <span>
-                        <a href="#">
-                            <img src="@/assets/images/facebook.png" style="max-height: 32px" />
-                        </a>
-                    </span>
-                    <span>
-                        <a href="#">
-                            <img src="@/assets/images/zalo.png" style="max-height: 32px" />
-                        </a>
-                    </span>
-                </div>
-                <div class="version">Copyright 2022 © AT Energy</div>
-            </div>
-        </div> -->
     </div>
 </template>
-
 
 <script>
 /* eslint-disable */
@@ -58,8 +35,9 @@ export default {
         return {
             formLabelWidth: '140px',
             model: {
-                username: 'sonnh',
-                password: '1122'
+                // Tài khoản test mặc định
+                username: 'PCHocMon',
+                password: 'evn_admin'
             },
             remember: true,
             loadingLogin: false,
@@ -70,11 +48,6 @@ export default {
                         message: 'Username is required',
                         trigger: 'blur'
                     }
-                    // {
-                    //     min: 5,
-                    //     message: 'Username length should be at least 5 characters',
-                    //     trigger: 'blur'
-                    // }
                 ],
                 password: [
                     {
@@ -82,40 +55,12 @@ export default {
                         message: 'Password is required',
                         trigger: 'blur'
                     }
-                    // {
-                    //     min: 8,
-                    //     message: 'Password length should be at least 8 characters',
-                    //     trigger: 'blur'
-                    // }
                 ]
-            },
-            dialogSignup: false,
-            loadingSignup: false,
-            formSignup: {
-                username: '',
-                password: '',
-                firstName: '',
-                lastName: '',
-                gender: '',
-                email: '',
-                phone: '',
-                birthDate: ''
             },
             redirect: undefined,
             otherQuery: {}
         }
     },
-    //  created() {
-    //     // Auto login nếu đã có authInfo
-    //     const savedAuth = localStorage.getItem('authInfo')
-    //     if (savedAuth) {
-    //         const response = JSON.parse(savedAuth)
-    //         this.$helper.afterLogin(true, response)
-    //         if (this.$route.path === '/login') {
-    //             this.$router.push('/')
-    //         }
-    //     }
-    // },
     watch: {
         $route: {
             handler: function (route) {
@@ -135,21 +80,40 @@ export default {
                 return
             }
             this.loadingLogin = true
-            await this.$common.simulateLoading()
+            
+            // Gọi API login (Lưu ý: api/user.js phải được cấu hình dùng qs và Basic Auth)
             userApi
                 .login(this.model)
                 .then((response) => {
-                    response.name = this.model.username
+                    // Xử lý response từ OAuth2
+                    // console.log("Login Success:", response) 
+
+                    // Gán username vào response để tiện hiển thị (vì OAuth response không trả về username)
+                    response.name = this.model.username 
+
                     this.$message.success('Login successfully')
-                    // Save to localStorage để auto login lần sau
+                    
+                    // Lưu thông tin token vào localStorage
                     localStorage.setItem('authInfo', JSON.stringify(response))
 
-                    this.$helper.afterLogin(this.remember, response)
+                    // Gọi helper xử lý state (store/vuex)
+                    // Đảm bảo this.$helper.afterLogin của bạn xử lý được object chứa access_token
+                    if (this.$helper && this.$helper.afterLogin) {
+                        this.$helper.afterLogin(this.remember, response)
+                    }
+                    
                     this.$router.push({path: this.redirect || '/', query: this.otherQuery})
                 })
                 .catch((error) => {
-                    console.log(error)
-                    this.$message.error(error.message)
+                    console.log("Login Error:", error)
+                    
+                    // Xử lý hiển thị lỗi chi tiết từ OAuth server
+                    let msg = 'Login failed'
+                    if (error.response && error.response.data) {
+                        // Ưu tiên hiển thị 'error_description' nếu có
+                        msg = error.response.data.error_description || error.response.data.message || msg
+                    }
+                    this.$message.error(msg)
                 })
                 .finally(async () => {
                     this.loadingLogin = false
@@ -168,8 +132,7 @@ export default {
 </script>
 
 <style scoped>
-
-@charset "UTF-8";
+/* Style cơ bản */
 .login {
     flex: 1;
     display: flex;
@@ -180,41 +143,13 @@ export default {
 .login-button {
     width: 100%;
 }
-.forgot-password {
-    margin-top: 10px;
+.float-left {
+    float: left;
 }
 </style>
 
 <style lang="scss" scoped>
-.login .el-input__prefix {
-    background: rgb(238, 237, 234);
-    left: 0;
-    height: calc(100% - 2px);
-    left: 1px;
-    top: 1px;
-    border-radius: 3px;
-    .el-input__icon {
-        width: 30px;
-    }
-}
-.login .el-input input {
-    padding-left: 35px;
-}
-.login .el-card {
-    padding: 50px;
-}
-h2 {
-    letter-spacing: 1px;
-    padding-bottom: 20px;
-}
-
-.login .el-card {
-    display: flex;
-    justify-content: center;
-}
-</style>
-
-<style lang="scss" scoped>
+/* Style nâng cao với SCSS */
 #login {
     text-align: center;
     color: #2c3e50;
@@ -227,38 +162,35 @@ h2 {
     background: #ebedef;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-align: center;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
 }
-.footer {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    .links {
-        display: flex;
-        span {
-            padding: 0 10px;
-            font-size: 18px;
-            border-right: 1px solid #9fb3c8;
-            &:last-child {
-                border-right: none;
-            }
+
+.login {
+    /* Override Element UI inputs */
+    .el-input__prefix {
+        background: rgb(238, 237, 234);
+        height: calc(100% - 2px);
+        left: 1px;
+        top: 1px;
+        border-radius: 3px;
+        .el-input__icon {
+            width: 30px;
         }
     }
-    .version {
-        padding: 0 10px;
-        color: #9fb3c8;
-        font-size: 12px;
-        margin-top: 5px;
+    
+    .el-input input {
+        padding-left: 35px;
     }
 
+    .el-card {
+        padding: 50px;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+    }
 }
-.header {
-    width: 100%;
-    height: 100px;
 
+h2 {
+    letter-spacing: 1px;
+    padding-bottom: 20px;
 }
 </style>
