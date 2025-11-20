@@ -5,16 +5,16 @@ export default {
         return {}
     },
     computed: mapState(['selectedAsset', 'selectedJob']),
-    async beforeMount() {},
+    async beforeMount() { },
     methods: {
-        initTest(testTypeCode) {
+        initTest(testTypeCode, assetData = null) {
             let data = null
             switch (testTypeCode) {
                 case 'GeneralInspection':
                     data = this.initGeneralInspection()
                     break
                 case 'InsulationResistance':
-                    data = this.initInsulationResistance()
+                    data = this.initInsulationResistance(assetData)
                     break
                 case 'RatioPrimSec':
                     data = this.initRatioPrimSec()
@@ -56,7 +56,7 @@ export default {
                     data = this.initSeparateSourceAc()
                     break
                 case 'WindingDfCap':
-                    data = this.initWindingDfCap()
+                    data = this.initWindingDfCap(assetData)
                     break
                 case 'BushingPrimC1':
                     data = this.initBushingPrimC1()
@@ -112,23 +112,90 @@ export default {
 
             return data
         },
-        initmotorCurrent() {
-            return {
-                motorChar : {
-                    limits : "Absolute",
-                    abs : [{},{},{},{}],
-                    rel : [{},{},{},{}], 
-                },
-                table : []
-            }
-        },
         initGeneralInspection() {
+            const test_object = [
+                'Transformer tank',
+                'Nameplate',
+                'High voltage bushings',
+                'Arresters',
+                'Radiators',
+                'Fault gas detector relay',
+                'Failt pressure relay',
+                'Oil flow relay',
+                'OLTC',
+                'DETC',
+                'Oil level of transformer',
+                'Oil level of tap changer',
+                'Grounding',
+                'Valves',
+                'Breathers',
+                'Desiccant gel/Silica gel',
+                'Oil temperature meter',
+                'Phase symbols'
+            ];
+
             return {
-                code: 'generalinspection',
-                general_inspection: ''
+                row_data: [
+                    {
+                        mrid: '',
+                        name: 'Test object',
+                        code: 'test_object',
+                        unit: '',
+                        type: 'string'
+                    },
+                    {
+                        mrid: '',
+                        name: 'Assessment',
+                        code: 'assessment',
+                        unit: '',
+                        type: 'discrete',
+                        pool: {
+                            mrid: '',
+                            valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
+                        }
+                    },
+                    {
+                        mrid: '',
+                        name: 'Condition indicator',
+                        code: 'condition_indicator',
+                        unit: '',
+                        type: 'discrete',
+                        pool: {
+                            mrid: '',
+                            valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
+                            { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
+                        }
+                    }
+                ],
+
+                table: test_object.map(obj => ({
+                    mrid: '',
+                    test_object: {
+                        mrid: '',
+                        value: obj,
+                        unit: '',
+                        type: 'string'
+                    },
+                    assessment: {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
+                    },
+                    condition_indicator: {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
+                    }
+                })),
+
+                measurementProcedure: []
+
             }
         },
-        initInsulationResistance() {
+        initInsulationResistance(assetData = null) {
+            const asset = assetData || this.asset || {}
             const data = {
                 code: 'insulationresistance',
                 t: '',
@@ -136,15 +203,14 @@ export default {
                 top_oil_temperature: '',
                 bottom_oil_temperature: '',
                 winding_temperature: '',
-                reference_temperature : '',
+                reference_temperature: '',
                 ambient_temperature: '',
                 humidity: '',
                 weather: '',
                 model: '',
                 serial_no: '',
                 calibration_date: '',
-                comment : '',
-                table: [],
+                comment: '',
                 // dữ liệu cấu hình indicator
                 assessment_setting: {
                     option: 'cigre',
@@ -161,7 +227,7 @@ export default {
                         },
                         custom: {
                             pass_1: {
-                                prim: '69',
+                                prim: '1',
                                 r60s: '1000'
                             },
                             pass_2: {
@@ -199,14 +265,16 @@ export default {
                 }
             }
 
-            if (this.asset.asset_type === 'Two-winding') {
+            if (asset && asset.asset_type === 'Two-winding') {
                 data.table = [
                     {
                         measured_position: '(HV + LV) - GND',
                         type: 'HV-E',
                         r15s: '',
                         r60s: '',
+                        r10min: '',
                         kht: '',
+                        pi: '',
                         assessment: '',
                         condition_indicator: ''
                     },
@@ -215,7 +283,9 @@ export default {
                         type: 'HV-E',
                         r15s: '',
                         r60s: '',
+                        r10min: '',
                         kht: '',
+                        pi: '',
                         assessment: '',
                         condition_indicator: ''
                     },
@@ -224,19 +294,23 @@ export default {
                         type: 'LV-E',
                         r15s: '',
                         r60s: '',
+                        r10min: '',
                         kht: '',
+                        pi: '',
                         assessment: '',
                         condition_indicator: ''
                     }
                 ]
-            } else if (this.asset.asset_type === 'Three-winding') {
+            } else if (asset && asset.asset_type === 'Three-winding') {
                 data.table = [
                     {
                         measured_position: 'HV - (LV + TV + GND)',
                         type: 'HV-E',
                         r15s: '',
                         r60s: '',
+                        r10min: '',
                         kht: '',
+                        pi: '',
                         assessment: '',
                         condition_indicator: ''
                     },
@@ -245,7 +319,9 @@ export default {
                         type: 'LV-E',
                         r15s: '',
                         r60s: '',
+                        r10min: '',
                         kht: '',
+                        pi: '',
                         assessment: '',
                         condition_indicator: ''
                     },
@@ -254,7 +330,9 @@ export default {
                         type: 'HV-E',
                         r15s: '',
                         r60s: '',
+                        r10min: '',
                         kht: '',
+                        pi: '',
                         assessment: '',
                         condition_indicator: ''
                     },
@@ -263,19 +341,23 @@ export default {
                         type: 'LV-E',
                         r15s: '',
                         r60s: '',
+                        r10min: '',
                         kht: '',
+                        pi: '',
                         assessment: '',
                         condition_indicator: ''
                     }
                 ]
-            } else if (this.asset.asset_type === 'Auto w/ tert') {
+            } else if (asset && asset.asset_type === 'Auto w/ tert') {
                 data.table = [
                     {
                         measured_position: '(HV + LV) - (TV + GND)',
                         type: 'HV-E',
                         r15s: '',
                         r60s: '',
+                        r10min: '',
                         kht: '',
+                        pi: '',
                         assessment: '',
                         condition_indicator: ''
                     },
@@ -284,7 +366,9 @@ export default {
                         type: 'HV-E',
                         r15s: '',
                         r60s: '',
+                        r10min: '',
                         kht: '',
+                        pi: '',
                         assessment: '',
                         condition_indicator: ''
                     },
@@ -293,19 +377,23 @@ export default {
                         type: 'LV-E',
                         r15s: '',
                         r60s: '',
+                        r10min: '',
                         kht: '',
+                        pi: '',
                         assessment: '',
                         condition_indicator: ''
                     }
                 ]
-            } else if (this.asset.asset_type === 'Auto w/o tert') {
+            } else if (asset && asset.asset_type === 'Auto w/o tert') {
                 data.table = [
                     {
                         measured_position: '(HV + LV) - GND',
                         type: 'HV-E',
                         r15s: '',
                         r60s: '',
+                        r10min: '',
                         kht: '',
+                        pi: '',
                         assessment: '',
                         condition_indicator: ''
                     }
@@ -324,14 +412,14 @@ export default {
                     top_oil_temperature: '',
                     bottom_oil_temperature: '',
                     winding_temperature: '',
-                    reference_temperature : '',
+                    reference_temperature: '',
                     ambient_temperature: '',
                     humidity: '',
                     weather: '',
                     model: '',
                     serial_no: '',
                     calibration_date: '',
-                    comment : '',
+                    comment: '',
                     table: [],
                     condition_indicator_setting: {
                         good: {
@@ -355,7 +443,7 @@ export default {
             }
 
             let table = []
-            const voltage_table = tapChangers.voltage_table
+            const voltage_table = tapChangers.voltage_table || []
             const phases = ['A', 'B', 'C']
             voltage_table.forEach((element) => {
                 const tap = element.tap
@@ -405,29 +493,29 @@ export default {
             }
         },
         initRatioPrimSec() {
-            const tapChangers = this.tapChangers
+            const tapChangers = this.tapChangers || {}
             if (!tapChangers.mode || !tapChangers.winding || !tapChangers.tap_scheme || !tapChangers.no_of_taps) {
                 return {
                     code: 'RatioPrimSec',
                     top_oil_temperature: '',
                     bottom_oil_temperature: '',
                     winding_temperature: '',
-                    reference_temperature : '',
+                    reference_temperature: '',
                     ambient_temperature: '',
                     humidity: '',
                     weather: '',
                     model: '',
                     serial_no: '',
                     calibration_date: '',
-                    comment : '',
+                    comment: '',
                     table: [],
                     // dữ liệu cấu hình assessment
                     assessment_setting: {
                         option: 'IEC',
                         data: {
-                            iec: {ratio_dev: 0.5},
-                            ieee: {ratio_dev: 0.5},
-                            custom: {ratio_dev: 0.5}
+                            iec: { ratio_dev: 0.5 },
+                            ieee: { ratio_dev: 0.5 },
+                            custom: { ratio_dev: 0.5 }
                         }
                     },
                     condition_indicator_setting: {
@@ -452,7 +540,7 @@ export default {
             }
 
             let table = []
-            const voltage_table = tapChangers.voltage_table
+            const voltage_table = tapChangers.voltage_table || []
             const phases = ['A', 'B', 'C']
             voltage_table.forEach((element) => {
                 const tap = element.tap
@@ -486,9 +574,9 @@ export default {
                 assessment_setting: {
                     option: 'IEC',
                     data: {
-                        iec: {ratio_dev: 0.5},
-                        ieee: {ratio_dev: 0.5},
-                        custom: {ratio_dev: 0.5}
+                        iec: { ratio_dev: 0.5 },
+                        ieee: { ratio_dev: 0.5 },
+                        custom: { ratio_dev: 0.5 }
                     }
                 },
                 condition_indicator_setting: {
@@ -512,7 +600,7 @@ export default {
             }
         },
         initDcWindingPrim() {
-            const tapChangers = this.tapChangers
+            const tapChangers = this.tapChangers || {}
             if (!tapChangers.mode || !tapChangers.winding || !tapChangers.tap_scheme || !tapChangers.no_of_taps) {
                 return {
                     code: 'DcWindingPrim',
@@ -520,14 +608,14 @@ export default {
                     top_oil_temperature: '',
                     bottom_oil_temperature: '',
                     winding_temperature: '',
-                    reference_temperature : '',
+                    reference_temperature: '',
                     ambient_temperature: '',
                     humidity: '',
                     weather: '',
                     model: '',
                     serial_no: '',
                     calibration_date: '',
-                    comment : '',
+                    comment: '',
                     table: [],
                     // dữ liệu cấu hình assessment
                     assessment_setting: {
@@ -624,14 +712,14 @@ export default {
                 top_oil_temperature: '',
                 bottom_oil_temperature: '',
                 winding_temperature: '',
-                reference_temperature : '',
+                reference_temperature: '',
                 ambient_temperature: '',
                 humidity: '',
                 weather: '',
                 model: '',
                 serial_no: '',
                 calibration_date: '',
-                comment : '',
+                comment: '',
                 table,
                 // dữ liệu cấu hình assessment
                 assessment_setting: {
@@ -676,7 +764,7 @@ export default {
             }
         },
         initDcWindingSec() {
-            const tapChangers = this.tapChangers
+            const tapChangers = this.tapChangers || {}
             if (!tapChangers.mode || !tapChangers.winding || !tapChangers.tap_scheme || !tapChangers.no_of_taps) {
                 return {
                     code: 'DcWindingSec',
@@ -684,14 +772,14 @@ export default {
                     top_oil_temperature: '',
                     bottom_oil_temperature: '',
                     winding_temperature: '',
-                    reference_temperature : '',
+                    reference_temperature: '',
                     ambient_temperature: '',
                     humidity: '',
                     weather: '',
                     model: '',
                     serial_no: '',
                     calibration_date: '',
-                    comment : '',
+                    comment: '',
                     table: [],
                     // dữ liệu cấu hình assessment
                     assessment_setting: {
@@ -788,14 +876,14 @@ export default {
                 top_oil_temperature: '',
                 bottom_oil_temperature: '',
                 winding_temperature: '',
-                reference_temperature : '',
+                reference_temperature: '',
                 ambient_temperature: '',
                 humidity: '',
                 weather: '',
                 model: '',
                 serial_no: '',
                 calibration_date: '',
-                comment : '',
+                comment: '',
                 table,
                 // dữ liệu cấu hình assessment
                 assessment_setting: {
@@ -840,7 +928,7 @@ export default {
             }
         },
         initDcWindingTert() {
-            const tapChangers = this.tapChangers
+            const tapChangers = this.tapChangers || {}
             if (!tapChangers.mode || !tapChangers.winding || !tapChangers.tap_scheme || !tapChangers.no_of_taps) {
                 return {
                     code: 'DcWindingTert',
@@ -848,14 +936,14 @@ export default {
                     top_oil_temperature: '',
                     bottom_oil_temperature: '',
                     winding_temperature: '',
-                    reference_temperature : '',
+                    reference_temperature: '',
                     ambient_temperature: '',
                     humidity: '',
                     weather: '',
                     model: '',
                     serial_no: '',
                     calibration_date: '',
-                    comment : '',
+                    comment: '',
                     table: [],
                     // dữ liệu cấu hình assessment
                     assessment_setting: {
@@ -950,14 +1038,14 @@ export default {
                 top_oil_temperature: '',
                 bottom_oil_temperature: '',
                 winding_temperature: '',
-                reference_temperature : '',
+                reference_temperature: '',
                 ambient_temperature: '',
                 humidity: '',
                 weather: '',
                 model: '',
                 serial_no: '',
                 calibration_date: '',
-                comment : '',
+                comment: '',
                 table,
                 // dữ liệu cấu hình assessment
                 assessment_setting: {
@@ -1077,9 +1165,9 @@ export default {
                 assessment_setting: {
                     option: 'IEC',
                     data: {
-                        iec: {voltage: 0.5},
-                        ieee: {voltage: 0.5},
-                        custom: {voltage: 0.5}
+                        iec: { voltage: 0.5 },
+                        ieee: { voltage: 0.5 },
+                        custom: { voltage: 0.5 }
                     }
                 },
                 condition_indicator_setting: {
@@ -1126,17 +1214,18 @@ export default {
                 dataList: []
             }
         },
-        initWindingDfCap() {
-            console.log(this.selectedAsset[0].insulation_medium)
+        initWindingDfCap(assetData = null) {
+            const selectedAsset = this.selectedAsset || []
+            const asset = assetData || (selectedAsset[0] || {})
             const dataTwoWinding = ["CH+CHL", "CH", "CHL", "CL", "CL+CHL"]
             const dataThreeWinding = ["CH+CHL+CHT", "CH+CHL", "CH+CHT", "CH", "CHL", "CHT", "CL+CHL+CLT", "CL+CHL", "CL+CLT", "CL",
-             "CLT", "CT+CHT+CLT", "CT+CHT", "CT+CHL", "CT"]
+                "CLT", "CT+CHT+CLT", "CT+CHT", "CT+CHL", "CT"]
             const dataTert = ["CH+CHT", "CH", "CHT", "CT", "CT+CHT"]
             var table = []
-            if(this.selectedAsset[0].asset_type == "Three-winding") {
+            if (asset.asset_type == "Three-winding") {
                 dataThreeWinding.forEach(element => {
                     table.push({
-                        measurement : element,
+                        measurement: element,
                         test_mode: '',
                         test_voltage: '',
                         df_ref: '',
@@ -1150,10 +1239,10 @@ export default {
                         condition_indicator_c: ''
                     })
                 })
-            } else if(this.selectedAsset[0].asset_type == "Two-winding") {
+            } else if (asset.asset_type == "Two-winding") {
                 dataTwoWinding.forEach(element => {
                     table.push({
-                        measurement : element,
+                        measurement: element,
                         test_mode: '',
                         test_voltage: '',
                         df_ref: '',
@@ -1170,7 +1259,7 @@ export default {
             } else {
                 dataTert.forEach(element => {
                     table.push({
-                        measurement : element,
+                        measurement: element,
                         test_mode: '',
                         test_voltage: '',
                         df_ref: '',
@@ -1187,104 +1276,104 @@ export default {
             }
             return {
                 code: 'WindingDfCap',
-                option : this.selectedAsset[0].insulation_medium,
+                option: asset.insulation_medium || '',
                 top_oil_temperature: '',
                 bottom_oil_temperature: '',
                 winding_temperature: '',
-                reference_temperature : '',
+                reference_temperature: '',
                 ambient_temperature: '',
                 humidity: '',
                 weather: '',
                 model: '',
                 serial_no: '',
                 calibration_date: '',
-                comment : '',
+                comment: '',
                 table: table,
                 // dữ liệu cấu hình assessment
                 assessment_setting: {
                     option: 'IEEEnewLiquid',
                     data: {
                         IEEEnewLiquid: {
-                            mineral : {
-                                celc25 : {
-                                    df_meas :  0.05,
-                                    tri_c_meas : 5
+                            mineral: {
+                                celc25: {
+                                    df_meas: 0.05,
+                                    tri_c_meas: 5
                                 },
-                                celc100 : {
-                                    df_meas : 0.4,
-                                    tri_c_meas : 5
+                                celc100: {
+                                    df_meas: 0.4,
+                                    tri_c_meas: 5
                                 }
                             },
-                            lfh : {
-                                celc25 : {
-                                    df_meas : 0.1,
-                                    tri_c_meas : 5
+                            lfh: {
+                                celc25: {
+                                    df_meas: 0.1,
+                                    tri_c_meas: 5
                                 },
-                                celc100 : {
-                                    df_meas : 1,
-                                    tri_c_meas : 5
+                                celc100: {
+                                    df_meas: 1,
+                                    tri_c_meas: 5
                                 }
                             },
-                            silicone : {
-                                celc25 : {
-                                    df_meas : 0.1,
-                                    tri_c_meas : 5
+                            silicone: {
+                                celc25: {
+                                    df_meas: 0.1,
+                                    tri_c_meas: 5
                                 },
-                                celc100 : {
-                                    df_meas : "-",
-                                    tri_c_meas : 5
+                                celc100: {
+                                    df_meas: "-",
+                                    tri_c_meas: 5
                                 }
                             },
-                            naturalEaster : {
-                                celc25 : {
-                                    df_meas : 0.5,
-                                    tri_c_meas : 5
+                            naturalEaster: {
+                                celc25: {
+                                    df_meas: 0.5,
+                                    tri_c_meas: 5
                                 },
-                                celc100 : {
-                                    df_meas : "-",
-                                    tri_c_meas : 5
+                                celc100: {
+                                    df_meas: "-",
+                                    tri_c_meas: 5
                                 }
                             },
                         },
                         IEEEserviceLiquid: {
-                            mineral : {
-                                celc25 : {
-                                    df_meas :  0.5,
-                                    tri_c_meas : 5
+                            mineral: {
+                                celc25: {
+                                    df_meas: 0.5,
+                                    tri_c_meas: 5
                                 },
-                                celc100 : {
-                                    df_meas : 5,
-                                    tri_c_meas : 5
+                                celc100: {
+                                    df_meas: 5,
+                                    tri_c_meas: 5
                                 }
                             },
-                            lfh : {
-                                celc25 : {
-                                    df_meas : 1,
-                                    tri_c_meas : 5
+                            lfh: {
+                                celc25: {
+                                    df_meas: 1,
+                                    tri_c_meas: 5
                                 },
-                                celc100 : {
-                                    df_meas : "-",
-                                    tri_c_meas : 5
+                                celc100: {
+                                    df_meas: "-",
+                                    tri_c_meas: 5
                                 }
                             },
-                            silicone : {
-                                celc25 : {
-                                    df_meas : 0.2,
-                                    tri_c_meas : 5
+                            silicone: {
+                                celc25: {
+                                    df_meas: 0.2,
+                                    tri_c_meas: 5
                                 },
-                                celc100 : {
-                                    df_meas : "-",
-                                    tri_c_meas : 5
+                                celc100: {
+                                    df_meas: "-",
+                                    tri_c_meas: 5
                                 }
                             },
-                            naturalEaster : {
-                                celc25 : {
-                                    df_meas : 0.5,
-                                    tri_c_meas : 5
+                            naturalEaster: {
+                                celc25: {
+                                    df_meas: 0.5,
+                                    tri_c_meas: 5
                                 },
-                                celc100 : {
-                                    df_meas : "-",
-                                    tri_c_meas : 5
+                                celc100: {
+                                    df_meas: "-",
+                                    tri_c_meas: 5
                                 }
                             },
                         },
@@ -1299,43 +1388,93 @@ export default {
                 },
                 // dữ liệu cấu hình indicator
                 condition_indicator_df: {
-                    good: {df_meas: ['0.5', null], score: '3'},
-                    fair: {df_meas: ['0.5', '1'], score: '2'},
-                    poor: {df_meas: ['1', '1.5'], score: '1'},
-                    bad: {df_meas: [null, '1.5'], score: '0'}
+                    good: { df_meas: ['0.5', null], score: '3' },
+                    fair: { df_meas: ['0.5', '1'], score: '2' },
+                    poor: { df_meas: ['1', '1.5'], score: '1' },
+                    bad: { df_meas: [null, '1.5'], score: '0' }
                 },
                 // dữ liệu cấu hình indicator C
                 condition_indicator_c: {
-                    good: {tri_c_meas: ['5', null], score: '3'},
-                    fair: {tri_c_meas: ['5', '7'], score: '2'},
-                    poor: {tri_c_meas: ['7', '10'], score: '1'},
-                    bad: {tri_c_meas: [null, '10'], score: '0'}
+                    good: { tri_c_meas: ['5', null], score: '3' },
+                    fair: { tri_c_meas: ['5', '7'], score: '2' },
+                    poor: { tri_c_meas: ['7', '10'], score: '1' },
+                    bad: { tri_c_meas: [null, '10'], score: '0' }
                 }
             }
         },
         initBushingPrimC1() {
-            const data = this.bushings.asset_type
+            const bushings = this.bushings || {}
+            const data = bushings.asset_type || {}
+            if (!data.DataShow) {
+                return {
+                    code: 'BushingPrimC1',
+                    top_oil_temperature: '',
+                    bottom_oil_temperature: '',
+                    winding_temperature: '',
+                    reference_temperature: '',
+                    ambient_temperature: '',
+                    humidity: '',
+                    weather: '',
+                    model: '',
+                    serial_no: '',
+                    calibration_date: '',
+                    comment: '',
+                    table: [],
+                    assessment_setting: {
+                        option: 'Custom',
+                        data: {
+                            iec: {
+                                oip: { df_meas: 0.7, tri_c_meas: 5 },
+                                rip: { df_meas: 0.7, tri_c_meas: 5 },
+                                rbp: { df_meas: 1.5, tri_c_meas: 5 }
+                            },
+                            ieee: {
+                                oip: { df_meas: 0.5, tri_c_meas: 5 },
+                                rip: { df_meas: 0.85, tri_c_meas: 5 },
+                                rbp: { df_meas: 2, tri_c_meas: 5 }
+                            },
+                            custom: {
+                                oip: { df_meas: 0.5, tri_c_meas: 5 },
+                                rip: { df_meas: 0.85, tri_c_meas: 5 },
+                                rbp: { df_meas: 2, tri_c_meas: 5 }
+                            }
+                        }
+                    },
+                    condition_indicator_df: {
+                        good: { df_meas: ['0.4', null], df_change: ['1.3', null], score: '3' },
+                        fair: { df_meas: ['0.4', '0.7'], df_change: ['1.3', '2'], score: '2' },
+                        poor: { df_meas: ['0.7', '1'], df_change: ['2', '3'], score: '1' },
+                        bad: { df_meas: [null, '1'], df_change: [null, '3'], score: '0' }
+                    },
+                    condition_indicator_c: {
+                        good: { tri_c_meas: ['5', null], score: '3' },
+                        fair: { tri_c_meas: ['5', '7'], score: '2' },
+                        poor: { tri_c_meas: ['7', '10'], score: '1' },
+                        bad: { tri_c_meas: [null, '10'], score: '0' }
+                    }
+                }
+            }
             let table = []
             Object.keys(data.DataShow).forEach(element => {
                 Object.keys(data.DataShow[element]).forEach(e => {
-                    if(data.DataShow[element][e] === true) {
-                        if(data[element][e].toString()) {
-                            if(data[element][e].toString() !== "Without tap") {
+                    if (data.DataShow[element][e] === true) {
+                        if (data[element][e].toString()) {
+                            if (data[element][e].toString() !== "Without tap") {
                                 let temp = {
-                                    measurement : data.NameOfPos[element][e],
-                                    df_ref : this.bushings.df_c1[element][e],
-                                    c_ref : this.bushings.cap_c1[element][e],
-                                    insulation : this.bushings.insulation_type[element][e],
-                                    test_voltage : '',
-                                    df_meas : '',
-                                    c_meas : '',
-                                    df_change : '',
-                                    tri_c_meas : '',
-                                    assessment : '',
-                                    condition_indicator_df : '',
-                                    condition_indicator_c : '',
+                                    measurement: data.NameOfPos[element][e],
+                                    df_ref: (bushings.df_c1 && bushings.df_c1[element] && bushings.df_c1[element][e]) || '',
+                                    c_ref: (bushings.cap_c1 && bushings.cap_c1[element] && bushings.cap_c1[element][e]) || '',
+                                    insulation: (bushings.insulation_type && bushings.insulation_type[element] && bushings.insulation_type[element][e]) || '',
+                                    test_voltage: '',
+                                    df_meas: '',
+                                    c_meas: '',
+                                    df_change: '',
+                                    tri_c_meas: '',
+                                    assessment: '',
+                                    condition_indicator_df: '',
+                                    condition_indicator_c: '',
                                 }
-                                table.push(temp) 
+                                table.push(temp)
                             }
                         }
                     }
@@ -1346,57 +1485,57 @@ export default {
                 top_oil_temperature: '',
                 bottom_oil_temperature: '',
                 winding_temperature: '',
-                reference_temperature : '',
+                reference_temperature: '',
                 ambient_temperature: '',
                 humidity: '',
                 weather: '',
                 model: '',
                 serial_no: '',
                 calibration_date: '',
-                comment : '',
+                comment: '',
                 table: table,
                 // dữ liệu cấu hình assessment
                 assessment_setting: {
                     option: 'Custom',
                     data: {
                         iec: {
-                            oip : {
+                            oip: {
                                 df_meas: 0.7,
                                 tri_c_meas: 5
                             },
-                            rip : {
+                            rip: {
                                 df_meas: 0.7,
                                 tri_c_meas: 5
                             },
-                            rbp : {
+                            rbp: {
                                 df_meas: 1.5,
                                 tri_c_meas: 5
                             }
                         },
                         ieee: {
-                            oip : {
+                            oip: {
                                 df_meas: 0.5,
                                 tri_c_meas: 5
                             },
-                            rip : {
+                            rip: {
                                 df_meas: 0.85,
                                 tri_c_meas: 5
                             },
-                            rbp : {
+                            rbp: {
                                 df_meas: 2,
                                 tri_c_meas: 5
                             }
                         },
                         custom: {
-                            oip : {
+                            oip: {
                                 df_meas: 0.5,
                                 tri_c_meas: 5
                             },
-                            rip : {
+                            rip: {
                                 df_meas: 0.85,
                                 tri_c_meas: 5
                             },
-                            rbp : {
+                            rbp: {
                                 df_meas: 2,
                                 tri_c_meas: 5
                             }
@@ -1428,36 +1567,86 @@ export default {
                 },
                 // dữ liệu cấu hình indicator C
                 condition_indicator_c: {
-                    good: {tri_c_meas: ['5', null], score: '3'},
-                    fair: {tri_c_meas: ['5', '7'], score: '2'},
-                    poor: {tri_c_meas: ['7', '10'], score: '1'},
-                    bad: {tri_c_meas: [null, '10'], score: '0'}
+                    good: { tri_c_meas: ['5', null], score: '3' },
+                    fair: { tri_c_meas: ['5', '7'], score: '2' },
+                    poor: { tri_c_meas: ['7', '10'], score: '1' },
+                    bad: { tri_c_meas: [null, '10'], score: '0' }
                 }
             }
         },
         initBushingPrimC2() {
-            const data = this.bushings.asset_type
+            const bushings = this.bushings || {}
+            const data = bushings.asset_type || {}
+            if (!data.DataShow) {
+                return {
+                    code: 'BushingPrimC2',
+                    top_oil_temperature: '',
+                    bottom_oil_temperature: '',
+                    winding_temperature: '',
+                    reference_temperature: '',
+                    ambient_temperature: '',
+                    humidity: '',
+                    weather: '',
+                    model: '',
+                    serial_no: '',
+                    calibration_date: '',
+                    comment: '',
+                    table: [],
+                    assessment_setting: {
+                        option: 'Custom',
+                        data: {
+                            iec: {
+                                oip: { df_meas: 0.7, tri_c_meas: 5 },
+                                rip: { df_meas: 0.7, tri_c_meas: 5 },
+                                rbp: { df_meas: 1.5, tri_c_meas: 5 }
+                            },
+                            ieee: {
+                                oip: { df_meas: 0.5, tri_c_meas: 5 },
+                                rip: { df_meas: 0.85, tri_c_meas: 5 },
+                                rbp: { df_meas: 2, tri_c_meas: 5 }
+                            },
+                            custom: {
+                                oip: { df_meas: 0.5, tri_c_meas: 5 },
+                                rip: { df_meas: 0.85, tri_c_meas: 5 },
+                                rbp: { df_meas: 2, tri_c_meas: 5 }
+                            }
+                        }
+                    },
+                    condition_indicator_df: {
+                        good: { df_meas: ['0.4', null], df_change: ['1.3', null], score: '3' },
+                        fair: { df_meas: ['0.4', '0.7'], df_change: ['1.3', '2'], score: '2' },
+                        poor: { df_meas: ['0.7', '1'], df_change: ['2', '3'], score: '1' },
+                        bad: { df_meas: [null, '1'], df_change: [null, '3'], score: '0' }
+                    },
+                    condition_indicator_c: {
+                        good: { tri_c_meas: ['5', null], score: '3' },
+                        fair: { tri_c_meas: ['5', '7'], score: '2' },
+                        poor: { tri_c_meas: ['7', '10'], score: '1' },
+                        bad: { tri_c_meas: [null, '10'], score: '0' }
+                    }
+                }
+            }
             let table = []
             Object.keys(data.DataShow).forEach(element => {
                 Object.keys(data.DataShow[element]).forEach(e => {
-                    if(data.DataShow[element][e] === true) {
-                        if(data[element][e].toString()) {
-                            if(data[element][e].toString() !== "Without tap") {
+                    if (data.DataShow[element][e] === true) {
+                        if (data[element][e].toString()) {
+                            if (data[element][e].toString() !== "Without tap") {
                                 let temp = {
-                                    measurement : data.NameOfPos[element][e],
-                                    df_ref : this.bushings.df_c1[element][e],
-                                    c_ref : this.bushings.cap_c1[element][e],
-                                    insulation : this.bushings.insulation_type[element][e],
-                                    test_voltage : '',
-                                    df_meas : '',
-                                    c_meas : '',
-                                    df_change : '',
-                                    tri_c_meas : '',
-                                    assessment : '',
-                                    condition_indicator_df : '',
-                                    condition_indicator_c : '',
+                                    measurement: data.NameOfPos[element][e],
+                                    df_ref: (bushings.df_c1 && bushings.df_c1[element] && bushings.df_c1[element][e]) || '',
+                                    c_ref: (bushings.cap_c1 && bushings.cap_c1[element] && bushings.cap_c1[element][e]) || '',
+                                    insulation: (bushings.insulation_type && bushings.insulation_type[element] && bushings.insulation_type[element][e]) || '',
+                                    test_voltage: '',
+                                    df_meas: '',
+                                    c_meas: '',
+                                    df_change: '',
+                                    tri_c_meas: '',
+                                    assessment: '',
+                                    condition_indicator_df: '',
+                                    condition_indicator_c: '',
                                 }
-                                table.push(temp) 
+                                table.push(temp)
                             }
                         }
                     }
@@ -1468,57 +1657,57 @@ export default {
                 top_oil_temperature: '',
                 bottom_oil_temperature: '',
                 winding_temperature: '',
-                reference_temperature : '',
+                reference_temperature: '',
                 ambient_temperature: '',
                 humidity: '',
                 weather: '',
                 model: '',
                 serial_no: '',
                 calibration_date: '',
-                comment : '',
+                comment: '',
                 table: table,
                 // dữ liệu cấu hình assessment
                 assessment_setting: {
                     option: 'Custom',
                     data: {
                         iec: {
-                            oip : {
+                            oip: {
                                 df_meas: 0.7,
                                 tri_c_meas: 5
                             },
-                            rip : {
+                            rip: {
                                 df_meas: 0.7,
                                 tri_c_meas: 5
                             },
-                            rbp : {
+                            rbp: {
                                 df_meas: 1.5,
                                 tri_c_meas: 5
                             }
                         },
                         ieee: {
-                            oip : {
+                            oip: {
                                 df_meas: 0.5,
                                 tri_c_meas: 5
                             },
-                            rip : {
+                            rip: {
                                 df_meas: 0.85,
                                 tri_c_meas: 5
                             },
-                            rbp : {
+                            rbp: {
                                 df_meas: 2,
                                 tri_c_meas: 5
                             }
                         },
                         custom: {
-                            oip : {
+                            oip: {
                                 df_meas: 0.5,
                                 tri_c_meas: 5
                             },
-                            rip : {
+                            rip: {
                                 df_meas: 0.85,
                                 tri_c_meas: 5
                             },
-                            rbp : {
+                            rbp: {
                                 df_meas: 2,
                                 tri_c_meas: 5
                             }
@@ -1550,10 +1739,10 @@ export default {
                 },
                 // dữ liệu cấu hình indicator C
                 condition_indicator_c: {
-                    good: {tri_c_meas: ['5', null], score: '3'},
-                    fair: {tri_c_meas: ['5', '7'], score: '2'},
-                    poor: {tri_c_meas: ['7', '10'], score: '1'},
-                    bad: {tri_c_meas: [null, '10'], score: '0'}
+                    good: { tri_c_meas: ['5', null], score: '3' },
+                    fair: { tri_c_meas: ['5', '7'], score: '2' },
+                    poor: { tri_c_meas: ['7', '10'], score: '1' },
+                    bad: { tri_c_meas: [null, '10'], score: '0' }
                 }
             }
         },
@@ -1563,14 +1752,14 @@ export default {
                 top_oil_temperature: '',
                 bottom_oil_temperature: '',
                 winding_temperature: '',
-                reference_temperature : '',
+                reference_temperature: '',
                 ambient_temperature: '',
                 humidity: '',
                 weather: '',
                 model: '',
                 serial_no: '',
                 calibration_date: '',
-                comment : '',
+                comment: '',
                 table: []
             }
         },
@@ -1580,14 +1769,14 @@ export default {
                 top_oil_temperature: '',
                 bottom_oil_temperature: '',
                 winding_temperature: '',
-                reference_temperature : '',
+                reference_temperature: '',
                 ambient_temperature: '',
                 humidity: '',
                 weather: '',
                 model: '',
                 serial_no: '',
                 calibration_date: '',
-                comment : '',
+                comment: '',
                 table: []
             }
         },
@@ -1597,14 +1786,14 @@ export default {
                 top_oil_temperature: '',
                 bottom_oil_temperature: '',
                 winding_temperature: '',
-                reference_temperature : '',
+                reference_temperature: '',
                 ambient_temperature: '',
                 humidity: '',
                 weather: '',
                 model: '',
                 serial_no: '',
                 calibration_date: '',
-                comment : '',
+                comment: '',
                 table: []
             }
         },
@@ -1614,14 +1803,14 @@ export default {
                 top_oil_temperature: '',
                 bottom_oil_temperature: '',
                 winding_temperature: '',
-                reference_temperature : '',
+                reference_temperature: '',
                 ambient_temperature: '',
                 humidity: '',
                 weather: '',
                 model: '',
                 serial_no: '',
                 calibration_date: '',
-                comment : '',
+                comment: '',
                 table: []
             }
         },
@@ -1649,14 +1838,14 @@ export default {
                 top_oil_temperature: '',
                 bottom_oil_temperature: '',
                 winding_temperature: '',
-                reference_temperature : '',
+                reference_temperature: '',
                 ambient_temperature: '',
                 humidity: '',
                 weather: '',
                 model: '',
                 serial_no: '',
                 calibration_date: '',
-                comment : '',
+                comment: '',
                 h2: '',
                 ch4: '',
                 c2h2: '',
@@ -1714,22 +1903,22 @@ export default {
         },
         initGasChromatography() {
             return {
-                option : {},
+                option: {},
                 code: 'GasChromatography',
-                assessment_setting : {
-                    option : "IEEEnewTrans",
-                    data : {
+                assessment_setting: {
+                    option: "IEEEnewTrans",
+                    data: {
                     }
-                    
+
                 },
-                condition_indicator : {
-                    good : {
+                condition_indicator: {
+                    good: {
                     },
-                    fair : {
+                    fair: {
                     },
-                    poor : {
+                    poor: {
                     },
-                    bad : {
+                    bad: {
                     }
                 },
                 table: []
@@ -1744,319 +1933,325 @@ export default {
         initInsulationResistanceYokeCore() {
             return {
                 code: 'InsulationResistanceYokeCore',
-                assessment_setting : {
-                    option : "IEEEnewTrans",
-                    data : {
-                        IEEEnewTrans : {
-                            pass : "500"
+                assessment_setting: {
+                    option: "IEEEnewTrans",
+                    data: {
+                        IEEEnewTrans: {
+                            pass: "500"
                         },
-                        IEEEserviceTrans : {
-                            pass : "100" ,
-                            fail : "10"
+                        IEEEserviceTrans: {
+                            pass: "100",
+                            fail: "10"
                         },
-                        custom : {
-                            pass : "",
-                            fail : ""
+                        custom: {
+                            pass: "",
+                            fail: ""
                         }
                     }
-                    
+
                 },
-                condition_indicator : {
-                    good : {
-                        r60s : [null, 500]
+                condition_indicator: {
+                    good: {
+                        r60s: [null, 500]
                     },
-                    fair : {
-                        r60s : [100, 500],
-                        r60sref : [50, null]
+                    fair: {
+                        r60s: [100, 500],
+                        r60sref: [50, null]
                     },
-                    poor : {
-                        r60s : [10, 100],
-                        r60sref : [50, null]
+                    poor: {
+                        r60s: [10, 100],
+                        r60sref: [50, null]
                     },
-                    bad : {
-                        r60s : [10, null]
+                    bad: {
+                        r60s: [10, null]
                     }
                 },
                 table: []
             }
         },
         initShortCircuitImpedancePrim() {
-            const tapChangers = this.tapChangers
+            const tapChangers = this.tapChangers || {}
+            const selectedAsset = this.selectedAsset || []
+            const asset = selectedAsset[0] || {}
             let table = []
             let mode = ""
             const phase = ['A', 'B', 'C']
-            if(tapChangers.mode === "oltc") {
+            if (tapChangers.mode === "oltc") {
                 mode = "oltc_position"
-                if(JSON.parse(this.selectedAsset[0].prim_sec).length !== 0) {
-                    JSON.parse(this.selectedAsset[0].prim_sec).forEach(element => {
+                if (asset.prim_sec && JSON.parse(asset.prim_sec).length !== 0) {
+                    JSON.parse(asset.prim_sec).forEach(element => {
                         phase.forEach(e => {
                             table.push({
-                                tap : element.oltc_position,
-                                phase : e,
-                                ukCal : "",
-                                ukDev : "",
-                                assessment : "",
-                                condition_indicator : ""
+                                tap: element.oltc_position,
+                                phase: e,
+                                ukCal: "",
+                                ukDev: "",
+                                assessment: "",
+                                condition_indicator: ""
                             })
                         })
                     })
                 }
             } else {
                 mode = "detc_position"
-                if(JSON.parse(this.selectedAsset[0].prim_sec).length !== 0) {
-                    JSON.parse(this.selectedAsset[0].prim_sec).forEach(element => {
+                if (asset.prim_sec && JSON.parse(asset.prim_sec).length !== 0) {
+                    JSON.parse(asset.prim_sec).forEach(element => {
                         phase.forEach(e => {
                             table.push({
-                                tap : element.detc_position,
-                                phase : e,
-                                ukCal : "",
-                                ukDev : "",
-                                assessment : "",
-                                condition_indicator : ""
+                                tap: element.detc_position,
+                                phase: e,
+                                ukCal: "",
+                                ukDev: "",
+                                assessment: "",
+                                condition_indicator: ""
                             })
                         })
                     })
                 }
             }
-            
+
             return {
-                code : "ShortCircuitImpedancePrim",
-                option : "threePhase",
-                mode : mode,
-                assessment_setting : {
-                    option : "IEEE",
-                    data : {
-                        ieee : {
-                            threePhase : {
-                                ukDev : 3
+                code: "ShortCircuitImpedancePrim",
+                option: "threePhase",
+                mode: mode,
+                assessment_setting: {
+                    option: "IEEE",
+                    data: {
+                        ieee: {
+                            threePhase: {
+                                ukDev: 3
                             },
-                            perPhase : {
-                                ukDev : 3 
+                            perPhase: {
+                                ukDev: 3
                             }
                         },
-                        cigre : {
-                            threePhase : {
-                                ukDev : 2
+                        cigre: {
+                            threePhase: {
+                                ukDev: 2
                             },
-                            perPhase : {
-                                ukDev : 2 
+                            perPhase: {
+                                ukDev: 2
                             }
                         },
-                        custom : {
-                            threePhase : {
-                                ukDev : ""
+                        custom: {
+                            threePhase: {
+                                ukDev: ""
                             },
-                            perPhase : {
-                                ukDev : "" 
+                            perPhase: {
+                                ukDev: ""
                             }
                         }
                     }
                 },
-                condition_indicator : {
-                    good : {
-                        breakdown_voltage : [60, null],
-                        score : 4
+                condition_indicator: {
+                    good: {
+                        breakdown_voltage: [60, null],
+                        score: 4
                     },
-                    fair : {
-                        breakdown_voltage : [55, 60],
-                        score : 3
+                    fair: {
+                        breakdown_voltage: [55, 60],
+                        score: 3
                     },
-                    poor : {
-                        breakdown_voltage : [40, 55],
-                        score : 2
+                    poor: {
+                        breakdown_voltage: [40, 55],
+                        score: 2
                     },
-                    bad : {
-                        breakdown_voltage : [null , 40],
-                        score : 1
+                    bad: {
+                        breakdown_voltage: [null, 40],
+                        score: 1
                     }
                 },
-                table : table
+                table: table
             }
         },
         initShortCircuitImpedanceSec() {
-            const tapChangers = this.tapChangers
+            const tapChangers = this.tapChangers || {}
+            const selectedAsset = this.selectedAsset || []
+            const asset = selectedAsset[0] || {}
             let table = []
             let mode = ""
             const phase = ['A', 'B', 'C']
-            if(tapChangers.mode === "oltc") {
+            if (tapChangers.mode === "oltc") {
                 mode = "oltc_position"
-                if(JSON.parse(this.selectedAsset[0].sec_tert).length !== 0) {
-                    JSON.parse(this.selectedAsset[0].sec_tert).forEach(element => {
+                if (asset.sec_tert && JSON.parse(asset.sec_tert).length !== 0) {
+                    JSON.parse(asset.sec_tert).forEach(element => {
                         phase.forEach(e => {
                             table.push({
-                                tap : element.oltc_position,
-                                phase : e,
-                                ukCal : "",
-                                ukDev : "",
-                                assessment : "",
-                                condition_indicator : ""
+                                tap: element.oltc_position,
+                                phase: e,
+                                ukCal: "",
+                                ukDev: "",
+                                assessment: "",
+                                condition_indicator: ""
                             })
                         })
                     })
                 }
             } else {
                 mode = "detc_position"
-                if(JSON.parse(this.selectedAsset[0].sec_tert).length !== 0) {
-                    JSON.parse(this.selectedAsset[0].sec_tert).forEach(element => {
+                if (asset.sec_tert && JSON.parse(asset.sec_tert).length !== 0) {
+                    JSON.parse(asset.sec_tert).forEach(element => {
                         phase.forEach(e => {
                             table.push({
-                                tap : element.detc_position,
-                                phase : e,
-                                ukCal : "",
-                                ukDev : "",
-                                assessment : "",
-                                condition_indicator : ""
+                                tap: element.detc_position,
+                                phase: e,
+                                ukCal: "",
+                                ukDev: "",
+                                assessment: "",
+                                condition_indicator: ""
                             })
                         })
                     })
                 }
             }
-            
+
             return {
-                code : "ShortCircuitImpedanceSec",
-                option : "threePhase",
-                mode : mode,
-                assessment_setting : {
-                    option : "IEEE",
-                    data : {
-                        ieee : {
-                            threePhase : {
-                                ukDev : 3
+                code: "ShortCircuitImpedanceSec",
+                option: "threePhase",
+                mode: mode,
+                assessment_setting: {
+                    option: "IEEE",
+                    data: {
+                        ieee: {
+                            threePhase: {
+                                ukDev: 3
                             },
-                            perPhase : {
-                                ukDev : 3 
+                            perPhase: {
+                                ukDev: 3
                             }
                         },
-                        cigre : {
-                            threePhase : {
-                                ukDev : 2
+                        cigre: {
+                            threePhase: {
+                                ukDev: 2
                             },
-                            perPhase : {
-                                ukDev : 2 
+                            perPhase: {
+                                ukDev: 2
                             }
                         },
-                        custom : {
-                            threePhase : {
-                                ukDev : ""
+                        custom: {
+                            threePhase: {
+                                ukDev: ""
                             },
-                            perPhase : {
-                                ukDev : "" 
+                            perPhase: {
+                                ukDev: ""
                             }
                         }
                     }
                 },
-                condition_indicator : {
-                    good : {
-                        breakdown_voltage : [60, null],
-                        score : 4
+                condition_indicator: {
+                    good: {
+                        breakdown_voltage: [60, null],
+                        score: 4
                     },
-                    fair : {
-                        breakdown_voltage : [55, 60],
-                        score : 3
+                    fair: {
+                        breakdown_voltage: [55, 60],
+                        score: 3
                     },
-                    poor : {
-                        breakdown_voltage : [40, 55],
-                        score : 2
+                    poor: {
+                        breakdown_voltage: [40, 55],
+                        score: 2
                     },
-                    bad : {
-                        breakdown_voltage : [null , 40],
-                        score : 1
+                    bad: {
+                        breakdown_voltage: [null, 40],
+                        score: 1
                     }
                 },
-                table : table
+                table: table
             }
         },
         initShortCircuitImpedanceTert() {
-            const tapChangers = this.tapChangers
+            const tapChangers = this.tapChangers || {}
+            const selectedAsset = this.selectedAsset || []
+            const asset = selectedAsset[0] || {}
             let table = []
             let mode = ""
             const phase = ['A', 'B', 'C']
-            if(tapChangers.mode === "oltc") {
+            if (tapChangers.mode === "oltc") {
                 mode = "oltc_position"
-                if(JSON.parse(this.selectedAsset[0].prim_tert).length !== 0) {
-                    JSON.parse(this.selectedAsset[0].prim_tert).forEach(element => {
+                if (asset.prim_tert && JSON.parse(asset.prim_tert).length !== 0) {
+                    JSON.parse(asset.prim_tert).forEach(element => {
                         phase.forEach(e => {
                             table.push({
-                                tap : element.oltc_position,
-                                phase : e,
-                                ukCal : "",
-                                ukDev : "",
-                                assessment : "",
-                                condition_indicator : ""
+                                tap: element.oltc_position,
+                                phase: e,
+                                ukCal: "",
+                                ukDev: "",
+                                assessment: "",
+                                condition_indicator: ""
                             })
                         })
                     })
                 }
             } else {
                 mode = "detc_position"
-                if(JSON.parse(this.selectedAsset[0].prim_tert).length !== 0) {
-                    JSON.parse(this.selectedAsset[0].prim_tert).forEach(element => {
+                if (asset.prim_tert && JSON.parse(asset.prim_tert).length !== 0) {
+                    JSON.parse(asset.prim_tert).forEach(element => {
                         phase.forEach(e => {
                             table.push({
-                                tap : element.detc_position,
-                                phase : e,
-                                ukCal : "",
-                                ukDev : "",
-                                assessment : "",
-                                condition_indicator : ""
+                                tap: element.detc_position,
+                                phase: e,
+                                ukCal: "",
+                                ukDev: "",
+                                assessment: "",
+                                condition_indicator: ""
                             })
                         })
                     })
                 }
             }
-            
+
             return {
-                code : "ShortCircuitImpedanceTert",
-                option : "threePhase",
-                mode : mode,
-                assessment_setting : {
-                    option : "IEEE",
-                    data : {
-                        ieee : {
-                            threePhase : {
-                                ukDev : 3
+                code: "ShortCircuitImpedanceTert",
+                option: "threePhase",
+                mode: mode,
+                assessment_setting: {
+                    option: "IEEE",
+                    data: {
+                        ieee: {
+                            threePhase: {
+                                ukDev: 3
                             },
-                            perPhase : {
-                                ukDev : 3 
+                            perPhase: {
+                                ukDev: 3
                             }
                         },
-                        cigre : {
-                            threePhase : {
-                                ukDev : 2
+                        cigre: {
+                            threePhase: {
+                                ukDev: 2
                             },
-                            perPhase : {
-                                ukDev : 2 
+                            perPhase: {
+                                ukDev: 2
                             }
                         },
-                        custom : {
-                            threePhase : {
-                                ukDev : ""
+                        custom: {
+                            threePhase: {
+                                ukDev: ""
                             },
-                            perPhase : {
-                                ukDev : "" 
+                            perPhase: {
+                                ukDev: ""
                             }
                         }
                     }
                 },
-                condition_indicator : {
-                    good : {
-                        breakdown_voltage : [60, null],
-                        score : 4
+                condition_indicator: {
+                    good: {
+                        breakdown_voltage: [60, null],
+                        score: 4
                     },
-                    fair : {
-                        breakdown_voltage : [55, 60],
-                        score : 3
+                    fair: {
+                        breakdown_voltage: [55, 60],
+                        score: 3
                     },
-                    poor : {
-                        breakdown_voltage : [40, 55],
-                        score : 2
+                    poor: {
+                        breakdown_voltage: [40, 55],
+                        score: 2
                     },
-                    bad : {
-                        breakdown_voltage : [null , 40],
-                        score : 1
+                    bad: {
+                        breakdown_voltage: [null, 40],
+                        score: 1
                     }
                 },
-                table : table
+                table: table
             }
         }
     }

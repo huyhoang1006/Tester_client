@@ -23,7 +23,7 @@
         </el-row>
         </div>
 
-        <table class="table-strip-input-data">
+        <table class="table-strip-input-data" style="width: 100% ; font-size: 12px;">
             <thead>
                 <tr>
                     <th class="no-col fix_width">No</th>

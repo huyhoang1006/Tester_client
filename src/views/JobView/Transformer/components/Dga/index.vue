@@ -16,7 +16,7 @@
             </el-col>
         </el-row>
 
-        <table class="table-strip-input-data" style="width: 1300px">
+        <table class="table-strip-input-data" style="width: 100% ; font-size: 12px;">
             <thead>
                 <tr>
                     <th>H<sub>2</sub></th>

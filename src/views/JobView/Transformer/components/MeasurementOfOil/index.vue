@@ -19,7 +19,7 @@
             </el-col>
         </el-row>
 
-        <table style="width: 1000px" class="mgb-10 table-strip-input-data">
+        <table style="width: 100% ; font-size: 12px;" class="mgb-10 table-strip-input-data">
             <thead>
                 <tr>
                     <th>Type</th>

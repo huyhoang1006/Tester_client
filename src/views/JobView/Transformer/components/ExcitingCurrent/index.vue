@@ -16,7 +16,7 @@
             </el-col>
         </el-row>
 
-        <table class="table-strip-input-data" style="width: 1150px">
+        <table class="table-strip-input-data" style="width: 100% ; font-size: 12px;">
             <thead>
                 <tr>
                     <th class="no-col">Tap</th>
