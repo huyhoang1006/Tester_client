@@ -25,11 +25,11 @@
                     </tr>
                     <tr>
                         <td><strong>ID</strong></td>
-                        <td>{{ userInfo.id }}</td>
+                        <td>{{ userInfo.user_id }}</td>
                     </tr>
                     <tr>
                         <td><strong>Username</strong></td>
-                        <td>{{ userInfo.username }}</td>
+                        <td>{{ userInfo.name }}</td>
                     </tr>
                     <tr>
                         <td><strong>Email</strong></td>
@@ -38,9 +38,7 @@
                     <tr>
                         <td><strong>Role</strong></td>
                         <td>
-                            <el-tag v-for="(group, index) in userInfo.usersGroups" :key="index" type="success" style="margin-right: 5px">
-                                {{ group.named }} ({{ group.coded }})
-                            </el-tag>
+                            {{ userInfo.role }}
                         </td>
                     </tr>
                      <tr>
@@ -60,9 +58,7 @@
                             <el-tag :type="userInfo.is_active ? 'success' : 'danger'">
                                 {{ userInfo.is_active ? 'Active' : 'Inactive' }}
                             </el-tag>
-                             <el-tag style="margin-left: 5px" :type="userInfo.is_verified ? 'success' : 'info'">
-                                {{ userInfo.is_verified ? 'Verified' : 'Not Verified' }}
-                            </el-tag>
+                           
                         </td>
                     </tr>
                     <tr>
