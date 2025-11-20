@@ -1,6 +1,6 @@
 import Attachment from "@/views/Entity/Attachment";
 
-class DisconnectorJobDto {
+class TransformerJobDto {
     constructor() {
         this.properties = {
             mrid: '',
@@ -27,4 +27,4 @@ class DisconnectorJobDto {
     }
 }
 
-export default DisconnectorJobDto;
+export default TransformerJobDto;

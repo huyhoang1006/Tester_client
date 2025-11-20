@@ -25,7 +25,7 @@
             <el-button size="mini" type="info" class="btn-action" @click="testData.option='threePhase'"> Three phase </el-button>
             <el-button size="mini" type="info" class="btn-action" @click="testData.option='perPhase'"> Per phase </el-button>
         </div>
-        <table class="table-strip-input-data" style="width: 100%">
+        <table class="table-strip-input-data" style="width: 100% ;font-size: 12px;">
             <thead>
                 <tr>
                     <th style="width: 100px;">Tap position</th>

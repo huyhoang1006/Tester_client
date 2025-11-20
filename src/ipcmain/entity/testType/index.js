@@ -4,6 +4,7 @@ import * as ipcTestTypeCurrentTransformer from './currentTransformer/index.js'
 import * as ipcTestTypeVoltageTransformer from './voltageTransformer/index.js'
 import * as ipcTestTypeDisconnector from './disconnector/index.js'
 import * as ipcTestTypeCircuitBreaker from './circuitBreaker/index.js'
+import * as ipcTestTypeTransformer from './transformer/index.js'
 export const active = () => {
     ipcTestTypeSurgeArrester.active()
     ipcTestTypePowerCable.active()
@@ -11,4 +12,5 @@ export const active = () => {
     ipcTestTypeVoltageTransformer.active()
     ipcTestTypeDisconnector.active()
     ipcTestTypeCircuitBreaker.active()
+    ipcTestTypeTransformer.active()
 }
