@@ -1,3 +1,4 @@
+/* eslint-disable */
 import store from '@/store'
 import client from './client'
 
@@ -55,14 +56,40 @@ export const afterLogin = (remember, response) => {
     // Lưu ý: Token luôn cần lưu để F5 không bị logout, biến 'remember' thường chỉ dùng để quyết định thời gian lưu cookie, 
     // nhưng với localStorage thì ta cứ lưu, logout thì xóa.
 
+    /**
+     * {"createdAt":1759506292729,"is_active":1,"usersGroups":[{"id":4,"named":"Role Tester","coded":"ROLE_TESTER"
+     * ,"namedDescription":"Role For Tester Client","isActive":1,"created_at":"03-10-2025 03:44:52"}],
+     * "id":5,"is_verified":1,"email":"evn@mail.com","username":"EVN_HCM"}
+     */
+
     localStorage.setItem('token', accessToken)
     localStorage.setItem('refresh_token', refreshToken) // Lưu cái này để làm tính năng refresh token sau này
-    localStorage.setItem('user', JSON.stringify(userInfo)) // Chỉ lưu phần info user, không lưu cả cục response to
+    localStorage.setItem('user', JSON.stringify({
+        user_id: userInfo.id,
+        name: userInfo.username,
+        email: userInfo.email,
+        role: roleCode,
+        token_type: response.token_type,
+        refresh_token: refreshToken,
+        access_token: accessToken,
+        exp: response.expires_in,
+        name: userInfo.username
+    })) // Chỉ lưu phần info user, không lưu cả cục response to
     localStorage.setItem('role', roleCode)
 
 
     // 3. Cập nhật vào Store (Vuex)
-    store.dispatch('setUser', userInfo)
+    store.dispatch('setUser', {
+        user_id: userInfo.id,
+        name: userInfo.username,
+        email: userInfo.email,
+        role: roleCode,
+        token_type: response.token_type,
+        refresh_token: refreshToken,
+        access_token: accessToken,
+        exp: response.expires_in,
+        name: userInfo.username
+    })
     store.dispatch('setToken', accessToken)
     store.dispatch('setRole', roleCode)
     store.dispatch('setIsAuthenticated', true)
