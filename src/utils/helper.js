@@ -4,56 +4,109 @@ import client from './client'
 let interceptorAuthenticate = null
 
 export const initApp = () => {
-    // server address
+    // 1. Khôi phục Server Address
     const serverAddr = localStorage.getItem('SERVER_ADDR')
     if (serverAddr) {
         store.dispatch('setServerAddr', serverAddr)
         client.defaults.baseURL = serverAddr
     }
 
-    // xác thực
+    // 2. Khôi phục thông tin User & Token từ LocalStorage
     const userStr = localStorage.getItem('user')
     const token = localStorage.getItem('token')
     const role = localStorage.getItem('role')
+    // const refreshToken = localStorage.getItem('refresh_token') // Nếu sau này cần dùng refresh token
 
     if (userStr && token) {
-        store.dispatch('setUser', JSON.parse(userStr))
+        // Parse thông tin user
+        const userData = JSON.parse(userStr)
+
+        // Đẩy lại vào Store (Vuex)
+        store.dispatch('setUser', userData)
         store.dispatch('setToken', token)
         store.dispatch('setRole', role)
         store.dispatch('setIsAuthenticated', true)
 
-        interceptorAuthenticate = client.interceptors.request.use(
-            function (config) {
-                config.headers.Authorization = `Bearer ${token}`
-                return config
-            },
-            function (err) {
-                return Promise.reject(err)
-            }
-        )
+        // Thiết lập Interceptor để tự động gắn Token vào mọi request API tiếp theo
+        setupInterceptor(token)
     } else {
+        // Nếu thiếu thông tin thì reset
         store.dispatch('setIsAuthenticated', false)
     }
 }
 
-export const afterLogin = (remember, user) => {
-    const userStr = JSON.stringify(user)
-    const token = user.access_token
-    const role = user.role
+export const afterLogin = (remember, response) => {
+    // response chính là cục JSON bạn cung cấp
 
-    if (remember) {
-        localStorage.setItem('user', userStr)
-        localStorage.setItem('token', token)
-        localStorage.setItem('role', role)
+    // 1. Trích xuất dữ liệu từ Response mới
+    const accessToken = response.access_token
+    const refreshToken = response.refresh_token
+    
+    // Thông tin user nằm trong object 'actionUser'
+    const userInfo = response.actionUser
+    
+    // Role nằm trong mảng 'usersGroups'. Lấy role đầu tiên hoặc xử lý theo logic dự án
+    let roleCode = ''
+    if (userInfo && userInfo.usersGroups && userInfo.usersGroups.length > 0) {
+        roleCode = userInfo.usersGroups[0].coded // Ví dụ: "ROLE_TESTER"
     }
 
-    store.dispatch('setUser', user)
-    store.dispatch('setToken', token)
-    store.dispatch('setRole', role)
+    // 2. Lưu vào LocalStorage (Nếu user chọn Remember hoặc mặc định lưu để F5 không mất session)
+    // Lưu ý: Token luôn cần lưu để F5 không bị logout, biến 'remember' thường chỉ dùng để quyết định thời gian lưu cookie, 
+    // nhưng với localStorage thì ta cứ lưu, logout thì xóa.
+    
+    localStorage.setItem('token', accessToken)
+    localStorage.setItem('refresh_token', refreshToken) // Lưu cái này để làm tính năng refresh token sau này
+    localStorage.setItem('user', JSON.stringify(userInfo)) // Chỉ lưu phần info user, không lưu cả cục response to
+    localStorage.setItem('role', roleCode)
+    
+
+    // 3. Cập nhật vào Store (Vuex)
+    store.dispatch('setUser', userInfo)
+    store.dispatch('setToken', accessToken)
+    store.dispatch('setRole', roleCode)
     store.dispatch('setIsAuthenticated', true)
+
+    // 4. Thiết lập Interceptor cho axios client
+    setupInterceptor(accessToken)
+}
+
+export const afterLogout = () => {
+    // Xóa sạch LocalStorage
+    localStorage.removeItem('user')
+    localStorage.removeItem('token')
+    localStorage.removeItem('refresh_token')
+    localStorage.removeItem('role')
+
+    // Reset Store
+    store.dispatch('setUser', null)
+    store.dispatch('setToken', null)
+    store.dispatch('setRole', null)
+    store.dispatch('setIsAuthenticated', false)
+
+    // Gỡ bỏ Interceptor
+    if (interceptorAuthenticate !== null) {
+        client.interceptors.request.eject(interceptorAuthenticate)
+        interceptorAuthenticate = null
+    }
+}
+
+export const setServerAddr = (domain) => {
+    localStorage.setItem('SERVER_ADDR', domain)
+    store.dispatch('setServerAddr', domain)
+    client.defaults.baseURL = domain
+}
+
+// Hàm phụ để cài đặt Interceptor (tránh lặp code giữa initApp và afterLogin)
+function setupInterceptor(token) {
+    // Xóa interceptor cũ nếu tồn tại để tránh bị duplicate header
+    if (interceptorAuthenticate !== null) {
+        client.interceptors.request.eject(interceptorAuthenticate)
+    }
 
     interceptorAuthenticate = client.interceptors.request.use(
         function (config) {
+            // Gắn Bearer Token vào Header Authorization
             config.headers.Authorization = `Bearer ${token}`
             return config
         },
@@ -61,23 +114,4 @@ export const afterLogin = (remember, user) => {
             return Promise.reject(err)
         }
     )
-}
-
-export const afterLogout = () => {
-    localStorage.removeItem('user')
-    localStorage.removeItem('token')
-    localStorage.removeItem('role')
-
-    store.dispatch('setUser', null)
-    store.dispatch('setToken', null)
-    store.dispatch('setRole', null)
-    store.dispatch('setIsAuthenticated', false)
-
-    client.interceptors.request.eject(interceptorAuthenticate)
-}
-
-export const setServerAddr = (domain) => {
-    localStorage.setItem('SERVER_ADDR', domain)
-    store.dispatch('setServerAddr', domain)
-    client.defaults.baseURL = domain
 }
