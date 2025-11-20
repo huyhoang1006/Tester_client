@@ -21,7 +21,7 @@
         </el-row>
         </div>
 
-        <table class="mgt-10 table-strip-input-data" style=" width: 100%; table-layout: fixed">
+        <table class="mgt-10 table-strip-input-data" style=" width: 100%; table-layout: fixed ; font-size: 12px; text-align: center;">
             <thead>
                 <tr>
                     <th class="no-col">No</th>
