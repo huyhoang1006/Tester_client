@@ -1,6 +1,6 @@
 <template>
     <div id="measurement-of-short-circuit">
-        <table class="table-strip-input-data" style="width: 770px">
+        <table class="table-strip-input-data" style="width: 70% ; font-size: 12px;">
             <thead>
                 <tr>
                     <th></th>

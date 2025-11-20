@@ -49,7 +49,7 @@
                 </el-form>
             </el-col>
         </el-row>
-        <table style="width: 80%;" class="table-strip-input-data">
+        <table style="width: 80%; font-size: 12px;" class="table-strip-input-data">
             <thead>
                 <tr>
                     <th>Name</th>

@@ -1,45 +1,29 @@
 <template>
     <div id="job">
-        <el-row id="top-bar">
-            <el-col :span="24">
-                <el-button @click="backToManage" style="box-sizing: border-box; border-right: 1px solid #aeb6bf">
-                    <i class="fa-solid fa-circle-arrow-left display-block fa-2x"></i>
-                    <div class="mgt-10">Manage</div>
-                </el-button>
-                <el-button @click="saveJob">
-                    <i class="fa-solid fa-floppy-disk display-block fa-2x"></i>
-                    <div class="mgt-10">Save job</div>
-                </el-button>
-                <el-button @click="$router.go(-1)" style="box-sizing: border-box">
-                    <i class="fa-solid fa-ban display-block fa-2x"></i>
-                    <div class="mgt-10">Cancel</div>
-                </el-button>
-                <el-button style="float: right; text-align: right; width: fit-content; cursor: default">
-                    <img src="@/assets/images/logo.png" style="max-height: 40px" />
-                </el-button>
-            </el-col>
-        </el-row>
-        <el-row :gutter="20" id="main-content" style="padding: 0">
-            <el-tabs tab-position="left" type="border-card" class="w-100 h-100">
+        <el-row :gutter="20" style="padding: 0">
+            <el-tabs type="card">
                 <!-- Overview -->
                 <el-tab-pane style="width: 100%;">
                     <span slot="label"><i class="fa-solid fa-book"></i> Overview</span>
-                    <overview :data="properties" :location="location" :asset="asset"></overview>
+                    <overview :data="transformerJobDto.properties" @update-attachment="updateAttachmentOverView" :attachment.sync="transformerJobDto.attachmentData" :locationData="locationData" :assetData="assetData" :productAssetModelData="productAssetModelData" :parentOrganization="parentOrganization"></overview>
                 </el-tab-pane>
 
                 <!-- Select test -->
                 <el-tab-pane>
                     <span slot="label"><i class="fa-solid fa-list-check"></i> Select test</span>
                     <select-test style="width: 100%;"
-                        :mode="mode" 
-                        :data="testList" 
-                        :tap-changers="tapChangers" 
-                        :asset="asset" 
+                        :data="transformerJobDto.testList" 
+                        :assetData="assetData" 
                         :obj-active-name="objActiveName"
-                        :attachmentArr.sync="attachmentArr"
-                        :testconditionArr.sync="testconditionArr"
-                        :bushings = "bushing"
+                        :testTypeListData="testTypeListData"
                         ></select-test>
+                </el-tab-pane>
+
+                <el-tab-pane>
+                    <span slot="label"><i class="fa-solid fa-list-check"></i> Testing equipment</span>
+                    <div>
+                        <testing-equipment :data="transformerJobDto.testingEquipmentData" :testTypeListData="testTypeListData"></testing-equipment>
+                    </div>
                 </el-tab-pane>
 
                 <!-- Tests -->
@@ -47,19 +31,21 @@
                     <span slot="label"><i class="fa-solid fa-calculator"></i> Tests</span>
                     <div id="tests" style="width: 100%;">
                         <el-tabs v-model="objActiveName.activeName" type="card" class="w-100 h-100">
-                            <el-tab-pane v-for="(item, index) in testList" :key="index" :label="item.name" :name="item.tabId">
+                            <el-tab-pane v-for="(item, index) in transformerJobDto.testList" :key="index" :label="item.name" :name="item.tabId">
                                 <test-information
-                                title="Test"
-                                :testCondition.sync="testconditionArr[index]"
+                                :title="item.name"
+                                :data="item.testCondition || testconditionArr[index]"
+                                :assetData="assetData"
                                 :attachment.sync="attachmentArr[index]"
                                 >
                                 </test-information>
-                                <component v-if="testconditionArr[index] != undefined"
+                                <component 
+                                    v-if="item.testCondition || testconditionArr[index]"
                                     :is="item.testTypeCode" 
                                     :data="item.data" 
                                     :asset="asset" 
                                     :tap-changers="tapChangers"
-                                    :testCondition = "testconditionArr[index]"
+                                    :testCondition="item.testCondition || testconditionArr[index]"
                                     >
                                 </component>
                             </el-tab-pane>
@@ -70,16 +56,16 @@
                 <!-- Health Index -->
                 <el-tab-pane>
                     <span slot="label"><i class="fa-solid fa-heart-pulse"></i> Health Index</span>
-                    <health-index style="width: 100%;" v-if="properties.asset !== '' && listHeal.length !== 0" :properties="properties" :data="listHeal"></health-index>
+                    <health-index style="width: 100%;" v-if="transformerJobDto.properties.asset_id !== '' && listHeal.length !== 0" :properties="transformerJobDto.properties" :data="listHeal"></health-index>
                 </el-tab-pane>
 
                 <el-tab-pane>
                     <span slot="label"><i class="fa-solid fa-table-columns"></i> Test summary</span>
-                    <test-summary style="width: 100%;" v-if="testList.length !==0" :data="testList" :asset="asset"></test-summary>
+                    <test-summary style="width: 100%;" v-if="transformerJobDto.testList.length !==0" :data="transformerJobDto.testList" :asset="asset"></test-summary>
                 </el-tab-pane>
                 <el-tab-pane>
                     <span slot="label"><i class="fa-solid fa-file-export"></i> Report</span>
-                    <exportData v-if="testList.length !==0" :data="testList"></exportData>
+                    <exportData v-if="transformerJobDto.testList.length !==0" :data="transformerJobDto.testList"></exportData>
                 </el-tab-pane>
             </el-tabs>
         </el-row>
@@ -88,35 +74,35 @@
 
 <script>
 /* eslint-disable */
-import SelectTest from './components/SelectTest'
-import DcWindingPrim from './components/DcWindingPrim'
-import DcWindingSec from './components/DcWindingSec'
-import DcWindingTert from './components/DcWindingTert'
+import SelectTest from './components/SelectTest/index.vue'
+import DcWindingPrim from './components/DcWindingPrim/index.vue'
+import DcWindingSec from './components/DcWindingSec/index.vue'
+import DcWindingTert from './components/DcWindingTert/index.vue'
 import DimensionWeight from './components/DimensionWeight'
-import EnergyEfficiency from './components/EnergyEfficiency'
+import EnergyEfficiency from './components/EnergyEfficiency/index.vue'
 import ExcitingCurrent from './components/ExcitingCurrent'
-import GeneralInspection from './components/GeneralInspection'
-import InducedAcVoltageTests from './components/InducedAcVoltageTests'
-import InsulationResistance from './components/InsulationResistance'
-import MeasurementOfNoLoad from './components/MeasurementOfNoLoad'
-import MeasurementOfOil from './components/MeasurementOfOil'
-import MeasurementOfShortCircuit from './components/MeasurementOfShortCircuit'
-import RatioPrimSec from './components/RatioPrimSec'
-import SeparateSourceAc from './components/SeparateSourceAc'
+import GeneralInspection from './components/GeneralInspection/index.vue'
+import InducedAcVoltageTests from './components/InducedAcVoltageTests/index.vue'
+import InsulationResistance from './components/InsulationResistance/index.vue'
+import MeasurementOfNoLoad from './components/MeasurementOfNoLoad/index.vue'
+import MeasurementOfOil from './components/MeasurementOfOil/index.vue'
+import MeasurementOfShortCircuit from './components/MeasurementOfShortCircuit/index.vue'
+import RatioPrimSec from './components/RatioPrimSec/index.vue'
+import SeparateSourceAc from './components/SeparateSourceAc/index.vue'
 import TestingInstruments from './components/TestingInstruments'
-import Overview from './components/Overview'
-import WindingDfCap from './components/WindingDfCap'
-import BushingPrimC1 from './components/BushingPrimC1'
-import BushingPrimC2 from './components/BushingPrimC2'
-import BushingSecC1 from './components/BushingSecC1'
-import BushingSecC2 from './components/BushingSecC2'
-import BushingTertC1 from './components/BushingTertC1'
-import BushingTertC2 from './components/BushingTertC2'
+import Overview from './components/Overview/index.vue'
+import WindingDfCap from './components/WindingDfCap/index.vue'
+import BushingPrimC1 from './components/BushingPrimC1/index.vue'
+import BushingPrimC2 from './components/BushingPrimC2/index.vue'
+import BushingSecC1 from './components/BushingSecC1/index.vue'
+import BushingSecC2 from './components/BushingSecC2/index.vue'
+import BushingTertC1 from './components/BushingTertC1/index.vue'
+import BushingTertC2 from './components/BushingTertC2/index.vue'
 import InsulationResistanceYokeCore from './components/InsulationResistanceYokeCore'
-import ShortCircuitImpedancePrim from './components/ShortCircuitImpedancePrim'
-import ShortCircuitImpedanceSec from './components/ShortCircuitImpedanceSec'
+import ShortCircuitImpedancePrim from './components/ShortCircuitImpedancePrim/index.vue'
+import ShortCircuitImpedanceSec from './components/ShortCircuitImpedanceSec/index.vue'
 import ShortCircuitImpedanceTert from './components/ShortCircuitImpedanceTert'
-import GasChromatography from './components/GasChromatography'
+import GasChromatography from './components/GasChromatography/index.vue'
 
 // import ShortPrimSec from './components/ShortPrimSec'
 // import ShortSecTert from './components/ShortSecTert'
@@ -125,12 +111,13 @@ import Dga from './components/Dga'
 // import DielectricResponseAnalysis from './components/DielectricResponseAnalysis'
 
 
-import TestSummary from './components/TestSummary'
-import HealthIndex from './components/HealthIndex'
+import TestSummary from './components/TestSummary/index.vue'
+import HealthIndex from './components/HealthIndex/index.vue'
 import mixin from './mixin'
 import Mixtestcondition from './mixin/Mixtestcondition'
 import testInformation from '@/views/Common/testInformation.vue'
 import exportData from './components/ExportData'
+import TestingEquipment from './components/TestingEquipment'
 
 export default {
     name: 'JobView',
@@ -172,21 +159,45 @@ export default {
         TestSummary,
         HealthIndex,
         testInformation,
-        exportData
+        exportData,
+        TestingEquipment
+
     },
     mixins: [mixin, Mixtestcondition],
     data() {
         return {
-            mode: this.$constant.ADD,
-            job_id: null,
-            saved: false,
             objActiveName: {
                 activeName: null
             }
         }
     },
+    props: {
+        locationData: {
+            type: Object,
+            default: () => ({})
+        },
+        assetData: {
+            type: Object,
+            default: () => ({})
+        },
+        productAssetModelData: {
+            type: Object,
+            default: () => ({})
+        },
+        parentOrganization: {
+            type: Object,
+            default: () => ({})
+        },
+        testTypeListData: {
+            type: Array,
+            default: () => []
+        }
+    },
     mounted() {},
     methods: {
+        updateAttachmentOverView(attachment) {
+            this.attachmentData = attachment
+        }
     },
 }
 </script>
@@ -194,13 +205,23 @@ export default {
 <style lang="scss" scoped>
 #job {
     width: 100%;
-    height: 100%;
+}
+
+::v-deep(.el-tabs__item) {
+  font-size: 12px !important;
+  font-weight: bold !important;
+}
+
+::v-deep(.el-tabs__item.is-active) {
+  color: #fff !important;
+  background-color: var(--el-color-primary, #012596) !important;
+  border-radius: 4px 4px 0 0;
+  font-size: 12px !important;
 }
 
 #tests,
 #job__health-index {
     width: calc(100vw - 145px);
-    height: calc(100vh - 150px);
     overflow-y: auto;
     overflow-x: hidden;
 }

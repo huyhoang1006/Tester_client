@@ -13,7 +13,7 @@
             </tbody>
         </table>
 
-        <table class="table-strip-input-data" style="width: 500px">
+        <table class="table-strip-input-data" style="width: 50% ; font-size: 12px;">
             <thead>
                 <tr>
                     <th>Applied terminal</th>

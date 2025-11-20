@@ -21,7 +21,7 @@
         </el-row>
         </div>
 
-        <table class="table-strip-input-data" style="width: 1450px">
+        <table class="table-strip-input-data" style="width: 100% ; font-size: 12px;">
             <thead>
                 <tr>
                     <th class="no-col" v-if="tapChangers.winding === $constant.TERT">Tap</th>
