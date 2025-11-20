@@ -69,7 +69,8 @@
                         <TreeNode v-for="item in ownerServerList" :key="item.id" :node="item"
                             :selectedNodes.sync="selectedNodes" @fetch-children="fetchChildrenServer"
                             @show-properties="showPropertiesData" @update-selection="updateSelection"
-                            @clear-selection="clearSelection" @open-context-menu="openContextMenu">
+                            @clear-selection="clearSelection" @open-context-menu="openContextMenu"
+                            @double-click-node="doubleClickNodeServer">
                         </TreeNode>
                     </ul>
                     <contextMenu @show-data="showData" ref="contextMenu"></contextMenu>
@@ -2927,22 +2928,43 @@ export default {
         },
 
         async showData(node) {
-            // Tạo bản sao của node để đảm bảo reactivity
-            const newNode = { ...node };
-            if (this.tabs.some(item => item.id === newNode.id)) {
-                // Nếu tab đã tồn tại, active nó
-                this.activeTab = newNode;
-            } else {
-                const newTabs = [...this.tabs]; // Tạo mảng mới
-                if (this.activeTab?.id) {
-                    const index = newTabs.findIndex(item => item.id === this.activeTab.id);
-                    newTabs.splice(index + 1, 0, newNode);
+            try {
+                // Tạo bản sao của node để đảm bảo reactivity
+                const newNode = { ...node };
+                // Sử dụng mrid hoặc id để check tab đã tồn tại
+                const nodeKey = newNode.mrid || newNode.id;
+                const existingTab = this.tabs.find(item => (item.mrid || item.id) === nodeKey);
+                
+                if (existingTab) {
+                    // Nếu tab đã tồn tại, active nó
+                    this.activeTab = existingTab;
+                    const index = this.tabs.findIndex(item => (item.mrid || item.id) === nodeKey);
+                    this.$refs.serverTabs.selectTab(this.activeTab, index);
                 } else {
-                    newTabs.push(newNode);
+                    const newTabs = [...this.tabs]; // Tạo mảng mới
+                    let insertIndex;
+                    if (this.activeTab?.mrid || this.activeTab?.id) {
+                        const activeKey = this.activeTab.mrid || this.activeTab.id;
+                        const index = newTabs.findIndex(item => (item.mrid || item.id) === activeKey);
+                        insertIndex = index + 1;
+                        newTabs.splice(insertIndex, 0, newNode);
+                    } else {
+                        insertIndex = newTabs.length;
+                        newTabs.push(newNode);
+                    }
+                    // Gán lại để trigger reactivity
+                    this.tabs = newTabs;
+                    this.activeTab = newNode;
+                    this.$nextTick(() => {
+                        if (this.$refs.serverTabs) {
+                            this.$refs.serverTabs.selectTab(this.activeTab, insertIndex);
+                            this.$refs.serverTabs.loadData(newNode, insertIndex);
+                        }
+                    });
                 }
-                // Gán lại để trigger reactivity
-                this.tabs = newTabs;
-                this.activeTab = newNode;
+            } catch (error) {
+                this.$message.error("Some error occur when loading data");
+                console.error(error);
             }
         },
 
@@ -3892,6 +3914,19 @@ export default {
 
         async doubleClickNode(node) {
             await this.showDataClient(node);
+        },
+
+        async doubleClickNodeServer(node) {
+            // Xử lý double click cho server side (ownerServerList)
+            if (node.mode === 'substation') {
+                // Nếu là substation, hiển thị tab và thông tin
+                await this.showData(node);
+                // Cũng hiển thị properties
+                await this.showPropertiesData(node);
+            } else {
+                // Các node khác vẫn dùng showData
+                await this.showData(node);
+            }
         },
 
     }
