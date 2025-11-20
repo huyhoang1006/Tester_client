@@ -41,10 +41,10 @@ export const afterLogin = (remember, response) => {
     // 1. Trích xuất dữ liệu từ Response mới
     const accessToken = response.access_token
     const refreshToken = response.refresh_token
-    
+
     // Thông tin user nằm trong object 'actionUser'
     const userInfo = response.actionUser
-    
+
     // Role nằm trong mảng 'usersGroups'. Lấy role đầu tiên hoặc xử lý theo logic dự án
     let roleCode = ''
     if (userInfo && userInfo.usersGroups && userInfo.usersGroups.length > 0) {
@@ -54,12 +54,12 @@ export const afterLogin = (remember, response) => {
     // 2. Lưu vào LocalStorage (Nếu user chọn Remember hoặc mặc định lưu để F5 không mất session)
     // Lưu ý: Token luôn cần lưu để F5 không bị logout, biến 'remember' thường chỉ dùng để quyết định thời gian lưu cookie, 
     // nhưng với localStorage thì ta cứ lưu, logout thì xóa.
-    
+
     localStorage.setItem('token', accessToken)
     localStorage.setItem('refresh_token', refreshToken) // Lưu cái này để làm tính năng refresh token sau này
     localStorage.setItem('user', JSON.stringify(userInfo)) // Chỉ lưu phần info user, không lưu cả cục response to
     localStorage.setItem('role', roleCode)
-    
+
 
     // 3. Cập nhật vào Store (Vuex)
     store.dispatch('setUser', userInfo)
