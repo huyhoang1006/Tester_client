@@ -4,6 +4,7 @@ import * as testTypeCurrentTransformerPreload from './currentTransformer/index.j
 import * as testTypeVoltageTransformerPreload from './voltageTransformer/index.js'
 import * as testTypeDisconnectorPreload from './disconnector/index.js'
 import * as testTypeCircuitBreakerPreload from './circuitBreaker/index.js'
+import * as testTypeTransformerPreload from './transformer/index.js'
 
 export { testTypePowerCablePreload }
 export { testTypeSurgeArresterPreload }
@@ -11,3 +12,4 @@ export { testTypeCurrentTransformerPreload }
 export { testTypeVoltageTransformerPreload }
 export { testTypeDisconnectorPreload }
 export { testTypeCircuitBreakerPreload }
+export { testTypeTransformerPreload }

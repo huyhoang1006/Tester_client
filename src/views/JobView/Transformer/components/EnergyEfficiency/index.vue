@@ -1,6 +1,6 @@
 <template>
     <div id="energy-efficiency">
-        <table class="table-strip-input-data" style="width: 500px">
+        <table class="table-strip-input-data" style="width: 60% ; font-size: 12px; ">
             <thead>
                 <tr>
                     <th></th>

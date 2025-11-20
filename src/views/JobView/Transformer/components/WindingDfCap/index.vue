@@ -21,7 +21,7 @@
         </el-row>
         </div>
 
-        <table class="table-strip-input-data" style="width: 2000px">
+        <table class="table-strip-input-data" style="width: 180% ; font-size: 12px;">
             <thead>
                 <tr>
                     <th class="no-col">No</th>

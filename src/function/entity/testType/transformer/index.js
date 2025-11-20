@@ -10,7 +10,7 @@ export const getTestTypeTransformerByMrid = async (mrid) => {
     })
 }
 
-export const getAllTestTypeTransformer = async () => {
+export const getAllTestTypeTransformers = async () => {
     return new Promise((resolve, reject) => {
         db.all("SELECT * FROM transformer_test_type", [], (err, rows) => {
             if (err) return reject({ success: false, err: err, message: 'Get all transformer test types failed' })
@@ -26,11 +26,11 @@ export const insertTestTypeTransformer = async (testType) => {
              VALUES (?, ?, ?)
              ON CONFLICT(mrid) DO UPDATE SET
                 code = excluded.code,
-                name = excluded.name`,            [
-                testType.mrid,
-                testType.code,
-                testType.name
-            ],
+                name = excluded.name`, [
+            testType.mrid,
+            testType.code,
+            testType.name
+        ],
             function (err) {
                 if (err) return reject({ success: false, err, message: 'Insert transformer test type failed' })
                 return resolve({ success: true, data: testType, message: 'Insert transformer test type completed' })

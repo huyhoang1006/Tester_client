@@ -176,11 +176,16 @@ export default {
         }
     },
     async beforeMount() {
-        const assetId = this.selectedAsset[0].id
-        const rs = await window.electronAPI.getOnlineMonitoringData(assetId)
-        
-        if (rs.success && rs.data) {
-            this.dataOnlineMonitoring = rs.data
+        if (this.selectedAsset && Array.isArray(this.selectedAsset) && this.selectedAsset.length > 0 && this.selectedAsset[0] && this.selectedAsset[0].id) {
+            const assetId = this.selectedAsset[0].id
+            const rs = await window.electronAPI.getOnlineMonitoringData(assetId)
+            
+            if (rs.success && rs.data) {
+                this.dataOnlineMonitoring = rs.data
+                this.isMonitor = true
+            } else {
+                this.isMonitor = false
+            }
         } else {
             this.isMonitor = false
         }
@@ -191,8 +196,15 @@ export default {
             return this.data
         },
         vectorGroup: function () {
-            const vg = JSON.parse(this.asset.vector_group)
-            return '' + vg.prim + ('' + vg.sec.I + vg.sec.Value + vg.tert.I + vg.tert.Value + vg.tert.accessibility).toLowerCase()
+            if (!this.asset || !this.asset.vector_group) {
+                return ''
+            }
+            try {
+                const vg = JSON.parse(this.asset.vector_group)
+                return '' + vg.prim + ('' + vg.sec.I + vg.sec.Value + vg.tert.I + vg.tert.Value + vg.tert.accessibility).toLowerCase()
+            } catch (error) {
+                return ''
+            }
         }
     }
 }

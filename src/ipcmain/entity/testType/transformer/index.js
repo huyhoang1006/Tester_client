@@ -59,7 +59,7 @@ export const getTestTypeTransformerByMrid = () => {
 export const getAllTestTypeTransformers = () => {
     ipcMain.handle('getAllTestTypeTransformers', async function (event) {
         try {
-            const rs = await entityFunc.TestTypeFunc.transformerTestTypeFunc.getAllTestTypeTransformer()
+            const rs = await entityFunc.TestTypeFunc.transformerTestTypeFunc.getAllTestTypeTransformers()
             if (rs.success == true) {
                 return {
                     success: true,
