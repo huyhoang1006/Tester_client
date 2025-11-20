@@ -21,7 +21,7 @@ const RESOURCE = 'users'
 export const login = (data) => {
     // 1. Lấy Server Address trực tiếp tại thời điểm Login
     let domain = localStorage.getItem('SERVER_ADDR') || ''
-    
+
     // Xử lý bỏ dấu gạch chéo cuối nếu có (để tránh thành //oauth)
     if (domain.endsWith('/')) {
         domain = domain.slice(0, -1)
