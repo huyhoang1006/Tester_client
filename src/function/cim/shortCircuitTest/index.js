@@ -195,3 +195,38 @@ export const getShortCircuitTestById = async (mrid) => {
         return { success: false, err, message: 'Get ShortCircuitTest failed' };
     }
 };
+
+export const getShortCircuitTestByTransformerEndInfoId = async (energisedEnd) => {
+    return new Promise((resolve, reject) => {
+        const sql = `
+            SELECT 
+                io.*, 
+                tt.*, 
+                sct.*
+            FROM short_circuit_test sct
+            JOIN transformer_test tt ON sct.mrid = tt.mrid
+            JOIN identified_object io ON tt.mrid = io.mrid
+            WHERE sct.energised_end = ?
+        `;
+
+        db.all(sql, [energisedEnd], (err, rows) => {
+            if (err) {
+                return reject({ success: false, err, message: 'Query ShortCircuitTest failed' });
+            }
+
+            if (!rows) {
+                return resolve({ success: false, data: null, message: 'ShortCircuitTest not found' });
+            }
+
+            if(rows.length === 0) {
+                return resolve({ success: false, data: null, message: 'ShortCircuitTest not found' });
+            }
+
+            return resolve({
+                success: true,
+                data: rows,
+                message: 'Get ShortCircuitTest by energised_end_step completed'
+            });
+        });
+    });
+};
