@@ -16,6 +16,7 @@
                         :assetData="assetData" 
                         :obj-active-name="objActiveName"
                         :testTypeListData="testTypeListData"
+                        :tap-changers="tapChangers"
                         ></select-test>
                 </el-tab-pane>
 
