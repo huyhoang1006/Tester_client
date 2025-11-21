@@ -3307,6 +3307,30 @@ export default {
                                 } else {
                                     this.$message.warning("Parent node not found in tree");
                                 }
+                            } else if (node.asset === 'Transformer') {
+                                const entity = await window.electronAPI.getTransformerEntityByMrid(node.mrid, node.parentId);
+                                if (!entity.success) {
+                                    this.$message.error("Entity not found");
+                                    return;
+                                }
+                                const deleteSign = await window.electronAPI.deleteTransformerEntity(entity.data);
+                                if (!deleteSign.success) {
+                                    this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
+                                    return;
+                                }
+                                // ✅ Xóa node khỏi cây organisationClientList
+                                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
+                                if (parentNode && Array.isArray(parentNode.children)) {
+                                    const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
+                                    if (index !== -1) {
+                                        parentNode.children.splice(index, 1); // Xóa khỏi mảng children
+                                        this.$message.success("Delete data successfully");
+                                    } else {
+                                        this.$message.warning("Node not found in tree structure");
+                                    }
+                                } else {
+                                    this.$message.warning("Parent node not found in tree");
+                                }
                             }
                         }
                     } catch (error) {
@@ -3925,16 +3949,8 @@ export default {
         },
 
         async doubleClickNodeServer(node) {
-            // Xử lý double click cho server side (ownerServerList)
-            if (node.mode === 'substation') {
-                // Nếu là substation, hiển thị tab và thông tin
-                await this.showData(node);
-                // Cũng hiển thị properties
-                await this.showPropertiesData(node);
-            } else {
-                // Các node khác vẫn dùng showData
-                await this.showData(node);
-            }
+            await this.showData(node);
+            await this.showPropertiesData(node);
         },
 
     }

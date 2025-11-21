@@ -291,12 +291,11 @@ export const transformerDtoToEntity = (dto) => {
     }
 
     //rated temperature
-    if(dto.impedances.ref_temp.value) {
-        entity.oldPowerTransformerInfo.impedance_temperature = dto.impedances.ref_temp.mrid || null;
-        const temperature = new Temperature();
-        mappingUnit(temperature, dto.impedances.ref_temp)
-        entity.temperature.push(temperature);
-    }
+    entity.oldPowerTransformerInfo.impedance_temperature = dto.impedances.ref_temp.mrid || null;
+    const temperature = new Temperature();
+    mappingUnit(temperature, dto.impedances.ref_temp)
+    entity.temperature.push(temperature);
+    
 
     let transformer_end_info_prim_id = null;
     for(let i = 0; i< dto.oldTransformerEndInfo.length; i++) {
@@ -561,6 +560,9 @@ export const transformerEntityToDto = (entity) => {
     dto.properties.comment = entity.asset.description || ''
     dto.locationId = entity.asset.location || ''
     dto.assetPsrId = entity.assetPsr.mrid || ''
+    dto.attachmentId = entity.attachment.mrid || '';
+    dto.attachment = entity.attachment;
+
     dto.oldPowerTransformerInfoId = entity.oldPowerTransformerInfo.mrid || ''
     dto.winding_configuration.phases = entity.oldPowerTransformerInfo.phases || ''
     if(entity.oldPowerTransformerInfo.vector_group_type == "custom") {

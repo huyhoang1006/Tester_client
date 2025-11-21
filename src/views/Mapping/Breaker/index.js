@@ -608,7 +608,6 @@ export function mapDtoToEntity(dto) {
 }
 
 export function mapEntityToDto(entity) {
-    console.log(entity)
     const dto = new CircuitBreakerDto()
     dto.properties.mrid = entity.asset.mrid || ''
     dto.properties.kind = entity.asset.kind || ''
@@ -628,6 +627,9 @@ export function mapEntityToDto(entity) {
     dto.circuitBreaker.poleOperation = entity.oldBreakerInfo.pole_operation || ''
     dto.assetPsrId = entity.assetPsr.mrid || ''
     dto.assetInfoId = entity.oldBreakerInfo.mrid || ''
+    //attachment
+    dto.attachmentId = entity.attachment.mrid || '';
+    dto.attachment = entity.attachment;
 
     if (entity.oldBreakerInfo.pir == 1) {
         dto.circuitBreaker.hasPIR = true;
