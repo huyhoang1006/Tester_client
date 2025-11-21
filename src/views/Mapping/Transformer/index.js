@@ -19,10 +19,10 @@ import ActivePower from "@/views/Cim/ActivePower"
 import ZeroSequenceImpedanceTable from "@/views/Entity/ZeroSequenceImpedanceTable"
 import Volume from "@/views/Cim/Volume"
 import Mass from "@/views/Cim/Mass"
+import { UnitSymbol } from "@/views/Enum/UnitSymbol"
+import { UnitMultiplier } from "@/views/Enum/UnitMultiplier"
 
 export const transformerDtoToEntity = (dto) => {
-    console.log(dto);
-    // const dto = new TransformerDto();
     const entity = new TransformerEntity();
 
     //properties
@@ -35,6 +35,8 @@ export const transformerDtoToEntity = (dto) => {
     entity.oldPowerTransformerInfo.manufacturer_type = dto.properties.manufacturer_type || null;
     entity.asset.product_asset_model = dto.productAssetModelId || null;
     entity.productAssetModel.mrid = dto.productAssetModelId || null;
+    entity.asset.description = dto.properties.comment || null;
+    entity.asset.location = dto.locationId || null;
     
     //lifecycleDate
     entity.lifecycleDate.manufactured_date = dto.properties.manufacturer_year || null;
@@ -53,13 +55,18 @@ export const transformerDtoToEntity = (dto) => {
     entity.asset.country_of_origin = dto.properties.country_of_origin || null;
     entity.oldPowerTransformerInfo.mrid = dto.oldPowerTransformerInfoId || null;
 
-    entity.oldPowerTransformerInfo.name = dto.properties.apparatus_id || null;
+    entity.asset.name = dto.properties.apparatus_id || null;
     entity.oldPowerTransformerInfo.phases = dto.winding_configuration.phases || null;
     if(dto.winding_configuration.unsupported_vector_group) {
         entity.oldPowerTransformerInfo.vector_group = dto.winding_configuration.unsupported_vector_group || null
     }
     if(dto.winding_configuration.vector_group_custom) {
         entity.oldPowerTransformerInfo.vector_group = dto.winding_configuration.vector_group_custom || null
+        entity.oldPowerTransformerInfo.vector_group_type = 'custom'
+    }
+    if(dto.winding_configuration.vector_group_unsupport) {
+        entity.oldPowerTransformerInfo.vector_group = dto.winding_configuration.unsupported_vector_group || null
+        entity.oldPowerTransformerInfo.vector_group_type = 'unsupport'
     }
     if(dto.winding_configuration.vector_group_data) {
         entity.oldPowerTransformerInfo.vector_group = ''
@@ -72,7 +79,7 @@ export const transformerDtoToEntity = (dto) => {
         entity.oldPowerTransformerInfo.vector_group += dto.winding_configuration.vector_group.sec.value
         entity.oldPowerTransformerInfo.vector_group += dto.winding_configuration.vector_group.tert.i
         entity.oldPowerTransformerInfo.vector_group += dto.winding_configuration.vector_group.tert.value
-
+        entity.oldPowerTransformerInfo.vector_group_type = null
     }
 
     //oldTransformerEndInfo
@@ -133,8 +140,7 @@ export const transformerDtoToEntity = (dto) => {
         const frequency = new Frequency();
         mappingUnit(frequency, dto.ratings.rated_frequency)
         entity.frequency.push(frequency);
-    }
-    
+    }    
 
     //Voltage ratings
     for (let item of dto.ratings.voltage_ratings) {
@@ -203,7 +209,7 @@ export const transformerDtoToEntity = (dto) => {
         powerRating.cooling_kind = item.cooling_class || null
 
         //temp_rise_wind
-        powerRating.temp = item.temp_rise_wind.mrid || null
+        powerRating.temp_rise_wind = item.temp_rise_wind.mrid || null
         let temperatureWind = new Temperature();
         mappingUnit(temperatureWind, item.temp_rise_wind)
         entity.temperature.push(temperatureWind);
@@ -240,7 +246,7 @@ export const transformerDtoToEntity = (dto) => {
                     break;
                 }
             }
-            currentRatingSec.rated_current = dto.ratings.power_ratings[index].rated_power.mrid || null;
+            currentRatingSec.rated_power = dto.ratings.power_ratings[index].rated_power.mrid || null;
             currentRatingSec.value = item.sec.data.mrid
             let currentFlow = new CurrentFlow();
             mappingUnit(currentFlow, item.sec.data)
@@ -257,7 +263,7 @@ export const transformerDtoToEntity = (dto) => {
                     break;
                 }
             }
-            currentRatingTert.rated_current = dto.ratings.power_ratings[index].rated_power.mrid || null;
+            currentRatingTert.rated_power = dto.ratings.power_ratings[index].rated_power.mrid || null;
             currentRatingTert.value = item.tert.data.mrid
             let currentFlow = new CurrentFlow();
             mappingUnit(currentFlow, item.tert.data)
@@ -535,14 +541,401 @@ export const transformerDtoToEntity = (dto) => {
     mappingUnit(weightMass, dto.others.total_weight)
     entity.mass.push(weightMass);
 
-    console.log(entity);
     return entity
     
 }
 
 export const transformerEntityToDto = (entity) => {
-    // const entity = new TransformerEntity();
     const dto = new TransformerDto();
+    dto.properties.mrid = entity.asset.mrid || ''
+    dto.properties.kind = entity.asset.kind || ''
+    dto.properties.type = entity.asset.type || ''
+    dto.properties.apparatus_id = entity.asset.name || ''
+    dto.properties.country_of_origin = entity.asset.country_of_origin || ''
+    dto.properties.serial_no = entity.asset.serial_number || ''
+    dto.productAssetModelId = entity.productAssetModel.mrid || ''
+    dto.properties.manufacturer = entity.productAssetModel.manufacturer || ''
+    dto.properties.manufacturer_type = entity.oldPowerTransformerInfo.manufacturer_type || ''
+    dto.lifecycleDateId = entity.lifecycleDate.mrid || ''
+    dto.properties.manufacturer_year = entity.lifecycleDate.manufactured_date || ''
+    dto.properties.comment = entity.asset.description || ''
+    dto.locationId = entity.asset.location || ''
+    dto.assetPsrId = entity.assetPsr.mrid || ''
+    dto.oldPowerTransformerInfoId = entity.oldPowerTransformerInfo.mrid || ''
+    dto.winding_configuration.phases = entity.oldPowerTransformerInfo.phases || ''
+    if(entity.oldPowerTransformerInfo.vector_group_type == "custom") {
+        dto.winding_configuration.vector_group_custom = entity.oldPowerTransformerInfo.vector_group || ''
+    } else if(entity.oldPowerTransformerInfo.vector_group_type == "unsupport" ) {
+        dto.winding_configuration.unsupported_vector_group = entity.oldPowerTransformerInfo.vector_group || ''
+    } else {
+        dto.winding_configuration.vector_group_data = entity.oldPowerTransformerInfo.vector_group || ''
+        dto.oldTransformerEndInfo = entity.oldTransformerEndInfo || []
+        for(const winding of dto.oldTransformerEndInfo) {
+            if(winding.end_number == 1) {
+                if(winding.spare == true) {
+                    dto.winding_configuration.vector_group.prim = 'Spare I'
+                } else {
+                    dto.winding_configuration.vector_group.prim = winding.connection_kind + winding.phase || ''
+                }
+            } else if(winding.end_number == 2) {
+                dto.winding_configuration.vector_group.sec.i = winding.connection_kind || ''
+                dto.winding_configuration.vector_group.sec.value = winding.phase_angle_clock || ''
+            } else if(winding.end_number == 3) {
+                dto.winding_configuration.vector_group.tert.i = winding.connection_kind || ''
+                dto.winding_configuration.vector_group.tert.value = winding.phase_angle_clock || ''
+                dto.winding_configuration.vector_group.tert.accessible = winding.accessibility || ''
+            }
+        }
+    }
+    dto.ratings.rated_frequency.mrid = entity.oldPowerTransformerInfo.rated_frequency || ''
+    for(const data of entity.frequency) {
+        if(data.mrid == entity.oldPowerTransformerInfo.rated_frequency) {
+            if(['50', '60', '16.7'].includes(data.value)) {
+                dto.ratings.rated_frequency.value = data.value
+            } else {
+                dto.ratings.rated_frequency.custom_value = data.value
+            }
+            break
+        }
+    }
+
+    for(const voltageRating of entity.voltageRating) {
+        const dataVoltageRating = {
+            mrid: '',
+            winding: '',
+            voltage_ll: {
+                mrid : '',
+                value: '',
+                unit: 'k|V'
+            },
+            voltage_ln: {
+                mrid : '',
+                value: '',
+                unit: 'k|V'
+            },
+            insul_level_ll: {
+                mrid : '',
+                value: '',
+                unit: 'k|V'
+            },
+            voltage_regulation: '',
+            insulation_class: ''
+        }
+        dataVoltageRating.mrid = voltageRating.mrid || ''
+        for(const transformerEndInfo of entity.oldTransformerEndInfo) {
+            if(transformerEndInfo.mrid == voltageRating.transformer_end_id) {
+                if(transformerEndInfo.end_number == 1) {
+                    dataVoltageRating.winding = "Prim"
+                } else if(transformerEndInfo.end_number == 2) {
+                    dataVoltageRating.winding = "Sec"
+                } else if(transformerEndInfo.end_number == 3) {
+                    dataVoltageRating.winding = "Tert"
+                }
+            }
+        }
+        dataVoltageRating.voltage_ll.mrid = voltageRating.rated_u || ''
+        for(const voltage of entity.voltage) {
+            if(voltage.mrid == voltageRating.rated_u) {
+                dataVoltageRating.voltage_ll.value = voltage.value || ''
+            }
+        }
+        dataVoltageRating.voltage_ln.mrid = voltageRating.rated_ln || ''
+        for(const voltage of entity.voltage) {
+            if(voltage.mrid == voltageRating.rated_ln) {
+                dataVoltageRating.voltage_ln.value = voltage.value || ''
+            }
+        }
+        dataVoltageRating.insul_level_ll.mrid = voltageRating.insulation_u || ''
+        for(const voltage of entity.voltage) {
+            if(voltage.mrid == voltageRating.insulation_u) {
+                dataVoltageRating.insul_level_ll.value = voltage.value || ''
+            }
+        }
+        dataVoltageRating.voltage_regulation = voltageRating.regulation || ''
+        dataVoltageRating.insulation_class = voltageRating.insulation_c || ''
+        dto.ratings.voltage_ratings.push(dataVoltageRating);
+    }
+
+    for(const powerRating of entity.coolingPowerRating) {
+        const dataPowerRating = {
+            mrid: '',
+            rated_power: {
+                mrid: '',
+                value: '',
+                unit: 'm|VA'
+            },
+            cooling_class: '',
+            temp_rise_wind: {
+                mrid: '',
+                value: '',
+                unit: '°C'
+            }
+        }
+        dataPowerRating.mrid = powerRating.mrid || ''
+        dataPowerRating.rated_power.mrid = powerRating.power_rating || ''
+        for(const apparentPower of entity.apparentPower) {
+            if(apparentPower.mrid == powerRating.power_rating) {
+                dataPowerRating.rated_power.value = apparentPower.value || ''
+            }
+        }
+        dataPowerRating.cooling_class = powerRating.cooling_kind || ''
+        dataPowerRating.temp_rise_wind.mrid = powerRating.temp_rise_wind || ''
+        for(const temperature of entity.temperature) {
+            if(temperature.mrid == powerRating.temp_rise_wind) {
+                dataPowerRating.temp_rise_wind.value = temperature.value || ''
+            }
+        }
+        dto.ratings.power_ratings.push(dataPowerRating);
+    }
+
+    for(const powerRating of dto.ratings.power_ratings) {
+        const dataCurrentRating = {
+            mrid: '',
+            prim: {
+                mrid : '',
+                data: {
+                    mrid: '',
+                    value: '',
+                    unit: 'A'
+                },
+            },
+            sec: {
+                mrid: '',
+                data: {
+                    mrid: '',
+                    value: '',
+                    unit: 'A'
+                },
+            },
+            tert: {
+                mrid: '',
+                data: {
+                    mrid: '',
+                    value: '',
+                    unit: 'A'
+                },
+            }
+        }
+        for(const currentRating of entity.currentRating) {
+            if(currentRating.rated_power == powerRating.rated_power.mrid) {
+                for(const transformerEndInfo of entity.oldTransformerEndInfo) {
+                    if(transformerEndInfo.mrid == currentRating.transformer_end_id) {
+                        if(transformerEndInfo.end_number == 1) {
+                            dataCurrentRating.prim.mrid = currentRating.mrid || ''
+                            dataCurrentRating.prim.data.mrid = currentRating.value || ''
+                            for(const currentFlow of entity.currentFlow) {
+                                if(currentFlow.mrid == currentRating.value) {
+                                    dataCurrentRating.prim.data.value = currentFlow.value || ''
+                                }
+                            }
+                        } else if(transformerEndInfo.end_number == 2) {
+                            dataCurrentRating.sec.mrid = currentRating.mrid || ''
+                            dataCurrentRating.sec.data.mrid = currentRating.value || ''
+                            for(const currentFlow of entity.currentFlow) {
+                                if(currentFlow.mrid == currentRating.value) {
+                                    dataCurrentRating.sec.data.value = currentFlow.value || ''
+                                }
+                            }
+                        } else if(transformerEndInfo.end_number == 3) {
+                            dataCurrentRating.tert.mrid = currentRating.mrid || ''
+                            dataCurrentRating.tert.data.mrid = currentRating.value || ''
+                            for(const currentFlow of entity.currentFlow) {
+                                if(currentFlow.mrid == currentRating.value) {
+                                    dataCurrentRating.tert.data.value = currentFlow.value || ''
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        dto.ratings.current_ratings.push(dataCurrentRating);
+    }
+
+    dto.ratings.short_circuit.mrid = entity.shortCircuitRating.mrid || ''
+    dto.ratings.short_circuit.ka.mrid = entity.shortCircuitRating.short_circuit_current || ''
+    for(const currentFlow of entity.currentFlow) {
+        if(currentFlow.mrid == entity.shortCircuitRating.short_circuit_current) {
+            dto.ratings.short_circuit.ka.value = currentFlow.value || ''
+        }
+    }
+    dto.ratings.short_circuit.s.mrid = entity.shortCircuitRating.duration_seconds || ''
+    for(const second of entity.seconds) {
+        if(second.mrid == entity.shortCircuitRating.duration_seconds) {
+            dto.ratings.short_circuit.s.value = second.value || ''
+        }
+    }
+
+    dto.impedances.ref_temp.mrid = entity.oldPowerTransformerInfo.impedance_temperature || ''
+    for(const temperature of entity.temperature) {
+        if(temperature.mrid == entity.oldPowerTransformerInfo.impedance_temperature) {
+            dto.impedances.ref_temp.value = temperature.value || ''
+        }
+    }
+
+    dto.shortCircuitTestTransformerEndInfo = entity.shortCircuitTestTransformerEndInfo || []
+
+    for(const shortCircuitTest of entity.shortCircuitTest) {
+        const dataCircuitTest = {
+            mrid: '',
+            short_circuit_impedances_uk: {
+                mrid: '',
+                value: '',
+                unit: UnitSymbol.percent
+            },
+            base_power: {
+                mrid: '',
+                data: {
+                    mrid: '',
+                    value: '',
+                    unit: UnitMultiplier.k + '|' + UnitSymbol.VA
+                },
+            },
+            base_voltage: {
+                mrid: '',
+                data : {
+                    mrid: '',
+                    value: '',
+                    unit: UnitMultiplier.k + '|' + UnitSymbol.V
+                }
+            },
+            load_losses_pk: {
+                mrid: '',
+                value: '',
+                unit: UnitSymbol.W
+            },
+            oltc_position: '',
+            detc_position: ''
+        }
+        dataCircuitTest.mrid = shortCircuitTest.mrid || ''
+        dataCircuitTest.short_circuit_impedances_uk.mrid = shortCircuitTest.voltage || ''
+        for(const percent of entity.percent) {
+            if(percent.mrid == shortCircuitTest.voltage) {
+                dataCircuitTest.short_circuit_impedances_uk.value = percent.value || ''
+            }
+        }
+
+        dataCircuitTest.base_power.mrid = shortCircuitTest.base_power || ''
+        for(const basePower of entity.basePower) {
+            if(basePower.mrid == shortCircuitTest.base_power) {
+                dataCircuitTest.base_power.data.mrid = basePower.base_power || ''
+                for(const apparentPower of entity.apparentPower) {
+                    if(apparentPower.mrid == basePower.base_power) {
+                        dataCircuitTest.base_power.data.value = apparentPower.value || ''
+                    }
+                }
+            }
+        }
+        dataCircuitTest.base_voltage.mrid = shortCircuitTest.base_voltage || ''
+        for(const baseVoltage of entity.baseVoltage) {
+            if(baseVoltage.mrid == shortCircuitTest.base_voltage) {
+                dataCircuitTest.base_voltage.data.mrid = baseVoltage.nominal_voltage || ''
+                for(const voltage of entity.voltage) {
+                    if(voltage.mrid == baseVoltage.nominal_voltage) {
+                        dataCircuitTest.base_voltage.data.value = voltage.value || ''
+                    }
+                }
+            }
+        }
+
+        dataCircuitTest.load_losses_pk.mrid = shortCircuitTest.loss || ''
+        for(const activePower of entity.activePower) {
+            if(activePower.mrid == shortCircuitTest.loss) {
+                dataCircuitTest.load_losses_pk.value = activePower.value || ''
+            }
+        }
+
+        for(const transformerEndInfo of entity.oldTransformerEndInfo) {
+            if(transformerEndInfo.mrid == shortCircuitTest.energised_end) {
+                if(transformerEndInfo.end_number == 1) {
+                    const found = entity.shortCircuitTestTransformerEndInfo.find(
+                        x => x.short_circuit_test_id === shortCircuitTest.mrid
+                    );
+                    for(const transformerEndInfo2 of entity.oldTransformerEndInfo) {
+                        if(transformerEndInfo2.mrid == found.transformer_end_info_id) {
+                            if(transformerEndInfo2.end_number == 2) {
+                                dto.impedances.prim_sec.push(dataCircuitTest);
+                            } else if(transformerEndInfo2.end_number == 3) {
+                                dto.impedances.prim_tert.push(dataCircuitTest);
+                            }
+                        }
+                    }
+                } else if(transformerEndInfo.end_number == 2) {
+                    const found = entity.shortCircuitTestTransformerEndInfo.find(
+                        x => x.short_circuit_test_id === shortCircuitTest.mrid
+                    );
+                    for(const transformerEndInfo2 of entity.oldTransformerEndInfo) {
+                        if(transformerEndInfo2.mrid == found.transformer_end_info_id) {
+                            if(transformerEndInfo2.end_number == 3) {
+                                dto.impedances.sec_tert.push(dataCircuitTest);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    dto.impedances.zero_sequence_impedance.mrid = entity.zeroSequenceImpedance.mrid || ''
+    dto.impedances.zero_sequence_impedance.base_power.mrid = entity.zeroSequenceImpedance.base_power
+    for(const basePower of entity.basePower) {
+        if(basePower.mrid == entity.zeroSequenceImpedance.base_power) {
+            dto.impedances.zero_sequence_impedance.base_power.data.mrid = basePower.base_power || ''
+            for(const apparentPower of entity.apparentPower) {
+                if(apparentPower.mrid == basePower.base_power) {
+                    dto.impedances.zero_sequence_impedance.base_power.data.value = apparentPower.value || ''
+                }
+            }
+        }
+    }
+    dto.impedances.zero_sequence_impedance.base_voltage.mrid = entity.zeroSequenceImpedance.base_voltage
+    for(const baseVoltage of entity.baseVoltage) {
+        if(baseVoltage.mrid == entity.zeroSequenceImpedance.base_voltage) {
+            dto.impedances.zero_sequence_impedance.base_voltage.data.mrid = baseVoltage.nominal_voltage || ''
+            for(const voltage of entity.voltage) {
+                if(voltage.mrid == baseVoltage.nominal_voltage) {
+                    dto.impedances.zero_sequence_impedance.base_voltage.data.value = voltage.value || ''
+                }
+            }
+        }
+    }
+
+    for(const zeroSequenceImpedanceTable of entity.zeroSequenceImpedanceTable) {
+        if(zeroSequenceImpedanceTable.transformer_end_id == '' || zeroSequenceImpedanceTable.transformer_end_id == null) {
+            dto.impedances.zero_sequence_impedance.zero_percent.zero.mrid = zeroSequenceImpedanceTable.mrid || ''
+            dto.impedances.zero_sequence_impedance.zero_percent.zero.data.mrid = zeroSequenceImpedanceTable.zero || ''
+            for(const percent of entity.percent) {
+                if(percent.mrid == zeroSequenceImpedanceTable.zero) {
+                    dto.impedances.zero_sequence_impedance.zero_percent.zero.data.value = percent.value || ''
+                }
+            }
+        } else {
+            for(const transformerEndInfo of entity.oldTransformerEndInfo) {
+                if(transformerEndInfo.mrid == zeroSequenceImpedanceTable.transformer_end_id) {
+                    if(transformerEndInfo.end_number == 1) {
+                        dto.impedances.zero_sequence_impedance.zero_percent.prim.mrid = zeroSequenceImpedanceTable.mrid
+                        dto.impedances.zero_sequence_impedance.zero_percent.prim.data.mrid = zeroSequenceImpedanceTable.zero || ''
+                        for(const percent of entity.percent) {
+                            if(percent.mrid == zeroSequenceImpedanceTable.zero) {
+                                dto.impedances.zero_sequence_impedance.zero_percent.prim.data.value = percent.value || ''
+                            }
+                        }
+                    }
+                } else if(transformerEndInfo.mrid == zeroSequenceImpedanceTable.transformer_end_id) {
+                    if(transformerEndInfo.end_number == 2) {
+                        dto.impedances.zero_sequence_impedance.zero_percent.sec.mrid = zeroSequenceImpedanceTable.mrid
+                        dto.impedances.zero_sequence_impedance.zero_percent.sec.data.mrid = zeroSequenceImpedanceTable.zero || ''
+                        for(const percent of entity.percent) {
+                            if(percent.mrid == zeroSequenceImpedanceTable.zero) {
+                                dto.impedances.zero_sequence_impedance.zero_percent.sec_tert.data.value = percent.value || ''
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     return dto;
 }
 
