@@ -102,38 +102,38 @@ export default {
         //     type: Object,
         //     require: true,
         // },
-        // tapChangers: {
-        //     type: Object,
-        //     require: true,
-        //     default() {
-        //         return {
-        //             id: null,
-        //             mode: null,
-        //             serial_no: null,
-        //             manufacturer: null,
-        //             manufacturer_type: null,
-        //             winding: null,
-        //             tap_scheme: null,
-        //             no_of_taps: null,
-        //             voltage_table: []
-        //         }
-        //     }
-        // },
+        tapChangers: {
+            type: Object,
+            required: false,
+            default() {
+                return {
+                    id: null,
+                    mode: null,
+                    serial_no: null,
+                    manufacturer: null,
+                    manufacturer_type: null,
+                    winding: null,
+                    tap_scheme: null,
+                    no_of_taps: null,
+                    voltage_table: []
+                }
+            }
+        },
         assetData: {
             type: Object,
             default() {
                 return {}
             }
         },
-        // objActiveName: {
-        //     type: Object,
-        //     require: true,
-        //     default() {
-        //         return {
-        //             activeName: null
-        //         }
-        //     }
-        // },
+        objActiveName: {
+            type: Object,
+            required: false,
+            default() {
+                return {
+                    activeName: null
+                }
+            }
+        },
         testTypeListData: {
             type: Array,
             default: () => []
