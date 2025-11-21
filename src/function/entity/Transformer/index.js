@@ -3,31 +3,31 @@ import path from 'path'
 import * as attachmentContext from '../../attachmentcontext/index'
 import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, deleteDirectory } from '@/function/entity/attachment'
 import {insertOldPowerTransformerInfoTransaction, getOldPowerTransformerInfoById, deleteOldPowerTransformerInfoTransaction} from '@/function/cim/oldPowerTransformerInfo'
-import {insertOldTransformerEndInfoTransaction, getOldTransformerEndInfoById, deleteOldTransformerEndInfoTransaction, getOldTransformerEndInfoByPowerTransformerInfoId} from '@/function/cim/oldTransformerEndInfo'
-import {insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction} from '@/function/entity/assetPsr'
+import {insertOldTransformerEndInfoTransaction, deleteOldTransformerEndInfoTransaction, getOldTransformerEndInfoByPowerTransformerInfoId} from '@/function/cim/oldTransformerEndInfo'
+import {insertAssetPsrTransaction, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction} from '@/function/entity/assetPsr'
 import {insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction} from '@/function/cim/productAssetModel';
 import {insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction} from '@/function/cim/lifecycleDate';
-import { insertSecondsTransaction, getSecondById, deleteSecondsByIdTransaction, getSecondByIds } from '@/function/cim/seconds';
-import {insertCurrentFlowTransaction, getCurrentFlowById, deleteCurrentFlowByIdTransaction, getCurrentFlowByIds, } from '@/function/cim/currentFlow';
-import {insertVoltageTransaction, getVoltageById, deleteVoltageByIdTransaction, getVoltageByIds} from '@/function/cim/voltage';
-import {insertPercentTransaction, getPercentById, getPercentByIds, deletePercentByIdTransaction} from "@/function/cim/percent"
-import {insertActivePowerTransaction, getActivePowerById, getActivePowerByIds, deleteActivePowerByIdTransaction} from '@/function/cim/activePower';
-import {insertApparentPowerTransaction, getApparentPowerById, getApparentPowerByIds, deleteApparentPowerByIdTransaction} from '@/function/cim/apparentPower';
-import {insertFrequencyTransaction, getFrequencyById, deleteFrequencyByIdTransaction, getFrequencyByIds} from '@/function/cim/frequency';
-import {insertMassTransaction, deleteMassByIdTransaction, getMassById} from '@/function/cim/mass'
-import {insertVolumeTransaction, deleteVolumeByIdTransaction, getVolumeById} from '@/function/cim/volume'
-import {insertTemperatureTransaction, deleteTemperatureByIdTransaction, getTemperatureById, getTemperatureByIds} from '@/function/cim/temperature'
+import { insertSecondsTransaction, deleteSecondsByIdTransaction, getSecondByIds } from '@/function/cim/seconds';
+import {insertCurrentFlowTransaction, deleteCurrentFlowByIdTransaction, getCurrentFlowByIds, } from '@/function/cim/currentFlow';
+import {insertVoltageTransaction, deleteVoltageByIdTransaction, getVoltageByIds} from '@/function/cim/voltage';
+import {insertPercentTransaction, getPercentByIds, deletePercentByIdTransaction} from "@/function/cim/percent"
+import {insertActivePowerTransaction, getActivePowerByIds, deleteActivePowerByIdTransaction} from '@/function/cim/activePower';
+import {insertApparentPowerTransaction, getApparentPowerByIds, deleteApparentPowerByIdTransaction} from '@/function/cim/apparentPower';
+import {insertFrequencyTransaction, deleteFrequencyByIdTransaction, getFrequencyByIds} from '@/function/cim/frequency';
+import {insertMassTransaction, deleteMassByIdTransaction} from '@/function/cim/mass'
+import {insertVolumeTransaction, deleteVolumeByIdTransaction} from '@/function/cim/volume'
+import {insertTemperatureTransaction, deleteTemperatureByIdTransaction, getTemperatureByIds} from '@/function/cim/temperature'
 import {insertAssetTransaction, deleteAssetByIdTransaction, getAssetById} from '@/function/cim/asset'
-import {insertZeroSequenceImpedanceTransaction, getZeroSequenceImpedanceById, deleteZeroSequenceImpedanceByIdTransaction, getZeroSequenceImpedanceByTransformerInfoId} from '@/function/cim/zeroSequenceImpedance'
-import {insertZeroSequenceImpedanceTableTransaction, getZeroSequenceImpedanceTableById, getZeroSequenceImpedanceTableByZeroSequenceImpedanceId, deleteZeroSequenceImpedanceTableTransaction, getZeroSequenceImpedanceTableByTransformerEndIdAndZeroSequenceImpedance} from '@/function/cim/zeroSequenceImpedanceTable'
-import {insertVoltageRatingTransaction, getVoltageRatingById, deleteVoltageRatingTransaction, getVoltageRatingByTransformerEndId} from "@/function/cim/voltageRating"
-import {insertCoolingPowerRatingTransaction, getCoolingPowerRatingById, getCoolingPowerRatingByPowerTransformerInfoId, deleteCoolingPowerRatingTransaction} from "@/function/cim/coolingPowerRating"
-import {insertCurrentRatingTransaction, getCurrentRatingById, getCurrentRatingByRatedPower, deleteCurrentRatingByIdTransaction} from "@/function/cim/currentRating"
-import {insertBaseVoltageTransaction, getBaseVoltageById, deleteBaseVoltageByIdTransaction, getBaseVoltageByIds} from "@/function/cim/baseVoltage"
-import {insertBasePowerTransaction, getBasePowerById, deleteBasePowerByIdTransaction, getBasePowerByIds} from "@/function/cim/basePower"
-import {insertShortCircuitTestTransaction, getShortCircuitTestById, getShortCircuitTestByTransformerEndInfoId, deleteShortCircuitTestByIdTransaction} from "@/function/cim/shortCircuitTest"
-import {insertSCTTransformerEndInfoTransaction, getSCTTransformerEndInfoById, getSCTTransformerEndInfoByShortCircuitTestId, deleteSCTTransformerEndInfoByIdTransaction} from "@/function/cim/shortCircuitTestTransformerEndInfo"
-import {insertShortCircuitRatingTransaction, getShortCircuitRatingById, deleteShortCircuitRatingByIdTransaction, getShortCircuitRatingByPowerTransformerInfoId} from '@/function/cim/shortCircuitRating'
+import {insertZeroSequenceImpedanceTransaction, deleteZeroSequenceImpedanceTransaction, getZeroSequenceImpedanceByTransformerInfoId} from '@/function/cim/zeroSequenceImpedance'
+import {insertZeroSequenceImpedanceTableTransaction, getZeroSequenceImpedanceTableByZeroSequenceImpedanceId, deleteZeroSequenceImpedanceTableTransaction, getZeroSequenceImpedanceTableByTransformerEndIdAndZeroSequenceImpedance} from '@/function/cim/zeroSequenceImpedanceTable'
+import {insertVoltageRatingTransaction, deleteVoltageRatingTransaction, getVoltageRatingByTransformerEndId} from "@/function/cim/voltageRating"
+import {insertCoolingPowerRatingTransaction, getCoolingPowerRatingByPowerTransformerInfoId, deleteCoolingPowerRatingTransaction} from "@/function/cim/coolingPowerRating"
+import {insertCurrentRatingTransaction, getCurrentRatingByRatedPower, deleteCurrentRatingByIdTransaction} from "@/function/cim/currentRating"
+import {insertBaseVoltageTransaction, deleteBaseVoltageByIdTransaction, getBaseVoltageByIds} from "@/function/cim/baseVoltage"
+import {insertBasePowerTransaction, deleteBasePowerByIdTransaction, getBasePowerByIds} from "@/function/cim/basePower"
+import {insertShortCircuitTestTransaction, getShortCircuitTestByTransformerEndInfoId, deleteShortCircuitTestByIdTransaction} from "@/function/cim/shortCircuitTest"
+import {insertSCTTransformerEndInfoTransaction, getSCTTransformerEndInfoByShortCircuitTestId, deleteSCTTransformerEndInfoByIdTransaction} from "@/function/cim/shortCircuitTestTransformerEndInfo"
+import {insertShortCircuitRatingTransaction, deleteShortCircuitRatingByIdTransaction, getShortCircuitRatingByPowerTransformerInfoId} from '@/function/cim/shortCircuitRating'
 
 import TransformerEntity from '@/views/Entity/Transformer/index';
 
@@ -333,7 +333,7 @@ export const getTransformerEntityById = async (id, psrId) => {
 
 export const deleteTransformerEntity = async (data) => {
     try {
-        if(data.surgeArrester == null || data.surgeArrester.mrid == null || data.surgeArrester.mrid === '') {
+        if(data.asset == null || data.asset.mrid == null || data.asset.mrid === '') {
             return { success: false, error: new Error('Invalid ID') };
         } else {
             try {
@@ -350,19 +350,68 @@ export const deleteTransformerEntity = async (data) => {
                 if(data.assetPsr && data.assetPsr.mrid) {
                     await deleteAssetPsrTransaction(data.assetPsr.mrid, db);
                 }
-                for (const oldSurgeArresterInfo of data.oldSurgeArresterInfo) {
-                    if (oldSurgeArresterInfo.mrid) {
-                        await deleteOldSurgeArresterInfoByIdTransaction(oldSurgeArresterInfo.mrid, db);
+                for(const shortCircuitTestTransformerEndInfo of data.shortCircuitTestTransformerEndInfo) {
+                    if(shortCircuitTestTransformerEndInfo.mrid) {
+                        await deleteSCTTransformerEndInfoByIdTransaction(shortCircuitTestTransformerEndInfo.mrid, db);
                     }
                 }
-                if(data.surgeArrester.mrid) {
-                    await deleteSurgeArresterTransaction(data.surgeArrester.mrid, db);
+                for(const shortCircuitTest of data.shortCircuitTest) {
+                    if(shortCircuitTest.mrid) {
+                        await deleteShortCircuitTestByIdTransaction(shortCircuitTest.mrid, db);
+                    }
+                }
+                for(const zeroSequenceImpedanceTable of data.zeroSequenceImpedanceTable) {
+                    if(zeroSequenceImpedanceTable.mrid) {
+                        await deleteZeroSequenceImpedanceTableTransaction(zeroSequenceImpedanceTable.mrid, db);
+                    }
+                }
+                if(data.zeroSequenceImpedance && data.zeroSequenceImpedance.mrid) {
+                    await deleteZeroSequenceImpedanceTransaction(data.zeroSequenceImpedance.mrid, db);
+                }
+                if(data.shortCircuitRating && data.shortCircuitRating.mrid) {
+                    await deleteShortCircuitRatingByIdTransaction(data.shortCircuitRating.mrid, db);
+                }
+                for(const currentRating of data.currentRating) {
+                    if(currentRating.mrid) {
+                        await deleteCurrentRatingByIdTransaction(currentRating.mrid, db);
+                    }
+                }
+                for(const coolingPowerRating of data.coolingPowerRating) {
+                    if(coolingPowerRating.mrid) {
+                        await deleteCoolingPowerRatingTransaction(coolingPowerRating.mrid, db);
+                    }
+                }
+                for(const voltageRating of data.voltageRating) {
+                    if(voltageRating.mrid) {
+                        await deleteVoltageRatingTransaction(voltageRating.mrid, db);
+                    }
+                }
+                for(const oldTransformerEndInfo of data.oldTransformerEndInfo) {
+                    if(oldTransformerEndInfo.mrid) {
+                        await deleteOldTransformerEndInfoTransaction(oldTransformerEndInfo.mrid, db);
+                    }
+                }
+                if(data.asset.mrid) {
+                    await deleteAssetByIdTransaction(data.asset.mrid, db);
+                }
+                if(data.oldPowerTransformerInfo && data.oldPowerTransformerInfo.mrid) {
+                    await deleteOldPowerTransformerInfoTransaction(data.oldPowerTransformerInfo.mrid, db);
                 }
                 if(data.lifecycleDate && data.lifecycleDate.mrid) {
                     await deleteLifecycleDateByIdTransaction(data.lifecycleDate.mrid, db);
                 }
                 if(data.productAssetModel && data.productAssetModel.mrid) {
                     await deleteProductAssetModelByIdTransaction(data.productAssetModel.mrid, db);
+                }
+                for(const basePower of data.basePower) {
+                    if(basePower.mrid) {
+                        await deleteBasePowerByIdTransaction(basePower.mrid, db);
+                    }
+                }
+                for(const baseVoltage of data.baseVoltage) {
+                    if(baseVoltage.mrid) {
+                        await deleteBaseVoltageByIdTransaction(baseVoltage.mrid, db);
+                    }
                 }
                 for (const voltage of data.voltage) {
                     if (voltage.mrid) {
@@ -379,20 +428,55 @@ export const deleteTransformerEntity = async (data) => {
                         await deleteCurrentFlowByIdTransaction(currentFlow.mrid, db);
                     }
                 }
+                for (const percent of data.percent) {
+                    if (percent.mrid) {
+                        await deletePercentByIdTransaction(percent.mrid, db);
+                    }
+                }
+                for (const activePower of data.activePower) {
+                    if (activePower.mrid) {
+                        await deleteActivePowerByIdTransaction(activePower.mrid, db);
+                    }
+                }
+                for (const apparentPower of data.apparentPower) {
+                    if (apparentPower.mrid) {
+                        await deleteApparentPowerByIdTransaction(apparentPower.mrid, db);
+                    }
+                }
+                for (const frequency of data.frequency) {
+                    if (frequency.mrid) {
+                        await deleteFrequencyByIdTransaction(frequency.mrid, db);
+                    }
+                }
+                for (const temperature of data.temperature) {
+                    if (temperature.mrid) {
+                        await deleteTemperatureByIdTransaction(temperature.mrid, db);
+                    }
+                }
+                for (const mass of data.mass) {
+                    if (mass.mrid) {
+                        await deleteMassByIdTransaction(mass.mrid, db);
+                    }
+                }
+                for (const volume of data.volume) {
+                    if (volume.mrid) {
+                        await deleteVolumeByIdTransaction(volume.mrid, db);
+                    }
+                }
                 await runAsync('COMMIT');
                 if(data.attachment && data.attachment.id) {
-                    deleteDirectory(null, data.surgeArrester.mrid);
+                    deleteDirectory(null, data.asset.mrid);
                 }
-                return { success: true, message: 'Surge Arrester entity deleted successfully' };
+                return { success: true, message: 'Transformer entity deleted successfully' };
             } catch (error) {
                 await runAsync('ROLLBACK');
-                console.error('Error deleting Surge Arrester entity:', error);
-                return { success: false, error, message: 'Error deleting Surge Arrester entity' };
+                console.error('Error deleting Transformer entity:', error);
+                return { success: false, error, message: 'Error deleting Transformer entity' };
             }
         }
     } catch (error) {
-        console.error('Error deleting Surge Arrester entity:', error);
-        return { success: false, error, message: 'Error deleting Surge Arrester entity' };
+        console.error('Error deleting Transformer entity:', error);
+        return { success: false, error, message: 'Error deleting Transformer entity' };
     }
 }
 
