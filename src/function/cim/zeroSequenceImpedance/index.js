@@ -19,7 +19,11 @@ export const insertZeroSequenceImpedanceTransaction = async (info, dbsql) => {
         dbsql.run(
             `INSERT INTO zero_sequence_impedance(
                 mrid, power_transformer_info_id, base_power, base_voltage
-            ) VALUES (?, ?, ?, ?)`,
+            ) VALUES (?, ?, ?, ?)
+            ON CONFLICT(mrid) DO UPDATE SET
+                power_transformer_info_id = excluded.power_transformer_info_id,
+                base_power = excluded.base_power,
+                base_voltage = excluded.base_voltage`,
             [
                 info.mrid,
                 info.power_transformer_info_id,
@@ -28,9 +32,9 @@ export const insertZeroSequenceImpedanceTransaction = async (info, dbsql) => {
             ],
             function (err) {
                 if (err)
-                    return reject({ success: false, err, message: "Insert zero sequence impedance failed" })
+                    return reject({ success: false, err, message: "Insert/Update zero sequence impedance failed" })
 
-                return resolve({ success: true, data: info, message: "Insert completed" })
+                return resolve({ success: true, data: info, message: "Upsert completed" })
             }
         )
     })
@@ -39,26 +43,29 @@ export const insertZeroSequenceImpedanceTransaction = async (info, dbsql) => {
 export const updateZeroSequenceImpedanceTransaction = async (mrid, info, dbsql) => {
     return new Promise((resolve, reject) => {
         dbsql.run(
-            `UPDATE zero_sequence_impedance SET
-                power_transformer_info_id = ?,
-                base_power = ?,
-                base_voltage = ?
-            WHERE mrid = ?`,
+            `INSERT INTO zero_sequence_impedance(
+                mrid, power_transformer_info_id, base_power, base_voltage
+            ) VALUES (?, ?, ?, ?)
+            ON CONFLICT(mrid) DO UPDATE SET
+                power_transformer_info_id = excluded.power_transformer_info_id,
+                base_power = excluded.base_power,
+                base_voltage = excluded.base_voltage`,
             [
+                mrid,
                 info.power_transformer_info_id,
                 info.base_power,
-                info.base_voltage,
-                mrid
+                info.base_voltage
             ],
             function (err) {
                 if (err)
-                    return reject({ success: false, err, message: "Update zero sequence impedance failed" })
+                    return reject({ success: false, err, message: "Upsert zero sequence impedance failed" })
 
-                return resolve({ success: true, data: info, message: "Update completed" })
+                return resolve({ success: true, data: info, message: "Upsert completed" })
             }
         )
     })
 }
+
 
 export const getZeroSequenceImpedanceByTransformerInfoId = async (powerTransformerInfoId) => {
     return new Promise((resolve, reject) => {

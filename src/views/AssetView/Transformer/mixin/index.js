@@ -423,37 +423,37 @@ export default {
         checkZeroImpedance(data) {
             if(data.impedances.zero_sequence_impedance.mrid === null || data.impedances.zero_sequence_impedance.mrid === '') {
                 data.impedances.zero_sequence_impedance.mrid = uuid.newUuid()
-                if(data.impedances.zero_sequence_impedance.base_power.mrid === null || data.impedances.zero_sequence_impedance.base_power.mrid === '') {
-                    data.impedances.zero_sequence_impedance.base_power.mrid = uuid.newUuid()
-                    if(data.impedances.zero_sequence_impedance.base_power.data.mrid === null || data.impedances.zero_sequence_impedance.base_power.data.mrid === '') {
-                        data.impedances.zero_sequence_impedance.base_power.data.mrid = uuid.newUuid()
-                    }
-                }
-                if(data.impedances.zero_sequence_impedance.base_voltage.mrid === null || data.impedances.zero_sequence_impedance.base_voltage.mrid === '') {
-                    data.impedances.zero_sequence_impedance.base_voltage.mrid = uuid.newUuid()
-                    if(data.impedances.zero_sequence_impedance.base_voltage.data.mrid === null || data.impedances.zero_sequence_impedance.base_voltage.data.mrid === '') {
-                        data.impedances.zero_sequence_impedance.base_voltage.data.mrid = uuid.newUuid()
-                    }
-                }
-                if(data.impedances.zero_sequence_impedance.zero_percent.prim.mrid === null || data.impedances.zero_sequence_impedance.zero_percent.prim.mrid === '') {
-                    data.impedances.zero_sequence_impedance.zero_percent.prim.mrid = uuid.newUuid()
-                    if(data.impedances.zero_sequence_impedance.zero_percent.prim.data.mrid === null || data.impedances.zero_sequence_impedance.zero_percent.prim.data.mrid === '') {
-                        data.impedances.zero_sequence_impedance.zero_percent.prim.data.mrid = uuid.newUuid()
-                    }
-                }
-                if(data.impedances.zero_sequence_impedance.zero_percent.sec.mrid === null || data.impedances.zero_sequence_impedance.zero_percent.sec.mrid === '') {
-                    data.impedances.zero_sequence_impedance.zero_percent.sec.mrid = uuid.newUuid()
-                    if(data.impedances.zero_sequence_impedance.zero_percent.sec.data.mrid === null || data.impedances.zero_sequence_impedance.zero_percent.sec.data.mrid === '') {
-                        data.impedances.zero_sequence_impedance.zero_percent.sec.data.mrid = uuid.newUuid()
-                    }
-                }
-                if(data.impedances.zero_sequence_impedance.zero_percent.zero.mrid === null || data.impedances.zero_sequence_impedance.zero_percent.zero.mrid === '') {
-                    data.impedances.zero_sequence_impedance.zero_percent.zero.mrid = uuid.newUuid()
-                    if(data.impedances.zero_sequence_impedance.zero_percent.zero.data.mrid === null || data.impedances.zero_sequence_impedance.zero_percent.zero.data.mrid === '') {
-                        data.impedances.zero_sequence_impedance.zero_percent.zero.data.mrid = uuid.newUuid()
-                    }
-                }
             }
+            if(data.impedances.zero_sequence_impedance.base_power.mrid === null || data.impedances.zero_sequence_impedance.base_power.mrid === '') {
+                data.impedances.zero_sequence_impedance.base_power.mrid = uuid.newUuid()
+            }
+            if(data.impedances.zero_sequence_impedance.base_power.data.mrid === null || data.impedances.zero_sequence_impedance.base_power.data.mrid === '') {
+                data.impedances.zero_sequence_impedance.base_power.data.mrid = uuid.newUuid()
+            }
+            if(data.impedances.zero_sequence_impedance.base_voltage.mrid === null || data.impedances.zero_sequence_impedance.base_voltage.mrid === '') {
+                data.impedances.zero_sequence_impedance.base_voltage.mrid = uuid.newUuid()
+            }
+            if(data.impedances.zero_sequence_impedance.base_voltage.data.mrid === null || data.impedances.zero_sequence_impedance.base_voltage.data.mrid === '') {
+                data.impedances.zero_sequence_impedance.base_voltage.data.mrid = uuid.newUuid()
+            }
+            if(data.impedances.zero_sequence_impedance.zero_percent.prim.mrid === null || data.impedances.zero_sequence_impedance.zero_percent.prim.mrid === '') {
+                data.impedances.zero_sequence_impedance.zero_percent.prim.mrid = uuid.newUuid()
+            }
+            if(data.impedances.zero_sequence_impedance.zero_percent.prim.data.mrid === null || data.impedances.zero_sequence_impedance.zero_percent.prim.data.mrid === '') {
+                data.impedances.zero_sequence_impedance.zero_percent.prim.data.mrid = uuid.newUuid()
+            }
+            if(data.impedances.zero_sequence_impedance.zero_percent.sec.mrid === null || data.impedances.zero_sequence_impedance.zero_percent.sec.mrid === '') {
+                data.impedances.zero_sequence_impedance.zero_percent.sec.mrid = uuid.newUuid()
+            }
+            if(data.impedances.zero_sequence_impedance.zero_percent.sec.data.mrid === null || data.impedances.zero_sequence_impedance.zero_percent.sec.data.mrid === '') {
+                data.impedances.zero_sequence_impedance.zero_percent.sec.data.mrid = uuid.newUuid()
+            }
+            if(data.impedances.zero_sequence_impedance.zero_percent.zero.mrid === null || data.impedances.zero_sequence_impedance.zero_percent.zero.mrid === '') {
+                data.impedances.zero_sequence_impedance.zero_percent.zero.mrid = uuid.newUuid()
+            }
+            if(data.impedances.zero_sequence_impedance.zero_percent.zero.data.mrid === null || data.impedances.zero_sequence_impedance.zero_percent.zero.data.mrid === '') {
+                data.impedances.zero_sequence_impedance.zero_percent.zero.data.mrid = uuid.newUuid()
+            }    
         },
 
         checkOther(data) {

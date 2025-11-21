@@ -34,15 +34,16 @@ export const insertOldPowerTransformerInfoTransaction = async (info, dbsql) => {
             }
             dbsql.run(
                 `INSERT INTO old_power_transformer_info(
-                    mrid, phases, vector_group, rated_frequency, impedance_temperature, category, apparatus_id
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                    mrid, phases, vector_group, rated_frequency, impedance_temperature, category, apparatus_id, vector_group_type
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(mrid) DO UPDATE SET
                     phases = excluded.phases,
                     vector_group = excluded.vector_group,
                     rated_frequency = excluded.rated_frequency,
                     impedance_temperature = excluded.impedance_temperature,
                     category = excluded.category,
-                    apparatus_id = excluded.apparatus_id
+                    apparatus_id = excluded.apparatus_id,
+                    vector_group_type = excluded.vector_group_type
                 `,
                 [
                     info.mrid,
@@ -51,7 +52,8 @@ export const insertOldPowerTransformerInfoTransaction = async (info, dbsql) => {
                     info.rated_frequency,
                     info.impedance_temperature,
                     info.category,
-                    info.apparatus_id
+                    info.apparatus_id,
+                    info.vector_group_type
                 ],
                 function (err) {
                     if (err) {
@@ -82,6 +84,7 @@ export const updateOldPowerTransformerInfoTransaction = async (mrid, info, dbsql
                     impedance_temperature = ?,
                     category = ?,
                     apparatus_id = ?
+                    vector_group_type = ?
                 WHERE mrid = ?`,
                 [
                     info.phases,
@@ -90,6 +93,7 @@ export const updateOldPowerTransformerInfoTransaction = async (mrid, info, dbsql
                     info.impedance_temperature,
                     info.category,
                     info.apparatus_id,
+                    info.vector_group_type,
                     mrid
                 ],
                 function (err) {
