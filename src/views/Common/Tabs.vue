@@ -61,6 +61,7 @@ import * as surgeMapper from '@/views/Mapping/SurgeArrester/index'
 import * as bushingMapper from '@/views/Mapping/Bushing/index'
 import * as vtMapper from '@/views/Mapping/VoltageTransformer/index'
 import * as SurgeArresterJobMapper from '@/views/Mapping/SurgerArresterJob/index'
+import * as TransformerJobMapper from '@/views/Mapping/TransformerJob/index'
 import * as disconnectorMapper from '@/views/Mapping/Disconnector/index'
 import * as PowerCableMapper from '@/views/Mapping/PowerCable'
 import * as RotatingMachineMapper from '@/views/Mapping/RotatingMachine'
@@ -75,6 +76,7 @@ import Bay from '@/views/Bay/index.vue'
 import SurgeArrester from '@/views/AssetView/SurgeArrester/index.vue'
 import Bushing from '@/views/AssetView/Bushing/index.vue'
 import SurgeArresterJob from '@/views/JobView/SurgeArrester/index.vue'
+import TransformerJob from '@/views/JobView/Transformer/index.vue'
 import VoltageTransformer from '@/views/AssetView/VoltageTransformer/index.vue'
 import Disconnector from '@/views/AssetView/Disconnector/index.vue'
 import PowerCable from '@/views/AssetView/PowerCable/index.vue'
@@ -98,6 +100,7 @@ export default {
         Bushing,
         VoltageTransformer,
         SurgeArresterJob,
+        TransformerJob,
         Disconnector,
         PowerCable,
         RotatingMachine,
@@ -505,6 +508,38 @@ export default {
                             this.$message.error("Failed to load power cable job data");
                         }
                     }
+                    else if( tab.job === 'Transformer') {
+                        const dataTestType = await window.electronAPI.getAllTestTypeTransformers();
+                        if (dataTestType.success) {
+                            this.testTypeListData = dataTestType.data
+                        } else {
+                            this.testTypeListData = []
+                        }
+                        const dataTransformer = await window.electronAPI.getAssetByMrid(tab.parentId)
+                        if (dataTransformer.success) {
+                            this.assetData = dataTransformer.data
+                        } else {
+                            this.assetData = {}
+                        }
+                        this.checkJobType = 'JobTransformer'
+                        this.signJob = true;
+                        const data = await window.electronAPI.getTransformerJobByMrid(tab.mrid)
+                        if (data.success) {
+                            const transformerJobDto = TransformerJobMapper.JobEntityToDto(data.data)
+                            for (const test of transformerJobDto.testList) {
+                                for (const type of this.testTypeListData) {
+                                    if (test.testTypeCode === type.code) {
+                                        test.testTypeName = type.name
+                                        test.testTypeId = type.mrid
+                                        break
+                                    }
+                                }
+                            }
+                            this.$refs.componentLoadData[index].loadData(transformerJobDto)
+                        } else {
+                            this.$message.error("Failed to load transformer job data");
+                        }
+                    }
                 } else {
                     this.$message.error("Unsupported tab mode");
                 }
@@ -593,6 +628,8 @@ export default {
             } else if (tab.mode == 'job') {
                 if (tab.job === 'Surge arrester') {
                     return 'SurgeArresterJob'
+                } else if (tab.job === 'Transformer') {
+                    return 'TransformerJob'
                 }
             }
         },

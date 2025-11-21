@@ -678,6 +678,7 @@ import JobDisconnector from '@/views/JobView/Disconnector/index.vue'
 import JobCurrentTransformer from '@/views/JobView/CurrentTrans/index.vue'
 import JobVoltageTransformer from '@/views/JobView/VoltageTransformer/index.vue'
 import JobCircuitBreaker from '@/views/JobView/CircuitBreaker/index.vue'
+import JobTransformer from '@/views/JobView/Transformer/index.vue'
 
 import * as rotatingMachineMapping from "@/views/Mapping/RotatingMachine/index"
 import RotatingMachine from '@/views/AssetView/RotatingMachine/index.vue'
@@ -716,6 +717,7 @@ export default {
         JobCurrentTransformer,
         JobVoltageTransformer,
         JobCircuitBreaker,
+        JobTransformer,
     },
     data() {
         return {
@@ -2683,6 +2685,9 @@ export default {
                             else if (this.checkJobType === 'JobCircuitBreaker') {
                                 jobType = 'Circuit breaker';
                             }
+                            else if (this.checkJobType === 'JobTransformer') {
+                                jobType = 'Transformer';
+                            }
                             const newRow = {
                                 mrid: data.oldWork.mrid,
                                 name: data.oldWork.name,
@@ -3786,15 +3791,18 @@ export default {
                     this.checkJobType = 'JobCircuitBreaker'
                     this.signJob = true;
                 }
-                else {
+                else if (node.asset == 'Transformer') {
+                    const dataTestType = await window.electronAPI.getAllTestTypeTransformers();
+                    if (dataTestType.success) {
+                        this.testTypeListData = dataTestType.data
+                    } else {
+                        this.testTypeListData = []
+                    }
+                    this.checkJobType = 'JobTransformer'
+                    this.signJob = true;
+                } else {
                     this.$message.error("This asset type not support for job")
                 }
-                this.$nextTick(() => {
-                    const job = this.$refs.jobData;
-                    if (job) {
-                        job.resetForm();
-                    }
-                });
             } catch (error) {
                 this.parentOrganization = null
                 this.$message.error("Some error occur")
