@@ -94,6 +94,31 @@ export const getBaseVoltageById = async (mrid) => {
     }
 }
 
+export const getBaseVoltageByIds = async (mrids) => {
+    return new Promise((resolve, reject) => {
+        if (!mrids || mrids.length === 0) {
+            return resolve({ success: false, data: [], message: 'No mrids provided' })
+        }
+
+        // Tạo chuỗi placeholder (?, ?, ?) tùy theo số lượng mrid
+        const placeholders = mrids.map(() => '?').join(',')
+
+        db.all(
+            `SELECT * FROM base_voltage WHERE mrid IN (${placeholders})`,
+            mrids,
+            (err, rows) => {
+                if (err) {
+                    return reject({ success: false, err: err, message: 'Get base voltage by ids failed' })
+                }
+                if (!rows || rows.length === 0) {
+                    return resolve({ success: false, data: [], message: 'Base voltage not found' })
+                }
+                return resolve({ success: true, data: rows, message: 'Get base voltage by ids completed' })
+            }
+        )
+    })
+}
+
 // Cập nhật BaseVoltage (gồm cả identified_object)
 export const updateBaseVoltageById = async (mrid, baseVoltage) => {
     return new Promise((resolve, reject) => {

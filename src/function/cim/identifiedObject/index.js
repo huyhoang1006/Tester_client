@@ -98,7 +98,6 @@ export const deleteIdentifiedObjectById = async (mrid) => {
 
 export const deleteIdentifiedObjectByIdTransaction = async (mrid, dbsql) => {
     return new Promise((resolve, reject) => {
-        console.log('deleteIdentifiedObjectByIdTransaction : ', mrid);
         dbsql.run("DELETE FROM identified_object WHERE mrid=?", [mrid], function (err) {
             if (err) return reject({ success: false, err, message: 'Delete identified object failed' })
             if (this.changes === 0) {
