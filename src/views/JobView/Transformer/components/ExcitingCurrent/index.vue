@@ -71,7 +71,7 @@
         </table>
 
         <!-- Condition indicator settings -->
-        <el-dialog title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="640px">
+        <el-dialog append-to-body title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="640px">
             <table class="table-strip-input-data">
                 <thead>
                     <tr>

@@ -90,7 +90,7 @@
         </table>
 
         <!-- Condition indicator settings -->
-        <el-dialog title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="1120px">
+        <el-dialog append-to-body title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="1120px">
             <table class="table-strip-input-data mgb-10">
                 <thead>
                     <tr>
