@@ -16,7 +16,6 @@ export default {
                     const data = JSON.parse(JSON.stringify(this.bushing_data));
                     const result = this.checkBushingData(data);
                     const resultEntity = Mapping.mapDtoToEntity(result);
-                    console.log(resultEntity)
                     let rs = await window.electronAPI.insertBushingEntity(resultEntity)
                     if(rs.success) {
                         return {
@@ -131,6 +130,9 @@ export default {
                     data.attachment.type = 'asset'
                     data.attachment.id_foreign = data.properties.mrid
                 }
+            } else {
+                console.log(this.attachmentData)
+                data.attachment.path = JSON.stringify(this.attachmentData)
             } 
         },
 

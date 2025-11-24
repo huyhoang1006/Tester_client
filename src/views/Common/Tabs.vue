@@ -1,6 +1,6 @@
 <!-- eslint-disable -->
 <template>
-    <div ref="customTabs" class="custom-tabs">
+    <div v-if="side == 'client'" ref="customTabs" class="custom-tabs">
         <div class="tabs-header">
             <div class="scroll-btn left" @click="scrollLeft"><i class="fa-solid fa-chevron-left"></i></div>
             <div class="tabs-header-data" ref="tabsHeader" @scroll="checkScroll">
@@ -42,6 +42,47 @@
                     <el-button size="small" type="danger" @click="closeTab(index)">Close</el-button>
                     <el-button size="small" type="primary" @click="saveCtrlS()">Save</el-button>
                 </span>
+            </div>
+        </div>
+    </div>
+    <div v-else class="custom-tabs" ref="customTabsServer">
+        <div class="tabs-header">
+            <div class="scroll-btn left" @click="scrollLeft"><i class="fa-solid fa-chevron-left"></i></div>
+            <div class="tabs-header-data" ref="tabsHeader" @scroll="checkScroll">
+                <div v-for="(tab, index) in tabs" :key="tab.mrid" @click="selectTab(tab, index)"
+                    @mouseover="hoveredTab = tab.mrid" @mouseleave="hoveredTab = null" class="tab-item"
+                    :class="{ active: activeTab.mrid === tab.mrid }" ref="tabItems">
+                    <div class="icon-wrapper mgl-10">
+                        <icon v-if="tab.mode == 'substation'" size="16px" folderType="location" badgeColor="146EBE"></icon>
+                        <icon v-else-if="tab.mode == 'voltageLevel'" size="16px" folderType="voltageLevel" badgeColor="146EBE"></icon>
+                        <icon v-else-if="tab.mode == 'bay'" size="16px" folderType="bay" badgeColor="146EBE"></icon>
+                        <icon v-else-if="tab.mode == 'asset'" size="16px" folderType="asset" :assetDetail="tab.asset" badgeColor="146EBE"></icon>
+                        <icon v-else-if="tab.mode == 'job'" size="16px" folderType="job" badgeColor="FF0000"></icon>
+                        <icon v-else-if="tab.mode == 'test'" size="16px" folderType="test" badgeColor="008001"></icon>
+                        <icon v-else size="16px" folderType="building" badgeColor="008001"></icon>
+                        <span v-if="tab.mode == 'organisation'" class="tab-label">{{ tab.name }}</span>
+                        <span v-else-if="tab.mode == 'substation'" class="tab-label">{{ tab.name }}</span>
+                        <span v-else-if="tab.mode == 'voltageLevel'" class="tab-label">{{ tab.name }}</span>
+                        <span v-else-if="tab.mode == 'bay'" class="tab-label">{{ tab.name }}</span>
+                        <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.serial_number }}</span>
+                        <span v-else-if="tab.mode == 'job'" class="tab-label">{{ tab.name }}</span>
+                        <span v-else-if="tab.mode == 'test'" class="tab-label">{{ tab.name }}</span>
+                    </div>
+                    <span class="close-icon mgr-10 mgl-10"
+                        :class="{ visible: hoveredTab === tab.mrid || activeTab.mrid === tab.mrid }"
+                        @click.stop="closeTab(index)">✖</span>
+                </div>
+            </div>
+            <div class="scroll-btn right" @click="scrollRight"><i class="fa-solid fa-angle-right"></i></div>
+        </div>
+        <div class="tabs-content">
+            <div class="mgr-20 mgt-20 mgb-20 mgl-20" v-for="(item) in tabs" :key="item.mrid">
+                <component mode="update" @reload="loadData" v-show="activeTab.mrid === item.mrid"
+                    ref="componentLoadData" :sideData="sideSign" :is="checkTab(item)" :organisationId="item.parentId"
+                    :testTypeListData="testTypeListData" :assetData="assetData"
+                    :productAssetModelData="productAssetModelData" :parent="parentOrganization"
+                    :locationData="locationData" style="min-height: calc(100vh - 250px);">
+                </component>
             </div>
         </div>
     </div>

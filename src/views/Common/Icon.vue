@@ -17,7 +17,7 @@ export default {
         size: {
             type: String,
             default: '20px',
-            validator: (value) => ['14px', '16px', '20px', '24px', '32px'].includes(value)
+            validator: (value) => ['12px', '14px', '16px', '20px', '24px', '32px'].includes(value)
         },
         badgeColor: {
             type: String,

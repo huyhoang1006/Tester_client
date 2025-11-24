@@ -123,20 +123,41 @@ export const updateTransformerEndInfoTransaction = async (mrid, info, dbsql) => 
 
 // Xóa transformerEndInfo (transaction)
 export const deleteTransformerEndInfoTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            const assetInfoResult = await AssetInfoFunc.deleteAssetInfoByIdTransaction(mrid, dbsql)
-            if (!assetInfoResult.success) {
-                return reject({ success: false, message: 'Delete assetInfo failed', err: assetInfoResult.err })
-            }
-            dbsql.run("DELETE FROM transformer_end_info WHERE mrid=?", [mrid], function (err) {
-                if (err) {
-                    return reject({ success: false, err, message: 'Delete transformerEndInfo failed' })
+    try {
+        // 1. Xóa transformer_end_info
+        const deleted = await new Promise((resolve, reject) => {
+            dbsql.run(
+                "DELETE FROM transformer_end_info WHERE mrid=?",
+                [mrid],
+                function (err) {
+                    if (err) return reject(err);
+                    resolve(this.changes);
                 }
-                return resolve({ success: true, data: mrid, message: 'Delete transformerEndInfo completed' })
-            })
-        } catch (err) {
-            return reject({ success: false, err, message: 'Delete transformerEndInfo transaction failed' })
+            );
+        });
+
+        // Nếu không có dòng nào bị xóa, coi như lỗi logic
+        if (deleted === 0) {
+            throw new Error("TransformerEndInfo not found");
         }
-    })
-}
+
+        // 2. Xóa asset info (phải chạy SAU khi xóa end_info)
+        const assetInfoResult = await AssetInfoFunc.deleteAssetInfoByIdTransaction(mrid, dbsql);
+        if (!assetInfoResult.success) {
+            throw assetInfoResult.err || new Error("Delete assetInfo failed");
+        }
+
+        return {
+            success: true,
+            data: mrid,
+            message: "Delete transformerEndInfo completed"
+        };
+
+    } catch (err) {
+        return {
+            success: false,
+            err,
+            message: "Delete transformerEndInfo transaction failed"
+        };
+    }
+};

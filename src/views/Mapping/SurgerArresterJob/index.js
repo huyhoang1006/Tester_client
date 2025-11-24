@@ -222,7 +222,6 @@ export const jobDtoToEntity = (dto) => {
         data.test_type_id = surgeArresterTestingEquipmentTestType.test_type_id || null;
         entity.surgeArresterTestingEquipmentTestType.push(data);
     }
-    console.log('entity', entity);
     return entity;
 }
 
