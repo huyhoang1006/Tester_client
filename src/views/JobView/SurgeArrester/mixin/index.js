@@ -23,9 +23,15 @@ export default {
                     const dto = JSON.parse(JSON.stringify(this.surgeArresterJobDto));
                     const resultDto = await this.checkJob(dto);
                     const entity = surgeArresterJobMapping.jobDtoToEntity(resultDto);
+                    console.log('DTO to save:', resultDto);
                     console.log('Entity to save:', entity);
                     const old_entity = surgeArresterJobMapping.jobDtoToEntity(this.surgeArresterJobDtoOld);
-                    const rs = await window.electronAPI.insertSurgeArresterJob(old_entity, entity)
+                    // const rs = await window.electronAPI.insertSurgeArresterJob(old_entity, entity)
+                    const rs = {
+                        success: false,
+                        data: entity,
+                        message: 'Job saved fail'
+                    }
                     if (rs.success) {
                         return {
                             success: true,

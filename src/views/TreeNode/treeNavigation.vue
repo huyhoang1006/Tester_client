@@ -21,6 +21,60 @@
                 <i style="margin-left: 10px;" class="fa-solid fa-angle-right"></i>
             </div>
         </div>
+        <div class="toolbar-setting">
+            <div>
+                <el-dropdown trigger="click">
+                    <span class="icon-wrapper">
+                        <i title="Add" style="font-size: 12px;" class="fa-solid fa-square-plus"></i>
+                    </span>
+
+                    <el-dropdown-menu slot="dropdown">
+                        <el-dropdown-item>
+                            <icon size="12px" folderType="building" badgeColor="146EBE"></icon> add Organisation
+                        </el-dropdown-item>
+                        <el-dropdown-item>
+                            <icon size="12px" folderType="voltageLevel" badgeColor="146EBE"></icon> add Voltage Level
+                        </el-dropdown-item>
+                        <el-dropdown-item>
+                            <icon size="12px" folderType="location" badgeColor="146EBE"></icon> add Substation
+                        </el-dropdown-item>
+                        <el-dropdown-item>
+                            <icon size="12px" folderType="bay" badgeColor="146EBE"></icon> add Bay
+                        </el-dropdown-item>
+                        <el-dropdown-item>
+                            <icon size="12px" folderType="asset" badgeColor="146EBE"></icon> add Asset
+                        </el-dropdown-item>
+                        <el-dropdown-item>
+                            <icon size="12px" folderType="job" badgeColor="146EBE"></icon> add Job
+                        </el-dropdown-item>
+                    </el-dropdown-menu>
+                </el-dropdown>
+            </div>
+            <div>
+                <i title="Open" style="font-size: 12px;" class="fa-regular fa-folder-open"></i>
+            </div>
+            <div>
+                <i title="Duplicate" style="font-size: 12px;" class="fa-solid fa-clone"></i>
+            </div>
+            <div>
+                <i title="Import" style="font-size: 12px;" class="fa-solid fa-file-import"></i>
+            </div>
+            <div>
+                <i title="Export" style="font-size: 12px;" class="fa-solid fa-file-export"></i>
+            </div>
+            <div v-if="clientSlide">
+                <i title="Upload" style="font-size: 12px;" class="fa-solid fa-upload"></i>
+            </div>
+            <div v-if="!clientSlide">
+                <i title="Download" style="font-size: 12px;" class="fa-solid fa-download"></i>
+            </div>
+            <div>
+                <i title="Delete" style="font-size: 12px;" class="fa-solid fa-trash"></i>
+            </div>
+            <div>
+                <i title="Fmeca" style="font-size: 12px;" class="fa-solid fa-table"></i>
+            </div>
+        </div>
         <!-- Thanh điều hướng có thể kéo rộng/kéo hẹp -->
         <div class="resizable-sidebar">
             <div ref="sidebarClient" v-show="clientSlide" class="sidebar">
@@ -686,6 +740,7 @@ import mixin from './mixin'
 import Attachment from '../Common/Attachment.vue';
 import * as demoAPI from '@/api/demo'
 import * as BreakerMapping from '@/views/Mapping/Breaker/index'
+import Icon from '@/views/Common/Icon.vue'
 
 
 export default {
@@ -718,6 +773,7 @@ export default {
         JobVoltageTransformer,
         JobCircuitBreaker,
         JobTransformer,
+        Icon
     },
     data() {
         return {
@@ -2311,7 +2367,7 @@ export default {
             try {
                 const bushing = this.$refs.bushing
                 if (bushing) {
-                    const { success, data } = await bushing.saveBay()
+                    const { success, data } = await bushing.saveAsset()
                     if (success) {
                         this.$message.success("Bushing saved successfully")
                         this.signBushing = false
@@ -3975,7 +4031,7 @@ export default {
 
 .resizable-sidebar {
     display: flex;
-    height: calc(100% - 30px);
+    height: calc(100% - 60px);
 }
 
 .sidebar {
@@ -4116,6 +4172,31 @@ export default {
     box-sizing: border-box;
     width: 100%;
     padding-left: 10px;
+}
+
+.toolbar-setting {
+    background-color: white;
+    height: 30px;
+    display: flex;
+    gap: 30px;
+    border-bottom: 1px solid #CCCCCC;
+    /* Độ dày 2px, màu đen */
+    align-items: center;
+    font-size: 12px;
+    color: #555;
+    font-weight: 600;
+    box-sizing: border-box;
+    width: 100%;
+    padding-left: 10px;
+}
+
+.toolbar-setting div {
+    cursor: pointer;
+}
+
+.el-dropdown-menu__item {
+    font-size: 12px !important;
+    font-family: Arial, sans-serif !important;
 }
 
 .properties {
