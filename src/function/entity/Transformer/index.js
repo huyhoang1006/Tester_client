@@ -32,6 +32,8 @@ import {insertShortCircuitRatingTransaction, deleteShortCircuitRatingByIdTransac
 import TransformerEntity from '@/views/Entity/Transformer/index';
 
 export const insertTransformerEntity = async (old_entity,entity) => {
+    console.log(entity.attachment)
+    console.log(old_entity.attachment)
     const unitTypes = ['percent', 'voltage', 'currentFlow', 'seconds', 'activePower', 'apparentPower', 'mass', 'volume', 'temperature', 'frequency', 'baseVoltage', 'basePower']
     const tableTypes = ['oldTransformerEndInfo', 'voltageRating', 'coolingPowerRating', 'currentRating', 'shortCircuitTest', 'shortCircuitTestTransformerEndInfo', 'zeroSequenceImpedanceTable']
     try {
