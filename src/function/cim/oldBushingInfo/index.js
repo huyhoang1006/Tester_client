@@ -35,7 +35,7 @@ export const insertOldBushingInfoTransaction = async (info, dbsql) => {
             dbsql.run(
                 `INSERT INTO old_bushing_info(
                     mrid, high_voltage_limit, c2_capacitance, c2_power_factor, rated_frequency
-                ) VALUES (?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?)
                 ON CONFLICT(mrid) DO UPDATE SET
                     high_voltage_limit = excluded.high_voltage_limit,
                     c2_capacitance = excluded.c2_capacitance,

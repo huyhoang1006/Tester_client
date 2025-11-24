@@ -149,7 +149,7 @@ export const updateCoolingPowerRatingTransaction = async (mrid, info, dbsql) => 
 export const deleteCoolingPowerRatingTransaction = async (mrid, dbsql) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const identifiedObjectResult = await IdentifiedObjectFunc.deleteIdentifiedObjectTransaction(mrid, dbsql)
+            const identifiedObjectResult = await IdentifiedObjectFunc.deleteIdentifiedObjectByIdTransaction(mrid, dbsql)
             if (!identifiedObjectResult.success) {
                 return reject({ success: false, message: 'Delete IdentifiedObject failed', err: identifiedObjectResult.err })
             }

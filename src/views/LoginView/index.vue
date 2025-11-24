@@ -36,7 +36,7 @@ export default {
             formLabelWidth: '140px',
             model: {
                 // Tài khoản test mặc định
-                username: 'PCHocMon',
+                username: 'EVN_HCM',
                 password: 'evn_admin'
             },
             remember: true,
