@@ -115,7 +115,7 @@
         </table>
 
         <!-- Assessment settings -->
-        <el-dialog title="Assessment settings" :visible.sync="openAssessmentDialog" width="860px">
+        <el-dialog append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="860px">
             <el-form size="small" label-position="left" label-width="140px">
                 <el-form-item label="Option">
                     <el-select class="w-100" placeholder="please select" v-model="assessmentSetting.option">
