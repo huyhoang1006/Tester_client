@@ -4,22 +4,22 @@
             <span class="bolder">Ratings</span>
             <el-divider></el-divider>
             <el-form-item label="Rated voltage">
-                <el-input v-model="ratingsData.ratedVoltage.value">
+                <el-input v-model="ratingsData.rated_voltage.value">
                     <template slot="append">kV</template>
                 </el-input>
             </el-form-item>
             <el-form-item label="Rated frequency">
-                <el-input v-model="ratingsData.ratedFrequency.value">
+                <el-input v-model="ratingsData.rated_frequency.value">
                     <template slot="append">Hz</template>
                 </el-input>
             </el-form-item>
             <el-form-item label="Rated current">
-                <el-input v-model="ratingsData.ratedCurrent.value">
+                <el-input v-model="ratingsData.rated_current.value">
                     <template slot="append">A</template>
                 </el-input>
             </el-form-item>
             <el-form-item label="Rated power">
-                <el-input v-model="ratingsData.ratedPower.value">
+                <el-input v-model="ratingsData.rated_power.value">
                     <template slot="append">kVAr</template>
                 </el-input>
             </el-form-item>      
