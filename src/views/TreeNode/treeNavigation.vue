@@ -58,9 +58,29 @@
             </div>
             <div>
                 <i title="Import" style="font-size: 12px;" class="fa-solid fa-file-import"></i>
+
             </div>
             <div>
+                <el-dropdown trigger="click">
                 <i title="Export" style="font-size: 12px;" class="fa-solid fa-file-export"></i>
+                    <el-dropdown-menu slot="dropdown">
+                        <el-dropdown-item>
+                            <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon> export to JSON
+                        </el-dropdown-item>
+                        <el-dropdown-item>
+                            <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon> export to XML
+                        </el-dropdown-item>
+                        <el-dropdown-item>
+                            <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon> export to Excel
+                        </el-dropdown-item>
+                        <el-dropdown-item>
+                            <icon size="12px" fileTypeDetail="word" folderType="fileType" badgeColor="146EBE"></icon> export to Word
+                        </el-dropdown-item>
+                        <el-dropdown-item>
+                            <icon size="12px" fileTypeDetail="pdf" folderType="fileType" badgeColor="146EBE"></icon> export to PDF
+                        </el-dropdown-item>
+                    </el-dropdown-menu>
+                </el-dropdown>
             </div>
             <div v-if="clientSlide">
                 <i title="Upload" style="font-size: 12px;" class="fa-solid fa-upload"></i>
