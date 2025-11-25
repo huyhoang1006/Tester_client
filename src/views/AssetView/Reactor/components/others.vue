@@ -4,7 +4,7 @@
             <span class="bolder">Others</span>
             <el-divider></el-divider>
             <el-form-item label="Insulation type">
-                <el-input v-model="otherData.insulationType.value">
+                <el-input v-model="otherData.insulation_type.value">
                     <template slot="append">kV</template>
                 </el-input>
             </el-form-item>
