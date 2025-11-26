@@ -61,22 +61,22 @@
 
             </div>
             <div>
-                <el-dropdown trigger="click">
+                <el-dropdown @command="handleCommand" trigger="click">
                 <i title="Export" style="font-size: 12px;" class="fa-solid fa-file-export"></i>
                     <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item>
+                        <el-dropdown-item command="exportJSON">
                             <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon> export to JSON
                         </el-dropdown-item>
-                        <el-dropdown-item>
+                        <el-dropdown-item command="exportXML">
                             <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon> export to XML
                         </el-dropdown-item>
-                        <el-dropdown-item>
+                        <el-dropdown-item command="exportExcel">
                             <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon> export to Excel
                         </el-dropdown-item>
-                        <el-dropdown-item>
+                        <el-dropdown-item command="exportWord"> 
                             <icon size="12px" fileTypeDetail="word" folderType="fileType" badgeColor="146EBE"></icon> export to Word
                         </el-dropdown-item>
-                        <el-dropdown-item>
+                        <el-dropdown-item command="exportPDF">
                             <icon size="12px" fileTypeDetail="pdf" folderType="fileType" badgeColor="146EBE"></icon> export to PDF
                         </el-dropdown-item>
                     </el-dropdown-menu>
@@ -708,6 +708,13 @@
                 <el-button size="small" type="primary" @click="handleJobConfirm">Save</el-button>
             </span>
         </el-dialog>
+
+        <el-dialog title="Export" width="1000px" :visible.sync="openExportDialog">
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" type="danger" @click="handleCancelExport">Cancel</el-button>
+                <el-button size="small" type="primary" @click="handleExportConfirm">Save</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 <script>
@@ -811,6 +818,7 @@ export default {
     },
     data() {
         return {
+            openExportDialog: false,
             parentOrganization: null,
             logDataServer: [],
             logDataClient: [],
@@ -974,6 +982,28 @@ export default {
         }
     },
     methods: {
+        handleCommand(cmd) {
+            if (cmd === 'exportExcel') {
+                this.openExportDialog = true
+            } else if(cmd === 'exportJSON'){
+
+            } else if(cmd === 'exportXML'){
+                this.openExportDialog = true
+            } else if(cmd === 'exportWord'){
+                this.openExportDialog = true
+            } else if(cmd === 'exportPDF'){
+                this.openExportDialog = true
+            } 
+        },
+
+        handleCancelExport(){
+            this.openExportDialog = false
+        },
+
+        handleExportConfirm(){
+            this.openExportDialog = false
+            this.$message.success("Export successfully")
+        },
 
         async reloadLogClient(doneCallback) {
             try {
