@@ -37,40 +37,40 @@
             </thead>
             <tbody>
                 <tr v-for="(item, index) in testData.table" :key="index">
-                    <td>{{ item.tap }}</td>
+                    <td>{{ item.tap.value }}</td>
                     <td>
                         <div class="col-phase">
                             <div class="phase">
-                                <el-input size="mini" type="text" v-model="item.phase"></el-input>
+                                <el-input size="mini" type="text" v-model="item.phase.value"></el-input>
                             </div>
-                            <div class="rectangle" :class="{red: item._phase == 'A', yellow: item._phase == 'B', blue: item._phase == 'C'}"></div>
+                            <div class="rectangle" :class="{red: item._phase.value == 'A', yellow: item._phase.value == 'B', blue: item._phase.value == 'C'}"></div>
                         </div>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.hv1"></el-input>
+                        <el-input size="mini" type="text" v-model="item.hv1.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.lv"></el-input>
+                        <el-input size="mini" type="text" v-model="item.lv.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.nominal_ratio"></el-input>
+                        <el-input size="mini" type="text" v-model="item.nominal_ratio.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.v_ratio"></el-input>
+                        <el-input size="mini" type="text" v-model="item.v_ratio.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.ratio_dev"><template slot="append">%</template></el-input>
+                        <el-input size="mini" type="text" v-model="item.ratio_dev.value"><template slot="append">%</template></el-input>
                     </td>
                     <td>
-                        <el-select class="assessment" size="mini" v-model="item.assessment">
+                        <el-select class="assessment" size="mini" v-model="item.assessment.value">
                             <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                             <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                         </el-select>
-                        <span v-if="item.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                        <span v-else-if="item.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                        <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                     <td>
-                        <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini" v-model="item.condition_indicator">
+                        <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
                         </el-input>
                     </td>
                 </tr>
@@ -81,7 +81,7 @@
         <el-dialog append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px">
             <el-form size="small" label-position="left" label-width="140px">
                 <el-form-item label="Option">
-                    <el-select class="w-100" placeholder="please select" v-model="assessmentSetting.option">
+                    <el-select class="w-100" placeholder="please select" v-model="assessmentSetting.option.value">
                         <el-option label="IEC 60076-1 (2011)" value="IEC"></el-option>
                         <el-option label=" IEEE C57.152 (2013)" value="IEEE"></el-option>
                         <el-option label="Customized limit" value="Custom"></el-option>
@@ -89,7 +89,7 @@
                 </el-form-item>
             </el-form>
 
-            <table v-if="assessmentSetting.option === 'IEC' || assessmentSetting.option === 'IEEE'" class="table-strip-input-data">
+            <table v-if="assessmentSetting.option.value === 'IEC' || assessmentSetting.option.value === 'IEEE'" class="table-strip-input-data">
                 <thead>
                     <tr>
                         <th colspan="2">Limit</th>
@@ -99,18 +99,18 @@
                 <tbody>
                     <tr>
                         <th>Ratio dev (%)</th>
-                        <td> ≤ {{ assessmentSetting.data.iec.ratio_dev }}</td>
+                        <td> ≤ {{ assessmentSetting.data.iec.ratio_dev.value }}</td>
                         <th><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
                     <tr>
                         <th>Ratio dev (%)</th>
-                        <td> > {{ assessmentSetting.data.iec.ratio_dev }}</td>
+                        <td> > {{ assessmentSetting.data.iec.ratio_dev.value }}</td>
                         <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
                 </tbody>
             </table>
 
-            <table v-else-if="assessmentSetting.option === 'Custom'" class="table-strip-input-data">
+            <table v-else-if="assessmentSetting.option.value === 'Custom'" class="table-strip-input-data">
                 <thead>
                     <tr>
                         <th colspan="2">Limit</th>
@@ -121,14 +121,14 @@
                     <tr>
                         <th>Ratio dev (%)</th>
                         <td>
-                            ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.ratio_dev"></el-input>
+                            ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.ratio_dev.value"></el-input>
                         </td>
                         <th><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
                     <tr>
                         <th>Ratio dev (%)</th>
                         <td>
-                            > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.ratio_dev"></el-input>
+                            > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.ratio_dev.value"></el-input>
                         </td>
                         <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
@@ -137,7 +137,7 @@
         </el-dialog>
 
         <!-- Condition indicator settings -->
-        <el-dialog title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="670px">
+        <el-dialog title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="670px" :modal="false">
             <table class="table-strip-input-data">
                 <thead>
                     <tr>
@@ -148,30 +148,30 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Ratio dev (%) ≤ <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.good.ratio_dev[0]"></el-input></td>
+                        <td>Ratio dev (%) ≤ <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.good.ratio_dev[0].value"></el-input></td>
                         <td class="good">Good</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.good.score"></el-input></td>
+                        <td><el-input size="mini" v-model="conditionIndicatorSetting.good.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.fair.ratio_dev[0]"></el-input> &lt; Ratio dev (%) ≤
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.fair.ratio_dev[1]"></el-input>
+                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.fair.ratio_dev[0].value"></el-input> &lt; Ratio dev (%) ≤
+                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.fair.ratio_dev[1].value"></el-input>
                         </td>
                         <td class="fair">Fair</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.fair.score"></el-input></td>
+                        <td><el-input size="mini" v-model="conditionIndicatorSetting.fair.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.poor.ratio_dev[0]"></el-input> &lt; Ratio dev (%) ≤
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.poor.ratio_dev[1]"></el-input>
+                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.poor.ratio_dev[0].value"></el-input> &lt; Ratio dev (%) ≤
+                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.poor.ratio_dev[1].value"></el-input>
                         </td>
                         <td class="poor">Poor</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.poor.score"></el-input></td>
+                        <td><el-input size="mini" v-model="conditionIndicatorSetting.poor.score.value"></el-input></td>
                     </tr>
                     <tr>
-                        <td>Ratio dev (%) > <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.bad.ratio_dev[1]"></el-input></td>
+                        <td>Ratio dev (%) > <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.bad.ratio_dev[1].value"></el-input></td>
                         <td class="bad">Bad</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.bad.score"></el-input></td>
+                        <td><el-input size="mini" v-model="conditionIndicatorSetting.bad.score.value"></el-input></td>
                     </tr>
                 </tbody>
             </table>
@@ -293,13 +293,13 @@ export default {
         },
         clear() {
             this.testData.table.forEach((element) => {
-                element.hv1 = ''
-                element.lv = ''
-                element.nominal_ratio = ''
-                element.v_ratio = ''
-                element.ratio_dev = ''
-                element.assessment = ''
-                element.condition_indicator = ''
+                element.hv1.value = ''
+                element.lv.value = ''
+                element.nominal_ratio.value = ''
+                element.v_ratio.value = ''
+                element.ratio_dev.value = ''
+                element.assessment.value = ''
+                element.condition_indicator.value = ''
             })
         },
         nameColor(data) {

@@ -44,33 +44,33 @@
             <tbody>
                 <tr v-for="(item, index) in dataTest.dataList" :key="index">
                     <td>
-                        <el-input size="mini" v-model="item.terminal"> </el-input>
+                        <el-input size="mini" v-model="item.terminal.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="item.ratedVoltage"> </el-input>
+                        <el-input size="mini" v-model="item.ratedVoltage.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="item.Lv.terminal"> </el-input>
+                        <el-input size="mini" v-model="item.Lv.terminal.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="item.Lv.testedVoltage"> </el-input>
+                        <el-input size="mini" v-model="item.Lv.testedVoltage.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="item.Hv.terminal"> </el-input>
+                        <el-input size="mini" v-model="item.Hv.terminal.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="item.Hv.testedVoltage"> </el-input>
+                        <el-input size="mini" v-model="item.Hv.testedVoltage.value"> </el-input>
                     </td>
                     <td>
-                        <el-select class="assessment" size="mini" v-model="item.assessment">
+                        <el-select class="assessment" size="mini" v-model="item.assessment.value">
                             <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                             <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                         </el-select>
-                        <span v-if="item.assessment==='Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                        <span v-else-if="item.assessment==='Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                        <span v-if="item.assessment.value==='Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment.value==='Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                     <td>
-                        <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini" v-model="item.condition_indicator">
+                        <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
                         </el-input>
                     </td>
                     <td>
@@ -100,27 +100,6 @@ export default {
         data: {
             type: Object,
             required: true,
-            default() {
-                return {
-                    code: 'InducedAcVoltageTests',
-                    dataList: [
-                        {
-                            terminal: '',
-                            ratedVoltage: '',
-                            Lv: {
-                                terminal: '',
-                                testedVoltage: ''
-                            },
-                            Hv: {
-                                terminal: '',
-                                testedVoltage: ''
-                            },
-                            assessment: '',
-                            condition_indicator: ''
-                        }
-                    ]
-                }
-            }
         },
         asset: {
             type: Object,
@@ -138,21 +117,21 @@ export default {
     },
     methods: {
         add() {
-            const induc_temp = {
-                terminal: '',
-                ratedVoltage: '',
+            const newRow = {
+                terminal: { mrid: '', value: '', unit: '', type: 'string' },
+                ratedVoltage: { mrid: '', value: '', unit: '', type: 'string' },
                 Lv: {
-                    terminal: '',
-                    testedVoltage: ''
+                    terminal: { mrid: '', value: '', unit: '', type: 'string' },
+                    testedVoltage: { mrid: '', value: '', unit: '', type: 'string' }
                 },
                 Hv: {
-                    terminal: '',
-                    testedVoltage: ''
+                    terminal: { mrid: '', value: '', unit: '', type: 'string' },
+                    testedVoltage: { mrid: '', value: '', unit: '', type: 'string' }
                 },
-                assessment: '',
-                condition_indicator: ''
+                assessment: { mrid: '', value: '', unit: '', type: 'string' },
+                condition_indicator: { mrid: '', value: '', unit: '', type: 'string' }
             }
-            this.dataTest.dataList.push(induc_temp)
+            this.dataTest.dataList.push(newRow)
         },
         removeAll() {
             this.$confirm('This will delete all items. Continue?', 'Warning', {
@@ -171,21 +150,21 @@ export default {
             this.dataTest.dataList.splice(index, 1)
         },
         addTest(index) {
-            const data = {
-                terminal: '',
-                ratedVoltage: '',
+            const newRow = {
+                terminal: { mrid: '', value: '', unit: '', type: 'string' },
+                ratedVoltage: { mrid: '', value: '', unit: '', type: 'string' },
                 Lv: {
-                    terminal: '',
-                    testedVoltage: ''
+                    terminal: { mrid: '', value: '', unit: '', type: 'string' },
+                    testedVoltage: { mrid: '', value: '', unit: '', type: 'string' }
                 },
                 Hv: {
-                    terminal: '',
-                    testedVoltage: ''
+                    terminal: { mrid: '', value: '', unit: '', type: 'string' },
+                    testedVoltage: { mrid: '', value: '', unit: '', type: 'string' }
                 },
-                assessment: '',
-                condition_indicator: ''
+                assessment: { mrid: '', value: '', unit: '', type: 'string' },
+                condition_indicator: { mrid: '', value: '', unit: '', type: 'string' }
             }
-            this.dataTest.dataList.splice(index+1, 0, data)
+            this.dataTest.dataList.splice(index+1, 0, newRow)
         },
         nameColor(data) {
             if(data === this.$constant.GOOD) {

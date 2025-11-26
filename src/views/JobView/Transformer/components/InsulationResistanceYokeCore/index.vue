@@ -41,25 +41,25 @@
                     <tr :key="index">
                         <td style="text-align: center;">{{ index + 1 }}</td>
                         <td style="display: flex;">
-                            <el-input size="mini" type="text" v-model="item.measurement"></el-input>
+                            <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
                             <div :class="{colorTableRed : index%3==0, colorTableYellow : index%3==1, colorTableBlue : index%3==2}"></div>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.r60sRef"></el-input>
+                            <el-input size="mini" type="text" v-model="item.r60sRef.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.r60s"></el-input>
+                            <el-input size="mini" type="text" v-model="item.r60s.value"></el-input>
                         </td>
                         <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment">
+                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
                                 <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                                 <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
-                            <span v-if="item.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini" v-model="item.condition_indicator">
+                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
                             </el-input>
                         </td>
                         <td>
@@ -81,7 +81,7 @@
         <el-dialog append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="800px">
             <el-form size="small" label-position="left" label-width="140px">
                 <el-form-item label="Option">
-                    <el-select class="w-100" placeholder="please select" v-model="assessmentSetting.option">
+                    <el-select class="w-100" placeholder="please select" v-model="assessmentSetting.option.value">
                         <el-option label="IEEE C57.152 (2013) - New transformer" value="IEEEnewTrans"></el-option>
                         <el-option label="IEEE C57.152 (2013) - Service aged transformer" value="IEEEserviceTrans"></el-option>
                         <el-option label="Customized limit" value="custom"></el-option>
@@ -96,37 +96,37 @@
                         <th>Assessment</th>
                     </tr>
                 </thead>
-                <tbody v-if="assessmentSetting.option === 'IEEEnewTrans'">
+                <tbody v-if="assessmentSetting.option.value === 'IEEEnewTrans'">
                     <tr>
-                        <td>R<sub>60s</sub> > {{ assessmentSetting.data.IEEEnewTrans.pass }} MΩ</td>
+                        <td>R<sub>60s</sub> > {{ assessmentSetting.data.IEEEnewTrans.pass.value }} MΩ</td>
                         <td class="bolder"><i class="fas fa-check-square pass"></i> Pass</td>
                     </tr>
                     <tr>
-                        <td>R<sub>60s</sub> &#8804; {{ assessmentSetting.data.IEEEnewTrans.pass }}MΩ</td>
+                        <td>R<sub>60s</sub> &#8804; {{ assessmentSetting.data.IEEEnewTrans.pass.value }}MΩ</td>
                         <td class="bolder"><i class="fa-solid fa-xmark fail"></i> Fail - Manufacturer to be consulted for values less than 500 MΩ for proper course of action</td>
                     </tr>
                 </tbody>
                 <tbody v-if="assessmentSetting.option === 'IEEEserviceTrans'">
                     <tr>
-                        <td>R<sub>60s</sub> > {{ assessmentSetting.data.IEEEserviceTrans.pass }} MΩ</td>
+                        <td>R<sub>60s</sub> > {{ assessmentSetting.data.IEEEserviceTrans.pass.value }} MΩ</td>
                         <td class="bolder"><i class="fas fa-check-square pass"></i> Pass</td>
                     </tr>
                     <tr>
-                        <td>{{ assessmentSetting.data.IEEEserviceTrans.fail }} MΩ ≤ R<sub>60s</sub> ≤ {{ assessmentSetting.data.IEEEserviceTrans.pass }}MΩ</td>
+                        <td>{{ assessmentSetting.data.IEEEserviceTrans.fail.value }} MΩ ≤ R<sub>60s</sub> ≤ {{ assessmentSetting.data.IEEEserviceTrans.pass.value }}MΩ</td>
                         <td class="bolder"><i class="fa-solid fa-xmark fail"></i> Fail - Indicative of insulation deterioration</td>
                     </tr>
                     <tr>
-                        <td>R<sub>60s</sub> &lt; {{ assessmentSetting.data.IEEEserviceTrans.pass }} MΩ</td>
+                        <td>R<sub>60s</sub> &lt; {{ assessmentSetting.data.IEEEserviceTrans.pass.value }} MΩ</td>
                         <td class="bolder"><i class="fa-solid fa-xmark fail"></i> Fail - Needs to be investigated</td>
                     </tr>
                 </tbody>
-                <tbody v-if="assessmentSetting.option === 'custom'">
+                <tbody v-if="assessmentSetting.option.value === 'custom'">
                     <tr>
-                        <td>R<sub>60s</sub> > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.pass"></el-input> MΩ</td>
+                        <td>R<sub>60s</sub> > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.pass.value"></el-input> MΩ</td>
                         <td class="bolder"><i class="fas fa-check-square pass"></i> Pass</td>
                     </tr>
                     <tr>
-                        <td>R<sub>60s</sub> ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.pass"></el-input> MΩ</td>
+                        <td>R<sub>60s</sub> ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.fail.value"></el-input> MΩ</td>
                         <td class="bolder"><i class="fa-solid fa-xmark fail"></i> Fail</td>
                     </tr>
                 </tbody>
@@ -146,38 +146,38 @@
                     <tr>
                         <td>
                             <div class="flex-container">
-                                <div>R<sub>60s</sub> ≥ {{ conditionIndicatorSetting.good.r60s[1] }} MΩ</div>
+                                <div>R<sub>60s</sub> ≥ {{ conditionIndicatorSetting.good.r60s[1].value }} MΩ</div>
                             </div>
                         </td>
                         <td class="good">Good</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.good.score"></el-input></td>
+                        <td><el-input size="mini" v-model="conditionIndicatorSetting.good.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
                             <div class="flex-container">
-                                <div>{{ conditionIndicatorSetting.fair.r60s[0] }} MΩ ≤ R<sub>60s</sub> &lt; {{ conditionIndicatorSetting.fair.r60s[1] }} MΩ , R<sub>60s</sub> ≥ {{ conditionIndicatorSetting.fair.r60sref[0] }}% R<sub>60s ref</sub> </div>
+                                <div>{{ conditionIndicatorSetting.fair.r60s[0].value }} MΩ ≤ R<sub>60s</sub> &lt; {{ conditionIndicatorSetting.fair.r60s[1].value }} MΩ , R<sub>60s</sub> ≥ {{ conditionIndicatorSetting.fair.r60sref[0].value }}% R<sub>60s ref</sub> </div>
                             </div>
                         </td>
                         <td class="fair">Fair</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.fair.score"></el-input></td>
+                        <td><el-input size="mini" v-model="conditionIndicatorSetting.fair.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
                             <div class="flex-container">
-                                <div>{{ conditionIndicatorSetting.poor.r60s[0] }} MΩ ≤ R<sub>60s</sub> &lt; {{ conditionIndicatorSetting.poor.r60s[1] }} MΩ , R<sub>60s</sub> ≥ {{ conditionIndicatorSetting.poor.r60sref[0] }}% R<sub>60s ref</sub> </div>
+                                <div>{{ conditionIndicatorSetting.poor.r60s[0].value }} MΩ ≤ R<sub>60s</sub> &lt; {{ conditionIndicatorSetting.poor.r60s[1].value }} MΩ , R<sub>60s</sub> ≥ {{ conditionIndicatorSetting.poor.r60sref[0].value }}% R<sub>60s ref</sub> </div>
                             </div>
                         </td>
                         <td class="poor">Poor</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.poor.score"></el-input></td>
+                        <td><el-input size="mini" v-model="conditionIndicatorSetting.poor.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
                             <div class="flex-container">
-                                <div>R<sub>60s</sub> ≥ {{ conditionIndicatorSetting.bad.r60s[0] }} MΩ</div>
+                                <div>R<sub>60s</sub> ≥ {{ conditionIndicatorSetting.bad.r60s[0].value }} MΩ</div>
                             </div>
                         </td>
                         <td class="bad">Bad</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.bad.score"></el-input></td>
+                        <td><el-input size="mini" v-model="conditionIndicatorSetting.bad.score.value"></el-input></td>
                     </tr>
                 </tbody>
             </table>
@@ -223,11 +223,36 @@ export default {
     methods: {
         add() {
             this.testData.table.push({
-                measurement: '',
-                r60sRef: '',
-                r60s: '',
-                assessment: '',
-                condition_indicator: ''
+                measurement: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'string'
+                        },
+                        r60sRef: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'analog'
+                        },
+                        r60s: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'analog'
+                        },
+                        assessment: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
+                        },
+                        condition_indicator: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
+                        }
             })
         },
         removeAll() {
@@ -246,11 +271,36 @@ export default {
         },
         addTest(index) {
             const data = {
-                measurement: '',
-                r60sRef: '',
-                r60s: '',
-                assessment: '',
-                condition_indicator: ''
+               measurement: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'string'
+                        },
+                        r60sRef: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'analog'
+                        },
+                        r60s: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'analog'
+                        },
+                        assessment: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
+                        },
+                        condition_indicator: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
+                        }
             }
             this.testData.table.splice(index+1, 0, data)
         },
@@ -321,7 +371,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
+.w-100 {
+    width: 100%;
+}
 th:not(:nth-child(1)):not(:nth-last-child(1)):not(:nth-last-child(2)) {
     min-width: 106px;
 }
@@ -345,19 +397,19 @@ th.no-col {
         padding: 1px;
     }
 }
-.Good input {
+.good  {
     background: #00CC00;
 }
 
-.Fair input {
+.fair  {
     background: #ffff00;
 }
 
-.Poor input {
+.poor  {
     background: #ff9900;
 }
 
-.Bad input {
+.bad  {
     background: #ff3300;
 }
 </style>
