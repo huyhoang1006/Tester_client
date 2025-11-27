@@ -58,9 +58,29 @@
             </div>
             <div>
                 <i title="Import" style="font-size: 12px;" class="fa-solid fa-file-import"></i>
+
             </div>
             <div>
+                <el-dropdown @command="handleCommand" trigger="click">
                 <i title="Export" style="font-size: 12px;" class="fa-solid fa-file-export"></i>
+                    <el-dropdown-menu slot="dropdown">
+                        <el-dropdown-item command="exportJSON">
+                            <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon> export to JSON
+                        </el-dropdown-item>
+                        <el-dropdown-item command="exportXML">
+                            <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon> export to XML
+                        </el-dropdown-item>
+                        <el-dropdown-item command="exportExcel">
+                            <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon> export to Excel
+                        </el-dropdown-item>
+                        <el-dropdown-item command="exportWord"> 
+                            <icon size="12px" fileTypeDetail="word" folderType="fileType" badgeColor="146EBE"></icon> export to Word
+                        </el-dropdown-item>
+                        <el-dropdown-item command="exportPDF">
+                            <icon size="12px" fileTypeDetail="pdf" folderType="fileType" badgeColor="146EBE"></icon> export to PDF
+                        </el-dropdown-item>
+                    </el-dropdown-menu>
+                </el-dropdown>
             </div>
             <div v-if="clientSlide">
                 <i title="Upload" style="font-size: 12px;" class="fa-solid fa-upload"></i>
@@ -105,8 +125,10 @@
                         @show-addBushing="showAddBushing" @show-addSurgeArrester="showAddSurgeArrester"
                         @show-addCircuit="showAddCircuitBreaker" @show-addVt="showAddVt" @show-addCt="showAddCt"
                         @show-addPowerCable="showAddPowerCable" @show-addDisconnector="showAddDisconnector"
-                        @show-addCapacitor="showAddCapacitor" @show-addRotatingMachine="showAddRotatingMachine"
-                        @show-addBay="showAddBay" @show-data="showDataClient" ref="contextMenuClient">
+                        @show-addCapacitor="showAddCapacitor"
+                        @show-addReactor="showAddReactor"
+                        @show-addRotatingMachine="showAddRotatingMachine" @show-addBay="showAddBay"
+                        @show-data="showDataClient" ref="contextMenuClient">
                     </contextMenu>
                 </div>
             </div>
@@ -666,6 +688,16 @@
             </span>
         </el-dialog>
 
+        <el-dialog title="Add Reactor" :visible.sync="signReactor" width="1000px"
+            @close="handleReactorCancel">
+            <Reactor :locationId="locationId" :parent="parentOrganization" ref="reactor">
+            </Reactor>
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" type="danger" @click="handleReactorCancel">Cancel</el-button>
+                <el-button size="small" type="primary" @click="handleReactorConfirm">Save</el-button>
+            </span>
+        </el-dialog>
+
         <el-dialog title="Add Job" :visible.sync="signJob" width="1000px" @close="handleJobCancel">
             <component ref="jobData" :is="checkJobType" :locationData="locationData" :assetData="assetData"
                 :productAssetModelData="productAssetModelData" :parent="parentOrganization"
@@ -674,6 +706,13 @@
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleJobCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleJobConfirm">Save</el-button>
+            </span>
+        </el-dialog>
+
+        <el-dialog title="Export" width="1000px" :visible.sync="openExportDialog">
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" type="danger" @click="handleCancelExport">Cancel</el-button>
+                <el-button size="small" type="primary" @click="handleExportConfirm">Save</el-button>
             </span>
         </el-dialog>
     </div>
@@ -726,6 +765,7 @@ import Disconnector from '@/views/AssetView/Disconnector/index.vue'
 import PowerCable from '@/views/AssetView/PowerCable'
 import VoltageTransformer from '@/views/AssetView/VoltageTransformer'
 import Capacitor from '@/views/AssetView/Capacitor/index.vue'
+import Reactor from '@/views/AssetView/Reactor/index.vue'
 import JobSurgeArrester from '@/views/JobView/SurgeArrester/index.vue'
 import JobPowerCable from '@/views/JobView/PowerCable/index.vue'
 import JobDisconnector from '@/views/JobView/Disconnector/index.vue'
@@ -767,6 +807,7 @@ export default {
         PowerCable,
         RotatingMachine,
         Capacitor,
+        Reactor,
         JobSurgeArrester,
         JobPowerCable,
         JobDisconnector,
@@ -778,6 +819,7 @@ export default {
     },
     data() {
         return {
+            openExportDialog: false,
             parentOrganization: null,
             logDataServer: [],
             logDataClient: [],
@@ -804,6 +846,7 @@ export default {
             signRotating: false,
             signJob: false,
             signCapacitor: false,
+            signReactor: false,
             activeTab: {},
             activeTabClient: {},
             indexTabData: null,
@@ -940,6 +983,28 @@ export default {
         }
     },
     methods: {
+        handleCommand(cmd) {
+            if (cmd === 'exportExcel') {
+                this.openExportDialog = true
+            } else if(cmd === 'exportJSON'){
+
+            } else if(cmd === 'exportXML'){
+                this.openExportDialog = true
+            } else if(cmd === 'exportWord'){
+                this.openExportDialog = true
+            } else if(cmd === 'exportPDF'){
+                this.openExportDialog = true
+            } 
+        },
+
+        handleCancelExport(){
+            this.openExportDialog = false
+        },
+
+        handleExportConfirm(){
+            this.openExportDialog = false
+            this.$message.success("Export successfully")
+        },
 
         async reloadLogClient(doneCallback) {
             try {
@@ -2179,6 +2244,10 @@ export default {
             this.signCapacitor = false
         },
 
+        handleReactorCancel() {
+            this.signReactor = false
+        },
+
         handleJobCancel() {
             this.signJob = false
         },
@@ -2713,6 +2782,13 @@ export default {
                 this.$message.error("Some error occur")
                 console.error(error)
             }
+        },
+
+        async handleReactorConfirm() {
+            this.$message.success("Reactor saved successfully")
+            // Cần thêm logic để cập nhật lại cây nếu cần thiết
+            // await this.$refs.transformer.saveAsset();
+            this.signReactor = false
         },
 
         async handleJobConfirm() {
@@ -3625,6 +3701,29 @@ export default {
                     const capacitor = this.$refs.capacitor;
                     if (capacitor) {
                         capacitor.resetForm();
+                    }
+                });
+            } catch (error) {
+                this.parentOrganization = null
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
+        },
+
+        async showAddReactor(node) {
+            try {
+                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
+                if (dataLocation.success) {
+                    this.locationId = dataLocation.data.mrid
+                } else {
+                    this.locationId = null
+                }
+                this.parentOrganization = node
+                this.signReactor = true
+                this.$nextTick(() => {
+                    const reactor = this.$refs.reactor;
+                    if (reactor) {
+                        reactor.resetForm();
                     }
                 });
             } catch (error) {
