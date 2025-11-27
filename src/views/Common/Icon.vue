@@ -12,12 +12,17 @@ export default {
         folderType: {
             type: String,
             default: 'location',
-            validator: (value) => ['location', 'asset', 'job', 'test', 'owner', 'building', 'voltageLevel', 'bay'].includes(value)
+            validator: (value) => ['location', 'asset', 'job', 'test', 'owner', 'building', 'voltageLevel', 'bay', 'fileType'].includes(value)
         },
         size: {
             type: String,
             default: '20px',
             validator: (value) => ['12px', '14px', '16px', '20px', '24px', '32px'].includes(value)
+        },
+        fileTypeDetail: {
+            type: String,
+            default: 'file',
+            validator: (value) => ['pdf', 'xml', 'excel', 'word', 'json', 'file'].includes(value)
         },
         badgeColor: {
             type: String,
@@ -51,7 +56,14 @@ export default {
                 owner: 'fa-solid fa-location-crosshairs',
                 building: 'fa-solid fa-building',
                 voltageLevel: 'fa-solid fa-bolt-lightning',
-                bay: 'fa-solid fa-tower-observation'
+                bay: 'fa-solid fa-tower-observation',
+                fileType: {
+                    pdf : "fa-solid fa-file-pdf",
+                    json : "fa-solid fa-file-code",
+                    xml : "fa-solid fa-file-code",
+                    excel : "fa-solid fa-file-excel",
+                    word : "fa-solid fa-file-word"
+                }
             }
             if(this.folderType == 'asset') {
                 if(this.assetDetail == 'Unknown') {
@@ -59,7 +71,10 @@ export default {
                 } else {
                     return icons.asset[this.assetDetail]
                 }
-            } else {
+            } else if(this.folderType == 'fileType') {
+                return icons.fileType[this.fileTypeDetail] || 'fa-solid fa-file'
+            }
+            else {
                 return icons[this.folderType] || 'fa-solid fa-location-dot'
             }
         },
