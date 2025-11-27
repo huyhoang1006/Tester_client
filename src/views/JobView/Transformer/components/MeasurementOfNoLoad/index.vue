@@ -12,24 +12,28 @@
             <tbody>
                 <tr>
                     <th>No-load loss (W)</th>
-                    <td><el-input size="mini" v-model="testData.no_load_loss.result"></el-input></td>
-                    <td><el-input size="mini" v-model="testData.no_load_loss.standard"></el-input></td>
+                    <td><el-input size="mini" v-model="testData.no_load_loss.result.value"></el-input></td>
+                    <td><el-input size="mini" v-model="testData.no_load_loss.standard.value"></el-input></td>
                     <td>
-                        <el-select size="mini" v-model="testData.no_load_loss.assessment">
-                            <el-option label="Pass" value="Pass"></el-option>
-                            <el-option label="Fail" value="Fail"></el-option>
+                        <el-select  class="assessment" size="mini" v-model="testData.no_load_loss.assessment.value">
+                            <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                         </el-select>
+                        <span v-if="testData.no_load_loss.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="testData.no_load_loss.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                 </tr>
                 <tr>
                     <th>No-load current (%)</th>
-                    <td><el-input size="mini" v-model="testData.no_load_current.result"></el-input></td>
-                    <td><el-input size="mini" v-model="testData.no_load_current.standard"></el-input></td>
+                    <td><el-input  size="mini" v-model="testData.no_load_current.result.value"></el-input></td>
+                    <td><el-input size="mini" v-model="testData.no_load_current.standard.value"></el-input></td>
                     <td>
-                        <el-select size="mini" v-model="testData.no_load_current.assessment">
-                            <el-option label="Pass" value="Pass"></el-option>
-                            <el-option label="Fail" value="Fail"></el-option>
+                        <el-select  class="assessment" size="mini" v-model="testData.no_load_current.assessment.value">
+                            <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                         </el-select>
+                        <span v-if="testData.no_load_current.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="testData.no_load_current.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                 </tr>
             </tbody>

@@ -780,6 +780,7 @@ import mixin from './mixin'
 import Attachment from '../Common/Attachment.vue';
 import * as demoAPI from '@/api/demo'
 import * as BreakerMapping from '@/views/Mapping/Breaker/index'
+import * as TransformerMapping from '@/views/Mapping/Transformer/index'
 import Icon from '@/views/Common/Icon.vue'
 
 
@@ -3972,6 +3973,15 @@ export default {
                 }
                 else if (node.asset == 'Transformer') {
                     const dataTestType = await window.electronAPI.getAllTestTypeTransformers();
+                    const dataTransformerEntity = await window.electronAPI.getTransformerEntityByMrid(node.mrid);
+                    console.log("dataTransformerEntity", dataTransformerEntity)
+                    const dto = TransformerMapping.transformerEntityToDto(dataTransformerEntity.data);
+                    console.log("dto", dto)
+                    if (dataTransformerEntity.success) {
+                        this.assetData = dto
+                    } else {
+                        this.assetData = {}
+                    }
                     if (dataTestType.success) {
                         this.testTypeListData = dataTestType.data
                     } else {

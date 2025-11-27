@@ -12,24 +12,28 @@
             <tbody>
                 <tr>
                     <th>HV1</th>
-                    <td><el-input size="mini" v-model="testData.hv1.e50"></el-input></td>
-                    <td><el-input size="mini" v-model="testData.hv1.standard"></el-input></td>
+                    <td><el-input size="mini" v-model="testData.hv1.e50.value"></el-input></td>
+                    <td><el-input size="mini" v-model="testData.hv1.standard.value"></el-input></td>
                     <td>
-                        <el-select size="mini" v-model="testData.hv1.assessment">
-                            <el-option label="Pass" value="Pass"></el-option>
-                            <el-option label="Fail" value="Fail"></el-option>
+                        <el-select class="assessment" size="mini" v-model="testData.hv1.assessment.value">
+                            <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                         </el-select>
+                        <span v-if="testData.hv1.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="testData.hv1.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                 </tr>
                 <tr>
                     <th>HV2</th>
-                    <td><el-input size="mini" v-model="testData.hv2.e50"></el-input></td>
-                    <td><el-input size="mini" v-model="testData.hv2.standard"></el-input></td>
+                    <td><el-input size="mini" v-model="testData.hv2.e50.value"></el-input></td>
+                    <td><el-input size="mini" v-model="testData.hv2.standard.value"></el-input></td>
                     <td>
-                        <el-select size="mini" v-model="testData.hv2.assessment">
-                            <el-option label="Pass" value="Pass"></el-option>
-                            <el-option label="Fail" value="Fail"></el-option>
+                        <el-select class="assessment" size="mini" v-model="testData.hv2.assessment.value">
+                            <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                         </el-select>
+                        <span v-if="testData.hv2.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="testData.hv2.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                 </tr>
             </tbody>

@@ -120,7 +120,7 @@
                             <span class="asset-name">{{ assetData.properties?.serial_no || assetData.serial_number || assetData.serial_no || '' }}</span>
                         </el-form-item>
                         <el-form-item class="asset-item" label="Manufacturer">
-                            <span class="asset-name">{{ productAssetModelData.manufacturer }}</span>
+                            <span class="asset-name">{{ assetData.properties?.manufacturer || assetData.manufacturer || '' }}</span>
                         </el-form-item>
                     </el-form>
                 </el-row>

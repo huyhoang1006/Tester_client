@@ -40,30 +40,30 @@
             <tbody>
                 <template v-for="(item, index) in testData.table">
                     <tr :key="index">
-                        <td v-if="tapChangers.winding === $constant.PRIM">{{ item.tap }}</td>
+                        <td v-if="tapChangers.winding === $constant.PRIM">{{ item.tap.value }}</td>
                         <td style="width: 10%">
                             <div class="col-phase">
                                 <div class="phase">
-                                    <el-input size="mini" type="text" v-model="item.phase"></el-input>
+                                    <el-input size="mini" type="text" v-model="item.phase.value"></el-input>
                                 </div>
-                                <div class="rectangle" :class="{red: item._phase == 'A', yellow: item._phase == 'B', blue: item._phase == 'C'}"></div>
+                                <div class="rectangle" :class="{red: item._phase.value == 'A', yellow: item._phase.value == 'B', blue: item._phase.value == 'C'}"></div>
                             </div>
                         </td>
                         <td>
-                            <el-input size="mini" type="number" v-model="item.r_meas"><template slot="append">Ω</template></el-input>
+                            <el-input size="mini" type="number" v-model="item.r_meas.value"><template slot="append">Ω</template></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="number" v-model="item.r_ref"><template slot="append">Ω</template></el-input>
+                            <el-input size="mini" type="number" v-model="item.r_ref.value"><template slot="append">Ω</template></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="number" v-model="item.r_corr"><template slot="append">Ω</template></el-input>
+                            <el-input size="mini" type="number" v-model="item.r_corr.value"><template slot="append">Ω</template></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="number" v-model="item.error_r_ref"></el-input>
+                            <el-input size="mini" type="number" v-model="item.error_r_ref.value"></el-input>
                         </td>
                         <template v-if="index % 3 == 0 && tapChangers.winding === $constant.PRIM">
                             <td rowspan="3">
-                                <el-input size="mini" type="number" v-model="item.error_between_phase"></el-input>
+                                <el-input size="mini" type="number" v-model="item.error_between_phase.value"></el-input>
                             </td>
 
                             <!-- <td rowspan="3">
@@ -72,7 +72,7 @@
                         </template>
                         <template v-else-if="index % 3 == 0 && tapChangers.winding !== $constant.PRIM">
                             <td rowspan="3">
-                                <el-input size="mini" type="number" v-model="item.error_between_phase"></el-input>
+                                <el-input size="mini" type="number" v-model="item.error_between_phase.value"></el-input>
                             </td>
 
                             <!-- <td rowspan="3">
@@ -80,15 +80,15 @@
                             </td> -->
                         </template>
                         <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment">
+                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
                                 <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                                 <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
-                            <span v-if="item.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini" v-model="item.condition_indicator">
+                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
                             </el-input>
                         </td>
                     </tr>
@@ -97,10 +97,10 @@
         </table>
 
         <!-- Assessment settings -->
-        <el-dialog title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px">
+        <el-dialog append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px">
             <el-form size="small" label-position="left" label-width="140px">
                 <el-form-item label="Option">
-                    <el-select class="w-100" placeholder="please select" v-model="assessmentSetting.option">
+                    <el-select class="w-100" placeholder="please select" v-model="assessmentSetting.option.value">
                         <el-option label="IEEE C57.152 (2013)" value="IEEE"></el-option>
                         <el-option label="CIGRE 445" value="CIGRE"></el-option>
                         <el-option label="Customized limit" value="Custom"></el-option>
@@ -108,7 +108,7 @@
                 </el-form-item>
             </el-form>
 
-            <table v-if="assessmentSetting.option === 'IEEE'" class="table-strip-input-data">
+            <table v-if="assessmentSetting.option.value === 'IEEE'" class="table-strip-input-data">
                 <thead>
                     <tr>
                         <th colspan="2">Limit</th>
@@ -118,18 +118,18 @@
                 <tbody>
                     <tr>
                         <th>Dev within phases (%)</th>
-                        <td> ≤ {{ assessmentSetting.data.ieee.error_between_phase }}</td>
+                        <td> ≤ {{ assessmentSetting.data.ieee.error_between_phase.value }}</td>
                         <th><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
                     <tr>
                         <th>Dev within phases (%)</th>
-                        <td> > {{ assessmentSetting.data.ieee.error_between_phase }}</td>
+                        <td> > {{ assessmentSetting.data.ieee.error_between_phase.value }}</td>
                         <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
                 </tbody>
             </table>
 
-            <table v-else-if="assessmentSetting.option === 'CIGRE'" class="table-strip-input-data">
+            <table v-else-if="assessmentSetting.option.value === 'CIGRE'" class="table-strip-input-data">
                 <thead>
                     <tr>
                         <th colspan="2">Limit</th>
@@ -139,18 +139,18 @@
                 <tbody>
                     <tr>
                         <th>Dev with R ref (%)</th>
-                        <td> ≤ {{ assessmentSetting.data.cigre.error_r_ref }}</td>
+                        <td> ≤ {{ assessmentSetting.data.cigre.error_r_ref.value }}</td>
                         <th><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
                     <tr>
                         <th>Dev with R ref (%)</th>
-                        <td> > {{ assessmentSetting.data.cigre.error_r_ref }}</td>
+                        <td> > {{ assessmentSetting.data.cigre.error_r_ref.value }}</td>
                         <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
                 </tbody>
             </table>
 
-            <table v-else-if="assessmentSetting.option === 'Custom'" class="table-strip-input-data">
+            <table v-else-if="assessmentSetting.option.value === 'Custom'" class="table-strip-input-data">
                 <thead>
                     <tr>
                         <th colspan="2">Limit</th>
@@ -161,28 +161,28 @@
                     <tr>
                         <th>Dev within phases (%)</th>
                         <td>
-                            ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.error_between_phase"></el-input>
+                            ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.error_between_phase.value"></el-input>
                         </td>
                         <th><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
                     <tr>
                         <th>Dev within phases (%)</th>
                         <td>
-                            > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.error_between_phase"></el-input>
+                            > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.error_between_phase.value"></el-input>
                         </td>
                         <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
                     <tr>
                         <th>Dev with R ref (%)</th>
                         <td>
-                            ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.error_r_ref"></el-input>
+                            ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.error_r_ref.value"></el-input>
                         </td>
                         <th><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
                     <tr>
                         <th>Dev with R ref (%)</th>
                         <td>
-                            > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.error_r_ref"></el-input>
+                            > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.error_r_ref.value"></el-input>
                         </td>
                         <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
@@ -191,7 +191,7 @@
         </el-dialog>
 
         <!-- Condition indicator settings -->
-        <el-dialog title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="870px">
+        <el-dialog append-to-body title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="870px">
             <table class="table-strip-input-data">
                 <thead>
                     <tr>
@@ -204,36 +204,36 @@
                     <tr>
                         <td>
                             % Error between phase or Error with R ref % ≤
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.good.error_between_phase[0]"></el-input>
+                            <el-input size="mini" class="size"  v-model="conditionIndicatorSetting.good.error_between_phase[0].value"></el-input>
                         </td>
-                        <td class="good">Good</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.good.score"></el-input></td>
+                        <td class="Good">Good</td>
+                        <td><el-input size="mini" v-model="conditionIndicatorSetting.good.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.fair.error_between_phase[0]"></el-input> &lt; % Error
+                            <el-input size="mini" class="size" v-model="conditionIndicatorSetting.fair.error_between_phase[0].value"></el-input> &lt; % Error
                             between phase or Error with R ref % ≤
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.fair.error_between_phase[1]"></el-input>
+                            <el-input size="mini" class="size" v-model="conditionIndicatorSetting.fair.error_between_phase[1].value"></el-input>
                         </td>
-                        <td class="fair">Fair</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.fair.score"></el-input></td>
+                        <td class="Fair">Fair</td>
+                        <td><el-input size="mini" v-model="conditionIndicatorSetting.fair.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.poor.error_between_phase[0]"></el-input> &lt; % Error
+                            <el-input size="mini" class="size" v-model="conditionIndicatorSetting.poor.error_between_phase[0].value"></el-input> &lt; % Error
                             between phase or Error with R ref % ≤
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.poor.error_between_phase[1]"></el-input>
+                            <el-input size="mini" class="size" v-model="conditionIndicatorSetting.poor.error_between_phase[1].value"></el-input>
                         </td>
-                        <td class="poor">Poor</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.poor.score"></el-input></td>
+                        <td class="Poor">Poor</td>
+                        <td><el-input size="mini" v-model="conditionIndicatorSetting.poor.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
                             % Error between phase or Error with R ref % >
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.bad.error_between_phase[1]"></el-input>
+                            <el-input size="mini" class="size" v-model="conditionIndicatorSetting.bad.error_between_phase[1].value"></el-input>
                         </td>
-                        <td class="bad">Bad</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.bad.score"></el-input></td>
+                        <td class="Bad">Bad</td>
+                        <td><el-input size="mini" v-model="conditionIndicatorSetting.bad.score.value"></el-input></td>
                     </tr>
                 </tbody>
             </table>
@@ -419,15 +419,15 @@ export default {
         },
         clear() {
             this.testData.table.forEach((element) => {
-                element.r_meas = ''
-                element.r_ref = ''
-                element.r_corr = ''
-                element.error_between_phase = ''
-                element.error_r_ref = ''
-                element.mean_value = ''
-                element.assessment = ''
-                element.error_r_ref = ''
-                element.condition_indicator = ''
+                element.r_meas.value = ''
+                element.r_ref.value = ''
+                element.r_corr.value = ''
+                element.error_between_phase.value = ''
+                element.error_r_ref.value = ''
+                element.mean_value.value = ''
+                element.assessment.value = ''
+                element.error_r_ref.value = ''
+                element.condition_indicator.value = ''
             })
         },
         nameColor(data) {
@@ -452,19 +452,22 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.Good input {
+.size {
+    width: 15%;
+}
+.Good {
     background: #00CC00;
 }
 
-.Fair input {
+.Fair {
     background: #FFFF00;
 }
 
-.Poor input {
+.Poor {
     background: #FFC000;
 }
 
-.Bad input {
+.Bad {
     background: #FF0000;
 }
 </style>
