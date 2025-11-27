@@ -16,10 +16,10 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-input size="mini" v-model="item.testingInstrument"> </el-input>
+                        <el-input size="mini" v-model="item.testingInstrument.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="item.type_ins"> </el-input>
+                        <el-input size="mini" v-model="item.type_ins.value"> </el-input>
                     </td>
                     <td>
                         <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
@@ -66,8 +66,8 @@ export default {
         add() {
             const temp = {
                 no: '',
-                testingInstrument: '',
-                type_ins: ''
+                testingInstrument: { mrid: '', value: '', unit: '', type: 'string' },
+                type_ins: { mrid: '', value: '', unit: '', type: 'string' }
             }
             this.testData.dataList.push(temp)
         },
@@ -90,8 +90,8 @@ export default {
         addTest(index) {
             const data = {
                 no: '',
-                testingInstrument: '',
-                type_ins: ''
+                testingInstrument: { mrid: '', value: '', unit: '', type: 'string' },
+                type_ins: { mrid: '', value: '', unit: '', type: 'string' }
             }
             this.testData.dataList.splice(index+1, 0, data)
         }
