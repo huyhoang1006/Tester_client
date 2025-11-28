@@ -23,7 +23,7 @@ import { insertConfigurationEventArrayTransaction, insertConfigurationEventTrans
 import { getPowerSystemResourceByLocationIdTransaction } from '@/function/cim/powerSystemResource/index'
 import ConfigurationEvent from '@/views/Cim/ConfigurationEvent'
 import uuid from '@/utils/uuid'
-import SubstationEntity from '@/views/Entity/Substation'
+import SubstationEntity from '@/views/Flatten/Substation'
 
 export const insertSubstationEntity = async (entity) => {
     if(entity == null || typeof entity !== 'object') {

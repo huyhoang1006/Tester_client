@@ -10,7 +10,7 @@ import { insertAssetPsrTransaction, getAssetPsrByAssetIdAndPsrId, deleteAssetPsr
 import { insertFrequencyTransaction, getFrequencyByIds, deleteFrequencyByIdTransaction } from '@/function/cim/frequency';
 import { insertAssetTransaction, getAssetById, deleteAssetByIdTransaction } from '@/function/cim/asset';
 import { insertReactorInfoTransaction, getReactorInfoById, deleteReactorInfoTransaction } from '@/function/cim/reactorInfo';
-import ReactorEntity from '@/views/Entity/Reactor';
+import ReactorEntity from '@/views/Flatten/Reactor';
 import { insertReactivePowerTransaction, getReactivePowerByIds, deleteReactivePowerByIdTransaction } from '@/function/cim/reactivePower';
 import { insertMassTransaction, getMassById, deleteMassByIdTransaction } from '@/function/cim/mass';
 import { insertInductanceTransaction, getInductanceById, deleteInductanceByIdTransaction } from '@/function/cim/inductance';

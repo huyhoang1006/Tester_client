@@ -15,7 +15,7 @@ import { insertCtTapInfoTransaction, deleteCtTapInfoByCtCoreInfoIdTransaction, g
 import { insertAssetTransaction, getAssetById, deleteAssetByIdTransaction } from "@/function/cim/asset";
 import { insertAssetPsrTransaction, getAssetPsrById, deleteAssetPsrByIdTransaction, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from "@/function/entity/assetPsr";
 import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction } from "@/function/cim/lifecycleDate";
-import CurrentTransformerEntity from "@/views/Entity/CurrentTransformer";
+import CurrentTransformerEntity from "@/views/Flatten/CurrentTransformer";
 import { getAssetInfoById, insertAssetInfoTransaction, deleteAssetInfoByIdTransaction } from "@/function/cim/assetInfo";
 import { getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction } from "@/function/entity/attachment";
 

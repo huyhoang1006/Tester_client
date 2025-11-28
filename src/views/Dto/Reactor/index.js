@@ -1,7 +1,7 @@
 import PropertiesDto from './Properties/index.js';
 import ReactorRatingDto from './Ratings/index.js';  
 import ReactorOtherDto from './Others/index.js';
-import Attachment from '@/views/Entity/Attachment'
+import Attachment from '@/views/Flatten/Attachment'
 class ReactorDto{
     constructor() {
         this.properties = new PropertiesDto();

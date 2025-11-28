@@ -1,6 +1,6 @@
 import db from '../../datacontext/index'
 import * as attachmentContext from '../../attachmentcontext/index'
-import OrganisationEntity from '@/views/Entity/Organisation'
+import OrganisationEntity from '@/views/Flatten/Organisation'
 import { insertStreetDetailTransaction, getStreetDetailById, deleteStreetDetailByIdTransaction } from '@/function/cim/streetDetail'
 import { insertTownDetailTransaction, getTownDetailById, deleteTownDetailByIdTransaction } from '@/function/cim/townDetail'
 import { insertStreetAddressTransaction, getStreetAddressById, deleteStreetAddressByIdTransaction } from '@/function/cim/streetAddress'

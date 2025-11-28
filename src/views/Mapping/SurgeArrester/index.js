@@ -1,4 +1,4 @@
-import SurgeArresterEntity from "@/views/Entity/SurgeArrester";
+import SurgeArresterEntity from "@/views/Flatten/SurgeArrester";
 import OldSurgeArresterInfo from "@/views/Cim/OldSurgeArresterInfo";
 import SurgeArresterDto from "@/views/Dto/SurgeAsset";
 import Voltage from "@/views/Cim/Voltage";

@@ -1,6 +1,6 @@
 import { UnitSymbol } from '@/views/Enum/UnitSymbol'
 import { UnitMultiplier } from '@/views/Enum/UnitMultiplier'
-import Attachment from '@/views/Entity/Attachment'
+import Attachment from '@/views/Flatten/Attachment'
 import PropertiesDto from './Properties'
 import CapacitanceDto from './Capacitance'
 import DissipationFactorDto from './DissipationFactor'

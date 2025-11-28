@@ -18,7 +18,7 @@ import { insertOldCableInfoTransaction, getOldCableInfoById, getOldCableInfoByCa
 import { insertSheathVoltageLimiterTransaction, getSheathVoltageLimiterById, getSheathVoltageLimiterByCableInfoId, deleteSheathVoltageLimiterTransaction } from '@/function/cim/sheathVoltageLimiter';
 import { insertTerminalCableInfoTransaction, getTerminalCableInfoById, getTerminalCableInfoByCableInfoId, deleteTerminalCableInfoTransaction } from '@/function/cim/terminalCableInfo';
 import { insertSecondsTransaction, getSecondById, getSecondByIds, deleteSecondsByIdTransaction } from '@/function/cim/seconds';
-import PowerCableEntity from '@/views/Entity/PowerCable/index'
+import PowerCableEntity from '@/views/Flatten/PowerCable/index'
 
 export const insertPowerCableEntity = async (old_entity, entity) => {
     try {
