@@ -57,8 +57,26 @@
                 <i title="Duplicate" style="font-size: 12px;" class="fa-solid fa-clone"></i>
             </div>
             <div>
+                <el-dropdown @command="handleImportCommand" trigger="click">
                 <i title="Import" style="font-size: 12px;" class="fa-solid fa-file-import"></i>
-
+                <el-dropdown-menu slot="dropdown">
+                        <el-dropdown-item command="importJSON">
+                            <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon> import from JSON
+                        </el-dropdown-item>
+                        <el-dropdown-item command="importXML">
+                            <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon> import from XML
+                        </el-dropdown-item>
+                        <el-dropdown-item command="importExcel">
+                            <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon> import from Excel
+                        </el-dropdown-item>
+                        <el-dropdown-item command="importWord"> 
+                            <icon size="12px" fileTypeDetail="word" folderType="fileType" badgeColor="146EBE"></icon> import from Word
+                        </el-dropdown-item>
+                        <el-dropdown-item command="importPDF">
+                            <icon size="12px" fileTypeDetail="pdf" folderType="fileType" badgeColor="146EBE"></icon> import from PDF
+                        </el-dropdown-item>
+                    </el-dropdown-menu>
+                </el-dropdown>        
             </div>
             <div>
                 <el-dropdown @command="handleCommand" trigger="click">
@@ -95,7 +113,7 @@
             <div>
                 <i title="Delete" style="font-size: 12px;" class="fa-solid fa-trash"></i>
             </div>
-            <div>
+            <div @click="handleClickFmeca">
                 <i title="Fmeca" style="font-size: 12px;" class="fa-solid fa-table"></i>
             </div>
         </div>
@@ -717,6 +735,21 @@
                 <el-button size="small" type="primary" @click="handleExportConfirm">Save</el-button>
             </span>
         </el-dialog>
+
+        <el-dialog title="Import" width="1000px" :visible.sync="openImportDialog">
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" type="danger" @click="handleCancelImport">Cancel</el-button>
+                <el-button size="small" type="primary" @click="handleImportConfirm">Save</el-button>
+            </span>
+        </el-dialog>
+
+        <el-dialog title="Fmeca" width="1000px" :visible.sync="signFmeca" @close="handleFmecaCancel">
+            <Fmeca></Fmeca>
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" type="danger" @click="handleFmecaCancel">Cancel</el-button>
+                <el-button size="small" type="primary" @click="handleFmecaConfirm">Save</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 <script>
@@ -784,6 +817,7 @@ import * as demoAPI from '@/api/demo'
 import * as BreakerMapping from '@/views/Mapping/Breaker/index'
 import * as TransformerMapping from '@/views/Mapping/Transformer/index'
 import Icon from '@/views/Common/Icon.vue'
+import Fmeca from '@/views/Fmeca'
 
 
 export default {
@@ -817,12 +851,14 @@ export default {
         JobVoltageTransformer,
         JobCircuitBreaker,
         JobTransformer,
-        Icon
+        Icon,
+        Fmeca
     },
     data() {
         return {
             openExportDialog: false,
-            showSub: null,
+            openImportDialog: false,
+            signFmeca: false,
             parentOrganization: null,
             logDataServer: [],
             logDataClient: [],
@@ -1001,14 +1037,47 @@ export default {
                 this.openExportDialog = true
             } 
         },
+        handleImportCommand(cmd) {
+           if (cmd === 'importExcel') {
+                this.openImportDialog = true
+            } else if(cmd === 'importJSON'){
 
-        handleCancelExport() {
+            } else if(cmd === 'importXML'){
+                this.openImportDialog = true
+            } else if(cmd === 'importWord'){
+                this.openImportDialog = true
+            } else if(cmd === 'importPDF'){
+                this.openImportDialog = true
+            }  
+        },
+        handleCancelImport(){
+            this.openImportDialog = false
+        },
+
+        handleImportConfirm(){
+            this.openImportDialog = false
+            this.$message.success("Import successfully")
+        },
+        handleCancelExport(){
             this.openExportDialog = false
         },
 
         handleExportConfirm() {
             this.openExportDialog = false
             this.$message.success("Export successfully")
+        },
+
+        handleFmecaCancel() {
+            this.signFmeca = false
+        },
+
+        handleFmecaConfirm() {
+            this.signFmeca = false
+            this.$message.success("Save successfully")
+        },
+
+        handleClickFmeca() {
+            this.signFmeca = true;
         },
 
         async reloadLogClient(doneCallback) {
