@@ -1,12 +1,12 @@
 <template>
     <div>
-        <PropertiesReactor :properties="reactor.properties"></PropertiesReactor>
+        <PropertiesReactor :data="reactor.properties" @update-attachment="updateAttachment" :attachment.sync="this.attachmentData"></PropertiesReactor>
         <el-row style="margin-top: 20px;" :gutter="20" class="content">
             <el-col :span="12" class="col-content">    
-                <RatingsReactor :ratings="reactor.reactorRating"></RatingsReactor>
+                <RatingsReactor :data="reactor.reactorRating"></RatingsReactor>
             </el-col>
             <el-col :span="12" class="col-content">    
-                <OthersReactor :other="reactor.reactorOther"></OthersReactor>
+                <OthersReactor :data="reactor.reactorOther"></OthersReactor>
             </el-col>
         </el-row>
     </div>
@@ -15,7 +15,7 @@
 import PropertiesReactor from './components/properties.vue'
 import OthersReactor from './components/others.vue'
 import RatingsReactor from './components/ratings.vue'
-import ReactorDto from '@/views/Dto/Reactor';
+import mixin from './mixin'
 export default {
     name: 'Reactor',
     components: {
@@ -23,14 +23,33 @@ export default {
         OthersReactor,
         RatingsReactor
     },
+    props: {
+        parent : {
+            type: Object,
+            default: () => ({})
+        },
+        organisationId: {
+            type: String,
+            default: ''
+        },
+
+        locationId: {
+            type: String,
+            default: ''
+        },
+    },
     data() {
         return {
-            reactor : new ReactorDto(),
+            parentData : JSON.parse(JSON.stringify(this.parent)),
         }
     },
+    mixins : [mixin],
     methods: {
-        resetForm() {
+        updateAttachment(attachment) {
+            this.attachmentData = attachment
         },
+        loadMapForView() {
+        }
     },
 }
 
