@@ -2,7 +2,7 @@
 import db from '../../datacontext/index'
 import path from 'path'
 import * as attachmentContext from '../../attachmentcontext/index'
-import circuitBreakerEntity from '@/views/Entity/CircuitBreaker'
+import circuitBreakerEntity from '@/views/Flatten/CircuitBreaker'
 import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, deleteDirectory } from '@/function/entity/attachment'
 import { insertVoltageTransaction, getVoltageByIds, deleteVoltageByIdTransaction } from '@/function/cim/voltage';
 import { insertCurrentFlowTransaction, getCurrentFlowByIds, deleteCurrentFlowByIdTransaction } from '@/function/cim/currentFlow';

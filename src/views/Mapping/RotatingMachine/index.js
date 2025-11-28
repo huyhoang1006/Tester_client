@@ -2,7 +2,7 @@ import ApparentPower from "@/views/Cim/ApparentPower";
 import CurrentFlow from "@/views/Cim/CurrentFlow";
 import Frequency from "@/views/Cim/Frequency";
 import Voltage from "@/views/Cim/Voltage";
-import RotatingMachineEntity from "@/views/Entity/RotatingMachine";
+import RotatingMachineEntity from "@/views/Flatten/RotatingMachine";
 import RotatingMachineDTO from "@/views/Dto/RotatingMachine";
 
 const mappingUnit = (map, unitDto) => {

@@ -29,7 +29,7 @@ import {insertShortCircuitTestTransaction, getShortCircuitTestByTransformerEndIn
 import {insertSCTTransformerEndInfoTransaction, getSCTTransformerEndInfoByShortCircuitTestId, deleteSCTTransformerEndInfoByIdTransaction} from "@/function/cim/shortCircuitTestTransformerEndInfo"
 import {insertShortCircuitRatingTransaction, deleteShortCircuitRatingByIdTransaction, getShortCircuitRatingByPowerTransformerInfoId} from '@/function/cim/shortCircuitRating'
 
-import TransformerEntity from '@/views/Entity/Transformer/index';
+import TransformerEntity from '@/views/Flatten/Transformer/index';
 
 export const insertTransformerEntity = async (old_entity,entity) => {
     console.log(entity.attachment)
