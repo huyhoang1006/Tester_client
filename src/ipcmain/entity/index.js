@@ -15,6 +15,8 @@ import * as ipcRotatingMachine from './rotatingMachine/index.js'
 import * as ipcCurrentTransformer from './currentTransformer/index.js'
 import * as ipcCapacitor from './capacitor/index.js'
 import * as ipcBreaker from './breaker/index.js'
+import * as ipcReactor from './reactor/index.js'
+import * as ipcExport from './export/index.js'
 
 export const active = () => {
     ipcSubstation.active()
@@ -34,4 +36,6 @@ export const active = () => {
     ipcCurrentTransformer.active()
     ipcCapacitor.active()
     ipcBreaker.active()
+    ipcReactor.active()
+    ipcExport.active()
 }

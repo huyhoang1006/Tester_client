@@ -1,6 +1,6 @@
 <template>
     <li>
-        <span @contextmenu.prevent="openContextMenu($event, node)" :class="{ selected: selectedNodes.some(n => n.id === node.id) }" class="folder" @click="toggle" @dblclick="doubleToggle">
+        <span @contextmenu.prevent="openContextMenu($event, node)" :class="{ selected: selectedNodes.some(n => n.mrid === node.mrid) }" class="folder" @click="toggle" @dblclick="doubleToggle">
             <div v-if="node.mode == 'substation'" class="icon-wrapper">
                 <icon size="16px" folderType="location" badgeColor="146EBE"></icon>
                 <span class="node-name">{{ node.name }}</span>
@@ -73,7 +73,7 @@ export default {
             contextMenuY: 0,
             dataType : ["OWNER1", "OWNER2", "OWNER3", "OWNER4", "OWNER5"],
             dataOwnerType : ["location", "voltage", "feeder"],
-            assetType : ["Transformer", "Circuit breaker", "Current transformer", "Disconnector", "Surge arrester", "Power cable", "Voltage transformer"],
+            assetType : ["Transformer", "Circuit breaker", "Current transformer", "Disconnector", "Surge arrester", "Power cable", "Voltage transformer","Reactor"],
             clickTimeout: null
         }
     },
@@ -127,7 +127,7 @@ export default {
 }
 
 .folder:hover {
-    background-color: #555;
+    background-color:rgb(127, 127, 127);
     color: white;
 }
 
@@ -144,7 +144,7 @@ ul {
 }
 
 .selected {
-    background-color: #007bff;
+    background-color: #000;
     color: white;
 }
 

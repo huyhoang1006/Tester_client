@@ -112,16 +112,16 @@
                 <el-row style="width: inherit;">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item class="asset-item" label="Asset">
-                            <span class="asset-name">{{ assetData.kind }}</span>
+                            <span class="asset-name">{{ assetData.properties.kind }}</span>
                         </el-form-item>
                         <el-form-item class="asset-item" label="Asset type">
-                            <span class="asset-name">{{ assetData.type }}</span>
+                            <span class="asset-name">{{ assetData.properties.type }}</span>
                         </el-form-item>
                         <el-form-item class="asset-item" label="Serial number">
-                            <span class="asset-name">{{ assetData.serial_number }}</span>
+                            <span class="asset-name">{{ assetData.properties.serial_no }}</span>
                         </el-form-item>
                         <el-form-item class="asset-item" label="Manufacturer">
-                            <span class="asset-name">{{ assetData.manufacturer }}</span>
+                            <span class="asset-name">{{ assetData.properties.manufacturer }}</span>
                         </el-form-item>
                     </el-form>
                 </el-row>
@@ -183,9 +183,9 @@ export default {
             require: true,
             default() {
                 return {
-                    id: '',
-                    asset: '',
-                    asset_type: '',
+                    mrid: '',
+                    type: '',
+                    kind: '',
                     serial_number: '',
                     manufacturer: ''
                 }

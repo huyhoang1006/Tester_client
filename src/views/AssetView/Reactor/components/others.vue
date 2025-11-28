@@ -4,7 +4,7 @@
             <span class="bolder">Others</span>
             <el-divider></el-divider>
             <el-form-item label="Insulation type">
-                <el-input v-model="otherData.insulation_type.value">
+                <el-input v-model="otherData.insulation_type">
                     <template slot="append">kV</template>
                 </el-input>
             </el-form-item>
@@ -25,7 +25,7 @@ export default {
         }
     },
     props: {
-        other: {
+        data: {
             type: Object,
             default: () => ({})
         },
@@ -34,7 +34,7 @@ export default {
     },
     computed: {
         otherData() {
-            return this.other
+            return this.data
         }
     },
 }

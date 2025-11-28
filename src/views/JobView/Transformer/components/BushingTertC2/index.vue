@@ -45,39 +45,39 @@
                     <tr :key="index">
                         <td>{{ index + 1 }}</td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.measurement"></el-input>
+                            <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.test_mode"></el-input>
+                            <el-input size="mini" type="text" v-model="item.test_mode.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.test_voltage"></el-input>
+                            <el-input size="mini" type="text" v-model="item.test_voltage.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.df_ref"></el-input>
+                            <el-input size="mini" type="text" v-model="item.df_ref.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.c_ref"></el-input>
+                            <el-input size="mini" type="text" v-model="item.c_ref.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.df_meas"></el-input>
+                            <el-input size="mini" type="text" v-model="item.df_meas.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.c_meas"></el-input>
+                            <el-input size="mini" type="text" v-model="item.c_meas.value"></el-input>
                         </td>
                         <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment">
+                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
                                 <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                                 <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
-                            <span v-if="item.assessment==='Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment==='Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                            <span v-if="item.assessment.value==='Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                            <span v-else-if="item.assessment.value==='Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator_df)" size="mini" type="text" v-model="item.condition_indicator_df"></el-input>
+                            <el-input :class="nameColor(item.condition_indicator_df.value)" size="mini" type="text" v-model="item.condition_indicator_df.value"></el-input>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator_c)" size="mini" type="text" v-model="item.condition_indicator_c"></el-input>
+                            <el-input :class="nameColor(item.condition_indicator_c.value)" size="mini" type="text" v-model="item.condition_indicator_c.value"></el-input>
                         </td>
                         <td>
                             <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
@@ -99,7 +99,7 @@
         </el-dialog>
 
         <!-- Condition indicator settings -->
-        <el-dialog title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="860px">
+        <el-dialog append-to-body title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="860px">
         </el-dialog>
     </div>
 </template>
@@ -135,16 +135,66 @@ export default {
     methods: {
         add() {
             this.testData.table.push({
-                measurement: '',
-                test_mode: '',
-                test_voltage: '',
-                df_ref: '',
-                c_ref: '',
-                df_meas: '',
-                c_meas: '',
-                assessment: '',
-                condition_indicator_df: '',
-                condition_indicator_c: ''
+               measurement: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'string'
+                        },
+                        test_mode: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
+                        },
+                        test_voltage: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'analog'
+                        },
+                        df_ref: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'analog'
+                        },
+                        c_ref: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'analog'
+                        },
+                        df_meas: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'analog'
+                        },
+                        c_meas: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'analog'
+                        },
+                        assessment: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
+                        },
+                        condition_indicator_df: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
+                        },
+                        condition_indicator_c: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
+                        }
             })
         },
         removeAll() {
@@ -165,16 +215,66 @@ export default {
         },
         addTest(index) {
             const data = {
-                measurement: '',
-                test_mode: '',
-                test_voltage: '',
-                df_ref: '',
-                c_ref: '',
-                df_meas: '',
-                c_meas: '',
-                assessment: '',
-                condition_indicator_df: '',
-                condition_indicator_c: ''
+                measurement: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'string'
+                        },
+                        test_mode: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
+                        },
+                        test_voltage: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'analog'
+                        },
+                        df_ref: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'analog'
+                        },
+                        c_ref: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'analog'
+                        },
+                        df_meas: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'analog'
+                        },
+                        c_meas: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'analog'
+                        },
+                        assessment: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
+                        },
+                        condition_indicator_df: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
+                        },
+                        condition_indicator_c: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
+                        }
             }
             this.testData.table.splice(index+1, 0, data)
         },

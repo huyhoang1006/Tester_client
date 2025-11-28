@@ -1,14 +1,14 @@
 /* eslint-disable */
-import CurrentTransformerJobEntity from "@/views/Entity/Job/CurrentTransformer"
+import CurrentTransformerJobEntity from "@/views/Flatten/Job/CurrentTransformer"
 import CurrentTransformerJobDto from "@/views/Dto/Job/CurrentTransformer";
 import WorkTask from "@/views/Cim/WorkTask";
 import TestDataSet from "@/views/Cim/TestDataSet";
 import OldTransformerObservation from "@/views/Cim/OldTransformerObservation";
-import Attachment from '@/views/Entity/Attachment'
+import Attachment from '@/views/Flatten/Attachment'
 import { UnitSymbol } from "@/views/Enum/UnitSymbol";
 import Percent from "@/views/Cim/Percent";
 import Temperature from "@/views/Cim/Temperature";
-import TestingEquipment from "@/views/Entity/TestingEquipment";
+import TestingEquipment from "@/views/Flatten/TestingEquipment";
 import StringMeaurementValue from "@/views/Cim/StringMeasurementValue";
 import AnalogValue from "@/views/Cim/AnalogValue";
 import DiscreteValue from "@/views/Cim/DiscreteValue";
