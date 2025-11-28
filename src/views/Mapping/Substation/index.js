@@ -1,5 +1,5 @@
 /* eslint-disable */
-import SubstationEntity from '@/views/Entity/Substation/index'
+import SubstationEntity from '@/views/Flatten/Substation/index'
 // import SubstationDto from '@/views/Dto/Substation/index'
 import PositionPoint from '@/views/Cim/PositionPoint'
 import ConfigurationEvent from '@/views/Cim/ConfigurationEvent'

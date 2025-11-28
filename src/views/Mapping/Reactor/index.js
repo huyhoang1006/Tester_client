@@ -2,7 +2,7 @@ import ReactivePower from "@/views/Cim/ReactivePower";
 import CurrentFlow from "@/views/Cim/CurrentFlow";
 import Frequency from "@/views/Cim/Frequency";
 import Voltage from "@/views/Cim/Voltage";
-import ReactorEntity from "@/views/Entity/Reactor";
+import ReactorEntity from "@/views/Flatten/Reactor";
 import ReactorDTO from "@/views/Dto/Reactor";
 import Mass from "@/views/Cim/Mass";
 import Inductance from "@/views/Cim/Inductance";

@@ -10,7 +10,7 @@ import {insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDat
 import {insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction} from '@/function/cim/productAssetModel';
 import {insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction} from '@/function/entity/assetPsr'
 import { insertOldSurgeArresterInfoTransaction, getOldSurgeArresterInfoBySurgeArresterId, deleteOldSurgeArresterInfoByIdTransaction } from '@/function/cim/oldSurgeArresterInfo';
-import SurgeArresterEntity from '@/views/Entity/SurgeArrester';
+import SurgeArresterEntity from '@/views/Flatten/SurgeArrester';
 
 export const insertSurgeArresterEntity = async (old_entity,entity) => {
     try {

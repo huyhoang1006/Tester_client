@@ -1,4 +1,4 @@
-import DisconnectorEntity from '@/views/Entity/Disconnector'
+import DisconnectorEntity from '@/views/Flatten/Disconnector'
 import DisconnectorDto from '@/views/Dto/Disconnector'
 import Voltage from '@/views/Cim/Voltage'
 import Frequency from '@/views/Cim/Frequency'
