@@ -12,7 +12,7 @@ import {insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDat
 import {insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction} from '@/function/cim/productAssetModel';
 import {insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction} from '@/function/entity/assetPsr'
 import { insertOldBushingInfoTransaction, getOldBushingInfoById, deleteOldBushingInfoTransaction } from '@/function/cim/oldBushingInfo';
-import BushingEntity from '@/views/Entity/Bushing';
+import BushingEntity from '@/views/Flatten/Bushing';
 
 export const insertBushingEntity = async (entity) => {
     console.log(entity.attachment)

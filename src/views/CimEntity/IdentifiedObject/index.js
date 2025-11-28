@@ -1,8 +1,10 @@
 class IdentifiedObject {
     constructor() {
-        this.mRID = null,
-        this.name = null,
-        this.aliasName = null,
-        this.description = null
+                this.name = null;
+                this.aliasName = null;
+                this.description = null;
+        this.mRID = null
     }
 }
+
+export default IdentifiedObject

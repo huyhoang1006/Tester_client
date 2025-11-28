@@ -1,4 +1,4 @@
-import PowerCableEntity from "@/views/Entity/PowerCable";
+import PowerCableEntity from "@/views/Flatten/PowerCable";
 import Temperature from "@/views/Cim/Temperature";
 import Voltage from "@/views/Cim/Voltage";
 import Frequency from "@/views/Cim/Frequency";
