@@ -320,43 +320,15 @@ export const deleteReactorEntity = async (entity) => {
             await deleteLifecycleDateByIdTransaction(entity.lifecycleDate.mrid, db);
         }
 
-        // 6. Xóa dissipationFactorCapacitorInfo
-        for (const dissipationFactorInfo of entity.dissipationFactorCapacitorInfo || []) {
-            if (dissipationFactorInfo.mrid) {
-                await deleteDissipationFactorCapacitorInfoTransaction(dissipationFactorInfo.mrid, db);
-            }
-        }
-
-        // 7. Xóa capacitanceCapacitorInfo
-        for (const capacitanceInfo of entity.capacitanceCapacitorInfo || []) {
-            if (capacitanceInfo.mrid) {
-                await deleteCapacitanceInfoTransaction(capacitanceInfo.mrid, db);
-            }
-        }
-
-        // 8. Xóa capacitorInfo
-        if (entity.capacitor && entity.capacitor.mrid) {
-            await deleteCapacitorInfoTransaction(entity.capacitor.mrid, db);
-        }
-
-        // 9. Xóa percent
-        for (const percent of entity.percent || []) {
-            if (percent.mrid) {
-                await deletePercentByIdTransaction(percent.mrid, db);
-            }
+        // 8. Xóa reactorInfo
+        if (entity.reactor && entity.reactor.mrid) {
+            await deleteReactorInfoTransaction(entity.reactor.mrid, db);
         }
 
         // 10. Xóa mass
         for (const mass of entity.mass || []) {
             if (mass.mrid) {
                 await deleteMassByIdTransaction(mass.mrid, db);
-            }
-        }
-
-        // 11. Xóa capacitance
-        for (const capacitance of entity.capacitance || []) {
-            if (capacitance.mrid) {
-                await deleteCapacitanceByIdTransaction(capacitance.mrid, db);
             }
         }
 
@@ -387,12 +359,19 @@ export const deleteReactorEntity = async (entity) => {
                 await deleteCurrentFlowByIdTransaction(currentFlow.mrid, db);
             }
         }
+
+        // 16. Xóa inductance
+        for (const inductance of entity.inductance || []) {
+            if (inductance.mrid) {
+                await deleteInductanceByIdTransaction(inductance.mrid, db);
+            }
+        }
         await runAsync('COMMIT');
-        return { success: true, message: 'Capacitor entity deleted successfully' };
+        return { success: true, message: 'Reactor entity deleted successfully' };
     } catch (error) {
         await runAsync('ROLLBACK');
-        console.error('Error deleting Capacitor entity:', error);
-        return { success: false, error, message: 'Error deleting Capacitor entity' };
+        console.error('Error deleting Reactor entity:', error);
+        return { success: false, error, message: 'Error deleting Reactor entity' };
     }
 };
 
