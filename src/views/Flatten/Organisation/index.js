@@ -2,10 +2,10 @@ import TelephoneNumber from '@/views/Cim/TelephoneNumber';
 import StreetAddress from '@/views/Cim/StreetAddress';
 import TownDetail from '@/views/Cim/TownDetail';
 import StreetDetail from '@/views/Cim/StreetDetail';    
-import Attachment from '@/views/Entity/Attachment';
+import Attachment from '@/views/Flatten/Attachment';
 import EletronicAddress from '@/views/Cim/ElectronicAddress';
 import Organisation from '@/views/Cim/Organisation';
-import User from '@/views/Entity/User/index'
+import User from '@/views/Flatten/User/index'
 
 class OrganisationEntity {
     constructor() {

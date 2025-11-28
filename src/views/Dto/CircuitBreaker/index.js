@@ -1,5 +1,5 @@
 import PropertiesDto from './Properties';
-import Attachment from "@/views/Entity/Attachment";
+import Attachment from "@/views/Flatten/Attachment";
 import circuitBreakerDto from "./CircuitBreaker";
 import ratingsDto from  "./Ratings"
 import ContactSystemDto from "./ContactSystem";
