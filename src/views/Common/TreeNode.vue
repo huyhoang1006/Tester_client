@@ -127,7 +127,7 @@ export default {
 }
 
 .folder:hover {
-    background-color:rgb(127, 127, 127);
+    background-color:rgb(189, 184, 184);
     color: white;
 }
 
@@ -144,7 +144,7 @@ ul {
 }
 
 .selected {
-    background-color: #000;
+    background-color: #555;
     color: white;
 }
 
