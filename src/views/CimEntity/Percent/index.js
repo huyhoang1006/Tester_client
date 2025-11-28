@@ -1,9 +1,10 @@
 class Percent {
     constructor() {
-        this.mRID = null,
-        this.multiplier = null
-        this.unit = new null
-        this.value = null
+        this.mRID = null // Unique identifier for the percent value
+                this.multiplier = null;
+                this.unit = null;
+                this.value = null; // e.g., 0.75 for 75%
     }
 }
-export default Percent
+
+export default Percent;

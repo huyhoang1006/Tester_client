@@ -13,7 +13,7 @@ import { getVoltageById } from '@/function/cim/voltage';
 import { getFrequencyById } from '@/function/cim/frequency';
 import { getCurrentFlowById } from '@/function/cim/currentFlow';
 import { getSecondById } from '@/function/cim/seconds';
-import DisconnectorEntity from '@/views/Entity/Disconnector';
+import DisconnectorEntity from '@/views/Flatten/Disconnector';
 import { insertAssetTransaction, getAssetById } from '@/function/cim/asset';
 import { deleteAssetByIdTransaction } from '@/function/cim/asset';
 import {insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction} from '@/function/entity/assetPsr'

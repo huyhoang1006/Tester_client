@@ -1,4 +1,4 @@
-import Attachment from "@/views/Entity/Attachment";
+import Attachment from "@/views/Flatten/Attachment";
 
 class SurgeArresterJobDto {
     constructor() {

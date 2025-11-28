@@ -1,15 +1,15 @@
 /* eslint-disable */
-import CircuitBreakerJobEntity from "@/views/Entity/Job/CircuitBreaker"
+import CircuitBreakerJobEntity from "@/views/Flatten/Job/CircuitBreaker"
 import CircuitBreakerJobDto from "@/views/Dto/Job/CircuitBreaker";
 import WorkTask from "@/views/Cim/WorkTask";
 import TestDataSet from "@/views/Cim/TestDataSet";
 import OldTransformerObservation from "@/views/Cim/OldTransformerObservation";
-import Attachment from '@/views/Entity/Attachment'
+import Attachment from '@/views/Flatten/Attachment'
 import { UnitSymbol } from "@/views/Enum/UnitSymbol";
 import Percent from "@/views/Cim/Percent";
 import Temperature from "@/views/Cim/Temperature";
-import TestingEquipment from "@/views/Entity/TestingEquipment";
-import CircuitBreakerTestType from "@/views/Entity/CircuitBreakerTestType";
+import TestingEquipment from "@/views/Flatten/TestingEquipment";
+import CircuitBreakerTestType from "@/views/Flatten/CircuitBreakerTestType";
 import StringMeaurementValue from "@/views/Cim/StringMeasurementValue";
 import AnalogValue from "@/views/Cim/AnalogValue";
 import DiscreteValue from "@/views/Cim/DiscreteValue";
