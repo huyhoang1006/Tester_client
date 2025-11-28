@@ -1,6 +1,5 @@
 import OldWork from "@/views/Cim/OldWork/index";
 import Attachment from "../../Attachment";
-import Procedure from "@/views/Cim/Procedure";
 class SurgeArresterJobEntity {
     constructor() {
         this.oldWork = new OldWork();
@@ -23,7 +22,8 @@ class SurgeArresterJobEntity {
         this.measurementProcedure = []
         this.valueAliasSet = []
         this.valueToAlias = []
-        this.procedure = new Procedure();
+        this.procedure = []
+        this.procedureAsset = []
     }
 }
 
