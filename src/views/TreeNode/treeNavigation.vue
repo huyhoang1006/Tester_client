@@ -3429,6 +3429,30 @@ export default {
                                 } else {
                                     this.$message.warning("Parent node not found in tree");
                                 }
+                            }else if (node.asset === 'Reactor') {
+                                const entity = await window.electronAPI.getReactorEntityByMrid(node.mrid, node.parentId);
+                                if (!entity.success) {
+                                    this.$message.error("Entity not found");
+                                    return;
+                                }
+                                const deleteSign = await window.electronAPI.deleteReactorEntity(entity.data);
+                                if (!deleteSign.success) {
+                                    this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
+                                    return;
+                                }
+                                // ✅ Xóa node khỏi cây organisationClientList
+                                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
+                                if (parentNode && Array.isArray(parentNode.children)) {
+                                    const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
+                                    if (index !== -1) {
+                                        parentNode.children.splice(index, 1); // Xóa khỏi mảng children
+                                        this.$message.success("Delete data successfully");
+                                    } else {
+                                        this.$message.warning("Node not found in tree structure");
+                                    }
+                                } else {
+                                    this.$message.warning("Parent node not found in tree");
+                                }
                             } else if (node.asset === 'Voltage transformer') {
                                 const entity = await window.electronAPI.getVoltageTransformerEntityByMrid(node.mrid, node.parentId);
                                 if (!entity.success) {
