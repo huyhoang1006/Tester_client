@@ -4,7 +4,6 @@ import * as surgeArresterJobMapping from "@/views/Mapping/SurgerArresterJob/inde
 import SurgeArresterJobDto from "@/views/Dto/Job/SurgeArrester/index";
 import mixins from '../components/SelectTest/mixin'
 import MeasurementProcedure from "@/views/Cim/MeasurementProcedure";
-import ValueAliasSet from "@/views/Cim/ValueAliasSet";
 
 export default {
     mixins: [mixins],
@@ -87,6 +86,9 @@ export default {
             this.checkAssetId(data);
             this.checkAttachment(data);
             this.checkTestingEquipment(data);
+            this.checkTestTypeList(data);
+            this.checkDataMeasurement(data);
+            this.checkProcedureAsset(data);
             await this.checkTestList(data);
             return data;
         },
@@ -152,6 +154,51 @@ export default {
                         old.test_type_id === current.test_type_id
                 )
             );
+        },
+
+        checkTestTypeList(data) {
+            const ids = data.testTypeList.map(item => item.mrid)
+            for(const item of this.testTypeListData) {
+                if(!ids.includes(item.mrid)) {
+                    data.testTypeList.push(item);
+                }
+            }
+        },
+
+        checkProcedureAsset(data) {
+            const testTypeListIds = data.testTypeList.map(item => item.mrid);
+            const procedureAssetIds = data.procedureAsset.map(item => item.procedure_id);
+
+            // 1. Những ID cần thêm
+            const missingInProcedureAsset = testTypeListIds.filter(id => !procedureAssetIds.includes(id));
+
+            // 2. Những ID cần xóa
+            const missingInTestTypeList = procedureAssetIds.filter(id => !testTypeListIds.includes(id));
+
+            // 3. THÊM các item còn thiếu
+            const newItems = missingInProcedureAsset.map(id => ({
+                mrid: uuid.newUuid(),
+                procedure_id: id,
+                asset_id: this.assetData.mrid
+            }));
+
+            // 4. LOẠI BỎ các item dư
+            const filtered = data.procedureAsset.filter(
+                item => !missingInTestTypeList.includes(item.procedure_id)
+            );
+
+            // 5. Gộp lại (cũ hợp lệ + mới)
+            data.procedureAsset = [...filtered, ...newItems];
+        },
+
+        async checkDataMeasurement(data) {
+            const testTypeListIds = [...new Set(data.testList.map(item => item.testTypeId))];
+            for(const item of testTypeListIds) {
+                const dataStringMeasurementSet = await window.electronAPI.getAllStringMeasurementByProcedure(item)
+                if (dataStringMeasurementSet.success) {
+                    console.log(dataStringMeasurementSet.data)
+                }
+            }
         },
 
         async checkTestList(data) {

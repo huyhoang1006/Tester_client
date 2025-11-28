@@ -11,7 +11,7 @@ import { insertFrequencyTransaction, getFrequencyByIds, deleteFrequencyByIdTrans
 import { insertAssetTransaction, getAssetById, deleteAssetByIdTransaction } from '@/function/cim/asset';
 import { insertRotatingMachineInfoTransaction, getRotatingMachineInfoById, deleteRotatingMachineInfoTransaction } from '@/function/cim/rotatingMachineInfo';
 import { insertApparentPowerTransaction, getApparentPowerByIds, deleteApparentPowerByIdTransaction } from '@/function/cim/apparentPower';
-import RotatingMachineEntity from '@/views/Entity/RotatingMachine';
+import RotatingMachineEntity from '@/views/Flatten/RotatingMachine';
 
 
 

@@ -73,7 +73,7 @@ export default {
             contextMenuY: 0,
             dataType : ["OWNER1", "OWNER2", "OWNER3", "OWNER4", "OWNER5"],
             dataOwnerType : ["location", "voltage", "feeder"],
-            assetType : ["Transformer", "Circuit breaker", "Current transformer", "Disconnector", "Surge arrester", "Power cable", "Voltage transformer"],
+            assetType : ["Transformer", "Circuit breaker", "Current transformer", "Disconnector", "Surge arrester", "Power cable", "Voltage transformer","Reactor"],
             clickTimeout: null
         }
     },

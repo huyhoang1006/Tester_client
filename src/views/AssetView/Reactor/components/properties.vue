@@ -76,7 +76,14 @@ export default {
         },
         update : {
             require : true
-        }
+        },
+        data: {
+            type: Object,
+            required: true,
+            default() {
+                return {}
+            }
+        },
     },
     data() {
         return {
@@ -91,8 +98,8 @@ export default {
         },
     },
     computed : {
-        propertiesData() {
-            return this.$parent.reactor?.properties || {}
+        propertiesData: function () {
+            return this.data
         }
     },
 }

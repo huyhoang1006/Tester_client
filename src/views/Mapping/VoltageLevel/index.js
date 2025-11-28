@@ -1,4 +1,4 @@
-import VoltageLevelEntity from "@/views/Entity/VoltageLevel";
+import VoltageLevelEntity from "@/views/Flatten/VoltageLevel";
 import VoltageLevelDto from "@/views/Dto/VoltageLevel/index.js";
 import Voltage from "@/views/Cim/Voltage";
 

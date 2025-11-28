@@ -1,5 +1,5 @@
 import PropertiesDto from "./Properties";
-import Attachment from "@/views/Entity/Attachment";
+import Attachment from "@/views/Flatten/Attachment";
 import WindingConfigurationDto from "./WindingConfiguration";
 import RatingsDto from "./Ratings/index";
 import ImpedancesDto from "./Impedances";

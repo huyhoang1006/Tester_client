@@ -3,7 +3,7 @@ import Capacitance from "@/views/Cim/Capacitance";
 import CurrentFlow from "@/views/Cim/CurrentFlow";
 import Frequency from "@/views/Cim/Frequency";
 import Voltage from "@/views/Cim/Voltage";
-import CapacitorEntity from "@/views/Entity/Capacitor";
+import CapacitorEntity from "@/views/Flatten/Capacitor";
 import CapacitorsDTO from "@/views/Dto/Capacitor";
 import Percent from "@/views/Cim/Percent";
 import Mass from "@/views/Cim/Mass";

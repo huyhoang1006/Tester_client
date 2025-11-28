@@ -9,7 +9,7 @@ import { insertAssetTransaction, getAssetById, deleteAssetByIdTransaction } from
 import { insertOldPotentialTransformerTransaction, getOldPotentialTransformerInfoById, deleteOldPotentialTransformerInfoTransaction } from '@/function/cim/OldPotentialTransformerInfo/index.js'
 import { insertPotentialTransformerTable, deletePotentialTransformerTableByPotentialTransformerInfoId, getPotentialTransformerTableByPotentialTransformerInfoId } from '@/function/cim/PotentialTransformerTable/index.js'
 import { insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction, deleteAssetPsrByIdTransaction } from '@/function/entity/assetPsr'
-import VoltageTransformerEntity from '@/views/Entity/VoltageTransformer'
+import VoltageTransformerEntity from '@/views/Flatten/VoltageTransformer'
 import { getAssetInfoById , deleteAssetInfoByIdTransaction } from '@/function/cim/assetInfo'
 
 
