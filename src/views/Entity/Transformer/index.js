@@ -1,5 +1,5 @@
 import Asset from '../../Cim/Asset'
-import Attachment from "../../Entity/Attachment";
+import Attachment from "../Attachment";
 import Manufacturer from '@/views/Cim/Manufacturer'
 import ProductAssetModel from '@/views/Cim/ProductAssetModel'
 import OldPowerTransformerInfo from '@/views/Cim/OldPowerTransformerInfo'

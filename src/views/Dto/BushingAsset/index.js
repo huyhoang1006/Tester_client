@@ -1,6 +1,6 @@
 import PropertiesDto from './Properties/index.js';
 import BushingDto from './Bushing/index.js';
-import Attachment from '@/views/Entity/Attachment'
+import Attachment from '@/views/Entity/Attachment/index.js'
 class BushingAssetDto {
     constructor() {
         this.properties = new PropertiesDto();
