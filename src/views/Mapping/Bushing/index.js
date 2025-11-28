@@ -1,5 +1,5 @@
 /* eslint-disable */
-import BushingingEntity from "@/views/Entity/Bushing";
+import BushingingEntity from "@/views/Flatten/Bushing";
 import BushingDto from "@/views/Dto/BushingAsset";
 import Voltage from "@/views/Cim/Voltage";
 import CurrentFlow from "@/views/Cim/CurrentFlow";

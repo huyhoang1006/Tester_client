@@ -12,24 +12,28 @@
             <tbody>
                 <tr>
                     <th>Load loss (W)</th>
-                    <td><el-input size="mini" v-model="testData.load_loss.result"></el-input></td>
-                    <td><el-input size="mini" v-model="testData.load_loss.standard"></el-input></td>
+                    <td><el-input size="mini" v-model="testData.load_loss.result.value"></el-input></td>
+                    <td><el-input size="mini" v-model="testData.load_loss.standard.value"></el-input></td>
                     <td>
-                        <el-select size="mini" v-model="testData.load_loss.assessment">
-                            <el-option label="Pass" value="Pass"></el-option>
-                            <el-option label="Fail" value="Fail"></el-option>
+                        <el-select  class="assessment" size="mini" v-model="testData.load_loss.assessment.value">
+                            <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                         </el-select>
+                        <span v-if="testData.load_loss.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="testData.load_loss.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                 </tr>
                 <tr>
                     <th>Short circuit impedance(%)</th>
-                    <td><el-input size="mini" v-model="testData.short_circuit_impedance.result"></el-input></td>
-                    <td><el-input size="mini" v-model="testData.short_circuit_impedance.standard"></el-input></td>
+                    <td><el-input size="mini" v-model="testData.short_circuit_impedance.result.value"></el-input></td>
+                    <td><el-input size="mini" v-model="testData.short_circuit_impedance.standard.value"></el-input></td>
                     <td>
-                        <el-select size="mini" v-model="testData.short_circuit_impedance.assessment">
-                            <el-option label="Pass" value="Pass"></el-option>
-                            <el-option label="Fail" value="Fail"></el-option>
+                        <el-select  class="assessment" size="mini" v-model="testData.short_circuit_impedance.assessment.value">
+                            <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                         </el-select>
+                        <span v-if="testData.short_circuit_impedance.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="testData.short_circuit_impedance.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                 </tr>
             </tbody>

@@ -80,10 +80,14 @@
             </div>
             <div>
                 <el-dropdown @command="handleCommand" trigger="click">
-                <i title="Export" style="font-size: 12px;" class="fa-solid fa-file-export"></i>
+                    <i title="Export" style="font-size: 12px;" class="fa-solid fa-file-export"></i>
                     <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item command="exportJSON">
+                        <el-dropdown-item class="export-json-parent" @mouseenter.native="showSub = 'json'" @mouseleave.native="showSub = null">
                             <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon> export to JSON
+                            <div class="export-json-submenu" v-if="showSub === 'json'" @click.stop @mouseenter.stop @mouseleave.stop>
+                                <div class="submenu-item" @click="handleCommand('exportJSON')">export JSON</div>
+                                <div class="submenu-item" @click="handleCommand('exportJSONCIM')">export JSON by CIM</div>
+                            </div>
                         </el-dropdown-item>
                         <el-dropdown-item command="exportXML">
                             <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon> export to XML
@@ -143,8 +147,7 @@
                         @show-addBushing="showAddBushing" @show-addSurgeArrester="showAddSurgeArrester"
                         @show-addCircuit="showAddCircuitBreaker" @show-addVt="showAddVt" @show-addCt="showAddCt"
                         @show-addPowerCable="showAddPowerCable" @show-addDisconnector="showAddDisconnector"
-                        @show-addCapacitor="showAddCapacitor"
-                        @show-addReactor="showAddReactor"
+                        @show-addCapacitor="showAddCapacitor" @show-addReactor="showAddReactor"
                         @show-addRotatingMachine="showAddRotatingMachine" @show-addBay="showAddBay"
                         @show-data="showDataClient" ref="contextMenuClient">
                     </contextMenu>
@@ -706,8 +709,7 @@
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Reactor" :visible.sync="signReactor" width="1000px"
-            @close="handleReactorCancel">
+        <el-dialog title="Add Reactor" :visible.sync="signReactor" width="1000px" @close="handleReactorCancel">
             <Reactor :locationId="locationId" :parent="parentOrganization" ref="reactor">
             </Reactor>
             <span slot="footer" class="dialog-footer">
@@ -813,6 +815,7 @@ import mixin from './mixin'
 import Attachment from '../Common/Attachment.vue';
 import * as demoAPI from '@/api/demo'
 import * as BreakerMapping from '@/views/Mapping/Breaker/index'
+import * as TransformerMapping from '@/views/Mapping/Transformer/index'
 import Icon from '@/views/Common/Icon.vue'
 import Fmeca from '@/views/Fmeca'
 
@@ -1022,13 +1025,15 @@ export default {
         handleCommand(cmd) {
             if (cmd === 'exportExcel') {
                 this.openExportDialog = true
-            } else if(cmd === 'exportJSON'){
-
-            } else if(cmd === 'exportXML'){
+            } else if (cmd === 'exportJSON') {
+                this.exportTreeToJSON('entity')
+            } else if (cmd === 'exportJSONCIM') {
+                this.exportTreeToJSON('cim')
+            } else if (cmd === 'exportXML') {
                 this.openExportDialog = true
-            } else if(cmd === 'exportWord'){
+            } else if (cmd === 'exportWord') {
                 this.openExportDialog = true
-            } else if(cmd === 'exportPDF'){
+            } else if (cmd === 'exportPDF') {
                 this.openExportDialog = true
             } 
         },
@@ -1057,7 +1062,7 @@ export default {
             this.openExportDialog = false
         },
 
-        handleExportConfirm(){
+        handleExportConfirm() {
             this.openExportDialog = false
             this.$message.success("Export successfully")
         },
@@ -1264,7 +1269,7 @@ export default {
                             window.electronAPI.getBayByVoltageBySubstationId(null, clickedRow.mrid)
                         ]);
                         const [assetTransformerReturn, assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn,
-                            assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetBreakerReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                            assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetBreakerReturn, assetReactorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (voltageLevelReturn.success) {
                             voltageLevelReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
@@ -1418,6 +1423,22 @@ export default {
                             newRows.push(...assetCapacitorReturn.data);
                         }
 
+                        if (assetReactorReturn.success) {
+                            assetReactorReturn.data.forEach(row => {
+                                row.parentId = clickedRow.mrid;
+                                row.mode = 'asset';
+                                row.asset = 'Reactor';
+                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                row.parentName = parentName
+                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr.push({
+                                    mrid: clickedRow.mrid,
+                                    parent: clickedRow.name
+                                })
+                            });
+                            newRows.push(...assetReactorReturn.data);
+                        }
+
                         if (assetCurrentTransformerReturn.success) {
                             assetCurrentTransformerReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
@@ -1490,7 +1511,7 @@ export default {
                     } else if (node.mode == 'bay') {
                         const clickedRow = node;
                         const [assetTransformerReturn, assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn,
-                            assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetBreakerReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                            assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetBreakerReturn, assetReactorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (assetTransformerReturn.success) {
                             assetTransformerReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
@@ -1626,11 +1647,12 @@ export default {
                             });
                             newRows.push(...assetCapacitorReturn.data);
                         }
-                        if (assetBreakerReturn.success) {
-                            assetBreakerReturn.data.forEach(row => {
+                        
+                        if (assetReactorReturn.success) {
+                            assetReactorReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
                                 row.mode = 'asset';
-                                row.asset = 'Circuit breaker';
+                                row.asset = 'Reactor';
                                 let parentName = clickedRow.parentName + "/" + clickedRow.name
                                 row.parentName = parentName
                                 row.parentArr = [...clickedRow.parentArr || []]
@@ -1639,7 +1661,7 @@ export default {
                                     parent: clickedRow.name
                                 })
                             });
-                            newRows.push(...assetBreakerReturn.data);
+                            newRows.push(...assetReactorReturn.data);
                         }
                     } else {
                         const clickedRow = node;
@@ -1687,7 +1709,7 @@ export default {
 
         async fetchAssetByPsr(psrId) {
             try {
-                const [responseTransformer, responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer, responseCapacitor, responseBreaker] = await Promise.all([
+                const [responseTransformer, responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer, responseCapacitor, responseBreaker , responseReactor] = await Promise.all([
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Transformer'),
                     window.electronAPI.getSurgeArresterByPsrId(psrId),
                     window.electronAPI.getBushingByPsrId(psrId),
@@ -1697,9 +1719,10 @@ export default {
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Rotating machine'),
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Current transformer'),
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Capacitor'),
-                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Circuit breaker')
+                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Circuit breaker'),
+                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Reactor')
                 ])
-                return [responseTransformer, responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer, responseCapacitor, responseBreaker];
+                return [responseTransformer, responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer, responseCapacitor, responseBreaker, responseReactor];
             } catch (error) {
                 console.error("Error fetching asset by substation:", error);
                 return {
@@ -1741,7 +1764,7 @@ export default {
                             window.electronAPI.getVoltageLevelBySubstationId(clickedRow.mrid),
                             window.electronAPI.getBayByVoltageBySubstationId(null, clickedRow.mrid)
                         ]);
-                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetReactorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (assetSurgeReturn.success) {
                             newRows.push(...assetSurgeReturn.data);
                         }
@@ -1773,6 +1796,9 @@ export default {
                         if (assetCapacitorReturn.success) {
                             newRows.push(...assetCapacitorReturn.data);
                         }
+                        if (assetReactorReturn.success) {
+                            newRows.push(...assetReactorReturn.data);
+                        }
 
                         if (voltageLevelReturn.success) {
                             newRows.push(...voltageLevelReturn.data);
@@ -1794,7 +1820,7 @@ export default {
 
                     } else if (node.mode == 'bay') {
                         const clickedRow = node;
-                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetReactorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (assetSurgeReturn.success) {
                             newRows.push(...assetSurgeReturn.data);
                         }
@@ -1823,6 +1849,9 @@ export default {
 
                         if (assetCapacitorReturn.success) {
                             newRows.push(...assetCapacitorReturn.data);
+                        }
+                        if(assetReactorReturn.success){
+                            newRows.push(...assetReactorReturn.data);
                         }
                     }
 
@@ -1986,7 +2015,7 @@ export default {
                         } catch (error) {
                             console.log(error)
                         }
-                    }else if (node.mode == 'bay') {
+                    } else if (node.mode == 'bay') {
                         try {
                             const newRowsVoltageLevel = await demoAPI.getAssetByOwner('Bay')
                             if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
@@ -2854,10 +2883,42 @@ export default {
         },
 
         async handleReactorConfirm() {
-            this.$message.success("Reactor saved successfully")
-            // Cần thêm logic để cập nhật lại cây nếu cần thiết
-            // await this.$refs.transformer.saveAsset();
-            this.signReactor = false
+           try {
+                const reactor = this.$refs.reactor
+                if (reactor) {
+                    const { success, data } = await reactor.saveAsset();
+                    if (success) {
+                        this.$message.success("Reactor saved successfully")
+                        this.signReactor = false
+                        let newRows = []
+                        if (this.organisationClientList && this.organisationClientList.length > 0) {
+                            const newRow = {
+                                mrid: data.asset.mrid,
+                                name: data.asset.name,
+                                serial_number: data.asset.serial_number,
+                                parentId: this.parentOrganization.mrid,
+                                parentName: this.parentOrganization.name,
+                                parentArr: this.parentOrganization.parentArr || [],
+                                mode: 'asset',
+                                asset: 'Reactor',
+                            }
+                            newRows.push(newRow);
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            if (node) {
+                                const children = Array.isArray(node.children) ? node.children : [];
+                                Vue.set(node, "children", [...children, ...newRows]);
+                            } else {
+                                this.$message.error("Parent node not found in tree");
+                            }
+                        }
+                    } else {
+                        this.$message.error("Failed to save Capacitor")
+                    }
+                }
+            } catch (error) {
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
         },
 
         async handleJobConfirm() {
@@ -3141,7 +3202,7 @@ export default {
                 // Sử dụng mrid hoặc id để check tab đã tồn tại
                 const nodeKey = newNode.mrid || newNode.id;
                 const existingTab = this.tabs.find(item => (item.mrid || item.id) === nodeKey);
-                
+
                 if (existingTab) {
                     // Nếu tab đã tồn tại, active nó
                     this.activeTab = existingTab;
@@ -4042,6 +4103,15 @@ export default {
                 }
                 else if (node.asset == 'Transformer') {
                     const dataTestType = await window.electronAPI.getAllTestTypeTransformers();
+                    const dataTransformerEntity = await window.electronAPI.getTransformerEntityByMrid(node.mrid);
+                    console.log("dataTransformerEntity", dataTransformerEntity)
+                    const dto = TransformerMapping.transformerEntityToDto(dataTransformerEntity.data);
+                    console.log("dto", dto)
+                    if (dataTransformerEntity.success) {
+                        this.assetData = dto
+                    } else {
+                        this.assetData = {}
+                    }
                     if (dataTestType.success) {
                         this.testTypeListData = dataTestType.data
                     } else {
@@ -4615,5 +4685,34 @@ export default {
 
 .break-word {
     word-break: break-word;
+}
+
+.export-json-parent {
+    position: relative;
+}
+
+.export-json-submenu {
+    position: absolute;
+    left: 100%;
+    top: 0;
+    background: #fff;
+    border: 1px solid #e4e7ed;
+    border-radius: 4px;
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+    min-width: 170px;
+    z-index: 1000;
+    padding: 1px 0;
+}
+
+.export-json-submenu .submenu-item {
+    padding: 1px 20px;
+    font-size: 12px;
+    cursor: pointer;
+    color: #606266;
+}
+
+.export-json-submenu .submenu-item:hover {
+    background-color: #f5f7fa;
+    color: rgb(51.8, 80.6, 171);
 }
 </style>

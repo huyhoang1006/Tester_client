@@ -37,7 +37,7 @@
                             allow-create
                             filterable
                             :reserve-keyword="false"
-                            v-model="testData.type_oil"
+                            v-model="testData.type_oil.value"
                             placeholder="Select insulation type"
                             class="w-100">
                             <el-option label="Askarel" value="Askarel"></el-option>
@@ -50,21 +50,21 @@
                         </el-select>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="testData.election_gap"> </el-input>
+                        <el-input size="mini" v-model="testData.election_gap.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="testData.result"> </el-input>
+                        <el-input size="mini" v-model="testData.result.value"> </el-input>
                     </td>
                     <td>
-                        <el-select class="assessment" size="mini" v-model="testData.assessment">
+                        <el-select class="assessment" size="mini" v-model="testData.assessment.value">
                             <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                             <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                         </el-select>
-                        <span v-if="testData.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                        <span v-else-if="testData.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                        <span v-if="testData.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="testData.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                     <td>
-                        <el-input :class="nameColor(testData.condition_indicator)" id="condition" type="text" size="mini" v-model="testData.condition_indicator">
+                        <el-input :class="nameColor(testData.condition_indicator.value)" id="condition" type="text" size="mini" v-model="testData.condition_indicator.value">
                         </el-input>
                     </td>
                 </tr>
@@ -72,10 +72,10 @@
         </table>
 
         <!-- Assessment settings -->
-        <el-dialog title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px">
+        <el-dialog append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px">
             <el-form size="small" label-position="left" label-width="140px">
                 <el-form-item label="Option">
-                    <el-select class="w-100" placeholder="please select" v-model="assessmentSetting.option">
+                    <el-select class="w-100" placeholder="please select" v-model="assessmentSetting.option.value">
                         <el-option label="Based on IEC" value="IEC"></el-option>
                         <el-option label="Based on IEEE" value="IEEE"></el-option>
                         <el-option label="Customized limit" value="Custom"></el-option>
@@ -83,7 +83,7 @@
                 </el-form-item>
             </el-form>
 
-            <table v-if="assessmentSetting.option === 'IEC'" class="table-strip-input-data">
+            <table v-if="assessmentSetting.option.value === 'IEC'" class="table-strip-input-data">
                 <thead>
                     <tr>
                         <th>Limit</th>
@@ -93,12 +93,12 @@
                 <tbody>
                     <tr>
                         <th>Breakdown voltage (kV)</th>
-                        <td><el-input size="mini" type="number" :min="0" v-model="assessmentSetting.data.iec.voltage"></el-input></td>
+                        <td><el-input size="mini" type="number" :min="0" v-model="assessmentSetting.data.iec.voltage.value"></el-input></td>
                     </tr>
                 </tbody>
             </table>
 
-            <table v-if="assessmentSetting.option === 'IEEE'" class="table-strip-input-data">
+            <table v-if="assessmentSetting.option.value === 'IEEE'" class="table-strip-input-data">
                 <thead>
                     <tr>
                         <th>Limit</th>
@@ -108,12 +108,12 @@
                 <tbody>
                     <tr>
                         <th>Breakdown voltage (kV)</th>
-                        <td><el-input size="mini" type="number" :min="0" v-model="assessmentSetting.data.ieee.voltage"></el-input></td>
+                        <td><el-input size="mini" type="number" :min="0" v-model="assessmentSetting.data.ieee.voltage.value"></el-input></td>
                     </tr>
                 </tbody>
             </table>
 
-            <table v-else-if="assessmentSetting.option === 'Custom'" class="table-strip-input-data">
+            <table v-else-if="assessmentSetting.option.value === 'Custom'" class="table-strip-input-data">
                 <thead>
                     <tr>
                         <th>Limit</th>
@@ -124,7 +124,7 @@
                     <tr>
                         <th>Breakdown voltage (kV)</th>
                         <td>
-                            <el-input size="mini" type="number" :min="0" v-model="assessmentSetting.data.custom.voltage"> </el-input>
+                            <el-input size="mini" type="number" :min="0" v-model="assessmentSetting.data.custom.voltage.value"> </el-input>
                         </td>
                     </tr>
                 </tbody>
@@ -132,7 +132,7 @@
         </el-dialog>
 
         <!-- Condition indicator settings -->
-        <el-dialog title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="600px">
+        <el-dialog append-to-body title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="600px">
             <table class="table-strip-input-data">
                 <thead>
                     <tr>
@@ -143,30 +143,30 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>≥ <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.good.breakdown_voltage[1]"></el-input></td>
-                        <td class="good">Good</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.good.score"></el-input></td>
+                        <td>≥ <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.good.breakdown_voltage[1].value"></el-input></td>
+                        <td class="Good">Good</td>
+                        <td><el-input size="mini" v-model="conditionIndicatorSetting.good.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.fair.breakdown_voltage[0]"></el-input> to
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.fair.breakdown_voltage[1]"></el-input>
+                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.fair.breakdown_voltage[0].value"></el-input> to
+                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.fair.breakdown_voltage[1].value"></el-input>
                         </td>
-                        <td class="fair">Fair</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.fair.score"></el-input></td>
+                        <td class="Fair">Fair</td>
+                        <td><el-input size="mini" v-model="conditionIndicatorSetting.fair.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.poor.breakdown_voltage[0]"></el-input> to
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.poor.breakdown_voltage[1]"></el-input>
+                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.poor.breakdown_voltage[0].value"></el-input> to
+                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.poor.breakdown_voltage[1].value"></el-input>
                         </td>
-                        <td class="poor">Poor</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.poor.score"></el-input></td>
+                        <td class="Poor">Poor</td>
+                        <td><el-input size="mini" v-model="conditionIndicatorSetting.poor.score.value"></el-input></td>
                     </tr>
                     <tr>
-                        <td>&lt; <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.bad.breakdown_voltage[0]"></el-input></td>
-                        <td class="bad">Bad</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.bad.score"></el-input></td>
+                        <td>&lt; <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.bad.breakdown_voltage[0].value"></el-input></td>
+                        <td class="Bad">Bad</td>
+                        <td><el-input size="mini" v-model="conditionIndicatorSetting.bad.score.value"></el-input></td>
                     </tr>
                 </tbody>
             </table>
@@ -231,11 +231,11 @@ export default {
             this.$message.success('Calculating successfully')
         },
         clear() {
-            this.testData.type_oil = ''
-            this.testData.election_gap = ''
-            this.testData.result = ''
-            this.testData.assessment = ''
-            this.testData.condition_indicator = ''
+            this.testData.type_oil.value = ''
+            this.testData.election_gap.value = ''
+            this.testData.result.value = ''
+            this.testData.assessment.value = ''
+            this.testData.condition_indicator.value = ''
         },
         nameColor(data) {
             if(data === this.$constant.GOOD) {
@@ -257,4 +257,23 @@ export default {
     }
 }
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.w-100px {
+    width: 100px;
+}
+.Good  {
+    background: #00CC00;
+}
+
+.Fair  {
+    background: #FFFF00;
+}
+
+.Poor {
+    background: #FFC000;
+}
+
+.Bad {
+    background: #FF0000;
+}
+</style>
