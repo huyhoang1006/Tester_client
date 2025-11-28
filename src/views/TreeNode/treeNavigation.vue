@@ -816,6 +816,16 @@ import Attachment from '../Common/Attachment.vue';
 import * as demoAPI from '@/api/demo'
 import * as BreakerMapping from '@/views/Mapping/Breaker/index'
 import * as TransformerMapping from '@/views/Mapping/Transformer/index'
+import * as SubstationMapping from '@/views/Mapping/Substation/index'
+import * as OrganisationMapping from '@/views/Mapping/Organisation/index'
+import * as SurgeArresterMapping from '@/views/Mapping/SurgeArrester/index'
+import * as PowerCableMapping from '@/views/Mapping/PowerCable/index'
+import * as DisconnectorMapping from '@/views/Mapping/Disconnector/index'
+import * as CapacitorMapping from '@/views/Mapping/Capacitor/index'
+import * as VoltageTransformerMapping from '@/views/Mapping/VoltageTransformer/index'
+import * as CurrentTransformerMapping from '@/views/Mapping/CurrentTransformer/index'
+import * as ReactorMapping from '@/views/Mapping/Reactor/index'
+import * as BushingMapping from '@/views/Mapping/Bushing/index'
 import Icon from '@/views/Common/Icon.vue'
 import Fmeca from '@/views/Fmeca'
 
@@ -1037,6 +1047,179 @@ export default {
             } else if (cmd === 'exportPDF') {
                 this.openExportDialog = true
             } 
+        },
+        async exportTreeToJSON(type) {
+            try {
+                // Kiểm tra nếu có selectedNodes thì export selected, không thì export all
+                const nodesToExport = this.selectedNodes && this.selectedNodes.length > 0 
+                    ? this.selectedNodes 
+                    : null
+
+                if (nodesToExport === null) {
+                    if (!this.organisationClientList || this.organisationClientList.length === 0) {
+                        this.$message.warning('No tree data to export')
+                        return
+                    }
+                } else if (nodesToExport.length === 0) {
+                    this.$message.warning('Please select nodes to export')
+                    return
+                }
+
+                this.$message.info('Exporting tree data, please wait...')
+                const dtos = []
+
+                // Helper function to check if a node is selected
+                const isNodeSelected = (node) => {
+                    if (!nodesToExport) return true // Export all
+                    return nodesToExport.some(selected => 
+                        (selected.mrid && node.mrid && selected.mrid === node.mrid) ||
+                        (selected.id && node.id && selected.id === node.id)
+                    )
+                }
+
+                // Helper function to fetch entity data and convert to DTO for a node
+                const fetchAndConvertToDto = async (node) => {
+                    try {
+                        if (node.mode === 'substation') {
+                            const entity = await window.electronAPI.getSubstationEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
+                            if (entity.success && entity.data) {
+                                const dto = SubstationMapping.mapEntityToDto(entity.data)
+                                dtos.push({ type: 'substation', data: dto })
+                            }
+                        } else if (node.mode === 'organisation') {
+                            const entity = await window.electronAPI.getOrganisationEntityByMrid(node.mrid)
+                            if (entity.success && entity.data) {
+                                const dto = OrganisationMapping.OrgEntityToOrgDto(entity.data)
+                                dtos.push({ type: 'organisation', data: dto })
+                            }
+                        } else if (node.mode === 'voltageLevel') {
+                            const entity = await window.electronAPI.getVoltageLevelEntityByMrid(node.mrid)
+                            if (entity.success && entity.data) {
+                                // VoltageLevel không có mapping, export entity trực tiếp
+                                dtos.push({ type: 'voltageLevel', data: entity.data })
+                            }
+                        } else if (node.mode === 'bay') {
+                            const entity = await window.electronAPI.getBayEntityByMrid(node.mrid)
+                            if (entity.success && entity.data) {
+                                // Bay không có mapping, export entity trực tiếp
+                                dtos.push({ type: 'bay', data: entity.data })
+                            }
+                        } else if (node.mode === 'asset') {
+                            if (node.asset === 'Surge arrester') {
+                                const entity = await window.electronAPI.getSurgeArresterEntityByMrid(node.mrid)
+                                if (entity.success && entity.data) {
+                                    const dto = SurgeArresterMapping.mapEntityToDto(entity.data)
+                                    dtos.push({ type: 'surgeArrester', data: dto })
+                                }
+                            } else if (node.asset === 'Power cable') {
+                                const entity = await window.electronAPI.getPowerCableEntityByMrid(node.mrid, node.parentId)
+                                if (entity.success && entity.data) {
+                                    const dto = PowerCableMapping.mapEntityToDto(entity.data)
+                                    dtos.push({ type: 'powerCable', data: dto })
+                                }
+                            } else if (node.asset === 'Disconnector') {
+                                const entity = await window.electronAPI.getDisconnectorEntityByMrid(node.mrid, node.parentId)
+                                if (entity.success && entity.data) {
+                                    const dto = DisconnectorMapping.disconnectorEntityToDto(entity.data)
+                                    dtos.push({ type: 'disconnector', data: dto })
+                                }
+                            } else if (node.asset === 'Rotating machine') {
+                                const entity = await window.electronAPI.getRotatingMachineEntityByMrid(node.mrid, node.parentId)
+                                if (entity.success && entity.data) {
+                                    const dto = rotatingMachineMapping.mapEntityToDto(entity.data)
+                                    dtos.push({ type: 'rotatingMachine', data: dto })
+                                }
+                            } else if (node.asset === 'Capacitor') {
+                                const entity = await window.electronAPI.getCapacitorEntityByMrid(node.mrid, node.parentId)
+                                if (entity.success && entity.data) {
+                                    const dto = CapacitorMapping.mapEntityToDto(entity.data)
+                                    dtos.push({ type: 'capacitor', data: dto })
+                                }
+                            } else if (node.asset === 'Voltage transformer') {
+                                const entity = await window.electronAPI.getVoltageTransformerEntityByMrid(node.mrid, node.parentId)
+                                if (entity.success && entity.data) {
+                                    const dto = VoltageTransformerMapping.mapEntityToDto(entity.data)
+                                    dtos.push({ type: 'voltageTransformer', data: dto })
+                                }
+                            } else if (node.asset === 'Current transformer') {
+                                const entity = await window.electronAPI.getCurrentTransformerEntityByMrid(node.mrid, node.parentId)
+                                if (entity.success && entity.data) {
+                                    const dto = CurrentTransformerMapping.mapEntityToDto(entity.data)
+                                    dtos.push({ type: 'currentTransformer', data: dto })
+                                }
+                            } else if (node.asset === 'Transformer') {
+                                const entity = await window.electronAPI.getTransformerEntityByMrid(node.mrid, node.parentId)
+                                if (entity.success && entity.data) {
+                                    const dto = TransformerMapping.transformerEntityToDto(entity.data)
+                                    dtos.push({ type: 'transformer', data: dto })
+                                }
+                            } else if (node.asset === 'Circuit breaker') {
+                                const entity = await window.electronAPI.getBreakerEntityByMrid(node.mrid, node.parentId)
+                                if (entity.success && entity.data) {
+                                    const dto = BreakerMapping.mapEntityToDto(entity.data)
+                                    dtos.push({ type: 'breaker', data: dto })
+                                }
+                            } else if (node.asset === 'Reactor') {
+                                const entity = await window.electronAPI.getReactorEntityByMrid(node.mrid, node.parentId)
+                                if (entity.success && entity.data) {
+                                    const dto = ReactorMapping.mapEntityToDto(entity.data)
+                                    dtos.push({ type: 'reactor', data: dto })
+                                }
+                            } else if (node.asset === 'Bushing') {
+                                const entity = await window.electronAPI.getBushingEntityByMrid(node.mrid, node.parentId)
+                                if (entity.success && entity.data) {
+                                    const dto = BushingMapping.mapEntityToDto(entity.data)
+                                    dtos.push({ type: 'bushing', data: dto })
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.error(`Error fetching and converting entity for node ${node.mrid}:`, error)
+                    }
+                }
+
+                if (nodesToExport) {
+                    // Export only selected nodes
+                    for (const node of nodesToExport) {
+                        await fetchAndConvertToDto(node)
+                    }
+                } else {
+                    // Recursive function to traverse tree
+                    const traverseTree = async (nodes) => {
+                        for (const node of nodes) {
+                            await fetchAndConvertToDto(node)
+                            if (node.children && node.children.length > 0) {
+                                await traverseTree(node.children)
+                            }
+                        }
+                    }
+                    // Start traversing from root
+                    await traverseTree(this.organisationClientList)
+                }
+
+                if (dtos.length === 0) {
+                    this.$message.warning('No data found to export')
+                    return
+                }
+
+                const fileName = type === 'cim' ? 'tree-export-cim.json' : 'tree-export-dto.json'
+                const result = await window.electronAPI.exportJSON(dtos, {
+                    defaultFileName: fileName,
+                    title: 'Select folder to save JSON file',
+                    buttonLabel: 'Save here'
+                })
+
+                if (result && result.success) {
+                    this.$message.success(result.message || `Exported ${dtos.length} items successfully`)
+                } else {
+                    if (result && result.message !== 'Export cancelled') {
+                        this.$message.error(result.message || 'Failed to export tree to JSON')
+                    }
+                }
+            } catch (error) {
+                console.error('Error exporting tree to JSON:', error)
+                this.$message.error('An error occurred while exporting tree to JSON')
+            }
         },
         handleImportCommand(cmd) {
            if (cmd === 'importExcel') {
