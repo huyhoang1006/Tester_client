@@ -4202,7 +4202,6 @@ export default {
             await this.showData(node);
             await this.showPropertiesData(node);
         },
-
     }
 }
 </script>
