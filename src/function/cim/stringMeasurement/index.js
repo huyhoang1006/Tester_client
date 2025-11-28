@@ -28,7 +28,7 @@ export const getAllStringMeasurementByProcedure = (procedureId) => {
     try {
         return new Promise((resolve, reject) => {
             const sql = `
-                SELECT sm.*, m.*, io.*
+                SELECT sm.*, m.*, io.*, mp.mrid AS measurement_procedure_mrid
                 FROM measurement_procedure mp
                 LEFT JOIN measurement m ON mp.measurement_id = m.mrid
                 LEFT JOIN string_measurement sm ON sm.mrid = m.mrid

@@ -59,11 +59,12 @@
 
 <script>
 /* eslint-disable */
-import Attachment from '@/views/Entity/Attachment'
+import Attachment from '@/views/Flatten/Attachment'
 import { UnitMultiplier } from '@/views/Enum/UnitMultiplier'
 import { UnitSymbol } from '@/views/Enum/UnitSymbol'
 import mixin from './mixin'
 import { mapState } from 'vuex'
+import uuid from "@/utils/uuid";
 
 export default {
     mixins: [mixin],
@@ -117,8 +118,9 @@ export default {
             const count = await this.countTest(testType.mrid)
             const initData = await this.initTest(testType.code, this.assetData)
             const name = count == 0 ? testType.name : `${testType.name} (${count})`
+            const mrid = uuid.newUuid()
             this.testListData.push({
-                mrid: this.$uuid.EMPTY,
+                mrid: mrid,
                 testTypeId: testType.mrid,
                 testTypeCode: testType.code,
                 testTypeName: testType.name,
@@ -174,7 +176,6 @@ export default {
                 total_worst_score: null,
                 created_on: new Date().getTime()
             })
-            console.log(this.testListData)
         },
         deleteTest(index) {
             /* eslint-disable */

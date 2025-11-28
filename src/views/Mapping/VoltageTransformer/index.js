@@ -1,4 +1,4 @@
-import VoltageTransformerEntity from "@/views/Entity/VoltageTransformer";
+import VoltageTransformerEntity from "@/views/Flatten/VoltageTransformer";
 import VoltageTransformerDto from "@/views/Dto/VoltageTransformer";
 import Frequency from "@/views/Cim/Frequency";
 import Voltage from "@/views/Cim/Voltage";

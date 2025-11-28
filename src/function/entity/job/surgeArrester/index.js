@@ -4,7 +4,7 @@ import path from 'path'
 import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, deleteDirectory } from '@/function/entity/attachment'
 import {insertOldWorkTransaction, getOldWorkById} from "@/function/cim/oldWork/index"
 import { insertTestingEquipmentTransaction, getTestingEquipmentById, getTestingEquipmentByWorkId, deleteTestingEquipmentByIdTransaction } from '../../testingEquipment/index.js'
-import SurgeArresterJobEntity from '@/views/Entity/Job/SurgeArrester'
+import SurgeArresterJobEntity from '@/views/Flatten/Job/SurgeArrester/index.js'
 import { insertWorkTaskTransaction, getWorkTaskByWork, deleteWorkTaskByIdTransaction } from '@/function/cim/workTask/index.js'
 import { insertOldTransformerObservationTransaction, getOldTransformerObservationById, deleteOldTransformerObservationByIdTransaction, getOldTransformerObservationByWorkTaskId } from '@/function/cim/oldTransformerObservation/index.js'
 import {insertPercentTransaction, deletePercentByIdTransaction, getPercentById} from '@/function/cim/percent/index.js'

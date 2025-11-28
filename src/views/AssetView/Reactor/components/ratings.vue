@@ -40,14 +40,14 @@ export default {
         }
     },
     props: {
-        ratings: {
+        data: {
             type: Object,
             default: () => ({})
         },
     },
     computed: {
         ratingsData() {
-            return this.ratings
+            return this.data
         }
     }
 }

@@ -1200,7 +1200,7 @@ export default {
                             window.electronAPI.getBayByVoltageBySubstationId(null, clickedRow.mrid)
                         ]);
                         const [assetTransformerReturn, assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn,
-                            assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetBreakerReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                            assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetBreakerReturn, assetReactorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (voltageLevelReturn.success) {
                             voltageLevelReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
@@ -1354,6 +1354,22 @@ export default {
                             newRows.push(...assetCapacitorReturn.data);
                         }
 
+                        if (assetReactorReturn.success) {
+                            assetReactorReturn.data.forEach(row => {
+                                row.parentId = clickedRow.mrid;
+                                row.mode = 'asset';
+                                row.asset = 'Reactor';
+                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                row.parentName = parentName
+                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr.push({
+                                    mrid: clickedRow.mrid,
+                                    parent: clickedRow.name
+                                })
+                            });
+                            newRows.push(...assetReactorReturn.data);
+                        }
+
                         if (assetCurrentTransformerReturn.success) {
                             assetCurrentTransformerReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
@@ -1426,7 +1442,7 @@ export default {
                     } else if (node.mode == 'bay') {
                         const clickedRow = node;
                         const [assetTransformerReturn, assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn,
-                            assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetBreakerReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                            assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetBreakerReturn, assetReactorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (assetTransformerReturn.success) {
                             assetTransformerReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
@@ -1562,11 +1578,12 @@ export default {
                             });
                             newRows.push(...assetCapacitorReturn.data);
                         }
-                        if (assetBreakerReturn.success) {
-                            assetBreakerReturn.data.forEach(row => {
+                        
+                        if (assetReactorReturn.success) {
+                            assetReactorReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
                                 row.mode = 'asset';
-                                row.asset = 'Circuit breaker';
+                                row.asset = 'Reactor';
                                 let parentName = clickedRow.parentName + "/" + clickedRow.name
                                 row.parentName = parentName
                                 row.parentArr = [...clickedRow.parentArr || []]
@@ -1575,7 +1592,7 @@ export default {
                                     parent: clickedRow.name
                                 })
                             });
-                            newRows.push(...assetBreakerReturn.data);
+                            newRows.push(...assetReactorReturn.data);
                         }
                     } else {
                         const clickedRow = node;
@@ -1623,7 +1640,7 @@ export default {
 
         async fetchAssetByPsr(psrId) {
             try {
-                const [responseTransformer, responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer, responseCapacitor, responseBreaker] = await Promise.all([
+                const [responseTransformer, responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer, responseCapacitor, responseBreaker , responseReactor] = await Promise.all([
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Transformer'),
                     window.electronAPI.getSurgeArresterByPsrId(psrId),
                     window.electronAPI.getBushingByPsrId(psrId),
@@ -1633,9 +1650,10 @@ export default {
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Rotating machine'),
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Current transformer'),
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Capacitor'),
-                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Circuit breaker')
+                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Circuit breaker'),
+                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Reactor')
                 ])
-                return [responseTransformer, responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer, responseCapacitor, responseBreaker];
+                return [responseTransformer, responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer, responseCapacitor, responseBreaker, responseReactor];
             } catch (error) {
                 console.error("Error fetching asset by substation:", error);
                 return {
@@ -1677,7 +1695,7 @@ export default {
                             window.electronAPI.getVoltageLevelBySubstationId(clickedRow.mrid),
                             window.electronAPI.getBayByVoltageBySubstationId(null, clickedRow.mrid)
                         ]);
-                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetReactorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (assetSurgeReturn.success) {
                             newRows.push(...assetSurgeReturn.data);
                         }
@@ -1709,6 +1727,9 @@ export default {
                         if (assetCapacitorReturn.success) {
                             newRows.push(...assetCapacitorReturn.data);
                         }
+                        if (assetReactorReturn.success) {
+                            newRows.push(...assetReactorReturn.data);
+                        }
 
                         if (voltageLevelReturn.success) {
                             newRows.push(...voltageLevelReturn.data);
@@ -1730,7 +1751,7 @@ export default {
 
                     } else if (node.mode == 'bay') {
                         const clickedRow = node;
-                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetReactorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (assetSurgeReturn.success) {
                             newRows.push(...assetSurgeReturn.data);
                         }
@@ -1759,6 +1780,9 @@ export default {
 
                         if (assetCapacitorReturn.success) {
                             newRows.push(...assetCapacitorReturn.data);
+                        }
+                        if(assetReactorReturn.success){
+                            newRows.push(...assetReactorReturn.data);
                         }
                     }
 
@@ -2790,10 +2814,42 @@ export default {
         },
 
         async handleReactorConfirm() {
-            this.$message.success("Reactor saved successfully")
-            // Cần thêm logic để cập nhật lại cây nếu cần thiết
-            // await this.$refs.transformer.saveAsset();
-            this.signReactor = false
+           try {
+                const reactor = this.$refs.reactor
+                if (reactor) {
+                    const { success, data } = await reactor.saveAsset();
+                    if (success) {
+                        this.$message.success("Reactor saved successfully")
+                        this.signReactor = false
+                        let newRows = []
+                        if (this.organisationClientList && this.organisationClientList.length > 0) {
+                            const newRow = {
+                                mrid: data.asset.mrid,
+                                name: data.asset.name,
+                                serial_number: data.asset.serial_number,
+                                parentId: this.parentOrganization.mrid,
+                                parentName: this.parentOrganization.name,
+                                parentArr: this.parentOrganization.parentArr || [],
+                                mode: 'asset',
+                                asset: 'Reactor',
+                            }
+                            newRows.push(newRow);
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            if (node) {
+                                const children = Array.isArray(node.children) ? node.children : [];
+                                Vue.set(node, "children", [...children, ...newRows]);
+                            } else {
+                                this.$message.error("Parent node not found in tree");
+                            }
+                        }
+                    } else {
+                        this.$message.error("Failed to save Capacitor")
+                    }
+                }
+            } catch (error) {
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
         },
 
         async handleJobConfirm() {

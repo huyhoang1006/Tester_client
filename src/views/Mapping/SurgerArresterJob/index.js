@@ -1,15 +1,15 @@
 /* eslint-disable */
-import SurgeArresterJobEntity from "@/views/Entity/Job/SurgeArrester"
+import SurgeArresterJobEntity from "@/views/Flatten/Job/SurgeArrester"
 import SurgeArresterJobDto from "@/views/Dto/Job/SurgeArrester";
 import WorkTask from "@/views/Cim/WorkTask";
 import TestDataSet from "@/views/Cim/TestDataSet";
 import OldTransformerObservation from "@/views/Cim/OldTransformerObservation";
-import Attachment from '@/views/Entity/Attachment'
+import Attachment from '@/views/Flatten/Attachment'
 import { UnitSymbol } from "@/views/Enum/UnitSymbol";
 import Percent from "@/views/Cim/Percent";
 import Temperature from "@/views/Cim/Temperature";
-import TestingEquipment from "@/views/Entity/TestingEquipment";
-import SurgeArresterTestingEquipmentTestType from "@/views/Entity/SurgeArresterTestingEquipmentTestType";
+import TestingEquipment from "@/views/Flatten/TestingEquipment";
+import SurgeArresterTestingEquipmentTestType from "@/views/Flatten/SurgeArresterTestingEquipmentTestType";
 import StringMeaurementValue from "@/views/Cim/StringMeasurementValue";
 import AnalogValue from "@/views/Cim/AnalogValue";
 import DiscreteValue from "@/views/Cim/DiscreteValue";
@@ -18,6 +18,9 @@ import Analog from "@/views/Cim/Analog";
 import Discrete from "@/views/Cim/Discrete";
 import ValueAliasSet from "@/views/Cim/ValueAliasSet";
 import ValueToAlias from "@/views/Cim/ValueToAlias";
+import Procedure from "@/views/Cim/Procedure"
+import ProcedureAsset from "@/views/Cim/ProcedureAsset";
+
 
 export const jobDtoToEntity = (dto) => {
     const entity = new SurgeArresterJobEntity();
@@ -49,6 +52,23 @@ export const jobDtoToEntity = (dto) => {
         data.work_id = equipment.work_id || null;
         data.calibration_date = equipment.calibration_date || null;
         entity.testingEquipment.push(data);
+    }
+
+    for(const testType of dto.testTypeList) {
+        const procedure = new Procedure();
+        procedure.mrid = testType.mrid || null;
+        procedure.name = testType.name || null;
+        procedure.kind = 'test' || null;
+        procedure.alias_name = testType.code || null;
+        entity.procedure.push(procedure);
+    }
+
+    for(const procedureAsset of dto.procedureAsset) {
+        const procedureAssetEntity = new ProcedureAsset();
+        procedureAssetEntity.mrid = procedureAsset.mrid || null;
+        procedureAssetEntity.procedure_id = procedureAsset.procedure_id || null;
+        procedureAssetEntity.asset_id = procedureAsset.asset_id || null;
+        entity.procedureAsset.push(procedureAssetEntity);
     }
 
     //test list

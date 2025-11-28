@@ -12,7 +12,7 @@ import { insertAssetTransaction, getAssetById, deleteAssetByIdTransaction } from
 import { insertCapacitorInfoTransaction, getCapacitorInfoById, deleteCapacitorInfoTransaction } from '@/function/cim/capacitorInfo';
 import { insertCapacitanceCapacitorInfoTransaction, getCapacitanceCapacitorInfoById, getCapacitanceCapacitorInfoByIds, deleteCapacitanceInfoTransaction } from '@/function/cim/capacitanceInfo';
 import { insertDissipationFactorCapacitorInfoTransaction, getDissipationFactorCapacitorInfoById, getDissipationFactorCapacitorInfoByIds, deleteDissipationFactorCapacitorInfoTransaction } from '@/function/cim/dissipationFactorInfo';
-import CapacitorEntity from '@/views/Entity/Capacitor';
+import CapacitorEntity from '@/views/Flatten/Capacitor';
 import { insertReactivePowerTransaction, getReactivePowerByIds, deleteReactivePowerByIdTransaction } from '@/function/cim/reactivePower';
 import { insertCapacitanceTransaction, getCapacitanceById, deleteCapacitanceByIdTransaction } from '@/function/cim/capacitance';
 import { insertPercentTransaction, getPercentById, deletePercentByIdTransaction } from '@/function/cim/percent';

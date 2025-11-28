@@ -1,4 +1,4 @@
-import CurrentTransformerEntity from "@/views/Entity/CurrentTransformer";
+import CurrentTransformerEntity from "@/views/Flatten/CurrentTransformer";
 import Frequency from "@/views/Cim/Frequency";
 import Voltage from "@/views/Cim/Voltage";
 import CurrentFlow from "@/views/Cim/CurrentFlow";
