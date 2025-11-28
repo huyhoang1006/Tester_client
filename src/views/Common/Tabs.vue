@@ -110,6 +110,7 @@ import * as currentTransformerMapper from '@/views/Mapping/CurrentTransformer'
 import * as CapacitorMapper from '@/views/Mapping/Capacitor'
 import * as BreakerMapper from '@/views/Mapping/Breaker'
 import * as transformerMapper from '@/views/Mapping/Transformer'
+import * as reactorMapper from '@/views/Mapping/Reactor'
 
 
 import VoltageLevel from '@/views/VoltageLevel/index.vue'
@@ -125,6 +126,7 @@ import RotatingMachine from '@/views/AssetView/RotatingMachine/index.vue'
 import CurrentTransformer from '@/views/AssetView/CurrentTransformer/index.vue'
 import Capacitor from '@/views/AssetView/Capacitor/index.vue'
 import CircuitBreaker from "@/views/AssetView/CircuitBreaker/index.vue"
+import Reactor from '@/views/AssetView/Reactor/index.vue'
 import Transformer from '@/views/AssetView/Transformer/index.vue'
 import Icon from '@/views/Common/Icon.vue'
 
@@ -148,6 +150,7 @@ export default {
         CurrentTransformer,
         Capacitor,
         CircuitBreaker,
+        Reactor,
         Icon
     },
     model: {
@@ -459,6 +462,22 @@ export default {
                         } else {
                             this.$message.error("Failed to load transformer data");
                         }    
+                    } else if(tab.asset === 'Reactor') {
+                        this.parentOrganization = {
+                            mrid : tab.parentId
+                        }
+                        const data = await window.electronAPI.getReactorEntityByMrid(tab.mrid, tab.parentId)
+                        if(data.success) {
+                            const reactorDto = reactorMapper.mapEntityToDto(data.data)
+                            // Đảm bảo serial_number được set từ tab nếu entity không có
+                            if (!reactorDto.properties?.serial_no || reactorDto.properties.serial_no === '') {
+                                if (!reactorDto.properties) reactorDto.properties = {}
+                                reactorDto.properties.serial_no = tab.serial_number || ''
+                            }
+                            this.$refs.componentLoadData[index].loadData(reactorDto)
+                        } else {
+                            this.$message.error("Failed to load reactor data");
+                        }    
                     }
                 } else if (tab.mode === 'job') {
                     const dataAsset = await window.electronAPI.getAssetByMrid(tab.parentId)
@@ -665,6 +684,8 @@ export default {
                     return 'CircuitBreaker'
                 } else if(tab.asset === 'Transformer') {
                     return 'Transformer'
+                } else if(tab.asset === 'Reactor') {
+                    return 'Reactor'
                 }
             } else if (tab.mode == 'job') {
                 if (tab.job === 'Surge arrester') {
