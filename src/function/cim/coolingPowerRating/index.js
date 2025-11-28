@@ -24,6 +24,51 @@ export const getCoolingPowerRatingById = async (mrid) => {
     }
 }
 
+export const getCoolingPowerRatingByPowerTransformerInfoId = async (powerTransformerInfoId) => {
+    try {
+        const rows = await new Promise((resolve, reject) => {
+            db.all(
+                `
+                SELECT
+                    cpr.*,
+                    io.*
+                FROM cooling_power_rating cpr
+                LEFT JOIN identified_object io
+                    ON io.mrid = cpr.mrid
+                WHERE cpr.power_transformer_info_id = ?
+                `,
+                [powerTransformerInfoId],
+                (err, rows) => {
+                    if (err) return reject(err);
+                    resolve(rows);
+                }
+            );
+        });
+
+        if (!rows || rows.length === 0) {
+            return {
+                success: false,
+                data: [],
+                message: 'No coolingPowerRating found for this powerTransformerInfoId'
+            };
+        }
+
+        return {
+            success: true,
+            data: rows,
+            message: 'Get coolingPowerRating by powerTransformerInfoId completed'
+        };
+    } catch (err) {
+        return {
+            success: false,
+            err,
+            data: [],
+            message: 'Get coolingPowerRating by powerTransformerInfoId failed'
+        };
+    }
+}
+
+
 // Thêm mới coolingPowerRating (transaction)
 export const insertCoolingPowerRatingTransaction = async (info, dbsql) => {
     return new Promise(async (resolve, reject) => {
@@ -34,20 +79,22 @@ export const insertCoolingPowerRatingTransaction = async (info, dbsql) => {
             }
             dbsql.run(
                 `INSERT INTO cooling_power_rating(
-                    mrid, power_rating, stage, cooling_kind, temp_rise_wind
-                ) VALUES (?, ?, ?, ?, ?)
+                    mrid, power_rating, stage, cooling_kind, temp_rise_wind, power_transformer_info_id
+                ) VALUES (?, ?, ?, ?, ?, ?)
                 ON CONFLICT(mrid) DO UPDATE SET
                     power_rating = excluded.power_rating,
                     stage = excluded.stage,
                     cooling_kind = excluded.cooling_kind,
-                    temp_rise_wind = excluded.temp_rise_wind
+                    temp_rise_wind = excluded.temp_rise_wind,
+                    power_transformer_info_id = excluded.power_transformer_info_id
                 `,
                 [
                     info.mrid,
                     info.power_rating,
                     info.stage,
                     info.cooling_kind,
-                    info.temp_rise_wind
+                    info.temp_rise_wind,
+                    info.power_transformer_info_id
                 ],
                 function (err) {
                     if (err) {
@@ -75,7 +122,8 @@ export const updateCoolingPowerRatingTransaction = async (mrid, info, dbsql) => 
                     power_rating = ?,
                     stage = ?,
                     cooling_kind = ?,
-                    temp_rise_wind = ?
+                    temp_rise_wind = ?,
+                    power_transformer_info_id = ?
                 WHERE mrid = ?`,
                 [
                     info.power_rating,
@@ -101,7 +149,7 @@ export const updateCoolingPowerRatingTransaction = async (mrid, info, dbsql) => 
 export const deleteCoolingPowerRatingTransaction = async (mrid, dbsql) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const identifiedObjectResult = await IdentifiedObjectFunc.deleteIdentifiedObjectTransaction(mrid, dbsql)
+            const identifiedObjectResult = await IdentifiedObjectFunc.deleteIdentifiedObjectByIdTransaction(mrid, dbsql)
             if (!identifiedObjectResult.success) {
                 return reject({ success: false, message: 'Delete IdentifiedObject failed', err: identifiedObjectResult.err })
             }

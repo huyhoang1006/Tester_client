@@ -70,7 +70,7 @@ export function mapDtoToEntity(dto) {
     entity.attachment = dto.attachment || null
 
     //position
-    if(dto.positionPoints.x.length !== 0) {
+    if (dto.positionPoints.x.length !== 0) {
         dto.positionPoints.x.forEach((element, index) => {
             const positionPoint = new PositionPoint
             positionPoint.location = dto.locationId || null
@@ -110,7 +110,7 @@ export function mapDtoToEntity(dto) {
     entity.organisationPsr.mrid = dto.organisationPsrId || null
     entity.organisationPsr.organisation_id = dto.organisationId || null
     entity.organisationPsr.psr_id = dto.subsId || null
-    
+
     //configurationEvent
     if (Array.isArray(dto.configurationEvent) && dto.configurationEvent.length > 0) {
         entity.configurationEvent = dto.configurationEvent

@@ -16,6 +16,7 @@ export default {
                 if(this.surge_arrester_data.properties.serial_no !== null && this.surge_arrester_data.properties.serial_no !== '') {
                     const data = JSON.parse(JSON.stringify(this.surge_arrester_data));
                     const result = this.checkSurgeArresterData(data);
+                    console.log(result)
                     const oldResult = this.checkSurgeArresterData(this.surge_arrester_data_old);
                     const resultEntity = Mapping.mapDtoToEntity(result);
                     const oldResultEntity = Mapping.mapDtoToEntity(oldResult);
@@ -133,7 +134,9 @@ export default {
                     data.attachment.type = 'asset'
                     data.attachment.id_foreign = data.properties.mrid
                 }
-            } 
+            } else {
+                data.attachment.path = JSON.stringify(this.attachmentData)
+            }
         },
 
         checkTableRating(data) {

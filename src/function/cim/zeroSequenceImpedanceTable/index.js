@@ -35,16 +35,20 @@ export const getZeroSequenceImpedanceTableByTransformerEndId = async (transforme
     })
 }
 
-export const getZeroSequenceImpedanceTableByTransformerEndIdAndZeroSequenceImpedance = async (transformerEndId) => {
+export const getZeroSequenceImpedanceTableByZeroSequenceImpedanceId = async (zeroSequenceImpedanceId) => {
     return new Promise((resolve, reject) => {
         db.all(
             `SELECT *
              FROM zero_sequence_impedance_table
-             WHERE transformer_end_id = ? and zero_sequence_impedance = ?`,
-            [transformerEndId],
+             WHERE zero_sequence_impedance = ?`,
+            [zeroSequenceImpedanceId],
             (err, rows) => {
                 if (err)
-                    return reject({ success: false, err, message: "Get by transformer_end_id and zero_sequence_impedance failed" })
+                    return reject({ success: false, err, message: "Get by zero_sequence_impedance failed" })
+
+                if(rows.length === 0) {
+                    return reject({ success: false, err, message: "Get by zero_sequence_impedance failed" })
+                }
 
                 return resolve({
                     success: true,
@@ -62,7 +66,11 @@ export const insertZeroSequenceImpedanceTableTransaction = async (info, dbsql) =
         dbsql.run(
             `INSERT INTO zero_sequence_impedance_table(
                 mrid, transformer_end_id, zero, zero_sequence_impedance
-            ) VALUES (?, ?, ?, ?)`,
+            ) VALUES (?, ?, ?, ?)
+            ON CONFLICT(mrid) DO UPDATE SET
+                transformer_end_id = excluded.transformer_end_id,
+                zero = excluded.zero,
+                zero_sequence_impedance = excluded.zero_sequence_impedance`,
             [
                 info.mrid,
                 info.transformer_end_id,
@@ -71,35 +79,39 @@ export const insertZeroSequenceImpedanceTableTransaction = async (info, dbsql) =
             ],
             function (err) {
                 if (err)
-                    return reject({ success: false, err, message: "Insert failed" })
-                return resolve({ success: true, data: info, message: "Insert completed" })
+                    return reject({ success: false, err, message: "Upsert failed" })
+                return resolve({ success: true, data: info, message: "Upsert completed" })
             }
         )
     })
 }
 
+
 export const updateZeroSequenceImpedanceTableTransaction = async (mrid, info, dbsql) => {
     return new Promise((resolve, reject) => {
         dbsql.run(
-            `UPDATE zero_sequence_impedance_table SET
-                transformer_end_id = ?,
-                zero = ?,
-                zero_sequence_impedance = ?
-            WHERE mrid = ?`,
+            `INSERT INTO zero_sequence_impedance_table(
+                mrid, transformer_end_id, zero, zero_sequence_impedance
+            ) VALUES (?, ?, ?, ?)
+            ON CONFLICT(mrid) DO UPDATE SET
+                transformer_end_id = excluded.transformer_end_id,
+                zero = excluded.zero,
+                zero_sequence_impedance = excluded.zero_sequence_impedance`,
             [
+                mrid,
                 info.transformer_end_id,
                 info.zero,
-                info.zero_sequence_impedance,
-                mrid
+                info.zero_sequence_impedance
             ],
             function (err) {
                 if (err)
-                    return reject({ success: false, err, message: "Update failed" })
-                return resolve({ success: true, data: info, message: "Update completed" })
+                    return reject({ success: false, err, message: "Upsert failed" })
+                return resolve({ success: true, data: info, message: "Upsert completed" })
             }
         )
     })
 }
+
 
 export const deleteZeroSequenceImpedanceTableTransaction = async (mrid, dbsql) => {
     return new Promise((resolve, reject) => {

@@ -146,21 +146,35 @@ export const updateOldTransformerEndInfoTransaction = async (mrid, info, dbsql) 
 
 // Xóa oldTransformerEndInfo (transaction)
 export const deleteOldTransformerEndInfoTransaction = async (mrid, dbsql) => {
-    try {
-        const baseResult = await TransformerEndInfoFunc.deleteTransformerEndInfoTransaction(mrid, dbsql)
-        if (!baseResult.success) {
-            throw baseResult.err || new Error('Delete transformerEndInfo failed')
-        }
+    // 1. Xóa old_transformer_end_info
+    const deleteOld = await new Promise((resolve, reject) => {
+        dbsql.run(
+            "DELETE FROM old_transformer_end_info WHERE mrid=?",
+            [mrid],
+            function (err) {
+                if (err) return reject(err);
+                resolve(this.changes); // số row bị xóa
+            }
+        );
+    });
 
-        await new Promise((resolve, reject) => {
-            dbsql.run(`DELETE FROM old_transformer_end_info WHERE mrid=?`, [mrid], (err) =>
-                err ? reject(err) : resolve()
-            )
-        })
-
-        return { success: true, data: mrid, message: 'Delete oldTransformerEndInfo completed' }
-
-    } catch (err) {
-        return { success: false, err, message: 'Delete oldTransformerEndInfo transaction failed' }
+    if (deleteOld === 0) {
+        return {
+            success: false,
+            data: null,
+            message: "Old transformer end info not found"
+        };
     }
+
+    // 2. Xóa transformer_end_info
+    const baseResult = await TransformerEndInfoFunc.deleteTransformerEndInfoTransaction(mrid, dbsql);
+    if (!baseResult.success) {
+        throw baseResult.err || new Error("Delete transformerEndInfo failed");
+    }
+
+    return {
+        success: true,
+        data: mrid,
+        message: "Delete oldTransformerEndInfo completed"
+    };
 }

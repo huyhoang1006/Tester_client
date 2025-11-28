@@ -410,7 +410,6 @@ export const updateAssetTransaction = (mrid, asset, dbsql) => {
 }
 
 export const deleteAssetByIdTransaction = async (mrid, dbsql) => {
-    console.log("deleteAssetByIdTransaction", mrid)
     return new Promise((resolve, reject) => {
         IdentifiedObjectFunc.deleteIdentifiedObjectByIdTransaction(mrid, dbsql)
             .then(result => {

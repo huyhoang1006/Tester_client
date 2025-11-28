@@ -25,7 +25,7 @@
             <el-button size="mini" type="info" class="btn-action" @click="testData.option='threePhase'"> Three phase </el-button>
             <el-button size="mini" type="info" class="btn-action" @click="testData.option='perPhase'"> Per phase </el-button>
         </div>
-        <table class="table-strip-input-data" style="width: 100%">
+        <table class="table-strip-input-data" style="width: 130% ; font-size: 12px;">
             <thead>
                 <tr>
                     <th style="width: 100px;">Tap position</th>
@@ -42,44 +42,44 @@
             <tbody v-if="testData.option === 'threePhase'">
                 <template v-for="(item, index) in testData.table">
                     <tr :key="index">
-                        <td><el-input size="mini" type="number" v-model="item.tap"></el-input></td>
+                        <td><el-input size="mini" type="number" v-model="item.tap.value"></el-input></td>
                         <td style="width: 10%">
                             <div class="col-phase">
                                 <div class="phase">
-                                    <el-input size="mini" type="text" v-model="item.phase"></el-input>
+                                    <el-input size="mini" type="text" v-model="item.phase.value"></el-input>
                                 </div>
-                                <div class="rectangle" :class="{red: item.phase == 'A', yellow: item.phase == 'B', blue: item.phase == 'C'}"></div>
+                                <div class="rectangle" :class="{red: item.phase.value == 'A', yellow: item.phase.value == 'B', blue: item.phase.value == 'C'}"></div>
                             </div>
                         </td>
                         <td>
-                            <el-input size="mini" type="number" v-model="item.rk"><template slot="append">Ω</template></el-input>
+                            <el-input size="mini" type="number" v-model="item.rk.value"><template slot="append">Ω</template></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="number" v-model="item.xk"><template slot="append">Ω</template></el-input>
+                            <el-input size="mini" type="number" v-model="item.xk.value"><template slot="append">Ω</template></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="number" v-model="item.zk"><template slot="append">Ω</template></el-input>
+                            <el-input size="mini" type="number" v-model="item.zk.value"><template slot="append">Ω</template></el-input>
                         </td>
                         <template v-if="index % 3 == 0">
                             <td rowspan="3">
-                                <el-input size="mini" type="number" v-model="item.ukCal"></el-input>
+                                <el-input size="mini" type="number" v-model="item.ukCal.value"></el-input>
                             </td>
                         </template>
                         <template v-if="index % 3 == 0" >
                             <td rowspan="3">
-                                <el-input size="mini" type="number" v-model="item.ukDev"></el-input>
+                                <el-input size="mini" type="number" v-model="item.ukDev.value"></el-input>
                             </td>
                         </template>
                         <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment">
+                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
                                 <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                                 <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
-                            <span v-if="item.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini" v-model="item.condition_indicator">
+                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
                             </el-input>
                         </td>
                     </tr>
@@ -88,40 +88,40 @@
             <tbody v-else>
                 <template v-for="(item, index) in testData.table">
                     <tr :key="index">
-                        <td><el-input size="mini" type="number" v-model="item.tap"></el-input></td>
+                        <td><el-input size="mini" type="number" v-model="item.tap.value"></el-input></td>
                         <td style="width: 10%">
                             <div class="col-phase">
                                 <div class="phase">
-                                    <el-input size="mini" type="text" v-model="item.phase"></el-input>
+                                    <el-input size="mini" type="text" v-model="item.phase.value"></el-input>
                                 </div>
-                                <div class="rectangle" :class="{red: item.phase == 'A', yellow: item.phase == 'B', blue: item.phase == 'C'}"></div>
+                                <div class="rectangle" :class="{red: item.phase.value == 'A', yellow: item.phase.value == 'B', blue: item.phase.value == 'C'}"></div>
                             </div>
                         </td>
                         <td>
-                            <el-input size="mini" type="number" v-model="item.rk"><template slot="append">Ω</template></el-input>
+                            <el-input size="mini" type="number" v-model="item.rk.value"><template slot="append">Ω</template></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="number" v-model="item.xk"><template slot="append">Ω</template></el-input>
+                            <el-input size="mini" type="number" v-model="item.xk.value"><template slot="append">Ω</template></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="number" v-model="item.zk"><template slot="append">Ω</template></el-input>
+                            <el-input size="mini" type="number" v-model="item.zk.value"><template slot="append">Ω</template></el-input>
                         </td>
                         <td >
-                            <el-input size="mini" type="number" v-model="item.ukCal"></el-input>
+                            <el-input size="mini" type="number" v-model="item.ukCal.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="number" v-model="item.ukDev"></el-input>
+                            <el-input size="mini" type="number" v-model="item.ukDev.value"></el-input>
                         </td>
                         <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment">
+                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
                                 <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                                 <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
-                            <span v-if="item.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini" v-model="item.condition_indicator">
+                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
                             </el-input>
                         </td>
                     </tr>
@@ -130,10 +130,10 @@
         </table>
 
         <!-- assessment_setting -->
-        <el-dialog title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px">
+        <el-dialog append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px">
             <el-form size="small" label-position="left" label-width="140px">
                 <el-form-item label="Option">
-                    <el-select class="w-100" placeholder="please select" v-model="assessmentSetting.option">
+                    <el-select class="w-100" placeholder="please select" v-model="assessmentSetting.option.value">
                         <el-option label="IEEE C57.152 (2013)" value="IEEE"></el-option>
                         <el-option label="CIGRE 445" value="CIGRE"></el-option>
                         <el-option label="Customized limit" value="Custom"></el-option>
@@ -141,7 +141,7 @@
                 </el-form-item>
             </el-form>
 
-            <table v-if="assessmentSetting.option === 'Custom'" class="table-strip-input-data">
+            <table v-if="assessmentSetting.option.value === 'Custom'" class="table-strip-input-data">
                 <thead>
                     <tr>
                         <th colspan="2">Limit</th>
@@ -155,14 +155,14 @@
                     <tr>
                         <th>uk dev (%)</th>
                         <td>
-                            ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.threePhase.ukDev"></el-input>
+                            ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.threePhase.ukDev.value"></el-input>
                         </td>
                         <th><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
                     <tr>
                         <th>uk dev (%)</th>
                         <td>
-                            > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.threePhase.ukDev"></el-input>
+                            > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.threePhase.ukDev.value"></el-input>
                         </td>
                         <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
@@ -172,14 +172,14 @@
                     <tr>
                         <th>uk dev (%)</th>
                         <td>
-                            ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.perPhase.ukDev"></el-input>
+                            ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.perPhase.ukDev.value"></el-input>
                         </td>
                         <th><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
                     <tr>
                         <th>uk dev (%)</th>
                         <td>
-                            > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.perPhase.ukDev"></el-input>
+                            > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.perPhase.ukDev.value"></el-input>
                         </td>
                         <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
@@ -199,7 +199,7 @@
                     <tr>
                         <th>uk dev (%)</th>
                         <td>
-                            ≤ {{ assessmentSetting.data.ieee.threePhase.ukDev }}
+                            ≤ {{ assessmentSetting.data.ieee.threePhase.ukDev.value }}
                         </td>
                         <th><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
@@ -216,20 +216,20 @@
                     <tr>
                         <th>uk dev (%)</th>
                         <td>
-                            ≤ {{assessmentSetting.data.ieee.perPhase.ukDev}}
+                            ≤ {{assessmentSetting.data.ieee.perPhase.ukDev.value}}
                         </td>
                         <th><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
                     <tr>
                         <th>uk dev (%)</th>
                         <td>
-                            > {{assessmentSetting.data.ieee.perPhase.ukDev}}
+                            > {{assessmentSetting.data.ieee.perPhase.ukDev.value}}
                         </td>
                         <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
                 </tbody>
             </table>
-            <table v-else-if="assessmentSetting.option === 'CIGRE'" class="table-strip-input-data">
+            <table v-else-if="assessmentSetting.option.value === 'CIGRE'" class="table-strip-input-data">
                 <thead>
                     <tr>
                         <th colspan="2">Limit</th>
@@ -243,14 +243,14 @@
                     <tr>
                         <th>uk dev (%)</th>
                         <td>
-                            ≤ {{ assessmentSetting.data.cigre.threePhase.ukDev }}
+                            ≤ {{ assessmentSetting.data.cigre.threePhase.ukDev.value }}
                         </td>
                         <th><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
                     <tr>
                         <th>uk dev (%)</th>
                         <td>
-                            > {{ assessmentSetting.data.cigre.threePhase.ukDev }}
+                            > {{ assessmentSetting.data.cigre.threePhase.ukDev.value }}
                         </td>
                         <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
@@ -260,14 +260,14 @@
                     <tr>
                         <th>uk dev (%)</th>
                         <td>
-                            ≤ {{assessmentSetting.data.cigre.perPhase.ukDev}}
+                            ≤ {{assessmentSetting.data.cigre.perPhase.ukDev.value}}
                         </td>
                         <th><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
                     <tr>
                         <th>uk dev (%)</th>
                         <td>
-                            > {{assessmentSetting.data.cigre.perPhase.ukDev}}
+                            > {{assessmentSetting.data.cigre.perPhase.ukDev.value}}
                         </td>
                         <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
@@ -276,7 +276,7 @@
         </el-dialog>
 
         <!-- Condition indicator settings -->
-        <el-dialog title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="600px">
+        <el-dialog append-to-body title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="600px">
             <table class="table-strip-input-data">
                 <thead>
                     <tr>
@@ -288,33 +288,33 @@
                 <tbody>
                     <tr>
                         <td>
-                            ≥ <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.good.breakdown_voltage[0]"></el-input>
+                            ≥ <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.good.breakdown_voltage[0].value"></el-input>
                         </td>
                         <td class="good">Good</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.good.score"></el-input></td>
+                        <td><el-input size="mini" v-model="conditionIndicatorSetting.good.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.fair.breakdown_voltage[0]"></el-input> to 
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.fair.breakdown_voltage[1]"></el-input>
+                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.fair.breakdown_voltage[0].value"></el-input> to 
+                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.fair.breakdown_voltage[1].value"></el-input>
                         </td>
                         <td class="fair">Fair</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.fair.score"></el-input></td>
+                        <td><el-input size="mini" v-model="conditionIndicatorSetting.fair.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.poor.breakdown_voltage[0]"></el-input> to
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.poor.breakdown_voltage[1]"></el-input>
+                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.poor.breakdown_voltage[0].value"></el-input> to
+                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.poor.breakdown_voltage[1].value"></el-input>
                         </td>
                         <td class="poor">Poor</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.poor.score"></el-input></td>
+                        <td><el-input size="mini" v-model="conditionIndicatorSetting.poor.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            &lt; <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.bad.breakdown_voltage[1]"></el-input>
+                            &lt; <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.bad.breakdown_voltage[1].value"></el-input>
                         </td>
                         <td class="bad">Bad</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.bad.score"></el-input></td>
+                        <td><el-input size="mini" v-model="conditionIndicatorSetting.bad.score.value"></el-input></td>
                     </tr>
                 </tbody>
             </table>
@@ -569,19 +569,22 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.Good input {
+.w-100px {
+    width: 100px;
+}
+.good  {
     background: #00CC00;
 }
 
-.Fair input {
+.fair {
     background: #FFFF00;
 }
 
-.Poor input {
+.poor  {
     background: #FFC000;
 }
 
-.Bad input {
+.bad  {
     background: #FF0000;
 }
 </style>

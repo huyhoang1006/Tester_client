@@ -22,7 +22,7 @@
         </el-row>
         </div>
 
-        <div v-if="assetData && assetData.circuitBreaker && assetData.circuitBreaker.numberOfInterruptPhase === 1 && testData && testData.table && testData.table.length > 0">
+        <div v-if="assetData && assetData.circuitBreaker && assetData.circuitBreaker.interruptersPerPhase === 1 && testData && testData.table && testData.table.length > 0">
             <div v-for="items in testData.table.length" :key="items" style="margin-top: 2%">
                 <div style="font-weight: bold ;font-size: 12px;" >Close coil no. {{ items }}</div>
                 <br />
@@ -47,10 +47,10 @@
                                 <el-input size="mini" v-model="item.closingTime"></el-input>
                             </td>
                             <td
-                                v-if="index % (assetData.circuitBreaker.numberOfInterruptPhase * assetData.circuitBreaker.numberOfPhase) === 0"
-                                :rowspan="assetData.circuitBreaker.numberOfInterruptPhase * assetData.circuitBreaker.numberOfPhase">
+                                v-if="index % (assetData.circuitBreaker.interruptersPerPhase * assetData.circuitBreaker.numberOfPhases) === 0"
+                                :rowspan="assetData.circuitBreaker.interruptersPerPhase * assetData.circuitBreaker.numberOfPhases">
                                 <el-input
-                                    :rows="assetData.circuitBreaker.numberOfInterruptPhase * assetData.circuitBreaker.numberOfPhase"
+                                    :rows="assetData.circuitBreaker.interruptersPerPhase * assetData.circuitBreaker.numberOfPhases"
                                     type="textarea"
                                     size="mini"
                                     v-model="item.closingSync"></el-input>
@@ -75,7 +75,7 @@
             </div>
         </div>
 
-        <div v-if="assetData && assetData.circuitBreaker && assetData.circuitBreaker.numberOfInterruptPhase > 1 && testData && testData.table && testData.table.length > 0">
+        <div v-if="assetData && assetData.circuitBreaker && assetData.circuitBreaker.interruptersPerPhase > 1 && testData && testData.table && testData.table.length > 0">
             <div v-for="items in testData.table.length" :key="items" style="margin-top: 2%">
                 <div style="font-weight: bold ;font-size: 12px;" >Close coil no. {{ items }}</div>
                 <br />
@@ -92,7 +92,7 @@
                     </thead>
                     <tbody>
                         <tr v-for="(item, index) in testData.table[items - 1]" :key="index">
-                            <td v-if="index % assetData.circuitBreaker.numberOfInterruptPhase === 0" :rowspan="assetData.circuitBreaker.numberOfInterruptPhase">
+                            <td v-if="index % assetData.circuitBreaker.interruptersPerPhase === 0" :rowspan="assetData.circuitBreaker.interruptersPerPhase">
                                 <div style="display: flex; width: 100%;">
                                    <el-input size="mini" v-model="item.phase"></el-input>  
                                    <div :class="{colorTableRed : item.phase=='A', colorTableYellow : item.phase=='B', colorTableBlue : item.phase=='C'}"></div>
@@ -105,14 +105,14 @@
                             <td>
                                 <el-input size="mini" v-model="item.closingTime"></el-input>
                             </td>
-                            <td v-if="index % assetData.circuitBreaker.numberOfInterruptPhase === 0" :rowspan="assetData.circuitBreaker.numberOfInterruptPhase">
-                                <el-input :rows="assetData.circuitBreaker.numberOfInterruptPhase" type="textarea" v-model="item.closingSync"></el-input>
+                            <td v-if="index % assetData.circuitBreaker.interruptersPerPhase === 0" :rowspan="assetData.circuitBreaker.interruptersPerPhase">
+                                <el-input :rows="assetData.circuitBreaker.interruptersPerPhase" type="textarea" v-model="item.closingSync"></el-input>
                             </td>
                             <td
-                                v-if="index % (assetData.circuitBreaker.numberOfInterruptPhase * assetData.circuitBreaker.numberOfPhase) === 0"
-                                :rowspan="assetData.circuitBreaker.numberOfInterruptPhase * assetData.circuitBreaker.numberOfPhase">
+                                v-if="index % (assetData.circuitBreaker.interruptersPerPhase * assetData.circuitBreaker.numberOfPhases) === 0"
+                                :rowspan="assetData.circuitBreaker.interruptersPerPhase * assetData.circuitBreaker.numberOfPhases">
                                 <el-input
-                                    :rows="assetData.circuitBreaker.numberOfInterruptPhase * assetData.circuitBreaker.numberOfPhase"
+                                    :rows="assetData.circuitBreaker.interruptersPerPhase * assetData.circuitBreaker.numberOfPhases"
                                     type="textarea"
                                     v-model="item.closingInterrupt"></el-input>
                             </td>
@@ -335,8 +335,8 @@ export default {
         },
         assetData() {
             let circuitBreaker = {
-                numberOfInterruptPhase: 1,
-                numberOfPhase: 3
+                interruptersPerPhase: 1,
+                numberOfPhases: 3
             }
             let operating = {
                 numberCloseCoil: 1,
@@ -357,15 +357,25 @@ export default {
             }
             
             if (this.asset && this.asset.operating) {
+                let parsedOperating = {}
                 if (typeof this.asset.operating === 'string') {
                     try {
-                        const parsed = JSON.parse(this.asset.operating)
-                        operating = { ...operating, ...parsed }
+                        parsedOperating = JSON.parse(this.asset.operating)
                     } catch (e) {
                         console.warn('Failed to parse operating:', e)
                     }
                 } else {
-                    operating = { ...operating, ...this.asset.operating }
+                    parsedOperating = this.asset.operating
+                }
+                
+                // Map from DTO property names (snake_case) to camelCase
+                operating = {
+                    ...operating,
+                    ...parsedOperating,
+                    // Map number_of_close_coil to numberCloseCoil
+                    numberCloseCoil: parsedOperating.number_of_close_coil || parsedOperating.numberCloseCoil || operating.numberCloseCoil,
+                    // Map number_of_trip_coil to numberTripCoil
+                    numberTripCoil: parsedOperating.number_of_trip_coil || parsedOperating.numberTripCoil || operating.numberTripCoil
                 }
             }
             
@@ -668,9 +678,12 @@ export default {
         initializeTable() {
             if (!this.data) return
             
-            const numCloseCoil = this.assetData?.operating?.numberCloseCoil || 1
-            const numPhase = this.assetData?.circuitBreaker?.numberOfPhase || 3
-            const numInterruptPhase = this.assetData?.circuitBreaker?.numberOfInterruptPhase || 1
+            // Get numberCloseCoil from either camelCase or snake_case
+            const numCloseCoil = this.assetData?.operating?.numberCloseCoil || 
+                                 this.assetData?.operating?.number_of_close_coil || 
+                                 1
+            const numPhase = this.assetData?.circuitBreaker?.numberOfPhases || 3
+            const numInterruptPhase = this.assetData?.circuitBreaker?.interruptersPerPhase || 1
             const phase = ["A", "B", "C"]
             
             if (!this.data.table) {

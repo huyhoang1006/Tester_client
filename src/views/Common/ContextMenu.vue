@@ -37,6 +37,7 @@
                         <li @click="addDisconnector"><i class="fa-solid fa-plug-circle-xmark"></i> Add Disconnector</li>
                         <li @click="addRotatingMachine"><i class="fa-solid fa-group-arrows-rotate"></i> Add Rotating Machine</li>
                         <li @click="addCapacitor"><i class="fa-solid fa-bolt"></i> Add Capacitor</li>
+                        <li @click="addReactor"><i class="fa-solid fa-bolt"></i> Add Reactor</li>
                     </ul>
                 </li>
                 <li @click="addJob" v-if="this.selectedNode && this.selectedNode.mode == 'asset'">
@@ -166,6 +167,10 @@ export default {
         },
         addCapacitor() {
             this.$emit("show-addCapacitor", this.selectedNode)
+            this.closeContextMenu()
+        },
+        addReactor() {
+            this.$emit("show-addReactor", this.selectedNode)
             this.closeContextMenu()
         },
         addVt() {

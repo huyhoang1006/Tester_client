@@ -15,6 +15,7 @@ import { insertOldBushingInfoTransaction, getOldBushingInfoById, deleteOldBushin
 import BushingEntity from '@/views/Entity/Bushing';
 
 export const insertBushingEntity = async (entity) => {
+    console.log(entity.attachment)
     try {
         if(entity.bushing.mrid === null || entity.bushing.mrid === '') {
             const result = {
