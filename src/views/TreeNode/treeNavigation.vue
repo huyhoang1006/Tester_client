@@ -62,10 +62,14 @@
             </div>
             <div>
                 <el-dropdown @command="handleCommand" trigger="click">
-                <i title="Export" style="font-size: 12px;" class="fa-solid fa-file-export"></i>
+                    <i title="Export" style="font-size: 12px;" class="fa-solid fa-file-export"></i>
                     <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item command="exportJSON">
+                        <el-dropdown-item class="export-json-parent" @mouseenter.native="showSub = 'json'" @mouseleave.native="showSub = null">
                             <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon> export to JSON
+                            <div class="export-json-submenu" v-if="showSub === 'json'" @click.stop @mouseenter.stop @mouseleave.stop>
+                                <div class="submenu-item" @click="handleCommand('exportJSON')">export JSON</div>
+                                <div class="submenu-item" @click="handleCommand('exportJSONCIM')">export JSON by CIM</div>
+                            </div>
                         </el-dropdown-item>
                         <el-dropdown-item command="exportXML">
                             <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon> export to XML
@@ -125,8 +129,7 @@
                         @show-addBushing="showAddBushing" @show-addSurgeArrester="showAddSurgeArrester"
                         @show-addCircuit="showAddCircuitBreaker" @show-addVt="showAddVt" @show-addCt="showAddCt"
                         @show-addPowerCable="showAddPowerCable" @show-addDisconnector="showAddDisconnector"
-                        @show-addCapacitor="showAddCapacitor"
-                        @show-addReactor="showAddReactor"
+                        @show-addCapacitor="showAddCapacitor" @show-addReactor="showAddReactor"
                         @show-addRotatingMachine="showAddRotatingMachine" @show-addBay="showAddBay"
                         @show-data="showDataClient" ref="contextMenuClient">
                     </contextMenu>
@@ -688,8 +691,7 @@
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Reactor" :visible.sync="signReactor" width="1000px"
-            @close="handleReactorCancel">
+        <el-dialog title="Add Reactor" :visible.sync="signReactor" width="1000px" @close="handleReactorCancel">
             <Reactor :locationId="locationId" :parent="parentOrganization" ref="reactor">
             </Reactor>
             <span slot="footer" class="dialog-footer">
@@ -820,6 +822,7 @@ export default {
     data() {
         return {
             openExportDialog: false,
+            showSub: null,
             parentOrganization: null,
             logDataServer: [],
             logDataClient: [],
@@ -986,22 +989,24 @@ export default {
         handleCommand(cmd) {
             if (cmd === 'exportExcel') {
                 this.openExportDialog = true
-            } else if(cmd === 'exportJSON'){
-
-            } else if(cmd === 'exportXML'){
+            } else if (cmd === 'exportJSON') {
+                this.exportTreeToJSON('entity')
+            } else if (cmd === 'exportJSONCIM') {
+                this.exportTreeToJSON('cim')
+            } else if (cmd === 'exportXML') {
                 this.openExportDialog = true
-            } else if(cmd === 'exportWord'){
+            } else if (cmd === 'exportWord') {
                 this.openExportDialog = true
-            } else if(cmd === 'exportPDF'){
+            } else if (cmd === 'exportPDF') {
                 this.openExportDialog = true
             } 
         },
 
-        handleCancelExport(){
+        handleCancelExport() {
             this.openExportDialog = false
         },
 
-        handleExportConfirm(){
+        handleExportConfirm() {
             this.openExportDialog = false
             this.$message.success("Export successfully")
         },
@@ -1917,7 +1922,7 @@ export default {
                         } catch (error) {
                             console.log(error)
                         }
-                    }else if (node.mode == 'bay') {
+                    } else if (node.mode == 'bay') {
                         try {
                             const newRowsVoltageLevel = await demoAPI.getAssetByOwner('Bay')
                             if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
@@ -3072,7 +3077,7 @@ export default {
                 // Sử dụng mrid hoặc id để check tab đã tồn tại
                 const nodeKey = newNode.mrid || newNode.id;
                 const existingTab = this.tabs.find(item => (item.mrid || item.id) === nodeKey);
-                
+
                 if (existingTab) {
                     // Nếu tab đã tồn tại, active nó
                     this.activeTab = existingTab;
@@ -4555,5 +4560,34 @@ export default {
 
 .break-word {
     word-break: break-word;
+}
+
+.export-json-parent {
+    position: relative;
+}
+
+.export-json-submenu {
+    position: absolute;
+    left: 100%;
+    top: 0;
+    background: #fff;
+    border: 1px solid #e4e7ed;
+    border-radius: 4px;
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+    min-width: 170px;
+    z-index: 1000;
+    padding: 1px 0;
+}
+
+.export-json-submenu .submenu-item {
+    padding: 1px 20px;
+    font-size: 12px;
+    cursor: pointer;
+    color: #606266;
+}
+
+.export-json-submenu .submenu-item:hover {
+    background-color: #f5f7fa;
+    color: rgb(51.8, 80.6, 171);
 }
 </style>
