@@ -1,5 +1,5 @@
-import {UnitSymbol} from '@/views/Enum/UnitSymbol'
-import {UnitMultiplier} from '@/views/Enum/UnitMultiplier'
+import { UnitSymbol } from '@/views/Enum/UnitSymbol'
+import { UnitMultiplier } from '@/views/Enum/UnitMultiplier'
 class ReactorRatingDto {
     constructor() {
         this.rated_voltage = {
@@ -14,17 +14,17 @@ class ReactorRatingDto {
         };
         this.rated_current = {
             mrid: '',
-            value: '',  
+            value: '',
             unit: UnitSymbol.A
         };
         this.rated_power = {
             mrid: '',
-            value: '',  
+            value: '',
             unit: UnitMultiplier.k + '|' + UnitSymbol.VAr
         };
         this.inductance = {
             mrid: '',
-            value: '',  
+            value: '',
             unit: UnitSymbol.H
         };
     }
