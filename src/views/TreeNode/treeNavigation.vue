@@ -859,6 +859,7 @@ export default {
             openExportDialog: false,
             openImportDialog: false,
             signFmeca: false,
+            showSub : null,
             parentOrganization: null,
             logDataServer: [],
             logDataClient: [],
