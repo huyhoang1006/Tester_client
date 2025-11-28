@@ -16,6 +16,8 @@ class SurgeArresterJobDto {
             summary: '',
             asset_id : '',
         }
+        this.testTypeList = [],
+        this.procedureAsset = []
         this.attachmentData = [];
         this.attachmentId = '';
         this.testList = [];

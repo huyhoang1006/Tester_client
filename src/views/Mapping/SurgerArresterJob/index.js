@@ -18,6 +18,9 @@ import Analog from "@/views/Cim/Analog";
 import Discrete from "@/views/Cim/Discrete";
 import ValueAliasSet from "@/views/Cim/ValueAliasSet";
 import ValueToAlias from "@/views/Cim/ValueToAlias";
+import Procedure from "@/views/Cim/Procedure"
+import ProcedureAsset from "@/views/Cim/ProcedureAsset";
+
 
 export const jobDtoToEntity = (dto) => {
     const entity = new SurgeArresterJobEntity();
@@ -49,6 +52,23 @@ export const jobDtoToEntity = (dto) => {
         data.work_id = equipment.work_id || null;
         data.calibration_date = equipment.calibration_date || null;
         entity.testingEquipment.push(data);
+    }
+
+    for(const testType of dto.testTypeList) {
+        const procedure = new Procedure();
+        procedure.mrid = testType.mrid || null;
+        procedure.name = testType.name || null;
+        procedure.kind = 'test' || null;
+        procedure.alias_name = testType.code || null;
+        entity.procedure.push(procedure);
+    }
+
+    for(const procedureAsset of dto.procedureAsset) {
+        const procedureAssetEntity = new ProcedureAsset();
+        procedureAssetEntity.mrid = procedureAsset.mrid || null;
+        procedureAssetEntity.procedure_id = procedureAsset.procedure_id || null;
+        procedureAssetEntity.asset_id = procedureAsset.asset_id || null;
+        entity.procedureAsset.push(procedureAssetEntity);
     }
 
     //test list
