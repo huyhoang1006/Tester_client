@@ -2,7 +2,7 @@ import Bushing from '@/views/Cim/Bushing';
 import OldBushingInfo from '@/views/Cim/OldBushingInfo';
 import Attachment from '../Attachment';
 import LifecycleDate from '@/views/Cim/LifecycleDate'
-import AssetPsr from '@/views/Entity/AssetPsr'
+import AssetPsr from '@/views/Flatten/AssetPsr'
 import ProductAssetModel from '@/views/Cim/ProductAssetModel'
 class BushingAssetEntity {
     constructor() {

@@ -2,7 +2,7 @@ import LifecycleDate from "@/views/Cim/LifecycleDate"
 import ProductAssetModel from "@/views/Cim/ProductAssetModel"
 import SurgeArrester from "@/views/Cim/SurgeArrester"
 import AssetPsr from "@/views/Cim/AssetPsr"
-import Attachment from '@/views/Entity/Attachment';
+import Attachment from '@/views/Flatten/Attachment';
 
 
 class SurgeArresterEntity {
