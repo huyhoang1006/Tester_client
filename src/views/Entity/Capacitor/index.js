@@ -1,4 +1,4 @@
-import Attachment from "../../Entity/Attachment";
+import Attachment from "../Attachment";
 import Asset from "../../Cim/Asset";
 import LifecycleDate from "../../Cim/LifecycleDate";
 import AssetPsr from "../../Cim/AssetPsr";
