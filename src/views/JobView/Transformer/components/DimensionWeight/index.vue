@@ -1,6 +1,6 @@
 <template>
     <div>
-        <table class="table-strip-input-data">
+        <table class="table-strip-input-data" style="width: 100% ; font-size: 12px;">
             <thead>
                 <tr>
                     <th colspan="4">Dimension (mm)</th>
@@ -19,25 +19,25 @@
             <tbody>
                 <tr>
                     <td>
-                        <el-input size="mini" v-model="testData.table.dimension.a"> </el-input>
+                        <el-input size="mini" v-model="testData.table.dimension.a.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="testData.table.dimension.b"> </el-input>
+                        <el-input size="mini" v-model="testData.table.dimension.b.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="testData.table.dimension.c"> </el-input>
+                        <el-input size="mini" v-model="testData.table.dimension.c.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="testData.table.dimension.n"> </el-input>
+                        <el-input size="mini" v-model="testData.table.dimension.n.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="testData.table.weight.oil"> </el-input>
+                        <el-input size="mini" v-model="testData.table.weight.oil.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="testData.table.weight.active"> </el-input>
+                        <el-input size="mini" v-model="testData.table.weight.active.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="testData.table.weight.total"> </el-input>
+                        <el-input size="mini" v-model="testData.table.weight.total.value"> </el-input>
                     </td>
                 </tr>
             </tbody>

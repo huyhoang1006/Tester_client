@@ -1,20 +1,28 @@
 <!-- eslint-disable -->
 <template>
-    <div ref="customTabs" class="custom-tabs">
+    <div v-if="side == 'client'" ref="customTabs" class="custom-tabs">
         <div class="tabs-header">
             <div class="scroll-btn left" @click="scrollLeft"><i class="fa-solid fa-chevron-left"></i></div>
             <div class="tabs-header-data" ref="tabsHeader" @scroll="checkScroll">
                 <div v-for="(tab, index) in tabs" :key="tab.mrid" @click="selectTab(tab, index)"
                     @mouseover="hoveredTab = tab.mrid" @mouseleave="hoveredTab = null" class="tab-item"
                     :class="{ active: activeTab.mrid === tab.mrid }" ref="tabItems">
-                    <i style="color: #FDD835;" class="fa-solid fa-folder-open mgr-10 mgl-10"></i>
-                    <span v-if="tab.mode == 'organisation'" class="tab-label">{{ tab.name }}</span>
-                    <span v-else-if="tab.mode == 'substation'" class="tab-label">{{ tab.name }}</span>
-                    <span v-else-if="tab.mode == 'voltageLevel'" class="tab-label">{{ tab.name }}</span>
-                    <span v-else-if="tab.mode == 'bay'" class="tab-label">{{ tab.name }}</span>
-                    <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.serial_number }}</span>
-                    <span v-else-if="tab.mode == 'job'" class="tab-label">{{ tab.name }}</span>
-                    <span v-else-if="tab.mode == 'test'" class="tab-label">{{ tab.name }}</span>
+                    <div class="icon-wrapper mgl-10">
+                        <icon v-if="tab.mode == 'substation'" size="16px" folderType="location" badgeColor="146EBE"></icon>
+                        <icon v-else-if="tab.mode == 'voltageLevel'" size="16px" folderType="voltageLevel" badgeColor="146EBE"></icon>
+                        <icon v-else-if="tab.mode == 'bay'" size="16px" folderType="bay" badgeColor="146EBE"></icon>
+                        <icon v-else-if="tab.mode == 'asset'" size="16px" folderType="asset" :assetDetail="tab.asset" badgeColor="146EBE"></icon>
+                        <icon v-else-if="tab.mode == 'job'" size="16px" folderType="job" badgeColor="FF0000"></icon>
+                        <icon v-else-if="tab.mode == 'test'" size="16px" folderType="test" badgeColor="008001"></icon>
+                        <icon v-else size="16px" folderType="building" badgeColor="008001"></icon>
+                        <span v-if="tab.mode == 'organisation'" class="tab-label">{{ tab.name }}</span>
+                        <span v-else-if="tab.mode == 'substation'" class="tab-label">{{ tab.name }}</span>
+                        <span v-else-if="tab.mode == 'voltageLevel'" class="tab-label">{{ tab.name }}</span>
+                        <span v-else-if="tab.mode == 'bay'" class="tab-label">{{ tab.name }}</span>
+                        <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.serial_number }}</span>
+                        <span v-else-if="tab.mode == 'job'" class="tab-label">{{ tab.name }}</span>
+                        <span v-else-if="tab.mode == 'test'" class="tab-label">{{ tab.name }}</span>
+                    </div>
                     <span class="close-icon mgr-10 mgl-10"
                         :class="{ visible: hoveredTab === tab.mrid || activeTab.mrid === tab.mrid }"
                         @click.stop="closeTab(index)">✖</span>
@@ -37,6 +45,47 @@
             </div>
         </div>
     </div>
+    <div v-else class="custom-tabs" ref="customTabsServer">
+        <div class="tabs-header">
+            <div class="scroll-btn left" @click="scrollLeft"><i class="fa-solid fa-chevron-left"></i></div>
+            <div class="tabs-header-data" ref="tabsHeader" @scroll="checkScroll">
+                <div v-for="(tab, index) in tabs" :key="tab.mrid" @click="selectTab(tab, index)"
+                    @mouseover="hoveredTab = tab.mrid" @mouseleave="hoveredTab = null" class="tab-item"
+                    :class="{ active: activeTab.mrid === tab.mrid }" ref="tabItems">
+                    <div class="icon-wrapper mgl-10">
+                        <icon v-if="tab.mode == 'substation'" size="16px" folderType="location" badgeColor="146EBE"></icon>
+                        <icon v-else-if="tab.mode == 'voltageLevel'" size="16px" folderType="voltageLevel" badgeColor="146EBE"></icon>
+                        <icon v-else-if="tab.mode == 'bay'" size="16px" folderType="bay" badgeColor="146EBE"></icon>
+                        <icon v-else-if="tab.mode == 'asset'" size="16px" folderType="asset" :assetDetail="tab.asset" badgeColor="146EBE"></icon>
+                        <icon v-else-if="tab.mode == 'job'" size="16px" folderType="job" badgeColor="FF0000"></icon>
+                        <icon v-else-if="tab.mode == 'test'" size="16px" folderType="test" badgeColor="008001"></icon>
+                        <icon v-else size="16px" folderType="building" badgeColor="008001"></icon>
+                        <span v-if="tab.mode == 'organisation'" class="tab-label">{{ tab.name }}</span>
+                        <span v-else-if="tab.mode == 'substation'" class="tab-label">{{ tab.name }}</span>
+                        <span v-else-if="tab.mode == 'voltageLevel'" class="tab-label">{{ tab.name }}</span>
+                        <span v-else-if="tab.mode == 'bay'" class="tab-label">{{ tab.name }}</span>
+                        <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.serial_number }}</span>
+                        <span v-else-if="tab.mode == 'job'" class="tab-label">{{ tab.name }}</span>
+                        <span v-else-if="tab.mode == 'test'" class="tab-label">{{ tab.name }}</span>
+                    </div>
+                    <span class="close-icon mgr-10 mgl-10"
+                        :class="{ visible: hoveredTab === tab.mrid || activeTab.mrid === tab.mrid }"
+                        @click.stop="closeTab(index)">✖</span>
+                </div>
+            </div>
+            <div class="scroll-btn right" @click="scrollRight"><i class="fa-solid fa-angle-right"></i></div>
+        </div>
+        <div class="tabs-content">
+            <div class="mgr-20 mgt-20 mgb-20 mgl-20" v-for="(item) in tabs" :key="item.mrid">
+                <component mode="update" @reload="loadData" v-show="activeTab.mrid === item.mrid"
+                    ref="componentLoadData" :sideData="sideSign" :is="checkTab(item)" :organisationId="item.parentId"
+                    :testTypeListData="testTypeListData" :assetData="assetData"
+                    :productAssetModelData="productAssetModelData" :parent="parentOrganization"
+                    :locationData="locationData" style="min-height: calc(100vh - 250px);">
+                </component>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script>
@@ -46,12 +95,14 @@ import LocationViewData from '@/views/LocationInsert/locationLevelView.vue'
 import OwnerView from '@/views/OwnerViewData/index.vue'
 import OrganisationView from '@/views/Organisation/index.vue'
 import * as subsMapper from '@/views/Mapping/Substation/index'
+import SubstationDto from '@/views/Dto/Substation'
 import * as orgMapper from '@/views/Mapping/Organisation/index'
 import * as voltageMapper from '@/views/Mapping/VoltageLevel/index'
 import * as surgeMapper from '@/views/Mapping/SurgeArrester/index'
 import * as bushingMapper from '@/views/Mapping/Bushing/index'
 import * as vtMapper from '@/views/Mapping/VoltageTransformer/index'
 import * as SurgeArresterJobMapper from '@/views/Mapping/SurgerArresterJob/index'
+import * as TransformerJobMapper from '@/views/Mapping/TransformerJob/index'
 import * as disconnectorMapper from '@/views/Mapping/Disconnector/index'
 import * as PowerCableMapper from '@/views/Mapping/PowerCable'
 import * as RotatingMachineMapper from '@/views/Mapping/RotatingMachine'
@@ -59,6 +110,7 @@ import * as currentTransformerMapper from '@/views/Mapping/CurrentTransformer'
 import * as CapacitorMapper from '@/views/Mapping/Capacitor'
 import * as BreakerMapper from '@/views/Mapping/Breaker'
 import * as transformerMapper from '@/views/Mapping/Transformer'
+import * as reactorMapper from '@/views/Mapping/Reactor'
 
 
 import VoltageLevel from '@/views/VoltageLevel/index.vue'
@@ -66,6 +118,7 @@ import Bay from '@/views/Bay/index.vue'
 import SurgeArrester from '@/views/AssetView/SurgeArrester/index.vue'
 import Bushing from '@/views/AssetView/Bushing/index.vue'
 import SurgeArresterJob from '@/views/JobView/SurgeArrester/index.vue'
+import TransformerJob from '@/views/JobView/Transformer/index.vue'
 import VoltageTransformer from '@/views/AssetView/VoltageTransformer/index.vue'
 import Disconnector from '@/views/AssetView/Disconnector/index.vue'
 import PowerCable from '@/views/AssetView/PowerCable/index.vue'
@@ -73,7 +126,9 @@ import RotatingMachine from '@/views/AssetView/RotatingMachine/index.vue'
 import CurrentTransformer from '@/views/AssetView/CurrentTransformer/index.vue'
 import Capacitor from '@/views/AssetView/Capacitor/index.vue'
 import CircuitBreaker from "@/views/AssetView/CircuitBreaker/index.vue"
+import Reactor from '@/views/AssetView/Reactor/index.vue'
 import Transformer from '@/views/AssetView/Transformer/index.vue'
+import Icon from '@/views/Common/Icon.vue'
 
 export default {
     name: "Tabs",
@@ -88,13 +143,15 @@ export default {
         Bushing,
         VoltageTransformer,
         SurgeArresterJob,
+        TransformerJob,
         Disconnector,
         PowerCable,
         RotatingMachine,
         CurrentTransformer,
         Capacitor,
         CircuitBreaker,
-        Transformer
+        Reactor,
+        Icon
     },
     model: {
         prop: 'value',
@@ -160,34 +217,77 @@ export default {
 
                     if (dataEntity.success) {
                         const dto = subsMapper.mapEntityToDto(dataEntity.data)
+                        // Đảm bảo name được set từ tab nếu entity không có name
+                        if (!dto.name || dto.name === '') {
+                            dto.name = tab.name || ''
+                        }
                         data.dto = dto
                     } else {
-                        this.$message.error("Failed to load substation data");
-                        return
+                        // Nếu entity chưa tồn tại, tạo DTO mới từ tab data
+                        const dto = new SubstationDto()
+                        dto.name = tab.name || ''
+                        dto.subsId = tab.mrid || ''
+                        dto.organisationId = tab.parentId || ''
+                        data.dto = dto
+                        console.log('Substation entity not found, created new DTO from tab data:', dto)
                     }
                     this.$refs.componentLoadData[index].loadData(data)
                 } else if (tab.mode === 'organisation') {
                     const data = await window.electronAPI.getOrganisationEntityByMrid(tab.mrid)
                     if (data.success) {
                         const orgEntity = orgMapper.OrgEntityToOrgDto(data.data)
+                        // Đảm bảo name được set từ tab nếu entity không có name
+                        if (!orgEntity.name || orgEntity.name === '') {
+                            orgEntity.name = tab.name || ''
+                        }
                         this.$refs.componentLoadData[index].loadData(orgEntity)
                     } else {
-                        this.$message.error("Failed to load organisation data");
+                        // Nếu entity chưa tồn tại, tạo DTO mới từ tab data
+                        const OrganisationDto = require('@/views/Dto/Organisation').default
+                        const orgDto = new OrganisationDto()
+                        orgDto.name = tab.name || ''
+                        orgDto.organisationId = tab.mrid || ''
+                        orgDto.parentId = tab.parentId || ''
+                        this.$refs.componentLoadData[index].loadData(orgDto)
+                        console.log('Organisation entity not found, created new DTO from tab data:', orgDto)
                     }
                 } else if (tab.mode === 'voltageLevel') {
                     const data = await window.electronAPI.getVoltageLevelEntityByMrid(tab.mrid)
                     if (data.success) {
                         const voltageLevelDto = voltageMapper.volEntityToVolDto(data.data)
+                        // Đảm bảo name được set từ tab nếu entity không có name
+                        if (!voltageLevelDto.name || voltageLevelDto.name === '') {
+                            voltageLevelDto.name = tab.name || ''
+                        }
                         this.$refs.componentLoadData[index].loadData(voltageLevelDto)
                     } else {
-                        this.$message.error("Failed to load voltage level data");
+                        // Nếu entity chưa tồn tại, tạo DTO mới từ tab data
+                        const VoltageLevelDto = require('@/views/Dto/VoltageLevel').default
+                        const volDto = new VoltageLevelDto()
+                        volDto.name = tab.name || ''
+                        volDto.voltageLevelId = tab.mrid || ''
+                        volDto.substationId = tab.parentId || ''
+                        this.$refs.componentLoadData[index].loadData(volDto)
+                        console.log('VoltageLevel entity not found, created new DTO from tab data:', volDto)
                     }
                 } else if (tab.mode === 'bay') {
                     const data = await window.electronAPI.getBayEntityByMrid(tab.mrid)
                     if (data.success) {
-                        this.$refs.componentLoadData[index].loadData(data.data)
+                        const bayData = data.data
+                        // Đảm bảo name được set từ tab nếu entity không có name
+                        if (!bayData.name || bayData.name === '') {
+                            bayData.name = tab.name || ''
+                        }
+                        this.$refs.componentLoadData[index].loadData(bayData)
                     } else {
-                        this.$message.error("Failed to load bay data");
+                        // Nếu entity chưa tồn tại, tạo object mới từ tab data
+                        const bayData = {
+                            name: tab.name || '',
+                            mrid: tab.mrid || '',
+                            voltageLevel: tab.parentId || ''
+                        }
+                        this.$refs.componentLoadData[index].loadData(bayData)
+                        console.log('Bay entity not found, created new data from tab data:', bayData)
                     }
                 } else if (tab.mode === 'asset') {
                     if (tab.asset === 'Surge arrester') {
@@ -197,9 +297,21 @@ export default {
                         const data = await window.electronAPI.getSurgeArresterEntityByMrid(tab.mrid, tab.parentId)
                         if (data.success) {
                             const surgeArresterDto = surgeMapper.mapEntityToDto(data.data)
+                            // Đảm bảo serial_number được set từ tab nếu entity không có
+                            if (!surgeArresterDto.properties?.serial_no || surgeArresterDto.properties.serial_no === '') {
+                                if (!surgeArresterDto.properties) surgeArresterDto.properties = {}
+                                surgeArresterDto.properties.serial_no = tab.serial_number || ''
+                            }
                             this.$refs.componentLoadData[index].loadData(surgeArresterDto)
                         } else {
-                            this.$message.error("Failed to load surge arrester data");
+                            // Nếu entity chưa tồn tại, tạo DTO mới từ tab data
+                            const SurgeArresterDto = require('@/views/Dto/SurgeArrester').default
+                            const dto = new SurgeArresterDto()
+                            if (!dto.properties) dto.properties = {}
+                            dto.properties.serial_no = tab.serial_number || ''
+                            dto.assetId = tab.mrid || ''
+                            this.$refs.componentLoadData[index].loadData(dto)
+                            console.log('Surge arrester entity not found, created new DTO from tab data:', dto)
                         }
                     } else if (tab.asset === 'Bushing') {
                         this.parentOrganization = {
@@ -208,9 +320,14 @@ export default {
                         const data = await window.electronAPI.getBushingEntityByMrid(tab.mrid, tab.parentId)
                         if (data.success) {
                             const BushingDto = bushingMapper.mapEntityToDto(data.data)
+                            // Đảm bảo serial_number được set từ tab nếu entity không có
+                            if (!BushingDto.properties?.serial_no || BushingDto.properties.serial_no === '') {
+                                if (!BushingDto.properties) BushingDto.properties = {}
+                                BushingDto.properties.serial_no = tab.serial_number || ''
+                            }
                             this.$refs.componentLoadData[index].loadData(BushingDto)
                         } else {
-                            this.$message.error("Failed to load surge arrester data");
+                            this.$message.error("Failed to load bushing data");
                         }
                     } else if (tab.asset === 'Current transformer') {
                         this.parentOrganization = {
@@ -220,6 +337,11 @@ export default {
                         console.log("data : ", data)
                         if (data.success) {
                             const currentTransformerDto = currentTransformerMapper.mapEntityToDto(data.data)
+                            // Đảm bảo serial_number được set từ tab nếu entity không có
+                            if (!currentTransformerDto.properties?.serial_no || currentTransformerDto.properties.serial_no === '') {
+                                if (!currentTransformerDto.properties) currentTransformerDto.properties = {}
+                                currentTransformerDto.properties.serial_no = tab.serial_number || ''
+                            }
                             console.log("currentTransformerDto : ", currentTransformerDto)
                             this.$refs.componentLoadData[index].loadData(currentTransformerDto)
                         } else {
@@ -233,10 +355,15 @@ export default {
                         const data = await window.electronAPI.getVoltageTransformerEntityByMrid(tab.mrid, tab.parentId)
                         if (data.success) {
                             const vtDto = vtMapper.mapEntityToDto(data.data)
+                            // Đảm bảo serial_number được set từ tab nếu entity không có
+                            if (!vtDto.properties?.serial_no || vtDto.properties.serial_no === '') {
+                                if (!vtDto.properties) vtDto.properties = {}
+                                vtDto.properties.serial_no = tab.serial_number || ''
+                            }
                             console.log("entityToDto : ", vtDto)
                             this.$refs.componentLoadData[index].loadData(vtDto)
                         } else {
-                            this.$message.error("Failed to load surge arrester data");
+                            this.$message.error("Failed to load Voltage transformer data");
                         }
                     } else if(tab.asset === 'Disconnector') {
                         this.parentOrganization = {
@@ -245,6 +372,11 @@ export default {
                         const data = await window.electronAPI.getDisconnectorEntityByMrid(tab.mrid, tab.parentId)
                         if(data.success) {
                             const disconnectorDto = disconnectorMapper.disconnectorEntityToDto(data.data)
+                            // Đảm bảo serial_number được set từ tab nếu entity không có
+                            if (!disconnectorDto.properties?.serial_no || disconnectorDto.properties.serial_no === '') {
+                                if (!disconnectorDto.properties) disconnectorDto.properties = {}
+                                disconnectorDto.properties.serial_no = tab.serial_number || ''
+                            }
                             this.$refs.componentLoadData[index].loadData(disconnectorDto)
                         } else {
                             this.$message.error("Failed to load Disconnector data");
@@ -256,9 +388,14 @@ export default {
                         const data = await window.electronAPI.getPowerCableEntityByMrid(tab.mrid, tab.parentId)
                         if(data.success) {
                             const powerCableDto = PowerCableMapper.mapEntityToDto(data.data)
+                            // Đảm bảo serial_number được set từ tab nếu entity không có
+                            if (!powerCableDto.properties?.serial_no || powerCableDto.properties.serial_no === '') {
+                                if (!powerCableDto.properties) powerCableDto.properties = {}
+                                powerCableDto.properties.serial_no = tab.serial_number || ''
+                            }
                             this.$refs.componentLoadData[index].loadData(powerCableDto)
                         } else {
-                            this.$message.error("Failed to load Disconnector data");
+                            this.$message.error("Failed to load Power cable data");
                         }
                     } else if(tab.asset === 'Rotating machine') {
                         this.parentOrganization = {
@@ -267,6 +404,11 @@ export default {
                         const data = await window.electronAPI.getRotatingMachineEntityByMrid(tab.mrid, tab.parentId)
                         if(data.success) {
                             const rotatingMachineDto = RotatingMachineMapper.mapEntityToDto(data.data)
+                            // Đảm bảo serial_number được set từ tab nếu entity không có
+                            if (!rotatingMachineDto.properties?.serial_no || rotatingMachineDto.properties.serial_no === '') {
+                                if (!rotatingMachineDto.properties) rotatingMachineDto.properties = {}
+                                rotatingMachineDto.properties.serial_no = tab.serial_number || ''
+                            }
                             this.$refs.componentLoadData[index].loadData(rotatingMachineDto)
                         } else {
                             this.$message.error("Failed to load Rotating Machine data");
@@ -278,6 +420,11 @@ export default {
                         const data = await window.electronAPI.getCapacitorEntityByMrid(tab.mrid, tab.parentId)
                         if(data.success) {
                             const capacitorDto = CapacitorMapper.mapEntityToDto(data.data)
+                            // Đảm bảo serial_number được set từ tab nếu entity không có
+                            if (!capacitorDto.properties?.serial_no || capacitorDto.properties.serial_no === '') {
+                                if (!capacitorDto.properties) capacitorDto.properties = {}
+                                capacitorDto.properties.serial_no = tab.serial_number || ''
+                            }
                             this.$refs.componentLoadData[index].loadData(capacitorDto)
                         }
                         else {
@@ -290,6 +437,11 @@ export default {
                         const data = await window.electronAPI.getBreakerEntityByMrid(tab.mrid, tab.parentId)
                         if(data.success) {
                             const breakerDto = BreakerMapper.mapEntityToDto(data.data)
+                            // Đảm bảo serial_number được set từ tab nếu entity không có
+                            if (!breakerDto.properties?.serial_no || breakerDto.properties.serial_no === '') {
+                                if (!breakerDto.properties) breakerDto.properties = {}
+                                breakerDto.properties.serial_no = tab.serial_number || ''
+                            }
                             this.$refs.componentLoadData[index].loadData(breakerDto)
                         } else {
                             this.$message.error("Failed to load circuit breaker data");
@@ -301,9 +453,30 @@ export default {
                         const data = await window.electronAPI.getTransformerEntityByMrid(tab.mrid, tab.parentId)
                         if(data.success) {
                             const transformerDto = transformerMapper.transformerEntityToDto(data.data)
+                            // Đảm bảo serial_number được set từ tab nếu entity không có
+                            if (!transformerDto.properties?.serial_no || transformerDto.properties.serial_no === '') {
+                                if (!transformerDto.properties) transformerDto.properties = {}
+                                transformerDto.properties.serial_no = tab.serial_number || ''
+                            }
                             this.$refs.componentLoadData[index].loadData(transformerDto)
                         } else {
                             this.$message.error("Failed to load transformer data");
+                        }    
+                    } else if(tab.asset === 'Reactor') {
+                        this.parentOrganization = {
+                            mrid : tab.parentId
+                        }
+                        const data = await window.electronAPI.getReactorEntityByMrid(tab.mrid, tab.parentId)
+                        if(data.success) {
+                            const reactorDto = reactorMapper.mapEntityToDto(data.data)
+                            // Đảm bảo serial_number được set từ tab nếu entity không có
+                            if (!reactorDto.properties?.serial_no || reactorDto.properties.serial_no === '') {
+                                if (!reactorDto.properties) reactorDto.properties = {}
+                                reactorDto.properties.serial_no = tab.serial_number || ''
+                            }
+                            this.$refs.componentLoadData[index].loadData(reactorDto)
+                        } else {
+                            this.$message.error("Failed to load reactor data");
                         }    
                     }
                 } else if (tab.mode === 'job') {
@@ -395,6 +568,38 @@ export default {
                             this.$message.error("Failed to load power cable job data");
                         }
                     }
+                    else if( tab.job === 'Transformer') {
+                        const dataTestType = await window.electronAPI.getAllTestTypeTransformers();
+                        if (dataTestType.success) {
+                            this.testTypeListData = dataTestType.data
+                        } else {
+                            this.testTypeListData = []
+                        }
+                        const dataTransformer = await window.electronAPI.getAssetByMrid(tab.parentId)
+                        if (dataTransformer.success) {
+                            this.assetData = dataTransformer.data
+                        } else {
+                            this.assetData = {}
+                        }
+                        this.checkJobType = 'JobTransformer'
+                        this.signJob = true;
+                        const data = await window.electronAPI.getTransformerJobByMrid(tab.mrid)
+                        if (data.success) {
+                            const transformerJobDto = TransformerJobMapper.JobEntityToDto(data.data)
+                            for (const test of transformerJobDto.testList) {
+                                for (const type of this.testTypeListData) {
+                                    if (test.testTypeCode === type.code) {
+                                        test.testTypeName = type.name
+                                        test.testTypeId = type.mrid
+                                        break
+                                    }
+                                }
+                            }
+                            this.$refs.componentLoadData[index].loadData(transformerJobDto)
+                        } else {
+                            this.$message.error("Failed to load transformer job data");
+                        }
+                    }
                 } else {
                     this.$message.error("Unsupported tab mode");
                 }
@@ -479,10 +684,14 @@ export default {
                     return 'CircuitBreaker'
                 } else if(tab.asset === 'Transformer') {
                     return 'Transformer'
+                } else if(tab.asset === 'Reactor') {
+                    return 'Reactor'
                 }
             } else if (tab.mode == 'job') {
                 if (tab.job === 'Surge arrester') {
                     return 'SurgeArresterJob'
+                } else if (tab.job === 'Transformer') {
+                    return 'TransformerJob'
                 }
             }
         },
@@ -544,6 +753,12 @@ export default {
 .tab-item.active {
     border-bottom: 3px solid #012596;
     font-weight: bold;
+}
+
+.icon-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .close-icon {

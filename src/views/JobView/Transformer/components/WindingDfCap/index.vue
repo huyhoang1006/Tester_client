@@ -21,7 +21,7 @@
         </el-row>
         </div>
 
-        <table class="table-strip-input-data" style="width: 2000px">
+        <table class="table-strip-input-data" style="width: 180% ; font-size: 12px;">
             <thead>
                 <tr>
                     <th class="no-col">No</th>
@@ -49,7 +49,7 @@
                             <div :class="{colorTableRed : index%3==0, colorTableYellow : index%3==1, colorTableBlue : index%3==2}"></div>
                         </td>
                         <td>
-                            <el-select size="mini" v-model="item.test_mode">
+                            <el-select size="mini" v-model="item.test_mode.value">
                                 <el-option label="GST" value="GST"></el-option>
                                 <el-option label="GSTg-A" value="GSTg-A"></el-option>
                                 <el-option label="GSTg-B" value="GSTg-B"></el-option>
@@ -60,37 +60,37 @@
                             </el-select>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.test_voltage"></el-input>
+                            <el-input size="mini" type="text" v-model="item.test_voltage.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.df_ref"></el-input>
+                            <el-input size="mini" type="text" v-model="item.df_ref.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.c_ref"></el-input>
+                            <el-input size="mini" type="text" v-model="item.c_ref.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.df_meas"></el-input>
+                            <el-input size="mini" type="text" v-model="item.df_meas.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.c_meas"></el-input>
+                            <el-input size="mini" type="text" v-model="item.c_meas.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.tri_c_meas"></el-input>
+                            <el-input size="mini" type="text" v-model="item.tri_c_meas.value"></el-input>
                         </td>
                         <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment">
+                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
                                 <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                                 <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
-                            <span v-if="item.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator_df)" id="condition" type="text" size="mini" v-model="item.condition_indicator_df">
+                            <el-input :class="nameColor(item.condition_indicator_df.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator_df.value">
                             </el-input>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator_c)" id="condition" type="text" size="mini" v-model="item.condition_indicator_c">
+                            <el-input :class="nameColor(item.condition_indicator_c.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator_c.value">
                             </el-input>
                         </td>
                         <td>
@@ -109,10 +109,10 @@
         </table>
 
         <!-- Assessment settings -->
-        <el-dialog title="Assessment settings" :visible.sync="openAssessmentDialog" width="860px">
+        <el-dialog append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="860px">
             <el-form size="small" label-position="left" label-width="140px">
                 <el-form-item label="Option">
-                    <el-select class="w-100" placeholder="please select" v-model="assessmentSetting.option">
+                    <el-select class="w-100" placeholder="please select" v-model="assessmentSetting.option.value">
                         <el-option label="IEEE C57.152 (2013) - New insulating liquid" value="IEEEnewLiquid"></el-option>
                         <el-option label="IEEE C57.152 (2013) - Service-aged insulating liquid" value="IEEEserviceLiquid"></el-option>
                         <el-option label="CIGRE 445" value="CIGRE"></el-option>
@@ -121,7 +121,7 @@
                 </el-form-item>
             </el-form>
 
-            <table v-if="assessmentSetting.option === 'IEEEnewLiquid'" class="table-strip-input-data">
+            <table v-if="assessmentSetting.option.value === 'IEEEnewLiquid'" class="table-strip-input-data">
                 <thead>
                     <tr>
                         <th colspan="9">Limit</th>
@@ -150,56 +150,56 @@
                 <tbody>
                     <tr>
                         <th>DF meas (%)</th>
-                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.mineral.celc25.df_meas }}</td>
-                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.mineral.celc100.df_meas }}</td>
-                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.lfh.celc25.df_meas }}</td>
-                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.lfh.celc100.df_meas }}</td>
-                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.silicone.celc25.df_meas }}</td>
-                        <td> {{ assessmentSetting.data.IEEEnewLiquid.silicone.celc100.df_meas }}</td>
-                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.naturalEaster.celc25.df_meas }}</td>
-                        <td> {{ assessmentSetting.data.IEEEnewLiquid.naturalEaster.celc100.df_meas }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.mineral.celc25.df_meas.value }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.mineral.celc100.df_meas.value }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.lfh.celc25.df_meas.value }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.lfh.celc100.df_meas.value }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.silicone.celc25.df_meas.value }}</td>
+                        <td> {{ assessmentSetting.data.IEEEnewLiquid.silicone.celc100.df_meas.value }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.naturalEaster.celc25.df_meas.value }}</td>
+                        <td> {{ assessmentSetting.data.IEEEnewLiquid.naturalEaster.celc100.df_meas.value }}</td>
                         <th><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
                     <tr>
                         <th>Δ C cal (%)</th>
-                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.mineral.celc25.tri_c_meas }}</td>
-                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.mineral.celc100.tri_c_meas }}</td>
-                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.lfh.celc25.tri_c_meas }}</td>
-                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.lfh.celc100.tri_c_meas }}</td>
-                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.silicone.celc25.tri_c_meas }}</td>
-                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.silicone.celc100.tri_c_meas }}</td>
-                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.naturalEaster.celc25.tri_c_meas }}</td>
-                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.naturalEaster.celc100.tri_c_meas }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.mineral.celc25.tri_c_meas.value }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.mineral.celc100.tri_c_meas.value }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.lfh.celc25.tri_c_meas.value }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.lfh.celc100.tri_c_meas.value }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.silicone.celc25.tri_c_meas.value }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.silicone.celc100.tri_c_meas.value }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.naturalEaster.celc25.tri_c_meas.value }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEnewLiquid.naturalEaster.celc100.tri_c_meas.value }}</td>
                         <th><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
                     <tr>
                         <th>DF meas (%)</th>
-                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.mineral.celc25.df_meas }}</td>
-                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.mineral.celc100.df_meas }}</td>
-                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.lfh.celc25.df_meas }}</td>
-                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.lfh.celc100.df_meas }}</td>
-                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.silicone.celc25.df_meas }}</td>
-                        <td> {{ assessmentSetting.data.IEEEnewLiquid.silicone.celc100.df_meas }}</td>
-                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.naturalEaster.celc25.df_meas }}</td>
-                        <td> {{ assessmentSetting.data.IEEEnewLiquid.naturalEaster.celc100.df_meas }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.mineral.celc25.df_meas.value }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.mineral.celc100.df_meas.value }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.lfh.celc25.df_meas.value }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.lfh.celc100.df_meas.value }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.silicone.celc25.df_meas.value }}</td>
+                        <td> {{ assessmentSetting.data.IEEEnewLiquid.silicone.celc100.df_meas.value }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.naturalEaster.celc25.df_meas.value }}</td>
+                        <td> {{ assessmentSetting.data.IEEEnewLiquid.naturalEaster.celc100.df_meas.value }}</td>
                         <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
                     <tr>
                         <th>Δ C cal (%)</th>
-                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.mineral.celc25.tri_c_meas }}</td>
-                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.mineral.celc100.tri_c_meas }}</td>
-                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.lfh.celc25.tri_c_meas }}</td>
-                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.lfh.celc100.tri_c_meas }}</td>
-                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.silicone.celc25.tri_c_meas }}</td>
-                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.silicone.celc100.tri_c_meas }}</td>
-                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.naturalEaster.celc25.tri_c_meas }}</td>
-                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.naturalEaster.celc100.tri_c_meas }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.mineral.celc25.tri_c_meas.value }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.mineral.celc100.tri_c_meas.value }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.lfh.celc25.tri_c_meas.value }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.lfh.celc100.tri_c_meas.value }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.silicone.celc25.tri_c_meas.value }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.silicone.celc100.tri_c_meas.value }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.naturalEaster.celc25.tri_c_meas.value }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEnewLiquid.naturalEaster.celc100.tri_c_meas.value }}</td>
                         <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
                 </tbody>
             </table>
 
-            <table v-if="assessmentSetting.option === 'IEEEserviceLiquid'" class="table-strip-input-data">
+            <table v-if="assessmentSetting.option.value === 'IEEEserviceLiquid'" class="table-strip-input-data">
                 <thead>
                     <tr>
                         <th colspan="9">Limit</th>
@@ -228,56 +228,56 @@
                 <tbody>
                     <tr>
                         <th>DF meas (%)</th>
-                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.mineral.celc25.df_meas }}</td>
-                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.mineral.celc100.df_meas }}</td>
-                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.lfh.celc25.df_meas }}</td>
-                        <td> {{ assessmentSetting.data.IEEEserviceLiquid.lfh.celc100.df_meas }}</td>
-                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.silicone.celc25.df_meas }}</td>
-                        <td> {{ assessmentSetting.data.IEEEserviceLiquid.silicone.celc100.df_meas }}</td>
-                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.naturalEaster.celc25.df_meas }}</td>
-                        <td> {{ assessmentSetting.data.IEEEserviceLiquid.naturalEaster.celc100.df_meas }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.mineral.celc25.df_meas.value }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.mineral.celc100.df_meas.value }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.lfh.celc25.df_meas.value }}</td>
+                        <td> {{ assessmentSetting.data.IEEEserviceLiquid.lfh.celc100.df_meas.value }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.silicone.celc25.df_meas.value }}</td>
+                        <td> {{ assessmentSetting.data.IEEEserviceLiquid.silicone.celc100.df_meas.value }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.naturalEaster.celc25.df_meas.value }}</td>
+                        <td> {{ assessmentSetting.data.IEEEserviceLiquid.naturalEaster.celc100.df_meas.value }}</td>
                         <th><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
                     <tr>
                         <th>Δ C cal (%)</th>
-                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.mineral.celc25.tri_c_meas }}</td>
-                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.mineral.celc100.tri_c_meas }}</td>
-                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.lfh.celc25.tri_c_meas }}</td>
-                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.lfh.celc100.tri_c_meas }}</td>
-                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.silicone.celc25.tri_c_meas }}</td>
-                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.silicone.celc100.tri_c_meas }}</td>
-                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.naturalEaster.celc25.tri_c_meas }}</td>
-                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.naturalEaster.celc100.tri_c_meas }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.mineral.celc25.tri_c_meas.value }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.mineral.celc100.tri_c_meas.value }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.lfh.celc25.tri_c_meas.value }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.lfh.celc100.tri_c_meas.value }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.silicone.celc25.tri_c_meas.value }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.silicone.celc100.tri_c_meas.value }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.naturalEaster.celc25.tri_c_meas.value }}</td>
+                        <td> ≤ {{ assessmentSetting.data.IEEEserviceLiquid.naturalEaster.celc100.tri_c_meas.value }}</td>
                         <th><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
                     <tr>
                         <th>DF meas (%)</th>
-                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.mineral.celc25.df_meas }}</td>
-                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.mineral.celc100.df_meas }}</td>
-                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.lfh.celc25.df_meas }}</td>
-                        <td> {{ assessmentSetting.data.IEEEserviceLiquid.lfh.celc100.df_meas }}</td>
-                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.silicone.celc25.df_meas }}</td>
-                        <td> {{ assessmentSetting.data.IEEEserviceLiquid.silicone.celc100.df_meas }}</td>
-                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.naturalEaster.celc25.df_meas }}</td>
-                        <td> {{ assessmentSetting.data.IEEEserviceLiquid.naturalEaster.celc100.df_meas }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.mineral.celc25.df_meas.value }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.mineral.celc100.df_meas.value }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.lfh.celc25.df_meas.value }}</td>
+                        <td> {{ assessmentSetting.data.IEEEserviceLiquid.lfh.celc100.df_meas.value }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.silicone.celc25.df_meas.value }}</td>
+                        <td> {{ assessmentSetting.data.IEEEserviceLiquid.silicone.celc100.df_meas.value }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.naturalEaster.celc25.df_meas.value }}</td>
+                        <td> {{ assessmentSetting.data.IEEEserviceLiquid.naturalEaster.celc100.df_meas.value }}</td>
                         <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
                     <tr>
                         <th>Δ C cal (%)</th>
-                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.mineral.celc25.tri_c_meas }}</td>
-                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.mineral.celc100.tri_c_meas }}</td>
-                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.lfh.celc25.tri_c_meas }}</td>
-                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.lfh.celc100.tri_c_meas }}</td>
-                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.silicone.celc25.tri_c_meas }}</td>
-                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.silicone.celc100.tri_c_meas }}</td>
-                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.naturalEaster.celc25.tri_c_meas }}</td>
-                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.naturalEaster.celc100.tri_c_meas }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.mineral.celc25.tri_c_meas.value }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.mineral.celc100.tri_c_meas.value }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.lfh.celc25.tri_c_meas.value }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.lfh.celc100.tri_c_meas.value }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.silicone.celc25.tri_c_meas.value }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.silicone.celc100.tri_c_meas.value }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.naturalEaster.celc25.tri_c_meas.value }}</td>
+                        <td> > {{ assessmentSetting.data.IEEEserviceLiquid.naturalEaster.celc100.tri_c_meas.value }}</td>
                         <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
                 </tbody>
             </table>
 
-            <table v-else-if="assessmentSetting.option === 'CIGRE'" class="table-strip-input-data">
+            <table v-else-if="assessmentSetting.option.value === 'CIGRE'" class="table-strip-input-data">
                 <thead>
                     <tr>
                         <th colspan="2">Limit</th>
@@ -288,21 +288,21 @@
                     <tr>
                         <th>DF meas (%)</th>
                         <td>
-                            ≤ {{ assessmentSetting.data.cirge.df_meas }}
+                            ≤ {{ assessmentSetting.data.cigre.df_meas.value }}
                         </td>
                         <th><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
                     <tr>
                         <th>DF meas (%)</th>
                         <td>
-                            > {{ assessmentSetting.data.cirge.df_meas }}
+                            > {{ assessmentSetting.data.cigre.df_meas.value }}
                         </td>
                         <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
                 </tbody>
             </table>
 
-            <table v-else-if="assessmentSetting.option === 'Custom'" class="table-strip-input-data">
+            <table v-else-if="assessmentSetting.option.value === 'Custom'" class="table-strip-input-data">
                 <thead>
                     <tr>
                         <th colspan="2">Limit</th>
@@ -313,28 +313,28 @@
                     <tr>
                         <th>DF meas (%)</th>
                         <td>
-                            ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.df_meas"></el-input>
+                            ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.df_meas.value"></el-input>
                         </td>
                         <th><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
                     <tr>
                         <th>ΔC cal (%)</th>
                         <td>
-                            ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.tri_c_meas"></el-input>
+                            ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.tri_c_meas.value"></el-input>
                         </td>
                         <th><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
                     <tr>
                         <th>DF meas (%)</th>
                         <td>
-                            > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.df_meas"></el-input>
+                            > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.df_meas.value"></el-input>
                         </td>
                         <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
                     <tr>
                         <th>ΔC cal (%)</th>
                         <td>
-                            > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.tri_c_meas"></el-input>
+                            > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.tri_c_meas.value"></el-input>
                         </td>
                         <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
@@ -343,7 +343,7 @@
         </el-dialog>
 
         <!-- Condition indicator settings -->
-        <el-dialog title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="650px">
+        <el-dialog append-to-body title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="650px">
             <table class="table-strip-input-data mgb-10">
                 <thead>
                     <tr>
@@ -354,30 +354,30 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>DF meas ≤ <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.good.df_meas[0]"></el-input></td>
-                        <td class="good">Good</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorDf.good.score"></el-input></td>
+                        <td>DF meas ≤ <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.good.df_meas[0].value"></el-input></td>
+                        <td class="Good">Good</td>
+                        <td><el-input size="mini" v-model="conditionIndicatorDf.good.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.fair.df_meas[0]"></el-input> &lt; DF meas ≤
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.fair.df_meas[1]"></el-input>
+                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.fair.df_meas[0].value"></el-input> &lt; DF meas ≤
+                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.fair.df_meas[1].value"></el-input>
                         </td>
-                        <td class="fair">Fair</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorDf.fair.score"></el-input></td>
+                        <td class="Fair">Fair</td>
+                        <td><el-input size="mini" v-model="conditionIndicatorDf.fair.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.poor.df_meas[0]"></el-input> &lt; DF meas ≤
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.poor.df_meas[1]"></el-input>
+                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.poor.df_meas[0].value"></el-input> &lt; DF meas ≤
+                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.poor.df_meas[1].value"></el-input>
                         </td>
-                        <td class="poor">Poor</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorDf.poor.score"></el-input></td>
+                        <td class="Poor">Poor</td>
+                        <td><el-input size="mini" v-model="conditionIndicatorDf.poor.score.value"></el-input></td>
                     </tr>
                     <tr>
-                        <td>DF meas > <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.bad.df_meas[1]"></el-input></td>
-                        <td class="bad">Bad</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorDf.bad.score"></el-input></td>
+                        <td>DF meas > <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.bad.df_meas[1].value"></el-input></td>
+                        <td class="Bad">Bad</td>
+                        <td><el-input size="mini" v-model="conditionIndicatorDf.bad.score.value"></el-input></td>
                     </tr>
                 </tbody>
             </table>
@@ -392,30 +392,30 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>ΔC cal ≤ <el-input size="mini" class="w-100px" v-model="conditionIndicatorC.good.tri_c_meas[0]"></el-input></td>
-                        <td class="good">Good</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorC.good.score"></el-input></td>
+                        <td>ΔC cal ≤ <el-input size="mini" class="w-100px" v-model="conditionIndicatorC.good.tri_c_meas[0].value"></el-input></td>
+                        <td class="Good">Good</td>
+                        <td><el-input size="mini" v-model="conditionIndicatorC.good.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorC.fair.tri_c_meas[0]"></el-input> &lt; ΔC cal ≤
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorC.fair.tri_c_meas[1]"></el-input>
+                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorC.fair.tri_c_meas[0].value"></el-input> &lt; ΔC cal ≤
+                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorC.fair.tri_c_meas[1].value"></el-input>
                         </td>
-                        <td class="fair">Fair</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorC.fair.score"></el-input></td>
+                        <td class="Fair">Fair</td>
+                        <td><el-input size="mini" v-model="conditionIndicatorC.fair.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorC.poor.tri_c_meas[0]"></el-input> &lt; ΔC cal ≤
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorC.poor.tri_c_meas[1]"></el-input>
+                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorC.poor.tri_c_meas[0].value"></el-input> &lt; ΔC cal ≤
+                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorC.poor.tri_c_meas[1].value"></el-input>
                         </td>
-                        <td class="poor">Poor</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorC.poor.score"></el-input></td>
+                        <td class="Poor">Poor</td>
+                        <td><el-input size="mini" v-model="conditionIndicatorC.poor.score.value"></el-input></td>
                     </tr>
                     <tr>
-                        <td>ΔC cal > <el-input size="mini" class="w-100px" v-model="conditionIndicatorC.bad.tri_c_meas[1]"></el-input></td>
-                        <td class="bad">Bad</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorC.bad.score"></el-input></td>
+                        <td>ΔC cal > <el-input size="mini" class="w-100px" v-model="conditionIndicatorC.bad.tri_c_meas[1].value"></el-input></td>
+                        <td class="Bad">Bad</td>
+                        <td><el-input size="mini" v-model="conditionIndicatorC.bad.score.value"></el-input></td>
                     </tr>
                 </tbody>
             </table>
@@ -595,7 +595,7 @@ export default {
             } else if(this.assessmentSetting.option === "CIGRE") {
                 this.testData.table.forEach((element) => {
                     if(!isNaN(parseFloat(element.df_meas))) {
-                        if(Math.abs(element.df_meas) <= this.assessmentSetting.data.cirge.df_meas) {
+                        if(Math.abs(element.df_meas) <= this.assessmentSetting.data.cigre.df_meas) {
                             element.assessment = "Pass"
                         } else {
                             element.assessment = "Fail"
@@ -766,4 +766,24 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.w-100px {
+    width: 100px;
+}
+.Good  {
+    background: #00CC00;
+}
+
+.Fair  {
+    background: #FFFF00;
+}
+
+.Poor {
+    background: #FFC000;
+}
+
+.Bad {
+    background: #FF0000;
+}
+</style>
+

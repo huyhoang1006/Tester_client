@@ -21,12 +21,12 @@
         </el-row>
         </div>
 
-        <table class="mgt-10 table-strip-input-data" style=" width: 100%; table-layout: fixed">
+        <table class="mgt-10 table-strip-input-data" style=" width: 130%; font-size: 12px; text-align: center;">
             <thead>
                 <tr>
                     <th class="no-col">No</th>
                     <th style="width: 160px;" @click="displayType">Measurement</th>
-                    <th :style="{display: isdisplay}" @click="displayType">Type</th>
+                    <th @click="displayType">Type</th>
                     <th>R<sub>15s</sub> (MΩ)</th>
                     <th>R<sub>60s</sub> (MΩ)</th>
                     <th style="width: 90px;">R<sub>10min</sub> (MΩ)</th>
@@ -42,32 +42,32 @@
                 <tr v-for="(item, index) in testData.table" :key="index">
                     <td>{{ index + 1 }}</td>
                     <td style="display: flex;">
-                        <el-input size="mini" v-model="item.measured_position" placeholder="Measured Position"> </el-input>
+                        <el-input size="mini" v-model="item.measured_position.value" placeholder="Measured Position"> </el-input>
                         <div :class="{colorTableRed : index%3==0, colorTableYellow : index%3==1, colorTableBlue : index%3==2}"></div>
                     </td>
-                    <td :style="{display: isdisplay}">
-                        <el-select :style="{display: isdisplay}" size="mini" v-model="item.type">
+                    <td>
+                        <el-select size="mini" v-model="item.type.value">
                             <el-option label="HV-E" value="HV-E"></el-option>
                             <el-option label="LV-E" value="LV-E"></el-option>
                         </el-select>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="item.r15s"> </el-input>
+                        <el-input size="mini" v-model="item.r15s.value"> </el-input>
                     </td>
-                    <td><el-input size="mini" v-model="item.r60s"> </el-input></td>
-                    <td><el-input size="mini" v-model="item.r10min"> </el-input></td>
-                    <td><el-input size="mini" v-model="item.kht"> </el-input></td>
-                    <td><el-input size="mini" v-model="item.pi"> </el-input></td>
+                    <td><el-input size="mini" v-model="item.r60s.value"> </el-input></td>
+                    <td><el-input size="mini" v-model="item.r10min.value"> </el-input></td>
+                    <td><el-input size="mini" v-model="item.kht.value"> </el-input></td>
+                    <td><el-input size="mini" v-model="item.pi.value"> </el-input></td>
                     <td>
-                        <el-select class="assessment" size="mini" v-model="item.assessment">
+                        <el-select class="assessment" size="mini" v-model="item.assessment.value">
                             <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                             <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                         </el-select>
-                        <span v-if="item.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                        <span v-else-if="item.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                        <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                     <td>
-                        <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini" v-model="item.condition_indicator">
+                        <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
                         </el-input>
                     </td>
                     <td>
@@ -85,10 +85,10 @@
         </table>
 
         <!-- Assessment settings -->
-        <el-dialog title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px">
+        <el-dialog append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px">
             <el-form size="small" label-position="left" label-width="140px">
                 <el-form-item label="Option">
-                    <el-select class="w-100" placeholder="please select" v-model="assessmentSetting.option">
+                    <el-select class="w-100" placeholder="please select" v-model="assessmentSetting.option.value">
                         <el-option label="CIGRE 445 " value="cigre"></el-option>
                         <el-option label="Customized limit" value="custom"></el-option>
                     </el-select>
@@ -102,39 +102,39 @@
                         <th>Assessment</th>
                     </tr>
                 </thead>
-                <tbody v-if="assessmentSetting.option === 'cigre'">
+                <tbody v-if="assessmentSetting.option.value === 'cigre'">
                     <tr>
-                        <td>If V<sub>Prim</sub> > {{ assessmentSetting.data.cigre.pass_1.prim }}kV and R<sub>60s</sub> > {{ assessmentSetting.data.cigre.pass_1.r60s }}MΩ</td>
+                        <td>If V<sub>Prim</sub> > {{ assessmentSetting.data.cigre.pass_1.prim.value }}kV and R<sub>60s</sub> > {{ assessmentSetting.data.cigre.pass_1.r60s.value }}MΩ</td>
                         <td class="bolder"><i class="fas fa-check-square pass"></i> Pass</td>
                     </tr>
                     <tr>
-                        <td>If V<sub>Prim</sub> > {{ assessmentSetting.data.cigre.pass_1.prim }}kV and R<sub>60s</sub> &#8804; {{ assessmentSetting.data.cigre.pass_1.r60s }}MΩ</td>
+                        <td>If V<sub>Prim</sub> > {{ assessmentSetting.data.cigre.pass_1.prim.value }}kV and R<sub>60s</sub> &#8804; {{ assessmentSetting.data.cigre.pass_1.r60s.value }}MΩ</td>
                         <td class="bolder"><i class="fa-solid fa-xmark fail"></i> Fail</td>
                     </tr>
                     <tr>
-                        <td>If Prim ≤ {{ assessmentSetting.data.cigre.pass_2.prim }}kV and R60s > {{ assessmentSetting.data.cigre.pass_2.r60s }}MΩ</td>
+                        <td>If Prim ≤ {{ assessmentSetting.data.cigre.pass_2.prim.value }}kV and R60s > {{ assessmentSetting.data.cigre.pass_2.r60s.value }}MΩ</td>
                         <td class="bolder"><i class="fas fa-check-square pass"></i> Pass</td>
                     </tr>
                     <tr>
-                        <td>If Prim ≤ {{ assessmentSetting.data.cigre.pass_2.prim }}kV and R60s ≤ {{ assessmentSetting.data.cigre.pass_2.r60s }}MΩ</td>
+                        <td>If Prim ≤ {{ assessmentSetting.data.cigre.pass_2.prim.value }}kV and R60s ≤ {{ assessmentSetting.data.cigre.pass_2.r60s.value }}MΩ</td>
                         <td class="bolder"><i class="fa-solid fa-xmark fail"></i> Fail</td>
                     </tr>
                 </tbody>
-                <tbody v-if="assessmentSetting.option === 'custom'">
+                <tbody v-if="assessmentSetting.option.value === 'custom'">
                     <tr>
-                        <td> If V<sub>Prim</sub> > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.pass_1.prim"></el-input> kV and R<sub>60s</sub> > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.pass_1.r60s"></el-input> MΩ</td>
+                        <td> If V<sub>Prim</sub> > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.pass_1.prim.value"></el-input> kV and R<sub>60s</sub> > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.pass_1.r60s.value"></el-input> MΩ</td>
                         <td class="bolder"><i class="fas fa-check-square pass"></i> Pass</td>
                     </tr>
                     <tr>
-                        <td> If V<sub>Prim</sub> > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.pass_1.prim"></el-input> kV and R<sub>60s</sub> ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.pass_1.r60s"></el-input> MΩ</td>
+                        <td> If V<sub>Prim</sub> > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.pass_1.prim.value"></el-input> kV and R<sub>60s</sub> ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.pass_1.r60s.value"></el-input> MΩ</td>
                         <td class="bolder"><i class="fa-solid fa-xmark fail"></i> Fail</td>
                     </tr>
                     <tr>
-                        <td>If V<sub>Prim</sub> ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.pass_2.prim"></el-input> kV and R<sub>60s</sub> > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.pass_2.r60s"></el-input> MΩ</td>
+                        <td>If V<sub>Prim</sub> ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.pass_2.prim.value"></el-input> kV and R<sub>60s</sub> > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.pass_2.r60s.value"></el-input> MΩ</td>
                         <td class="bolder"><i class="fas fa-check-square pass"></i> Pass</td>
                     </tr>
                     <tr>
-                        <td>If V<sub>Prim</sub> ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.pass_2.prim"></el-input> kV and R<sub>60s</sub> ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.pass_2.r60s"></el-input> MΩ</td>
+                        <td>If V<sub>Prim</sub> ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.pass_2.prim.value"></el-input> kV and R<sub>60s</sub> ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.pass_2.r60s.value"></el-input> MΩ</td>
                         <td class="bolder"><i class="fa-solid fa-xmark fail"></i> Fail</td>
                     </tr>
                 </tbody>
@@ -142,7 +142,7 @@
         </el-dialog>
 
         <!-- Condition indicator settings -->
-        <el-dialog title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="670px">
+        <el-dialog :modal="false" title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="670px">
             <table class="table-strip-input-data">
                 <thead>
                     <tr>
@@ -155,46 +155,46 @@
                     <tr>
                         <td>
                             <div class="flex-container">
-                                <div>Kht ≥ {{ conditionIndicatorSetting.good.kht[1] }}</div>
-                                <div>R60s_HV-E ≥ {{ conditionIndicatorSetting.good.r60s_hve[1] }} MΩ</div>
-                                <div>R60s_LV-E ≥ {{ conditionIndicatorSetting.good.r60s_lve[1] }} MΩ</div>
+                                <div>Kht ≥ {{ conditionIndicatorSetting.good.kht[1].value }}</div>
+                                <div>R60s_HV-E ≥ {{ conditionIndicatorSetting.good.r60s_hve[1].value }} MΩ</div>
+                                <div>R60s_LV-E ≥ {{ conditionIndicatorSetting.good.r60s_lve[1].value }} MΩ</div>
                             </div>
                         </td>
                         <td class="good">Good</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.good.score"></el-input></td>
+                        <td><el-input size="mini" v-model="conditionIndicatorSetting.good.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
                             <div class="flex-container">
-                                <div>{{ conditionIndicatorSetting.fair.kht[1] }} > Kht ≥ {{ conditionIndicatorSetting.fair.kht[0] }}</div>
-                                <div>{{ conditionIndicatorSetting.fair.r60s_hve[1] }} MΩ > R60s_HV-E ≥ {{ conditionIndicatorSetting.fair.r60s_hve[0] }} MΩ</div>
-                                <div>{{ conditionIndicatorSetting.fair.r60s_lve[1] }} MΩ > R60s_LV-E ≥ {{ conditionIndicatorSetting.fair.r60s_lve[0] }} MΩ</div>
+                                <div>{{ conditionIndicatorSetting.fair.kht[1].value }} > Kht ≥ {{ conditionIndicatorSetting.fair.kht[0].value }}</div>
+                                <div>{{ conditionIndicatorSetting.fair.r60s_hve[1].value }} MΩ > R60s_HV-E ≥ {{ conditionIndicatorSetting.fair.r60s_hve[0].value }} MΩ</div>
+                                <div>{{ conditionIndicatorSetting.fair.r60s_lve[1].value }} MΩ > R60s_LV-E ≥ {{ conditionIndicatorSetting.fair.r60s_lve[0].value }} MΩ</div>
                             </div>
                         </td>
                         <td class="fair">Fair</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.fair.score"></el-input></td>
+                        <td><el-input size="mini" v-model="conditionIndicatorSetting.fair.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
                             <div class="flex-container">
-                                <div>{{ conditionIndicatorSetting.poor.kht[1] }} > Kht ≥ {{ conditionIndicatorSetting.poor.kht[0] }}</div>
-                                <div>{{ conditionIndicatorSetting.poor.r60s_hve[1] }} MΩ > R60s_HV-E ≥ {{ conditionIndicatorSetting.poor.r60s_hve[0] }} MΩ</div>
-                                <div>{{ conditionIndicatorSetting.poor.r60s_lve[1] }} MΩ > R60s_LV-E ≥ {{ conditionIndicatorSetting.poor.r60s_lve[0] }} MΩ</div>
+                                <div>{{ conditionIndicatorSetting.poor.kht[1].value }} > Kht ≥ {{ conditionIndicatorSetting.poor.kht[0].value }}</div>
+                                <div>{{ conditionIndicatorSetting.poor.r60s_hve[1].value }} MΩ > R60s_HV-E ≥ {{ conditionIndicatorSetting.poor.r60s_hve[0].value }} MΩ</div>
+                                <div>{{ conditionIndicatorSetting.poor.r60s_lve[1].value }} MΩ > R60s_LV-E ≥ {{ conditionIndicatorSetting.poor.r60s_lve[0].value }} MΩ</div>
                             </div>
                         </td>
                         <td class="poor">Poor</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.poor.score"></el-input></td>
+                        <td><el-input size="mini" v-model="conditionIndicatorSetting.poor.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
                             <div class="flex-container">
-                                <div>Kht &lt; {{ conditionIndicatorSetting.bad.kht[0] }}</div>
-                                <div>R60s_HV-E &lt; {{ conditionIndicatorSetting.bad.r60s_hve[0] }} MΩ</div>
-                                <div>R60s_LV-E &lt; {{ conditionIndicatorSetting.bad.r60s_lve[0] }} MΩ</div>
+                                <div>Kht &lt; {{ conditionIndicatorSetting.bad.kht[0].value }}</div>
+                                <div>R60s_HV-E &lt; {{ conditionIndicatorSetting.bad.r60s_hve[0].value }} MΩ</div>
+                                <div>R60s_LV-E &lt; {{ conditionIndicatorSetting.bad.r60s_lve[0].value }} MΩ</div>
                             </div>
                         </td>
                         <td class="bad">Bad</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.bad.score"></el-input></td>
+                        <td><el-input size="mini" v-model="conditionIndicatorSetting.bad.score.value"></el-input></td>
                     </tr>
                 </tbody>
             </table>
@@ -214,7 +214,7 @@ export default {
     props: {
         data: {
             type: Object,
-            require: true
+            require: true,
         },
         asset: {
             type: Object,
@@ -241,15 +241,60 @@ export default {
     methods: {
         add() {
             this.testData.table.push({
-                measured_position: '',
-                type: '',
-                r15s: '',
-                r60s: '',
-                r10min : "",
-                kht: '',
-                pi : "",
-                assessment: '',
-                condition_indicator: ''
+                measured_position: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                type: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                r15s: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                r60s: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                r10min : {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                kht: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                pi : {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                assessment: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                condition_indicator: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                }
             })
         },
         removeAll() {
@@ -260,15 +305,60 @@ export default {
         },
         addTest(index) {
             const data = {
-                easured_position: '',
-                type: '',
-                r15s: '',
-                r60s: '',
-                r10min : "",
-                kht: '',
-                pi : "",
-                assessment: '',
-                condition_indicator: ''
+                measured_position: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                type: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                r15s: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                r60s: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                r10min : {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                kht: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                pi : {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                assessment: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                },
+                condition_indicator: {
+                    mrid: '',
+                    value: '',
+                    unit: '',
+                    type: 'string'
+                }
             }
             this.testData.table.splice(index+1, 0, data)
         },
@@ -320,14 +410,14 @@ export default {
         },
         clear() {
             this.testData.table.forEach((element) => {
-                element.type = ''
-                element.r15s = ''
-                element.r60s = ''
-                element.r10min = ''
-                element.kht = ''
-                element.pi = ''
-                element.assessment = ''
-                element.condition_indicator = ''
+                element.type.value = ''
+                element.r15s.value = ''
+                element.r60s.value = ''
+                element.r10min.value = ''
+                element.kht.value = ''
+                element.pi.value = ''
+                element.assessment.value = ''
+                element.condition_indicator.value = ''
             })
         },
         displayType() {

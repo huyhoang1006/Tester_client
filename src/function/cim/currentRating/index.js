@@ -49,6 +49,40 @@ export const getCurrentRatingByEndIdAndPower = async (endId, ratedPower) => {
     })
 }
 
+export const getCurrentRatingByRatedPower = async (ratedPower) => {
+    return new Promise((resolve, reject) => {
+        db.all(
+            `SELECT * FROM current_rating
+             WHERE rated_power = ?`,
+            [ratedPower],
+            (err, rows) => {
+                if (err) {
+                    return reject({
+                        success: false,
+                        err,
+                        message: 'Get current rating failed'
+                    });
+                }
+
+                if (!rows || rows.length === 0) {
+                    return resolve({
+                        success: false,
+                        data: [],
+                        message: 'Current rating not found'
+                    });
+                }
+
+                return resolve({
+                    success: true,
+                    data: rows,
+                    message: 'Get current rating completed'
+                });
+            }
+        );
+    });
+};
+
+
 export const insertCurrentRatingTransaction = async (rating, dbsql) => {
     return new Promise((resolve, reject) => {
         dbsql.run(

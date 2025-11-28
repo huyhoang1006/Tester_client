@@ -16,7 +16,7 @@
             </el-col>
         </el-row>
 
-        <table class="table-strip-input-data" style="width: 1300px">
+        <table class="table-strip-input-data" style="width: 120% ; font-size: 12px;">
             <thead>
                 <tr>
                     <th>H<sub>2</sub></th>
@@ -34,47 +34,47 @@
             <tbody>
                 <tr>
                     <td>
-                        <el-input type="number" size="mini" v-model="testData.h2">
+                        <el-input type="number" size="mini" v-model="testData.h2.value">
                             <template slot="append">ppm</template>
                         </el-input>
                     </td>
                     <td>
-                        <el-input type="number" size="mini" v-model="testData.ch4">
+                        <el-input type="number" size="mini" v-model="testData.ch4.value">
                             <template slot="append">ppm</template>
                         </el-input>
                     </td>
                     <td>
-                        <el-input type="number" size="mini" v-model="testData.c2h2">
+                        <el-input type="number" size="mini" v-model="testData.c2h2.value">
                             <template slot="append">ppm</template>
                         </el-input>
                     </td>
                     <td>
-                        <el-input type="number" size="mini" v-model="testData.c2h4">
+                        <el-input type="number" size="mini" v-model="testData.c2h4.value">
                             <template slot="append">ppm</template>
                         </el-input>
                     </td>
                     <td>
-                        <el-input type="number" size="mini" v-model="testData.c2h6">
+                        <el-input type="number" size="mini" v-model="testData.c2h6.value">
                             <template slot="append">ppm</template>
                         </el-input>
                     </td>
                     <td>
-                        <el-input type="number" size="mini" v-model="testData.co">
+                        <el-input type="number" size="mini" v-model="testData.co.value">
                             <template slot="append">ppm</template>
                         </el-input>
                     </td>
                     <td>
-                        <el-input type="number" size="mini" v-model="testData.co2">
+                        <el-input type="number" size="mini" v-model="testData.co2.value">
                             <template slot="append">ppm</template>
                         </el-input>
                     </td>
                     <td>
-                        <el-input type="number" size="mini" v-model="testData.tdcg">
+                        <el-input type="number" size="mini" v-model="testData.tdcg.value">
                             <template slot="append">ppm</template>
                         </el-input>
                     </td>
                     <td>
-                        <el-select style="width: 120px" size="mini" v-model="testData.status">
+                        <el-select style="width: 120px" size="mini" v-model="testData.status.value">
                             <el-option label="Condition 1" value="Condition 1"></el-option>
                             <el-option label="Condition 2" value="Condition 2"></el-option>
                             <el-option label="Condition 3" value="Condition 3"></el-option>
@@ -82,7 +82,7 @@
                         </el-select>
                     </td>
                     <td>
-                        <el-input :class="nameColor()" id="condition" type="text" size="mini" v-model="testData.condition_indicator">
+                        <el-input :class="nameColor()" id="condition" type="text" size="mini" v-model="testData.condition_indicator.value">
                         </el-input>
                     </td>
                 </tr>
@@ -90,7 +90,7 @@
         </table>
 
         <!-- Condition indicator settings -->
-        <el-dialog title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="1120px">
+        <el-dialog append-to-body title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="1120px">
             <table class="table-strip-input-data mgb-10">
                 <thead>
                     <tr>
@@ -109,51 +109,51 @@
                 <tbody>
                     <tr>
                         <td>Condition 1</td>
-                        <td>≤ {{ conditionIndicatorSetting.good.h2[0] }}</td>
-                        <td>≤ {{ conditionIndicatorSetting.good.c2h2[0] }}</td>
-                        <td>≤ {{ conditionIndicatorSetting.good.c2h4[0] }}</td>
-                        <td>≤ {{ conditionIndicatorSetting.good.c2h6[0] }}</td>
-                        <td>≤ {{ conditionIndicatorSetting.good.ch4[0] }}</td>
-                        <td>≤ {{ conditionIndicatorSetting.good.co[0] }}</td>
-                        <td>≤ {{ conditionIndicatorSetting.good.tdcg[0] }}</td>
+                        <td>≤ {{ conditionIndicatorSetting.good.h2[0].value }}</td>
+                        <td>≤ {{ conditionIndicatorSetting.good.c2h2[0].value }}</td>
+                        <td>≤ {{ conditionIndicatorSetting.good.c2h4[0].value }}</td>
+                        <td>≤ {{ conditionIndicatorSetting.good.c2h6[0].value }}</td>
+                        <td>≤ {{ conditionIndicatorSetting.good.ch4[0].value }}</td>
+                        <td>≤ {{ conditionIndicatorSetting.good.co[0].value }}</td>
+                        <td>≤ {{ conditionIndicatorSetting.good.tdcg[0].value }}</td>
                         <td class="good">Good</td>
-                        <td>{{ conditionIndicatorSetting.good.score }}</td>
+                        <td>{{ conditionIndicatorSetting.good.score.value }}</td>
                     </tr>
                     <tr>
                         <td>Condition 2</td>
-                        <td>{{ `${conditionIndicatorSetting.fair.h2[0]} - ${conditionIndicatorSetting.fair.h2[1]}` }}</td>
-                        <td>{{ `${conditionIndicatorSetting.fair.c2h2[0]} - ${conditionIndicatorSetting.fair.c2h2[1]}` }}</td>
-                        <td>{{ `${conditionIndicatorSetting.fair.c2h4[0]} - ${conditionIndicatorSetting.fair.c2h4[1]}` }}</td>
-                        <td>{{ `${conditionIndicatorSetting.fair.c2h6[0]} - ${conditionIndicatorSetting.fair.c2h6[1]}` }}</td>
-                        <td>{{ `${conditionIndicatorSetting.fair.ch4[0]} - ${conditionIndicatorSetting.fair.ch4[1]}` }}</td>
-                        <td>{{ `${conditionIndicatorSetting.fair.co[0]} - ${conditionIndicatorSetting.fair.co[1]}` }}</td>
-                        <td>{{ `${conditionIndicatorSetting.fair.tdcg[0]} - ${conditionIndicatorSetting.fair.tdcg[1]}` }}</td>
+                        <td>{{ `${conditionIndicatorSetting.fair.h2[0].value} - ${conditionIndicatorSetting.fair.h2[1].value}` }}</td>
+                        <td>{{ `${conditionIndicatorSetting.fair.c2h2[0].value} - ${conditionIndicatorSetting.fair.c2h2[1].value}` }}</td>
+                        <td>{{ `${conditionIndicatorSetting.fair.c2h4[0].value} - ${conditionIndicatorSetting.fair.c2h4[1].value}` }}</td>
+                        <td>{{ `${conditionIndicatorSetting.fair.c2h6[0].value} - ${conditionIndicatorSetting.fair.c2h6[1].value}` }}</td>
+                        <td>{{ `${conditionIndicatorSetting.fair.ch4[0].value} - ${conditionIndicatorSetting.fair.ch4[1].value}` }}</td>
+                        <td>{{ `${conditionIndicatorSetting.fair.co[0].value} - ${conditionIndicatorSetting.fair.co[1].value}` }}</td>
+                        <td>{{ `${conditionIndicatorSetting.fair.tdcg[0].value} - ${conditionIndicatorSetting.fair.tdcg[1].value}` }}</td>
                         <td class="fair">Fair</td>
-                        <td>{{ conditionIndicatorSetting.fair.score }}</td>
+                        <td>{{ conditionIndicatorSetting.fair.score.value }}</td>
                     </tr>
                     <tr>
                         <td>Condition 3</td>
-                        <td>{{ `${conditionIndicatorSetting.poor.h2[0]} - ${conditionIndicatorSetting.poor.h2[1]}` }}</td>
-                        <td>{{ `${conditionIndicatorSetting.poor.c2h2[0]} - ${conditionIndicatorSetting.poor.c2h2[1]}` }}</td>
-                        <td>{{ `${conditionIndicatorSetting.poor.c2h4[0]} - ${conditionIndicatorSetting.poor.c2h4[1]}` }}</td>
-                        <td>{{ `${conditionIndicatorSetting.poor.c2h6[0]} - ${conditionIndicatorSetting.poor.c2h6[1]}` }}</td>
-                        <td>{{ `${conditionIndicatorSetting.poor.ch4[0]} - ${conditionIndicatorSetting.poor.ch4[1]}` }}</td>
-                        <td>{{ `${conditionIndicatorSetting.poor.co[0]} - ${conditionIndicatorSetting.poor.co[1]}` }}</td>
-                        <td>{{ `${conditionIndicatorSetting.poor.tdcg[0]} - ${conditionIndicatorSetting.poor.tdcg[1]}` }}</td>
+                        <td>{{ `${conditionIndicatorSetting.poor.h2[0].value} - ${conditionIndicatorSetting.poor.h2[1].value}` }}</td>
+                        <td>{{ `${conditionIndicatorSetting.poor.c2h2[0].value} - ${conditionIndicatorSetting.poor.c2h2[1].value}` }}</td>
+                        <td>{{ `${conditionIndicatorSetting.poor.c2h4[0].value} - ${conditionIndicatorSetting.poor.c2h4[1].value}` }}</td>
+                        <td>{{ `${conditionIndicatorSetting.poor.c2h6[0].value} - ${conditionIndicatorSetting.poor.c2h6[1].value}` }}</td>
+                        <td>{{ `${conditionIndicatorSetting.poor.ch4[0].value} - ${conditionIndicatorSetting.poor.ch4[1].value}` }}</td>
+                        <td>{{ `${conditionIndicatorSetting.poor.co[0].value} - ${conditionIndicatorSetting.poor.co[1].value}` }}</td>
+                        <td>{{ `${conditionIndicatorSetting.poor.tdcg[0].value} - ${conditionIndicatorSetting.poor.tdcg[1].value}` }}</td>
                         <td class="poor">Poor</td>
-                        <td>{{ conditionIndicatorSetting.poor.score }}</td>
+                        <td>{{ conditionIndicatorSetting.poor.score.value }}</td>
                     </tr>
                     <tr>
                         <td>Condition 4</td>
-                        <td>> {{ conditionIndicatorSetting.bad.h2[1] }}</td>
-                        <td>> {{ conditionIndicatorSetting.bad.c2h2[1] }}</td>
-                        <td>> {{ conditionIndicatorSetting.bad.c2h4[1] }}</td>
-                        <td>> {{ conditionIndicatorSetting.bad.c2h6[1] }}</td>
-                        <td>> {{ conditionIndicatorSetting.bad.ch4[1] }}</td>
-                        <td>> {{ conditionIndicatorSetting.bad.co[1] }}</td>
-                        <td>> {{ conditionIndicatorSetting.bad.tdcg[1] }}</td>
+                        <td>> {{ conditionIndicatorSetting.bad.h2[1].value }}</td>
+                        <td>> {{ conditionIndicatorSetting.bad.c2h2[1].value }}</td>
+                        <td>> {{ conditionIndicatorSetting.bad.c2h4[1].value }}</td>
+                        <td>> {{ conditionIndicatorSetting.bad.c2h6[1].value }}</td>
+                        <td>> {{ conditionIndicatorSetting.bad.ch4[1].value }}</td>
+                        <td>> {{ conditionIndicatorSetting.bad.co[1].value }}</td>
+                        <td>> {{ conditionIndicatorSetting.bad.tdcg[1].value }}</td>
                         <td class="bad">Bad</td>
-                        <td>{{ conditionIndicatorSetting.bad.score }}</td>
+                        <td>{{ conditionIndicatorSetting.bad.score.value }}</td>
                     </tr>
                 </tbody>
             </table>

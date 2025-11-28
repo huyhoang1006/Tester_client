@@ -1,14 +1,13 @@
 <template>
-    <div>
-        <el-button size="mini" type="primary" class="btn-action" plain @click="add(testData.dataList)"> <i class="fas fa-plus"></i> Add </el-button>
-        <el-button size="mini" type="primary" class="btn-action" plain @click="removeAll()"> <i class="fas fa-xmark"></i> Remove all </el-button>
-        <table style="width: 600px" class="mgt-10 table-strip-input-data">
+    <div id="testing-instruments" style="width: 100%; font-size: 12px;">
+        <table style="width: 60%; font-size: 12px;" class="mgt-10 table-strip-input-data">
             <thead>
                 <tr>
                     <th class="no-col">No.</th>
                     <th>Testing instrument</th>
                     <th>Type</th>
-                    <th class="action-col"></th>
+                    <th @click="add()" class="action-col"><i class="fa-solid fa-plus pointer"></i></th>
+                    <th @click="removeAll()" class="action-col"><i class="fa-solid fa-trash pointer"></i></th>
                 </tr>
             </thead>
             <tbody>
@@ -17,10 +16,15 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-input size="mini" v-model="item.testingInstrument"> </el-input>
+                        <el-input size="mini" v-model="item.testingInstrument.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="item.type_ins"> </el-input>
+                        <el-input size="mini" v-model="item.type_ins.value"> </el-input>
+                    </td>
+                    <td>
+                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
+                            <i class="fa-solid fa-plus"></i>
+                        </el-button>
                     </td>
                     <td>
                         <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
@@ -34,10 +38,11 @@
 </template>
 <script>
 export default {
+    name: 'TestingInstruments',
     props: {
         data: {
             type: Object,
-            require: true,
+            required: true,
             default() {
                 return {
                     code: 'TestingInstruments',
@@ -58,19 +63,37 @@ export default {
         }
     },
     methods: {
-        add(array_list) {
+        add() {
             const temp = {
                 no: '',
-                testingInstrument: '',
-                type_ins: ''
+                testingInstrument: { mrid: '', value: '', unit: '', type: 'string' },
+                type_ins: { mrid: '', value: '', unit: '', type: 'string' }
             }
-            array_list.push(temp)
+            this.testData.dataList.push(temp)
         },
         removeAll() {
-            this.testData.dataList = []
+            this.$confirm('This will delete all items. Continue?', 'Warning', {
+                    confirmButtonText: 'OK',
+                    cancelButtonText: 'Cancel',
+                    type: 'warning'
+                })
+                .then( () => {
+                    this.testData.dataList = []
+                })
+                .catch( () => {
+                    // User cancelled, do nothing
+                })
         },
         deleteTest(index) {
             this.testData.dataList.splice(index, 1)
+        },
+        addTest(index) {
+            const data = {
+                no: '',
+                testingInstrument: { mrid: '', value: '', unit: '', type: 'string' },
+                type_ins: { mrid: '', value: '', unit: '', type: 'string' }
+            }
+            this.testData.dataList.splice(index+1, 0, data)
         }
     }
 }

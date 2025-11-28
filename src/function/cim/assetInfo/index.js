@@ -200,7 +200,6 @@ export const deleteAssetInfoByIdTransaction = (mrid, dbsql) => {
                     if (err) {
                         return reject({ success: false, err: err, message: 'Delete assetInfo transaction failed' })
                     }
-                    console.log('Delete assetInfo transaction completed');
                     return resolve({ success: true, data: mrid, message: 'Delete assetInfo transaction completed' })
                 })
             })

@@ -21,6 +21,80 @@
                 <i style="margin-left: 10px;" class="fa-solid fa-angle-right"></i>
             </div>
         </div>
+        <div class="toolbar-setting">
+            <div>
+                <el-dropdown trigger="click">
+                    <span class="icon-wrapper">
+                        <i title="Add" style="font-size: 12px;" class="fa-solid fa-square-plus"></i>
+                    </span>
+
+                    <el-dropdown-menu slot="dropdown">
+                        <el-dropdown-item>
+                            <icon size="12px" folderType="building" badgeColor="146EBE"></icon> add Organisation
+                        </el-dropdown-item>
+                        <el-dropdown-item>
+                            <icon size="12px" folderType="voltageLevel" badgeColor="146EBE"></icon> add Voltage Level
+                        </el-dropdown-item>
+                        <el-dropdown-item>
+                            <icon size="12px" folderType="location" badgeColor="146EBE"></icon> add Substation
+                        </el-dropdown-item>
+                        <el-dropdown-item>
+                            <icon size="12px" folderType="bay" badgeColor="146EBE"></icon> add Bay
+                        </el-dropdown-item>
+                        <el-dropdown-item>
+                            <icon size="12px" folderType="asset" badgeColor="146EBE"></icon> add Asset
+                        </el-dropdown-item>
+                        <el-dropdown-item>
+                            <icon size="12px" folderType="job" badgeColor="146EBE"></icon> add Job
+                        </el-dropdown-item>
+                    </el-dropdown-menu>
+                </el-dropdown>
+            </div>
+            <div>
+                <i title="Open" style="font-size: 12px;" class="fa-regular fa-folder-open"></i>
+            </div>
+            <div>
+                <i title="Duplicate" style="font-size: 12px;" class="fa-solid fa-clone"></i>
+            </div>
+            <div>
+                <i title="Import" style="font-size: 12px;" class="fa-solid fa-file-import"></i>
+
+            </div>
+            <div>
+                <el-dropdown @command="handleCommand" trigger="click">
+                <i title="Export" style="font-size: 12px;" class="fa-solid fa-file-export"></i>
+                    <el-dropdown-menu slot="dropdown">
+                        <el-dropdown-item command="exportJSON">
+                            <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon> export to JSON
+                        </el-dropdown-item>
+                        <el-dropdown-item command="exportXML">
+                            <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon> export to XML
+                        </el-dropdown-item>
+                        <el-dropdown-item command="exportExcel">
+                            <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon> export to Excel
+                        </el-dropdown-item>
+                        <el-dropdown-item command="exportWord"> 
+                            <icon size="12px" fileTypeDetail="word" folderType="fileType" badgeColor="146EBE"></icon> export to Word
+                        </el-dropdown-item>
+                        <el-dropdown-item command="exportPDF">
+                            <icon size="12px" fileTypeDetail="pdf" folderType="fileType" badgeColor="146EBE"></icon> export to PDF
+                        </el-dropdown-item>
+                    </el-dropdown-menu>
+                </el-dropdown>
+            </div>
+            <div v-if="clientSlide">
+                <i title="Upload" style="font-size: 12px;" class="fa-solid fa-upload"></i>
+            </div>
+            <div v-if="!clientSlide">
+                <i title="Download" style="font-size: 12px;" class="fa-solid fa-download"></i>
+            </div>
+            <div>
+                <i title="Delete" style="font-size: 12px;" class="fa-solid fa-trash"></i>
+            </div>
+            <div>
+                <i title="Fmeca" style="font-size: 12px;" class="fa-solid fa-table"></i>
+            </div>
+        </div>
         <!-- Thanh điều hướng có thể kéo rộng/kéo hẹp -->
         <div class="resizable-sidebar">
             <div ref="sidebarClient" v-show="clientSlide" class="sidebar">
@@ -51,8 +125,10 @@
                         @show-addBushing="showAddBushing" @show-addSurgeArrester="showAddSurgeArrester"
                         @show-addCircuit="showAddCircuitBreaker" @show-addVt="showAddVt" @show-addCt="showAddCt"
                         @show-addPowerCable="showAddPowerCable" @show-addDisconnector="showAddDisconnector"
-                        @show-addCapacitor="showAddCapacitor" @show-addRotatingMachine="showAddRotatingMachine"
-                        @show-addBay="showAddBay" @show-data="showDataClient" ref="contextMenuClient">
+                        @show-addCapacitor="showAddCapacitor"
+                        @show-addReactor="showAddReactor"
+                        @show-addRotatingMachine="showAddRotatingMachine" @show-addBay="showAddBay"
+                        @show-data="showDataClient" ref="contextMenuClient">
                     </contextMenu>
                 </div>
             </div>
@@ -69,7 +145,8 @@
                         <TreeNode v-for="item in ownerServerList" :key="item.id" :node="item"
                             :selectedNodes.sync="selectedNodes" @fetch-children="fetchChildrenServer"
                             @show-properties="showPropertiesData" @update-selection="updateSelection"
-                            @clear-selection="clearSelection" @open-context-menu="openContextMenu">
+                            @clear-selection="clearSelection" @open-context-menu="openContextMenu"
+                            @double-click-node="doubleClickNodeServer">
                         </TreeNode>
                     </ul>
                     <contextMenu @show-data="showData" ref="contextMenu"></contextMenu>
@@ -611,6 +688,16 @@
             </span>
         </el-dialog>
 
+        <el-dialog title="Add Reactor" :visible.sync="signReactor" width="1000px"
+            @close="handleReactorCancel">
+            <Reactor :locationId="locationId" :parent="parentOrganization" ref="reactor">
+            </Reactor>
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" type="danger" @click="handleReactorCancel">Cancel</el-button>
+                <el-button size="small" type="primary" @click="handleReactorConfirm">Save</el-button>
+            </span>
+        </el-dialog>
+
         <el-dialog title="Add Job" :visible.sync="signJob" width="1000px" @close="handleJobCancel">
             <component ref="jobData" :is="checkJobType" :locationData="locationData" :assetData="assetData"
                 :productAssetModelData="productAssetModelData" :parent="parentOrganization"
@@ -619,6 +706,13 @@
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleJobCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleJobConfirm">Save</el-button>
+            </span>
+        </el-dialog>
+
+        <el-dialog title="Export" width="1000px" :visible.sync="openExportDialog">
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" type="danger" @click="handleCancelExport">Cancel</el-button>
+                <el-button size="small" type="primary" @click="handleExportConfirm">Save</el-button>
             </span>
         </el-dialog>
     </div>
@@ -671,12 +765,14 @@ import Disconnector from '@/views/AssetView/Disconnector/index.vue'
 import PowerCable from '@/views/AssetView/PowerCable'
 import VoltageTransformer from '@/views/AssetView/VoltageTransformer'
 import Capacitor from '@/views/AssetView/Capacitor/index.vue'
+import Reactor from '@/views/AssetView/Reactor/index.vue'
 import JobSurgeArrester from '@/views/JobView/SurgeArrester/index.vue'
 import JobPowerCable from '@/views/JobView/PowerCable/index.vue'
 import JobDisconnector from '@/views/JobView/Disconnector/index.vue'
 import JobCurrentTransformer from '@/views/JobView/CurrentTrans/index.vue'
 import JobVoltageTransformer from '@/views/JobView/VoltageTransformer/index.vue'
 import JobCircuitBreaker from '@/views/JobView/CircuitBreaker/index.vue'
+import JobTransformer from '@/views/JobView/Transformer/index.vue'
 
 import * as rotatingMachineMapping from "@/views/Mapping/RotatingMachine/index"
 import RotatingMachine from '@/views/AssetView/RotatingMachine/index.vue'
@@ -684,6 +780,8 @@ import mixin from './mixin'
 import Attachment from '../Common/Attachment.vue';
 import * as demoAPI from '@/api/demo'
 import * as BreakerMapping from '@/views/Mapping/Breaker/index'
+import * as TransformerMapping from '@/views/Mapping/Transformer/index'
+import Icon from '@/views/Common/Icon.vue'
 
 
 export default {
@@ -709,15 +807,19 @@ export default {
         PowerCable,
         RotatingMachine,
         Capacitor,
+        Reactor,
         JobSurgeArrester,
         JobPowerCable,
         JobDisconnector,
         JobCurrentTransformer,
         JobVoltageTransformer,
         JobCircuitBreaker,
+        JobTransformer,
+        Icon
     },
     data() {
         return {
+            openExportDialog: false,
             parentOrganization: null,
             logDataServer: [],
             logDataClient: [],
@@ -744,6 +846,7 @@ export default {
             signRotating: false,
             signJob: false,
             signCapacitor: false,
+            signReactor: false,
             activeTab: {},
             activeTabClient: {},
             indexTabData: null,
@@ -880,6 +983,28 @@ export default {
         }
     },
     methods: {
+        handleCommand(cmd) {
+            if (cmd === 'exportExcel') {
+                this.openExportDialog = true
+            } else if(cmd === 'exportJSON'){
+
+            } else if(cmd === 'exportXML'){
+                this.openExportDialog = true
+            } else if(cmd === 'exportWord'){
+                this.openExportDialog = true
+            } else if(cmd === 'exportPDF'){
+                this.openExportDialog = true
+            } 
+        },
+
+        handleCancelExport(){
+            this.openExportDialog = false
+        },
+
+        handleExportConfirm(){
+            this.openExportDialog = false
+            this.$message.success("Export successfully")
+        },
 
         async reloadLogClient(doneCallback) {
             try {
@@ -1070,7 +1195,7 @@ export default {
                             window.electronAPI.getBayByVoltageBySubstationId(null, clickedRow.mrid)
                         ]);
                         const [assetTransformerReturn, assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn,
-                            assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetBreakerReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                            assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetBreakerReturn, assetReactorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (voltageLevelReturn.success) {
                             voltageLevelReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
@@ -1224,6 +1349,22 @@ export default {
                             newRows.push(...assetCapacitorReturn.data);
                         }
 
+                        if (assetReactorReturn.success) {
+                            assetReactorReturn.data.forEach(row => {
+                                row.parentId = clickedRow.mrid;
+                                row.mode = 'asset';
+                                row.asset = 'Reactor';
+                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                row.parentName = parentName
+                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr.push({
+                                    mrid: clickedRow.mrid,
+                                    parent: clickedRow.name
+                                })
+                            });
+                            newRows.push(...assetReactorReturn.data);
+                        }
+
                         if (assetCurrentTransformerReturn.success) {
                             assetCurrentTransformerReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
@@ -1296,7 +1437,7 @@ export default {
                     } else if (node.mode == 'bay') {
                         const clickedRow = node;
                         const [assetTransformerReturn, assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn,
-                            assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetBreakerReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                            assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetBreakerReturn, assetReactorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (assetTransformerReturn.success) {
                             assetTransformerReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
@@ -1432,11 +1573,12 @@ export default {
                             });
                             newRows.push(...assetCapacitorReturn.data);
                         }
-                        if (assetBreakerReturn.success) {
-                            assetBreakerReturn.data.forEach(row => {
+                        
+                        if (assetReactorReturn.success) {
+                            assetReactorReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
                                 row.mode = 'asset';
-                                row.asset = 'Circuit breaker';
+                                row.asset = 'Reactor';
                                 let parentName = clickedRow.parentName + "/" + clickedRow.name
                                 row.parentName = parentName
                                 row.parentArr = [...clickedRow.parentArr || []]
@@ -1445,7 +1587,7 @@ export default {
                                     parent: clickedRow.name
                                 })
                             });
-                            newRows.push(...assetBreakerReturn.data);
+                            newRows.push(...assetReactorReturn.data);
                         }
                     } else {
                         const clickedRow = node;
@@ -1493,7 +1635,7 @@ export default {
 
         async fetchAssetByPsr(psrId) {
             try {
-                const [responseTransformer, responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer, responseCapacitor, responseBreaker] = await Promise.all([
+                const [responseTransformer, responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer, responseCapacitor, responseBreaker , responseReactor] = await Promise.all([
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Transformer'),
                     window.electronAPI.getSurgeArresterByPsrId(psrId),
                     window.electronAPI.getBushingByPsrId(psrId),
@@ -1503,9 +1645,10 @@ export default {
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Rotating machine'),
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Current transformer'),
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Capacitor'),
-                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Circuit breaker')
+                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Circuit breaker'),
+                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Reactor')
                 ])
-                return [responseTransformer, responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer, responseCapacitor, responseBreaker];
+                return [responseTransformer, responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer, responseCapacitor, responseBreaker, responseReactor];
             } catch (error) {
                 console.error("Error fetching asset by substation:", error);
                 return {
@@ -1547,7 +1690,7 @@ export default {
                             window.electronAPI.getVoltageLevelBySubstationId(clickedRow.mrid),
                             window.electronAPI.getBayByVoltageBySubstationId(null, clickedRow.mrid)
                         ]);
-                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetReactorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (assetSurgeReturn.success) {
                             newRows.push(...assetSurgeReturn.data);
                         }
@@ -1579,6 +1722,9 @@ export default {
                         if (assetCapacitorReturn.success) {
                             newRows.push(...assetCapacitorReturn.data);
                         }
+                        if (assetReactorReturn.success) {
+                            newRows.push(...assetReactorReturn.data);
+                        }
 
                         if (voltageLevelReturn.success) {
                             newRows.push(...voltageLevelReturn.data);
@@ -1600,7 +1746,7 @@ export default {
 
                     } else if (node.mode == 'bay') {
                         const clickedRow = node;
-                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetReactorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
                         if (assetSurgeReturn.success) {
                             newRows.push(...assetSurgeReturn.data);
                         }
@@ -1629,6 +1775,9 @@ export default {
 
                         if (assetCapacitorReturn.success) {
                             newRows.push(...assetCapacitorReturn.data);
+                        }
+                        if(assetReactorReturn.success){
+                            newRows.push(...assetReactorReturn.data);
                         }
                     }
 
@@ -2119,6 +2268,10 @@ export default {
             this.signCapacitor = false
         },
 
+        handleReactorCancel() {
+            this.signReactor = false
+        },
+
         handleJobCancel() {
             this.signJob = false
         },
@@ -2308,7 +2461,7 @@ export default {
             try {
                 const bushing = this.$refs.bushing
                 if (bushing) {
-                    const { success, data } = await bushing.saveBay()
+                    const { success, data } = await bushing.saveAsset()
                     if (success) {
                         this.$message.success("Bushing saved successfully")
                         this.signBushing = false
@@ -2655,6 +2808,45 @@ export default {
             }
         },
 
+        async handleReactorConfirm() {
+           try {
+                const reactor = this.$refs.reactor
+                if (reactor) {
+                    const { success, data } = await reactor.saveAsset();
+                    if (success) {
+                        this.$message.success("Reactor saved successfully")
+                        this.signReactor = false
+                        let newRows = []
+                        if (this.organisationClientList && this.organisationClientList.length > 0) {
+                            const newRow = {
+                                mrid: data.asset.mrid,
+                                name: data.asset.name,
+                                serial_number: data.asset.serial_number,
+                                parentId: this.parentOrganization.mrid,
+                                parentName: this.parentOrganization.name,
+                                parentArr: this.parentOrganization.parentArr || [],
+                                mode: 'asset',
+                                asset: 'Reactor',
+                            }
+                            newRows.push(newRow);
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            if (node) {
+                                const children = Array.isArray(node.children) ? node.children : [];
+                                Vue.set(node, "children", [...children, ...newRows]);
+                            } else {
+                                this.$message.error("Parent node not found in tree");
+                            }
+                        }
+                    } else {
+                        this.$message.error("Failed to save Capacitor")
+                    }
+                }
+            } catch (error) {
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
+        },
+
         async handleJobConfirm() {
             try {
                 const job = this.$refs.jobData
@@ -2681,6 +2873,9 @@ export default {
                             }
                             else if (this.checkJobType === 'JobCircuitBreaker') {
                                 jobType = 'Circuit breaker';
+                            }
+                            else if (this.checkJobType === 'JobTransformer') {
+                                jobType = 'Transformer';
                             }
                             const newRow = {
                                 mrid: data.oldWork.mrid,
@@ -2927,22 +3122,43 @@ export default {
         },
 
         async showData(node) {
-            // Tạo bản sao của node để đảm bảo reactivity
-            const newNode = { ...node };
-            if (this.tabs.some(item => item.id === newNode.id)) {
-                // Nếu tab đã tồn tại, active nó
-                this.activeTab = newNode;
-            } else {
-                const newTabs = [...this.tabs]; // Tạo mảng mới
-                if (this.activeTab?.id) {
-                    const index = newTabs.findIndex(item => item.id === this.activeTab.id);
-                    newTabs.splice(index + 1, 0, newNode);
+            try {
+                // Tạo bản sao của node để đảm bảo reactivity
+                const newNode = { ...node };
+                // Sử dụng mrid hoặc id để check tab đã tồn tại
+                const nodeKey = newNode.mrid || newNode.id;
+                const existingTab = this.tabs.find(item => (item.mrid || item.id) === nodeKey);
+                
+                if (existingTab) {
+                    // Nếu tab đã tồn tại, active nó
+                    this.activeTab = existingTab;
+                    const index = this.tabs.findIndex(item => (item.mrid || item.id) === nodeKey);
+                    this.$refs.serverTabs.selectTab(this.activeTab, index);
                 } else {
-                    newTabs.push(newNode);
+                    const newTabs = [...this.tabs]; // Tạo mảng mới
+                    let insertIndex;
+                    if (this.activeTab?.mrid || this.activeTab?.id) {
+                        const activeKey = this.activeTab.mrid || this.activeTab.id;
+                        const index = newTabs.findIndex(item => (item.mrid || item.id) === activeKey);
+                        insertIndex = index + 1;
+                        newTabs.splice(insertIndex, 0, newNode);
+                    } else {
+                        insertIndex = newTabs.length;
+                        newTabs.push(newNode);
+                    }
+                    // Gán lại để trigger reactivity
+                    this.tabs = newTabs;
+                    this.activeTab = newNode;
+                    this.$nextTick(() => {
+                        if (this.$refs.serverTabs) {
+                            this.$refs.serverTabs.selectTab(this.activeTab, insertIndex);
+                            this.$refs.serverTabs.loadData(newNode, insertIndex);
+                        }
+                    });
                 }
-                // Gán lại để trigger reactivity
-                this.tabs = newTabs;
-                this.activeTab = newNode;
+            } catch (error) {
+                this.$message.error("Some error occur when loading data");
+                console.error(error);
             }
         },
 
@@ -3280,6 +3496,30 @@ export default {
                                 } else {
                                     this.$message.warning("Parent node not found in tree");
                                 }
+                            } else if (node.asset === 'Transformer') {
+                                const entity = await window.electronAPI.getTransformerEntityByMrid(node.mrid, node.parentId);
+                                if (!entity.success) {
+                                    this.$message.error("Entity not found");
+                                    return;
+                                }
+                                const deleteSign = await window.electronAPI.deleteTransformerEntity(entity.data);
+                                if (!deleteSign.success) {
+                                    this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
+                                    return;
+                                }
+                                // ✅ Xóa node khỏi cây organisationClientList
+                                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
+                                if (parentNode && Array.isArray(parentNode.children)) {
+                                    const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
+                                    if (index !== -1) {
+                                        parentNode.children.splice(index, 1); // Xóa khỏi mảng children
+                                        this.$message.success("Delete data successfully");
+                                    } else {
+                                        this.$message.warning("Node not found in tree structure");
+                                    }
+                                } else {
+                                    this.$message.warning("Parent node not found in tree");
+                                }
                             }
                         }
                     } catch (error) {
@@ -3517,6 +3757,29 @@ export default {
                     const capacitor = this.$refs.capacitor;
                     if (capacitor) {
                         capacitor.resetForm();
+                    }
+                });
+            } catch (error) {
+                this.parentOrganization = null
+                this.$message.error("Some error occur")
+                console.error(error)
+            }
+        },
+
+        async showAddReactor(node) {
+            try {
+                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
+                if (dataLocation.success) {
+                    this.locationId = dataLocation.data.mrid
+                } else {
+                    this.locationId = null
+                }
+                this.parentOrganization = node
+                this.signReactor = true
+                this.$nextTick(() => {
+                    const reactor = this.$refs.reactor;
+                    if (reactor) {
+                        reactor.resetForm();
                     }
                 });
             } catch (error) {
@@ -3764,15 +4027,27 @@ export default {
                     this.checkJobType = 'JobCircuitBreaker'
                     this.signJob = true;
                 }
-                else {
+                else if (node.asset == 'Transformer') {
+                    const dataTestType = await window.electronAPI.getAllTestTypeTransformers();
+                    const dataTransformerEntity = await window.electronAPI.getTransformerEntityByMrid(node.mrid);
+                    console.log("dataTransformerEntity", dataTransformerEntity)
+                    const dto = TransformerMapping.transformerEntityToDto(dataTransformerEntity.data);
+                    console.log("dto", dto)
+                    if (dataTransformerEntity.success) {
+                        this.assetData = dto
+                    } else {
+                        this.assetData = {}
+                    }
+                    if (dataTestType.success) {
+                        this.testTypeListData = dataTestType.data
+                    } else {
+                        this.testTypeListData = []
+                    }
+                    this.checkJobType = 'JobTransformer'
+                    this.signJob = true;
+                } else {
                     this.$message.error("This asset type not support for job")
                 }
-                this.$nextTick(() => {
-                    const job = this.$refs.jobData;
-                    if (job) {
-                        job.resetForm();
-                    }
-                });
             } catch (error) {
                 this.parentOrganization = null
                 this.$message.error("Some error occur")
@@ -3894,6 +4169,11 @@ export default {
             await this.showDataClient(node);
         },
 
+        async doubleClickNodeServer(node) {
+            await this.showData(node);
+            await this.showPropertiesData(node);
+        },
+
     }
 }
 </script>
@@ -3916,7 +4196,7 @@ export default {
 
 .resizable-sidebar {
     display: flex;
-    height: calc(100% - 30px);
+    height: calc(100% - 60px);
 }
 
 .sidebar {
@@ -4057,6 +4337,31 @@ export default {
     box-sizing: border-box;
     width: 100%;
     padding-left: 10px;
+}
+
+.toolbar-setting {
+    background-color: white;
+    height: 30px;
+    display: flex;
+    gap: 30px;
+    border-bottom: 1px solid #CCCCCC;
+    /* Độ dày 2px, màu đen */
+    align-items: center;
+    font-size: 12px;
+    color: #555;
+    font-weight: 600;
+    box-sizing: border-box;
+    width: 100%;
+    padding-left: 10px;
+}
+
+.toolbar-setting div {
+    cursor: pointer;
+}
+
+.el-dropdown-menu__item {
+    font-size: 12px !important;
+    font-family: Arial, sans-serif !important;
 }
 
 .properties {
