@@ -1,5 +1,5 @@
-import OrganisationEntity from '@/views/Entity/Organisation';
-import GeoMap from '@/views/Entity/GeoMap';
+import OrganisationEntity from '@/views/Flatten/Organisation';
+import GeoMap from '@/views/Flatten/GeoMap';
 import OrganisationDto from '@/views/Dto/Organisation';
 
 export const OrgDtoToOrgEntity = (orgDto) => {

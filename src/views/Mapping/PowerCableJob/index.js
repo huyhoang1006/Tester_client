@@ -1,15 +1,15 @@
 /* eslint-disable */
-import PowerCableJobEntity from "@/views/Entity/Job/PowerCable"
+import PowerCableJobEntity from "@/views/Flatten/Job/PowerCable"
 import PowerCableJobDto from "@/views/Dto/Job/PowerCable";
 import WorkTask from "@/views/Cim/WorkTask";
 import TestDataSet from "@/views/Cim/TestDataSet";
 import OldTransformerObservation from "@/views/Cim/OldTransformerObservation";
-import Attachment from '@/views/Entity/Attachment'
+import Attachment from '@/views/Flatten/Attachment'
 import { UnitSymbol } from "@/views/Enum/UnitSymbol";
 import Percent from "@/views/Cim/Percent";
 import Temperature from "@/views/Cim/Temperature";
-import TestingEquipment from "@/views/Entity/TestingEquipment";
-import PowerCableTestingEquipmentTestType from "@/views/Entity/PowerCableTestingEquipmentTestType";
+import TestingEquipment from "@/views/Flatten/TestingEquipment";
+import PowerCableTestingEquipmentTestType from "@/views/Flatten/PowerCableTestingEquipmentTestType";
 import StringMeaurementValue from "@/views/Cim/StringMeasurementValue";
 import AnalogValue from "@/views/Cim/AnalogValue";
 import DiscreteValue from "@/views/Cim/DiscreteValue";

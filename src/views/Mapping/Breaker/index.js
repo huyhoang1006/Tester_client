@@ -1,5 +1,5 @@
 /* eslint-disable */
-import CircuitBreakerEntity from "../../Entity/CircuitBreaker"
+import CircuitBreakerEntity from "@/views/Flatten/CircuitBreaker"
 import CircuitBreakerDto from "../../Dto/CircuitBreaker"
 import Resistance from "@/views/Cim/Resistance";
 import Capacitance from "@/views/Cim/Capacitance";

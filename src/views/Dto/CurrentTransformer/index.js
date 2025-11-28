@@ -1,7 +1,7 @@
 import PropertiesDto from "./Properties";
 import RatingsDto from "./Ratings";
 import CTConfigurationDto from "./CTConfiguration";
-import Attachment from "@/views/Entity/Attachment";
+import Attachment from "@/views/Flatten/Attachment";
 class CurrentTransformerDto {
     constructor() {
         this.properties = new PropertiesDto();

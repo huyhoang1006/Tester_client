@@ -65,7 +65,7 @@ import loader from "@/utils/preload"
 import { mapState } from 'vuex'
 import { UnitMultiplier } from '@/views/Enum/UnitMultiplier'
 import { UnitSymbol } from '@/views/Enum/UnitSymbol'
-import Attachment from '@/views/Entity/Attachment'
+import Attachment from '@/views/Flatten/Attachment'
 
 export default {
     mixins: [mixin, Mixtestcondition],

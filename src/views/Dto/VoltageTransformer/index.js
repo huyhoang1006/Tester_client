@@ -1,5 +1,5 @@
 import PropertiesDto from "./Properties";
-import Attachment from "@/views/Entity/Attachment";
+import Attachment from "@/views/Flatten/Attachment";
 import RatingDto from "./Rating";
 import VTConfigurationDto from "./VTConfiguration";
 
