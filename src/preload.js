@@ -18,7 +18,6 @@ const uploadCustomAPI = uploadCustomPreload.uploadCustomPreload()
 const manufacturerAPI = manufacturerPreload.munufacturerPreload()
 const ownerAPI = ownerPreload.ownerPreload()
 const attachmentAPI = entityPreload.attachmentPreload.attachmentPreload()
-const exportAPI = entityPreload.exportPreload.exportPreload()
 const parentOrganizationAPI = cimPreload.parentOrganizationPreload.parentOrganizationPreload()
 const substationAPI = cimPreload.substationPreload.substationPreload()
 const locationAPI = cimPreload.locationPreload.locationPreload()
@@ -46,9 +45,6 @@ const testTypeSurgeArresterAPI = entityPreload.testTypePreload.testTypeSurgeArre
 const surgeArresterJobAPI = entityPreload.jobEntityPreload.surgeArresterJob.surgeArresterJobPreload()
 const powerCableJobAPI = entityPreload.jobEntityPreload.powerCableJob.powerCableJobPreload()
 const testTypePowerCableAPI = entityPreload.testTypePreload.testTypePowerCablePreload.testTypePowerCablePreload()
-const testTypeCurrentTransformerAPI = entityPreload.testTypePreload.testTypeCurrentTransformerPreload.testTypeCurrentTransformerPreload()
-const testTypeVoltageTransformerAPI = entityPreload.testTypePreload.testTypeVoltageTransformerPreload.testTypeVoltageTransformerPreload()
-const testTypeDisconnectorAPI = entityPreload.testTypePreload.testTypeDisconnectorPreload.testTypeDisconnectorPreload()
 const oldWorkAPI = cimPreload.oldWorkPreload.oldWorkPreload()
 const assetAPI = cimPreload.assetPreload.assetPreload()
 const analogAPI = cimPreload.analogPreload.analogPreload()
@@ -65,21 +61,18 @@ const rotatingMachineEntityAPI = entityPreload.rotatingMachineEntityPreload.rota
 const capacitorEntityAPI = entityPreload.capacitorEntityPreload.capacitorEntityPreload()
 const currentTransformerEntityAPI = entityPreload.currentTransformerEntityPreload.currentTransformerEntityPreload()
 const breakerEntityAPI = entityPreload.breakerEntityPreload.breakerEntityPreload()
-const testTypeCircuitBreakerAPI = entityPreload.testTypePreload.testTypeCircuitBreakerPreload.testTypeCircuitBreakerPreload()
-const testTypeTransformerAPI = entityPreload.testTypePreload.testTypeTransformerPreload.testTypeTransformerPreload()
-const reactorEntityAPI = entityPreload.reactorEntityPreload.reactorEntityPreload()
 
 
 
-const ipcMain = Object.assign(userAPI, transformerAPI, fmecaAPI, conditionAPI, circuitAPI, attachmentAPI, exportAPI,
+const ipcMain = Object.assign(userAPI, transformerAPI, fmecaAPI, conditionAPI, circuitAPI, attachmentAPI,
     currentTransAPI, voltageTransAPI, disconnectorAPI, surgeArresterAPI, powerCablePreAPI, uploadCustomAPI,
     manufacturerAPI, ownerAPI, parentOrganizationAPI, substationAPI, locationAPI, streetAddressAPI, streetDetailAPI, townDetailAPI,
     electronicAddressAPI, personAPI, personRoleAPI, telephoneNumberAPI, configurationEventAPI, substationEntityAPI, parentOrganizationEntityAPI,
     positionPointAPI, voltageLevelEntityAPI, voltageLevelAPI, bayEntityAPI, bayAPI, powerSystemResourceAPI, surgeArresterEntityAPI,
     productAssetModelAPI, testTypeSurgeArresterAPI, surgeArresterJobAPI, powerCableJobAPI, oldWorkAPI, assetAPI, transformerEntityAPI, analogAPI,
     stringMeasurementAPI, discreteAPI, valueToAliasAPI, valueAliasSetAPI, powerCableEntityAPI, voltageTransformerEntityAPI, bushingEntityAPI,
-    bushingAPI, disconnectorEntityAPI, rotatingMachineEntityAPI, currentTransformerEntityAPI, testTypePowerCableAPI, capacitorEntityAPI,
-    breakerEntityAPI, testTypeVoltageTransformerAPI, testTypeDisconnectorAPI, testTypeCurrentTransformerAPI, testTypeVoltageTransformerAPI, testTypeCircuitBreakerAPI, testTypeTransformerAPI, reactorEntityAPI)
+    bushingAPI, disconnectorEntityAPI, rotatingMachineEntityAPI, currentTransformerEntityAPI, testTypePowerCableAPI, capacitorEntityAPI, 
+    breakerEntityAPI)
 contextBridge.exposeInMainWorld('electronAPI',
     ipcMain
 )
