@@ -1050,32 +1050,16 @@ export default {
         },
         async exportTreeToJSON(type) {
             try {
-                // Kiểm tra nếu có selectedNodes thì export selected, không thì export all
-                const nodesToExport = this.selectedNodes && this.selectedNodes.length > 0 
-                    ? this.selectedNodes 
-                    : null
-
-                if (nodesToExport === null) {
-                    if (!this.organisationClientList || this.organisationClientList.length === 0) {
-                        this.$message.warning('No tree data to export')
-                        return
-                    }
-                } else if (nodesToExport.length === 0) {
-                    this.$message.warning('Please select nodes to export')
+                // Yêu cầu phải chọn ít nhất 1 node để export
+                if (!this.selectedNodes || this.selectedNodes.length === 0) {
+                    this.$message.warning('Please select at least one node to export')
                     return
                 }
 
+                const nodesToExport = this.selectedNodes
+
                 this.$message.info('Exporting tree data, please wait...')
                 const dtos = []
-
-                // Helper function to check if a node is selected
-                const isNodeSelected = (node) => {
-                    if (!nodesToExport) return true // Export all
-                    return nodesToExport.some(selected => 
-                        (selected.mrid && node.mrid && selected.mrid === node.mrid) ||
-                        (selected.id && node.id && selected.id === node.id)
-                    )
-                }
 
                 // Helper function to fetch entity data and convert to DTO for a node
                 const fetchAndConvertToDto = async (node) => {
@@ -1178,23 +1162,9 @@ export default {
                     }
                 }
 
-                if (nodesToExport) {
-                    // Export only selected nodes
-                    for (const node of nodesToExport) {
-                        await fetchAndConvertToDto(node)
-                    }
-                } else {
-                    // Recursive function to traverse tree
-                    const traverseTree = async (nodes) => {
-                        for (const node of nodes) {
-                            await fetchAndConvertToDto(node)
-                            if (node.children && node.children.length > 0) {
-                                await traverseTree(node.children)
-                            }
-                        }
-                    }
-                    // Start traversing from root
-                    await traverseTree(this.organisationClientList)
+                // Export only selected nodes
+                for (const node of nodesToExport) {
+                    await fetchAndConvertToDto(node)
                 }
 
                 if (dtos.length === 0) {
