@@ -23,38 +23,102 @@
         </div>
         <div class="toolbar-setting">
             <div>
-                <el-dropdown trigger="click">
-                    <span class="icon-wrapper">
-                        <i title="Add" style="font-size: 12px;" class="fa-solid fa-square-plus"></i>
-                    </span>
-
-                    <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item>
-                            <icon size="12px" folderType="building" badgeColor="146EBE"></icon> add Organisation
-                        </el-dropdown-item>
-                        <el-dropdown-item>
-                            <icon size="12px" folderType="voltageLevel" badgeColor="146EBE"></icon> add Voltage Level
-                        </el-dropdown-item>
-                        <el-dropdown-item>
-                            <icon size="12px" folderType="location" badgeColor="146EBE"></icon> add Substation
-                        </el-dropdown-item>
-                        <el-dropdown-item>
-                            <icon size="12px" folderType="bay" badgeColor="146EBE"></icon> add Bay
-                        </el-dropdown-item>
-                        <el-dropdown-item>
-                            <icon size="12px" folderType="asset" badgeColor="146EBE"></icon> add Asset
-                        </el-dropdown-item>
-                        <el-dropdown-item>
-                            <icon size="12px" folderType="job" badgeColor="146EBE"></icon> add Job
-                        </el-dropdown-item>
-                    </el-dropdown-menu>
-                </el-dropdown>
+                <el-dropdown 
+                ref="addDropdown"
+        @command="handleAddCommand" 
+        @visible-change="handleDropdownVisibleChange"
+        trigger="click">
+        <span class="icon-wrapper">
+            <i title="Add" style="font-size: 12px;" class="fa-solid fa-square-plus"></i>
+        </span>
+        <el-dropdown-menu slot="dropdown">
+        <el-dropdown-item 
+            v-if="isCommandAllowed('organisation')" 
+            command="organisation">
+            <icon size="12px" folderType="building" badgeColor="146EBE"></icon> add Organisation
+        </el-dropdown-item>
+        <el-dropdown-item 
+            v-if="isCommandAllowed('substation')" 
+            command="substation">
+            <icon size="12px" folderType="location" badgeColor="146EBE"></icon> add Substation
+        </el-dropdown-item>
+        <el-dropdown-item 
+            v-if="isCommandAllowed('voltageLevel')" 
+            command="voltageLevel">
+            <icon size="12px" folderType="voltageLevel" badgeColor="146EBE"></icon> add Voltage Level
+        </el-dropdown-item>
+        <el-dropdown-item 
+            v-if="isCommandAllowed('bay')" 
+            command="bay">
+            <icon size="12px" folderType="bay" badgeColor="146EBE"></icon> add Bay
+        </el-dropdown-item>
+<el-dropdown-item 
+    v-if="isCommandAllowed('asset')" 
+    command="asset"
+    class="asset-submenu-parent"
+    @mouseenter.native="showAssetSub = true"
+    @mouseleave.native="showAssetSub = false">
+    <icon size="12px" folderType="asset" badgeColor="146EBE"></icon> add Asset
+    <div class="asset-submenu" v-if="showAssetSub" @click.stop @mouseenter.stop @mouseleave.stop>
+        <div class="submenu-item" @click="handleAssetCommand('Transformer')">
+            <i class="fa-solid fa-bolt"></i>
+            <span>Add Transformer</span>
+        </div>
+        <div class="submenu-item" @click="handleAssetCommand('Surge arrester')">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>Add Surge arrester</span>
+        </div>
+        <div class="submenu-item" @click="handleAssetCommand('Bushing')">
+            <i class="fa-solid fa-shield"></i>
+            <span>Add Bushing</span>
+        </div>
+        <div class="submenu-item" @click="handleAssetCommand('Voltage transformer')">
+            <i class="fa-solid fa-bolt-lightning"></i>
+            <span>Add VT</span>
+        </div>
+        <div class="submenu-item" @click="handleAssetCommand('Disconnector')">
+            <i class="fa-solid fa-plug-circle-xmark"></i>
+            <span>Add Disconnector</span>
+        </div>
+        <div class="submenu-item" @click="handleAssetCommand('Power cable')">
+            <i class="fa-solid fa-route"></i>
+            <span>Add Power cable</span>
+        </div>
+        <div class="submenu-item" @click="handleAssetCommand('Current transformer')">
+            <i class="fa-solid fa-ruler"></i>
+            <span>Add CT</span>
+        </div>
+        <div class="submenu-item" @click="handleAssetCommand('Circuit breaker')">
+            <i class="fa-solid fa-plug"></i>
+            <span>Add Circuit breaker</span>
+        </div>
+        <div class="submenu-item" @click="handleAssetCommand('Rotating machine')">
+            <i class="fa-solid fa-group-arrows-rotate"></i>
+            <span>Add Rotating machine</span>
+        </div>
+        <div class="submenu-item" @click="handleAssetCommand('Capacitor')">
+            <i class="fa-solid fa-bolt"></i>
+            <span>Add Capacitor</span>
+        </div>
+        <div class="submenu-item" @click="handleAssetCommand('Reactor')">
+            <i class="fa-solid fa-bolt"></i>
+            <span>Add Reactor</span>
+        </div>
+    </div>
+</el-dropdown-item>
+        <el-dropdown-item 
+            v-if="isCommandAllowed('job')" 
+            command="job">
+            <icon size="12px" folderType="job" badgeColor="146EBE"></icon> add Job
+        </el-dropdown-item>
+    </el-dropdown-menu>
+</el-dropdown>
             </div>
             <div>
                 <i title="Open" style="font-size: 12px;" class="fa-regular fa-folder-open"></i>
             </div>
             <div>
-                <i title="Duplicate" style="font-size: 12px;" class="fa-solid fa-clone"></i>
+                <i @click="duplicateSelectedNodes" title="Duplicate" style="font-size: 12px;" class="fa-solid fa-clone"></i>
             </div>
             <div>
                 <el-dropdown @command="handleImportCommand" trigger="click">
@@ -902,6 +966,7 @@ export default {
             pathMapClient: [],
             hideTabContentServer: [],
             hideTabContentClient: [],
+            showAssetSub: false,
             currentTabServer: '',
             properties: {
                 region: '',
@@ -1010,6 +1075,19 @@ export default {
             LocationType: ["location", "voltage", "feeder"]
         }
     },
+    computed: {
+    // ...existing computed properties...
+    isCommandAllowed() {
+        return (cmd) => {
+            const selectedNode = this.selectedNodes && this.selectedNodes.length > 0 
+                ? this.selectedNodes[this.selectedNodes.length - 1] 
+                : null;
+            
+            if (!selectedNode) return false;
+            return this.getAllowedCommands(selectedNode).includes(cmd);
+        }
+    }
+},
     mixins: [mixin],
     async beforeMount() {
         try {
@@ -1023,7 +1101,23 @@ export default {
         }
     },
     methods: {
+
+        
+        handleDropdownVisibleChange(visible) {
+        // Nếu dropdown muốn mở mà chưa có node selected, ngăn nó mở
+        if (visible && (!this.selectedNodes || this.selectedNodes.length === 0)) {
+            this.$message.warning("Please select a node first");
+            // Ngăn dropdown mở bằng cách set visible = false
+            this.$nextTick(() => {
+                // Tìm ref dropdown và close nó
+                if (this.$refs.addDropdown) {
+                    this.$refs.addDropdown.visible = false;
+                }
+            });
+        }
+    },
         handleCommand(cmd) {
+            console.log("Command received:", cmd);
             if (cmd === 'exportExcel') {
                 this.openExportDialog = true
             } else if (cmd === 'exportJSON') {
@@ -2921,7 +3015,12 @@ export default {
                 console.error(error)
             }
         },
-
+        generateUuid() {
+          return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+               const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+               return v.toString(16);
+           });
+       },
         async handleJobConfirm() {
             try {
                 const job = this.$refs.jobData
@@ -4253,6 +4352,152 @@ export default {
         async resetAllClient() {
         },
 
+        async handleAddCommand(cmd) {
+    const selectedNode = this.selectedNodes && this.selectedNodes.length > 0 
+        ? this.selectedNodes[this.selectedNodes.length - 1] 
+        : null;
+
+    if (!selectedNode) {
+        this.$message.warning("Please select a node first");
+        return;
+    }
+
+    // Validate command against node type
+    const allowedCommands = this.getAllowedCommands(selectedNode);
+    if (!allowedCommands.includes(cmd)) {
+        this.$message.warning("This action is not allowed for this node type");
+        return;
+    }
+
+    switch(cmd) {
+        case 'organisation':
+            this.showAddOrganisation(selectedNode);
+            break;
+        case 'substation':
+            this.showAddSubsInTree(selectedNode);
+            break;
+        case 'voltageLevel':
+            this.showAddVoltageLevel(selectedNode);
+            break;
+        case 'bay':
+            this.showAddBay(selectedNode);
+            break;
+        case 'asset':
+            this.showAddTransformer(selectedNode);
+            break;
+        case 'job':
+            this.showAddJob(selectedNode);
+            break;
+    }
+},
+
+getAllowedCommands(node) {
+    const commands = [];
+    
+    if (node.mode === 'organisation') {
+        commands.push('organisation', 'substation');
+    } else if (node.mode === 'substation') {
+        commands.push('voltageLevel', 'bay', 'asset');
+    } else if (node.mode === 'voltageLevel') {
+        commands.push('bay');
+    } else if (node.mode === 'bay') {
+        commands.push('asset', 'job');
+    } else if (node.mode === 'asset') {
+        commands.push('job');
+    }
+    
+    return commands;
+},
+
+async handleAssetCommand(assetType) {
+    const selectedNode = this.selectedNodes && this.selectedNodes.length > 0 
+        ? this.selectedNodes[this.selectedNodes.length - 1] 
+        : null;
+
+    if (!selectedNode) {
+        this.$message.warning("Please select a node first");
+        return;
+    }
+
+    // Map asset type to show* method
+    const assetMethodMap = {
+        'Transformer': this.showAddTransformer,
+        'Surge arrester': this.showAddSurgeArrester,
+        'Bushing': this.showAddBushing,
+        'Voltage transformer': this.showAddVt,
+        'Disconnector': this.showAddDisconnector,
+        'Power cable': this.showAddPowerCable,
+        'Current transformer': this.showAddCt,
+        'Circuit breaker': this.showAddCircuitBreaker,
+        'Rotating machine': this.showAddRotatingMachine,
+        'Capacitor': this.showAddCapacitor,
+        'Reactor': this.showAddReactor,
+    };
+
+    const method = assetMethodMap[assetType];
+    if (method) {
+        await method.call(this, selectedNode);
+    } else {
+        this.$message.warning(`Asset type "${assetType}" not supported`);
+    }
+},
+cloneNodeRecursive(node) {
+           const copy = JSON.parse(JSON.stringify(node));
+           const walk = (n) => {
+               n.mrid = this.generateUuid();
+               if (n.id !== undefined) n.id = n.mrid;
+               if (n.parentArr && Array.isArray(n.parentArr)) {
+                   // keep parentArr of copy pointing to same ancestors (not changing)
+               }
+               if (n.children && n.children.length) {
+                   n.children = n.children.map(child => walk(child));
+               }
+               return n;
+           };
+           return walk(copy);
+       },
+duplicateSelectedNodes() {
+            if (!this.selectedNodes || this.selectedNodes.length === 0) {
+                this.$message.warning("Please select a node first");
+                return;
+            }
+
+            const newSelected = [];
+            for (const node of this.selectedNodes.slice()) {
+                // find parent array and index
+                let parentNode = this.findNodeById(node.parentId, this.organisationClientList);
+                let list = this.organisationClientList;
+                if (parentNode) {
+                    const children = Array.isArray(parentNode.children) ? parentNode.children : [];
+                    const idx = children.findIndex(c => c.mrid === node.mrid);
+                    const copy = this.cloneNodeRecursive(node);
+                    // maintain parentId/parentName/parentArr for copy
+                    copy.parentId = parentNode.mrid;
+                    copy.parentName = parentNode.name;
+                    copy.parentArr = parentNode.parentArr ? [...parentNode.parentArr] : [];
+                    copy.parentArr.push({ mrid: parentNode.mrid, parent: parentNode.name });
+                    // insert after original
+                    const newChildren = [...children.slice(0, idx + 1), copy, ...children.slice(idx + 1)];
+                    Vue.set(parentNode, 'children', newChildren);
+                    newSelected.push(copy);
+                } else {
+                    // node is root-level (in organisationClientList)
+                    const idxRoot = list.findIndex(c => c.mrid === node.mrid);
+                    const copy = this.cloneNodeRecursive(node);
+                    copy.parentId = null;
+                    copy.parentName = '';
+                    copy.parentArr = [];
+                    list.splice(idxRoot + 1, 0, copy);
+                    this.organisationClientList = [...list];
+                    newSelected.push(copy);
+                }
+            }
+            // update selection to new copies
+            this.selectedNodes = newSelected;
+            this.$message.success("Duplicate completed");
+        },
+
+
         findNodeById(mrid, nodes) {
             for (const node of nodes) {
                 if (node.mrid === mrid) return node;
@@ -4738,5 +4983,42 @@ export default {
 .export-json-submenu .submenu-item:hover {
     background-color: #f5f7fa;
     color: rgb(51.8, 80.6, 171);
+}
+
+.asset-submenu-parent {
+    position: relative;
+}
+
+.asset-submenu {
+    position: absolute;
+    left: 100%;
+    top: 0;
+    background: #fff;
+    border: 1px solid #e4e7ed;
+    border-radius: 4px;
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+    min-width: 200px;
+    z-index: 1000;
+    padding: 5px 0;
+}
+
+.asset-submenu .submenu-item {
+    padding: 5px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    color: #606266;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.asset-submenu .submenu-item:hover {
+    background-color: #f5f7fa;
+    color: rgb(20, 110, 190);
+}
+
+.asset-submenu .submenu-item span {
+    flex: 1;
 }
 </style>
