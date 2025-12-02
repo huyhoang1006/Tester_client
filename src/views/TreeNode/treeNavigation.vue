@@ -1151,8 +1151,6 @@ export default {
                 }
 
                 const nodesToExport = this.selectedNodes
-
-                this.$message.info('Exporting tree data, please wait...')
                 const dtos = []
 
                 // Helper function to fetch entity data and convert to DTO for a node
@@ -1266,11 +1264,42 @@ export default {
                     return
                 }
 
-                const fileName = type === 'cim' ? 'tree-export-cim.json' : 'tree-export-dto.json'
+                // Helper function to sanitize filename (remove invalid characters)
+                const sanitizeFileName = (name) => {
+                    if (!name) return 'export-data'
+                    // Remove invalid characters for Windows/Linux file names
+                    return name.replace(/[<>:"/\\|?*]/g, '').trim() || 'export-data'
+                }
+
+                // Generate default filename based on node names
+                let fileName = 'export-data.json'
+                if (type === 'cim') {
+                    // For CIM export, use node name if single node, otherwise generic name
+                    if (nodesToExport.length === 1 && nodesToExport[0].name) {
+                        fileName = `${sanitizeFileName(nodesToExport[0].name)}.json`
+                    } else {
+                        fileName = 'tree-export-cim.json'
+                    }
+                } else {
+                    // For entity export, use node name(s)
+                    if (nodesToExport.length === 1 && nodesToExport[0].name) {
+                        // Single node export - use node name
+                        fileName = `${sanitizeFileName(nodesToExport[0].name)}.json`
+                    } else if (nodesToExport.length > 1) {
+                        // Multiple nodes - use first node name with suffix
+                        const firstName = nodesToExport[0].name
+                        if (firstName) {
+                            fileName = `${sanitizeFileName(firstName)}-export.json`
+                        } else {
+                            fileName = 'tree-export-dto.json'
+                        }
+                    }
+                }
+                
                 const result = await window.electronAPI.exportJSON(dtos, {
                     defaultFileName: fileName,
-                    title: 'Select folder to save JSON file',
-                    buttonLabel: 'Save here'
+                    title: 'Save JSON file',
+                    buttonLabel: 'Save'
                 })
 
                 if (result && result.success) {
