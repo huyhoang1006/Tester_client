@@ -42,6 +42,7 @@ const transformerEntityAPI = entityPreload.transformerEntityPreload.transformerE
 const surgeArresterAPI = cimPreload.SurgeArresterPreload.surgeArresterPreload()
 const productAssetModelAPI = cimPreload.productAssetModelPreload.productAssetModelPreload()
 const testTypeSurgeArresterAPI = entityPreload.testTypePreload.testTypeSurgeArresterPreload.testTypeSurgeArresterPreload()
+const testTypeTransformerAPI = entityPreload.testTypePreload.testTypeTransformerPreload.testTypeTransformerPreload()
 const surgeArresterJobAPI = entityPreload.jobEntityPreload.surgeArresterJob.surgeArresterJobPreload()
 const powerCableJobAPI = entityPreload.jobEntityPreload.powerCableJob.powerCableJobPreload()
 const testTypePowerCableAPI = entityPreload.testTypePreload.testTypePowerCablePreload.testTypePowerCablePreload()
@@ -61,6 +62,7 @@ const rotatingMachineEntityAPI = entityPreload.rotatingMachineEntityPreload.rota
 const capacitorEntityAPI = entityPreload.capacitorEntityPreload.capacitorEntityPreload()
 const currentTransformerEntityAPI = entityPreload.currentTransformerEntityPreload.currentTransformerEntityPreload()
 const breakerEntityAPI = entityPreload.breakerEntityPreload.breakerEntityPreload()
+const reactorEntityAPI = entityPreload.reactorEntityPreload.reactorEntityPreload()
 
 
 
@@ -69,10 +71,10 @@ const ipcMain = Object.assign(userAPI, transformerAPI, fmecaAPI, conditionAPI, c
     manufacturerAPI, ownerAPI, parentOrganizationAPI, substationAPI, locationAPI, streetAddressAPI, streetDetailAPI, townDetailAPI,
     electronicAddressAPI, personAPI, personRoleAPI, telephoneNumberAPI, configurationEventAPI, substationEntityAPI, parentOrganizationEntityAPI,
     positionPointAPI, voltageLevelEntityAPI, voltageLevelAPI, bayEntityAPI, bayAPI, powerSystemResourceAPI, surgeArresterEntityAPI,
-    productAssetModelAPI, testTypeSurgeArresterAPI, surgeArresterJobAPI, powerCableJobAPI, oldWorkAPI, assetAPI, transformerEntityAPI, analogAPI,
+    productAssetModelAPI, testTypeSurgeArresterAPI, testTypeTransformerAPI, surgeArresterJobAPI, powerCableJobAPI, oldWorkAPI, assetAPI, transformerEntityAPI, analogAPI,
     stringMeasurementAPI, discreteAPI, valueToAliasAPI, valueAliasSetAPI, powerCableEntityAPI, voltageTransformerEntityAPI, bushingEntityAPI,
-    bushingAPI, disconnectorEntityAPI, rotatingMachineEntityAPI, currentTransformerEntityAPI, testTypePowerCableAPI, capacitorEntityAPI, 
-    breakerEntityAPI)
+    bushingAPI, disconnectorEntityAPI, rotatingMachineEntityAPI, currentTransformerEntityAPI, testTypePowerCableAPI, capacitorEntityAPI,
+    breakerEntityAPI, reactorEntityAPI)
 contextBridge.exposeInMainWorld('electronAPI',
     ipcMain
 )
