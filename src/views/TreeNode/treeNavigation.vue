@@ -115,7 +115,7 @@
 </el-dropdown>
             </div>
             <div>
-                <i title="Open" style="font-size: 12px;" class="fa-regular fa-folder-open"></i>
+                <i @click="handleOpenNode" title="Open" style="font-size: 12px;" class="fa-regular fa-folder-open"></i>
             </div>
             <div>
                 <i @click="duplicateSelectedNodes" title="Duplicate" style="font-size: 12px;" class="fa-solid fa-clone"></i>
@@ -175,7 +175,7 @@
                 <i title="Download" style="font-size: 12px;" class="fa-solid fa-download"></i>
             </div>
             <div>
-                <i title="Delete" style="font-size: 12px;" class="fa-solid fa-trash"></i>
+                <i @click="handleDeleteNode" title="Delete" style="font-size: 12px;" class="fa-solid fa-trash"></i>
             </div>
             <div @click="handleClickFmeca">
                 <i title="Fmeca" style="font-size: 12px;" class="fa-solid fa-table"></i>
@@ -4406,6 +4406,67 @@ export default {
             }
         },
 
+        async handleOpenNode() {
+    if (!this.selectedNodes || this.selectedNodes.length === 0) {
+        this.$message.warning("Please select a node first");
+        return;
+    }
+
+    try {
+        const node = this.selectedNodes[this.selectedNodes.length - 1];
+        
+        // Nếu là client side, mở tab client
+        if (this.clientSlide) {
+            await this.showDataClient(node);
+            
+        } else {
+            // Nếu là server side, mở tab server
+            await this.showData(node);
+            await this.showPropertiesData(node);
+            
+        }
+    } catch (error) {
+        this.$message.error("Error opening node");
+        console.error(error);
+    }
+},
+
+async handleDeleteNode() {
+    if (!this.selectedNodes || this.selectedNodes.length === 0) {
+        this.$message.warning("Please select a node first");
+        return;
+    }
+
+    const node = this.selectedNodes[this.selectedNodes.length - 1];
+    
+    // Lấy tên node - kiểm tra nhiều field khả năng
+    const nodeName = node.name || node.serial_no || node.serial_number || 'Unknown';
+    
+    // Confirm before delete
+    this.$confirm(`Delete "${nodeName}"?`, 'Warning', {
+        confirmButtonText: 'Delete',
+        cancelButtonText: 'Cancel',
+        type: 'warning'
+    }).then(async () => {
+        try {
+            if (this.clientSlide) {
+                // Delete from client side
+                await this.deleteDataClient(node);
+            } else {
+                // Delete from server side - cần implement tương tự
+                this.$message.info("Delete from server side not yet implemented");
+            }
+            // Clear selection sau khi xóa
+            this.selectedNodes = [];
+        } catch (error) {
+            this.$message.error("Error deleting node: " + error.message);
+            console.error(error);
+        }
+    }).catch(() => {
+        this.$message.info("Delete cancelled");
+    });
+},
+
         async resetAllServer() {
             this.selectedNodes = [],
                 this.assetPropertySign = false
@@ -4609,45 +4670,135 @@ cloneNodeRecursive(node) {
            };
            return walk(copy);
        },
-duplicateSelectedNodes() {
+async duplicateSelectedNodes() {
             if (!this.selectedNodes || this.selectedNodes.length === 0) {
                 this.$message.warning("Please select a node first");
                 return;
             }
 
-            const newSelected = [];
-            for (const node of this.selectedNodes.slice()) {
-                // find parent array and index
-                let parentNode = this.findNodeById(node.parentId, this.organisationClientList);
-                let list = this.organisationClientList;
-                if (parentNode) {
-                    const children = Array.isArray(parentNode.children) ? parentNode.children : [];
-                    const idx = children.findIndex(c => c.mrid === node.mrid);
-                    const copy = this.cloneNodeRecursive(node);
-                    // maintain parentId/parentName/parentArr for copy
-                    copy.parentId = parentNode.mrid;
-                    copy.parentName = parentNode.name;
-                    copy.parentArr = parentNode.parentArr ? [...parentNode.parentArr] : [];
-                    copy.parentArr.push({ mrid: parentNode.mrid, parent: parentNode.name });
-                    // insert after original
-                    const newChildren = [...children.slice(0, idx + 1), copy, ...children.slice(idx + 1)];
-                    Vue.set(parentNode, 'children', newChildren);
-                    newSelected.push(copy);
-                } else {
-                    // node is root-level (in organisationClientList)
-                    const idxRoot = list.findIndex(c => c.mrid === node.mrid);
-                    const copy = this.cloneNodeRecursive(node);
-                    copy.parentId = null;
-                    copy.parentName = '';
-                    copy.parentArr = [];
-                    list.splice(idxRoot + 1, 0, copy);
-                    this.organisationClientList = [...list];
-                    newSelected.push(copy);
+            try {
+                this.$message.info("Đang duplicate và lưu vào database...");
+                const newSelected = [];
+                
+                for (const node of this.selectedNodes.slice()) {
+                    // Clone node structure trước - đảm bảo copy tất cả giá trị
+                    const copy = JSON.parse(JSON.stringify(node));
+                    // Tạo mrid mới cho node chính
+                    copy.mrid = this.generateUuid();
+                    if (copy.id !== undefined) copy.id = copy.mrid;
+                    // Đảm bảo giữ lại mode và asset để xác định loại node
+                    if (!copy.mode && node.mode) copy.mode = node.mode;
+                    if (!copy.asset && node.asset) copy.asset = node.asset;
+                    
+                    // Tìm parent node
+                    let parentNode = this.findNodeById(node.parentId, this.organisationClientList);
+                    let list = this.organisationClientList;
+                    
+                    if (parentNode) {
+                        // Set parent info cho copy
+                        copy.parentId = parentNode.mrid;
+                        copy.parentName = parentNode.name;
+                        copy.parentArr = parentNode.parentArr ? [...parentNode.parentArr] : [];
+                        copy.parentArr.push({ mrid: parentNode.mrid, parent: parentNode.name });
+                    } else {
+                        // node is root-level
+                        copy.parentId = null;
+                        copy.parentName = '';
+                        copy.parentArr = [];
+                    }
+                    
+                    // Hàm đệ quy để duplicate và lưu node cùng tất cả children
+                    const duplicateNodeRecursive = async (nodeToDuplicate, newParentId, originalNode = null) => {
+                        // Lưu node gốc để lấy children
+                        const sourceNode = originalNode || node;
+                        
+                        // Lưu mrid gốc để lấy entity từ database (entity trong DB dùng mrid gốc)
+                        const originalMrid = originalNode ? originalNode.mrid : node.mrid;
+                        
+                        // Duplicate và lưu node hiện tại vào database - truyền mrid gốc để lấy entity
+                        const saveResult = await this.duplicateEntityAndSave(nodeToDuplicate, newParentId, originalMrid);
+                        
+                        if (saveResult.success) {
+                            // Cập nhật node với thông tin từ database - copy tất cả giá trị
+                            Object.assign(nodeToDuplicate, {
+                                mrid: saveResult.node.mrid,
+                                name: saveResult.node.name,
+                                serial_number: saveResult.node.serial_number,
+                                id: saveResult.node.id || saveResult.node.mrid
+                            });
+                            
+                            // Lấy tất cả children từ node gốc để đảm bảo copy đầy đủ
+                            let allChildren = [];
+                            // Ưu tiên lấy từ originalNode (node gốc) nếu có
+                            if (originalNode && originalNode.children && originalNode.children.length > 0) {
+                                allChildren = originalNode.children;
+                            } else if (nodeToDuplicate.children && nodeToDuplicate.children.length > 0) {
+                                // Nếu không có, dùng từ nodeToDuplicate
+                                allChildren = nodeToDuplicate.children;
+                            } else if (sourceNode && sourceNode.children && sourceNode.children.length > 0) {
+                                // Cuối cùng, thử lấy từ sourceNode
+                                allChildren = sourceNode.children;
+                            }
+                            
+                            // Nếu có children, duplicate từng child với tất cả giá trị
+                            if (allChildren && allChildren.length > 0) {
+                                const duplicatedChildren = [];
+                                for (const child of allChildren) {
+                                    // Clone child với tất cả giá trị
+                                    const childCopy = JSON.parse(JSON.stringify(child));
+                                    // Tạo mrid mới cho child
+                                    childCopy.mrid = this.generateUuid();
+                                    if (childCopy.id !== undefined) childCopy.id = childCopy.mrid;
+                                    
+                                    // Đảm bảo giữ lại mode và asset để xác định loại node
+                                    if (!childCopy.mode && child.mode) childCopy.mode = child.mode;
+                                    if (!childCopy.asset && child.asset) childCopy.asset = child.asset;
+                                    
+                                    // Cập nhật parent info với mrid mới của parent
+                                    childCopy.parentId = nodeToDuplicate.mrid;
+                                    childCopy.parentName = nodeToDuplicate.name;
+                                    childCopy.parentArr = nodeToDuplicate.parentArr ? [...nodeToDuplicate.parentArr] : [];
+                                    childCopy.parentArr.push({ mrid: nodeToDuplicate.mrid, parent: nodeToDuplicate.name });
+                                    
+                                    // Đệ quy duplicate child - truyền child gốc để lấy children và mrid gốc
+                                    await duplicateNodeRecursive(childCopy, nodeToDuplicate.mrid, child);
+                                    duplicatedChildren.push(childCopy);
+                                }
+                                nodeToDuplicate.children = duplicatedChildren;
+                            }
+                            
+                            return nodeToDuplicate;
+                        } else {
+                            throw new Error(saveResult.message || 'Failed to duplicate node');
+                        }
+                    };
+                    
+                    // Duplicate node và tất cả children - truyền node gốc
+                    const duplicatedNode = await duplicateNodeRecursive(copy, parentNode ? parentNode.mrid : null, node);
+                    
+                    // Thêm vào tree structure
+                    if (parentNode) {
+                        const children = Array.isArray(parentNode.children) ? parentNode.children : [];
+                        const idx = children.findIndex(c => c.mrid === node.mrid);
+                        const newChildren = [...children.slice(0, idx + 1), duplicatedNode, ...children.slice(idx + 1)];
+                        Vue.set(parentNode, 'children', newChildren);
+                    } else {
+                        // node is root-level
+                        const idxRoot = list.findIndex(c => c.mrid === node.mrid);
+                        list.splice(idxRoot + 1, 0, duplicatedNode);
+                        this.organisationClientList = [...list];
+                    }
+                    
+                    newSelected.push(duplicatedNode);
                 }
+                
+                // Update selection to new copies
+                this.selectedNodes = newSelected;
+                this.$message.success(`Duplicate thành công ${newSelected.length} node(s) và đã lưu vào database`);
+            } catch (error) {
+                console.error('Error duplicating nodes:', error);
+                this.$message.error("Lỗi khi duplicate: " + (error.message || 'Unknown error'));
             }
-            // update selection to new copies
-            this.selectedNodes = newSelected;
-            this.$message.success("Duplicate completed");
         },
 
 
