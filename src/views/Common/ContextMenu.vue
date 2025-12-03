@@ -58,6 +58,32 @@
                 <li @click="duplicate">
                     <i class="fa-solid fa-copy"></i> Duplicate
                 </li>
+                <li class="has-submenu">
+                    <i class="fa-solid fa-file-export"></i> Export
+                    <ul class="submenu">
+                        <li class="has-submenu">
+                            <i class="fa-solid fa-file-code"></i> Export to JSON
+                            <ul class="submenu">
+                                <li @click="exportJSON"><i class="fa-solid fa-file-code"></i> Export JSON</li>
+                                <li @click="exportJSONCIM"><i class="fa-solid fa-file-code"></i> Export JSON by CIM</li>
+                            </ul>
+                        </li>
+                        <li @click="exportXML"><i class="fa-solid fa-file-code"></i> Export to XML</li>
+                        <li @click="exportExcel"><i class="fa-solid fa-file-excel"></i> Export to Excel</li>
+                        <li @click="exportWord"><i class="fa-solid fa-file-word"></i> Export to Word</li>
+                        <li @click="exportPDF"><i class="fa-solid fa-file-pdf"></i> Export to PDF</li>
+                    </ul>
+                </li>
+                <li class="has-submenu">
+                    <i class="fa-solid fa-file-import"></i> Import
+                    <ul class="submenu">
+                        <li @click="importJSON"><i class="fa-solid fa-file-code"></i> Import from JSON</li>
+                        <li @click="importXML"><i class="fa-solid fa-file-code"></i> Import from XML</li>
+                        <li @click="importExcel"><i class="fa-solid fa-file-excel"></i> Import from Excel</li>
+                        <li @click="importWord"><i class="fa-solid fa-file-word"></i> Import from Word</li>
+                        <li @click="importPDF"><i class="fa-solid fa-file-pdf"></i> Import from PDF</li>
+                    </ul>
+                </li>
             </ul>
         </transition>
     </div>
@@ -197,6 +223,50 @@ export default {
             this.$emit("show-addJob", this.selectedNode)
             this.closeContextMenu()
         },
+        exportJSON() {
+            this.$emit("export-json", this.selectedNode)
+            this.closeContextMenu()
+        },
+        exportJSONCIM() {
+            this.$emit("export-json-cim", this.selectedNode)
+            this.closeContextMenu()
+        },
+        exportXML() {
+            this.$emit("export-xml", this.selectedNode)
+            this.closeContextMenu()
+        },
+        exportExcel() {
+            this.$emit("export-excel", this.selectedNode)
+            this.closeContextMenu()
+        },
+        exportWord() {
+            this.$emit("export-word", this.selectedNode)
+            this.closeContextMenu()
+        },
+        exportPDF() {
+            this.$emit("export-pdf", this.selectedNode)
+            this.closeContextMenu()
+        },
+        importJSON() {
+            this.$emit("import-json", this.selectedNode)
+            this.closeContextMenu()
+        },
+        importXML() {
+            this.$emit("import-xml", this.selectedNode)
+            this.closeContextMenu()
+        },
+        importExcel() {
+            this.$emit("import-excel", this.selectedNode)
+            this.closeContextMenu()
+        },
+        importWord() {
+            this.$emit("import-word", this.selectedNode)
+            this.closeContextMenu()
+        },
+        importPDF() {
+            this.$emit("import-pdf", this.selectedNode)
+            this.closeContextMenu()
+        },
     }
 };
 </script>
@@ -276,5 +346,10 @@ export default {
 
 .has-submenu:hover > .submenu {
     display: block;
+}
+
+/* Nested submenu - submenu trong submenu */
+.submenu .has-submenu > .submenu {
+    z-index: 1002;
 }
 </style>

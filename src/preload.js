@@ -1,5 +1,5 @@
 import { userPreload, transformerPreload, fmecaPreload, conditionPreload, circuitPreload, currentTransPreload, voltageTransPreload } from '@/preload/index.js'
-import { uploadCustomPreload, manufacturerPreload } from '@/preload/index.js'
+import { uploadCustomPreload, manufacturerPreload, exportPreload } from '@/preload/index.js'
 import { disconnectorPreload, surgeArresterPreload, powerCablePreload, ownerPreload } from '@/preload/index.js'
 import { entityPreload, cimPreload } from '@/preload/index.js'
 
@@ -17,8 +17,8 @@ const powerCablePreAPI = powerCablePreload.powerCablePreload()
 const uploadCustomAPI = uploadCustomPreload.uploadCustomPreload()
 const manufacturerAPI = manufacturerPreload.munufacturerPreload()
 const ownerAPI = ownerPreload.ownerPreload()
+const exportAPI = exportPreload.exportPreload()
 const attachmentAPI = entityPreload.attachmentPreload.attachmentPreload()
-const exportAPI = entityPreload.exportPreload.exportPreload()
 const parentOrganizationAPI = cimPreload.parentOrganizationPreload.parentOrganizationPreload()
 const substationAPI = cimPreload.substationPreload.substationPreload()
 const locationAPI = cimPreload.locationPreload.locationPreload()
