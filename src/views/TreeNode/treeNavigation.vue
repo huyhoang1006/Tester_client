@@ -149,6 +149,9 @@
                         @show-addPowerCable="showAddPowerCable" @show-addDisconnector="showAddDisconnector"
                         @show-addCapacitor="showAddCapacitor" @show-addReactor="showAddReactor"
                         @show-addRotatingMachine="showAddRotatingMachine" @show-addBay="showAddBay"
+                        @export-json="handleExportJSONFromContext" @export-json-cim="handleExportJSONCIMFromContext"
+                        @export-xml="handleExportXMLFromContext" @export-excel="handleExportExcelFromContext"
+                        @export-word="handleExportWordFromContext" @export-pdf="handleExportPDFFromContext"
                         @show-data="showDataClient" ref="contextMenuClient">
                     </contextMenu>
                 </div>
@@ -170,7 +173,11 @@
                             @double-click-node="doubleClickNodeServer">
                         </TreeNode>
                     </ul>
-                    <contextMenu @show-data="showData" ref="contextMenu"></contextMenu>
+                    <contextMenu @show-data="showData" 
+                        @export-json="handleExportJSONFromContext" @export-json-cim="handleExportJSONCIMFromContext"
+                        @export-xml="handleExportXMLFromContext" @export-excel="handleExportExcelFromContext"
+                        @export-word="handleExportWordFromContext" @export-pdf="handleExportPDFFromContext"
+                        ref="contextMenu"></contextMenu>
                 </div>
                 <div class="page-align">
                     <page-align ref="LocationSyncPageAlign" :page-user="this.pageLocationSync"
@@ -828,6 +835,7 @@ import * as ReactorMapping from '@/views/Mapping/Reactor/index'
 import * as BushingMapping from '@/views/Mapping/Bushing/index'
 import Icon from '@/views/Common/Icon.vue'
 import Fmeca from '@/views/Fmeca'
+import { exportNodeToJSON as exportNodeToJSONUtil } from '@/function/entity/export/index'
 
 
 export default {
@@ -1037,7 +1045,7 @@ export default {
             if (cmd === 'exportExcel') {
                 this.openExportDialog = true
             } else if (cmd === 'exportJSON') {
-                this.exportTreeToJSON('entity')
+                this.exportTreeToJSON('dto')
             } else if (cmd === 'exportJSONCIM') {
                 this.exportTreeToJSON('cim')
             } else if (cmd === 'exportXML') {
@@ -1049,176 +1057,34 @@ export default {
             } 
         },
         async exportTreeToJSON(type) {
-            try {
-                // Yêu cầu phải chọn ít nhất 1 node để export
-                if (!this.selectedNodes || this.selectedNodes.length === 0) {
-                    this.$message.warning('Please select at least one node to export')
-                    return
-                }
-
-                const nodesToExport = this.selectedNodes
-                const dtos = []
-
-                // Helper function to fetch entity data and convert to DTO for a node
-                const fetchAndConvertToDto = async (node) => {
-                    try {
-                        if (node.mode === 'substation') {
-                            const entity = await window.electronAPI.getSubstationEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                            if (entity.success && entity.data) {
-                                const dto = SubstationMapping.mapEntityToDto(entity.data)
-                                dtos.push({ type: 'substation', data: dto })
-                            }
-                        } else if (node.mode === 'organisation') {
-                            const entity = await window.electronAPI.getOrganisationEntityByMrid(node.mrid)
-                            if (entity.success && entity.data) {
-                                const dto = OrganisationMapping.OrgEntityToOrgDto(entity.data)
-                                dtos.push({ type: 'organisation', data: dto })
-                            }
-                        } else if (node.mode === 'voltageLevel') {
-                            const entity = await window.electronAPI.getVoltageLevelEntityByMrid(node.mrid)
-                            if (entity.success && entity.data) {
-                                // VoltageLevel không có mapping, export entity trực tiếp
-                                dtos.push({ type: 'voltageLevel', data: entity.data })
-                            }
-                        } else if (node.mode === 'bay') {
-                            const entity = await window.electronAPI.getBayEntityByMrid(node.mrid)
-                            if (entity.success && entity.data) {
-                                // Bay không có mapping, export entity trực tiếp
-                                dtos.push({ type: 'bay', data: entity.data })
-                            }
-                        } else if (node.mode === 'asset') {
-                            if (node.asset === 'Surge arrester') {
-                                const entity = await window.electronAPI.getSurgeArresterEntityByMrid(node.mrid)
-                                if (entity.success && entity.data) {
-                                    const dto = SurgeArresterMapping.mapEntityToDto(entity.data)
-                                    dtos.push({ type: 'surgeArrester', data: dto })
-                                }
-                            } else if (node.asset === 'Power cable') {
-                                const entity = await window.electronAPI.getPowerCableEntityByMrid(node.mrid, node.parentId)
-                                if (entity.success && entity.data) {
-                                    const dto = PowerCableMapping.mapEntityToDto(entity.data)
-                                    dtos.push({ type: 'powerCable', data: dto })
-                                }
-                            } else if (node.asset === 'Disconnector') {
-                                const entity = await window.electronAPI.getDisconnectorEntityByMrid(node.mrid, node.parentId)
-                                if (entity.success && entity.data) {
-                                    const dto = DisconnectorMapping.disconnectorEntityToDto(entity.data)
-                                    dtos.push({ type: 'disconnector', data: dto })
-                                }
-                            } else if (node.asset === 'Rotating machine') {
-                                const entity = await window.electronAPI.getRotatingMachineEntityByMrid(node.mrid, node.parentId)
-                                if (entity.success && entity.data) {
-                                    const dto = rotatingMachineMapping.mapEntityToDto(entity.data)
-                                    dtos.push({ type: 'rotatingMachine', data: dto })
-                                }
-                            } else if (node.asset === 'Capacitor') {
-                                const entity = await window.electronAPI.getCapacitorEntityByMrid(node.mrid, node.parentId)
-                                if (entity.success && entity.data) {
-                                    const dto = CapacitorMapping.mapEntityToDto(entity.data)
-                                    dtos.push({ type: 'capacitor', data: dto })
-                                }
-                            } else if (node.asset === 'Voltage transformer') {
-                                const entity = await window.electronAPI.getVoltageTransformerEntityByMrid(node.mrid, node.parentId)
-                                if (entity.success && entity.data) {
-                                    const dto = VoltageTransformerMapping.mapEntityToDto(entity.data)
-                                    dtos.push({ type: 'voltageTransformer', data: dto })
-                                }
-                            } else if (node.asset === 'Current transformer') {
-                                const entity = await window.electronAPI.getCurrentTransformerEntityByMrid(node.mrid, node.parentId)
-                                if (entity.success && entity.data) {
-                                    const dto = CurrentTransformerMapping.mapEntityToDto(entity.data)
-                                    dtos.push({ type: 'currentTransformer', data: dto })
-                                }
-                            } else if (node.asset === 'Transformer') {
-                                const entity = await window.electronAPI.getTransformerEntityByMrid(node.mrid, node.parentId)
-                                if (entity.success && entity.data) {
-                                    const dto = TransformerMapping.transformerEntityToDto(entity.data)
-                                    dtos.push({ type: 'transformer', data: dto })
-                                }
-                            } else if (node.asset === 'Circuit breaker') {
-                                const entity = await window.electronAPI.getBreakerEntityByMrid(node.mrid, node.parentId)
-                                if (entity.success && entity.data) {
-                                    const dto = BreakerMapping.mapEntityToDto(entity.data)
-                                    dtos.push({ type: 'breaker', data: dto })
-                                }
-                            } else if (node.asset === 'Reactor') {
-                                const entity = await window.electronAPI.getReactorEntityByMrid(node.mrid, node.parentId)
-                                if (entity.success && entity.data) {
-                                    const dto = ReactorMapping.mapEntityToDto(entity.data)
-                                    dtos.push({ type: 'reactor', data: dto })
-                                }
-                            } else if (node.asset === 'Bushing') {
-                                const entity = await window.electronAPI.getBushingEntityByMrid(node.mrid, node.parentId)
-                                if (entity.success && entity.data) {
-                                    const dto = BushingMapping.mapEntityToDto(entity.data)
-                                    dtos.push({ type: 'bushing', data: dto })
-                                }
-                            }
-                        }
-                    } catch (error) {
-                        console.error(`Error fetching and converting entity for node ${node.mrid}:`, error)
-                    }
-                }
-
-                // Export only selected nodes
-                for (const node of nodesToExport) {
-                    await fetchAndConvertToDto(node)
-                }
-
-                if (dtos.length === 0) {
-                    this.$message.warning('No data found to export')
-                    return
-                }
-
-                // Helper function to sanitize filename (remove invalid characters)
-                const sanitizeFileName = (name) => {
-                    if (!name) return 'export-data'
-                    // Remove invalid characters for Windows/Linux file names
-                    return name.replace(/[<>:"/\\|?*]/g, '').trim() || 'export-data'
-                }
-
-                // Generate default filename based on node names
-                let fileName = 'export-data.json'
-                if (type === 'cim') {
-                    // For CIM export, use node name if single node, otherwise generic name
-                    if (nodesToExport.length === 1 && nodesToExport[0].name) {
-                        fileName = `${sanitizeFileName(nodesToExport[0].name)}.json`
-                    } else {
-                        fileName = 'tree-export-cim.json'
-                    }
-                } else {
-                    // For entity export, use node name(s)
-                    if (nodesToExport.length === 1 && nodesToExport[0].name) {
-                        // Single node export - use node name
-                        fileName = `${sanitizeFileName(nodesToExport[0].name)}.json`
-                    } else if (nodesToExport.length > 1) {
-                        // Multiple nodes - use first node name with suffix
-                        const firstName = nodesToExport[0].name
-                        if (firstName) {
-                            fileName = `${sanitizeFileName(firstName)}-export.json`
-                        } else {
-                            fileName = 'tree-export-dto.json'
-                        }
-                    }
-                }
-                
-                const result = await window.electronAPI.exportJSON(dtos, {
-                    defaultFileName: fileName,
-                    title: 'Save JSON file',
-                    buttonLabel: 'Save'
-                })
-
-                if (result && result.success) {
-                    this.$message.success(result.message || `Exported ${dtos.length} items successfully`)
-                } else {
-                    if (result && result.message !== 'Export cancelled') {
-                        this.$message.error(result.message || 'Failed to export tree to JSON')
-                    }
-                }
-            } catch (error) {
-                console.error('Error exporting tree to JSON:', error)
-                this.$message.error('An error occurred while exporting tree to JSON')
+            // Yêu cầu phải chọn ít nhất 1 node để export
+            if (!this.selectedNodes || this.selectedNodes.length === 0) {
+                this.$message.warning('Please select at least one node to export')
+                return
             }
+
+            const dependencies = {
+                electronAPI: window.electronAPI,
+                mappings: {
+                    SubstationMapping,
+                    OrganisationMapping,
+                    SurgeArresterMapping,
+                    PowerCableMapping,
+                    DisconnectorMapping,
+                    rotatingMachineMapping,
+                    CapacitorMapping,
+                    VoltageTransformerMapping,
+                    CurrentTransformerMapping,
+                    TransformerMapping,
+                    BreakerMapping,
+                    ReactorMapping,
+                    BushingMapping
+                },
+                userId: this.$store.state.user.user_id,
+                messageHandler: this.$message
+            }
+
+            await exportNodeToJSONUtil(this.selectedNodes, type, dependencies)
         },
         handleImportCommand(cmd) {
            if (cmd === 'importExcel') {
@@ -1261,6 +1127,56 @@ export default {
 
         handleClickFmeca() {
             this.signFmeca = true;
+        },
+        // Export handlers từ context menu - chỉ export node được click, không export children
+        async handleExportJSONFromContext(node) {
+            await this.exportSingleNodeToJSON(node, 'dto')
+        },
+        async handleExportJSONCIMFromContext(node) {
+            await this.exportSingleNodeToJSON(node, 'cim')
+        },
+        // Export một node duy nhất từ context menu (không dùng selectedNodes)
+        async exportSingleNodeToJSON(node, type) {
+            if (!node) {
+                this.$message.warning('No node selected to export')
+                return
+            }
+
+            const dependencies = {
+                electronAPI: window.electronAPI,
+                mappings: {
+                    SubstationMapping,
+                    OrganisationMapping,
+                    SurgeArresterMapping,
+                    PowerCableMapping,
+                    DisconnectorMapping,
+                    rotatingMachineMapping,
+                    CapacitorMapping,
+                    VoltageTransformerMapping,
+                    CurrentTransformerMapping,
+                    TransformerMapping,
+                    BreakerMapping,
+                    ReactorMapping,
+                    BushingMapping
+                },
+                userId: this.$store.state.user.user_id,
+                messageHandler: this.$message
+            }
+
+            // Truyền trực tiếp node, không dùng selectedNodes
+            await exportNodeToJSONUtil(node, type, dependencies)
+        },
+        handleExportXMLFromContext(node) {
+            this.openExportDialog = true
+        },
+        handleExportExcelFromContext(node) {
+            this.openExportDialog = true
+        },
+        handleExportWordFromContext(node) {
+            this.openExportDialog = true
+        },
+        handleExportPDFFromContext(node) {
+            this.openExportDialog = true
         },
 
         async reloadLogClient(doneCallback) {
