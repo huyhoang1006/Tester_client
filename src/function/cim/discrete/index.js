@@ -28,7 +28,7 @@ export const getAllDiscreteByProcedure = (procedureId) => {
     try {
         return new Promise((resolve, reject) => {
             const sql = `
-                SELECT d.*, m.*, io.*
+                SELECT d.*, m.*, io.*, mp.mrid AS measurement_procedure_mrid
                 FROM measurement_procedure mp
                 LEFT JOIN measurement m ON mp.measurement_id = m.mrid
                 LEFT JOIN discrete d ON d.mrid = m.mrid

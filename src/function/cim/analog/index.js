@@ -28,7 +28,7 @@ export const getAllAnalogByProcedure = (procedureId) => {
     try {
         return new Promise((resolve, reject) => {
             const sql = `
-                SELECT a.*, m.*, io.*
+                SELECT a.*, m.*, io.*, mp.mrid AS measurement_procedure_mrid
                 FROM measurement_procedure mp
                 LEFT JOIN measurement m ON mp.measurement_id = m.mrid
                 LEFT JOIN analog a ON a.mrid = m.mrid
