@@ -21,8 +21,8 @@ class SwitchInfo extends AssetInfo {
                 this.ratedVoltage = new Voltage();
 
         // Plain fields
-                this.isSinglePhase = new Boolean();
-                this.isUnganged = new Boolean();
+                this.isSinglePhase = null;
+                this.isUnganged = null;
                 this.lowPressureAlarm = new Pressure();
                 this.lowPressureLockOut = new Pressure();
     }
