@@ -30,7 +30,7 @@ class CtTapInfo {
                 this.tapName = null;
                 this.ipn = null;
                 this.isn = null;
-                this.inUse = new Boolean();
+                this.inUse = null;
                 this.ratedBurden = null;
                 this.burden = null;
                 this.extendedBurden = null;
