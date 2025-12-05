@@ -17,6 +17,7 @@ import * as capacitorEntityPreload from './capacitor/index.js'
 import * as breakerEntityPreload from './breaker/index.js'
 import * as reactorEntityPreload from './reactor/index.js'
 import * as exportPreload from './export/index'
+import * as assetPsrPreload from './assetPsr/index.js'
 
 
 export {
@@ -24,5 +25,5 @@ export {
     voltageLevelPreload, bayPreload, surgeArresterEntityPreload, transformerEntityPreload,
     testTypePreload, jobEntityPreload, powerCableEntityPreload, voltageTransformerEntityPreload,
     bushingEntityPreload, disconnectorEntityPreload, rotatingMachineEntityPreload, currentTransformerEntityPreload,
-    capacitorEntityPreload, breakerEntityPreload, reactorEntityPreload, exportPreload
+    capacitorEntityPreload, breakerEntityPreload, reactorEntityPreload, exportPreload, assetPsrPreload
 }
