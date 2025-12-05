@@ -87,9 +87,9 @@ export default {
             this.checkAttachment(data);
             this.checkTestingEquipment(data);
             this.checkTestTypeList(data);
-            this.checkDataMeasurement(data);
+            await this.checkDataMeasurement(data);
             this.checkProcedureAsset(data);
-            await this.checkTestList(data);
+            // await this.checkTestList(data);
             return data;
         },
 
@@ -230,10 +230,10 @@ export default {
                             measurementProcedure.measurement_id = analogMeasurement.mrid
                             measurementProcedureList.push(measurementProcedure)
                             const measure = {
-                                mrid: stringMeasurement.mrid,
-                                name: stringMeasurement.name,
+                                mrid: analogMeasurement.mrid,
+                                name: analogMeasurement.name,
                                 type: 'string',
-                                code: stringMeasurement.alias_name
+                                code: analogMeasurement.alias_name
                             }
                             measurement.push(measure)
                         }
@@ -249,10 +249,10 @@ export default {
                             measurementProcedure.measurement_id = discreteMeasurement.mrid
                             measurementProcedureList.push(measurementProcedure)
                             const measure = {
-                                mrid: stringMeasurement.mrid,
-                                name: stringMeasurement.name,
+                                mrid: discreteMeasurement.mrid,
+                                name: discreteMeasurement.name,
                                 type: 'string',
-                                code: stringMeasurement.alias_name
+                                code: discreteMeasurement.alias_name
                             }
                             measurement.push(measure)
                         }
@@ -261,52 +261,67 @@ export default {
 
                 for(const testList of data.testList) {
                     if(testList.testTypeId === item) {
+                        if (testList.mrid === '' || testList.mrid === null || testList.mrid === this.$constant.ROOT) {
+                            testList.mrid = uuid.newUuid();
+                        }
+                        if (testList.testCondition.mrid === '' || testList.testCondition.mrid === null) {
+                            testList.testCondition.mrid = uuid.newUuid();
+                        }
+
+                        if (testList.testCondition.condition) {
+                            if (testList.testCondition.condition.top_oil_temperature.mrid === null || testList.testCondition.condition.top_oil_temperature.mrid === '') {
+                                testList.testCondition.condition.top_oil_temperature.mrid = uuid.newUuid();
+                            }
+                            if (testList.testCondition.condition.bottom_oil_temperature.mrid === null || testList.testCondition.condition.bottom_oil_temperature.mrid === '') {
+                                testList.testCondition.condition.bottom_oil_temperature.mrid = uuid.newUuid();
+                            }
+                            if (testList.testCondition.condition.winding_temperature.mrid === null || testList.testCondition.condition.winding_temperature.mrid === '') {
+                                testList.testCondition.condition.winding_temperature.mrid = uuid.newUuid();
+                            }
+                            if (testList.testCondition.condition.reference_temperature.mrid === null || testList.testCondition.condition.reference_temperature.mrid === '') {
+                                testList.testCondition.condition.reference_temperature.mrid = uuid.newUuid();
+                            }
+                            if (testList.testCondition.condition.ambient_temperature.mrid === null || testList.testCondition.condition.ambient_temperature.mrid === '') {
+                                testList.testCondition.condition.ambient_temperature.mrid = uuid.newUuid();
+                            }
+                            if (testList.testCondition.condition.humidity.mrid === null || testList.testCondition.condition.humidity.mrid === '') {
+                                testList.testCondition.condition.humidity.mrid = uuid.newUuid();
+                            }
+                        }
+
+                        if (testList.testCondition.attachment.id === null || testList.testCondition.attachment.id === '') {
+                            if (testList.testCondition.attachmentData.length > 0) {
+                                testList.testCondition.attachment.id = uuid.newUuid()
+                                testList.testCondition.attachment.name = null
+                                testList.testCondition.attachment.path = JSON.stringify(testList.testCondition.attachmentData)
+                                testList.testCondition.attachment.type = 'test'
+                                testList.testCondition.attachment.id_foreign = testList.mrid
+                            }
+                        }
+                        for(const row of testList.data.row_data) {
+                            let existed = measurement.find(m => m.code === row.code);
+                            if (!existed) {
+                                const newMeasurementId = uuid.newUuid();
+                                const newProcedureId = uuid.newUuid();
+
+                                existed = {
+                                    mrid: newMeasurementId,
+                                    name: row.name || row.code,
+                                    type: row.type,
+                                    code: row.code
+                                };
+
+                                measurement.push(existed);
+                                row.mrid = newMeasurementId
+
+                                const mp = new MeasurementProcedure();
+                                mp.mrid = newProcedureId;
+                                mp.procedure_id = item;
+                                mp.measurement_id = newMeasurementId;
+                                measurementProcedureList.push(mp);
+                            }
+                        }
                         testList.data.measurementProcedure = measurementProcedureList
-                        if (item.mrid === '' || item.mrid === null || item.mrid === this.$constant.ROOT) {
-                            item.mrid = uuid.newUuid();
-                        }
-                        if (item.testCondition.mrid === '' || item.testCondition.mrid === null) {
-                            item.testCondition.mrid = uuid.newUuid();
-                        }
-
-                        if (item.testCondition.condition) {
-                            if (item.testCondition.condition.top_oil_temperature.mrid === null || item.testCondition.condition.top_oil_temperature.mrid === '') {
-                                item.testCondition.condition.top_oil_temperature.mrid = uuid.newUuid();
-                            }
-                            if (item.testCondition.condition.bottom_oil_temperature.mrid === null || item.testCondition.condition.bottom_oil_temperature.mrid === '') {
-                                item.testCondition.condition.bottom_oil_temperature.mrid = uuid.newUuid();
-                            }
-                            if (item.testCondition.condition.winding_temperature.mrid === null || item.testCondition.condition.winding_temperature.mrid === '') {
-                                item.testCondition.condition.winding_temperature.mrid = uuid.newUuid();
-                            }
-                            if (item.testCondition.condition.reference_temperature.mrid === null || item.testCondition.condition.reference_temperature.mrid === '') {
-                                item.testCondition.condition.reference_temperature.mrid = uuid.newUuid();
-                            }
-                            if (item.testCondition.condition.ambient_temperature.mrid === null || item.testCondition.condition.ambient_temperature.mrid === '') {
-                                item.testCondition.condition.ambient_temperature.mrid = uuid.newUuid();
-                            }
-                            if (item.testCondition.condition.humidity.mrid === null || item.testCondition.condition.humidity.mrid === '') {
-                                item.testCondition.condition.humidity.mrid = uuid.newUuid();
-                            }
-                        }
-
-                        if (item.testCondition.attachment.id === null || item.testCondition.attachment.id === '') {
-                            if (item.testCondition.attachmentData.length > 0) {
-                                item.testCondition.attachment.id = uuid.newUuid()
-                                item.testCondition.attachment.name = null
-                                item.testCondition.attachment.path = JSON.stringify(item.testCondition.attachmentData)
-                                item.testCondition.attachment.type = 'test'
-                                item.testCondition.attachment.id_foreign = item.mrid
-                            }
-                        }
-                    }
-                    for(const row of testList.data.row_data) {
-                        for(const measure of measurement) {
-                            if(row.code === measure.alias_name) {
-                                row.mrid = measure.mrid
-                                break
-                            }
-                        }
                     }
                 }
             }

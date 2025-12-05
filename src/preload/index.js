@@ -11,10 +11,11 @@ import * as powerCablePreload from "./powerCablePreload"
 import * as uploadCustomPreload from './uploadCustomPreload'
 import * as manufacturerPreload from './manufacturerPreload'
 import * as ownerPreload from './ownerPreload'
+import * as exportPreload from './exportPreload'
 
 import * as entityPreload from './entity/index'
 import * as cimPreload from './cim/index'
 
 export { userPreload, transformerPreload, fmecaPreload, conditionPreload, circuitPreload, currentTransPreload, voltageTransPreload }
-export { disconnectorPreload, surgeArresterPreload, powerCablePreload, uploadCustomPreload, manufacturerPreload, ownerPreload }
+export { disconnectorPreload, surgeArresterPreload, powerCablePreload, uploadCustomPreload, manufacturerPreload, ownerPreload, exportPreload }
 export { entityPreload, cimPreload }

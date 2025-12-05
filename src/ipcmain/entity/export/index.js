@@ -2,7 +2,42 @@
 import { ipcMain, dialog } from 'electron'
 import * as Path from 'path'
 import os from 'os'
-import { saveJsonFile } from '@/function/entity/export/index.js'
+import fs from 'fs/promises'
+
+// Helper function to save JSON file
+const ensureJsonExtension = (filePath) => {
+    if (!filePath) return filePath
+    return filePath.toLowerCase().endsWith('.json') ? filePath : `${filePath}.json`
+}
+
+const isRootDirectory = (dirPath) => {
+    if (!dirPath) return false
+    const parsed = Path.parse(Path.normalize(dirPath))
+    return parsed.dir === parsed.root || parsed.dir === parsed.root.replace(/\\$/, '')
+}
+
+const saveJsonFile = async (targetPath, payload) => {
+    if (!targetPath) throw new Error('Missing target path for JSON export')
+    
+    const normalizedPath = ensureJsonExtension(targetPath)
+    const dirPath = Path.dirname(normalizedPath)
+    
+    // Create directory if not root (ignore permission errors)
+    if (!isRootDirectory(dirPath)) {
+        try {
+            await fs.mkdir(dirPath, { recursive: true })
+        } catch (error) {
+            if (!['EEXIST', 'EPERM'].includes(error.code)) throw error
+        }
+    }
+    
+    const jsonContent = typeof payload === 'string' 
+        ? payload 
+        : JSON.stringify(payload !== null && payload !== undefined ? payload : {}, null, 2)
+    
+    await fs.writeFile(normalizedPath, jsonContent, 'utf8')
+    return { success: true, path: normalizedPath }
+}
 
 const buildDialogOptions = (options = {}) => {
     // Get default filename from options

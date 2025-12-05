@@ -7,7 +7,7 @@ class SurgeArresterInfo extends AssetInfo{
     constructor() {
         super();
                 this.continuousOperatingVoltage = new Voltage();
-                this.isPolymer = new Boolean();
+                this.isPolymer = null;
                 this.lightningImpulseDischargeVoltage = new Voltage();
                 this.lineDischargeClass = null;
                 this.nominalDischargeCurrent = new CurrentFlow();
