@@ -12,7 +12,7 @@ class CableInfo extends WireInfo {
                 this.diameterOverInsulation = new Length(); // Length
                 this.diameterOverJacket = new Length(); // Length
                 this.diameterOverScreen = new Length(); // Length
-                this.isStrandFill = new Boolean(); // Boolean
+                this.isStrandFill = null; // Boolean
                 this.nominalTemperature = new Temperature(); // Temperature
                 this.outerJacketKind = null; // CableOuterJacketKind
                 this.sheathAsNeutral = null; // Boolean

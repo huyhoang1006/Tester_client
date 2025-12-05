@@ -1,9 +1,10 @@
 import IdentifiedObject from "../IdentifiedObject";
+import ApparentPower from "../ApparentPower";
 
 class BasePower extends IdentifiedObject {
     constructor() {
         super();
-                this.basePower = null; // Base power value
+        this.basePower = new ApparentPower(); // Base power value
     }
 }
 

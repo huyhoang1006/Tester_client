@@ -2,6 +2,8 @@ import Voltage from "../Voltage";
 import CurrentFlow from "../CurrentFlow";
 import Frequency from "../Frequency";
 import ApparentPower from "../ApparentPower";
+import AngleDegrees from "../AngleDegrees"; // Bạn cần tạo class này
+// Ratio nếu cần dùng
 class TapChanger extends AssetInfo {
     constructor() {
         super();
@@ -10,14 +12,14 @@ class TapChanger extends AssetInfo {
                 this.ctRatio = ""; // Reference to the percent ratings
                 this.frequency = new Frequency(); // Reference to the active power ratings
                 this.highStep = ""; // Reference to the zero sequence impedance
-                this.isTcul = new Boolean(); // Reference to the zero sequence impedance table
+                this.isTcul = null; // Reference to the zero sequence impedance table
                 this.lowStep = ""; // Reference to the zero sequence impedance table
                 this.neutralStep = new Voltage(); // Reference to the zero sequence impedance table
                 this.ptRatio = ""; // Reference to the zero sequence impedance table
                 this.ratedApparentPower = new ApparentPower(); // Reference to the zero sequence impedance table
                 this.ratedCurrent = new CurrentFlow(); // Reference to the zero sequence impedance table
                 this.ratedVoltage = new Voltage(); // Reference to the zero sequence impedance table
-                this.stepPhaseIncrement = ""; // Reference to the zero sequence impedance table
+                this.stepPhaseIncrement = new AngleDegrees(); // Reference to the zero sequence impedance table
                 this.stepVoltageIncrement = new Voltage(); // Reference to the zero sequence impedance table
     }
 }
