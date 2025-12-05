@@ -25,94 +25,94 @@
             <div>
                 <el-dropdown 
                 ref="addDropdown"
-        @command="handleAddCommand" 
-        @visible-change="handleDropdownVisibleChange"
-        trigger="click">
-        <span class="icon-wrapper">
-            <i title="Add" style="font-size: 12px;" class="fa-solid fa-square-plus"></i>
-        </span>
-        <el-dropdown-menu slot="dropdown">
-        <el-dropdown-item 
-            v-if="isCommandAllowed('organisation')" 
-            command="organisation">
-            <icon size="12px" folderType="building" badgeColor="146EBE"></icon> add Organisation
-        </el-dropdown-item>
-        <el-dropdown-item 
-            v-if="isCommandAllowed('substation')" 
-            command="substation">
-            <icon size="12px" folderType="location" badgeColor="146EBE"></icon> add Substation
-        </el-dropdown-item>
-        <el-dropdown-item 
-            v-if="isCommandAllowed('voltageLevel')" 
-            command="voltageLevel">
-            <icon size="12px" folderType="voltageLevel" badgeColor="146EBE"></icon> add Voltage Level
-        </el-dropdown-item>
-        <el-dropdown-item 
-            v-if="isCommandAllowed('bay')" 
-            command="bay">
-            <icon size="12px" folderType="bay" badgeColor="146EBE"></icon> add Bay
-        </el-dropdown-item>
-<el-dropdown-item 
-    v-if="isCommandAllowed('asset')" 
-    command="asset"
-    class="asset-submenu-parent"
-    @mouseenter.native="showAssetSub = true"
-    @mouseleave.native="showAssetSub = false">
-    <icon size="12px" folderType="asset" badgeColor="146EBE"></icon> add Asset
-    <div class="asset-submenu" v-if="showAssetSub" @click.stop @mouseenter.stop @mouseleave.stop>
-        <div class="submenu-item" @click="handleAssetCommand('Transformer')">
-            <i class="fa-solid fa-bolt"></i>
-            <span>Add Transformer</span>
-        </div>
-        <div class="submenu-item" @click="handleAssetCommand('Surge arrester')">
-            <i class="fa-solid fa-shield-halved"></i>
-            <span>Add Surge arrester</span>
-        </div>
-        <div class="submenu-item" @click="handleAssetCommand('Bushing')">
-            <i class="fa-solid fa-shield"></i>
-            <span>Add Bushing</span>
-        </div>
-        <div class="submenu-item" @click="handleAssetCommand('Voltage transformer')">
-            <i class="fa-solid fa-bolt-lightning"></i>
-            <span>Add VT</span>
-        </div>
-        <div class="submenu-item" @click="handleAssetCommand('Disconnector')">
-            <i class="fa-solid fa-plug-circle-xmark"></i>
-            <span>Add Disconnector</span>
-        </div>
-        <div class="submenu-item" @click="handleAssetCommand('Power cable')">
-            <i class="fa-solid fa-route"></i>
-            <span>Add Power cable</span>
-        </div>
-        <div class="submenu-item" @click="handleAssetCommand('Current transformer')">
-            <i class="fa-solid fa-ruler"></i>
-            <span>Add CT</span>
-        </div>
-        <div class="submenu-item" @click="handleAssetCommand('Circuit breaker')">
-            <i class="fa-solid fa-plug"></i>
-            <span>Add Circuit breaker</span>
-        </div>
-        <div class="submenu-item" @click="handleAssetCommand('Rotating machine')">
-            <i class="fa-solid fa-group-arrows-rotate"></i>
-            <span>Add Rotating machine</span>
-        </div>
-        <div class="submenu-item" @click="handleAssetCommand('Capacitor')">
-            <i class="fa-solid fa-bolt"></i>
-            <span>Add Capacitor</span>
-        </div>
-        <div class="submenu-item" @click="handleAssetCommand('Reactor')">
-            <i class="fa-solid fa-bolt"></i>
-            <span>Add Reactor</span>
-        </div>
-    </div>
-</el-dropdown-item>
-        <el-dropdown-item 
-            v-if="isCommandAllowed('job')" 
-            command="job">
-            <icon size="12px" folderType="job" badgeColor="146EBE"></icon> add Job
-        </el-dropdown-item>
-    </el-dropdown-menu>
-</el-dropdown>
+                @command="handleAddCommand" 
+                @visible-change="handleDropdownVisibleChange"
+                trigger="click">
+                    <span class="icon-wrapper">
+                        <i title="Add" style="font-size: 12px;" class="fa-solid fa-square-plus"></i>
+                    </span>
+                    <el-dropdown-menu slot="dropdown">
+                        <el-dropdown-item 
+                            v-if="isCommandAllowed('organisation')" 
+                            command="organisation">
+                            <icon size="12px" folderType="building" badgeColor="146EBE"></icon> add Organisation
+                        </el-dropdown-item>
+                        <el-dropdown-item 
+                            v-if="isCommandAllowed('substation')" 
+                            command="substation">
+                            <icon size="12px" folderType="location" badgeColor="146EBE"></icon> add Substation
+                        </el-dropdown-item>
+                        <el-dropdown-item 
+                            v-if="isCommandAllowed('voltageLevel')" 
+                            command="voltageLevel">
+                            <icon size="12px" folderType="voltageLevel" badgeColor="146EBE"></icon> add Voltage Level
+                        </el-dropdown-item>
+                        <el-dropdown-item 
+                            v-if="isCommandAllowed('bay')" 
+                            command="bay">
+                            <icon size="12px" folderType="bay" badgeColor="146EBE"></icon> add Bay
+                        </el-dropdown-item>
+                        <el-dropdown-item 
+                            v-if="isCommandAllowed('asset')" 
+                            command="asset"
+                            class="asset-submenu-parent"
+                            @mouseenter.native="showAssetSub = true"
+                            @mouseleave.native="showAssetSub = false">
+                            <icon size="12px" folderType="asset" badgeColor="146EBE"></icon> add Asset
+                            <div class="asset-submenu" v-if="showAssetSub" @click.stop @mouseenter.stop @mouseleave.stop>
+                                <div class="submenu-item" @click="handleAssetCommand('Transformer')">
+                                    <i class="fa-solid fa-bolt"></i>
+                                    <span>Add Transformer</span>
+                                </div>
+                                <div class="submenu-item" @click="handleAssetCommand('Surge arrester')">
+                                    <i class="fa-solid fa-shield-halved"></i>
+                                    <span>Add Surge arrester</span>
+                                </div>
+                                <div class="submenu-item" @click="handleAssetCommand('Bushing')">
+                                    <i class="fa-solid fa-shield"></i>
+                                    <span>Add Bushing</span>
+                                </div>
+                                <div class="submenu-item" @click="handleAssetCommand('Voltage transformer')">
+                                    <i class="fa-solid fa-bolt-lightning"></i>
+                                    <span>Add VT</span>
+                                </div>
+                                <div class="submenu-item" @click="handleAssetCommand('Disconnector')">
+                                    <i class="fa-solid fa-plug-circle-xmark"></i>
+                                    <span>Add Disconnector</span>
+                                </div>
+                                <div class="submenu-item" @click="handleAssetCommand('Power cable')">
+                                    <i class="fa-solid fa-route"></i>
+                                    <span>Add Power cable</span>
+                                </div>
+                                <div class="submenu-item" @click="handleAssetCommand('Current transformer')">
+                                    <i class="fa-solid fa-ruler"></i>
+                                    <span>Add CT</span>
+                                </div>
+                                <div class="submenu-item" @click="handleAssetCommand('Circuit breaker')">
+                                    <i class="fa-solid fa-plug"></i>
+                                    <span>Add Circuit breaker</span>
+                                </div>
+                                <div class="submenu-item" @click="handleAssetCommand('Rotating machine')">
+                                    <i class="fa-solid fa-group-arrows-rotate"></i>
+                                    <span>Add Rotating machine</span>
+                                </div>
+                                <div class="submenu-item" @click="handleAssetCommand('Capacitor')">
+                                    <i class="fa-solid fa-bolt"></i>
+                                    <span>Add Capacitor</span>
+                                </div>
+                                <div class="submenu-item" @click="handleAssetCommand('Reactor')">
+                                    <i class="fa-solid fa-bolt"></i>
+                                    <span>Add Reactor</span>
+                                </div>
+                            </div>
+                        </el-dropdown-item>
+                        <el-dropdown-item 
+                            v-if="isCommandAllowed('job')" 
+                            command="job">
+                            <icon size="12px" folderType="job" badgeColor="146EBE"></icon> add Job
+                        </el-dropdown-item>
+                    </el-dropdown-menu>
+                </el-dropdown>
             </div>
             <div>
                 <i @click="handleOpenNode" title="Open" style="font-size: 12px;" class="fa-regular fa-folder-open"></i>
@@ -122,8 +122,8 @@
             </div>
             <div>
                 <el-dropdown @command="handleImportCommand" trigger="click">
-                <i title="Import" style="font-size: 12px;" class="fa-solid fa-file-import"></i>
-                <el-dropdown-menu slot="dropdown">
+                    <i title="Import" style="font-size: 12px;" class="fa-solid fa-file-import"></i>
+                    <el-dropdown-menu slot="dropdown">
                         <el-dropdown-item command="importJSON">
                             <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon> import from JSON
                         </el-dropdown-item>
@@ -179,6 +179,9 @@
             </div>
             <div @click="handleClickFmeca">
                 <i title="Fmeca" style="font-size: 12px;" class="fa-solid fa-table"></i>
+            </div>
+            <div>
+                <i @click="handleMoveNode" title="Move" style="font-size: 12px;" class="fa-solid fa-arrows-up-down"></i>
             </div>
         </div>
         <!-- Thanh điều hướng có thể kéo rộng/kéo hẹp -->
@@ -688,7 +691,11 @@
         </el-dialog>
 
         <el-dialog title="Add Transformer" :visible.sync="signTransformer" width="1000px"
-            @close="handleTransformerCancel">
+            @close="handleTransformerCancel"
+            :modal="!isDuplicating" 
+    :show-close="!isDuplicating"
+    :transition="isDuplicating ? '' : 'dialog-fade'"
+    :custom-class="isDuplicating ? 'ghost-dialog' : ''">
             <Transformer :locationId="locationId" :parent="parentOrganization" ref="transformer"></Transformer>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleTransformerCancel">Cancel</el-button>
@@ -696,7 +703,11 @@
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Bushing" :visible.sync="signBushing" width="1000px" @close="handleBushingCancel">
+        <el-dialog title="Add Bushing" :visible.sync="signBushing" width="1000px" @close="handleBushingCancel"
+            :modal="!isDuplicating" 
+            :show-close="!isDuplicating"
+            :transition="isDuplicating ? '' : 'dialog-fade'"
+            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
             <Bushing :locationId="locationId" :parent="parentOrganization" ref="bushing"></Bushing>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleBushingCancel">Cancel</el-button>
@@ -704,7 +715,11 @@
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Surge Arrester" :visible.sync="signSurge" width="1000px" @close="handleSurgeCancel">
+        <el-dialog title="Add Surge Arrester" :visible.sync="signSurge" width="1000px" @close="handleSurgeCancel"
+            :modal="!isDuplicating" 
+            :show-close="!isDuplicating"
+            :transition="isDuplicating ? '' : 'dialog-fade'"
+            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
             <SurgeArrester :locationId="locationId" :parent="parentOrganization" ref="surgeArrester"></SurgeArrester>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleSurgeCancel">Cancel</el-button>
@@ -712,7 +727,11 @@
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Circuit Breaker" :visible.sync="signCircuit" width="1000px" @close="handleCircuitCancel">
+        <el-dialog title="Add Circuit Breaker" :visible.sync="signCircuit" width="1000px" @close="handleCircuitCancel"
+            :modal="!isDuplicating" 
+            :show-close="!isDuplicating"
+            :transition="isDuplicating ? '' : 'dialog-fade'"
+            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
             <CircuitBreaker :locationId="locationId" :parent="parentOrganization" ref="circuitBreaker"></CircuitBreaker>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleCircuitCancel">Cancel</el-button>
@@ -720,7 +739,11 @@
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Current Transformer" :visible.sync="signCt" width="1000px" @close="handleCtCancel">
+        <el-dialog title="Add Current Transformer" :visible.sync="signCt" width="1000px" @close="handleCtCancel"
+            :modal="!isDuplicating" 
+            :show-close="!isDuplicating"
+            :transition="isDuplicating ? '' : 'dialog-fade'"
+            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
             <CurrentTransformer :locationId="locationId" :parent="parentOrganization" ref="currentTransformer">
             </CurrentTransformer>
             <span slot="footer" class="dialog-footer">
@@ -729,7 +752,11 @@
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Voltage Transformer" :visible.sync="signVt" width="1000px" @close="handleVtCancel">
+        <el-dialog title="Add Voltage Transformer" :visible.sync="signVt" width="1000px" @close="handleVtCancel"
+            :modal="!isDuplicating" 
+            :show-close="!isDuplicating"
+            :transition="isDuplicating ? '' : 'dialog-fade'"
+            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
             <VoltageTransformer :locationId="locationId" :parent="parentOrganization" ref="voltageTransformer">
             </VoltageTransformer>
             <span slot="footer" class="dialog-footer">
@@ -738,7 +765,11 @@
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Power Cable" :visible.sync="signPower" width="1000px" @close="handlePowerCancel">
+        <el-dialog title="Add Power Cable" :visible.sync="signPower" width="1000px" @close="handlePowerCancel"
+            :modal="!isDuplicating" 
+            :show-close="!isDuplicating"
+            :transition="isDuplicating ? '' : 'dialog-fade'"
+            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
             <PowerCable :locationId="locationId" :parent="parentOrganization" ref="powerCable"></PowerCable>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handlePowerCancel">Cancel</el-button>
@@ -747,7 +778,11 @@
         </el-dialog>
 
         <el-dialog title="Add Disconnector" :visible.sync="signDisconnector" width="1000px"
-            @close="handleDisconnectorCancel">
+            @close="handleDisconnectorCancel"
+            :modal="!isDuplicating" 
+            :show-close="!isDuplicating"
+            :transition="isDuplicating ? '' : 'dialog-fade'"
+            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
             <Disconnector :locationId="locationId" :parent="parentOrganization" ref="disconnector"></Disconnector>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleDisconnectorCancel">Cancel</el-button>
@@ -756,7 +791,11 @@
         </el-dialog>
 
         <el-dialog title="Add Rotating Machine" :visible.sync="signRotating" width="1000px"
-            @close="handleRotatingCancel">
+            @close="handleRotatingCancel"
+            :modal="!isDuplicating" 
+            :show-close="!isDuplicating"
+            :transition="isDuplicating ? '' : 'dialog-fade'"
+            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
             <RotatingMachine :locationId="locationId" :parent="parentOrganization" ref="rotatingMachine">
             </RotatingMachine>
             <span slot="footer" class="dialog-footer">
@@ -764,7 +803,11 @@
                 <el-button size="small" type="primary" @click="handleRotatingConfirm">Save</el-button>
             </span>
         </el-dialog>
-        <el-dialog title="Add Capacitor" :visible.sync="signCapacitor" width="1000px" @close="handleCapacitorCancel">
+        <el-dialog title="Add Capacitor" :visible.sync="signCapacitor" width="1000px" @close="handleCapacitorCancel"
+            :modal="!isDuplicating" 
+            :show-close="!isDuplicating"
+            :transition="isDuplicating ? '' : 'dialog-fade'"
+            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
             <Capacitor :locationId="locationId" :parent="parentOrganization" ref="capacitor">
             </Capacitor>
             <span slot="footer" class="dialog-footer">
@@ -773,7 +816,11 @@
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Reactor" :visible.sync="signReactor" width="1000px" @close="handleReactorCancel">
+        <el-dialog title="Add Reactor" :visible.sync="signReactor" width="1000px" @close="handleReactorCancel"
+            :modal="!isDuplicating" 
+            :show-close="!isDuplicating"
+            :transition="isDuplicating ? '' : 'dialog-fade'"
+            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
             <Reactor :locationId="locationId" :parent="parentOrganization" ref="reactor">
             </Reactor>
             <span slot="footer" class="dialog-footer">
@@ -814,7 +861,37 @@
                 <el-button size="small" type="primary" @click="handleFmecaConfirm">Save</el-button>
             </span>
         </el-dialog>
+        <el-dialog title="Move Node" :visible.sync="moveDialogVisible" width="500px">
+    <div style="height: 400px; overflow-y: auto;">
+        <el-tree 
+            ref="moveTree"
+            :data="moveTreeData" 
+            :props="moveTreeProps" 
+            node-key="mrid"
+            :expand-on-click-node="false"
+            :default-expanded-keys="expandedMoveKeys"
+            @node-click="handleTargetNodeClick"
+            highlight-current>
+            <span class="custom-tree-node" slot-scope="{ node, data }">
+                <span>
+                    <!-- Icon tương ứng với loại node -->
+                    <i v-if="data.mode === 'organisation'" class="fa-regular fa-building"></i>
+                    <i v-if="data.mode === 'substation'" class="fa-solid fa-industry"></i>
+                    <i v-if="data.mode === 'voltageLevel'" class="fa-solid fa-bolt"></i>
+                    <i v-if="data.mode === 'bay'" class="fa-solid fa-cube"></i>
+                    <i v-if="data.mode === 'asset'" class="fa-solid fa-box"></i>
+                    {{ node.label }}
+                </span>
+            </span>
+        </el-tree>
     </div>
+    <span slot="footer" class="dialog-footer">
+        <el-button size="small" @click="moveDialogVisible = false">Cancel</el-button>
+        <el-button size="small" type="primary" @click="confirmMoveNode" :disabled="!selectedTargetNode">Move</el-button>
+    </span>
+</el-dialog>
+    </div>
+    
 </template>
 <script>
 /* eslint-disable */
@@ -827,6 +904,7 @@ import * as locationApi from '@/api/location'
 import spinner from '@/views/Common/Spinner.vue'
 import Tabs from '@/views/Common/Tabs.vue'
 import contextMenu from "@/views/Common/ContextMenu.vue";
+// ... (Giữ nguyên các import API cũ của bạn) ...
 import * as circuitApi from '@/api/circuit/circuit'
 import * as currentApi from '@/api/current/current'
 import * as disconnectorApi from '@/api/disconnector/disconnector'
@@ -851,6 +929,7 @@ import * as testDisconnectorApi from '@/api/disconnector/testDisconnector'
 import * as testSurgeApi from '@/api/surge/testSurge'
 import * as testPowerApi from '@/api/power/testPower'
 
+// Import Components
 import Substation from '../LocationInsert/locationLevelView.vue'
 import Organisation from '@/views/Organisation/index.vue'
 import VoltageLevel from '@/views/VoltageLevel/index.vue'
@@ -865,6 +944,9 @@ import PowerCable from '@/views/AssetView/PowerCable'
 import VoltageTransformer from '@/views/AssetView/VoltageTransformer'
 import Capacitor from '@/views/AssetView/Capacitor/index.vue'
 import Reactor from '@/views/AssetView/Reactor/index.vue'
+import RotatingMachine from '@/views/AssetView/RotatingMachine/index.vue'
+
+// Import Jobs
 import JobSurgeArrester from '@/views/JobView/SurgeArrester/index.vue'
 import JobPowerCable from '@/views/JobView/PowerCable/index.vue'
 import JobDisconnector from '@/views/JobView/Disconnector/index.vue'
@@ -873,11 +955,13 @@ import JobVoltageTransformer from '@/views/JobView/VoltageTransformer/index.vue'
 import JobCircuitBreaker from '@/views/JobView/CircuitBreaker/index.vue'
 import JobTransformer from '@/views/JobView/Transformer/index.vue'
 
-import * as rotatingMachineMapping from "@/views/Mapping/RotatingMachine/index"
-import RotatingMachine from '@/views/AssetView/RotatingMachine/index.vue'
 import mixin from './mixin'
 import Attachment from '../Common/Attachment.vue';
 import * as demoAPI from '@/api/demo'
+import Icon from '@/views/Common/Icon.vue'
+import Fmeca from '@/views/Fmeca'
+
+// Import Mappings (Quan trọng cho Duplicate)
 import * as BreakerMapping from '@/views/Mapping/Breaker/index'
 import * as TransformerMapping from '@/views/Mapping/Transformer/index'
 import * as SubstationMapping from '@/views/Mapping/Substation/index'
@@ -890,10 +974,20 @@ import * as VoltageTransformerMapping from '@/views/Mapping/VoltageTransformer/i
 import * as CurrentTransformerMapping from '@/views/Mapping/CurrentTransformer/index'
 import * as ReactorMapping from '@/views/Mapping/Reactor/index'
 import * as BushingMapping from '@/views/Mapping/Bushing/index'
-import Icon from '@/views/Common/Icon.vue'
-import Fmeca from '@/views/Fmeca'
+import * as RotatingMachineMapping from "@/views/Mapping/RotatingMachine/index"
 
-
+import TransformerMixin from '@/views/AssetView/Transformer/mixin/index.js'
+import SurgeArresterMixin from '@/views/AssetView/SurgeArrester/mixin/index.js'
+import BushingMixin from '@/views/AssetView/Bushing/mixin/index.js'
+import VoltageTransformerMixin from '@/views/AssetView/VoltageTransformer/mixin/index.js'
+import DisconnectorMixin from '@/views/AssetView/Disconnector/mixin/index.js'
+import PowerCableMixin from '@/views/AssetView/PowerCable/mixin/index.js'
+import CurrentTransformerMixin from '@/views/AssetView/CurrentTransformer/mixin/index.js'
+import CircuitBreakerMixin from '@/views/AssetView/CircuitBreaker/mixin/index.js'
+import RotatingMachineMixin from '@/views/AssetView/RotatingMachine/mixin/index.js'
+import CapacitorMixin from '@/views/AssetView/Capacitor/mixin/index.js'
+import ReactorMixin from '@/views/AssetView/Reactor/mixin/index.js'
+import BayMixin from '@/views/Bay/mixin/index.js'
 export default {
     name: 'TreeNavigation',
     components: {
@@ -978,6 +1072,16 @@ export default {
             hideTabContentClient: [],
             showAssetSub: false,
             currentTabServer: '',
+            isDuplicating: false, 
+            moveDialogVisible: false,
+            moveTreeData: [],
+            selectedTargetNode: null,
+            expandedMoveKeys: [],
+            moveTreeProps: {
+            children: 'children',
+            label: 'name',
+            disabled: 'disabled' // Thuộc tính để chặn click vào node không hợp lệ
+        },
             properties: {
                 region: '',
                 name: '',
@@ -1111,8 +1215,6 @@ export default {
         }
     },
     methods: {
-
-        
         handleDropdownVisibleChange(visible) {
         // Nếu dropdown muốn mở mà chưa có node selected, ngăn nó mở
         if (visible && (!this.selectedNodes || this.selectedNodes.length === 0)) {
@@ -1516,7 +1618,17 @@ export default {
         },
 
         async fetchChildren(node) {
-            if (!node.children) {
+            // Lưu children hiện có (nếu có) để merge sau
+            // Điều này đảm bảo không mất asset đã add trước đó khi node chưa được expand
+            const existingChildren = Array.isArray(node.children) ? [...node.children] : [];
+            
+            // Chỉ fetch nếu:
+            // 1. Chưa có children (chưa fetch lần nào)
+            // 2. Hoặc có children nhưng chưa được fetch từ server (chỉ có asset mới add)
+            // 3. Hoặc có children đã fetch nhưng có asset mới add (cần merge)
+            const hasExistingChildren = existingChildren.length > 0;
+            const needsFetch = !node.children || !node._childrenFetched || hasExistingChildren;
+            if (needsFetch) {
                 try {
                     let newRows = [];
                     if (node.mode == 'asset') {
@@ -1976,7 +2088,18 @@ export default {
                             newRows.push(...substationReturn.data);
                         }
                     }
+                    // Merge với children hiện có (nếu có) để không mất asset đã add trước đó
+                    if (existingChildren.length > 0) {
+                        // Tạo map của mrid để tránh duplicate
+                        const existingMrids = new Set(existingChildren.map(c => c.mrid));
+                        // Chỉ thêm children mới nếu chưa có trong existingChildren
+                        const newChildrenToAdd = newRows.filter(row => !existingMrids.has(row.mrid));
+                        Vue.set(node, "children", [...existingChildren, ...newChildrenToAdd]);
+                    } else {
                     Vue.set(node, "children", newRows); // Đảm bảo Vue reactive
+                    }
+                    // Đánh dấu đã fetch để tránh fetch lại không cần thiết
+                    Vue.set(node, "_childrenFetched", true);
                 } catch (error) {
                     console.error("Error fetching children:", error);
                     this.$message.error("Có lỗi xảy ra khi tải dữ liệu: " + error.message);
@@ -2513,10 +2636,18 @@ export default {
                 this.selectedNodes = [node];
             } else {
                 // Ctrl + Click → bật/tắt node cha mà KHÔNG ảnh hưởng con
-                const index = this.selectedNodes.findIndex(n => n.id === node.id);
+                // So sánh bằng mrid (vì mrid là unique) để nhất quán với TreeNode.vue
+                // Chỉ so sánh khi cả hai node đều có mrid
+                const index = this.selectedNodes.findIndex(n => {
+                    if (!n || !node) return false;
+                    if (!n.mrid || !node.mrid) return false;
+                    return n.mrid === node.mrid;
+                });
                 if (index === -1) {
+                    // Chưa có trong selection → thêm vào
                     this.selectedNodes.push(node);
                 } else {
+                    // Đã có trong selection → xóa khỏi selection
                     this.selectedNodes.splice(index, 1);
                 }
             }
@@ -3198,11 +3329,12 @@ export default {
             }
         },
         generateUuid() {
-          return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-               const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-               return v.toString(16);
-           });
-       },
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            const r = Math.random() * 16 | 0,
+                v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    },
         async handleJobConfirm() {
             try {
                 const job = this.$refs.jobData
@@ -4442,17 +4574,16 @@ export default {
     }
 
     try {
-        const node = this.selectedNodes[this.selectedNodes.length - 1];
-        
-        // Nếu là client side, mở tab client
-        if (this.clientSlide) {
-            await this.showDataClient(node);
-            
-        } else {
-            // Nếu là server side, mở tab server
-            await this.showData(node);
-            await this.showPropertiesData(node);
-            
+        // Mở tất cả các node được chọn
+        for (const node of this.selectedNodes) {
+            // Nếu là client side, mở tab client
+            if (this.clientSlide) {
+                await this.showDataClient(node);
+            } else {
+                // Nếu là server side, mở tab server
+                await this.showData(node);
+                await this.showPropertiesData(node);
+            }
         }
     } catch (error) {
         this.$message.error("Error opening node");
@@ -4469,8 +4600,11 @@ async handleDeleteNode() {
     const node = this.selectedNodes[this.selectedNodes.length - 1];
     
     // Lấy tên node - kiểm tra nhiều field khả năng
-    const nodeName = node.name || node.serial_no || node.serial_number || 'Unknown';
-    
+    let nodeName = node.serial_no || node.serial_number;
+    if (!nodeName || nodeName.toString().trim() === '') {
+        nodeName = node.name;
+    }
+    nodeName = nodeName || 'Unknown';
     // Confirm before delete
     this.$confirm(`Delete "${nodeName}"?`, 'Warning', {
         confirmButtonText: 'Delete',
@@ -4492,7 +4626,6 @@ async handleDeleteNode() {
             console.error(error);
         }
     }).catch(() => {
-        this.$message.info("Delete cancelled");
     });
 },
 
@@ -4699,136 +4832,625 @@ cloneNodeRecursive(node) {
            };
            return walk(copy);
        },
-async duplicateSelectedNodes() {
-            if (!this.selectedNodes || this.selectedNodes.length === 0) {
-                this.$message.warning("Please select a node first");
-                return;
+       
+cleanDtoForDuplicate(dto) {
+            if (!dto) return;
+            
+            // Xóa IDs của entity chính (cần tạo mới)
+            if (dto.properties) dto.properties.mrid = null;
+            dto.mrid = null;
+            dto.id = null;
+            dto.assetInfoId = null;
+            dto.lifecycleDateId = null;
+            dto.assetPsrId = null;
+            dto.attachmentId = null;
+            dto.productAssetModelId = null; // Tạo ProductAssetModel mới
+            
+            // Old info IDs
+            if (dto.oldSurgeArresterInfoId) dto.oldSurgeArresterInfoId = null;
+            if (dto.oldPowerTransformerInfoId) dto.oldPowerTransformerInfoId = null;
+            if (dto.oldCableInfoId) dto.oldCableInfoId = null;
+            
+            // Giữ lại foreign keys: locationId, psrId (tham chiếu đến entities độc lập)
+            
+            // Xóa mrid trong ratings (giữ value và unit)
+            if (dto.ratings) {
+                const ratingFields = [
+                    'rated_voltage', 'rated_frequency', 'rated_current',
+                    'short_time_withstand_current', 'rated_duration_of_short_circuit',
+                    'power_freq_withstand_voltage_earth_poles',
+                    'power_freq_withstand_voltage_isolating_distance'
+                ];
+                ratingFields.forEach(field => {
+                    if (dto.ratings[field] && dto.ratings[field].mrid) {
+                        dto.ratings[field].mrid = null;
+                    }
+                });
+            }
+            
+            // Xóa mrid/id trong nested objects (giữ dữ liệu)
+            const clearRecursive = (obj, depth = 0) => {
+                if (depth > 5) return;
+                if (Array.isArray(obj)) {
+                    obj.forEach(item => clearRecursive(item, depth + 1));
+                } else if (obj && typeof obj === 'object') {
+                    if ('mrid' in obj && obj.mrid !== null) obj.mrid = null;
+                    if ('id' in obj && obj.id !== null) obj.id = null;
+                    Object.values(obj).forEach(val => {
+                        if (val !== null && typeof val === 'object') {
+                            clearRecursive(val, depth + 1);
+                        }
+                    });
+                }
+            };
+            
+            if (dto.ratings) clearRecursive(dto.ratings);
+            if (dto.winding_configuration) clearRecursive(dto.winding_configuration);
+            if (dto.impedances) clearRecursive(dto.impedances);
+            if (dto.others) clearRecursive(dto.others);
+            if (dto.tap_changers) clearRecursive(dto.tap_changers);
+            if (dto.voltage) clearRecursive(dto.voltage);
+            if (dto.frequency) clearRecursive(dto.frequency);
+            if (dto.currentFlow) clearRecursive(dto.currentFlow);
+            if (dto.seconds) clearRecursive(dto.seconds);
+            // Power Cable specific: temperature, area, length, datasData, othersData, ratingsData
+            if (dto.temperature) clearRecursive(dto.temperature);
+            if (dto.area) clearRecursive(dto.area);
+            if (dto.length) clearRecursive(dto.length);
+            if (dto.datasData) clearRecursive(dto.datasData);
+            if (dto.othersData) clearRecursive(dto.othersData);
+            if (dto.ratingsData) clearRecursive(dto.ratingsData);
+            if (dto.configsData) clearRecursive(dto.configsData);
+            // Reactor specific: reactorRating (includes inductance), reactorOther
+            if (dto.reactorRating) clearRecursive(dto.reactorRating);
+            if (dto.reactorOther) clearRecursive(dto.reactorOther);
+    },
+       
+       
+        async processDuplicateAsset(node, apiGetEntity, mappingFunction, mixinObject, dataPropName) {
+    try {
+        // 1. Tìm Node cha
+        let parentNode = this.findNodeById(node.parentId, this.organisationClientList);
+        
+        if (!parentNode) {
+            const isRoot = node.parentId === this.$constant.ROOT || !node.parentId;
+            if (isRoot) parentNode = { mrid: this.$constant.ROOT, name: 'Root', mode: 'root' };
+            else {
+                this.$message.error(`Cannot find parent node.`);
+                return { success: false };
+            }
+        }
+
+        // 2. Lấy dữ liệu gốc
+        const entityRes = await apiGetEntity(node.mrid, this.$store.state.user.user_id, node.parentId);
+        if (!entityRes.success || !entityRes.data) {
+            this.$message.error("Failed to fetch original data.");
+            return { success: false };
+                }
+
+        // 3. Map sang DTO & Clean
+        const dto = mappingFunction(entityRes.data);
+        this.cleanDtoForDuplicate(dto);
+
+        // Generate mrid mới cho nested objects
+        if (Array.isArray(dto.voltage)) {
+            dto.voltage.forEach(item => {
+                if (item && !item.mrid) item.mrid = this.generateUuid();
+            });
+        }
+        if (Array.isArray(dto.frequency)) {
+            dto.frequency.forEach(item => {
+                if (item && !item.mrid) item.mrid = this.generateUuid();
+            });
+        }
+        if (Array.isArray(dto.seconds)) {
+            dto.seconds.forEach(item => {
+                if (item && !item.mrid) item.mrid = this.generateUuid();
+            });
+        }
+        if (Array.isArray(dto.currentFlow)) {
+            dto.currentFlow.forEach(item => {
+                if (item && !item.mrid) item.mrid = this.generateUuid();
+            });
+        }
+        // Power Cable specific: temperature, area, length
+        if (Array.isArray(dto.temperature)) {
+            dto.temperature.forEach(item => {
+                if (item && !item.mrid) item.mrid = this.generateUuid();
+            });
+        }
+        if (Array.isArray(dto.area)) {
+            dto.area.forEach(item => {
+                if (item && !item.mrid) item.mrid = this.generateUuid();
+            });
+        }
+        if (Array.isArray(dto.length)) {
+            dto.length.forEach(item => {
+                if (item && !item.mrid) item.mrid = this.generateUuid();
+            });
+        }
+        // Reactor specific: inductance, reactivePower, mass
+        if (Array.isArray(dto.inductance)) {
+            dto.inductance.forEach(item => {
+                if (item && !item.mrid) item.mrid = this.generateUuid();
+            });
+        }
+        if (Array.isArray(dto.reactivePower)) {
+            dto.reactivePower.forEach(item => {
+                if (item && !item.mrid) item.mrid = this.generateUuid();
+            });
+        }
+        if (Array.isArray(dto.mass)) {
+            dto.mass.forEach(item => {
+                if (item && !item.mrid) item.mrid = this.generateUuid();
+            });
+        }
+        
+        // Generate mrid cho objects chính
+        if (dto.properties && !dto.properties.mrid) {
+            dto.properties.mrid = this.generateUuid();
+        }
+        if (!dto.lifecycleDateId) {
+            dto.lifecycleDateId = this.generateUuid();
+        }
+        if (!dto.productAssetModelId) {
+            dto.productAssetModelId = this.generateUuid();
+        }
+        if (!dto.assetPsrId) {
+            dto.assetPsrId = this.generateUuid();
+        }
+        if (!dto.assetInfoId) {
+            dto.assetInfoId = this.generateUuid();
+        }
+        if (!dto.psrId && parentNode && parentNode.mrid) {
+            dto.psrId = parentNode.mrid;
+        }
+        
+        // Setup attachment
+        if (!dto.attachment) {
+            dto.attachment = {};
+        }
+        if (!dto.attachment.path || dto.attachment.path === '') {
+            dto.attachment.path = "[]";
+        } else if (typeof dto.attachment.path !== 'string') {
+            try {
+                dto.attachment.path = JSON.stringify(dto.attachment.path);
+            } catch (e) {
+                dto.attachment.path = "[]";
+            }
+        } else {
+            try {
+                JSON.parse(dto.attachment.path);
+            } catch (e) {
+                dto.attachment.path = "[]";
+            }
+        }
+        if (!dto.attachmentId) {
+            dto.attachmentId = this.generateUuid();
+        }
+        dto.attachment.id = dto.attachmentId;
+        dto.attachment.id_foreign = dto.properties?.mrid || null;
+        dto.attachment.type = dto.attachment.type || 'asset';
+        dto.attachment.name = dto.attachment.name || null;
+        
+        // Generate mrid cho ratings
+        if (dto.ratings) {
+            const ratingFields = [
+                'rated_voltage', 'rated_frequency', 'rated_current',
+                'short_time_withstand_current', 'rated_duration_of_short_circuit',
+                'power_freq_withstand_voltage_earth_poles',
+                'power_freq_withstand_voltage_isolating_distance'
+            ];
+            ratingFields.forEach(field => {
+                if (dto.ratings[field] && !dto.ratings[field].mrid) {
+                    dto.ratings[field].mrid = this.generateUuid();
+                }
+            });
+        }
+        
+        // Reactor specific: Generate mrid cho reactorRating (includes inductance)
+        if (dto.reactorRating) {
+            const reactorRatingFields = [
+                'rated_voltage', 'rated_frequency', 'rated_current',
+                'rated_power', 'inductance'
+            ];
+            reactorRatingFields.forEach(field => {
+                if (dto.reactorRating[field] && !dto.reactorRating[field].mrid) {
+                    dto.reactorRating[field].mrid = this.generateUuid();
+                }
+            });
+        }
+        
+        // Reactor specific: Generate mrid cho reactorOther
+        if (dto.reactorOther) {
+            if (dto.reactorOther.weight && !dto.reactorOther.weight.mrid) {
+                dto.reactorOther.weight.mrid = this.generateUuid();
+            }
+        }
+        
+        // Power Cable specific: Generate mrid cho nested objects trong datasData, othersData, ratingsData
+        const generateMridForNestedObject = (obj) => {
+            if (!obj || typeof obj !== 'object') return;
+            if (Array.isArray(obj)) {
+                obj.forEach(item => generateMridForNestedObject(item));
+            } else {
+                if (obj.mrid === null || obj.mrid === '') {
+                    obj.mrid = this.generateUuid();
+                }
+                Object.values(obj).forEach(val => {
+                    if (val && typeof val === 'object' && val !== null) {
+                        generateMridForNestedObject(val);
+                    }
+                });
+            }
+        };
+        
+        if (dto.ratingsData) generateMridForNestedObject(dto.ratingsData);
+        if (dto.othersData) generateMridForNestedObject(dto.othersData);
+        if (dto.datasData) generateMridForNestedObject(dto.datasData);
+        if (dto.configsData) generateMridForNestedObject(dto.configsData);
+        
+        // Reactor specific: Generate mrid cho nested objects trong reactorRating và reactorOther
+        if (dto.reactorRating) generateMridForNestedObject(dto.reactorRating);
+        if (dto.reactorOther) generateMridForNestedObject(dto.reactorOther);
+
+        // Xóa children
+        if (dto.children) dto.children = [];
+        if (dto.voltageLevels) dto.voltageLevels = [];
+        if (dto.bays) dto.bays = [];
+        if (dto.assets) dto.assets = [];
+
+        // Đổi serial no (chỉ đổi serial_no, giữ nguyên apparatus_id)
+        const copySuffix = ` - Copy`;
+        if (dto.name) dto.name = `${dto.name}${copySuffix}`;
+        if (dto.properties) {
+             if (dto.properties.serial_no) {
+                 dto.properties.serial_no = `${dto.properties.serial_no}${copySuffix}`;
+             } else {
+                 const randomSuffix = Math.floor(Math.random() * 10000);
+                 dto.properties.serial_no = `COPY_${randomSuffix}`;
+             }
+             // Giữ nguyên apparatus_id - không đổi
+        }
+
+        // Location logic
+        let targetLocationId = dto.locationId;
+        if (!targetLocationId && ['substation', 'organisation', 'root'].includes(parentNode.mode)) {
+             try {
+                 const locRes = await window.electronAPI.getLocationByPowerSystemResourceMrid(parentNode.mrid);
+                 if (locRes.success) targetLocationId = locRes.data.mrid;
+             } catch(e) {
+                 console.warn("Failed to fetch location from parent node:", e);
+             }
+        }
+        if (!dto.locationId && targetLocationId) {
+            dto.locationId = targetLocationId;
+        }
+
+        // Tạo context từ mixin
+        const context = {
+            [dataPropName]: dto,
+            [dataPropName + 'Old']: JSON.parse(JSON.stringify(dto)),
+            parentData: parentNode,
+            locationId: targetLocationId,
+            attachmentData: [],
+            ...mixinObject.methods,
+            $message: this.$message,
+            $store: this.$store,
+            $constant: this.$constant,
+            $config: this.$config,
+            $common: this.$common,
+            $helper: this.$helper,
+            $uuid: this.$uuid
+        };
+            
+        // Bind methods
+        const vuePrototypeProps = ['$message', '$store', '$constant', '$config', '$common', '$helper', '$uuid', '$nextTick', '$set', '$delete'];
+        Object.keys(context).forEach(key => {
+            if (typeof context[key] === 'function' && !vuePrototypeProps.includes(key) && !key.startsWith('$')) {
+                context[key] = context[key].bind(context);
+            }
+        });
+        
+        if (typeof mixinObject.data === 'function') {
+            const defaultData = mixinObject.data();
+            Object.keys(defaultData).forEach(k => {
+                if (k !== dataPropName && k !== dataPropName + 'Old') {
+                    context[k] = defaultData[k];
+                }
+            });
+        }
+
+        // Gọi hàm save
+        let saveResult;
+        if (typeof context.saveAsset === 'function') {
+            saveResult = await context.saveAsset();
+        } else if (typeof context.saveSubstation === 'function') {
+             saveResult = await context.saveSubstation();
+        } else if (typeof context.saveOrganisation === 'function') {
+             saveResult = await context.saveOrganisation();
+        } else if (typeof context.saveBay === 'function') {
+             saveResult = await context.saveBay();
+        } else if (typeof context.saveVoltageLevel === 'function') {
+             saveResult = await context.saveVoltageLevel();
+        } else {
+            return { success: false, message: "Save method not found in mixin" };
+        }
+        if (saveResult && saveResult.success) {
+            let newNodeData = {
+                mrid: '',
+                name: dto.name || (dto.properties ? dto.properties.apparatus_id : `${node.name} - Copy`),
+                serial_number: dto.properties ? dto.properties.serial_no : '',
+                parentId: parentNode.mrid,
+                parentName: parentNode.name,
+                parentArr: [...(parentNode.parentArr || []), { mrid: parentNode.mrid, parent: parentNode.name }],
+                mode: node.mode,
+                asset: node.asset,
+                job: node.job,
+                children: [], 
+                expanded: false,
+                isLeaf: true
+            };
+
+            const resData = saveResult.data;
+            if (resData) {
+                const keys = ['substation', 'organisation', 'voltageLevel', 'bay', 'asset', 'surgeArrester', 'transformer', 'circuitBreaker', 'breaker', 'disconnector', 'powerCable', 'voltageTransformer', 'currentTransformer', 'rotatingMachine', 'capacitor', 'reactor', 'bushing'];
+                let mainObj = null;
+                for(const k of keys) { if(resData[k]) { mainObj = resData[k]; break; } }
+                
+                if(mainObj) {
+                    newNodeData.mrid = mainObj.mrid;
+                    newNodeData.id = mainObj.mrid;
+                    if (mainObj.name && mainObj.name !== mainObj.mrid) newNodeData.name = mainObj.name;
+                } else if (resData.mrid) {
+                     newNodeData.mrid = resData.mrid;
+                     newNodeData.id = resData.mrid;
+                     if(resData.name) newNodeData.name = resData.name;
+                }
+            }
+            return { success: true, data: newNodeData };
+            } else {
+            return { success: false, message: saveResult ? saveResult.error : "Save failed" };
             }
 
-            try {
-                this.$message.info("Đang duplicate và lưu vào database...");
-                const newSelected = [];
-                
-                for (const node of this.selectedNodes.slice()) {
-                    // Clone node structure trước - đảm bảo copy tất cả giá trị
-                    const copy = JSON.parse(JSON.stringify(node));
-                    // Tạo mrid mới cho node chính
-                    copy.mrid = this.generateUuid();
-                    if (copy.id !== undefined) copy.id = copy.mrid;
-                    // Đảm bảo giữ lại mode và asset để xác định loại node
-                    if (!copy.mode && node.mode) copy.mode = node.mode;
-                    if (!copy.asset && node.asset) copy.asset = node.asset;
-                    
-                    // Tìm parent node
-                    let parentNode = this.findNodeById(node.parentId, this.organisationClientList);
-                    let list = this.organisationClientList;
-                    
-                    if (parentNode) {
-                        // Set parent info cho copy
-                        copy.parentId = parentNode.mrid;
-                        copy.parentName = parentNode.name;
-                        copy.parentArr = parentNode.parentArr ? [...parentNode.parentArr] : [];
-                        copy.parentArr.push({ mrid: parentNode.mrid, parent: parentNode.name });
-                    } else {
-                        // node is root-level
-                        copy.parentId = null;
-                        copy.parentName = '';
-                        copy.parentArr = [];
-                    }
-                    
-                    // Hàm đệ quy để duplicate và lưu node cùng tất cả children
-                    const duplicateNodeRecursive = async (nodeToDuplicate, newParentId, originalNode = null) => {
-                        // Lưu node gốc để lấy children
-                        const sourceNode = originalNode || node;
-                        
-                        // Lưu mrid gốc để lấy entity từ database (entity trong DB dùng mrid gốc)
-                        const originalMrid = originalNode ? originalNode.mrid : node.mrid;
-                        
-                        // Duplicate và lưu node hiện tại vào database - truyền mrid gốc để lấy entity
-                        const saveResult = await this.duplicateEntityAndSave(nodeToDuplicate, newParentId, originalMrid);
-                        
-                        if (saveResult.success) {
-                            // Cập nhật node với thông tin từ database - copy tất cả giá trị
-                            Object.assign(nodeToDuplicate, {
-                                mrid: saveResult.node.mrid,
-                                name: saveResult.node.name,
-                                serial_number: saveResult.node.serial_number,
-                                id: saveResult.node.id || saveResult.node.mrid
-                            });
-                            
-                            // Lấy tất cả children từ node gốc để đảm bảo copy đầy đủ
-                            let allChildren = [];
-                            // Ưu tiên lấy từ originalNode (node gốc) nếu có
-                            if (originalNode && originalNode.children && originalNode.children.length > 0) {
-                                allChildren = originalNode.children;
-                            } else if (nodeToDuplicate.children && nodeToDuplicate.children.length > 0) {
-                                // Nếu không có, dùng từ nodeToDuplicate
-                                allChildren = nodeToDuplicate.children;
-                            } else if (sourceNode && sourceNode.children && sourceNode.children.length > 0) {
-                                // Cuối cùng, thử lấy từ sourceNode
-                                allChildren = sourceNode.children;
-                            }
-                            
-                            // Nếu có children, duplicate từng child với tất cả giá trị
-                            if (allChildren && allChildren.length > 0) {
-                                const duplicatedChildren = [];
-                                for (const child of allChildren) {
-                                    // Clone child với tất cả giá trị
-                                    const childCopy = JSON.parse(JSON.stringify(child));
-                                    // Tạo mrid mới cho child
-                                    childCopy.mrid = this.generateUuid();
-                                    if (childCopy.id !== undefined) childCopy.id = childCopy.mrid;
-                                    
-                                    // Đảm bảo giữ lại mode và asset để xác định loại node
-                                    if (!childCopy.mode && child.mode) childCopy.mode = child.mode;
-                                    if (!childCopy.asset && child.asset) childCopy.asset = child.asset;
-                                    
-                                    // Cập nhật parent info với mrid mới của parent
-                                    childCopy.parentId = nodeToDuplicate.mrid;
-                                    childCopy.parentName = nodeToDuplicate.name;
-                                    childCopy.parentArr = nodeToDuplicate.parentArr ? [...nodeToDuplicate.parentArr] : [];
-                                    childCopy.parentArr.push({ mrid: nodeToDuplicate.mrid, parent: nodeToDuplicate.name });
-                                    
-                                    // Đệ quy duplicate child - truyền child gốc để lấy children và mrid gốc
-                                    await duplicateNodeRecursive(childCopy, nodeToDuplicate.mrid, child);
-                                    duplicatedChildren.push(childCopy);
-                                }
-                                nodeToDuplicate.children = duplicatedChildren;
-                            }
-                            
-                            return nodeToDuplicate;
-                        } else {
-                            throw new Error(saveResult.message || 'Failed to duplicate node');
-                        }
-                    };
-                    
-                    // Duplicate node và tất cả children - truyền node gốc
-                    const duplicatedNode = await duplicateNodeRecursive(copy, parentNode ? parentNode.mrid : null, node);
-                    
-                    // Thêm vào tree structure
-                    if (parentNode) {
-                        const children = Array.isArray(parentNode.children) ? parentNode.children : [];
-                        const idx = children.findIndex(c => c.mrid === node.mrid);
-                        const newChildren = [...children.slice(0, idx + 1), duplicatedNode, ...children.slice(idx + 1)];
-                        Vue.set(parentNode, 'children', newChildren);
-                    } else {
-                        // node is root-level
-                        const idxRoot = list.findIndex(c => c.mrid === node.mrid);
-                        list.splice(idxRoot + 1, 0, duplicatedNode);
-                        this.organisationClientList = [...list];
-                    }
-                    
-                    newSelected.push(duplicatedNode);
+        } catch (error) {
+        console.error("Duplicate Error:", error);
+        return { success: false, message: error.message };
+        }
+    },
+    async duplicateSelectedNodes() {
+    if (!this.selectedNodes || this.selectedNodes.length === 0) {
+        this.$message.warning("Please select a node to duplicate");
+        return;
+    }
+
+    const node = this.selectedNodes[this.selectedNodes.length - 1];
+    let nodeName = node.serial_no || node.serial_number;
+    
+    // Logic cũ: ưu tiên serial_no nếu name rỗng
+    if (!nodeName || nodeName.trim() === '') {
+        nodeName = node.name;
+    }
+    
+    // Nếu vẫn chưa có tên, gọi API lấy chi tiết
+    if ((!nodeName || nodeName.toString().trim() === '') && node.mode === 'asset' && node.mrid) {
+        try {
+            let entityRes = null;
+            const getNameFromEntity = (assetData) => {
+                if (!assetData) return 'Unknown';
+                // Ưu tiên Serial Number
+                if (assetData.serial_number && assetData.serial_number.toString().trim() !== '') {
+                    return assetData.serial_number;
                 }
-                
-                // Update selection to new copies
-                this.selectedNodes = newSelected;
-                this.$message.success(`Duplicate thành công ${newSelected.length} node(s) và đã lưu vào database`);
-            } catch (error) {
-                console.error('Error duplicating nodes:', error);
-                this.$message.error("Lỗi khi duplicate: " + (error.message || 'Unknown error'));
+                // Sau đó đến Name
+                if (assetData.name && assetData.name.toString().trim() !== '') {
+                    return assetData.name;
+                }
+                // Cuối cùng là Apparatus ID (nếu có)
+                return assetData.apparatus_id || 'Unknown';
+            };
+            // --- SURGE ARRESTER ---
+            if (node.asset === 'Surge arrester') {
+                entityRes = await window.electronAPI.getSurgeArresterEntityByMrid(node.mrid);
+                if (entityRes.success && entityRes.data) {
+                    nodeName = getNameFromEntity(entityRes.data.surgeArrester);
+                }   
+            } else if (node.asset === 'Transformer') {
+                entityRes = await window.electronAPI.getTransformerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId);
+                if (entityRes.success && entityRes.data) {
+                    nodeName = getNameFromEntity(entityRes.data.asset);
+                }
+            } else if (node.asset === 'Circuit breaker') {
+                entityRes = await window.electronAPI.getBreakerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId);
+                if (entityRes.success && entityRes.data) {
+                    nodeName = getNameFromEntity(entityRes.data.asset);
+                }
+            } else if (node.asset === 'Disconnector') {
+                entityRes = await window.electronAPI.getDisconnectorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId);
+                if (entityRes.success && entityRes.data) {
+                    nodeName = getNameFromEntity(entityRes.data.asset);
+                }
+            } else if (node.asset === 'Power cable') {
+                entityRes = await window.electronAPI.getPowerCableEntityByMrid(node.mrid, node.parentId);
+                if (entityRes.success && entityRes.data) {
+                    nodeName = getNameFromEntity(entityRes.data.asset);
+                }
+            } else if (node.asset === 'Rotating machine') {
+                entityRes = await window.electronAPI.getRotatingMachineEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId);
+                if (entityRes.success && entityRes.data) {
+                    nodeName = getNameFromEntity(entityRes.data.asset);
+                }
+            } else if (node.asset === 'Voltage transformer') {
+                entityRes = await window.electronAPI.getVoltageTransformerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId);
+                if (entityRes.success && entityRes.data) {
+                    nodeName = getNameFromEntity(entityRes.data.asset);
+                }
+            } else if (node.asset === 'Current transformer') {
+                entityRes = await window.electronAPI.getCurrentTransformerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId);
+                if (entityRes.success && entityRes.data) {
+                    nodeName = getNameFromEntity(entityRes.data.asset);
+                }
+            } else if (node.asset === 'Capacitor') {
+                entityRes = await window.electronAPI.getCapacitorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId);
+                if (entityRes.success && entityRes.data) {
+                    nodeName = getNameFromEntity(entityRes.data.asset);
+                }
+            } else if (node.asset === 'Reactor') {
+                entityRes = await window.electronAPI.getReactorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId);
+                if (entityRes.success && entityRes.data) {
+                    nodeName = getNameFromEntity(entityRes.data.asset);
+                }
+            } else if (node.asset === 'Bushing') {
+                entityRes = await window.electronAPI.getBushingEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId);
+                if (entityRes.success && entityRes.data) {
+                    nodeName = getNameFromEntity(entityRes.data.asset); // Bushing thường dùng name hoặc serial
+                }
             }
-        },
+        } catch (error) {
+            console.error("Error fetching entity for name:", error);
+        }
+    }
+    
+    nodeName = nodeName || 'Unknown';
+
+        this.$confirm(`Duplicate "${nodeName}"?`, 'Confirmation', {
+            confirmButtonText: 'Yes',
+            cancelButtonText: 'No',
+            type: 'info'
+        }).then(async () => {
+        let result = { success: false };
+
+        if (node.asset === 'Transformer') {
+            result = await this.processDuplicateAsset(
+                node,
+                window.electronAPI.getTransformerEntityByMrid,
+                TransformerMapping.transformerEntityToDto,
+                TransformerMixin,   // Mixin Object
+                'transformerDto'    // Tên biến data trong Mixin
+            );
+        }
+        else if (node.asset === 'Surge arrester') {
+            result = await this.processDuplicateAsset(
+                node,
+                window.electronAPI.getSurgeArresterEntityByMrid,
+                SurgeArresterMapping.mapEntityToDto,
+                SurgeArresterMixin,
+                'surge_arrester_data' // Tên biến data trong Mixin Surge
+            );
+        }
+        else if (node.asset === 'Circuit breaker') {
+            result = await this.processDuplicateAsset(
+                node,
+                window.electronAPI.getBreakerEntityByMrid,
+                BreakerMapping.mapEntityToDto,
+                CircuitBreakerMixin,
+                'circuitBreakerDto'
+            );
+        }
+        else if (node.asset === 'Disconnector') {
+            result = await this.processDuplicateAsset(
+                node,
+                window.electronAPI.getDisconnectorEntityByMrid,
+                DisconnectorMapping.disconnectorEntityToDto,
+                DisconnectorMixin,
+                'disconnector'
+            );
+        }
+        else if (node.asset === 'Power cable') {
+            result = await this.processDuplicateAsset(
+                node,
+                window.electronAPI.getPowerCableEntityByMrid,
+                PowerCableMapping.mapEntityToDto,
+                PowerCableMixin,
+                'powerCable'
+            );
+        }
+        else if (node.asset === 'Voltage transformer') {
+            result = await this.processDuplicateAsset(
+                node,
+                window.electronAPI.getVoltageTransformerEntityByMrid,
+                VoltageTransformerMapping.mapEntityToDto,
+                VoltageTransformerMixin,
+                'voltageTransformer'
+            );
+        }
+        else if (node.asset === 'Current transformer') {
+            result = await this.processDuplicateAsset(
+                node,
+                window.electronAPI.getCurrentTransformerEntityByMrid,
+                CurrentTransformerMapping.mapEntityToDto,
+                CurrentTransformerMixin,
+                'currentTransformer'
+            );
+        }
+        else if (node.asset === 'Rotating machine') {
+            result = await this.processDuplicateAsset(
+                node,
+                window.electronAPI.getRotatingMachineEntityByMrid,
+                RotatingMachineMapping.mapEntityToDto,
+                RotatingMachineMixin,
+                'rotatingMachine'
+            );
+        }
+        else if (node.asset === 'Capacitor') {
+            result = await this.processDuplicateAsset(
+                node,
+                window.electronAPI.getCapacitorEntityByMrid,
+                CapacitorMapping.mapEntityToDto,
+                CapacitorMixin,
+                'capacitor'
+            );
+        }
+        else if (node.asset === 'Reactor') {
+            result = await this.processDuplicateAsset(
+                node,
+                window.electronAPI.getReactorEntityByMrid,
+                ReactorMapping.mapEntityToDto,
+                ReactorMixin,
+                'reactor'
+            );
+        }
+        else if (node.asset === 'Bushing') {
+            result = await this.processDuplicateAsset(
+                node,
+                window.electronAPI.getBushingEntityByMrid,
+                BushingMapping.mapEntityToDto,
+                BushingMixin,
+                'bushing_data'
+            );
+        }
+        // --- LOCATIONS ---
+        else if (node.mode === 'bay') {
+             result = await this.processDuplicateAsset(
+                node,
+                window.electronAPI.getBayEntityByMrid,
+                (entity) => { return { mrid: entity.mrid, name: entity.name, ...entity }; },
+                BayMixin,
+                'properties'
+            );
+        }
+        // ... Các location khác tương tự (Substation, Organisation) ...
+
+        if (result.success && result.data) {
+            this.$message.success("Duplicate successful!");
+            const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
+                    if (parentNode) {
+                if (!Array.isArray(parentNode.children)) this.$set(parentNode, 'children', []);
+                const index = parentNode.children.findIndex(c => c.mrid === node.mrid);
+                if (index !== -1) parentNode.children.splice(index + 1, 0, result.data);
+                else parentNode.children.push(result.data);
+                this.$set(parentNode, 'expanded', true);
+                    this.clearSelection();
+                this.updateSelection(result.data);
+            }
+                } else {
+            this.$message.error(result.message || "Failed to duplicate.");
+                }
+
+    }).catch((e) => {
+        if(e !== 'cancel') console.error(e);
+        });
+    },
 
 
         findNodeById(mrid, nodes) {
@@ -4850,6 +5472,337 @@ async duplicateSelectedNodes() {
             await this.showData(node);
             await this.showPropertiesData(node);
         },
+
+        getValidParentTypes(nodeMode) {
+        switch (nodeMode) {
+            case 'organisation':
+                return ['organisation']; // Org chỉ nằm trong Org
+            case 'substation':
+                return ['organisation']; // Substation nằm trong Org
+            case 'voltageLevel':
+                return ['substation'];   // Voltage nằm trong Substation
+            case 'bay':
+                return ['voltageLevel', 'substation']; // Bay nằm trong Voltage hoặc Substation
+            case 'asset':
+                return ['bay', 'voltageLevel', 'substation', 'organisation']; // Asset nằm được nhiều chỗ
+            case 'job':
+                return ['asset']; // Job nằm trong Asset
+            default:
+                return [];
+        }
+    },
+
+    // 2. Hàm đệ quy xây dựng cây cho Dialog Move
+    // nodeToMove: Node đang được chọn để di chuyển (để ẩn đi khỏi cây đích)
+    // validParentTypes: Danh sách các loại node cha hợp lệ
+    buildMoveTreeData(nodes, nodeToMove, validParentTypes) {
+        let tree = [];
+        if (!nodes) return tree;
+
+        nodes.forEach(node => {
+            // Không hiển thị chính node đang di chuyển (và con của nó) trong cây đích
+            if (node.mrid === nodeToMove.mrid) return;
+
+            // Kiểm tra xem node này có phải là cha hợp lệ không
+            // Nếu KHÔNG phải cha hợp lệ -> disabled = true (không cho chọn), nhưng vẫn hiện để duyệt con
+            const isValidParent = validParentTypes.includes(node.mode);
+
+            // Tạo node mới cho el-tree
+            let newNode = {
+                mrid: node.mrid,
+                name: node.name || node.serial_no || 'Unknown',
+                mode: node.mode,
+                disabled: !isValidParent, // Element UI sẽ làm mờ và không cho click nếu true
+                children: []
+            };
+
+            // Đệ quy xử lý con
+            if (node.children && node.children.length > 0) {
+                newNode.children = this.buildMoveTreeData(node.children, nodeToMove, validParentTypes);
+            }
+
+            tree.push(newNode);
+        });
+        return tree;
+    },
+
+    // 3. Xử lý khi nhấn nút Move trên toolbar
+    async handleMoveNode() {
+        if (!this.selectedNodes || this.selectedNodes.length === 0) {
+            this.$message.warning("Please select a node to move");
+            return;
+        }
+
+        const nodeToMove = this.selectedNodes[this.selectedNodes.length - 1];
+        
+        // Không cho phép di chuyển Root
+        if (!nodeToMove.parentId || nodeToMove.parentId === this.$constant.ROOT) {
+             // Tuỳ logic của bạn, nếu Organisation cấp 1 không được move thì chặn
+             // this.$message.warning("Cannot move root nodes");
+             // return;
+        }
+
+        const validTypes = this.getValidParentTypes(nodeToMove.mode);
+        
+        // Xây dựng dữ liệu cây, lọc theo logic
+        // Dùng organisationClientList nếu đang ở Client Slide, hoặc ownerServerList nếu Server
+        const sourceData = this.clientSlide ? this.organisationClientList : this.ownerServerList;
+        
+        this.moveTreeData = this.buildMoveTreeData(sourceData, nodeToMove, validTypes);
+        
+        // Reset selection
+        this.selectedTargetNode = null;
+        this.moveDialogVisible = true;
+        
+        // Mở rộng cây mặc định (optional)
+        if(this.moveTreeData.length > 0) {
+            this.expandedMoveKeys = [this.moveTreeData[0].mrid];
+        }
+    },
+
+    // 4. Xử lý khi click chọn node đích trong Dialog
+    handleTargetNodeClick(data, node, component) {
+        if (data.disabled) {
+            this.$message.warning("Cannot move to this node type");
+            this.selectedTargetNode = null;
+            return;
+        }
+        this.selectedTargetNode = data;
+    },
+
+    // 5. Xác nhận di chuyển
+    async confirmMoveNode() {
+        if (!this.selectedTargetNode) return;
+        
+        const nodeToMove = this.selectedNodes[this.selectedNodes.length - 1];
+        const newParent = this.selectedTargetNode;
+
+        // Kiểm tra xem có di chuyển vào chính cha hiện tại không
+        if (nodeToMove.parentId === newParent.mrid) {
+            this.$message.warning("Node is already in this location");
+            return;
+        }
+
+        this.$confirm(`Move "${nodeToMove.name || nodeToMove.serial_no}" to "${newParent.name}"?`, 'Confirm Move', {
+            confirmButtonText: 'Move',
+            cancelButtonText: 'Cancel',
+            type: 'warning'
+        }).then(async () => {
+            try {
+                let success = false;
+                let updateResult = null;
+                
+                // --- GỌI API CẬP NHẬT PARENT ID TRONG DATABASE ---
+                
+                if (nodeToMove.mode === 'organisation') {
+                    // Update parent_organization field
+                    const orgEntity = await window.electronAPI.getOrganisationEntityByMrid(nodeToMove.mrid);
+                    if (!orgEntity.success || !orgEntity.data) {
+                        this.$message.error("Failed to fetch organisation data");
+                        return;
+                    }
+                    const orgData = orgEntity.data.organisation;
+                    orgData.parent_organization = newParent.mrid;
+                    updateResult = await window.electronAPI.updateParentOrganizationByMrid(nodeToMove.mrid, orgData);
+                    success = updateResult.success;
+                    
+                } else if (nodeToMove.mode === 'substation') {
+                    // Update PSR location field (location refId points to parent organisation)
+                    const substationEntity = await window.electronAPI.getSubstationByMrid(nodeToMove.mrid);
+                    if (!substationEntity.success || !substationEntity.data) {
+                        this.$message.error("Failed to fetch substation data");
+                        return;
+                    }
+                    const substationData = substationEntity.data;
+                    // Update location refId to point to new parent
+                    if (substationData.location) {
+                        const locationEntity = await window.electronAPI.getLocationByMrid(substationData.location);
+                        if (locationEntity.success && locationEntity.data) {
+                            locationEntity.data.refId = newParent.mrid;
+                            const locationUpdate = await window.electronAPI.updateLocationByMrid(substationData.location, locationEntity.data);
+                            if (!locationUpdate.success) {
+                                this.$message.error("Failed to update location");
+                                return;
+                            }
+                        }
+                    }
+                    // Also update substation data if needed
+                    updateResult = await window.electronAPI.updateSubstationByMrid(nodeToMove.mrid, substationData);
+                    success = updateResult.success;
+                    
+                } else if (nodeToMove.mode === 'voltageLevel') {
+                    // Update substation field
+                    const voltageLevelEntity = await window.electronAPI.getVoltageLevelByMrid(nodeToMove.mrid);
+                    if (!voltageLevelEntity.success || !voltageLevelEntity.data) {
+                        this.$message.error("Failed to fetch voltage level data");
+                        return;
+                    }
+                    const voltageLevelData = voltageLevelEntity.data;
+                    voltageLevelData.substation = newParent.mrid;
+                    updateResult = await window.electronAPI.updateVoltageLevelByMrid(nodeToMove.mrid, voltageLevelData);
+                    success = updateResult.success;
+                    
+                } else if (nodeToMove.mode === 'bay') {
+                    // Update voltage_level or substation field
+                    const bayEntity = await window.electronAPI.getBayByMrid(nodeToMove.mrid);
+                    if (!bayEntity.success || !bayEntity.data) {
+                        this.$message.error("Failed to fetch bay data");
+                        return;
+                    }
+                    const bayData = bayEntity.data;
+                    // Determine if new parent is voltageLevel or substation
+                    if (newParent.mode === 'voltageLevel') {
+                        bayData.voltage_level = newParent.mrid;
+                        bayData.substation = null; // Clear substation if moving to voltageLevel
+                    } else if (newParent.mode === 'substation') {
+                        bayData.substation = newParent.mrid;
+                        bayData.voltage_level = null; // Clear voltageLevel if moving to substation
+                    }
+                    updateResult = await window.electronAPI.updateBayByMrid(nodeToMove.mrid, bayData);
+                    success = updateResult.success;
+                    
+                } else if (nodeToMove.mode === 'asset') {
+                    // Asset có thể có parent là location hoặc PSR (substation, voltageLevel, bay)
+                    // Lấy asset entity để biết location mrid
+                    const assetEntity = await window.electronAPI.getAssetByMrid(nodeToMove.mrid);
+                    if (!assetEntity.success || !assetEntity.data) {
+                        this.$message.error("Failed to fetch asset data");
+                        return;
+                    }
+                    const assetData = assetEntity.data;
+                    
+                    // Kiểm tra new parent là location hay PSR
+                    if (newParent.mode === 'location' || newParent.mode === 'organisation') {
+                        // Parent là location: update location refId
+                        if (assetData.location) {
+                            const locationEntity = await window.electronAPI.getLocationByMrid(assetData.location);
+                            if (locationEntity.success && locationEntity.data) {
+                                locationEntity.data.refId = newParent.mrid;
+                                updateResult = await window.electronAPI.updateLocationByMrid(assetData.location, locationEntity.data);
+                                success = updateResult.success;
+                            } else {
+                                this.$message.error("Failed to fetch location data for asset");
+                                return;
+                            }
+                        } else {
+                            // Asset không có location, có thể cần tạo mới hoặc update asset.location
+                            this.$message.warning("Asset does not have location. This case needs special handling.");
+                            success = false;
+                        }
+                    } else if (newParent.mode === 'substation' || newParent.mode === 'voltageLevel' || newParent.mode === 'bay') {
+                        // Parent là PSR: cần update asset_psr.psr_id
+                        // Tìm asset_psr record hiện tại của asset (nếu có)
+                        // Có thể có nhiều asset_psr records, nhưng thường chỉ có một active
+                        // Tìm asset_psr với asset_id = nodeToMove.mrid
+                        try {
+                            // Tìm asset_psr hiện tại (có thể có nhiều, lấy cái đầu tiên)
+                            // Hoặc tìm theo psr_id cũ (parentId hiện tại)
+                            let existingAssetPsr = null;
+                            
+                            // Thử tìm asset_psr với psr_id cũ (parentId hiện tại)
+                            if (nodeToMove.parentId) {
+                                const assetPsrResult = await window.electronAPI.getAssetPsrByAssetIdAndPsrId(nodeToMove.mrid, nodeToMove.parentId);
+                                if (assetPsrResult.success && assetPsrResult.data) {
+                                    existingAssetPsr = assetPsrResult.data;
+                                }
+                            }
+                            
+                            // Nếu không tìm thấy, tìm bất kỳ asset_psr nào của asset này
+                            // (Có thể cần query khác, nhưng tạm thời dùng cách này)
+                            
+                            if (existingAssetPsr) {
+                                // Update asset_psr với psr_id mới
+                                existingAssetPsr.psr_id = newParent.mrid;
+                                updateResult = await window.electronAPI.updateAssetPsr(existingAssetPsr.mrid, existingAssetPsr);
+                                success = updateResult.success;
+                            } else {
+                                // Tạo mới asset_psr
+                                const newAssetPsr = {
+                                    mrid: this.generateUuid(),
+                                    asset_id: nodeToMove.mrid,
+                                    psr_id: newParent.mrid
+                                };
+                                updateResult = await window.electronAPI.insertAssetPsr(newAssetPsr);
+                                success = updateResult.success;
+                            }
+                            
+                            if (!success) {
+                                this.$message.error("Failed to update asset_psr");
+                                return;
+                            }
+                        } catch (error) {
+                            console.error("Error updating asset_psr:", error);
+                            this.$message.error("Failed to move asset to PSR: " + (error.message || error));
+                            return;
+                        }
+                    } else {
+                        this.$message.warning(`Cannot move asset to ${newParent.mode} type`);
+                        success = false;
+                    }
+                    
+                } else if (nodeToMove.mode === 'job') {
+                    // Job parent is asset, need to check how job parent is stored
+                    // For now, update job's asset_id if available
+                    this.$message.warning("Job move functionality needs to be implemented based on job structure");
+                    success = false;
+                } else {
+                    this.$message.warning(`Move functionality for ${nodeToMove.mode} is not yet implemented`);
+                    success = false;
+                }
+
+                if (success) {
+                    // --- CẬP NHẬT UI (CLIENT SIDE) ---
+                    
+                    // 1. Tìm và xoá node ở vị trí cũ
+                    const oldParentNode = this.findNodeById(nodeToMove.parentId, this.clientSlide ? this.organisationClientList : this.ownerServerList);
+                    if (oldParentNode && oldParentNode.children) {
+                        const idx = oldParentNode.children.findIndex(c => c.mrid === nodeToMove.mrid);
+                        if (idx !== -1) {
+                            oldParentNode.children.splice(idx, 1);
+                            // Clear children fetched flag to force reload
+                            if (oldParentNode.children.length === 0) {
+                                this.$set(oldParentNode, '_childrenFetched', false);
+                            }
+                        }
+                    }
+
+                    // 2. Thêm node vào vị trí mới
+                    const targetNodeInTree = this.findNodeById(newParent.mrid, this.clientSlide ? this.organisationClientList : this.ownerServerList);
+                    if (targetNodeInTree) {
+                        if (!targetNodeInTree.children) this.$set(targetNodeInTree, 'children', []);
+                        
+                        // Cập nhật thông tin cha mới cho node
+                        nodeToMove.parentId = newParent.mrid;
+                        nodeToMove.parentName = newParent.name || newParent.parentName || '';
+                        // Cập nhật lại parentArr
+                        const newParentArr = [...(newParent.parentArr || []), { mrid: newParent.mrid, parent: newParent.name }];
+                        nodeToMove.parentArr = newParentArr;
+                        
+                        // Clear children fetched flag để force reload từ database
+                        this.$set(targetNodeInTree, '_childrenFetched', false);
+                        
+                        // Reload children từ database để đảm bảo dữ liệu mới nhất
+                        await this.fetchChildren(targetNodeInTree);
+                        
+                        // Mở rộng node cha mới để thấy kết quả
+                        this.$set(targetNodeInTree, 'expanded', true);
+                    }
+
+                    this.$message.success("Moved successfully");
+                    this.moveDialogVisible = false;
+                    this.selectedNodes = []; // Clear selection
+                } else {
+                    if (updateResult && updateResult.message) {
+                        this.$message.error(updateResult.message || "Failed to move node");
+                    }
+                }
+
+            } catch (error) {
+                console.error("Move node error:", error);
+                this.$message.error("Failed to move node: " + (error.message || error));
+            }
+        });
+    },
     }
 }
 </script>
@@ -5353,5 +6306,70 @@ async duplicateSelectedNodes() {
 
 .asset-submenu .submenu-item span {
     flex: 1;
+}
+</style>
+
+<style>
+/* Đặt ở cuối file, không dùng scoped - Ẩn dialog khi duplicate */
+
+/* Ẩn dialog và tất cả nội dung */
+.ghost-dialog {
+    visibility: hidden !important; 
+    opacity: 0 !important;
+    display: none !important;
+    pointer-events: none !important;
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+/* Ẩn backdrop/modal mask - Ẩn TẤT CẢ backdrop khi có dialog với class ghost-dialog */
+body > .v-modal {
+    transition: none !important;
+}
+
+/* Ẩn wrapper của dialog khi có class ghost-dialog */
+.el-dialog__wrapper {
+    transition: none !important;
+}
+
+/* Đảm bảo không có transition/animation khi duplicate */
+.ghost-dialog * {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+}
+
+/* Ẩn backdrop ngay lập tức khi có class ghost-dialog trong DOM */
+body:has(.ghost-dialog) .v-modal,
+.el-dialog__wrapper:has(.ghost-dialog) .v-modal {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Fallback: Ẩn backdrop nếu browser không support :has() */
+body .v-modal {
+    transition: opacity 0s !important;
+}
+
+/* Ẩn backdrop khi body có class duplicating-mode */
+body.duplicating-mode .v-modal {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: none !important;
+}
+
+/* Ẩn tất cả backdrop ngay khi duplicate */
+body.duplicating-mode > .v-modal {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
 }
 </style>
