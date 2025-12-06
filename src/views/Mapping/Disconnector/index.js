@@ -173,8 +173,8 @@ export const disconnectorEntityToDto = (entity) => {
     dto.properties.manufacturer = entity.productAssetModel.manufacturer || '';
     dto.productAssetModelId = entity.productAssetModel.mrid || '';
     dto.properties.manufacturer_type = (entity.disconnectorInfo && entity.disconnectorInfo.manufacturer_type)
-    ? entity.disconnectorInfo.manufacturer_type
-    : (entity.asset.manufacturer_type || '');    
+        ? entity.disconnectorInfo.manufacturer_type
+        : (entity.asset.manufacturer_type || '');
     dto.properties.country_of_origin = entity.asset.country_of_origin || '';
     dto.properties.apparatus_id = entity.asset.name || '';
     dto.properties.comment = entity.asset.description || '';
