@@ -52,6 +52,9 @@
                 <li>
                     <i class="fa-solid fa-file-arrow-down"></i> Download
                 </li>
+                <li @click="move">
+                    <i class="fa-solid fa-arrows-up-down-left-right"></i> Move
+                </li>
                 <li @click="deleteNode">
                     <i class="fas fa-trash-alt"></i> Delete
                 </li>
@@ -148,6 +151,11 @@ export default {
             this.closeContextMenu();
         },
         duplicate() {
+            this.$emit("duplicate-node", this.selectedNode);
+            this.closeContextMenu();
+        },
+        move() {
+            this.$emit("move-node", this.selectedNode);
             this.closeContextMenu();
         },
         addSubs() {

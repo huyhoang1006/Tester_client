@@ -181,7 +181,7 @@
                 <i title="Fmeca" style="font-size: 12px;" class="fa-solid fa-table"></i>
             </div>
             <div>
-                <i @click="handleMoveNode" title="Move" style="font-size: 12px;" class="fa-solid fa-arrows-up-down"></i>
+                <i @click="handleMoveNode" title="Move" style="font-size: 12px;" class="fa-solid fa-arrows-up-down-left-right"></i>
             </div>
         </div>
         <!-- Thanh điều hướng có thể kéo rộng/kéo hẹp -->
@@ -219,6 +219,8 @@
                         @export-json="handleExportJSONFromContext" @export-json-cim="handleExportJSONCIMFromContext"
                         @export-xml="handleExportXMLFromContext" @export-excel="handleExportExcelFromContext"
                         @export-word="handleExportWordFromContext" @export-pdf="handleExportPDFFromContext"
+                        @duplicate-node="handleDuplicateFromContext"
+                        @move-node="handleMoveFromContext"
                         @show-data="showDataClient" ref="contextMenuClient">
                     </contextMenu>
                 </div>
@@ -244,6 +246,8 @@
                         @export-json="handleExportJSONFromContext" @export-json-cim="handleExportJSONCIMFromContext"
                         @export-xml="handleExportXMLFromContext" @export-excel="handleExportExcelFromContext"
                         @export-word="handleExportWordFromContext" @export-pdf="handleExportPDFFromContext"
+                        @duplicate-node="handleDuplicateFromContext"
+                        @move-node="handleMoveFromContext"
                         ref="contextMenu"></contextMenu>
                 </div>
                 <div class="page-align">
@@ -983,8 +987,6 @@ import * as ReactorMapping from '@/views/Mapping/Reactor/index'
 import * as BushingMapping from '@/views/Mapping/Bushing/index'
 import * as RotatingMachineMapping from "@/views/Mapping/RotatingMachine/index"
 
-import Icon from '@/views/Common/Icon.vue'
-import Fmeca from '@/views/Fmeca'
 import { exportNodeToJSON as exportNodeToJSONUtil } from '@/function/entity/export/index'
 
 import TransformerMixin from '@/views/AssetView/Transformer/mixin/index.js'
@@ -1333,6 +1335,18 @@ export default {
         },
         async handleExportJSONCIMFromContext(node) {
             await this.exportSingleNodeToJSON(node, 'cim')
+        },
+        async handleDuplicateFromContext(node) {
+            // Set selectedNodes để duplicateSelectedNodes có thể sử dụng
+            this.selectedNodes = [node];
+            // Gọi hàm duplicate
+            await this.duplicateSelectedNodes();
+        },
+        async handleMoveFromContext(node) {
+            // Set selectedNodes để handleMoveNode có thể sử dụng
+            this.selectedNodes = [node];
+            // Gọi hàm move
+            await this.handleMoveNode();
         },
         // Export một node duy nhất từ context menu (không dùng selectedNodes)
         async exportSingleNodeToJSON(node, type) {
