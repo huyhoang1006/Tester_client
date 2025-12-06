@@ -16,14 +16,14 @@ import { getSecondById } from '@/function/cim/seconds';
 import DisconnectorEntity from '@/views/Flatten/Disconnector';
 import { insertAssetTransaction, getAssetById } from '@/function/cim/asset';
 import { deleteAssetByIdTransaction } from '@/function/cim/asset';
-import {insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction} from '@/function/entity/assetPsr'
-import {insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction} from '@/function/cim/lifecycleDate';
-import {insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction} from '@/function/cim/productAssetModel';
+import { insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
+import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction } from '@/function/cim/lifecycleDate';
+import { insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction } from '@/function/cim/productAssetModel';
 
 
 export const insertDisconnectorEntity = async (entity) => {
     try {
-        if(entity.asset.mrid === null || entity.asset.mrid === '') {
+        if (entity.asset.mrid === null || entity.asset.mrid === '') {
             const result = {
                 success: false,
                 error: new Error("MRID is required for Disconnector Entity"),
@@ -47,28 +47,28 @@ export const insertDisconnectorEntity = async (entity) => {
 
             //voltage
             for (const voltage of entity.voltage) {
-                if(voltage.mrid) {
+                if (voltage.mrid) {
                     await insertVoltageTransaction(voltage, db);
                 }
             }
 
             //frequency
             for (const frequency of entity.frequency) {
-                if(frequency.mrid) {
+                if (frequency.mrid) {
                     await insertFrequencyTransaction(frequency, db);
                 }
             }
 
             //second
             for (const second of entity.seconds) {
-                if(second.mrid) {
+                if (second.mrid) {
                     await insertSecondsTransaction(second, db);
                 }
             }
-           
+
             //currentFlow
             for (const currentFlow of entity.currentFlow) {
-                if(currentFlow.mrid) {
+                if (currentFlow.mrid) {
                     await insertCurrentFlowTransaction(currentFlow, db);
                 }
             }
@@ -117,7 +117,7 @@ export const insertDisconnectorEntity = async (entity) => {
             if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
                 const pathData = JSON.parse(entity.attachment.path);
                 const newPath = []
-                for(let i = 0; i < pathData.length; i++) {
+                for (let i = 0; i < pathData.length; i++) {
                     const namefile = path.basename(pathData[i].path);
                     pathData[i].path = path.join(attachmentContext.getAttachmentDir(), entity.asset.mrid, namefile);
                     newPath.push(pathData[i]);
@@ -126,8 +126,8 @@ export const insertDisconnectorEntity = async (entity) => {
                 await uploadAttachmentTransaction(entity.attachment, db);
             }
 
-           await runAsync('COMMIT');
-           return { success: true, data: entity, message: 'Insert disconnector entity completed' };
+            await runAsync('COMMIT');
+            return { success: true, data: entity, message: 'Insert disconnector entity completed' };
 
         }
     } catch (error) {
@@ -142,19 +142,19 @@ export const insertDisconnectorEntity = async (entity) => {
 
 export const getDisconnectorEntityById = async (id, psrId) => {
     try {
-        if(id == null || id === '') {
+        if (id == null || id === '') {
             return { success: false, error: new Error('Invalid ID') };
         } else {
             const entity = new DisconnectorEntity()
             const dataDisconnector = await getAssetById(id);
-            if(dataDisconnector.success) {
+            if (dataDisconnector.success) {
                 entity.asset = dataDisconnector.data
                 const dataLifecycleDate = await getLifecycleDateById(entity.asset.lifecycle_date);
-                if(dataLifecycleDate.success) {
+                if (dataLifecycleDate.success) {
                     entity.lifecycleDate = dataLifecycleDate.data;
                 }
                 const dataDisconnectorInfo = await getDisconnectorInfoById(entity.asset.asset_info);
-                if(dataDisconnectorInfo.success) {
+                if (dataDisconnectorInfo.success) {
                     entity.disconnectorInfo = dataDisconnectorInfo.data;
                 }
                 // Merge rated fields from switch_info (legacy location for ratings)
@@ -224,20 +224,20 @@ export const getDisconnectorEntityById = async (id, psrId) => {
                 } catch (e) {
                     console.error('Error loading ratings data for Disconnector entity:', e);
                 }
-                
+
                 const productAssetModelId = entity.disconnectorInfo.product_asset_model;
                 const dataProductAssetModel = await getProductAssetModelById(productAssetModelId);
-                if(dataProductAssetModel.success) {
+                if (dataProductAssetModel.success) {
                     entity.productAssetModel = dataProductAssetModel.data;
                 }
-                
+
                 const dataAssetPsr = await getAssetPsrByAssetIdAndPsrId(entity.asset.mrid, psrId);
-                if(dataAssetPsr.success) {
+                if (dataAssetPsr.success) {
                     entity.assetPsr = dataAssetPsr.data;
                 }
 
                 const dataAttachment = await getAttachmentByForeignIdAndType(entity.asset.mrid, 'asset');
-                if(dataAttachment.success) {
+                if (dataAttachment.success) {
                     entity.attachment = dataAttachment.data;
                 }
 
@@ -267,7 +267,7 @@ const runAsync = (sql, params = []) => {
 
 export const deleteDisconnectorEntity = async (data) => {
     try {
-        if(!data || !data.asset || !data.asset.mrid) {
+        if (!data || !data.asset || !data.asset.mrid) {
             return { success: false, error: new Error('Invalid ID'), message: 'Invalid ID' };
         }
 
@@ -275,7 +275,7 @@ export const deleteDisconnectorEntity = async (data) => {
             await runAsync('BEGIN TRANSACTION');
 
             // Prepare and sync file deletions (logical first)
-            if(data.attachment && data.attachment.id) {
+            if (data.attachment && data.attachment.id) {
                 const pathData = JSON.parse(data.attachment.path || '[]')
                 if (Array.isArray(pathData) && pathData.length > 0) {
                     syncFilesWithDeletion(pathData, null, data.asset.mrid);
@@ -284,13 +284,13 @@ export const deleteDisconnectorEntity = async (data) => {
             console.log('1');
 
             // Delete attachment record (no dependencies)
-            if(data.attachment && data.attachment.id) {
+            if (data.attachment && data.attachment.id) {
                 await deleteAttachmentByIdTransaction(data.attachment.id, db);
             }
             console.log('2');
 
             // Delete asset-psr link (depends on asset)
-            if(data.assetPsr && data.assetPsr.mrid) {
+            if (data.assetPsr && data.assetPsr.mrid) {
                 await deleteAssetPsrTransaction(data.assetPsr.mrid, db);
             }
             console.log('3');
@@ -301,8 +301,8 @@ export const deleteDisconnectorEntity = async (data) => {
             }
             console.log('4');
 
-             // Delete disconnector info (depends on asset - must be before asset)
-             if (data.disconnectorInfo && data.disconnectorInfo.mrid) {
+            // Delete disconnector info (depends on asset - must be before asset)
+            if (data.disconnectorInfo && data.disconnectorInfo.mrid) {
                 const mridInfo = data.disconnectorInfo.mrid;
                 const delInfoRes = await deleteDisconnectorInfoTransaction(mridInfo, db);
                 if (!delInfoRes || delInfoRes.success === false) {
@@ -310,14 +310,14 @@ export const deleteDisconnectorEntity = async (data) => {
                 }
             }
             console.log('5');
-            
+
             if (data.productAssetModel && data.productAssetModel.mrid) {
                 await deleteProductAssetModelByIdTransaction(data.productAssetModel.mrid, db);
             }
             console.log('6');
 
-             // Delete lifecycleDate and productAssetModel (after asset is deleted)
-             if (data.lifecycleDate && data.lifecycleDate.mrid) {
+            // Delete lifecycleDate and productAssetModel (after asset is deleted)
+            if (data.lifecycleDate && data.lifecycleDate.mrid) {
                 await deleteLifecycleDateByIdTransaction(data.lifecycleDate.mrid, db);
             }
             console.log('7');
@@ -342,7 +342,7 @@ export const deleteDisconnectorEntity = async (data) => {
             //         await insertSecondsTransaction(second, db);
             //     }
             // }
-           
+
             // //currentFlow
             // for (const currentFlow of entity.currentFlow) {
             //     if(currentFlow.mrid) {
@@ -352,7 +352,7 @@ export const deleteDisconnectorEntity = async (data) => {
 
             //voltage
             for (const voltage of data.voltage) {
-                if(voltage.mrid) {
+                if (voltage.mrid) {
                     await deleteVoltageByIdTransaction(voltage.mrid, db);
                 }
             }
@@ -360,7 +360,7 @@ export const deleteDisconnectorEntity = async (data) => {
 
             //frequency
             for (const frequency of data.frequency) {
-                if(frequency.mrid) {
+                if (frequency.mrid) {
                     await deleteFrequencyByIdTransaction(frequency.mrid, db);
                 }
             }
@@ -368,7 +368,7 @@ export const deleteDisconnectorEntity = async (data) => {
 
             //second
             for (const second of data.seconds) {
-                if(second.mrid) {
+                if (second.mrid) {
                     await deleteSecondsByIdTransaction(second.mrid, db);
                 }
             }
@@ -376,7 +376,7 @@ export const deleteDisconnectorEntity = async (data) => {
 
             //currentFlow
             for (const currentFlow of data.currentFlow) {
-                if(currentFlow.mrid) {
+                if (currentFlow.mrid) {
                     await deleteCurrentFlowByIdTransaction(currentFlow.mrid, db);
                 }
             }
@@ -385,10 +385,10 @@ export const deleteDisconnectorEntity = async (data) => {
             await runAsync('COMMIT');
 
             // Physical file deletions after commit
-            if(data.attachment && data.attachment.id) {
+            if (data.attachment && data.attachment.id) {
                 deleteDirectory(null, data.asset.mrid);
             }
-        
+
 
             return { success: true, message: 'Disconnector entity deleted successfully' };
         } catch (error) {

@@ -1,5 +1,5 @@
 /* eslint-disable */
-import {mapState} from 'vuex'
+import { mapState } from 'vuex'
 import uuid from '@/utils/uuid'
 import OrganisationDto from '@/views/Dto/Organisation'
 import * as orgMapper from '@/views/Mapping/Organisation/index'
@@ -8,14 +8,14 @@ import ConfigurationEvent from '@/views/Cim/ConfigurationEvent'
 export default {
     data() {
         return {
-            properties : new OrganisationDto(),
-            attachmentData : [],
+            properties: new OrganisationDto(),
+            attachmentData: [],
         }
     },
     methods: {
         async saveCtrS() {
             const data = await this.saveOrganisation()
-            if(data.success) {
+            if (data.success) {
                 this.$message.success("Organisation saved successfully")
             } else {
                 this.$message.error("Failed to save organisation")
@@ -29,7 +29,7 @@ export default {
 
         loadData(data) {
             this.properties = data
-            if(data.attachment && data.attachment.path) {
+            if (data.attachment && data.attachment.path) {
                 this.attachmentData = JSON.parse(data.attachment.path)
             } else {
                 this.attachmentData = []
@@ -37,15 +37,15 @@ export default {
         },
 
         async saveOrganisation() {
-            if(this.properties.name === '') {
+            if (this.properties.name === '') {
                 this.$message.error("Name is required")
                 return
             } else {
                 try {
-                    if(this.properties.organisationId === null || this.properties.organisationId === '') {
+                    if (this.properties.organisationId === null || this.properties.organisationId === '') {
                         this.properties.organisationId = uuid.newUuid()
                     }
-                    if(this.properties.parentId === null || this.properties.parentId === '') {
+                    if (this.properties.parentId === null || this.properties.parentId === '') {
                         this.properties.parentId = this.parent ? this.parent.mrid : null
                     }
                     const dto = JSON.parse(JSON.stringify(this.properties))
@@ -53,7 +53,7 @@ export default {
                     const data = orgMapper.OrgDtoToOrgEntity(dtoData)
                     console.log("Organisation data to save:", data)
                     const result = await window.electronAPI.insertParentOrganizationEntity(data)
-                    if(result.success) {
+                    if (result.success) {
                         return {
                             data: result.data,
                             success: true
@@ -68,15 +68,15 @@ export default {
 
                 } catch (err) {
                     console.error('Error saving organisation:', err)
-                    return {success : false}
+                    return { success: false }
                 }
-                
+
             }
         },
-        
+
         checkElectronicAddress(dto) {
-            if(dto.electronicAddressId === null || dto.electronicAddressId === '') {
-                if(dto.email === '' && dto.fax === '') {
+            if (dto.electronicAddressId === null || dto.electronicAddressId === '') {
+                if (dto.email === '' && dto.fax === '') {
                     dto.electronicAddressId = null
                 } else {
                     dto.electronicAddressId = uuid.newUuid()
@@ -85,8 +85,8 @@ export default {
         },
 
         checkTelephoneNumber(dto) {
-            if(dto.telephoneNumberId === null || dto.telephoneNumberId === '') {
-                if(dto.phoneNumber === '') {
+            if (dto.telephoneNumberId === null || dto.telephoneNumberId === '') {
+                if (dto.phoneNumber === '') {
                     dto.telephoneNumberId = null
                 } else {
                     dto.telephoneNumberId = uuid.newUuid()
@@ -96,7 +96,7 @@ export default {
 
         checkStreetDetail(dto) {
             if (dto.streetDetailId === null || dto.streetDetailId === '') {
-                if(dto.street === '') {
+                if (dto.street === '') {
                     dto.streetDetailId = null
                 } else {
                     dto.streetDetailId = uuid.newUuid()
@@ -105,8 +105,8 @@ export default {
         },
 
         checkTownDetail(dto) {
-            if(dto.townDetailId === null || dto.townDetailId === '') {
-                if(dto.city === '' && dto.state_or_province === '' &&
+            if (dto.townDetailId === null || dto.townDetailId === '') {
+                if (dto.city === '' && dto.state_or_province === '' &&
                     dto.country === '' && dto.district_or_town === '' &&
                     dto.ward_or_commune === '') {
                     dto.townDetailId = null
@@ -117,8 +117,8 @@ export default {
         },
 
         checkStreetAddress(dto) {
-            if(dto.streetAddressId === null || dto.streetAddressId === '') {
-                if((dto.streetDetailId === null || dto.streetDetailId === '') && (dto.townDetailId === null || dto.townDetailId === '')) {
+            if (dto.streetAddressId === null || dto.streetAddressId === '') {
+                if ((dto.streetDetailId === null || dto.streetDetailId === '') && (dto.townDetailId === null || dto.townDetailId === '')) {
                     dto.streetAddressId = null
                 } else {
                     dto.streetAddressId = uuid.newUuid()
@@ -143,7 +143,7 @@ export default {
         },
 
         checkConfigurationEvent(dto) {
-            if(dto.organisationId !== null && dto.organisationId !== '') {
+            if (dto.organisationId !== null && dto.organisationId !== '') {
                 const configEventAttachment = new ConfigurationEvent()
                 configEventAttachment.mrid = uuid.newUuid()
                 configEventAttachment.name = 'Change organisation'
@@ -151,23 +151,23 @@ export default {
                 configEventAttachment.changed_organisation = dto.organisationId
                 configEventAttachment.user_name = this.$store.state.user.name
                 configEventAttachment.modified_by = this.$store.state.user.user_id
-                if(this.mode === this.$constant.ADD) {
+                if (this.mode === this.$constant.ADD) {
                     configEventAttachment.type = "INSERT"
-                } else if(this.mode === this.$constant.EDIT) {
+                } else if (this.mode === this.$constant.EDIT) {
                     configEventAttachment.type = "UPDATE"
                 }
                 configEventAttachment.description = `Organisation changed of ${dto.name}`
                 dto.configurationEvent.push(configEventAttachment)
             }
         },
-        
+
         checkUser(dto) {
             dto.user_id = this.$store.state.user.user_id
             dto.user_name = this.$store.state.user.name
         },
 
         checkAttachment(dto) {
-            if(dto.attachmentId === null || dto.attachmentId === '') {
+            if (dto.attachmentId === null || dto.attachmentId === '') {
                 if (this.attachmentData.length > 0) {
                     dto.attachmentId = uuid.newUuid()
                     dto.attachment.id = dto.attachmentId
@@ -176,7 +176,7 @@ export default {
                     dto.attachment.type = 'organisation'
                     dto.attachment.id_foreign = this.properties.organisationId
                 }
-            } 
+            }
         },
 
         checkOrganisation(dto) {
@@ -191,6 +191,6 @@ export default {
             this.checkConfigurationEvent(dto)
             return dto
         }
-        
+
     }
 }
