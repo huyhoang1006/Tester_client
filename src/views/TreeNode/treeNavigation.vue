@@ -124,8 +124,12 @@
                 <el-dropdown @command="handleImportCommand" trigger="click">
                     <i title="Import" style="font-size: 12px;" class="fa-solid fa-file-import"></i>
                     <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item command="importJSON">
+                        <el-dropdown-item class="import-json-parent" @mouseenter.native="showSubImport = 'json'" @mouseleave.native="showSubImport = null">
                             <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon> import from JSON
+                            <div class="import-json-submenu" v-if="showSubImport === 'json'" @click.stop @mouseenter.stop @mouseleave.stop>
+                                <div class="submenu-item" @click="handleImportCommand('importJSON')">import JSON</div>
+                                <div class="submenu-item" @click="handleImportCommand('importJSONCIM')">import JSON by CIM</div>
+                            </div>
                         </el-dropdown-item>
                         <el-dropdown-item command="importXML">
                             <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon> import from XML
@@ -221,6 +225,7 @@
                         @export-word="handleExportWordFromContext" @export-pdf="handleExportPDFFromContext"
                         @duplicate-node="handleDuplicateFromContext"
                         @move-node="handleMoveFromContext"
+                        @import-json="handleImportJSONFromContext" @import-json-cim="handleImportJSONCIMFromContext"
                         @show-data="showDataClient" ref="contextMenuClient">
                     </contextMenu>
                 </div>
@@ -248,6 +253,7 @@
                         @export-word="handleExportWordFromContext" @export-pdf="handleExportPDFFromContext"
                         @duplicate-node="handleDuplicateFromContext"
                         @move-node="handleMoveFromContext"
+                        @import-json="handleImportJSONFromContext" @import-json-cim="handleImportJSONCIMFromContext"
                         ref="contextMenu"></contextMenu>
                 </div>
                 <div class="page-align">
@@ -985,9 +991,10 @@ import * as VoltageTransformerMapping from '@/views/Mapping/VoltageTransformer/i
 import * as CurrentTransformerMapping from '@/views/Mapping/CurrentTransformer/index'
 import * as ReactorMapping from '@/views/Mapping/Reactor/index'
 import * as BushingMapping from '@/views/Mapping/Bushing/index'
-import * as RotatingMachineMapping from "@/views/Mapping/RotatingMachine/index"
+import * as rotatingMachineMapping from "@/views/Mapping/RotatingMachine/index"
 
 import { exportNodeToJSON as exportNodeToJSONUtil } from '@/function/entity/export/index'
+import { importNodeFromJSON as importNodeFromJSONUtil } from '@/function/entity/import/index'
 
 import TransformerMixin from '@/views/AssetView/Transformer/mixin/index.js'
 import SurgeArresterMixin from '@/views/AssetView/SurgeArrester/mixin/index.js'
@@ -1041,6 +1048,7 @@ export default {
             openImportDialog: false,
             signFmeca: false,
             showSub : null,
+            showSubImport : null,
             parentOrganization: null,
             logDataServer: [],
             logDataClient: [],
@@ -1287,11 +1295,14 @@ export default {
 
             await exportNodeToJSONUtil(this.selectedNodes, type, dependencies)
         },
-        handleImportCommand(cmd) {
+        async handleImportCommand(cmd) {
            if (cmd === 'importExcel') {
                 this.openImportDialog = true
             } else if(cmd === 'importJSON'){
-
+                await this.importTreeFromJSON('dto')
+            } else if(cmd === 'importJSONCIM'){
+                // TODO: Implement import JSON by CIM (sau khi có import JSON thường)
+                this.$message.info('Import JSON by CIM feature is coming soon')
             } else if(cmd === 'importXML'){
                 this.openImportDialog = true
             } else if(cmd === 'importWord'){
@@ -1299,6 +1310,75 @@ export default {
             } else if(cmd === 'importPDF'){
                 this.openImportDialog = true
             }  
+        },
+        async importTreeFromJSON(type) {
+            // Validate: Phải có selectedNode (giống export)
+            if (!this.selectedNodes || this.selectedNodes.length === 0) {
+                this.$message.warning('Please select at least one node to import into')
+                return
+            }
+
+            // Lấy parent node (node được chọn đầu tiên)
+            const parentNode = this.selectedNodes[0]
+
+            try {
+                // Mở file picker để chọn JSON file
+                const fileResult = await window.electronAPI.importJSON()
+                
+                if (!fileResult.success || !fileResult.data) {
+                    if (fileResult.message !== 'Import cancelled') {
+                        this.$message.error(fileResult.message || 'Failed to load JSON file')
+                    }
+                    return
+                }
+
+                const dtos = fileResult.data
+
+                // Prepare dependencies
+                const dependencies = {
+                    electronAPI: window.electronAPI,
+                    mappings: {
+                        SubstationMapping,
+                        OrganisationMapping,
+                        SurgeArresterMapping,
+                        PowerCableMapping,
+                        DisconnectorMapping,
+                        rotatingMachineMapping,
+                        CapacitorMapping,
+                        VoltageTransformerMapping,
+                        CurrentTransformerMapping,
+                        TransformerMapping,
+                        BreakerMapping,
+                        ReactorMapping,
+                        BushingMapping
+                    },
+                    userId: this.$store.state.user.user_id,
+                    messageHandler: this.$message
+                }
+
+                // Import với parent node
+                const result = await importNodeFromJSONUtil(dtos, parentNode, dependencies)
+
+                // Refresh tree sau khi import thành công
+                if (result.success && result.successCount > 0) {
+                    // Refresh tree bằng cách reload children của parent node
+                    this.refreshTreeAfterImport(parentNode)
+                }
+            } catch (error) {
+                console.error('Error importing JSON:', error)
+                this.$message.error('An error occurred while importing JSON')
+            }
+        },
+        refreshTreeAfterImport(parentNode) {
+            // Refresh tree bằng cách trigger reload children
+            if (parentNode) {
+                // Emit event để reload children của parent node
+                this.$nextTick(() => {
+                    // Có thể cần gọi method reload tree tùy vào implementation
+                    // Tạm thời chỉ log
+                    console.log('Tree should be refreshed after import')
+                })
+            }
         },
         handleCancelImport(){
             this.openImportDialog = false
@@ -1329,7 +1409,6 @@ export default {
         handleClickFmeca() {
             this.signFmeca = true;
         },
-        // Export handlers từ context menu - chỉ export node được click, không export children
         async handleExportJSONFromContext(node) {
             await this.exportSingleNodeToJSON(node, 'dto')
         },
@@ -1345,8 +1424,65 @@ export default {
         async handleMoveFromContext(node) {
             // Set selectedNodes để handleMoveNode có thể sử dụng
             this.selectedNodes = [node];
-            // Gọi hàm move
             await this.handleMoveNode();
+        },
+        // Import handlers từ context menu
+        async handleImportJSONFromContext(node) {
+            // Validate: Phải có node
+            if (!node) {
+                this.$message.warning('Please select a node to import into')
+                return
+            }
+
+            try {
+                // Mở file picker để chọn JSON file
+                const fileResult = await window.electronAPI.importJSON()
+                
+                if (!fileResult.success || !fileResult.data) {
+                    if (fileResult.message !== 'Import cancelled') {
+                        this.$message.error(fileResult.message || 'Failed to load JSON file')
+                    }
+                    return
+                }
+
+                const dtos = fileResult.data
+
+                // Prepare dependencies
+                const dependencies = {
+                    electronAPI: window.electronAPI,
+                    mappings: {
+                        SubstationMapping,
+                        OrganisationMapping,
+                        SurgeArresterMapping,
+                        PowerCableMapping,
+                        DisconnectorMapping,
+                        rotatingMachineMapping,
+                        CapacitorMapping,
+                        VoltageTransformerMapping,
+                        CurrentTransformerMapping,
+                        TransformerMapping,
+                        BreakerMapping,
+                        ReactorMapping,
+                        BushingMapping
+                    },
+                    userId: this.$store.state.user.user_id,
+                    messageHandler: this.$message
+                }
+
+                // Import với node làm parent
+                const result = await importNodeFromJSONUtil(dtos, node, dependencies)
+
+                // Refresh tree sau khi import thành công
+                if (result.success && result.successCount > 0) {
+                    this.refreshTreeAfterImport(node)
+                }
+            } catch (error) {
+                console.error('Error importing JSON:', error)
+                this.$message.error('An error occurred while importing JSON')
+            }
+        },
+        async handleImportJSONCIMFromContext(node) {
+            this.$message.info('Import JSON by CIM feature is coming soon')
         },
         // Export một node duy nhất từ context menu (không dùng selectedNodes)
         async exportSingleNodeToJSON(node, type) {
@@ -5320,7 +5456,7 @@ cleanDtoForDuplicate(dto) {
             result = await this.processDuplicateAsset(
                 node,
                 window.electronAPI.getRotatingMachineEntityByMrid,
-                RotatingMachineMapping.mapEntityToDto,
+                rotatingMachineMapping.mapEntityToDto,
                 RotatingMachineMixin,
                 'rotatingMachine'
             );
@@ -6204,6 +6340,35 @@ cleanDtoForDuplicate(dto) {
     color: rgb(51.8, 80.6, 171);
 }
 
+.import-json-parent {
+    position: relative;
+}
+
+.import-json-submenu {
+    position: absolute;
+    left: 100%;
+    top: 0;
+    background: #fff;
+    border: 1px solid #e4e7ed;
+    border-radius: 4px;
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+    min-width: 170px;
+    z-index: 1000;
+    padding: 1px 0;
+}
+
+.import-json-submenu .submenu-item {
+    padding: 1px 20px;
+    font-size: 12px;
+    cursor: pointer;
+    color: #606266;
+}
+
+.import-json-submenu .submenu-item:hover {
+    background-color: #f5f7fa;
+    color: rgb(51.8, 80.6, 171);
+}
+
 .asset-submenu-parent {
     position: relative;
 }
@@ -6243,8 +6408,6 @@ cleanDtoForDuplicate(dto) {
 </style>
 
 <style>
-/* Đặt ở cuối file, không dùng scoped - Ẩn dialog khi duplicate */
-
 /* Ẩn dialog và tất cả nội dung */
 .ghost-dialog {
     visibility: hidden !important; 
