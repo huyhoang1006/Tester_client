@@ -1,35 +1,41 @@
 <template>
     <li>
-        <span @contextmenu.prevent="openContextMenu($event, node)" :class="{ selected: selectedNodes.some(n => n.mrid === node.mrid) }" class="folder" @click="toggle" @dblclick="doubleToggle">
-            <div v-if="node.mode == 'substation'" class="icon-wrapper">
-                <icon size="16px" folderType="location" badgeColor="146EBE"></icon>
-                <span class="node-name">{{ node.name }}</span>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div @click="fetchNodeData">
+                <i v-if="!node.expanded" class="fa-solid fa-caret-right" style="font-size: 12px;"></i>
+                <i v-else class="fa-solid fa-caret-down" style="font-size: 12px;"></i>
             </div>
-            <div v-else-if="node.mode == 'voltageLevel'" class="icon-wrapper">
-                <icon size="16px" folderType="voltageLevel" badgeColor="146EBE"></icon>
-                <span class="node-name">{{ node.name }}</span>
-            </div>
-            <div v-else-if="node.mode == 'bay'" class="icon-wrapper">
-                <icon size="16px" folderType="bay" badgeColor="146EBE"></icon>
-                <span class="node-name">{{ node.name }}</span>
-            </div>
-            <div v-else-if="node.mode == 'asset'" class="icon-wrapper">
-                <icon size="16px" folderType="asset" :assetDetail="node.asset" badgeColor="146EBE"></icon>
-                <span class="node-name">{{ node.serial_number }} </span>
-            </div>
-            <div v-else-if="node.mode == 'job'" class="icon-wrapper">
-                <icon size="16px" folderType="job" badgeColor="FF0000"></icon>
-                <span class="node-name">{{ node.name }}</span>
-            </div>
-            <div v-else-if="node.mode == 'test'" class="icon-wrapper">
-                <icon size="16px" folderType="test" badgeColor="008001"></icon>
-                <span class="node-name">{{ node.name }}</span>
-            </div>
-            <div v-else class="icon-wrapper">
-                <icon size="14px" folderType="building" badgeColor="008001"></icon>
-                <span class="node-name">{{ node.name }}</span>
-            </div>
-        </span>
+            <span @contextmenu.prevent="openContextMenu($event, node)" :class="{ selected: selectedNodes.some(n => n.mrid === node.mrid) }" class="folder" @click="toggle" @dblclick="doubleToggle">
+                <div v-if="node.mode == 'substation'" class="icon-wrapper">
+                    <icon size="16px" folderType="location" badgeColor="146EBE"></icon>
+                    <span class="node-name">{{ node.name }}</span>
+                </div>
+                <div v-else-if="node.mode == 'voltageLevel'" class="icon-wrapper">
+                    <icon size="16px" folderType="voltageLevel" badgeColor="146EBE"></icon>
+                    <span class="node-name">{{ node.name }}</span>
+                </div>
+                <div v-else-if="node.mode == 'bay'" class="icon-wrapper">
+                    <icon size="16px" folderType="bay" badgeColor="146EBE"></icon>
+                    <span class="node-name">{{ node.name }}</span>
+                </div>
+                <div v-else-if="node.mode == 'asset'" class="icon-wrapper">
+                    <icon size="16px" folderType="asset" :assetDetail="node.asset" badgeColor="146EBE"></icon>
+                    <span class="node-name">{{ node.serial_number }} </span>
+                </div>
+                <div v-else-if="node.mode == 'job'" class="icon-wrapper">
+                    <icon size="16px" folderType="job" badgeColor="FF0000"></icon>
+                    <span class="node-name">{{ node.name }}</span>
+                </div>
+                <div v-else-if="node.mode == 'test'" class="icon-wrapper">
+                    <icon size="16px" folderType="test" badgeColor="008001"></icon>
+                    <span class="node-name">{{ node.name }}</span>
+                </div>
+                <div v-else class="icon-wrapper">
+                    <icon size="14px" folderType="building" badgeColor="008001"></icon>
+                    <span class="node-name">{{ node.name }}</span>
+                </div>
+            </span>
+        </div>
         
         <spinner style="margin-left: 20px;" v-if="isLoading"></spinner>
         
@@ -82,19 +88,19 @@ export default {
             // Phân biệt click và double click
             if (this.clickTimeout) clearTimeout(this.clickTimeout);
             this.clickTimeout = setTimeout(() => {
-                if(event.ctrlKey) {
-                    this.updateSelection(this.node);
-                } else {
-                    this.clearSelection();
-                    this.$emit("show-properties", this.node);
-                    if (!this.node.expanded) {
-                        this.isLoading = true
-                        this.$emit("fetch-children", this.node);
-                        this.isLoading = false
-                    }
-                    Vue.set(this.node, "expanded", !this.node.expanded);
-                }
+                this.clearSelection();
+                this.updateSelection(this.node);
             }, 250); // 250ms là khoảng thời gian nhận biết double click
+        },
+
+        fetchNodeData(event) {
+            this.$emit("show-properties", this.node);
+            if (!this.node.expanded) {
+                this.isLoading = true
+                this.$emit("fetch-children", this.node);
+                this.isLoading = false
+            }
+            Vue.set(this.node, "expanded", !this.node.expanded);
         },
 
         doubleToggle(event) {
@@ -132,7 +138,6 @@ export default {
 }
 
 .folder i {
-    margin-right: 8px; /* Khoảng cách giữa icon và văn bản */
     width: 16px; /* Kích thước icon */
     text-align: center;
     font-size: 12px; /* Cỡ chữ cho icon */

@@ -24,6 +24,7 @@ class SurgeArresterJobEntity {
         this.valueToAlias = []
         this.procedure = []
         this.procedureAsset = []
+        this.procedureDataSetMeasurementValue = []
     }
 }
 

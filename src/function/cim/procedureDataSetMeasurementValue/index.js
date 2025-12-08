@@ -1,77 +1,96 @@
 import db from '../../datacontext/index'
 
 // Lấy procedureDataSetMeasurementValue theo mrid
-export const getProcedureDataSetMeasurementValueById = async (mrid) => {
+export const getProcedureDataSetMeasurementValueById = async (procedure_dataset_id, measurement_value_id) => {
     return new Promise((resolve, reject) => {
         db.get(
-            `SELECT * FROM procedure_dataset_measurement_value WHERE mrid=?`,
-            [mrid],
+            `SELECT * FROM procedure_dataset_measurement_value 
+             WHERE procedure_dataset_id=? AND measurement_value_id=?`,
+            [procedure_dataset_id, measurement_value_id],
             (err, row) => {
-                if (err) return reject({ success: false, err, message: 'Get procedureDataSetMeasurementValue by id failed' })
-                if (!row) return resolve({ success: false, data: null, message: 'ProcedureDataSetMeasurementValue not found' })
-                return resolve({ success: true, data: row, message: 'Get procedureDataSetMeasurementValue by id completed' })
+                if (err) return reject({ success: false, err, message: 'Get failed' });
+                if (!row) return resolve({ success: false, data: null, message: 'Not found' });
+
+                return resolve({ success: true, data: row, message: 'Get completed' });
             }
-        )
-    })
-}
+        );
+    });
+};
+
 
 // Thêm mới procedureDataSetMeasurementValue (transaction)
 export const insertProcedureDataSetMeasurementValueTransaction = async (info, dbsql) => {
     return new Promise((resolve, reject) => {
         dbsql.run(
             `INSERT INTO procedure_dataset_measurement_value(
-                mrid, procedure_dataset_id, measurement_value_id
-            ) VALUES (?, ?, ?)
-            ON CONFLICT(mrid) DO UPDATE SET
-                procedure_dataset_id = excluded.procedure_dataset_id,
-                measurement_value_id = excluded.measurement_value_id
-            `,
+                procedure_dataset_id,
+                measurement_value_id
+            ) VALUES (?, ?)
+            ON CONFLICT(procedure_dataset_id, measurement_value_id) DO NOTHING`,
             [
-                info.mrid,
                 info.procedure_dataset_id,
                 info.measurement_value_id
             ],
             function (err) {
                 if (err) {
-                    return reject({ success: false, err, message: 'Insert procedureDataSetMeasurementValue failed' })
+                    return reject({ success: false, err, message: 'Insert failed' });
                 }
-                return resolve({ success: true, data: info, message: 'Insert procedureDataSetMeasurementValue completed' })
+                return resolve({ success: true, data: info, message: 'Insert completed' });
             }
-        )
-    })
-}
+        );
+    });
+};
 
 // Cập nhật procedureDataSetMeasurementValue (transaction)
-export const updateProcedureDataSetMeasurementValueTransaction = async (mrid, info, dbsql) => {
+export const updateProcedureDataSetMeasurementValueTransaction = async (
+    old_procedure_dataset_id,
+    old_measurement_value_id,
+    info,
+    dbsql
+) => {
     return new Promise((resolve, reject) => {
         dbsql.run(
             `UPDATE procedure_dataset_measurement_value SET
                 procedure_dataset_id = ?,
                 measurement_value_id = ?
-            WHERE mrid = ?`,
+             WHERE procedure_dataset_id = ? AND measurement_value_id = ?`,
             [
                 info.procedure_dataset_id,
                 info.measurement_value_id,
-                mrid
+                old_procedure_dataset_id,
+                old_measurement_value_id
             ],
             function (err) {
                 if (err) {
-                    return reject({ success: false, err, message: 'Update procedureDataSetMeasurementValue failed' })
+                    return reject({ success: false, err, message: 'Update failed' });
                 }
-                return resolve({ success: true, data: info, message: 'Update procedureDataSetMeasurementValue completed' })
+                return resolve({ success: true, data: info, message: 'Update completed' });
             }
-        )
-    })
-}
+        );
+    });
+};
 
 // Xóa procedureDataSetMeasurementValue (transaction)
-export const deleteProcedureDataSetMeasurementValueTransaction = async (mrid, dbsql) => {
+export const deleteProcedureDataSetMeasurementValueTransaction = async (
+    procedure_dataset_id,
+    measurement_value_id,
+    dbsql
+) => {
     return new Promise((resolve, reject) => {
-        dbsql.run("DELETE FROM procedure_dataset_measurement_value WHERE mrid=?", [mrid], function (err) {
-            if (err) {
-                return reject({ success: false, err, message: 'Delete procedureDataSetMeasurementValue failed' })
+        dbsql.run(
+            `DELETE FROM procedure_dataset_measurement_value 
+             WHERE procedure_dataset_id=? AND measurement_value_id=?`,
+            [procedure_dataset_id, measurement_value_id],
+            function (err) {
+                if (err) {
+                    return reject({ success: false, err, message: 'Delete failed' });
+                }
+                return resolve({
+                    success: true,
+                    data: { procedure_dataset_id, measurement_value_id },
+                    message: 'Delete completed'
+                });
             }
-            return resolve({ success: true, data: mrid, message: 'Delete procedureDataSetMeasurementValue completed' })
-        })
-    })
-}
+        );
+    });
+};

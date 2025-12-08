@@ -13,13 +13,14 @@ import SurgeArresterTestingEquipmentTestType from "@/views/Flatten/SurgeArrester
 import StringMeaurementValue from "@/views/Cim/StringMeasurementValue";
 import AnalogValue from "@/views/Cim/AnalogValue";
 import DiscreteValue from "@/views/Cim/DiscreteValue";
-import StringMeaurement from "@/views/Cim/StringMeasurement";
+import StringMeasurement from "@/views/Cim/StringMeasurement";
 import Analog from "@/views/Cim/Analog";
 import Discrete from "@/views/Cim/Discrete";
 import ValueAliasSet from "@/views/Cim/ValueAliasSet";
 import ValueToAlias from "@/views/Cim/ValueToAlias";
 import Procedure from "@/views/Cim/Procedure"
 import ProcedureAsset from "@/views/Cim/ProcedureAsset";
+import ProcedureDataSetMeasurementValue from "@/views/Cim/ProcedureDataSetMeasurementValue";
 
 
 export const jobDtoToEntity = (dto) => {
@@ -71,17 +72,26 @@ export const jobDtoToEntity = (dto) => {
         entity.procedureAsset.push(procedureAssetEntity);
     }
 
+    //surgeArresterTestingEquipmentTestType
+    for(const surgeArresterTestingEquipmentTestType of dto.surgeArresterTestingEquipmentTestType) {
+        const data = new SurgeArresterTestingEquipmentTestType();
+        data.mrid = surgeArresterTestingEquipmentTestType.mrid || null;
+        data.testing_equipment_id = surgeArresterTestingEquipmentTestType.testing_equipment_id || null;
+        data.test_type_id = surgeArresterTestingEquipmentTestType.test_type_id || null;
+        entity.surgeArresterTestingEquipmentTestType.push(data);
+    }
+
     //test list
     for (const item of dto.testList) {
         const testCodeKey = convertArrayToObject(item.data.row_data);
-        for(const testCodeKeyItem of item.data.row_data) {
-            if(testCodeKeyItem.type === 'string') {
-                const stringMeasurement = new StringMeaurement();
+        for (const testCodeKeyItem of item.data.row_data) {
+            if (testCodeKeyItem.type === 'string') {
+                const stringMeasurement = new StringMeasurement();
                 stringMeasurement.mrid = testCodeKeyItem.mrid || null;
                 stringMeasurement.alias_name = testCodeKeyItem.code || null;
                 stringMeasurement.name = testCodeKeyItem.name || null;
                 entity.stringMeasurement.push(stringMeasurement);
-            } else if(testCodeKeyItem.type === 'analog') {
+            } else if (testCodeKeyItem.type === 'analog') {
                 const analog = new Analog();
                 analog.mrid = testCodeKeyItem.mrid || null;
                 analog.alias_name = testCodeKeyItem.code || null;
@@ -90,7 +100,7 @@ export const jobDtoToEntity = (dto) => {
                 analog.unit_multiplier = unitParts.length > 1 ? unitParts[0] : null;
                 analog.unit_symbol = unitParts.length > 1 ? unitParts[1] : unitParts[0] || null;
                 entity.analog.push(analog);
-            } else if(testCodeKeyItem.type === 'discrete') {
+            } else if (testCodeKeyItem.type === 'discrete') {
                 const discrete = new Discrete();
                 discrete.mrid = testCodeKeyItem.mrid || null;
                 discrete.alias_name = testCodeKeyItem.code || null;
@@ -102,7 +112,7 @@ export const jobDtoToEntity = (dto) => {
                 valueAliasSet.mrid = testCodeKeyItem.pool.mrid || null;
                 entity.valueAliasSet.push(valueAliasSet);
 
-                for(const valueAlias of testCodeKeyItem.pool.valueToAlias) {
+                for (const valueAlias of testCodeKeyItem.pool.valueToAlias) {
                     const valueToAlias = new ValueToAlias();
                     valueToAlias.mrid = valueAlias.mrid || null;
                     valueToAlias.value = valueAlias.value || null;
@@ -114,7 +124,7 @@ export const jobDtoToEntity = (dto) => {
         }
 
         //MeasurementProcedure
-        for(const measurementProcedure of item.data.measurementProcedure) {
+        for (const measurementProcedure of item.data.measurementProcedure) {
             entity.measurementProcedure.push(measurementProcedure);
         }
 
@@ -200,48 +210,76 @@ export const jobDtoToEntity = (dto) => {
         //attachment
         entity.attachmentTest.push(item.testCondition.attachment);
 
-        for(const data of item.data.table) {
+        for (const data of item.data.table) {
             const testData = new TestDataSet();
             testData.mrid = data.mrid || null;
             testData.work_task = item.mrid || null;
             entity.testDataSet.push(testData);
 
             for (const [key, value] of Object.entries(data)) {
-                if(typeof value === 'object') {
-                    if(value.type === 'analog') {
+                if (typeof value === 'object') {
+                    if (value.type === 'analog') {
                         const analogValue = new AnalogValue();
                         analogValue.mrid = value.mrid || null;
                         analogValue.alias_name = value.value || null;
                         analogValue.analog = testCodeKey[key] ? testCodeKey[key].mrid : null;
                         entity.analogValues.push(analogValue);
-                    } else if(value.type === 'string') {
+                        const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue();
+                        procedureDataSetMeasurementValue.data_set_id = data.mrid || null;
+                        procedureDataSetMeasurementValue.measurement_value_id = value.mrid || null;
+                        entity.procedureDataSetMeasurementValue.push(procedureDataSetMeasurementValue);
+                    } else if (value.type === 'string') {
                         const stringValue = new StringMeaurementValue();
                         stringValue.mrid = value.mrid || null;
                         stringValue.value = value.value || null;
                         stringValue.alias_name = key || null;
                         stringValue.string_measurement = testCodeKey[key] ? testCodeKey[key].mrid : null;
                         entity.stringMeasurementValues.push(stringValue);
-                    } else if(value.type === 'discrete') {
+                        const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue();
+                        procedureDataSetMeasurementValue.data_set_id = data.mrid || null;
+                        procedureDataSetMeasurementValue.measurement_value_id = value.mrid || null;
+                        entity.procedureDataSetMeasurementValue.push(procedureDataSetMeasurementValue);
+                    } else if (value.type === 'discrete') {
                         const discreteValue = new DiscreteValue();
                         discreteValue.mrid = value.mrid || null;
                         discreteValue.value = value.value || null;
                         discreteValue.alias_name = key || null;
                         discreteValue.discrete = testCodeKey[key] ? testCodeKey[key].mrid : null;
                         entity.discreteValues.push(discreteValue);
+                        const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue();
+                        procedureDataSetMeasurementValue.data_set_id = data.mrid || null;
+                        procedureDataSetMeasurementValue.measurement_value_id = value.mrid || null;
+                        entity.procedureDataSetMeasurementValue.push(procedureDataSetMeasurementValue);
                     }
                 }
             }
         }
     }
 
-    //surgeArresterTestingEquipmentTestType
-    for(const surgeArresterTestingEquipmentTestType of dto.surgeArresterTestingEquipmentTestType) {
-        const data = new SurgeArresterTestingEquipmentTestType();
-        data.mrid = surgeArresterTestingEquipmentTestType.mrid || null;
-        data.testing_equipment_id = surgeArresterTestingEquipmentTestType.testing_equipment_id || null;
-        data.test_type_id = surgeArresterTestingEquipmentTestType.test_type_id || null;
-        entity.surgeArresterTestingEquipmentTestType.push(data);
-    }
+    entity.measurementProcedure = [
+        ...new Map(entity.measurementProcedure.map(mp => [mp.mrid, mp])).values()
+    ];
+
+    entity.stringMeasurement = [
+        ...new Map(entity.stringMeasurement.map(mp => [mp.mrid, mp])).values()
+    ];
+
+    entity.analog = [
+        ...new Map(entity.analog.map(mp => [mp.mrid, mp])).values()
+    ];
+
+    entity.discrete = [
+        ...new Map(entity.discrete.map(mp => [mp.mrid, mp])).values()
+    ];
+
+    entity.valueAliasSet = [
+        ...new Map(entity.valueAliasSet.map(mp => [mp.mrid, mp])).values()
+    ];
+
+    entity.valueToAlias = [
+        ...new Map(entity.valueToAlias.map(mp => [mp.mrid, mp])).values()
+    ];
+
     return entity;
 }
 

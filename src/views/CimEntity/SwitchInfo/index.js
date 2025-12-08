@@ -1,4 +1,4 @@
-import AssetInfo from '../AssetInfo'
+import AssetInfo from '../AssetInfo';
 import CurrentFlow from "../CurrentFlow";
 import Mass from "../Mass";
 import Volume from "../Volume";
@@ -9,23 +9,23 @@ import Pressure from "../Pressure";
 
 class SwitchInfo extends AssetInfo {
     constructor() {
-        super()
-        // FK references
-                this.breakingCapacity = new CurrentFlow();
-                this.gasWeightPerTank = new Mass();
-                this.oilVolumePerTank = new Volume();
-                this.ratedCurrent = new CurrentFlow();
-                this.ratedFrequency = new Frequency();
-                this.ratedImpulseWithstandVoltage = new Voltage();
-                this.ratedInterruptingTime = new Seconds();
-                this.ratedVoltage = new Voltage();
+        super();
+        // Khởi tạo đầy đủ theo DB
+        this.breakingCapacity = new CurrentFlow();
+        this.gasWeightPerTank = new Mass();
+        this.oilVolumePerTank = new Volume();
+        this.ratedCurrent = new CurrentFlow();
+        this.ratedFrequency = new Frequency();
+        this.ratedImpulseWithstandVoltage = new Voltage();
+        this.ratedInterruptingTime = new Seconds();
+        this.ratedVoltage = new Voltage();
 
-        // Plain fields
-                this.isSinglePhase = null;
-                this.isUnganged = null;
-                this.lowPressureAlarm = new Pressure();
-                this.lowPressureLockOut = new Pressure();
+        // Sửa Boolean thành null
+        this.isSinglePhase = null;
+        this.isUnganged = null;
+
+        this.lowPressureAlarm = new Pressure();
+        this.lowPressureLockOut = new Pressure();
     }
 }
-
-export default SwitchInfo
+export default SwitchInfo;

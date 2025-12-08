@@ -70,7 +70,6 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
                 entity.attachment.path = JSON.stringify(newPath);
                 await uploadAttachmentTransaction(entity.attachment, db);
             }
-            console.log("A")
 
             //testing equipment
             const newIds = entity.testingEquipment.map(v => v.mrid).filter(id => id); // bỏ null/empty
