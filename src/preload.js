@@ -1,5 +1,5 @@
 import { userPreload, transformerPreload, fmecaPreload, conditionPreload, circuitPreload, currentTransPreload, voltageTransPreload } from '@/preload/index.js'
-import { uploadCustomPreload, manufacturerPreload, exportPreload } from '@/preload/index.js'
+import { uploadCustomPreload, manufacturerPreload, exportPreload, importPreload } from '@/preload/index.js'
 import { disconnectorPreload, surgeArresterPreload, powerCablePreload, ownerPreload } from '@/preload/index.js'
 import { entityPreload, cimPreload } from '@/preload/index.js'
 
@@ -18,6 +18,7 @@ const uploadCustomAPI = uploadCustomPreload.uploadCustomPreload()
 const manufacturerAPI = manufacturerPreload.munufacturerPreload()
 const ownerAPI = ownerPreload.ownerPreload()
 const exportAPI = exportPreload.exportPreload()
+const importAPI = importPreload.importPreload()
 const attachmentAPI = entityPreload.attachmentPreload.attachmentPreload()
 const parentOrganizationAPI = cimPreload.parentOrganizationPreload.parentOrganizationPreload()
 const substationAPI = cimPreload.substationPreload.substationPreload()
@@ -68,7 +69,7 @@ const assetPsrAPI = entityPreload.assetPsrPreload.assetPsrPreload()
 
 
 
-const ipcMain = Object.assign(userAPI, transformerAPI, fmecaAPI, conditionAPI, circuitAPI, attachmentAPI, exportAPI,
+const ipcMain = Object.assign(userAPI, transformerAPI, fmecaAPI, conditionAPI, circuitAPI, attachmentAPI, exportAPI, importAPI,
     currentTransAPI, voltageTransAPI, disconnectorAPI, surgeArresterAPI, powerCablePreAPI, uploadCustomAPI,
     manufacturerAPI, ownerAPI, parentOrganizationAPI, substationAPI, locationAPI, streetAddressAPI, streetDetailAPI, townDetailAPI,
     electronicAddressAPI, personAPI, personRoleAPI, telephoneNumberAPI, configurationEventAPI, substationEntityAPI, parentOrganizationEntityAPI,
