@@ -80,7 +80,13 @@
                 <li class="has-submenu">
                     <i class="fa-solid fa-file-import"></i> Import
                     <ul class="submenu">
-                        <li @click="importJSON"><i class="fa-solid fa-file-code"></i> Import from JSON</li>
+                        <li class="has-submenu">
+                            <i class="fa-solid fa-file-code"></i> Import from JSON
+                            <ul class="submenu">
+                                <li @click="importJSON"><i class="fa-solid fa-file-code"></i> Import JSON</li>
+                                <li @click="importJSONCIM"><i class="fa-solid fa-file-code"></i> Import JSON by CIM</li>
+                            </ul>
+                        </li>
                         <li @click="importXML"><i class="fa-solid fa-file-code"></i> Import from XML</li>
                         <li @click="importExcel"><i class="fa-solid fa-file-excel"></i> Import from Excel</li>
                         <li @click="importWord"><i class="fa-solid fa-file-word"></i> Import from Word</li>
@@ -225,6 +231,7 @@ export default {
         },
         addAsset() {
             this.$emit("show-addAsset", this.selectedNode)
+            
             this.closeContextMenu()
         },
         addJob() {
@@ -257,6 +264,10 @@ export default {
         },
         importJSON() {
             this.$emit("import-json", this.selectedNode)
+            this.closeContextMenu()
+        },
+        importJSONCIM() {
+            this.$emit("import-json-cim", this.selectedNode)
             this.closeContextMenu()
         },
         importXML() {
