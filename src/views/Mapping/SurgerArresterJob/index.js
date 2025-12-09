@@ -225,7 +225,7 @@ export const jobDtoToEntity = (dto) => {
                         analogValue.analog = testCodeKey[key] ? testCodeKey[key].mrid : null;
                         entity.analogValues.push(analogValue);
                         const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue();
-                        procedureDataSetMeasurementValue.data_set_id = data.mrid || null;
+                        procedureDataSetMeasurementValue.procedure_dataset_id = data.mrid || null;
                         procedureDataSetMeasurementValue.measurement_value_id = value.mrid || null;
                         entity.procedureDataSetMeasurementValue.push(procedureDataSetMeasurementValue);
                     } else if (value.type === 'string') {
@@ -236,7 +236,7 @@ export const jobDtoToEntity = (dto) => {
                         stringValue.string_measurement = testCodeKey[key] ? testCodeKey[key].mrid : null;
                         entity.stringMeasurementValues.push(stringValue);
                         const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue();
-                        procedureDataSetMeasurementValue.data_set_id = data.mrid || null;
+                        procedureDataSetMeasurementValue.procedure_dataset_id = data.mrid || null;
                         procedureDataSetMeasurementValue.measurement_value_id = value.mrid || null;
                         entity.procedureDataSetMeasurementValue.push(procedureDataSetMeasurementValue);
                     } else if (value.type === 'discrete') {
@@ -247,7 +247,7 @@ export const jobDtoToEntity = (dto) => {
                         discreteValue.discrete = testCodeKey[key] ? testCodeKey[key].mrid : null;
                         entity.discreteValues.push(discreteValue);
                         const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue();
-                        procedureDataSetMeasurementValue.data_set_id = data.mrid || null;
+                        procedureDataSetMeasurementValue.procedure_dataset_id = data.mrid || null;
                         procedureDataSetMeasurementValue.measurement_value_id = value.mrid || null;
                         entity.procedureDataSetMeasurementValue.push(procedureDataSetMeasurementValue);
                     }

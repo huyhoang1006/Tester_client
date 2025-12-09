@@ -268,6 +268,7 @@ export default {
             for (let i in phase) {
                 for (let j = 1; j <= units; j++) {
                     let data = {
+                        mrid: '',
                         phase: {
                             mrid: '',
                             value: phase[i],
@@ -377,6 +378,7 @@ export default {
             for (let i in phase) {
                 for (let j = 1; j <= units; j++) {
                     let data = {
+                        mrid: '',
                         phase: {
                             mrid: '',
                             value: phase[i],
@@ -465,6 +467,7 @@ export default {
             ]
             data.forEach(element => {
                 table.push({
+                    mrid: '',
                     items: {
                         mrid: '',
                         value: element,

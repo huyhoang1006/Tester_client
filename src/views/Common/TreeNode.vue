@@ -91,6 +91,7 @@ export default {
                 this.clearSelection();
                 this.updateSelection(this.node);
             }, 250); // 250ms là khoảng thời gian nhận biết double click
+            document.addEventListener("click", this.onClickOutside);
         },
 
         fetchNodeData(event) {
@@ -118,6 +119,13 @@ export default {
         openContextMenu(event, node) {
             this.$emit("open-context-menu", event, node);
         },
+        onClickOutside(e) {
+            const treeNodeEl = this.$el;
+            const toolbarSettingEl = document.getElementById("toolbar-setting-id");
+            if (treeNodeEl.contains(e.target)) return;
+            if (toolbarSettingEl && toolbarSettingEl.contains(e.target)) return;
+            this.clearSelection();
+        }
     }
 }
 </script>

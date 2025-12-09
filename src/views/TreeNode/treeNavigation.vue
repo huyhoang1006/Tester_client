@@ -21,7 +21,7 @@
                 <i style="margin-left: 10px;" class="fa-solid fa-angle-right"></i>
             </div>
         </div>
-        <div class="toolbar-setting">
+        <div id="toolbar-setting-id" class="toolbar-setting">
             <div>
                 <el-dropdown 
                 ref="addDropdown"
@@ -2732,7 +2732,7 @@ export default {
 
         async openContextMenuClient(event, node) {
             const menu = this.$refs.contextMenuClient.$el;
-            const menuHeight = menu.offsetHeight || 200; // fallback nếu chưa render
+            const menuHeight = menu.offsetHeight || 320; // fallback nếu chưa render
             const menuWidth = menu.offsetWidth || 180;
             // Lấy vị trí click
             const clickX = event.clientX;
