@@ -25,12 +25,13 @@ export default {
                     console.log('DTO to save:', resultDto);
                     console.log('Entity to save:', entity);
                     const old_entity = surgeArresterJobMapping.jobDtoToEntity(this.surgeArresterJobDtoOld);
-                    // const rs = await window.electronAPI.insertSurgeArresterJob(old_entity, entity)
-                    const rs = {
-                        success: false,
-                        data: entity,
-                        message: 'Job saved fail'
-                    }
+                    const rs = await window.electronAPI.insertSurgeArresterJob(old_entity, entity)
+                    console.log('Save result:', rs);
+                    // const rs = {
+                    //     success: false,
+                    //     data: entity,
+                    //     message: 'Job saved fail'
+                    // }
                     if (rs.success) {
                         return {
                             success: true,
@@ -194,7 +195,7 @@ export default {
             const testTypeListIds = [...new Set(data.testList.map(item => item.testTypeId))];
             for(const item of testTypeListIds) {
                 const row_data = data.testList.find(t => t.testTypeId === item).data.row_data;
-                const newPoolId = uuid.newUuid()
+                var newPoolId = uuid.newUuid()
                 const measurementProcedureList = []
                 const measurement = []
                 const [dataStringMeasurementSet, dataAnalogSet, dataDiscreteSet] = await Promise.all([
@@ -261,7 +262,7 @@ export default {
                     }
                 }
 
-                const valueToAliastSet = []
+                var valueToAliastSet = []
                 const dataValueToAlias = await window.electronAPI.getValueToAliasBySetId(newPoolId)
                 if(dataValueToAlias.success && dataValueToAlias.data.length) {
                     valueToAliastSet = dataValueToAlias.data

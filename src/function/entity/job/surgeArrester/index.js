@@ -18,6 +18,10 @@ import { insertValueAliasSetTransaction} from '@/function/cim/valueAliasSet/inde
 import { insertValueToAliasTransaction } from '@/function/cim/valueToAlias'
 import { insertProcedureTransaction } from '@/function/cim/procedure'
 import { insertMeasurementProcedureTransaction } from '@/function/cim/measurementProcedure/index.js'
+import { insertAnalogValueTransaction, deleteAnalogValueByIdTransaction } from '@/function/cim/analogValue/index.js'
+import { insertStringMeasurementValueTransaction, deleteStringMeasurementValueByIdTransaction } from '@/function/cim/stringMeasurementValue/index.js'
+import { insertDiscreteValueTransaction, deleteDiscreteValueByIdTransaction } from '@/function/cim/discreteValue/index.js'
+import { insertProcedureDataSetMeasurementValueTransaction } from '@/function/cim/procedureDataSetMeasurementValue/index.js'
 
 export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
     try {
@@ -69,6 +73,42 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
                 }
                 entity.attachment.path = JSON.stringify(newPath);
                 await uploadAttachmentTransaction(entity.attachment, db);
+            }
+
+            //procedure
+            for(const procedure of entity.procedure) {
+                await insertProcedureTransaction(procedure, db);
+            }
+
+            //measurement
+            //insert analog
+            for(const analog of entity.analog) {
+                await insertAnalogTransaction(analog, db);
+            }
+
+            //insert string measurement
+            for(const stringMeasurement of entity.stringMeasurement) {
+                await insertStringMeasurementTransaction(stringMeasurement, db);
+            }
+
+            //insert valueAliasSet
+            for(const valueAliasSet of entity.valueAliasSet) {
+                await insertValueAliasSetTransaction(valueAliasSet, db);
+            }
+
+            //insert valueToAlias
+            for(const valueToAlias of entity.valueToAlias) {
+                await insertValueToAliasTransaction(valueToAlias, db);
+            }
+
+            //insert discrete
+            for(const discrete of entity.discrete) {
+                await insertDiscreteTransaction(discrete, db);
+            }
+
+            //insert measurement procedure
+            for(const measurementProcedure of entity.measurementProcedure) {
+                await insertMeasurementProcedureTransaction(measurementProcedure, db);
             }
 
             //testing equipment
@@ -208,61 +248,74 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
                 await insertTestDataSetTransaction(testData, db);
             }
 
-            //insert string measurement value
-            const newIdsAnalog = entity.analog.map(v => v.mrid).filter(id => id); // bỏ null/empty
-            const oldIdsAnalog = old_entity.analog.map(v => v.mrid).filter(id => id);
+            //analog value
+            const newIdsAnalogValue = entity.analogValues.map(v => v.mrid).filter(id => id); // bỏ null/empty
+            const oldIdsAnalogValue = old_entity.analogValues.map(v => v.mrid).filter(id => id);
 
-            const toAddAnalog = entity.analog.filter(v => v.mrid && !oldIdsAnalog.includes(v.mrid));
-            const toUpdateAnalog = entity.analog.filter(v => v.mrid && oldIdsAnalog.includes(v.mrid));
-            const toDeleteAnalog = old_entity.analog.filter(v => v.mrid && !newIdsAnalog.includes(v.mrid));
-
-            for (const analog of toAddAnalog) {
-                await insertAnalogTransaction(analog, db);
+            const toAddAnalogValue = entity.analogValues.filter(v => v.mrid && !oldIdsAnalogValue.includes(v.mrid));
+            const toUpdateAnalogValue = entity.analogValues.filter(v => v.mrid && oldIdsAnalogValue.includes(v.mrid));
+            const toDeleteAnalogValue = old_entity.analogValues.filter(v => v.mrid && !newIdsAnalogValue.includes(v.mrid));
+            for (const analogValue of toAddAnalogValue) {
+                await insertAnalogValueTransaction(analogValue, db);
             }
 
-            for (const analog of toUpdateAnalog) {
-                await insertAnalogTransaction(analog, db);
+            for (const analogValue of toUpdateAnalogValue) {
+                await insertAnalogValueTransaction(analogValue, db);
             }
 
-            //insert string measurement value
-            const newIdsStringMeasurement = entity.stringMeasurement.map(v => v.mrid).filter(id => id);
-            const oldIdsStringMeasurement = old_entity.stringMeasurement.map(v => v.mrid).filter(id => id);
+            //string measurement value
+            const newIdsStringMeasurementValue = entity.stringMeasurementValues.map(v => v.mrid).filter(id => id); // bỏ null/empty
+            const oldIdsStringMeasurementValue = old_entity.stringMeasurementValues.map(v => v.mrid).filter(id => id);
 
-            const toAddStringMeasurement = entity.stringMeasurement.filter(v => v.mrid && !oldIdsStringMeasurement.includes(v.mrid));
-            const toUpdateStringMeasurement = entity.stringMeasurement.filter(v => v.mrid && oldIdsStringMeasurement.includes(v.mrid));
-            const toDeleteStringMeasurement = old_entity.stringMeasurement.filter(v => v.mrid && !newIdsStringMeasurement.includes(v.mrid));
-
-            for (const stringMeasurement of toAddStringMeasurement) {
-                await insertStringMeasurementTransaction(stringMeasurement, db);
+            const toAddStringMeasurementValue = entity.stringMeasurementValues.filter(v => v.mrid && !oldIdsStringMeasurementValue.includes(v.mrid));
+            const toUpdateStringMeasurementValue = entity.stringMeasurementValues.filter(v => v.mrid && oldIdsStringMeasurementValue.includes(v.mrid));
+            const toDeleteStringMeasurementValue = old_entity.stringMeasurementValues.filter(v => v.mrid && !newIdsStringMeasurementValue.includes(v.mrid));
+            for (const stringMeasurementValue of toAddStringMeasurementValue) {
+                await insertStringMeasurementValueTransaction(stringMeasurementValue, db);
             }
 
-            for (const stringMeasurement of toUpdateStringMeasurement) {
-                await insertStringMeasurementTransaction(stringMeasurement, db);
+            for (const stringMeasurementValue of toUpdateStringMeasurementValue) {
+                await insertStringMeasurementValueTransaction(stringMeasurementValue, db);
             }
 
-            //insert discrete value
-            const newIdsDiscrete = entity.discrete.map(v => v.mrid).filter(id => id);
-            const oldIdsDiscrete = old_entity.discrete.map(v => v.mrid).filter(id => id);
+            //discrete value
+            const newIdsDiscreteValue = entity.discreteValues.map(v => v.mrid).filter(id => id);
+            const oldIdsDiscreteValue = old_entity.discreteValues.map(v => v.mrid).filter(id => id);
 
-            const toAddDiscrete = entity.discrete.filter(v => v.mrid && !oldIdsDiscrete.includes(v.mrid));
-            const toUpdateDiscrete = entity.discrete.filter(v => v.mrid && oldIdsDiscrete.includes(v.mrid));
-            const toDeleteDiscrete = old_entity.discrete.filter(v => v.mrid && !newIdsDiscrete.includes(v.mrid));
-
-            for (const discrete of toAddDiscrete) {
-                await insertDiscreteTransaction(discrete, db);
+            const toAddDiscreteValue = entity.discreteValues.filter(v => v.mrid && !oldIdsDiscreteValue.includes(v.mrid));
+            const toUpdateDiscreteValue = entity.discreteValues.filter(v => v.mrid && oldIdsDiscreteValue.includes(v.mrid));
+            const toDeleteDiscreteValue = old_entity.discreteValues.filter(v => v.mrid && !newIdsDiscreteValue.includes(v.mrid));
+            for (const discreteValue of toAddDiscreteValue) {
+                await insertDiscreteValueTransaction(discreteValue, db);
+            }
+            for (const discreteValue of toUpdateDiscreteValue) {
+                await insertDiscreteValueTransaction(discreteValue, db);
             }
 
-            for (const discrete of toUpdateDiscrete) {
-                await insertDiscreteTransaction(discrete, db);
+            //procedure dataset measurement value
+            for(const procedureDataSetMeasurementValue of entity.procedureDataSetMeasurementValue) {
+                await insertProcedureDataSetMeasurementValueTransaction(procedureDataSetMeasurementValue, db);
             }
 
-            //delete testing equipment that are not in the new list
-            for(const equipmentTestType of toDeleteSet) {
-                await deleteSurgeArresterTestingEquipmentTestTypeByIdTransaction(equipmentTestType.mrid, db);
+            //delete section
+            for(const analogValue of toDeleteAnalogValue) {
+                await deleteAnalogValueByIdTransaction(analogValue.mrid, db);
+            }
+
+            for(const stringMeasurementValue of toDeleteStringMeasurementValue) {
+                await deleteStringMeasurementValueByIdTransaction(stringMeasurementValue.mrid, db);
+            }
+
+            for(const discreteValue of toDeleteDiscreteValue) {
+                await deleteDiscreteValueByIdTransaction(discreteValue.mrid, db);
             }
 
             for (const testData of toDeleteTestDataSet) {
                 await deleteTestDataSetByIdTransaction(testData.mrid, db);
+            }
+
+            for(const equipmentTestType of toDeleteSet) {
+                await deleteSurgeArresterTestingEquipmentTestTypeByIdTransaction(equipmentTestType.mrid, db);
             }
 
             for (const equipment of toDelete) {
@@ -294,13 +347,13 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
 
         }
     } catch (error) {
+        console.error('Error retrieving surge arrester entity:', error);
         restoreFiles(null, null, entity.oldWork.mrid);
         deleteBackupFiles(null, entity.oldWork.mrid);
         for(const attachment of entity.attachmentTest) {
             restoreFiles(null, null, attachment.id_foreign);
             deleteBackupFiles(null, attachment.id_foreign);
         }
-        console.error('Error retrieving surge arrester entity:', error);
         await runAsync('ROLLBACK');
         return { success: false, error, message: 'Error retrieving surge arrester entity' };
     }
