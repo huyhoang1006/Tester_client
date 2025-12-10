@@ -212,7 +212,7 @@ async function importSurgeArrester(dto, parentNode, { electronAPI, mappings }) {
 
         // Update parent if provided
         if (parentNode && parentNode.mrid) {
-            entity.asset.location = parentNode.mrid
+            entity.surgeArrester.location = parentNode.mrid
         }
 
         // Insert/Update entity (SurgeArrester uses old_entity pattern)
