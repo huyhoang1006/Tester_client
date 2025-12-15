@@ -92,7 +92,6 @@
 /* eslint-disable */
 
 import LocationViewData from '@/views/LocationInsert/locationLevelView.vue'
-import OwnerView from '@/views/OwnerViewData/index.vue'
 import OrganisationView from '@/views/Organisation/index.vue'
 import * as subsMapper from '@/views/Mapping/Substation/index'
 import SubstationDto from '@/views/Dto/Substation'
@@ -134,7 +133,6 @@ export default {
     name: "Tabs",
     components: {
         LocationViewData,
-        OwnerView,
         Transformer,
         OrganisationView,
         VoltageLevel,
@@ -519,7 +517,7 @@ export default {
                         }
                         this.checkJobType = 'JobSurgeArrester'
                         this.signJob = true;
-                        const data = await window.electronAPI.getSurgeArresterJobByMrid(tab.mrid)
+                        const data = await window.electronAPI.getSurgeArresterJobByMrid(tab.mrid, tab.parentId)
                         if (data.success) {
                             const surgeArresterJobDto = SurgeArresterJobMapper.JobEntityToDto(data.data)
                             for (const test of surgeArresterJobDto.testList) {

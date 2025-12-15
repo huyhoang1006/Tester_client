@@ -30,9 +30,9 @@ export const insertSurgeArresterJob = () => {
 }
 
 export const getSurgeArresterJobByMrid = () => {
-    ipcMain.handle('getSurgeArresterJobByMrid', async function (event, mrid) {
+    ipcMain.handle('getSurgeArresterJobByMrid', async function (event, mrid, assetId) {
         try {
-            const rs = await entityFunc.jobEntityFunc.surgeArresterJob.getSurgeArresterJobEntity(mrid)
+            const rs = await entityFunc.jobEntityFunc.surgeArresterJob.getSurgeArresterJobEntity(mrid, assetId)
             if (rs.success == true) {
                 return {
                     success: true,

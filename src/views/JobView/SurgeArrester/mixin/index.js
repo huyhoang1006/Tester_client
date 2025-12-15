@@ -22,16 +22,8 @@ export default {
                     const dto = JSON.parse(JSON.stringify(this.surgeArresterJobDto));
                     const resultDto = await this.checkJob(dto);
                     const entity = surgeArresterJobMapping.jobDtoToEntity(resultDto);
-                    console.log('DTO to save:', resultDto);
-                    console.log('Entity to save:', entity);
                     const old_entity = surgeArresterJobMapping.jobDtoToEntity(this.surgeArresterJobDtoOld);
                     const rs = await window.electronAPI.insertSurgeArresterJob(old_entity, entity)
-                    console.log('Save result:', rs);
-                    // const rs = {
-                    //     success: false,
-                    //     data: entity,
-                    //     message: 'Job saved fail'
-                    // }
                     if (rs.success) {
                         return {
                             success: true,
@@ -177,7 +169,6 @@ export default {
 
             // 3. THÊM các item còn thiếu
             const newItems = missingInProcedureAsset.map(id => ({
-                mrid: uuid.newUuid(),
                 procedure_id: id,
                 asset_id: this.assetData.mrid
             }));
@@ -208,7 +199,6 @@ export default {
                     if (dataStringMeasurementSet.data.length > 0) {
                         for (const stringMeasurement of dataStringMeasurementSet.data) {
                             const measurementProcedure = new MeasurementProcedure();
-                            measurementProcedure.mrid = stringMeasurement.measurement_procedure_mrid
                             measurementProcedure.procedure_id = item
                             measurementProcedure.measurement_id = stringMeasurement.mrid
                             measurementProcedureList.push(measurementProcedure)
@@ -227,7 +217,6 @@ export default {
                     if (dataAnalogSet.data.length > 0) {
                         for (const analogMeasurement of dataAnalogSet.data) {
                             const measurementProcedure = new MeasurementProcedure();
-                            measurementProcedure.mrid = analogMeasurement.measurement_procedure_mrid
                             measurementProcedure.procedure_id = item
                             measurementProcedure.measurement_id = analogMeasurement.mrid
                             measurementProcedureList.push(measurementProcedure)
@@ -246,7 +235,6 @@ export default {
                     if (dataDiscreteSet.data.length > 0) {
                         for (const discreteMeasurement of dataDiscreteSet.data) {
                             const measurementProcedure = new MeasurementProcedure();
-                            measurementProcedure.mrid = discreteMeasurement.measurement_procedure_mrid
                             measurementProcedure.procedure_id = item
                             measurementProcedure.measurement_id = discreteMeasurement.mrid
                             measurementProcedureList.push(measurementProcedure)
@@ -272,12 +260,10 @@ export default {
                     let existed = measurement.find(m => m.code === row.code);
                     if (!existed) {
                         const newMeasurementId = uuid.newUuid();
-                        const newProcedureId = uuid.newUuid();
 
                         row.mrid = newMeasurementId
 
                         const mp = new MeasurementProcedure();
-                        mp.mrid = newProcedureId;
                         if(row.type == 'discrete') {
                             row.pool.mrid = newPoolId
                             for(const discreteData of row.pool.valueToAlias) {
@@ -300,6 +286,8 @@ export default {
                         measurementProcedureList.push(mp);
                     } else {
                         if(row.type == 'discrete') {
+                            row.mrid = existed.mrid;
+                            row.pool.mrid = newPoolId
                             for(const discreteData of row.pool.valueToAlias) {
                                 let matched = false;
                                 for(const valueToAliasSetItem of valueToAliastSet) {

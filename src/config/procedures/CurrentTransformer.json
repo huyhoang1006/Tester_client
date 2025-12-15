@@ -1,0 +1,38 @@
+[
+  {
+    "mrid": "aac04d70-ca0e-466b-ab4f-969a0afb7fef",
+    "code": "InsulationResistance",
+    "name": "Insulation resistance",
+    "kind": "test"
+  },
+  {
+    "mrid": "f6c60697-396c-4167-8000-fcf529434b29",
+    "code": "CTRatio",
+    "name": "CT ratio",
+    "kind": "test"
+  },
+  {
+    "mrid": "9ef9e0da-0bc7-44ed-91b9-9656bd696342",
+    "code": "CTExcitation",
+    "name": "CT Excitation",
+    "kind": "test"
+  },
+  {
+    "mrid": "f1ec4c35-428a-49ce-8d9b-502f1cc7acbd",
+    "code": "CTWindingRes",
+    "name": "CT Winding resistance",
+    "kind": "test"
+  },
+  {
+    "mrid": "291bbd7d-0233-4e64-8539-f82a4d172a30",
+    "code": "CTDfcap",
+    "name": "CT DF & CAP",
+    "kind": "test"
+  },
+  {
+    "mrid": "cd64fb09-950b-4258-84ee-149cf7938142",
+    "code": "GeneralInspection",
+    "name": "General inspection",
+    "kind": "test"
+  }
+]

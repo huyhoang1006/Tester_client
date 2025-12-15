@@ -24,11 +24,66 @@ export const getAnalogById = async (mrid) => {
     }
 }
 
+export const getAllAnalogByProcedureIds = (procedureIds) => {
+    try {
+        return new Promise((resolve, reject) => {
+
+            if (!procedureIds || procedureIds.length === 0) {
+                return resolve({
+                    success: true,
+                    data: [],
+                    message: 'No procedureIds provided'
+                });
+            }
+
+            const placeholders = procedureIds.map(() => '?').join(', ');
+
+            const sql = `
+                SELECT 
+                    a.*,
+                    m.*,
+                    io.*
+                FROM measurement_procedure mp
+                JOIN measurement m ON mp.measurement_id = m.mrid
+                JOIN analog a ON m.mrid = a.mrid
+                JOIN identified_object io ON m.mrid = io.mrid
+                WHERE mp.procedure_id IN (${placeholders})
+            `;
+
+            db.all(sql, procedureIds, (err, rows) => {
+                if (err) {
+                    return reject({
+                        success: false,
+                        err,
+                        message: 'Get all analog by procedures failed'
+                    });
+                }
+
+                if (!rows || rows.length === 0) {
+                    return resolve({
+                        success: false,
+                        data: [],
+                        message: 'No analog found for these procedures'
+                    });
+                }
+
+                return resolve({
+                    success: true,
+                    data: rows,
+                    message: 'Get all analog by procedures completed'
+                });
+            });
+        });
+    } catch (err) {
+        return { success: false, err, message: 'Get all analog by procedures failed' };
+    }
+};
+
 export const getAllAnalogByProcedure = (procedureId) => {
     try {
         return new Promise((resolve, reject) => {
             const sql = `
-                SELECT a.*, m.*, io.*, mp.mrid AS measurement_procedure_mrid
+                SELECT a.*, m.*, io.*
                 FROM measurement_procedure mp
                 LEFT JOIN measurement m ON mp.measurement_id = m.mrid
                 LEFT JOIN analog a ON a.mrid = m.mrid
@@ -70,7 +125,7 @@ export const insertAnalogTransaction = async (analog, dbsql) => {
             // Thêm measurement trước
             const measResult = await measurementFunc.insertMeasurementTransaction(analog, dbsql)
             if (!measResult.success) {
-                return reject({ success: false, message: 'Insert measurement failed', err: measResult.err })
+                return reject({ success: false, message: 'Insert analog measurement failed', err: measResult.err })
             }
             dbsql.run(
                 `INSERT INTO analog(
@@ -114,7 +169,7 @@ export const insertAnalog = async (analog) => {
                     const measResult = await measurementFunc.insertMeasurementTransaction(analog, db);
                     if (!measResult.success) {
                         db.run('ROLLBACK');
-                        return reject({ success: false, message: 'Insert measurement failed', err: measResult.err });
+                        return reject({ success: false, message: 'Insert analog measurement failed', err: measResult.err });
                     }
 
                     // Thêm hoặc update analog
