@@ -11,17 +11,18 @@ import {insertPercentTransaction, deletePercentByIdTransaction, getPercentById} 
 import {insertTemperatureTransaction, deleteTemperatureByIdTransaction, getTemperatureById} from '@/function/cim/temperature/index.js'
 import { insertSurgeArresterTestingEquipmentTestTypeTransaction, getSurgeArresterTestingEquipmentTestingEqId, deleteSurgeArresterTestingEquipmentTestTypeByIdTransaction } from '../../surgeArresterTestingEquipmentTestType/index.js'
 import { insertTestDataSetTransaction, getTestDataSetByWorkTaskId, deleteTestDataSetByIdTransaction } from '@/function/cim/testDataSet'
-import { insertAnalogTransaction  } from '@/function/cim/analog'
-import { insertStringMeasurementTransaction } from '@/function/cim/stringMeasurement/index.js'
-import {insertDiscreteTransaction } from  '@/function/cim/discrete'
-import { insertValueAliasSetTransaction} from '@/function/cim/valueAliasSet/index.js'
-import { insertValueToAliasTransaction } from '@/function/cim/valueToAlias'
-import { insertProcedureTransaction } from '@/function/cim/procedure'
+import { insertAnalogTransaction, getAllAnalogByProcedureIds  } from '@/function/cim/analog'
+import { insertStringMeasurementTransaction, getAllStringMeasurementByProcedureIds } from '@/function/cim/stringMeasurement/index.js'
+import {insertDiscreteTransaction , getAllDiscreteByProcedureIds } from  '@/function/cim/discrete'
+import { insertValueAliasSetTransaction, getValueAliasSetByIds} from '@/function/cim/valueAliasSet/index.js'
+import { insertValueToAliasTransaction, getValueToAliasByValueAliasSetId } from '@/function/cim/valueToAlias'
+import { getProcedureByAssetId, insertProcedureTransaction } from '@/function/cim/procedure'
 import { insertMeasurementProcedureTransaction } from '@/function/cim/measurementProcedure/index.js'
-import { insertAnalogValueTransaction, deleteAnalogValueByIdTransaction } from '@/function/cim/analogValue/index.js'
-import { insertStringMeasurementValueTransaction, deleteStringMeasurementValueByIdTransaction } from '@/function/cim/stringMeasurementValue/index.js'
-import { insertDiscreteValueTransaction, deleteDiscreteValueByIdTransaction } from '@/function/cim/discreteValue/index.js'
+import { insertAnalogValueTransaction, getAnalogValueByTestDataSetMrids, deleteAnalogValueByIdTransaction } from '@/function/cim/analogValue/index.js'
+import { insertStringMeasurementValueTransaction, getStringMeasurementValueByTestDataSetMrids, deleteStringMeasurementValueByIdTransaction } from '@/function/cim/stringMeasurementValue/index.js'
+import { insertDiscreteValueTransaction, getDiscreteValueByTestDataSetMrids, deleteDiscreteValueByIdTransaction } from '@/function/cim/discreteValue/index.js'
 import { insertProcedureDataSetMeasurementValueTransaction } from '@/function/cim/procedureDataSetMeasurementValue/index.js'
+import { insertProcedureAssetTransaction } from '@/function/cim/procedureAsset/index.js'
 
 export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
     try {
@@ -47,17 +48,19 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
             }
 
             for(const attachment of entity.attachmentTest) {
-                backupAllFilesInDir(null, null, attachment.id_foreign);
-                const syncResult = syncFilesWithDeletion(JSON.parse(attachment.path), null, attachment.id_foreign);
-                if (!syncResult.success) {
-                    restoreFiles(null, null, attachment.id_foreign);
-                    deleteBackupFiles(null, attachment.id_foreign);
-                    const result = {
-                        success: false,
-                        error: new Error("MRID is required for Surge Arrester Job Entity"),
-                        message: '',
+                if(entity.attachmentTest.id && Array.isArray(JSON.parse(attachment.path))) {
+                    backupAllFilesInDir(null, null, attachment.id_foreign);
+                    const syncResult = syncFilesWithDeletion(JSON.parse(attachment.path), null, attachment.id_foreign);
+                    if (!syncResult.success) {
+                        restoreFiles(null, null, attachment.id_foreign);
+                        deleteBackupFiles(null, attachment.id_foreign);
+                        const result = {
+                            success: false,
+                            error: new Error("MRID is required for Surge Arrester Job Entity"),
+                            message: '',
+                        }
+                        return result;
                     }
-                    return result;
                 }
             }
 
@@ -78,6 +81,10 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
             //procedure
             for(const procedure of entity.procedure) {
                 await insertProcedureTransaction(procedure, db);
+            }
+
+            for(const procedureAsset of entity.procedureAsset) {
+                await insertProcedureAssetTransaction(procedureAsset, db);
             }
 
             //measurement
@@ -359,7 +366,7 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
     }
 }
 
-export const getSurgeArresterJobEntity = async (id) => {
+export const getSurgeArresterJobEntity = async (id, assetId) => {
     try {
         if(id == null || id === '') {
             return { success: false, error: new Error('Invalid ID') };
@@ -412,7 +419,7 @@ export const getSurgeArresterJobEntity = async (id) => {
                         entity.testDataSet = entity.testDataSet.concat(dataTestDataSet.data)
                     }
                 }
-                
+
                 for(const observation of entity.transformerObservation) {
                     if(observation.humidity) {
                         const dataPercent = await getPercentById(observation.humidity);
@@ -421,36 +428,27 @@ export const getSurgeArresterJobEntity = async (id) => {
                         }
                     }
 
-                }
-
-                for(const observation of entity.transformerObservation) {
                     if(observation.ambient_temp) {
                         const dataTemp = await getTemperatureById(observation.ambient_temp);
                         if(dataTemp.success) {
                             entity.temperature.push(dataTemp.data);
                         }
                     }
-                }
 
-                for(const observation of entity.transformerObservation) {
                     if(observation.reference_temp) {
                         const dataTemp = await getTemperatureById(observation.reference_temp);
                         if(dataTemp.success) {
                             entity.temperature.push(dataTemp.data);
                         }
                     }
-                }
 
-                for(const observation of entity.transformerObservation) {
                     if(observation.winding_temp) {
                         const dataTemp = await getTemperatureById(observation.winding_temp);
                         if(dataTemp.success) {
                             entity.temperature.push(dataTemp.data);
                         }
                     }
-                }
 
-                for(const observation of entity.transformerObservation) {
                     if(observation.top_oil_temp) {
                         const dataTemp = await getTemperatureById(observation.top_oil_temp);
                         if(dataTemp.success) {
@@ -462,6 +460,59 @@ export const getSurgeArresterJobEntity = async (id) => {
                         if(dataTemp.success) {
                             entity.temperature.push(dataTemp.data);
                         }
+                    }
+
+                }
+
+                const mrids = entity.testDataSet.map(x => x.mrid);
+                const analogValue = await getAnalogValueByTestDataSetMrids(mrids);
+                if(analogValue.success) {
+                    entity.analogValues = analogValue.data;
+                }
+
+                const stringMeasurementValue = await getStringMeasurementValueByTestDataSetMrids(mrids);
+                if(stringMeasurementValue.success) {
+                    entity.stringMeasurementValues = stringMeasurementValue.data;
+                }
+
+                const discreteValue = await getDiscreteValueByTestDataSetMrids(mrids);
+                if(discreteValue.success) {
+                    entity.discreteValues = discreteValue.data;
+                }
+
+                const procedure = await getProcedureByAssetId(assetId);
+                if(procedure.success) {
+                    entity.procedure = procedure.data;
+                } else {
+                    entity.procedure = [];
+                }
+
+                const procedureIds = entity.procedure.map(x => x.mrid);
+                const analogSet = await getAllAnalogByProcedureIds(procedureIds);
+                if(analogSet.success) {
+                    entity.analog = analogSet.data;
+                }
+
+                const stringMeasurementSet = await getAllStringMeasurementByProcedureIds(procedureIds);
+                if(stringMeasurementSet.success) {
+                    entity.stringMeasurement = stringMeasurementSet.data;
+                }
+
+                const discreteSet = await getAllDiscreteByProcedureIds(procedureIds);
+                if(discreteSet.success) {
+                    entity.discrete = discreteSet.data;
+                }
+
+                const valueAliasSetIds = [...new Set(entity.discrete.map(x => x.value_alias_set))];
+                const valueAliasSet = await getValueAliasSetByIds(valueAliasSetIds);
+                if(valueAliasSet.success) {
+                    entity.valueAliasSet = valueAliasSet.data;
+                }
+
+                for(const vas of entity.valueAliasSet) {
+                    const vToAlias = await getValueToAliasByValueAliasSetId(vas.mrid);
+                    if(vToAlias.success) {
+                        entity.valueToAlias = entity.valueToAlias.concat(vToAlias.data);
                     }
                 }
 

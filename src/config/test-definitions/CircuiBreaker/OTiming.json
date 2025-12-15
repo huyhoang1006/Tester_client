@@ -1,0 +1,13 @@
+{
+  "testId": "436604e1-b98a-4486-ad04-1fd1d75da948",
+  "testCode": "oTiming",
+  "testName": "O Timing",
+  "columns": [
+    { "mrid": "a2b3c4d5-e6f7-4890-a1b2-c3d4e5f67890", "code": "phase", "name": "Phase", "type": "string" },
+    { "mrid": "e58bd21c-69dd-4483-b678-1f13c3d4e58a", "code": "opening_time", "name": "Opening time", "type": "analog", "unit": "m|s" },
+    { "mrid": "a70df43e-81ff-4605-d890-3135e5f6a70c", "code": "opening_sync", "name": "Opening sync", "type": "analog", "unit": "m|s" },
+    { "mrid": "99999999-aaaa-bbbb-cccc-000000000001", "code": "assessment", "name": "Assessment", "type": "discrete", "valueAliasSetId": "40c60468-232a-4643-851f-50616900f601", "options": [{"value": 0, "alias": "Fail", "mrid": "d8858564-e438-4034-9273-030919163001"}, {"value": 1, "alias": "Pass", "mrid": "d8858564-e438-4034-9273-030919163002"}] },
+    { "mrid": "99999999-aaaa-bbbb-cccc-000000000002", "code": "condition_indicator", "name": "Condition indicator", "type": "discrete", "valueAliasSetId": "8e323053-481b-4348-89c0-67258380d701", "options": [{"value": 0, "alias": "Bad", "mrid": "e9969675-f549-4145-a384-141020274001"}, {"value": 1, "alias": "Poor", "mrid": "e9969675-f549-4145-a384-141020274002"}, {"value": 2, "alias": "Fair", "mrid": "e9969675-f549-4145-a384-141020274003"}, {"value": 3, "alias": "Good", "mrid": "e9969675-f549-4145-a384-141020274004"}] }
+  ],
+  "defaultRows": []
+}

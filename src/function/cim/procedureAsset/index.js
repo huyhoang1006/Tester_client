@@ -15,19 +15,14 @@ export const getProcedureAssetById = async (mrid) => {
     })
 }
 
-// Thêm mới procedure asset (transaction)
 export const insertProcedureAssetTransaction = async (info, dbsql) => {
     return new Promise((resolve, reject) => {
         dbsql.run(
-            `INSERT INTO procedure_asset(
-                mrid, procedure_id, asset_id
-            ) VALUES (?, ?, ?)
-            ON CONFLICT(mrid) DO UPDATE SET
-                procedure_id = excluded.procedure_id,
-                asset_id = excluded.asset_id
-            `,
+            `INSERT INTO procedure_asset (
+                procedure_id, asset_id
+            ) VALUES (?, ?)
+            ON CONFLICT(procedure_id, asset_id) DO NOTHING`,
             [
-                info.mrid,
                 info.procedure_id,
                 info.asset_id
             ],
@@ -40,6 +35,7 @@ export const insertProcedureAssetTransaction = async (info, dbsql) => {
         )
     })
 }
+
 
 // Cập nhật ProcedureAsset (transaction)
 export const updateProcedureAssetTransaction = async (mrid, info, dbsql) => {

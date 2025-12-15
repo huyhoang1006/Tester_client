@@ -24,6 +24,56 @@ export const getStringMeasurementValueById = async (mrid) => {
     }
 }
 
+export const getStringMeasurementValueByTestDataSetMrids = async (mrids) => {
+    return new Promise((resolve, reject) => {
+
+        if (!mrids || mrids.length === 0) {
+            return resolve({
+                success: true,
+                data: [],
+                message: 'Get stringMeasurementValue by testDataSet mrids completed'
+            });
+        }
+
+        const placeholders = mrids.map(() => '?').join(',');
+
+        const sql = `
+            SELECT 
+                smv.*, 
+                mv.*, 
+                io.*, 
+                iop.*, 
+                pdmv.procedure_dataset_id
+            FROM procedure_dataset_measurement_value pdmv
+            JOIN measurement_value mv 
+                ON mv.mrid = pdmv.measurement_value_id
+            JOIN string_measurement_value smv 
+                ON smv.mrid = mv.mrid
+            LEFT JOIN iopoint iop
+                ON iop.mrid = mv.mrid
+            LEFT JOIN identified_object io
+                ON io.mrid = mv.mrid
+            WHERE pdmv.procedure_dataset_id IN (${placeholders})
+        `;
+
+        db.all(sql, mrids, (err, rows) => {
+            if (err) {
+                return reject({
+                    success: false,
+                    err,
+                    message: 'Get stringMeasurementValue by testDataSet mrids failed'
+                });
+            }
+
+            return resolve({
+                success: true,
+                data: rows,
+                message: 'Get stringMeasurementValue by testDataSet mrids completed'
+            });
+        });
+    });
+};
+
 // Thêm mới stringMeasurementValue
 export const insertStringMeasurementValueTransaction = async (stringMeasurementValue, dbsql) => {
     return new Promise(async (resolve, reject) => {

@@ -256,15 +256,6 @@
                         @import-json="handleImportJSONFromContext" @import-json-cim="handleImportJSONCIMFromContext"
                         ref="contextMenu"></contextMenu>
                 </div>
-                <div class="page-align">
-                    <page-align ref="LocationSyncPageAlign" :page-user="this.pageLocationSync"
-                        :display-page-user="this.displayPageLocationSync"
-                        :page-user-instance="this.pageLocationSyncInstance" :current-page="this.currentLocationSync"
-                        title="LocationSync" :option.sync="this.optionLocationSync"
-                        @update-page="updateLocationSyncPage">
-                        >
-                    </page-align>
-                </div>
             </div>
             <div @mousedown="startResizeClient" v-if="clientSlide" ref="resizerClient" class="resizer"></div>
             <div @mousedown="startResizeServer" v-if="!clientSlide" ref="resizerServer" class="resizer"></div>
@@ -916,35 +907,9 @@ import LogBar from '@/components/LogBar'
 import TreeNode from '@/views/Common/TreeNode.vue'
 import Vue from "vue";
 import pageAlign from '@/views/PageAlign/pageAlign.vue'
-import * as ownerAPI from '@/api/owner/owner.js'
-import * as locationApi from '@/api/location'
 import spinner from '@/views/Common/Spinner.vue'
 import Tabs from '@/views/Common/Tabs.vue'
 import contextMenu from "@/views/Common/ContextMenu.vue";
-// ... (Giữ nguyên các import API cũ của bạn) ...
-import * as circuitApi from '@/api/circuit/circuit'
-import * as currentApi from '@/api/current/current'
-import * as disconnectorApi from '@/api/disconnector/disconnector'
-import * as voltageApi from '@/api/voltage/voltage'
-import * as surgeApi from '@/api/surge/surge'
-import * as powerApi from '@/api/power/power'
-import * as assetApi from '@/api/asset'
-
-import * as jobApi from '@/api/job'
-import * as jobCircuitApi from '@/api/circuit/jobCircuit'
-import * as jobCurrentApi from '@/api/current/jobCurrent'
-import * as jobVoltageApi from '@/api/voltage/jobVoltage'
-import * as jobDisconnectorApi from '@/api/disconnector/jobDisconnector'
-import * as jobSurgeApi from '@/api/surge/jobSurge'
-import * as jobPowerApi from '@/api/power/jobPower'
-
-import * as testApi from '@/api/test'
-import * as testCircuitApi from '@/api/circuit/testCircuit'
-import * as testCurrentApi from '@/api/current/testCurrent'
-import * as testVoltageApi from '@/api/voltage/testVoltage'
-import * as testDisconnectorApi from '@/api/disconnector/testDisconnector'
-import * as testSurgeApi from '@/api/surge/testSurge'
-import * as testPowerApi from '@/api/power/testPower'
 
 // Import Components
 import Substation from '../LocationInsert/locationLevelView.vue'
@@ -2547,27 +2512,6 @@ export default {
             }
         },
 
-        async updateLocationSyncPage(pageStt) {
-            try {
-                if (this.optionLocationSync.mode == 'update') {
-                    await ownerAPI.getOwnerByRole("OWNER3", pageStt, this.sl).then((res) => {
-                        if (res != null && res.length != 0) {
-                            for (let i in res) {
-                                res[i].id = res[i].mrid
-                                res[i].parentId = ''
-                                res[i].parentName = ''
-                                res[i].parentArr = []
-                            }
-                            this.ownerServerList = res
-                        }
-                    })
-                }
-            } catch (error) {
-                this.$message.error("Some error occur")
-                console.error(error)
-            }
-        },
-
         async showOwnerServerRoot() {
             const ownerRootServer = this.$refs.ownerRootServer;
             if (ownerRootServer) {
@@ -3460,222 +3404,6 @@ export default {
                 this.$message.error("Some error occur")
                 console.error(error)
             }
-        },
-
-        async downloadFromServer() {
-
-        },
-
-        async getAssets(node, rowData) {
-            let locationId = node.id
-            await assetApi.getAssetByLocation(locationId).then(async (response) => {
-                if (response && response.length > 0) {
-                    response.forEach(row => {
-                        row.parentId = node.id;
-                        let parentName = node.parentName + "/" + node.name
-                        row.parentName = parentName
-                    });
-                    rowData = response
-                }
-            })
-            await circuitApi.findByLocationId(locationId).then(async (responseAsset) => {
-                if (responseAsset && responseAsset.length > 0) {
-                    responseAsset.forEach(row => {
-                        row.parentId = node.id;
-                        let parentName = node.parentName + "/" + node.name
-                        row.parentName = parentName
-                    });
-                    rowData = rowData.concat(responseAsset)
-                }
-            })
-            await currentApi.findByLocationId(locationId).then(async (responseAsset) => {
-                if (responseAsset && responseAsset.length > 0) {
-                    responseAsset.forEach(row => {
-                        row.parentId = node.id;
-                        let parentName = node.parentName + "/" + node.name
-                        row.parentName = parentName
-                    });
-                    rowData = rowData.concat(responseAsset)
-                }
-            })
-            await voltageApi.findByLocationId(locationId).then(async (responseAsset) => {
-                if (responseAsset && responseAsset.length > 0) {
-                    responseAsset.forEach(row => {
-                        row.parentId = node.id;
-                        let parentName = node.parentName + "/" + node.name
-                        row.parentName = parentName
-                    });
-                    rowData = rowData.concat(responseAsset)
-                }
-            })
-            await disconnectorApi.findByLocationId(locationId).then(async (responseAsset) => {
-                if (responseAsset && responseAsset.length > 0) {
-                    responseAsset.forEach(row => {
-                        row.parentId = node.id;
-                        let parentName = node.parentName + "/" + node.name
-                        row.parentName = parentName
-                    });
-                    rowData = rowData.concat(responseAsset)
-                }
-            })
-            await surgeApi.findByLocationId(locationId).then(async (responseAsset) => {
-                if (responseAsset && responseAsset.length > 0) {
-                    responseAsset.forEach(row => {
-                        row.parentId = node.id;
-                        let parentName = node.parentName + "/" + node.name
-                        row.parentName = parentName
-                    });
-                    rowData = rowData.concat(responseAsset)
-                }
-            })
-            await powerApi.findByLocationId(locationId).then(async (responseAsset) => {
-                if (responseAsset && responseAsset.length > 0) {
-                    responseAsset.forEach(row => {
-                        row.parentId = node.id;
-                        let parentName = node.parentName + "/" + node.name
-                        row.parentName = parentName
-                    });
-                    rowData = rowData.concat(responseAsset)
-                }
-            })
-
-            return rowData
-        },
-
-        async getJobs(node, rowData) {
-            if (node.asset == "Transformer") {
-                await jobApi.getJobByAsset(node.id).then((response) => {
-                    if (response && response.length > 0) {
-                        response.forEach(row => {
-                            row.parentId = node.id;
-                        });
-                        rowData = response
-                    }
-                })
-            } else if (node.asset == "Circuit breaker") {
-                await jobCircuitApi.findAllJobByAssetId(node.id).then((responseJob) => {
-                    if (responseJob && responseJob.length > 0) {
-                        responseJob.forEach(row => {
-                            row.parentId = node.id;
-                        });
-                        rowData = rowData.concat(responseJob)
-                    }
-                })
-            } else if (node.asset == "Current transformer") {
-                await jobCurrentApi.findAllJobByAssetId(node.id).then((responseJob) => {
-                    if (responseJob && responseJob.length > 0) {
-                        responseJob.forEach(row => {
-                            row.parentId = node.id;
-                        });
-                        rowData = rowData.concat(responseJob)
-                    }
-                })
-            } else if (node.asset == "Disconnector") {
-                await jobDisconnectorApi.findAllJobByAssetId(node.id).then((responseJob) => {
-                    if (responseJob && responseJob.length > 0) {
-                        responseJob.forEach(row => {
-                            row.parentId = node.id;
-                        });
-                        rowData = rowData.concat(responseJob)
-                    }
-                })
-            } else if (node.asset == "Surge arrester") {
-                await jobSurgeApi.findAllJobByAssetId(node.id).then((responseJob) => {
-                    if (responseJob && responseJob.length > 0) {
-                        responseJob.forEach(row => {
-                            row.parentId = node.id;
-                        });
-                        rowData = rowData.concat(responseJob)
-                    }
-                })
-            } else if (node.asset == "Power cable") {
-                await jobPowerApi.findAllJobByAssetId(node.id).then((responseJob) => {
-                    if (responseJob && responseJob.length > 0) {
-                        responseJob.forEach(row => {
-                            row.parentId = node.id;
-                        });
-                        rowData = rowData.concat(responseJob)
-                    }
-                })
-            } else if (node.asset == "Voltage transformer") {
-                await jobVoltageApi.findAllJobByAssetId(node.id).then((responseJob) => {
-                    if (responseJob && responseJob.length > 0) {
-                        responseJob.forEach(row => {
-                            row.parentId = node.id;
-                        });
-                        rowData = rowData.concat(responseJob)
-                    }
-                })
-            }
-            return rowData
-        },
-
-        async getTests(node, rowData) {
-            if (node.parent.asset == "Transformer") {
-                await testApi.getTestsByJobId(node.id).then((responseTest) => {
-                    if (responseTest && responseTest.length > 0) {
-                        responseTest.forEach(row => {
-                            row.parentId = node.id;
-                        });
-                        rowData = rowData.concat(responseTest)
-                    }
-                })
-            } else if (node.parent.asset == "Circuit breaker") {
-                await testCircuitApi.findAllTestByJobId(node.id).then((responseTest) => {
-                    if (responseTest && responseTest.length > 0) {
-                        responseTest.forEach(row => {
-                            row.parentId = node.id;
-                        });
-                        rowData = rowData.concat(responseTest)
-                    }
-                })
-            } else if (node.parent.asset == "Current transformer") {
-                await testCurrentApi.findAllTestByJobId(node.id).then((responseTest) => {
-                    if (responseTest && responseTest.length > 0) {
-                        responseTest.forEach(row => {
-                            row.parentId = node.id;
-                        });
-                        rowData = rowData.concat(responseTest)
-                    }
-                })
-            } else if (node.parent.asset == "Disconnector") {
-                await testDisconnectorApi.findAllTestByJobId(node.id).then((responseTest) => {
-                    if (responseTest && responseTest.length > 0) {
-                        responseTest.forEach(row => {
-                            row.parentId = node.id;
-                        });
-                        rowData = rowData.concat(responseTest)
-                    }
-                })
-            } else if (node.parent.asset == "Surge arrester") {
-                await testSurgeApi.findAllTestByJobId(node.id).then((responseTest) => {
-                    if (responseTest && responseTest.length > 0) {
-                        responseTest.forEach(row => {
-                            row.parentId = node.id;
-                        });
-                        rowData = rowData.concat(responseTest)
-                    }
-                })
-            } else if (node.parent.asset == "Power cable") {
-                await testPowerApi.findAllTestByJobId(node.id).then((responseTest) => {
-                    if (responseTest && responseTest.length > 0) {
-                        responseTest.forEach(row => {
-                            row.parentId = node.id;
-                        });
-                        rowData = rowData.concat(responseTest)
-                    }
-                })
-            } else if (node.parent.asset == "Voltage transformer") {
-                await testVoltageApi.findAllTestByJobId(node.id).then((responseTest) => {
-                    if (responseTest && responseTest.length > 0) {
-                        responseTest.forEach(row => {
-                            row.parentId = node.id;
-                        });
-                        rowData = rowData.concat(responseTest)
-                    }
-                })
-            }
-            return rowData
         },
 
         async showData(node) {
