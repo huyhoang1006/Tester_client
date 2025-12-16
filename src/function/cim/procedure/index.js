@@ -24,6 +24,28 @@ export const getProcedureById = async (mrid) => {
     }
 }
 
+export const getProcedureByAssetId = async (mrid) => {
+    try {
+        return new Promise((resolve, reject) => {
+            db.all(
+                `SELECT p.*, d.*, io.*
+                 FROM procedure p
+                 JOIN document d ON p.mrid = d.mrid
+                 JOIN identified_object io ON p.mrid = io.mrid
+                 JOIN procedure_asset pa ON p.mrid = pa.procedure_id
+                 WHERE pa.asset_id = ?`,
+                [mrid],
+                (err, rows) => {
+                    if (err) return reject({ success: false, err, message: 'Get procedure by asset id failed' })
+                    return resolve({ success: true, data: rows, message: 'Get procedure by asset id completed' })
+                }
+            )
+        })
+    } catch (err) {
+        return { success: false, err, message: 'Get procedure by id failed' }
+    }
+}
+
 // Thêm mới procedure
 export const insertProcedureTransaction = async (procedure, dbsql) => {
     return new Promise(async (resolve, reject) => {

@@ -1,0 +1,146 @@
+[
+  {
+    "mrid": "be1bba32-76a3-48c9-be6b-095085aaf8aa",
+    "code": "motorCurrent",
+    "name": "Motor current",
+    "kind": "test"
+  },
+  {
+    "mrid": "4ac548da-4f12-4385-acbd-22752f0b68b7",
+    "code": "cTiming",
+    "name": "C Timing",
+    "kind": "test"
+  },
+  {
+    "mrid": "436604e1-b98a-4486-ad04-1fd1d75da948",
+    "code": "oTiming",
+    "name": "O Timing",
+    "kind": "test"
+  },
+  {
+    "mrid": "f93847dd-beab-43ea-a0c2-4a190e7ded37",
+    "code": "ocTiming",
+    "name": "OC Timing",
+    "kind": "test"
+  },
+  {
+    "mrid": "afe25bc0-7319-44f6-9893-bbe5bf98c5d3",
+    "code": "coTiming",
+    "name": "CO Timing",
+    "kind": "test"
+  },
+  {
+    "mrid": "3866135c-317a-4ae3-ad73-2b458d421706",
+    "code": "ocoTiming",
+    "name": "O-CO Timing",
+    "kind": "test"
+  },
+  {
+    "mrid": "d8e9cd10-ede4-404c-990d-bfaaea25972b",
+    "code": "cocoTiming",
+    "name": "CO-CO Timing",
+    "kind": "test"
+  },
+  {
+    "mrid": "952bd537-b442-454d-8531-c5649158b644",
+    "code": "ococoTiming",
+    "name": "O-CO-CO Timing",
+    "kind": "test"
+  },
+  {
+    "mrid": "69abf10d-7943-43b8-9b08-b8a468f9b8c2",
+    "code": "contactResistance",
+    "name": "Contact resistance",
+    "kind": "test"
+  },
+  {
+    "mrid": "d0947596-64c5-4fdd-9f30-78076e658ffd",
+    "code": "minimumPickup",
+    "name": "Minimum pick up",
+    "kind": "test"
+  },
+  {
+    "mrid": "802bca64-119c-4d4b-b965-b54a152557e3",
+    "code": "dcWindingTripCoil",
+    "name": "DC winding resistance of trip coil",
+    "kind": "test"
+  },
+  {
+    "mrid": "b0b0293d-1573-45c5-b87f-e8d9f1f32525",
+    "code": "dcWindingCloseCoil",
+    "name": "DC winding resistance of close coil",
+    "kind": "test"
+  },
+  {
+    "mrid": "0a8e9951-bc75-4baf-b792-fd265219d450",
+    "code": "dcWindingMotor",
+    "name": "DC winding resistance of motor",
+    "kind": "test"
+  },
+  {
+    "mrid": "8163aa31-37bb-4905-adfa-d31c68d9f0cc",
+    "code": "insulationResistanceCircuit",
+    "name": "Insulation resistance of circuit breaker",
+    "kind": "test"
+  },
+  {
+    "mrid": "73a69f63-cef6-4f22-a773-b721509506cb",
+    "code": "insulationResistanceTripCoil",
+    "name": "Insulation resistance of trip coil",
+    "kind": "test"
+  },
+  {
+    "mrid": "927e27c9-55a2-4eaa-8d9e-717423fad2f7",
+    "code": "insulationResistanceCloseCoil",
+    "name": "Insulation resistance of close coil",
+    "kind": "test"
+  },
+  {
+    "mrid": "c7ef382e-af74-4d31-9644-c5429d8bf2fc",
+    "code": "insulationResistanceMotor",
+    "name": "Insulation resistance of motor",
+    "kind": "test"
+  },
+  {
+    "mrid": "336dc0c4-81d9-419b-8cbe-5767c51d518f",
+    "code": "sf6MoiturePurity",
+    "name": "SF6 gas moiture and purity",
+    "kind": "test"
+  },
+  {
+    "mrid": "82692530-e65b-41f0-98dc-afa0382e8c37",
+    "code": "sf6GasAnalysis",
+    "name": "SF6 gas analysis",
+    "kind": "test"
+  },
+  {
+    "mrid": "9e6cbf39-6586-479a-b79a-3e16e8400930",
+    "code": "pressureGauge",
+    "name": "Pressure gauge",
+    "kind": "test"
+  },
+  {
+    "mrid": "26b32b45-af6d-4ae4-807c-8ed6fc09c55c",
+    "code": "overCurrentRelease",
+    "name": "Overcurrent release",
+    "kind": "test"
+  },
+  {
+    "mrid": "017cf8b6-e026-4455-ba54-ed40b7e4efe1",
+    "code": "underVoltageRelease",
+    "name": "Under-voltage release",
+    "kind": "test"
+  },
+  {
+    "mrid": "f024a870-c244-45bd-a3dd-f5c32a37c494",
+    "code": "inspection",
+    "name": "General inspection",
+    "kind": "test"
+  },
+  {
+    "mrid": "bf3284e8-4b18-4be0-beb2-c240456ce0f0",
+    "code": "controlCabinet",
+    "name": "Control cabinet check",
+    "kind": "test"
+  }
+]

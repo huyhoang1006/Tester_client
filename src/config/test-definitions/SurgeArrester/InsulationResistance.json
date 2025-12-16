@@ -1,0 +1,51 @@
+{
+  "testId": "847b9f63-a309-4a8b-a253-9f9a161c3179",
+  "testCode": "InsulationResistance",
+  "testName": "Insulation resistance",
+  "columns": [
+    {
+      "mrid": "908d1326-0616-4191-8973-10a905187001",
+      "code": "measurement",
+      "name": "Measurement",
+      "type": "string"
+    },
+    {
+      "mrid": "12739343-6523-455b-8016-5683267571b2",
+      "code": "v_test",
+      "name": "V test",
+      "type": "analog",
+      "unit": "V"
+    },
+    {
+      "mrid": "92183472-1254-463b-9123-128374651293",
+      "code": "r60s",
+      "name": "R60s",
+      "type": "analog",
+      "unit": "M|Ω"
+    },
+    {
+      "mrid": "99999999-aaaa-bbbb-cccc-000000000001",
+      "code": "assessment",
+      "name": "Assessment",
+      "type": "discrete",
+      "valueAliasSetId": "40c60468-232a-4643-851f-50616900f601",
+      "options": [
+        { "mrid": "d8858564-e438-4034-9273-030919163001", "value": 0, "alias": "Fail" },
+        { "mrid": "d8858564-e438-4034-9273-030919163002", "value": 1, "alias": "Pass" }
+      ]
+    },
+    {
+      "mrid": "99999999-aaaa-bbbb-cccc-000000000002",
+      "code": "condition_indicator",
+      "name": "Condition indicator",
+      "type": "discrete",
+      "valueAliasSetId": "8e323053-481b-4348-89c0-67258380d701",
+      "options": [
+        { "mrid": "e9969675-f549-4145-a384-141020274001", "value": 0, "alias": "Bad" },
+        { "mrid": "e9969675-f549-4145-a384-141020274002", "value": 1, "alias": "Poor" },
+        { "mrid": "e9969675-f549-4145-a384-141020274003", "value": 2, "alias": "Fair" },
+        { "mrid": "e9969675-f549-4145-a384-141020274004", "value": 3, "alias": "Good" }
+      ]
+    }
+  ]
+}

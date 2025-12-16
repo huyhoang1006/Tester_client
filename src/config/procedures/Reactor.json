@@ -1,0 +1,44 @@
+[
+  {
+    "mrid": "1bc0d94a-24cc-4c20-8fc3-28d3db016271",
+    "code": "insulationResistance",
+    "name": "Insulation resistance",
+    "kind": "test"
+  },
+  {
+    "mrid": "27aa4119-486f-4c17-a304-6a673e9ba8af",
+    "code": "windingDfCap",
+    "name": "Winding DF & CAP",
+    "kind": "test"
+  },
+  {
+    "mrid": "ab836582-70d5-43eb-9d5d-19d26994fc3b",
+    "code": "dcWindingResistance",
+    "name": "DC winding resistance",
+    "kind": "test"
+  },
+  {
+    "mrid": "f8a97057-56d2-45dd-8380-abd50dd00bde",
+    "code": "bushingDfCap",
+    "name": "Bushing DF & CAP",
+    "kind": "test"
+  },
+  {
+    "mrid": "3d564112-e5a5-4026-9512-36caec1fbac3",
+    "code": "inductanceMeasurement",
+    "name": "Inductance measurement",
+    "kind": "test"
+  },
+  {
+    "mrid": "d6cffbaf-19a1-4ee4-8c1d-f8df620a1acb",
+    "code": "powerFrequencyVoltage",
+    "name": "Power frequency withstand voltage test",
+    "kind": "test"
+  },
+  {
+    "mrid": "8f74f587-a8ec-4a7b-bda5-d6b80d6235b4",
+    "code": "generalInspection",
+    "name": "General inspection",
+    "kind": "test"
+  }
+]

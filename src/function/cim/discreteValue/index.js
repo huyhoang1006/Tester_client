@@ -24,6 +24,57 @@ export const getDiscreteValueById = async (mrid) => {
     }
 }
 
+export const getDiscreteValueByTestDataSetMrids = async (mrids) => {
+    return new Promise((resolve, reject) => {
+
+        if (!mrids || mrids.length === 0) {
+            return resolve({
+                success: true,
+                data: [],
+                message: 'Get discreteValue by testDataSet mrids completed'
+            });
+        }
+
+        const placeholders = mrids.map(() => '?').join(',');
+
+        const sql = `
+            SELECT 
+                dv.*, 
+                mv.*, 
+                io.*, 
+                iop.*, 
+                pdmv.procedure_dataset_id
+            FROM procedure_dataset_measurement_value pdmv
+            JOIN measurement_value mv 
+                ON mv.mrid = pdmv.measurement_value_id
+            JOIN discrete_value dv 
+                ON dv.mrid = mv.mrid
+            LEFT JOIN iopoint iop
+                ON iop.mrid = mv.mrid
+            LEFT JOIN identified_object io
+                ON io.mrid = mv.mrid
+            WHERE pdmv.procedure_dataset_id IN (${placeholders})
+        `;
+
+        db.all(sql, mrids, (err, rows) => {
+            if (err) {
+                return reject({
+                    success: false,
+                    err,
+                    message: 'Get discreteValue by testDataSet mrids failed'
+                });
+            }
+
+            return resolve({
+                success: true,
+                data: rows,
+                message: 'Get discreteValue by testDataSet mrids completed'
+            });
+        });
+    });
+};
+
+
 // Thêm mới discreteValue
 export const insertDiscreteValueTransaction = async (discreteValue, dbsql) => {
     return new Promise(async (resolve, reject) => {
