@@ -1,0 +1,188 @@
+[
+  {
+    "mrid": "b228dac3-e200-49d2-a75a-03f59f7f83c4",
+    "code": "InsulationResistance",
+    "name": "Insulation resistance of winding",
+    "kind": "test"
+  },
+  {
+    "mrid": "811cb1cd-57d1-4572-ba18-fdb0eff907a3",
+    "code": "RatioPrimSec",
+    "name": "Ratio Prim/Sec",
+    "kind": "test"
+  },
+  {
+    "mrid": "7eefc1db-4ceb-4ddd-92ff-5a9e662afc8e",
+    "code": "DcWindingPrim",
+    "name": "DC Winding resistance Prim",
+    "kind": "test"
+  },
+  {
+    "mrid": "c4a3176d-c2d2-4903-932b-3fe6c6438c5b",
+    "code": "DcWindingSec",
+    "name": "DC Winding resistance Sec",
+    "kind": "test"
+  },
+  {
+    "mrid": "512b8d7c-9d11-419c-ae1c-ac7c4b2d08e6",
+    "code": "DcWindingTert",
+    "name": "DC Winding resistance Tert",
+    "kind": "test"
+  },
+  {
+    "mrid": "2df1cd08-5347-4776-8319-a1987918932c",
+    "code": "MeasurementOfNoLoad",
+    "name": "No-load Test",
+    "kind": "test"
+  },
+  {
+    "mrid": "1a3f6c14-265b-486c-89ec-dcb8426ce06e",
+    "code": "MeasurementOfShortCircuit",
+    "name": "Short-circuit Test",
+    "kind": "test"
+  },
+  {
+    "mrid": "e4863274-ac59-405a-9aeb-fc09490fe17e",
+    "code": "EnergyEfficiency",
+    "name": "Energy Efficiency",
+    "kind": "test"
+  },
+  {
+    "mrid": "4cd34382-16cd-493a-ad1c-ed2985d1e977",
+    "code": "InducedAcVoltageTests",
+    "name": "Induced AC Voltage Test",
+    "kind": "test"
+  },
+  {
+    "mrid": "d04ecee3-831a-47dc-8ec5-8eb3bc594cef",
+    "code": "MeasurementOfOil",
+    "name": "Oil breakdown voltage",
+    "kind": "test"
+  },
+  {
+    "mrid": "84b45a72-5aeb-49fb-9000-5e8e6c7ab03c",
+    "code": "DimensionWeight",
+    "name": "Dimension Weight",
+    "kind": "test"
+  },
+  {
+    "mrid": "0e78e50b-ce66-4329-9201-d795a827f962",
+    "code": "TestingInstruments",
+    "name": "Testing Instruments",
+    "kind": "test"
+  },
+  {
+    "mrid": "ba2d3ec4-dbe6-4cf7-8542-b40299e1450f",
+    "code": "ExcitingCurrent",
+    "name": "Exciting current",
+    "kind": "test"
+  },
+  {
+    "mrid": "4523fb4a-6733-4b08-9675-278a4c8ac7cf",
+    "code": "SeparateSourceAc",
+    "name": "Separate Source AC Voltage Test",
+    "kind": "test"
+  },
+  {
+    "mrid": "0fa4d989-3c20-49d0-a4ce-3dc00aebc45d",
+    "code": "WindingDfCap",
+    "name": "Winding DF & CAP",
+    "kind": "test"
+  },
+  {
+    "mrid": "f701fc13-c721-4734-9361-0da527ff8995",
+    "code": "BushingPrimC1",
+    "name": "Bushing Prim DF & CAP C1",
+    "kind": "test"
+  },
+  {
+    "mrid": "a63922b2-9011-48b4-9760-9aebf9b5e2f7",
+    "code": "BushingPrimC2",
+    "name": "Bushing Prim DF & CAP C2",
+    "kind": "test"
+  },
+  {
+    "mrid": "2955d8fb-251a-43cf-ae90-a1cce9ff7d68",
+    "code": "BushingSecC1",
+    "name": "Bushing Sec DF & CAP C1",
+    "kind": "test"
+  },
+  {
+    "mrid": "c8c64f37-009e-4cab-9603-796b3be54ec6",
+    "code": "BushingSecC2",
+    "name": "Bushing Sec DF & CAP C2",
+    "kind": "test"
+  },
+  {
+    "mrid": "8947ffa6-6abf-49a5-a35a-12f78536218c",
+    "code": "BushingTertC1",
+    "name": "Bushing Tert DF & CAP C1",
+    "kind": "test"
+  },
+  {
+    "mrid": "5e4521e4-97d1-4c79-a55d-2f81d02e9ac6",
+    "code": "BushingTertC2",
+    "name": "Bushing Tert DF & CAP C2",
+    "kind": "test"
+  },
+  {
+    "mrid": "bfcc1ac2-6918-40fc-97bf-fa4fe345d0ea",
+    "code": "ShortPrimSec",
+    "name": "Short-circuit prim-sec test",
+    "kind": "test"
+  },
+  {
+    "mrid": "8edc2faa-fbb3-4012-9e36-eb87de6e162c",
+    "code": "ShortSecTert",
+    "name": "Short-circuit sec-tert test",
+    "kind": "test"
+  },
+  {
+    "mrid": "fc1a5eab-9169-4c1a-83eb-de45cd9e9c5e",
+    "code": "ShortPrimTert",
+    "name": "Short-circuit prim-tert test",
+    "kind": "test"
+  },
+  {
+    "mrid": "7c80ee02-9315-449b-8808-4aca4bd7b59e",
+    "code": "Dga",
+    "name": "DGA",
+    "kind": "test"
+  },
+  {
+    "mrid": "a157af35-e965-4374-96bb-84e4b938091e",
+    "code": "DielectricResponseAnalysis",
+    "name": "Dielectric Respone Analysis",
+    "kind": "test"
+  },
+  {
+    "mrid": "7b05583f-530e-4547-8668-93961dca99d6",
+    "code": "InsulationResistanceYokeCore",
+    "name": "Insulation resistance of yoke and core",
+    "kind": "test"
+  },
+  {
+    "mrid": "6f418b8c-0217-4f7b-ab4d-2ab500691e3e",
+    "code": "ShortCircuitImpedancePrim",
+    "name": "Short-circuit impedance prim",
+    "kind": "test"
+  },
+  {
+    "mrid": "2c4ce2d4-df72-40d7-b505-b51744a5b42b",
+    "code": "ShortCircuitImpedanceSec",
+    "name": "Short-circuit impedance sec",
+    "kind": "test"
+  },
+  {
+    "mrid": "66c08a40-e4ac-4538-8f0d-808d39e2b205",
+    "code": "ShortCircuitImpedanceTert",
+    "name": "Short-circuit impedance tert",
+    "kind": "test"
+  },
+  {
+    "mrid": "50dfbdf2-80d2-4840-bc39-e1d63c5825d2",
+    "code": "GasChromatography",
+    "name": "Gas Chromatography",
+    "kind": "test"
+  }
+]

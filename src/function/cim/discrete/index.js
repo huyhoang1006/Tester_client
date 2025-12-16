@@ -24,17 +24,73 @@ export const getDiscreteById = async (mrid) => {
     }
 }
 
+export const getAllDiscreteByProcedureIds = (procedureIds) => {
+    try {
+        return new Promise((resolve, reject) => {
+
+            if (!procedureIds || procedureIds.length === 0) {
+                return resolve({
+                    success: true,
+                    data: [],
+                    message: 'No procedureIds provided'
+                });
+            }
+
+            const placeholders = procedureIds.map(() => '?').join(', ');
+
+            const sql = `
+                SELECT 
+                    d.*,
+                    m.*,
+                    io.*
+                FROM measurement_procedure mp
+                JOIN measurement m ON mp.measurement_id = m.mrid
+                JOIN discrete d ON m.mrid = d.mrid
+                JOIN identified_object io ON m.mrid = io.mrid
+                WHERE mp.procedure_id IN (${placeholders})
+            `;
+
+            db.all(sql, procedureIds, (err, rows) => {
+                if (err) {
+                    return reject({
+                        success: false,
+                        err,
+                        message: 'Get all discrete by procedures failed'
+                    });
+                }
+
+                if (!rows || rows.length === 0) {
+                    return resolve({
+                        success: false,
+                        data: [],
+                        message: 'No discrete found for these procedures'
+                    });
+                }
+
+                return resolve({
+                    success: true,
+                    data: rows,
+                    message: 'Get all discrete by procedures completed'
+                });
+            });
+        });
+    } catch (err) {
+        return { success: false, err, message: 'Get all discrete by procedures failed' };
+    }
+};
+
 export const getAllDiscreteByProcedure = (procedureId) => {
     try {
         return new Promise((resolve, reject) => {
             const sql = `
-                SELECT d.*, m.*, io.*, mp.mrid AS measurement_procedure_mrid
+                SELECT d.*, m.*, io.*
                 FROM measurement_procedure mp
-                LEFT JOIN measurement m ON mp.measurement_id = m.mrid
-                LEFT JOIN discrete d ON d.mrid = m.mrid
+                INNER JOIN measurement m ON mp.measurement_id = m.mrid
+                INNER JOIN discrete d ON d.mrid = m.mrid
                 LEFT JOIN identified_object io ON m.mrid = io.mrid
                 WHERE mp.procedure_id = ?
             `
+
             db.all(sql, [procedureId], (err, rows) => {
                 if (err) {
                     return reject({
@@ -68,7 +124,7 @@ export const insertDiscreteTransaction = async (info, dbsql) => {
         try {
             const measurementResult = await MeasurementFunc.insertMeasurementTransaction(info, dbsql)
             if (!measurementResult.success) {
-                return reject({ success: false, message: 'Insert measurement failed', err: measurementResult.err })
+                return reject({ success: false, message: 'Insert discrete measurement failed', err: measurementResult.err })
             }
             dbsql.run(
                 `INSERT INTO discrete(
@@ -109,7 +165,7 @@ export const insertDiscrete = async (info) => {
                 const measurementResult = await MeasurementFunc.insertMeasurementTransaction(info, db);
                 if (!measurementResult.success) {
                     db.run('ROLLBACK');
-                    return reject({ success: false, message: 'Insert measurement failed', err: measurementResult.err });
+                    return reject({ success: false, message: 'Insert discrete measurement failed', err: measurementResult.err });
                 }
                 db.run(
                     `INSERT INTO discrete(

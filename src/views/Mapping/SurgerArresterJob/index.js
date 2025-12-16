@@ -151,7 +151,7 @@ export const jobDtoToEntity = (dto) => {
         entity.percent.push(percent);
 
         //ambient_temperature_at_sampling
-        transformerObservation.ambient_temperature = item.testCondition.condition.ambient_temperature.mrid || null;
+        transformerObservation.ambient_temp = item.testCondition.condition.ambient_temperature.mrid || null;
         const ambientTemp = new Temperature();
         ambientTemp.mrid = item.testCondition.condition.ambient_temperature.mrid || null;
         ambientTemp.value = item.testCondition.condition.ambient_temperature.value || null;
@@ -221,7 +221,8 @@ export const jobDtoToEntity = (dto) => {
                     if (value.type === 'analog') {
                         const analogValue = new AnalogValue();
                         analogValue.mrid = value.mrid || null;
-                        analogValue.alias_name = value.value || null;
+                        analogValue.value = value.value || null;
+                        analogValue.alias_name = key || null;
                         analogValue.analog = testCodeKey[key] ? testCodeKey[key].mrid : null;
                         entity.analogValues.push(analogValue);
                         const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue();
@@ -284,6 +285,7 @@ export const jobDtoToEntity = (dto) => {
 }
 
 export const JobEntityToDto = (entity) => {
+    console.log('entity:', entity);
     const dto = new SurgeArresterJobDto();
     //job properties
     dto.properties.mrid = entity.oldWork.mrid || '';
@@ -334,6 +336,16 @@ export const JobEntityToDto = (entity) => {
             testTypeCode: item.type || '',
             testTypeName: '',
             testTypeId: '',
+            average_score: null,
+            average_score_c: null,
+            average_score_df: null,
+            total_average_score: null,
+            total_worst_score: null,
+            weighting_factor: null,
+            worst_score: null,
+            worst_score_c: null,
+            worst_score_df: null,
+            created_on: '',
             testCondition: {
                 mrid: '',
                 condition: {
@@ -383,12 +395,12 @@ export const JobEntityToDto = (entity) => {
 
         for(const observation of entity.transformerObservation) {
             if(observation.work_task_id === item.mrid) {
-                testTemplate.testCondition.observationId = observation.mrid || '';
+                testTemplate.testCondition.mrid = observation.mrid || '';
                 testTemplate.testCondition.condition.top_oil_temperature.mrid = observation.top_oil_temp || '';
                 testTemplate.testCondition.condition.bottom_oil_temperature.mrid = observation.bottom_oil_temp || '';
                 testTemplate.testCondition.condition.winding_temperature.mrid = observation.winding_temp || '';
                 testTemplate.testCondition.condition.reference_temperature.mrid = observation.reference_temp || '';
-                testTemplate.testCondition.condition.ambient_temperature.mrid = observation.ambient_temperature || '';
+                testTemplate.testCondition.condition.ambient_temperature.mrid = observation.ambient_temp || '';
                 testTemplate.testCondition.condition.weather = observation.weather || '';
                 testTemplate.testCondition.condition.humidity.mrid = observation.humidity || '';
             }
@@ -436,6 +448,57 @@ export const JobEntityToDto = (entity) => {
                 }
                 break;
             }
+        }
+
+        for(const proc of entity.procedure) {
+            if(proc.alias_name === item.type) {
+                testTemplate.testTypeId = proc.mrid || '';
+                testTemplate.testTypeName = proc.name || '';
+                break;
+            }
+        }
+
+        const testData = entity.testDataSet.filter(x => x.work_task === item.mrid);
+        for(const test of testData) {
+            const rowData = {};
+            rowData.mrid = test.mrid || '';
+            const stringMeasutementValueData = entity.stringMeasurementValues.filter(x => x.procedure_dataset_id === test.mrid);
+            for (const smv of stringMeasutementValueData) {
+                const key = smv.alias_name; // vd: "assessment"
+
+                rowData[key] = {
+                    mrid: smv.mrid,
+                    type: "string",
+                    unit: "",
+                    value: smv.value || ""
+                };
+            }
+
+            const analogValueData = entity.analogValues.filter(x => x.procedure_dataset_id === test.mrid);
+            for (const av of analogValueData) {
+                const key = av.alias_name; // vd: "assessment"
+
+                rowData[key] = {
+                    mrid: av.mrid,
+                    type: "analog",
+                    unit: "",
+                    value: av.value || ""
+                };
+            }
+
+            const discreteValueData = entity.discreteValues.filter(x => x.procedure_dataset_id === test.mrid);
+            for (const dv of discreteValueData) {
+                const key = dv.alias_name; // vd: "assessment"
+
+                rowData[key] = {
+                    mrid: dv.mrid,
+                    type: "discrete",
+                    unit: "",
+                    value: dv.value || ""
+                };
+            }
+
+            testTemplate.data.table.push(rowData);
         }
 
         dto.testList.push(testTemplate);

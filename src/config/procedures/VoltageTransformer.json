@@ -1,0 +1,32 @@
+[
+  {
+    "mrid": "950afb42-7080-4172-a689-c3023d61a583",
+    "code": "InsulationResistance",
+    "name": "Insulation resistance",
+    "kind": "test"
+  },
+  {
+    "mrid": "694a6ddb-ca9b-4948-8b14-6efdab7dd9ef",
+    "code": "VTRatio",
+    "name": "VT ratio",
+    "kind": "test"
+  },
+  {
+    "mrid": "cf3a06a1-11ee-43f1-b2ce-cfd61f26a6f9",
+    "code": "DcWindingRes",
+    "name": "DC Winding resistance",
+    "kind": "test"
+  },
+  {
+    "mrid": "d436dbbd-f7ad-4f47-abce-fa7dfa126a9b",
+    "code": "VTDfcap",
+    "name": "VT DF & CAP",
+    "kind": "test"
+  },
+  {
+    "mrid": "f6a13d2f-0e1f-4e8e-ba9a-e3f43eb222ae",
+    "code": "GeneralInspection",
+    "name": "General inspection",
+    "kind": "test"
+  }
+]

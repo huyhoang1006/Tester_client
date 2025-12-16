@@ -1,0 +1,12 @@
+{
+  "testId": "336dc0c4-81d9-419b-8cbe-5767c51d518f",
+  "testCode": "sf6MoiturePurity",
+  "testName": "SF6 gas moiture and purity",
+  "columns": [
+    { "mrid": "1541c032-8419-450e-9407-7429188550d1", "code": "moiture", "name": "Moiture", "type": "analog", "unit": "ppm" },
+    { "mrid": "6791e0a8-3f56-42d3-9830-22a8300224d2", "code": "purity", "name": "Purity", "type": "analog", "unit": "%" },
+    { "mrid": "99999999-aaaa-bbbb-cccc-000000000001", "code": "assessment", "name": "Assessment", "type": "discrete", "valueAliasSetId": "40c60468-232a-4643-851f-50616900f601", "options": [{"value": 0, "alias": "Fail", "mrid": "d8858564-e438-4034-9273-030919163001"}, {"value": 1, "alias": "Pass", "mrid": "d8858564-e438-4034-9273-030919163002"}] },
+    { "mrid": "99999999-aaaa-bbbb-cccc-000000000002", "code": "condition_indicator", "name": "Condition indicator", "type": "discrete", "valueAliasSetId": "8e323053-481b-4348-89c0-67258380d701", "options": [{"value": 0, "alias": "Bad", "mrid": "e9969675-f549-4145-a384-141020274001"}, {"value": 1, "alias": "Poor", "mrid": "e9969675-f549-4145-a384-141020274002"}, {"value": 2, "alias": "Fair", "mrid": "e9969675-f549-4145-a384-141020274003"}, {"value": 3, "alias": "Good", "mrid": "e9969675-f549-4145-a384-141020274004"}] }
+  ],
+  "defaultRows": []
+}

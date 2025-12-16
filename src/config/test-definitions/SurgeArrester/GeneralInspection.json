@@ -1,0 +1,37 @@
+{
+  "testId": "cd37afa1-0357-4fe3-b52e-cd960c39a1cf",
+  "testCode": "GeneralInspection",
+  "testName": "General inspection",
+  "columns": [
+    {
+      "mrid": "33281947-1234-4567-89ab-cdef01234005",
+      "code": "items",
+      "name": "Items",
+      "type": "string"
+    },
+    {
+      "mrid": "99999999-aaaa-bbbb-cccc-000000000001",
+      "code": "assessment",
+      "name": "Assessment",
+      "type": "discrete",
+      "valueAliasSetId": "40c60468-232a-4643-851f-50616900f601",
+      "options": [
+        { "mrid": "d8858564-e438-4034-9273-030919163001", "value": 0, "alias": "Fail" },
+        { "mrid": "d8858564-e438-4034-9273-030919163002", "value": 1, "alias": "Pass" }
+      ]
+    },
+    {
+      "mrid": "99999999-aaaa-bbbb-cccc-000000000002",
+      "code": "condition_indicator",
+      "name": "Condition indicator",
+      "type": "discrete",
+      "valueAliasSetId": "8e323053-481b-4348-89c0-67258380d701",
+      "options": [
+        { "mrid": "e9969675-f549-4145-a384-141020274001", "value": 0, "alias": "Bad" },
+        { "mrid": "e9969675-f549-4145-a384-141020274002", "value": 1, "alias": "Poor" },
+        { "mrid": "e9969675-f549-4145-a384-141020274003", "value": 2, "alias": "Fair" },
+        { "mrid": "e9969675-f549-4145-a384-141020274004", "value": 3, "alias": "Good" }
+      ]
+    }
+  ]
+}

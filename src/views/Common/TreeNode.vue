@@ -2,8 +2,8 @@
     <li>
         <div style="display: flex; align-items: center; gap: 10px;">
             <div @click="fetchNodeData">
-                <i v-if="!node.expanded" class="fa-solid fa-caret-right" style="font-size: 12px;"></i>
-                <i v-else class="fa-solid fa-caret-down" style="font-size: 12px;"></i>
+                <i v-if="!node.expanded" class="fa-solid fa-angle-right" style="font-size: 12px; color: #CCCCCC;"></i>
+                <i v-else class="fa-solid fa-angle-down" style="font-size: 12px; color: #CCCCCC;"></i>
             </div>
             <span @contextmenu.prevent="openContextMenu($event, node)" :class="{ selected: selectedNodes.some(n => n.mrid === node.mrid) }" class="folder" @click="toggle" @dblclick="doubleToggle">
                 <div v-if="node.mode == 'substation'" class="icon-wrapper">
