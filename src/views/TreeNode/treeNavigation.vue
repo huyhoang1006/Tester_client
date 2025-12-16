@@ -4917,7 +4917,14 @@ cleanDtoForDuplicate(dto) {
             if (dto.oldCableInfoId) dto.oldCableInfoId = null;
             
             // Giữ lại foreign keys: locationId, psrId (tham chiếu đến entities độc lập)
-            
+            if (dto.breakerRatingInfoId) dto.breakerRatingInfoId = null;
+            if (dto.breakerContactSystemInfoId) dto.breakerContactSystemInfoId = null;
+            if (dto.breakerOtherInfoId) dto.breakerOtherInfoId = null;
+            if (dto.operatingMechanismId) dto.operatingMechanismId = null;
+            if (dto.operatingMechanismInfoId) dto.operatingMechanismInfoId = null;
+            if (dto.operatingMechanismLifecycleDateId) dto.operatingMechanismLifecycleDateId = null;
+            if (dto.operatingMechanismProductAssetModelId) dto.operatingMechanismProductAssetModelId = null;
+            if (dto.assessmentLimitBreakerInfoId) dto.assessmentLimitBreakerInfoId = null;
             // Xóa mrid trong ratings (giữ value và unit)
             if (dto.ratings) {
                 const ratingFields = [
@@ -4950,6 +4957,11 @@ cleanDtoForDuplicate(dto) {
             };
             
             if (dto.ratings) clearRecursive(dto.ratings);
+            if (dto.circuitBreaker) clearRecursive(dto.circuitBreaker);
+            if (dto.contactSystem) clearRecursive(dto.contactSystem);
+            if (dto.others) clearRecursive(dto.others);
+            if (dto.operating) clearRecursive(dto.operating);
+            if (dto.assessmentLimits) clearRecursive(dto.assessmentLimits);
             if (dto.winding_configuration) clearRecursive(dto.winding_configuration);
             if (dto.impedances) clearRecursive(dto.impedances);
             if (dto.others) clearRecursive(dto.others);
@@ -5155,6 +5167,8 @@ cleanDtoForDuplicate(dto) {
                 });
             }
         };
+
+        if (dto.ratings) generateMridForNestedObject(dto.ratings); 
 
         if (dto.ratingsData) generateMridForNestedObject(dto.ratingsData);
         if (dto.othersData) generateMridForNestedObject(dto.othersData);

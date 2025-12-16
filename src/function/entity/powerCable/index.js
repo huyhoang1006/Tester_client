@@ -23,167 +23,105 @@ import PowerCableEntity from '@/views/Flatten/PowerCable/index'
 export const insertPowerCableEntity = async (old_entity, entity) => {
     try {
         if (entity.asset.mrid === null || entity.asset.mrid === '') {
-            const result = {
+            return {
                 success: false,
                 error: new Error("MRID is required for Power Cable Entity"),
                 message: '',
-            }
-            return result;
+            };
         } else {
             backupAllFilesInDir(null, null, entity.asset.mrid);
             const syncResult = syncFilesWithDeletion(JSON.parse(entity.attachment.path), null, entity.asset.mrid);
             if (!syncResult.success) {
                 restoreFiles(null, null, entity.asset.mrid);
                 deleteBackupFiles(null, entity.asset.mrid);
-                const result = {
+                return {
                     success: false,
                     error: new Error("MRID is required for Power Cable Entity"),
                     message: '',
-                }
-                return result;
+                };
             }
             await runAsync('BEGIN TRANSACTION');
 
             //area
             const newAreaIds = entity.area.map(s => s.mrid).filter(id => id);
             const oldAreaIds = old_entity.area.map(s => s.mrid).filter(id => id);
-
             const toAddArea = entity.area.filter(s => s.mrid && !oldAreaIds.includes(s.mrid));
             const toDeleteArea = old_entity.area.filter(s => s.mrid && !newAreaIds.includes(s.mrid));
             const toUpdateArea = entity.area.filter(s => s.mrid && oldAreaIds.includes(s.mrid));
-            for (const area of toAddArea) {
-                await insertAreaTransaction(area, db);
-            }
-            for (const area of toUpdateArea) {
-                await insertAreaTransaction(area, db);
-            }
-            console.log('Inserted area');
+            for (const area of toAddArea) await insertAreaTransaction(area, db);
+            for (const area of toUpdateArea) await insertAreaTransaction(area, db);
+            for (const area of toDeleteArea) await deleteUnitSafely(deleteAreaByIdTransaction, area.mrid, db);
 
             //current flow
             const newCurrentFlowIds = entity.currentFlow.map(s => s.mrid).filter(id => id);
             const oldCurrentFlowIds = old_entity.currentFlow.map(s => s.mrid).filter(id => id);
-
             const toAddCurrentFlow = entity.currentFlow.filter(s => s.mrid && !oldCurrentFlowIds.includes(s.mrid));
             const toDeleteCurrentFlow = old_entity.currentFlow.filter(s => s.mrid && !newCurrentFlowIds.includes(s.mrid));
             const toUpdateCurrentFlow = entity.currentFlow.filter(s => s.mrid && oldCurrentFlowIds.includes(s.mrid));
-            for (const currentFlow of toAddCurrentFlow) {
-                await insertCurrentFlowTransaction(currentFlow, db);
-            }
-            for (const currentFlow of toUpdateCurrentFlow) {
-                await insertCurrentFlowTransaction(currentFlow, db);
-            }
-            console.log('Inserted current flow');
+            for (const item of toAddCurrentFlow) await insertCurrentFlowTransaction(item, db);
+            for (const item of toUpdateCurrentFlow) await insertCurrentFlowTransaction(item, db);
+            for (const item of toDeleteCurrentFlow) await deleteUnitSafely(deleteCurrentFlowByIdTransaction, item.mrid, db);
 
             //second
             const newSecondIds = entity.second.map(s => s.mrid).filter(id => id);
             const oldSecondIds = old_entity.second.map(s => s.mrid).filter(id => id);
-
             const toAddSecond = entity.second.filter(s => s.mrid && !oldSecondIds.includes(s.mrid));
             const toDeleteSecond = old_entity.second.filter(s => s.mrid && !newSecondIds.includes(s.mrid));
             const toUpdateSecond = entity.second.filter(s => s.mrid && oldSecondIds.includes(s.mrid));
-            for (const second of toAddSecond) {
-                await insertSecondsTransaction(second, db);
-            }
-            for (const second of toUpdateSecond) {
-                await insertSecondsTransaction(second, db);
-            }
-            console.log('Inserted current flow');
+            for (const item of toAddSecond) await insertSecondsTransaction(item, db);
+            for (const item of toUpdateSecond) await insertSecondsTransaction(item, db);
+            for (const item of toDeleteSecond) await deleteUnitSafely(deleteSecondsByIdTransaction, item.mrid, db);
 
             //frequency
             const newFrequencyIds = entity.frequency.map(s => s.mrid).filter(id => id);
             const oldFrequencyIds = old_entity.frequency.map(s => s.mrid).filter(id => id);
-
             const toAddFrequency = entity.frequency.filter(s => s.mrid && !oldFrequencyIds.includes(s.mrid));
             const toDeleteFrequency = old_entity.frequency.filter(s => s.mrid && !newFrequencyIds.includes(s.mrid));
             const toUpdateFrequency = entity.frequency.filter(s => s.mrid && oldFrequencyIds.includes(s.mrid));
-            for (const frequency of toAddFrequency) {
-                await insertFrequencyTransaction(frequency, db);
-            }
-            for (const frequency of toUpdateFrequency) {
-                await insertFrequencyTransaction(frequency, db);
-            }
-            console.log('Inserted frequency');
+            for (const item of toAddFrequency) await insertFrequencyTransaction(item, db);
+            for (const item of toUpdateFrequency) await insertFrequencyTransaction(item, db);
+            for (const item of toDeleteFrequency) await deleteUnitSafely(deleteFrequencyByIdTransaction, item.mrid, db);
 
             //length
             const newLengthIds = entity.length.map(s => s.mrid).filter(id => id);
             const oldLengthIds = old_entity.length.map(s => s.mrid).filter(id => id);
-
             const toAddLength = entity.length.filter(s => s.mrid && !oldLengthIds.includes(s.mrid));
             const toDeleteLength = old_entity.length.filter(s => s.mrid && !newLengthIds.includes(s.mrid));
             const toUpdateLength = entity.length.filter(s => s.mrid && oldLengthIds.includes(s.mrid));
-            for (const length of toAddLength) {
-                await insertLengthTransaction(length, db);
-            }
-            for (const length of toUpdateLength) {
-                await insertLengthTransaction(length, db);
-            }
-            console.log('Inserted length');
+            for (const item of toAddLength) await insertLengthTransaction(item, db);
+            for (const item of toUpdateLength) await insertLengthTransaction(item, db);
+            for (const item of toDeleteLength) await deleteUnitSafely(deleteLengthByIdTransaction, item.mrid, db);
 
             //voltage
-            const newIds = entity.voltage.map(v => v.mrid).filter(id => id); // bỏ null/empty
+            const newIds = entity.voltage.map(v => v.mrid).filter(id => id);
             const oldIds = old_entity.voltage.map(v => v.mrid).filter(id => id);
-
             const toAdd = entity.voltage.filter(v => v.mrid && !oldIds.includes(v.mrid));
             const toDelete = old_entity.voltage.filter(v => v.mrid && !newIds.includes(v.mrid));
             const toUpdate = entity.voltage.filter(v => v.mrid && oldIds.includes(v.mrid));
-            for (const voltage of toAdd) {
-                await insertVoltageTransaction(voltage, db);
-            }
-            for (const voltage of toUpdate) {
-                await insertVoltageTransaction(voltage, db);
-            }
-            console.log('Inserted voltage');
+            for (const item of toAdd) await insertVoltageTransaction(item, db);
+            for (const item of toUpdate) await insertVoltageTransaction(item, db);
+            for (const item of toDelete) await deleteUnitSafely(deleteVoltageByIdTransaction, item.mrid, db);
 
             //temperature
-            const newTemperatureIds = entity.temperature.map(v => v.mrid).filter(id => id); // bỏ null/empty
+            const newTemperatureIds = entity.temperature.map(v => v.mrid).filter(id => id);
             const oldTemperatureIds = old_entity.temperature.map(v => v.mrid).filter(id => id);
-
             const toAddTemperature = entity.temperature.filter(v => v.mrid && !oldTemperatureIds.includes(v.mrid));
             const toDeleteTemperature = old_entity.temperature.filter(v => v.mrid && !newTemperatureIds.includes(v.mrid));
             const toUpdateTemperature = entity.temperature.filter(v => v.mrid && oldTemperatureIds.includes(v.mrid));
-            for (const temperature of toAddTemperature) {
-                await insertTemperatureTransaction(temperature, db);
-            }
-            for (const temperature of toUpdateTemperature) {
-                await insertTemperatureTransaction(temperature, db);
-            }
-            console.log('Inserted temperature');
+            for (const item of toAddTemperature) await insertTemperatureTransaction(item, db);
+            for (const item of toUpdateTemperature) await insertTemperatureTransaction(item, db);
+            for (const item of toDeleteTemperature) await deleteUnitSafely(deleteTemperatureByIdTransaction, item.mrid, db);
 
-            //concentricNeutralCableInfo
+            // Other components
             await insertConcentricNeutralCableInfoTransaction(entity.concentricNeutral, db);
-            console.log('Inserted concentricNeutralCableInfo');
-
-            //jointCableInfo
             await insertJointCableInfoTransaction(entity.joint, db);
-            console.log('Inserted jointCableInfo');
-
-            //sheathVoltageLimiter
             await insertSheathVoltageLimiterTransaction(entity.sheathVoltageLimiter, db);
-            console.log('Inserted sheathVoltageLimiter');
-
-            //terminalCableInfo
             await insertTerminalCableInfoTransaction(entity.terminal, db);
-            console.log('Inserted terminalCableInfo');
-
-            //lifecycleDate
             await insertLifecycleDateTransaction(entity.lifecycleDate, db);
-            console.log('Inserted lifecycleDate');
-
-            //productAssetModel
             await insertProductAssetModelTransaction(entity.productAssetModel, db);
-            console.log('Inserted productAssetModel');
-
-            //asset
             await insertAssetTransaction(entity.asset, db);
-            console.log('Inserted asset');
-
-            //assetPsr
             await insertAssetPsrTransaction(entity.assetPsr, db);
-            console.log('Inserted assetPsr');
-
-            //oldCableInfo
             await insertOldCableInfoTransaction(entity.oldCableInfo, db);
-            console.log('Inserted oldCableInfo');
 
             //attachment
             if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
@@ -197,7 +135,6 @@ export const insertPowerCableEntity = async (old_entity, entity) => {
                 entity.attachment.path = JSON.stringify(newPath);
                 await uploadAttachmentTransaction(entity.attachment, db);
             }
-            console.log('Inserted attachment');
 
             await runAsync('COMMIT');
             deleteBackupFiles(null, entity.asset.mrid);
@@ -278,152 +215,69 @@ export const getPowerCableEntity = async (id, psrId) => {
                     voltage: ['rated_voltage_ur', 'max_continuous_operating_voltage']
                 }
                 const oldCableInfoArr = {
-                    voltage: [
-                        "rated_u",
-                        "max_u"
-                    ],
-                    currentFlow: [
-                        "short_circuit_current"
-                    ],
-                    second: [
-                        "rated_duration_short_circuit"
-                    ],
-                    temperature: [
-                        "insulation_max_operating_temp"
-                    ],
-                    area: [
-                        "conductor_size",
-                        "armour_cross_sectional_area_tap",
-                        "concentric_area"
-                    ],
-                    frequency: [
-                        "rated_frequency"
-                    ],
+                    voltage: ["rated_u", "max_u"],
+                    currentFlow: ["short_circuit_current"],
+                    second: ["rated_duration_short_circuit"],
+                    temperature: ["insulation_max_operating_temp"],
+                    area: ["conductor_size", "armour_cross_sectional_area_tap", "concentric_area"],
+                    frequency: ["rated_frequency"],
                     length: [
-                        "armour_bedding_thickness",
-                        "armour_thickness",
-                        "concentric_length_lay",
-                        "concentric_thickness",
-                        "conductor_shield_thickness",
-                        "nominal_conductor_diameter",
-                        "diameter_over_shield",
-                        "diameter_over_sheath",
-                        "diameter_over_armour",
-                        "diameter_bedding_over_armour",
-                        "diameter_over_sheath_reinforcing",
-                        "sheath_thickness",
-                        "sheath_reinforcing_thickness",
-                        "sheath_reinforcing_length_lay",
-                        "sheath_reinforcing_width",
-                        "jacket_thickness",
-                        "screen_thickness",
-                        "length"
+                        "armour_bedding_thickness", "armour_thickness", "concentric_length_lay", "concentric_thickness",
+                        "conductor_shield_thickness", "nominal_conductor_diameter", "diameter_over_shield", "diameter_over_sheath",
+                        "diameter_over_armour", "diameter_bedding_over_armour", "diameter_over_sheath_reinforcing", "sheath_thickness",
+                        "sheath_reinforcing_thickness", "sheath_reinforcing_length_lay", "sheath_reinforcing_width", "jacket_thickness",
+                        "screen_thickness", "length"
                     ]
                 };
                 const concentricNeutral = {
-                    length: [
-                        'insulation_thickness',
-                        'diameter_over_insulation',
-                        'diameter_over_screen',
-                        'diameter_over_neutral',
-                        'diameter_over_jacket'
-                    ],
+                    length: ['insulation_thickness', 'diameter_over_insulation', 'diameter_over_screen', 'diameter_over_neutral', 'diameter_over_jacket'],
                 }
 
                 const dataDB = [joint_cable_info_arr, terminal_cable_info_arr, sheath_voltage_limiter_arr, concentricNeutral, oldCableInfoArr]
                 const entityDB = ['joint', 'terminal', 'sheathVoltageLimiter', 'concentricNeutral', 'oldCableInfo']
 
-                const voltage = [];
-                const currentFlow = [];
-                const second = [];
-                const temperature = [];
-                const area = [];
-                const frequency = [];
-                const length = [];
+                const voltage = [], currentFlow = [], second = [], temperature = [], area = [], frequency = [], length = [];
 
                 for (const i in dataDB) {
                     const item = dataDB[i];
                     for (const key in item) {
                         for (const field of item[key]) {
-                            if (key === 'voltage') {
-                                if (entity[entityDB[i]][field] != null) {
-                                    voltage.push(entity[entityDB[i]][field]);
-                                }
-                            }
-                            else if (key === 'currentFlow') {
-                                if (entity[entityDB[i]][field] != null) {
-                                    currentFlow.push(entity[entityDB[i]][field]);
-                                }
-                            }
-                            else if (key === 'second') {
-                                if (entity[entityDB[i]][field] != null) {
-                                    second.push(entity[entityDB[i]][field]);
-                                }
-                            }
-                            else if (key === 'temperature') {
-                                if (entity[entityDB[i]][field] != null) {
-                                    temperature.push(entity[entityDB[i]][field]);
-                                }
-                            }
-                            else if (key === 'area') {
-                                if (entity[entityDB[i]][field] != null) {
-                                    area.push(entity[entityDB[i]][field]);
-                                }
-                            }
-                            else if (key === 'frequency') {
-                                if (entity[entityDB[i]][field] != null) {
-                                    frequency.push(entity[entityDB[i]][field]);
-                                }
-                            }
-                            else if (key === 'length') {
-                                if (entity[entityDB[i]][field] != null) {
-                                    length.push(entity[entityDB[i]][field]);
-                                }
+                            const val = entity[entityDB[i]][field];
+                            if (val != null) {
+                                if (key === 'voltage') voltage.push(val);
+                                else if (key === 'currentFlow') currentFlow.push(val);
+                                else if (key === 'second') second.push(val);
+                                else if (key === 'temperature') temperature.push(val);
+                                else if (key === 'area') area.push(val);
+                                else if (key === 'frequency') frequency.push(val);
+                                else if (key === 'length') length.push(val);
                             }
                         }
                     }
                 }
 
                 const dataVoltage = await getVoltageByIds(voltage);
-                if (dataVoltage.success) {
-                    entity.voltage = dataVoltage.data;
-                }
+                if (dataVoltage.success) entity.voltage = dataVoltage.data;
 
                 const dataCurrentFlow = await getCurrentFlowByIds(currentFlow);
-                if (dataCurrentFlow.success) {
-                    entity.currentFlow = dataCurrentFlow.data;
-                }
+                if (dataCurrentFlow.success) entity.currentFlow = dataCurrentFlow.data;
 
                 const dataSecond = await getSecondByIds(second);
-                if (dataSecond.success) {
-                    entity.second = dataSecond.data;
-                }
+                if (dataSecond.success) entity.second = dataSecond.data;
 
                 const dataTemperature = await getTemperatureByIds(temperature);
-                if (dataTemperature.success) {
-                    entity.temperature = dataTemperature.data;
-                }
+                if (dataTemperature.success) entity.temperature = dataTemperature.data;
 
                 const dataArea = await getAreaByIds(area);
-                if (dataArea.success) {
-                    entity.area = dataArea.data;
-                }
+                if (dataArea.success) entity.area = dataArea.data;
 
                 const dataFrequency = await getFrequencyByIds(frequency);
-                if (dataFrequency.success) {
-                    entity.frequency = dataFrequency.data;
-                }
+                if (dataFrequency.success) entity.frequency = dataFrequency.data;
 
                 const dataLength = await getLengthByIds(length);
-                if (dataLength.success) {
-                    entity.length = dataLength.data;
-                }
+                if (dataLength.success) entity.length = dataLength.data;
 
-                return {
-                    success: true,
-                    data: entity,
-                    message: 'Power Cable entity retrieved successfully'
-                }
+                return { success: true, data: entity, message: 'Power Cable entity retrieved successfully' }
             } else {
                 return { success: false, error: dataPowerCable.error, message: dataPowerCable.message };
             }
@@ -445,116 +299,73 @@ export const deletePowerCableEntity = async (entity) => {
                 syncFilesWithDeletion(pathData, null, entity.asset.mrid);
             }
         }
-        console.log('1');
-        // Xóa oldCableInfo
-        if (entity.oldCableInfo && entity.oldCableInfo.mrid) {
-            await deleteOldCableInfoTransaction(entity.oldCableInfo.mrid, db);
-        }
-        console.log('2');
 
-        // Xóa assetPsr
-        if (entity.assetPsr && entity.assetPsr.mrid) {
-            await deleteAssetPsrTransaction(entity.assetPsr.mrid, db);
-        }
-        console.log('3');
+        // Xóa các bảng cha/bảng quan hệ trước (để nhả khóa ngoại)
+        if (entity.oldCableInfo && entity.oldCableInfo.mrid) await deleteOldCableInfoTransaction(entity.oldCableInfo.mrid, db);
+        if (entity.assetPsr && entity.assetPsr.mrid) await deleteAssetPsrTransaction(entity.assetPsr.mrid, db);
+        if (entity.asset && entity.asset.mrid) await deleteAssetByIdTransaction(entity.asset.mrid, db);
+        if (entity.productAssetModel && entity.productAssetModel.mrid) await deleteProductAssetModelByIdTransaction(entity.productAssetModel.mrid, db);
+        if (entity.lifecycleDate && entity.lifecycleDate.mrid) await deleteLifecycleDateByIdTransaction(entity.lifecycleDate.mrid, db);
+        if (entity.terminal && entity.terminal.mrid) await deleteTerminalCableInfoTransaction(entity.terminal.mrid, db);
+        if (entity.sheathVoltageLimiter && entity.sheathVoltageLimiter.mrid) await deleteSheathVoltageLimiterTransaction(entity.sheathVoltageLimiter.mrid, db);
+        if (entity.joint && entity.joint.mrid) await deleteJointCableInfoById(entity.joint.mrid, db);
+        if (entity.concentricNeutral && entity.concentricNeutral.mrid) await deleteConcentricNeutralCableInfoTransaction(entity.concentricNeutral.mrid, db);
 
-        // Xóa asset
-        if (entity.asset && entity.asset.mrid) {
-            await deleteAssetByIdTransaction(entity.asset.mrid, db);
-        }
-        console.log('4');
-
-        // Xóa productAssetModel
-        if (entity.productAssetModel && entity.productAssetModel.mrid) {
-            await deleteProductAssetModelByIdTransaction(entity.productAssetModel.mrid, db);
-        }
-        console.log('5');
-
-        // Xóa lifecycleDate
-        if (entity.lifecycleDate && entity.lifecycleDate.mrid) {
-            await deleteLifecycleDateByIdTransaction(entity.lifecycleDate.mrid, db);
-        }
-        console.log('6');
-
-        // Xóa terminal
-        if (entity.terminal && entity.terminal.mrid) {
-            await deleteTerminalCableInfoTransaction(entity.terminal.mrid, db);
-        }
-        console.log('7');
-
-        // Xóa sheathVoltageLimiter
-        if (entity.sheathVoltageLimiter && entity.sheathVoltageLimiter.mrid) {
-            await deleteSheathVoltageLimiterTransaction(entity.sheathVoltageLimiter.mrid, db);
-        }
-        console.log('8');
-
-        // Xóa joint
-        if (entity.joint && entity.joint.mrid) {
-            await deleteJointCableInfoById(entity.joint.mrid, db);
-        }
-        console.log('9');
-
-        // Xóa concentricNeutralCableInfo
-        if (entity.concentricNeutral && entity.concentricNeutral.mrid) {
-            await deleteConcentricNeutralCableInfoTransaction(entity.concentricNeutral.mrid, db);
-        }
-        console.log('10');
-
-        // Xóa temperature
-        for (const temperature of entity.temperature || []) {
-            if (temperature.mrid) await deleteTemperatureByIdTransaction(temperature.mrid, db);
-        }
-        console.log('11');
-
-        // Xóa voltage
-        for (const voltage of entity.voltage || []) {
-            if (voltage.mrid) await deleteVoltageByIdTransaction(voltage.mrid, db);
-        }
-        console.log('12');
-
-        // Xóa length
-        for (const length of entity.length || []) {
-            if (length.mrid) await deleteLengthByIdTransaction(length.mrid, db);
-        }
-        console.log('13');
-
-        // Xóa frequency
-        for (const frequency of entity.frequency || []) {
-            if (frequency.mrid) await deleteFrequencyByIdTransaction(frequency.mrid, db);
-        }
-        console.log('14');
-
-        // Xóa second
-        for (const second of entity.second || []) {
-            if (second.mrid) await deleteSecondsByIdTransaction(second.mrid, db);
-        }
-        console.log('15');
-
-        // Xóa currentFlow
-        for (const currentFlow of entity.currentFlow || []) {
-            if (currentFlow.mrid) await deleteCurrentFlowByIdTransaction(currentFlow.mrid, db);
-        }
-        console.log('16');
-
-        // Xóa area
-        for (const area of entity.area || []) {
-            if (area.mrid) await deleteAreaByIdTransaction(area.mrid, db);
-        }
-        console.log('17');
+        // Xóa các Unit (Voltage, Length...) - Sử dụng hàm deleteUnitSafely để bỏ qua lỗi Constraint
+        for (const item of entity.temperature || []) await deleteUnitSafely(deleteTemperatureByIdTransaction, item.mrid, db);
+        for (const item of entity.voltage || []) await deleteUnitSafely(deleteVoltageByIdTransaction, item.mrid, db);
+        for (const item of entity.length || []) await deleteUnitSafely(deleteLengthByIdTransaction, item.mrid, db);
+        for (const item of entity.frequency || []) await deleteUnitSafely(deleteFrequencyByIdTransaction, item.mrid, db);
+        for (const item of entity.second || []) await deleteUnitSafely(deleteSecondsByIdTransaction, item.mrid, db);
+        for (const item of entity.currentFlow || []) await deleteUnitSafely(deleteCurrentFlowByIdTransaction, item.mrid, db);
+        for (const item of entity.area || []) await deleteUnitSafely(deleteAreaByIdTransaction, item.mrid, db);
 
         await runAsync('COMMIT');
         return { success: true, message: 'Power cable entity deleted successfully' };
     } catch (error) {
         await runAsync('ROLLBACK');
+        console.error('Delete Power Cable Error:', error);
         return { success: false, error, message: 'Error deleting Power Cable entity' };
     }
 }
 
+// Hàm hỗ trợ xóa an toàn: Bỏ qua lỗi SQLITE_CONSTRAINT (do đang được dùng bởi bảng khác)
+const deleteUnitSafely = async (deleteFunc, id, dbsql) => {
+    if (!id) return;
+    try {
+        await deleteFunc(id, dbsql);
+    } catch (error) {
+        // Kiểm tra lỗi Constraint (SQLite error 19)
+        // Cấu trúc lỗi có thể nằm trực tiếp ở error hoặc error.err hoặc error.error
+        const isConstraintError = (errObj) => {
+            return errObj && (errObj.code === 'SQLITE_CONSTRAINT' || errObj.errno === 19);
+        };
+
+        if (isConstraintError(error) || isConstraintError(error.err) || isConstraintError(error.error)) {
+            // Constraint violation -> Bỏ qua, không ném lỗi
+            return;
+        }
+
+        // Nếu không phải lỗi constraint thì ném ra ngoài
+        throw error;
+    }
+};
+
 const runAsync = (sql, params = []) => {
     return new Promise((resolve, reject) => {
-        db.run(sql, params, function (err) {
-            if (err) reject(err);
-            else resolve();
-        });
+        const execute = (retries = 5) => {
+            db.run(sql, params, function (err) {
+                if (err) {
+                    if (err.code === 'SQLITE_BUSY' && retries > 0) {
+                        setTimeout(() => execute(retries - 1), 100);
+                    } else {
+                        reject(err);
+                    }
+                } else {
+                    resolve();
+                }
+            });
+        };
+        execute();
     });
 };
