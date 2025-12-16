@@ -5,12 +5,12 @@ import * as Mapping from "@/views/Mapping/Breaker/index";
 export default {
     data() {
         return {
-            circuitBreakerDto : new circuitBreakerDto(),
-            oldCircuitBreakerDto : new circuitBreakerDto(),
-            attachmentData : []
+            circuitBreakerDto: new circuitBreakerDto(),
+            oldCircuitBreakerDto: new circuitBreakerDto(),
+            attachmentData: []
         }
     },
-    methods : {
+    methods: {
         async saveAsset() {
             try {
                 if (this.circuitBreakerDto.properties.serial_no !== null && this.circuitBreakerDto.properties.serial_no !== '') {
@@ -19,6 +19,8 @@ export default {
                     const oldResult = await this.checkBreakerData(this.oldCircuitBreakerDto);
                     const resultEntity = Mapping.mapDtoToEntity(result);
                     const oldResultEntity = Mapping.mapDtoToEntity(oldResult);
+                    console.log(resultEntity);
+                    console.log(oldResultEntity);
                     let rs = await window.electronAPI.insertBreakerEntity(oldResultEntity, resultEntity)
                     if (rs.success) {
                         return {
@@ -77,8 +79,8 @@ export default {
         },
         async resetForm() {
             this.circuitBreakerDto = new circuitBreakerDto(),
-            this.oldCircuitBreakerDto = new circuitBreakerDto(),
-            this.attachmentData = []
+                this.oldCircuitBreakerDto = new circuitBreakerDto(),
+                this.attachmentData = []
         },
         async saveCtrS() {
             const data = await this.saveAsset()
@@ -98,7 +100,7 @@ export default {
             if (data.properties.mrid == null || data.properties.mrid == '') {
                 data.properties.mrid = uuid.newUuid();
             }
-            if(data.operatingMechanismId == null || data.operatingMechanismId == '') {
+            if (data.operatingMechanismId == null || data.operatingMechanismId == '') {
                 data.operatingMechanismId = uuid.newUuid();
             }
         },
