@@ -198,26 +198,22 @@ async function importBay(dto, parentNode, { electronAPI }) {
  */
 async function importSurgeArrester(dto, parentNode, { electronAPI, mappings }) {
     try {
-        // Convert DTO to Entity
         const entity = mappings.SurgeArresterMapping.mapDtoToEntity(dto)
-        
-        // Check if mrid exists to get old_entity
+
         let oldEntity = null
         if (entity.surgeArrester.mrid) {
-            const existing = await electronAPI.getSurgeArresterEntityByMrid(entity.surgeArrester.mrid)
+            const existing = await electronAPI.getSurgeArresterEntityByMrid(
+                entity.surgeArrester.mrid
+            )
             if (existing.success && existing.data) {
                 oldEntity = existing.data
             }
         }
 
-        // Update parent if provided
-        if (parentNode && parentNode.mrid) {
-            entity.surgeArrester.location = parentNode.mrid
-        }
-
-        // Insert/Update entity (SurgeArrester uses old_entity pattern)
-        const result = await electronAPI.insertSurgeArresterEntity(oldEntity || {}, entity)
-        return result
+        return await electronAPI.insertSurgeArresterEntity(
+            oldEntity || {},
+            entity
+        )
     } catch (error) {
         console.error('Error importing surge arrester:', error)
         return { success: false, message: error.message }
@@ -488,15 +484,10 @@ async function importReactor(dto, parentNode, { electronAPI, mappings }) {
 /**
  * Import Bushing
  */
-async function importBushing(dto, parentNode, { electronAPI, mappings }) {
+async function importBushing(dto, { electronAPI, mappings }) {
     try {
         // Convert DTO to Entity
         const entity = mappings.BushingMapping.mapDtoToEntity(dto)
-        
-        // Update parent if provided
-        if (parentNode && parentNode.mrid) {
-            entity.asset.location = parentNode.mrid
-        }
 
         // Insert/Update entity (insertBushingEntity doesn't use old_entity pattern)
         const result = await electronAPI.insertBushingEntity(entity)
