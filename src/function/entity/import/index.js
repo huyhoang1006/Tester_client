@@ -56,7 +56,7 @@ export const importNodeFromJSON = async (dtos, parentNode, dependencies) => {
                 } else if (type === 'reactor') {
                     result = await importReactor(dto, parentNode, { electronAPI, mappings })
                 } else if (type === 'bushing') {
-                    result = await importBushing(dto, parentNode, { electronAPI, mappings })
+                    result = await importBushing(dto, { electronAPI, mappings })
                 } else {
                     errorCount++
                     errors.push(`Unknown type: ${type}`)
