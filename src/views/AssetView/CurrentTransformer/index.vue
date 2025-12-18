@@ -59,17 +59,14 @@ export default {
             dataProperties: {},
             updateNew: '',
             update: false,
-            parentData: JSON.parse(JSON.stringify(this.parent)),
         }
+    },
+    computed: {
+        parentData() {
+            return this.parent
+        }   
     },
     mixins: [mixin],
-    mounted() { },
-    async beforeMount() {
-        let rs = await window.electronAPI.getManufacturerByType(this.title)
-        if (rs.success) {
-            this.manufacturerCustom = rs.data.map(e => e.name)
-        }
-    },
     methods: {
         loadMapForView() {},
         updateShowAdd(sign) {

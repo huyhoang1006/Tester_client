@@ -84,12 +84,16 @@ export function mapDtoToEntity(dto) {
 
     //rating
     entity.breakerRatingInfo.mrid = dto.breakerRatingInfoId || null
-    entity.oldBreakerInfo.rated_frequency = dto.ratings.rated_frequency.mrid || null;
+
     if (dto.ratings.rated_frequency.value != 'Custom') {
+        // Nếu không phải Custom, dùng ID và Value của rated_frequency
+        entity.oldBreakerInfo.rated_frequency = dto.ratings.rated_frequency.mrid || null;
         const frequency = new Frequency()
         mappingUnit(frequency, dto.ratings.rated_frequency);
         entity.frequency.push(frequency);
     } else {
+        // Nếu là Custom, PHẢI dùng ID của rated_frequency_custom cho khóa ngoại
+        entity.oldBreakerInfo.rated_frequency = dto.ratings.rated_frequency_custom.mrid || null;
         const frequency = new Frequency()
         mappingUnit(frequency, dto.ratings.rated_frequency_custom);
         entity.frequency.push(frequency);
@@ -608,6 +612,7 @@ export function mapDtoToEntity(dto) {
 }
 
 export function mapEntityToDto(entity) {
+    console.log(entity);
     const dto = new CircuitBreakerDto()
     dto.properties.mrid = entity.asset.mrid || ''
     dto.properties.kind = entity.asset.kind || ''

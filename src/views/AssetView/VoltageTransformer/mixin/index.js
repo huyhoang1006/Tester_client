@@ -113,7 +113,8 @@ export default {
         },
 
         checkPsrId(data) {
-            if (this.parentData.mrid !== null && this.parentData.mrid !== '' && this.parentData.mrid !== undefined) {
+            // Luôn cập nhật psrId từ parentData nếu có, để đảm bảo asset được gán đúng substation
+            if (this.parentData && this.parentData.mrid !== null && this.parentData.mrid !== '' && this.parentData.mrid !== undefined) {
                 data.psrId = this.parentData.mrid
             }
         },
@@ -188,7 +189,7 @@ export default {
             return obj;
         },
 
-        
+
 
 
 

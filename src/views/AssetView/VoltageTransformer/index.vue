@@ -59,12 +59,14 @@ export default {
             dataProperties: {},
             updateNew: '',
             update: false,
-            parentData: JSON.parse(JSON.stringify(this.parent)),
+        }
+    },
+    computed: {
+        parentData() {
+            return this.parent
         }
     },
     mixins: [mixin],
-    computed: {
-    },
     methods: {
         onCancel() {
             this.$router.go(-1)

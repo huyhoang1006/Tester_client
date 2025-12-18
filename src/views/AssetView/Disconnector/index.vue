@@ -23,7 +23,11 @@ export default {
     data() {
         return {
             title : 'disconnector',
-            parentData : JSON.parse(JSON.stringify(this.parent)),
+        }
+    },
+    computed: {
+        parentData() {
+            return this.parent
         }
     },
     mixins : [mixin],

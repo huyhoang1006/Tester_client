@@ -2,22 +2,22 @@ import db from '../../datacontext/index'
 import path from 'path'
 import * as attachmentContext from '../../attachmentcontext/index'
 import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, deleteDirectory } from '@/function/entity/attachment'
-import {insertBushingTransaction, getBushingById, deleteBushingTransaction} from '@/function/cim/bushing';
-import {insertVoltageTransaction, getVoltageById, deleteVoltageByIdTransaction} from '@/function/cim/voltage';
-import {insertPercentTransaction, getPercentById} from '@/function/cim/percent'
-import {insertCapacitanceTransaction, getCapacitanceById} from '@/function/cim/capacitance'
-import {insertCurrentFlowTransaction, getCurrentFlowById, deleteCurrentFlowByIdTransaction} from '@/function/cim/currentFlow';
-import {insertFrequencyTransaction, deleteFrequencyByIdTransaction, getFrequencyById} from '@/function/cim/frequency'
-import {insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction} from '@/function/cim/lifecycleDate';
-import {insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction} from '@/function/cim/productAssetModel';
-import {insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction} from '@/function/entity/assetPsr'
+import { insertBushingTransaction, getBushingById, deleteBushingTransaction } from '@/function/cim/bushing';
+import { insertVoltageTransaction, getVoltageById, deleteVoltageByIdTransaction } from '@/function/cim/voltage';
+import { insertPercentTransaction, getPercentById } from '@/function/cim/percent'
+import { insertCapacitanceTransaction, getCapacitanceById } from '@/function/cim/capacitance'
+import { insertCurrentFlowTransaction, getCurrentFlowById, deleteCurrentFlowByIdTransaction } from '@/function/cim/currentFlow';
+import { insertFrequencyTransaction, deleteFrequencyByIdTransaction, getFrequencyById } from '@/function/cim/frequency'
+import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction } from '@/function/cim/lifecycleDate';
+import { insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction } from '@/function/cim/productAssetModel';
+import { insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
 import { insertOldBushingInfoTransaction, getOldBushingInfoById, deleteOldBushingInfoTransaction } from '@/function/cim/oldBushingInfo';
 import BushingEntity from '@/views/Flatten/Bushing';
 
 export const insertBushingEntity = async (entity) => {
     console.log(entity.attachment)
     try {
-        if(entity.bushing.mrid === null || entity.bushing.mrid === '') {
+        if (entity.bushing.mrid === null || entity.bushing.mrid === '') {
             const result = {
                 success: false,
                 error: new Error("MRID is required for bushing Entity"),
@@ -73,7 +73,7 @@ export const insertBushingEntity = async (entity) => {
             if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
                 const pathData = JSON.parse(entity.attachment.path);
                 const newPath = []
-                for(let i = 0; i < pathData.length; i++) {
+                for (let i = 0; i < pathData.length; i++) {
                     const namefile = path.basename(pathData[i].path);
                     pathData[i].path = path.join(attachmentContext.getAttachmentDir(), entity.bushing.mrid, namefile);
                     newPath.push(pathData[i]);
@@ -97,75 +97,75 @@ export const insertBushingEntity = async (entity) => {
 
 export const getBushingEntityById = async (id, psrId) => {
     try {
-        if(id == null || id === '') {
+        if (id == null || id === '') {
             return { success: false, error: new Error('Invalid ID') };
         } else {
             const entity = new BushingEntity()
             const dataBushing = await getBushingById(id);
-            if(dataBushing.success) {
+            if (dataBushing.success) {
                 entity.bushing = dataBushing.data
                 const dataLifecycleDate = await getLifecycleDateById(entity.bushing.lifecycle_date);
-                if(dataLifecycleDate.success) {
+                if (dataLifecycleDate.success) {
                     entity.lifecycleDate = dataLifecycleDate.data;
                 }
                 const dataOldBushingInfo = await getOldBushingInfoById(entity.bushing.asset_info);
-                if(dataOldBushingInfo.success) {
+                if (dataOldBushingInfo.success) {
                     entity.oldBushingInfo = dataOldBushingInfo.data;
                 }
-                
+
                 const productAssetModelId = entity.oldBushingInfo.product_asset_model;
                 const dataProductAssetModel = await getProductAssetModelById(productAssetModelId);
-                if(dataProductAssetModel.success) {
+                if (dataProductAssetModel.success) {
                     entity.productAssetModel = dataProductAssetModel.data;
                 }
-                
+
                 const dataAssetPsr = await getAssetPsrByAssetIdAndPsrId(entity.bushing.mrid, psrId);
-                if(dataAssetPsr.success) {
+                if (dataAssetPsr.success) {
                     entity.assetPsr = dataAssetPsr.data;
                 }
 
                 const dataAttachment = await getAttachmentByForeignIdAndType(entity.bushing.mrid, 'asset');
-                if(dataAttachment.success) {
+                if (dataAttachment.success) {
                     entity.attachment = dataAttachment.data;
                 }
 
-                const voltageArr = ['high_voltage_limit','rated_impulse_withstand_voltage', 'rated_line_to_ground_voltage']
+                const voltageArr = ['high_voltage_limit', 'rated_impulse_withstand_voltage', 'rated_line_to_ground_voltage']
                 const currentFlowArr = ['rated_current']
                 const percentArr = ['c2_power_factor', 'c_power_factor']
                 const capacitanceArr = ['c2_capacitance', 'c_capacitance']
                 const frequencyArr = ['rated_frequency']
 
-                for(let attribute of voltageArr) {
+                for (let attribute of voltageArr) {
                     const voltage = await getVoltageById(entity.oldBushingInfo[attribute])
-                    if(voltage.success) {
+                    if (voltage.success) {
                         entity.voltage.push(voltage.data);
                     }
                 }
 
-                for(let attribute of currentFlowArr) {
+                for (let attribute of currentFlowArr) {
                     const currentFlow = await getCurrentFlowById(entity.oldBushingInfo[attribute])
-                    if(currentFlow.success) {
+                    if (currentFlow.success) {
                         entity.currentFlow.push(currentFlow.data);
                     }
                 }
 
-                for(let attribute of percentArr) {
+                for (let attribute of percentArr) {
                     const percent = await getPercentById(entity.oldBushingInfo[attribute])
-                    if(percent.success) {
+                    if (percent.success) {
                         entity.percent.push(percent.data);
                     }
                 }
 
-                for(let attribute of capacitanceArr) {
+                for (let attribute of capacitanceArr) {
                     const capacitance = await getCapacitanceById(entity.oldBushingInfo[attribute])
-                    if(capacitance.success) {
+                    if (capacitance.success) {
                         entity.capacitance.push(capacitance.data);
                     }
                 }
 
-                for(let attribute of frequencyArr) {
+                for (let attribute of frequencyArr) {
                     const frequency = await getFrequencyById(entity.oldBushingInfo[attribute])
-                    if(frequency.success) {
+                    if (frequency.success) {
                         entity.frequency.push(frequency.data);
                     }
                 }
@@ -187,37 +187,39 @@ export const getBushingEntityById = async (id, psrId) => {
 
 export const deleteBushingEntity = async (data) => {
     try {
-        if(data.bushing == null || data.bushing.mrid == null || data.bushing.mrid === '') {
+        if (data.bushing == null || data.bushing.mrid == null || data.bushing.mrid === '') {
             return { success: false, error: new Error('Invalid ID') };
         } else {
             try {
                 await runAsync('BEGIN TRANSACTION');
-                if(data.attachment && data.attachment.id) {
+                if (data.attachment && data.attachment.id) {
                     const pathData = JSON.parse(data.attachment.path || '[]')
                     if (Array.isArray(pathData) && pathData.length > 0) {
                         syncFilesWithDeletion(pathData, null, data.mrid);
                     }
                 }
-                if( data.attachment.id) {
+                if (data.attachment.id) {
                     await deleteAttachmentByIdTransaction(data.attachment.id, db);
                 }
-                if(data.assetPsr && data.assetPsr.mrid) {
+                if (data.assetPsr && data.assetPsr.mrid) {
                     await deleteAssetPsrTransaction(data.assetPsr.mrid, db);
                 }
-                
-                if (data.oldBushingInfo.mrid) {
-                    await deleteOldBushingInfoTransaction(data.oldBushingInfo.mrid, db);
-                }
-                
-                if(data.bushing.mrid) {
+
+                // ĐÃ SỬA: Xóa Asset (Bushing) TRƯỚC khi xóa Info (OldBushingInfo)
+                // Vì Asset tham chiếu đến Info
+                if (data.bushing.mrid) {
                     await deleteBushingTransaction(data.bushing.mrid, db);
                 }
 
-                if(data.lifecycleDate && data.lifecycleDate.mrid) {
+                if (data.oldBushingInfo.mrid) {
+                    await deleteOldBushingInfoTransaction(data.oldBushingInfo.mrid, db);
+                }
+
+                if (data.lifecycleDate && data.lifecycleDate.mrid) {
                     await deleteLifecycleDateByIdTransaction(data.lifecycleDate.mrid, db);
                 }
 
-                if(data.productAssetModel && data.productAssetModel.mrid) {
+                if (data.productAssetModel && data.productAssetModel.mrid) {
                     await deleteProductAssetModelByIdTransaction(data.productAssetModel.mrid, db);
                 }
 
@@ -237,7 +239,7 @@ export const deleteBushingEntity = async (data) => {
                     }
                 }
                 await runAsync('COMMIT');
-                if(data.attachment && data.attachment.id) {
+                if (data.attachment && data.attachment.id) {
                     deleteDirectory(null, data.bushing.mrid);
                 }
                 return { success: true, message: 'Bushing entity deleted successfully' };
@@ -252,6 +254,7 @@ export const deleteBushingEntity = async (data) => {
         return { success: false, error, message: 'Error deleting Bushing entity' };
     }
 }
+
 
 const runAsync = (sql, params = []) => {
     return new Promise((resolve, reject) => {

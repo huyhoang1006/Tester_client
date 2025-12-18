@@ -869,29 +869,23 @@
                 <el-button size="small" type="primary" @click="handleFmecaConfirm">Save</el-button>
             </span>
         </el-dialog>
-        <el-dialog title="Move Node" :visible.sync="moveDialogVisible" width="500px">
-    <div style="height: 400px; overflow-y: auto;">
-        <el-tree 
-            ref="moveTree"
-            :data="moveTreeData" 
-            :props="moveTreeProps" 
-            node-key="mrid"
-            :expand-on-click-node="false"
-            :default-expanded-keys="expandedMoveKeys"
-            @node-click="handleTargetNodeClick"
-            highlight-current>
-            <span class="custom-tree-node" slot-scope="{ node, data }">
-                <span>
-                    <!-- Icon tương ứng với loại node -->
-                    <i v-if="data.mode === 'organisation'" class="fa-regular fa-building"></i>
-                    <i v-if="data.mode === 'substation'" class="fa-solid fa-industry"></i>
-                    <i v-if="data.mode === 'voltageLevel'" class="fa-solid fa-bolt"></i>
-                    <i v-if="data.mode === 'bay'" class="fa-solid fa-cube"></i>
-                    <i v-if="data.mode === 'asset'" class="fa-solid fa-box"></i>
-                    {{ node.label }}
-                </span>
-            </span>
-        </el-tree>
+        <el-dialog title="Move Node" :visible.sync="moveDialogVisible" width="450px" @close="handleMoveCancel" custom-class="move-dialog" >
+    <div style="height: 400px; overflow-y: auto;" >
+        <div class="child-nav" style="height: 100%; cursor: pointer;">
+            <ul style="list-style: none; padding-left: 0;">
+                <TreeNode 
+                    v-for="item in moveTreeData" 
+                    :key="item.mrid" 
+                    :node="item"
+                    :selectedNodes="selectedTargetNodes"
+                    @fetch-children="fetchChildrenForMove" 
+                    @update-selection="handleMoveNodeSelection"
+                    @open-context-menu="() => {}"
+                    style="width: 100%;"
+                >
+                </TreeNode>
+            </ul>
+        </div>
     </div>
     <span slot="footer" class="dialog-footer">
         <el-button size="small" @click="moveDialogVisible = false">Cancel</el-button>
@@ -1063,6 +1057,8 @@ export default {
             moveTreeData: [],
             selectedTargetNode: null,
             expandedMoveKeys: [],
+            nodeToMove: null, // Lưu node đang được move để dùng trong fetchChildrenForMove
+            validParentTypesForMove: [], // Lưu valid parent types để dùng trong fetchChildrenForMove
             moveTreeProps: {
             children: 'children',
             label: 'name',
@@ -3781,6 +3777,30 @@ export default {
                                 } else {
                                     this.$message.warning("Parent node not found in tree");
                                 }
+                            } else if (node.asset === 'Bushing') {
+                                const entity = await window.electronAPI.getBushingEntityByMrid(node.mrid, node.parentId);
+                                if (!entity.success) {
+                                    this.$message.error("Entity not found");
+                                    return;
+                                }
+                                const deleteSign = await window.electronAPI.deleteBushingEntity(entity.data);
+                                if (!deleteSign.success) {
+                                    this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
+                                    return;
+                                }
+                                // ✅ Xóa node khỏi cây organisationClientList
+                                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
+                                if (parentNode && Array.isArray(parentNode.children)) {
+                                    const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
+                                    if (index !== -1) {
+                                        parentNode.children.splice(index, 1); // Xóa khỏi mảng children
+                                        this.$message.success("Delete data successfully");
+                                    } else {
+                                        this.$message.warning("Node not found in tree structure");
+                                    }
+                                } else {
+                                    this.$message.warning("Parent node not found in tree");
+                                }
                             } else if (node.asset === 'Circuit breaker') {
                                 const entity = await window.electronAPI.getBreakerEntityByMrid(node.mrid, node.parentId);
                                 if (!entity.success) {
@@ -4649,7 +4669,14 @@ cleanDtoForDuplicate(dto) {
             if (dto.oldCableInfoId) dto.oldCableInfoId = null;
             
             // Giữ lại foreign keys: locationId, psrId (tham chiếu đến entities độc lập)
-            
+            if (dto.breakerRatingInfoId) dto.breakerRatingInfoId = null;
+            if (dto.breakerContactSystemInfoId) dto.breakerContactSystemInfoId = null;
+            if (dto.breakerOtherInfoId) dto.breakerOtherInfoId = null;
+            if (dto.operatingMechanismId) dto.operatingMechanismId = null;
+            if (dto.operatingMechanismInfoId) dto.operatingMechanismInfoId = null;
+            if (dto.operatingMechanismLifecycleDateId) dto.operatingMechanismLifecycleDateId = null;
+            if (dto.operatingMechanismProductAssetModelId) dto.operatingMechanismProductAssetModelId = null;
+            if (dto.assessmentLimitBreakerInfoId) dto.assessmentLimitBreakerInfoId = null;
             // Xóa mrid trong ratings (giữ value và unit)
             if (dto.ratings) {
                 const ratingFields = [
@@ -4682,6 +4709,11 @@ cleanDtoForDuplicate(dto) {
             };
             
             if (dto.ratings) clearRecursive(dto.ratings);
+            if (dto.circuitBreaker) clearRecursive(dto.circuitBreaker);
+            if (dto.contactSystem) clearRecursive(dto.contactSystem);
+            if (dto.others) clearRecursive(dto.others);
+            if (dto.operating) clearRecursive(dto.operating);
+            if (dto.assessmentLimits) clearRecursive(dto.assessmentLimits);
             if (dto.winding_configuration) clearRecursive(dto.winding_configuration);
             if (dto.impedances) clearRecursive(dto.impedances);
             if (dto.others) clearRecursive(dto.others);
@@ -4698,38 +4730,50 @@ cleanDtoForDuplicate(dto) {
             if (dto.othersData) clearRecursive(dto.othersData);
             if (dto.ratingsData) clearRecursive(dto.ratingsData);
             if (dto.configsData) clearRecursive(dto.configsData);
+            if (dto.ctConfiguration) clearRecursive(dto.ctConfiguration); 
+            if (dto.vt_Configuration) clearRecursive(dto.vt_Configuration);
+            if (dto.capacitance) clearRecursive(dto.capacitance);
+            if (dto.dissipationFactor) clearRecursive(dto.dissipationFactor);
             // Reactor specific: reactorRating (includes inductance), reactorOther
             if (dto.reactorRating) clearRecursive(dto.reactorRating);
             if (dto.reactorOther) clearRecursive(dto.reactorOther);
     },
        
        
-        async processDuplicateAsset(node, apiGetEntity, mappingFunction, mixinObject, dataPropName) {
+    async processDuplicateAsset(node, apiGetEntity, mappingFunction, mixinObject, dataPropName) {
     try {
         // 1. Tìm Node cha
         let parentNode = this.findNodeById(node.parentId, this.organisationClientList);
-        
+
         if (!parentNode) {
             const isRoot = node.parentId === this.$constant.ROOT || !node.parentId;
-            if (isRoot) parentNode = { mrid: this.$constant.ROOT, name: 'Root', mode: 'root' };
+            if (isRoot) parentNode = {
+                mrid: this.$constant.ROOT,
+                name: 'Root',
+                mode: 'root'
+            };
             else {
                 this.$message.error(`Cannot find parent node.`);
-                return { success: false };
+                return {
+                    success: false
+                };
             }
         }
 
-        // 2. Lấy dữ liệu gốc
+        // 2. Lấy dữ liệu gốc từ API
         const entityRes = await apiGetEntity(node.mrid, this.$store.state.user.user_id, node.parentId);
         if (!entityRes.success || !entityRes.data) {
             this.$message.error("Failed to fetch original data.");
-            return { success: false };
-                }
+            return {
+                success: false
+            };
+        }
 
-        // 3. Map sang DTO & Clean
+        // 3. Map sang DTO & Clean dữ liệu (Xóa ID cũ)
         const dto = mappingFunction(entityRes.data);
         this.cleanDtoForDuplicate(dto);
 
-        // Generate mrid mới cho nested objects
+        // --- Generate UUID mới cho các nested objects ---
         if (Array.isArray(dto.voltage)) {
             dto.voltage.forEach(item => {
                 if (item && !item.mrid) item.mrid = this.generateUuid();
@@ -4750,7 +4794,7 @@ cleanDtoForDuplicate(dto) {
                 if (item && !item.mrid) item.mrid = this.generateUuid();
             });
         }
-        // Power Cable specific: temperature, area, length
+        // Power Cable specific
         if (Array.isArray(dto.temperature)) {
             dto.temperature.forEach(item => {
                 if (item && !item.mrid) item.mrid = this.generateUuid();
@@ -4766,7 +4810,7 @@ cleanDtoForDuplicate(dto) {
                 if (item && !item.mrid) item.mrid = this.generateUuid();
             });
         }
-        // Reactor specific: inductance, reactivePower, mass
+        // Reactor specific
         if (Array.isArray(dto.inductance)) {
             dto.inductance.forEach(item => {
                 if (item && !item.mrid) item.mrid = this.generateUuid();
@@ -4782,7 +4826,7 @@ cleanDtoForDuplicate(dto) {
                 if (item && !item.mrid) item.mrid = this.generateUuid();
             });
         }
-        
+
         // Generate mrid cho objects chính
         if (dto.properties && !dto.properties.mrid) {
             dto.properties.mrid = this.generateUuid();
@@ -4802,7 +4846,7 @@ cleanDtoForDuplicate(dto) {
         if (!dto.psrId && parentNode && parentNode.mrid) {
             dto.psrId = parentNode.mrid;
         }
-        
+
         // Setup attachment
         if (!dto.attachment) {
             dto.attachment = {};
@@ -4829,7 +4873,7 @@ cleanDtoForDuplicate(dto) {
         dto.attachment.id_foreign = dto.properties?.mrid || null;
         dto.attachment.type = dto.attachment.type || 'asset';
         dto.attachment.name = dto.attachment.name || null;
-        
+
         // Generate mrid cho ratings
         if (dto.ratings) {
             const ratingFields = [
@@ -4844,8 +4888,8 @@ cleanDtoForDuplicate(dto) {
                 }
             });
         }
-        
-        // Reactor specific: Generate mrid cho reactorRating (includes inductance)
+
+        // Reactor specific nested objects
         if (dto.reactorRating) {
             const reactorRatingFields = [
                 'rated_voltage', 'rated_frequency', 'rated_current',
@@ -4857,15 +4901,13 @@ cleanDtoForDuplicate(dto) {
                 }
             });
         }
-        
-        // Reactor specific: Generate mrid cho reactorOther
         if (dto.reactorOther) {
             if (dto.reactorOther.weight && !dto.reactorOther.weight.mrid) {
                 dto.reactorOther.weight.mrid = this.generateUuid();
             }
         }
-        
-        // Power Cable specific: Generate mrid cho nested objects trong datasData, othersData, ratingsData
+
+        // Helper recursive generation
         const generateMridForNestedObject = (obj) => {
             if (!obj || typeof obj !== 'object') return;
             if (Array.isArray(obj)) {
@@ -4881,53 +4923,73 @@ cleanDtoForDuplicate(dto) {
                 });
             }
         };
-        
+
+        if (dto.ratings) generateMridForNestedObject(dto.ratings); 
+
         if (dto.ratingsData) generateMridForNestedObject(dto.ratingsData);
         if (dto.othersData) generateMridForNestedObject(dto.othersData);
         if (dto.datasData) generateMridForNestedObject(dto.datasData);
         if (dto.configsData) generateMridForNestedObject(dto.configsData);
+
+        if (dto.ctConfiguration) generateMridForNestedObject(dto.ctConfiguration);
+
+        if (dto.vt_Configuration) generateMridForNestedObject(dto.vt_Configuration);
+
+        if (dto.capacitance) generateMridForNestedObject(dto.capacitance);
+        if (dto.dissipationFactor) generateMridForNestedObject(dto.dissipationFactor);
         
-        // Reactor specific: Generate mrid cho nested objects trong reactorRating và reactorOther
         if (dto.reactorRating) generateMridForNestedObject(dto.reactorRating);
         if (dto.reactorOther) generateMridForNestedObject(dto.reactorOther);
 
-        // Xóa children
+        // Xóa children để tránh duplicate con đệ quy (nếu không cần thiết)
         if (dto.children) dto.children = [];
         if (dto.voltageLevels) dto.voltageLevels = [];
         if (dto.bays) dto.bays = [];
         if (dto.assets) dto.assets = [];
 
-        // Đổi serial no (chỉ đổi serial_no, giữ nguyên apparatus_id)
+        // Đổi tên và serial number
         const copySuffix = ` - Copy`;
         if (dto.name) dto.name = `${dto.name}${copySuffix}`;
         if (dto.properties) {
-             if (dto.properties.serial_no) {
-                 dto.properties.serial_no = `${dto.properties.serial_no}${copySuffix}`;
-             } else {
-                 const randomSuffix = Math.floor(Math.random() * 10000);
-                 dto.properties.serial_no = `COPY_${randomSuffix}`;
-             }
-             // Giữ nguyên apparatus_id - không đổi
+            if (dto.properties.serial_no) {
+                dto.properties.serial_no = `${dto.properties.serial_no}${copySuffix}`;
+            } else {
+                const randomSuffix = Math.floor(Math.random() * 10000);
+                dto.properties.serial_no = `COPY_${randomSuffix}`;
+            }
         }
 
         // Location logic
         let targetLocationId = dto.locationId;
         if (!targetLocationId && ['substation', 'organisation', 'root'].includes(parentNode.mode)) {
-             try {
-                 const locRes = await window.electronAPI.getLocationByPowerSystemResourceMrid(parentNode.mrid);
-                 if (locRes.success) targetLocationId = locRes.data.mrid;
-             } catch(e) {
-                 console.warn("Failed to fetch location from parent node:", e);
-             }
+            try {
+                const locRes = await window.electronAPI.getLocationByPowerSystemResourceMrid(parentNode.mrid);
+                if (locRes.success) targetLocationId = locRes.data.mrid;
+            } catch (e) {
+                console.warn("Failed to fetch location from parent node:", e);
+            }
         }
         if (!dto.locationId && targetLocationId) {
             dto.locationId = targetLocationId;
         }
 
+        // --- BẮT ĐẦU PHẦN SỬA LỖI QUAN TRỌNG ---
+        
+        // Lấy dữ liệu mặc định từ Mixin (để đảm bảo biến Old là RỖNG/MỚI)
+        let defaultMixinData = {};
+        if (typeof mixinObject.data === 'function') {
+            defaultMixinData = mixinObject.data();
+        }
+
         // Tạo context từ mixin
         const context = {
+            // Dữ liệu mới (đã clone và đổi ID)
             [dataPropName]: dto,
-            [dataPropName + 'Old']: JSON.parse(JSON.stringify(dto)),
+            
+            // FIX: Dùng dữ liệu mặc định cho biến Old. 
+            // KHÔNG copy từ dto sang Old, vì backend sẽ tưởng là update và insert vào bảng lịch sử gây lỗi.
+            [dataPropName + 'Old']: defaultMixinData[dataPropName + 'Old'],
+            
             parentData: parentNode,
             locationId: targetLocationId,
             attachmentData: [],
@@ -4940,39 +5002,44 @@ cleanDtoForDuplicate(dto) {
             $helper: this.$helper,
             $uuid: this.$uuid
         };
-            
-        // Bind methods
+
+        // Bind methods để 'this' trong mixin trỏ đúng vào context
         const vuePrototypeProps = ['$message', '$store', '$constant', '$config', '$common', '$helper', '$uuid', '$nextTick', '$set', '$delete'];
         Object.keys(context).forEach(key => {
             if (typeof context[key] === 'function' && !vuePrototypeProps.includes(key) && !key.startsWith('$')) {
                 context[key] = context[key].bind(context);
             }
         });
-        
-        if (typeof mixinObject.data === 'function') {
-            const defaultData = mixinObject.data();
-            Object.keys(defaultData).forEach(k => {
-                if (k !== dataPropName && k !== dataPropName + 'Old') {
-                    context[k] = defaultData[k];
-                }
-            });
-        }
 
-        // Gọi hàm save
+        // Copy các data khác từ mixin (nếu có)
+        Object.keys(defaultMixinData).forEach(k => {
+            if (k !== dataPropName && k !== dataPropName + 'Old') {
+                context[k] = defaultMixinData[k];
+            }
+        });
+
+        // --- KẾT THÚC PHẦN SỬA LỖI ---
+
+        // Gọi hàm save tương ứng
         let saveResult;
         if (typeof context.saveAsset === 'function') {
             saveResult = await context.saveAsset();
         } else if (typeof context.saveSubstation === 'function') {
-             saveResult = await context.saveSubstation();
+            saveResult = await context.saveSubstation();
         } else if (typeof context.saveOrganisation === 'function') {
-             saveResult = await context.saveOrganisation();
+            saveResult = await context.saveOrganisation();
         } else if (typeof context.saveBay === 'function') {
-             saveResult = await context.saveBay();
+            saveResult = await context.saveBay();
         } else if (typeof context.saveVoltageLevel === 'function') {
-             saveResult = await context.saveVoltageLevel();
+            saveResult = await context.saveVoltageLevel();
         } else {
-            return { success: false, message: "Save method not found in mixin" };
+            return {
+                success: false,
+                message: "Save method not found in mixin"
+            };
         }
+
+        // Xử lý kết quả trả về
         if (saveResult && saveResult.success) {
             let newNodeData = {
                 mrid: '',
@@ -4980,11 +5047,14 @@ cleanDtoForDuplicate(dto) {
                 serial_number: dto.properties ? dto.properties.serial_no : '',
                 parentId: parentNode.mrid,
                 parentName: parentNode.name,
-                parentArr: [...(parentNode.parentArr || []), { mrid: parentNode.mrid, parent: parentNode.name }],
+                parentArr: [...(parentNode.parentArr || []), {
+                    mrid: parentNode.mrid,
+                    parent: parentNode.name
+                }],
                 mode: node.mode,
                 asset: node.asset,
                 job: node.job,
-                children: [], 
+                children: [],
                 expanded: false,
                 isLeaf: true
             };
@@ -4993,28 +5063,42 @@ cleanDtoForDuplicate(dto) {
             if (resData) {
                 const keys = ['substation', 'organisation', 'voltageLevel', 'bay', 'asset', 'surgeArrester', 'transformer', 'circuitBreaker', 'breaker', 'disconnector', 'powerCable', 'voltageTransformer', 'currentTransformer', 'rotatingMachine', 'capacitor', 'reactor', 'bushing'];
                 let mainObj = null;
-                for(const k of keys) { if(resData[k]) { mainObj = resData[k]; break; } }
-                
-                if(mainObj) {
+                for (const k of keys) {
+                    if (resData[k]) {
+                        mainObj = resData[k];
+                        break;
+                    }
+                }
+
+                if (mainObj) {
                     newNodeData.mrid = mainObj.mrid;
                     newNodeData.id = mainObj.mrid;
                     if (mainObj.name && mainObj.name !== mainObj.mrid) newNodeData.name = mainObj.name;
                 } else if (resData.mrid) {
-                     newNodeData.mrid = resData.mrid;
-                     newNodeData.id = resData.mrid;
-                     if(resData.name) newNodeData.name = resData.name;
+                    newNodeData.mrid = resData.mrid;
+                    newNodeData.id = resData.mrid;
+                    if (resData.name) newNodeData.name = resData.name;
                 }
             }
-            return { success: true, data: newNodeData };
-            } else {
-            return { success: false, message: saveResult ? saveResult.error : "Save failed" };
-            }
-
-        } catch (error) {
-        console.error("Duplicate Error:", error);
-        return { success: false, message: error.message };
+            return {
+                success: true,
+                data: newNodeData
+            };
+        } else {
+            return {
+                success: false,
+                message: saveResult ? saveResult.error : "Save failed"
+            };
         }
-    },
+
+    } catch (error) {
+        console.error("Duplicate Error:", error);
+        return {
+            success: false,
+            message: error.message
+        };
+    }
+},
     async duplicateSelectedNodes() {
     if (!this.selectedNodes || this.selectedNodes.length === 0) {
         this.$message.warning("Please select a node to duplicate");
@@ -5289,73 +5373,160 @@ cleanDtoForDuplicate(dto) {
         }
     },
 
+    // Helper: Kiểm tra xem node hoặc children của nó có chứa valid target không
+    hasValidTargetInTree(node, nodeToMove, validParentTypes) {
+        // Bỏ qua node đang được move
+        if (node.mrid === nodeToMove.mrid) return false;
+        
+        // Nếu node này là valid target
+        if (validParentTypes.includes(node.mode)) {
+            return true;
+        }
+        
+        // Kiểm tra children
+        if (node.children && node.children.length > 0) {
+            for (const child of node.children) {
+                if (this.hasValidTargetInTree(child, nodeToMove, validParentTypes)) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    },
+
     // 2. Hàm đệ quy xây dựng cây cho Dialog Move
     // nodeToMove: Node đang được chọn để di chuyển (để ẩn đi khỏi cây đích)
     // validParentTypes: Danh sách các loại node cha hợp lệ
     buildMoveTreeData(nodes, nodeToMove, validParentTypes) {
-        let tree = [];
-        if (!nodes) return tree;
+    let tree = [];
+    if (!nodes) return tree;
 
-        nodes.forEach(node => {
-            // Không hiển thị chính node đang di chuyển (và con của nó) trong cây đích
-            if (node.mrid === nodeToMove.mrid) return;
+    nodes.forEach(node => {
+        // 1. Không hiển thị chính node đang di chuyển (và con của nó)
+        if (node.mrid === nodeToMove.mrid) return;
 
-            // Kiểm tra xem node này có phải là cha hợp lệ không
-            // Nếu KHÔNG phải cha hợp lệ -> disabled = true (không cho chọn), nhưng vẫn hiện để duyệt con
-            const isValidParent = validParentTypes.includes(node.mode);
+        // 2. Chỉ hiển thị node nếu:
+        // - Node này là valid target, HOẶC
+        // - Node này có children chứa valid target (để user có thể mở rộng tìm node hợp lệ)
+        if (!this.hasValidTargetInTree(node, nodeToMove, validParentTypes)) {
+            return; // Bỏ qua node này hoàn toàn
+        }
 
-            // Tạo node mới cho el-tree
-            let newNode = {
-                mrid: node.mrid,
-                name: node.name || node.serial_no || 'Unknown',
-                mode: node.mode,
-                disabled: !isValidParent, // Element UI sẽ làm mờ và không cho click nếu true
-                children: []
-            };
+        // 3. Logic: Node này có được phép làm cha không?
+        const isValidTarget = validParentTypes.includes(node.mode);
 
-            // Đệ quy xử lý con
-            if (node.children && node.children.length > 0) {
-                newNode.children = this.buildMoveTreeData(node.children, nodeToMove, validParentTypes);
-            }
+        // 4. Đệ quy xử lý con trước để lọc children
+        let filteredChildren = [];
+        if (node.children && node.children.length > 0) {
+            filteredChildren = this.buildMoveTreeData(node.children, nodeToMove, validParentTypes);
+        }
 
+        // 5. Chỉ thêm node vào tree nếu:
+        // - Node này là valid target, HOẶC
+        // - Node này có children hợp lệ (đã được lọc)
+        if (isValidTarget || filteredChildren.length > 0) {
+            let newNode = { 
+                ...node,
+                disabled: !isValidTarget, 
+                isValidTarget: isValidTarget,
+                children: filteredChildren
+            }; 
             tree.push(newNode);
-        });
-        return tree;
-    },
+        }
+    });
+    return tree;
+},
 
     // 3. Xử lý khi nhấn nút Move trên toolbar
     async handleMoveNode() {
-        if (!this.selectedNodes || this.selectedNodes.length === 0) {
-            this.$message.warning("Please select a node to move");
-            return;
-        }
+    if (!this.selectedNodes || this.selectedNodes.length === 0) {
+        this.$message.warning("Please select a node to move");
+        return;
+    }
 
-        const nodeToMove = this.selectedNodes[this.selectedNodes.length - 1];
-        
-        // Không cho phép di chuyển Root
-        if (!nodeToMove.parentId || nodeToMove.parentId === this.$constant.ROOT) {
-             // Tuỳ logic của bạn, nếu Organisation cấp 1 không được move thì chặn
-             // this.$message.warning("Cannot move root nodes");
-             // return;
-        }
+    const nodeToMove = this.selectedNodes[this.selectedNodes.length - 1];
+    
+    // Kiểm tra logic nếu cần (ví dụ không cho move Root)
+    if (!nodeToMove.parentId || nodeToMove.parentId === this.$constant.ROOT) {
+         // this.$message.warning("Cannot move root nodes");
+         // return;
+    }
 
-        const validTypes = this.getValidParentTypes(nodeToMove.mode);
-        
-        // Xây dựng dữ liệu cây, lọc theo logic
-        // Dùng organisationClientList nếu đang ở Client Slide, hoặc ownerServerList nếu Server
-        const sourceData = this.clientSlide ? this.organisationClientList : this.ownerServerList;
-        
-        this.moveTreeData = this.buildMoveTreeData(sourceData, nodeToMove, validTypes);
-        
-        // Reset selection
+    const validTypes = this.getValidParentTypes(nodeToMove.mode);
+    
+    // Lưu nodeToMove và validTypes để dùng trong fetchChildrenForMove
+    this.nodeToMove = nodeToMove;
+    this.validParentTypesForMove = validTypes;
+    
+    // Lấy nguồn dữ liệu (Server hoặc Client side)
+    const sourceData = this.clientSlide ? this.organisationClientList : this.ownerServerList;
+    
+    // Build cây dữ liệu đã lọc
+    this.moveTreeData = this.buildMoveTreeData(sourceData, nodeToMove, validTypes);
+    
+    // Reset trạng thái chọn trong Dialog
+    this.selectedTargetNode = null;
+    this.selectedTargetNodes = []; 
+    
+    this.moveDialogVisible = true;
+},
+
+// 3. Xử lý khi click chọn 1 node trong Dialog (Thay thế handleTargetNodeClick cũ)
+handleMoveNodeSelection(node) {
+    // Nếu là mảng (do TreeNode emit), lấy phần tử cuối hoặc phần tử duy nhất
+    const targetNode = Array.isArray(node) ? node[node.length - 1] : node;
+
+    if (!targetNode) {
+        this.selectedTargetNodes = [];
         this.selectedTargetNode = null;
-        this.moveDialogVisible = true;
+        return;
+    }
+
+    // Nếu node chưa có isValidTarget (có thể là node mới được fetch), tính toán lại
+    if (targetNode.isValidTarget === undefined && this.validParentTypesForMove.length > 0) {
+        const isValidTarget = this.validParentTypesForMove.includes(targetNode.mode);
+        Vue.set(targetNode, 'disabled', !isValidTarget);
+        Vue.set(targetNode, 'isValidTarget', isValidTarget);
+    }
+
+    // Chặn nếu node không hợp lệ
+    if (targetNode.disabled || !targetNode.isValidTarget) {
+        // this.$message.warning(`Cannot move here. Invalid parent type.`);
+        // Reset selection để không highlight node sai
+        this.selectedTargetNodes = []; 
+        this.selectedTargetNode = null;
+        return;
+    }
+
+    // Nếu hợp lệ
+    this.selectedTargetNodes = [targetNode];
+    this.selectedTargetNode = targetNode;
+},
+
+// 4. Reset khi đóng dialog
+handleMoveCancel() {
+    this.moveDialogVisible = false;
+    this.selectedTargetNodes = [];
+    this.selectedTargetNode = null;
+    this.nodeToMove = null;
+    this.validParentTypesForMove = [];
+},
+
+// 5. Fetch children cho move dialog (lọc và set disabled, isValidTarget cho các node mới)
+async fetchChildrenForMove(node) {
+    // Gọi fetchChildren bình thường
+    await this.fetchChildren(node);
+    
+    // Sau khi fetch xong, lọc children bằng buildMoveTreeData để chỉ giữ lại node hợp lệ
+    if (node.children && node.children.length > 0 && this.validParentTypesForMove.length > 0 && this.nodeToMove) {
+        // Sử dụng buildMoveTreeData để lọc children (tự động loại bỏ node không hợp lệ)
+        const filteredChildren = this.buildMoveTreeData(node.children, this.nodeToMove, this.validParentTypesForMove);
         
-        // Mở rộng cây mặc định (optional)
-        if(this.moveTreeData.length > 0) {
-            this.expandedMoveKeys = [this.moveTreeData[0].mrid];
-        }
-    },
+        // Cập nhật children của node đã lọc
+        Vue.set(node, 'children', filteredChildren);
+    }
+},
 
     // 4. Xử lý khi click chọn node đích trong Dialog
     handleTargetNodeClick(data, node, component) {
@@ -5369,237 +5540,198 @@ cleanDtoForDuplicate(dto) {
 
     // 5. Xác nhận di chuyển
     async confirmMoveNode() {
-        if (!this.selectedTargetNode) return;
-        
-        const nodeToMove = this.selectedNodes[this.selectedNodes.length - 1];
-        const newParent = this.selectedTargetNode;
+    if (!this.selectedTargetNode) {
+        this.$message.warning("Please select a target node");
+        return;
+    }
+    
+    // Sử dụng nodeToMove đã được lưu trong handleMoveNode thay vì selectedNodes
+    // vì selectedNodes có thể bị clear khi user tương tác với dialog
+    if (!this.nodeToMove) {
+        this.$message.warning("No node selected to move");
+        return;
+    }
+    
+    const nodeToMove = this.nodeToMove;
+    const newParent = this.selectedTargetNode;
 
-        // Kiểm tra xem có di chuyển vào chính cha hiện tại không
-        if (nodeToMove.parentId === newParent.mrid) {
-            this.$message.warning("Node is already in this location");
-            return;
+    if (!nodeToMove) {
+        this.$message.error("Cannot find node to move");
+        return;
+    }
+
+    if (!newParent) {
+        this.$message.error("Cannot find target parent");
+        return;
+    }
+
+    // Kiểm tra trùng cha
+    if (nodeToMove.parentId === newParent.mrid) {
+        this.$message.warning("Node is already in this location");
+        return;
+    }
+    let sourceName = nodeToMove.name;
+        // Nếu name rỗng hoặc null, thử lấy serial_number hoặc serial_no
+        if (!sourceName || sourceName.toString().trim() === '') {
+            sourceName = nodeToMove.serial_number || nodeToMove.serial_no;
         }
+        // Nếu vẫn không có, hiển thị giá trị mặc định
+        sourceName = sourceName || 'Unknown Item';
 
-        this.$confirm(`Move "${nodeToMove.name || nodeToMove.serial_no}" to "${newParent.name}"?`, 'Confirm Move', {
+        let targetName = newParent.name || 'Unknown Location';
+        this.$confirm(`Move "${sourceName}" to "${targetName}"?`, 'Confirm Move', {
             confirmButtonText: 'Move',
             cancelButtonText: 'Cancel',
             type: 'warning'
-        }).then(async () => {
-            try {
-                let success = false;
-                let updateResult = null;
-                
-                // --- GỌI API CẬP NHẬT PARENT ID TRONG DATABASE ---
-                
-                if (nodeToMove.mode === 'organisation') {
-                    // Update parent_organization field
-                    const orgEntity = await window.electronAPI.getOrganisationEntityByMrid(nodeToMove.mrid);
-                    if (!orgEntity.success || !orgEntity.data) {
-                        this.$message.error("Failed to fetch organisation data");
-                        return;
-                    }
-                    const orgData = orgEntity.data.organisation;
-                    orgData.parent_organization = newParent.mrid;
-                    updateResult = await window.electronAPI.updateParentOrganizationByMrid(nodeToMove.mrid, orgData);
-                    success = updateResult.success;
-                    
-                } else if (nodeToMove.mode === 'substation') {
-                    // Update PSR location field (location refId points to parent organisation)
-                    const substationEntity = await window.electronAPI.getSubstationByMrid(nodeToMove.mrid);
-                    if (!substationEntity.success || !substationEntity.data) {
-                        this.$message.error("Failed to fetch substation data");
-                        return;
-                    }
-                    const substationData = substationEntity.data;
-                    // Update location refId to point to new parent
-                    if (substationData.location) {
-                        const locationEntity = await window.electronAPI.getLocationByMrid(substationData.location);
+    }).then(async () => {
+        try {
+            let success = false;
+            let updateResult = null;
+
+            // --- XỬ LÝ ASSET (Reactor, Breaker, etc.) ---
+            if (nodeToMove.mode === 'asset') {
+                const assetEntity = await window.electronAPI.getAssetByMrid(nodeToMove.mrid);
+                if (!assetEntity.success || !assetEntity.data) {
+                    this.$message.error("Failed to fetch asset data");
+                    return;
+                }
+                const assetData = assetEntity.data;
+
+                // TRƯỜNG HỢP 1: Di chuyển vào LOCATION (Organisation)
+                if (newParent.mode === 'organisation' || newParent.mode === 'location') {
+                    // Cập nhật bảng Location
+                    if (assetData.location) {
+                        const locationEntity = await window.electronAPI.getLocationByMrid(assetData.location);
                         if (locationEntity.success && locationEntity.data) {
-                            locationEntity.data.refId = newParent.mrid;
-                            const locationUpdate = await window.electronAPI.updateLocationByMrid(substationData.location, locationEntity.data);
-                            if (!locationUpdate.success) {
-                                this.$message.error("Failed to update location");
-                                return;
-                            }
+                            locationEntity.data.refId = newParent.mrid; // Trỏ về Org mới
+                            updateResult = await window.electronAPI.updateLocationByMrid(assetData.location, locationEntity.data);
+                            success = updateResult.success;
+                        }
+                    } 
+                    // Nếu asset chưa có location, cần tạo mới location (Logic bổ sung tùy hệ thống của bạn)
+                    
+                    // Quan trọng: Nếu trước đó nó nằm trong PSR (Bay/Sub), cần xóa liên kết AssetPsr cũ đi (nếu hệ thống yêu cầu 1 cha duy nhất)
+                    if (success) {
+                         // Tìm và xóa AssetPsr cũ nếu có (Optional - tùy business rule)
+                         // await window.electronAPI.deleteAssetPsrByAssetId...
+                    }
+                } 
+                // TRƯỜNG HỢP 2: Di chuyển vào PSR (Substation, VoltageLevel, Bay)
+                else if (['substation', 'voltageLevel', 'bay'].includes(newParent.mode)) {
+                    // Cần cập nhật hoặc tạo mới bản ghi trong bảng AssetPsr
+                    
+                    // B1: Tìm AssetPsr hiện tại
+                    let currentAssetPsr = null;
+                    // Tìm theo psr_id cũ (parentId)
+                    if (nodeToMove.parentId) {
+                        const searchRes = await window.electronAPI.getAssetPsrByAssetIdAndPsrId(nodeToMove.mrid, nodeToMove.parentId);
+                        if (searchRes.success && searchRes.data) {
+                            currentAssetPsr = searchRes.data;
                         }
                     }
-                    // Also update substation data if needed
-                    updateResult = await window.electronAPI.updateSubstationByMrid(nodeToMove.mrid, substationData);
-                    success = updateResult.success;
-                    
-                } else if (nodeToMove.mode === 'voltageLevel') {
-                    // Update substation field
-                    const voltageLevelEntity = await window.electronAPI.getVoltageLevelByMrid(nodeToMove.mrid);
-                    if (!voltageLevelEntity.success || !voltageLevelEntity.data) {
-                        this.$message.error("Failed to fetch voltage level data");
-                        return;
-                    }
-                    const voltageLevelData = voltageLevelEntity.data;
-                    voltageLevelData.substation = newParent.mrid;
-                    updateResult = await window.electronAPI.updateVoltageLevelByMrid(nodeToMove.mrid, voltageLevelData);
-                    success = updateResult.success;
-                    
-                } else if (nodeToMove.mode === 'bay') {
-                    // Update voltage_level or substation field
-                    const bayEntity = await window.electronAPI.getBayByMrid(nodeToMove.mrid);
-                    if (!bayEntity.success || !bayEntity.data) {
-                        this.$message.error("Failed to fetch bay data");
-                        return;
-                    }
-                    const bayData = bayEntity.data;
-                    // Determine if new parent is voltageLevel or substation
-                    if (newParent.mode === 'voltageLevel') {
-                        bayData.voltage_level = newParent.mrid;
-                        bayData.substation = null; // Clear substation if moving to voltageLevel
-                    } else if (newParent.mode === 'substation') {
-                        bayData.substation = newParent.mrid;
-                        bayData.voltage_level = null; // Clear voltageLevel if moving to substation
-                    }
-                    updateResult = await window.electronAPI.updateBayByMrid(nodeToMove.mrid, bayData);
-                    success = updateResult.success;
-                    
-                } else if (nodeToMove.mode === 'asset') {
-                    // Asset có thể có parent là location hoặc PSR (substation, voltageLevel, bay)
-                    // Lấy asset entity để biết location mrid
-                    const assetEntity = await window.electronAPI.getAssetByMrid(nodeToMove.mrid);
-                    if (!assetEntity.success || !assetEntity.data) {
-                        this.$message.error("Failed to fetch asset data");
-                        return;
-                    }
-                    const assetData = assetEntity.data;
-                    
-                    // Kiểm tra new parent là location hay PSR
-                    if (newParent.mode === 'location' || newParent.mode === 'organisation') {
-                        // Parent là location: update location refId
-                        if (assetData.location) {
-                            const locationEntity = await window.electronAPI.getLocationByMrid(assetData.location);
-                            if (locationEntity.success && locationEntity.data) {
-                                locationEntity.data.refId = newParent.mrid;
-                                updateResult = await window.electronAPI.updateLocationByMrid(assetData.location, locationEntity.data);
-                                success = updateResult.success;
-                            } else {
-                                this.$message.error("Failed to fetch location data for asset");
-                                return;
-                            }
-                        } else {
-                            // Asset không có location, có thể cần tạo mới hoặc update asset.location
-                            this.$message.warning("Asset does not have location. This case needs special handling.");
-                            success = false;
-                        }
-                    } else if (newParent.mode === 'substation' || newParent.mode === 'voltageLevel' || newParent.mode === 'bay') {
-                        // Parent là PSR: cần update asset_psr.psr_id
-                        // Tìm asset_psr record hiện tại của asset (nếu có)
-                        // Có thể có nhiều asset_psr records, nhưng thường chỉ có một active
-                        // Tìm asset_psr với asset_id = nodeToMove.mrid
-                        try {
-                            // Tìm asset_psr hiện tại (có thể có nhiều, lấy cái đầu tiên)
-                            // Hoặc tìm theo psr_id cũ (parentId hiện tại)
-                            let existingAssetPsr = null;
-                            
-                            // Thử tìm asset_psr với psr_id cũ (parentId hiện tại)
-                            if (nodeToMove.parentId) {
-                                const assetPsrResult = await window.electronAPI.getAssetPsrByAssetIdAndPsrId(nodeToMove.mrid, nodeToMove.parentId);
-                                if (assetPsrResult.success && assetPsrResult.data) {
-                                    existingAssetPsr = assetPsrResult.data;
-                                }
-                            }
-                            
-                            // Nếu không tìm thấy, tìm bất kỳ asset_psr nào của asset này
-                            // (Có thể cần query khác, nhưng tạm thời dùng cách này)
-                            
-                            if (existingAssetPsr) {
-                                // Update asset_psr với psr_id mới
-                                existingAssetPsr.psr_id = newParent.mrid;
-                                updateResult = await window.electronAPI.updateAssetPsr(existingAssetPsr.mrid, existingAssetPsr);
-                                success = updateResult.success;
-                            } else {
-                                // Tạo mới asset_psr
-                                const newAssetPsr = {
-                                    mrid: this.generateUuid(),
-                                    asset_id: nodeToMove.mrid,
-                                    psr_id: newParent.mrid
-                                };
-                                updateResult = await window.electronAPI.insertAssetPsr(newAssetPsr);
-                                success = updateResult.success;
-                            }
-                            
-                            if (!success) {
-                                this.$message.error("Failed to update asset_psr");
-                                return;
-                            }
-                        } catch (error) {
-                            console.error("Error updating asset_psr:", error);
-                            this.$message.error("Failed to move asset to PSR: " + (error.message || error));
-                            return;
-                        }
+
+                    if (currentAssetPsr) {
+                        // Update: Chuyển sang PSR mới
+                        currentAssetPsr.psr_id = newParent.mrid;
+                        updateResult = await window.electronAPI.updateAssetPsr(currentAssetPsr.mrid, currentAssetPsr);
+                        success = updateResult.success;
                     } else {
-                        this.$message.warning(`Cannot move asset to ${newParent.mode} type`);
-                        success = false;
-                    }
-                    
-                } else if (nodeToMove.mode === 'job') {
-                    // Job parent is asset, need to check how job parent is stored
-                    // For now, update job's asset_id if available
-                    this.$message.warning("Job move functionality needs to be implemented based on job structure");
-                    success = false;
-                } else {
-                    this.$message.warning(`Move functionality for ${nodeToMove.mode} is not yet implemented`);
-                    success = false;
-                }
-
-                if (success) {
-                    // --- CẬP NHẬT UI (CLIENT SIDE) ---
-                    
-                    // 1. Tìm và xoá node ở vị trí cũ
-                    const oldParentNode = this.findNodeById(nodeToMove.parentId, this.clientSlide ? this.organisationClientList : this.ownerServerList);
-                    if (oldParentNode && oldParentNode.children) {
-                        const idx = oldParentNode.children.findIndex(c => c.mrid === nodeToMove.mrid);
-                        if (idx !== -1) {
-                            oldParentNode.children.splice(idx, 1);
-                            // Clear children fetched flag to force reload
-                            if (oldParentNode.children.length === 0) {
-                                this.$set(oldParentNode, '_childrenFetched', false);
-                            }
-                        }
-                    }
-
-                    // 2. Thêm node vào vị trí mới
-                    const targetNodeInTree = this.findNodeById(newParent.mrid, this.clientSlide ? this.organisationClientList : this.ownerServerList);
-                    if (targetNodeInTree) {
-                        if (!targetNodeInTree.children) this.$set(targetNodeInTree, 'children', []);
-                        
-                        // Cập nhật thông tin cha mới cho node
-                        nodeToMove.parentId = newParent.mrid;
-                        nodeToMove.parentName = newParent.name || newParent.parentName || '';
-                        // Cập nhật lại parentArr
-                        const newParentArr = [...(newParent.parentArr || []), { mrid: newParent.mrid, parent: newParent.name }];
-                        nodeToMove.parentArr = newParentArr;
-                        
-                        // Clear children fetched flag để force reload từ database
-                        this.$set(targetNodeInTree, '_childrenFetched', false);
-                        
-                        // Reload children từ database để đảm bảo dữ liệu mới nhất
-                        await this.fetchChildren(targetNodeInTree);
-                        
-                        // Mở rộng node cha mới để thấy kết quả
-                        this.$set(targetNodeInTree, 'expanded', true);
-                    }
-
-                    this.$message.success("Moved successfully");
-                    this.moveDialogVisible = false;
-                    this.selectedNodes = []; // Clear selection
-                } else {
-                    if (updateResult && updateResult.message) {
-                        this.$message.error(updateResult.message || "Failed to move node");
+                        // Insert: Nếu trước đó nó ở Org (chưa có AssetPsr), giờ tạo mới
+                        const newAssetPsr = {
+                            mrid: this.generateUuid(),
+                            asset_id: nodeToMove.mrid,
+                            psr_id: newParent.mrid,
+                            // Các trường khác nếu cần
+                        };
+                        updateResult = await window.electronAPI.insertAssetPsr(newAssetPsr);
+                        success = updateResult.success;
                     }
                 }
-
-            } catch (error) {
-                console.error("Move node error:", error);
-                this.$message.error("Failed to move node: " + (error.message || error));
+            } 
+            // --- XỬ LÝ CÁC LOẠI KHÁC (Giữ nguyên logic cũ của bạn) ---
+            else if (nodeToMove.mode === 'organisation') {
+                 // ... (Code cũ của bạn đúng rồi)
+                 const orgEntity = await window.electronAPI.getOrganisationEntityByMrid(nodeToMove.mrid);
+                 if(orgEntity.success) {
+                    orgEntity.data.organisation.parent_organization = newParent.mrid;
+                    updateResult = await window.electronAPI.updateParentOrganizationByMrid(nodeToMove.mrid, orgEntity.data.organisation);
+                    success = updateResult.success;
+                 }
             }
-        });
-    },
+            else if (nodeToMove.mode === 'substation') {
+                 // ... (Code cũ của bạn)
+                 // Lưu ý: Substation thường update Location refId
+                 const subData = await window.electronAPI.getSubstationByMrid(nodeToMove.mrid);
+                 if(subData.success && subData.data.location) {
+                    const locData = await window.electronAPI.getLocationByMrid(subData.data.location);
+                    if(locData.success) {
+                        locData.data.refId = newParent.mrid;
+                        updateResult = await window.electronAPI.updateLocationByMrid(subData.data.location, locData.data);
+                        success = updateResult.success;
+                    }
+                 }
+            }
+            // ... (Voltage, Bay logic giữ nguyên) ...
+            else if (nodeToMove.mode === 'voltageLevel') {
+                const vl = await window.electronAPI.getVoltageLevelByMrid(nodeToMove.mrid);
+                if(vl.success) {
+                    vl.data.substation = newParent.mrid;
+                    updateResult = await window.electronAPI.updateVoltageLevelByMrid(nodeToMove.mrid, vl.data);
+                    success = updateResult.success;
+                }
+            }
+            else if (nodeToMove.mode === 'bay') {
+                const bay = await window.electronAPI.getBayByMrid(nodeToMove.mrid);
+                if(bay.success) {
+                    if (newParent.mode === 'voltageLevel') {
+                        bay.data.voltage_level = newParent.mrid;
+                        bay.data.substation = null;
+                    } else {
+                        bay.data.substation = newParent.mrid;
+                        bay.data.voltage_level = null;
+                    }
+                    updateResult = await window.electronAPI.updateBayByMrid(nodeToMove.mrid, bay.data);
+                    success = updateResult.success;
+                }
+            }
+
+            // --- CẬP NHẬT UI SAU KHI THÀNH CÔNG ---
+            if (success) {
+                // 1. Xóa khỏi cha cũ
+                const sourceList = this.clientSlide ? this.organisationClientList : this.ownerServerList;
+                const oldParentNode = this.findNodeById(nodeToMove.parentId, sourceList);
+                
+                if (oldParentNode && oldParentNode.children) {
+                    const idx = oldParentNode.children.findIndex(c => c.mrid === nodeToMove.mrid);
+                    if (idx !== -1) oldParentNode.children.splice(idx, 1);
+                }
+
+                // 2. Thêm vào cha mới
+                const newParentInTree = this.findNodeById(newParent.mrid, sourceList);
+                if (newParentInTree) {
+                    // Force reload children từ server để đảm bảo dữ liệu đúng
+                    this.$set(newParentInTree, '_childrenFetched', false);
+                    await this.fetchChildren(newParentInTree);
+                    this.$set(newParentInTree, 'expanded', true);
+                }
+
+                this.$message.success("Moved successfully");
+                this.moveDialogVisible = false;
+                this.selectedNodes = [];
+            } else {
+                this.$message.error("Move failed: " + (updateResult?.message || "Unknown error"));
+            }
+
+        } catch (error) {
+            console.error(error);
+            this.$message.error("Error: " + error.message);
+        }
+    }).catch((err) => { 
+        if (err !== 'cancel') {
+            console.error("Move confirmation error:", err);
+        }
+    });
+},
     }
 }
 </script>
@@ -6188,6 +6320,10 @@ body.duplicating-mode .v-modal {
     opacity: 0 !important;
     pointer-events: none !important;
     transition: none !important;
+}
+
+.move-dialog .el-dialog__body {
+  padding-top: 0;
 }
 
 /* Ẩn tất cả backdrop ngay khi duplicate */
