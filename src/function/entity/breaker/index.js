@@ -12,35 +12,35 @@ import { insertAssetPsrTransaction, getAssetPsrByAssetIdAndPsrId, deleteAssetPsr
 import { insertFrequencyTransaction, getFrequencyByIds, deleteFrequencyByIdTransaction } from '@/function/cim/frequency';
 import { insertAssetTransaction, getAssetById, deleteAssetByIdTransaction, insertAsset } from '@/function/cim/asset';
 import { insertResistanceTransaction, getResistanceByIds, deleteResistanceByIdTransaction } from '@/function/cim/resistance';
-import {insertLengthTransaction, getLengthByIds, deleteLengthByIdTransaction} from '@/function/cim/length'
-import {insertMassTransaction, getMassByIds, deleteMassByIdTransaction} from '@/function/cim/mass'
-import {insertVolumeTransaction, getVolumeByIds, deleteVolumeByIdTransaction} from '@/function/cim/volume'
-import {insertPressureTransaction, getPressureByIds, deletePressureByIdTransaction} from '@/function/cim/pressure'
-import {insertTemperatureTransaction, getTemperatureByIds, deleteTemperatureByIdTransaction} from '@/function/cim/temperature'
-import {insertQuantityValueTransaction, getQuantityValueByIds, deleteQuantityValueTransaction} from '@/function/cim/quantityValue'
-import {insertCapacitanceTransaction, getCapacitanceByIds, deleteCapacitanceByIdTransaction} from '@/function/cim/capacitance'
-import {insertSecondsTransaction, getSecondByIds, deleteSecondsByIdTransaction } from '@/function/cim/seconds'
-import {insertActivePowerTransaction, getActivePowerByIds, deleteActivePowerByIdTransaction} from '@/function/cim/activePower'
-import {insertOldBreakerInfoTransaction, getOldBreakerInfoById, deleteOldBreakerInfoTransaction } from '@/function/cim/oldBreakerInfo'
-import {insertBreakerContactSystemInfoTransaction, deleteBreakerContactSystemInfoTransaction, getBreakerContactSystemInfoByBreakerInfoId } from '@/function/cim/breakerContactSystemInfo'
-import {insertBreakerRatingInfoTransaction, deleteBreakerRatingInfoTransaction, getBreakerRatingInfoByBreakerInfoId} from '@/function/cim/breakerRatingInfo'
-import {insertBreakerOtherInfoTransaction, deleteBreakerOtherInfoTransaction, getBreakerOtherInfoByBreakerInfoId} from '@/function/cim/breakerOtherInfo'
-import {insertOldOperatingMechanismTransaction, getOldOperatingMechanismByAssetIdTransaction ,getOldOperatingMechanismById, deleteOldOperatingMechanismTransaction} from '@/function/cim/oldOperatingMechanism'
-import {insertOldOperatingMechanismInfoTransaction, getOldOperatingMechanismInfoById, deleteOldOperatingMechanismInfoTransaction} from '@/function/cim/oldOperatingMechanismInfo'
-import {insertOperatingMechanismComponentTransaction, deleteOperatingMechanismComponentTransaction, getOperatingMechanismComponentByOperatingMechanismId} from '@/function/cim/operatingMechanismComponent'
-import { insertAssessmentLimitBreakerInfoTransaction, getAssessmentLimitBreakerInfoByBreakerInfoId, deleteAssessmentLimitBreakerInfoTransaction} from '@/function/cim/assessmentLimitBreakerInfo'
-import { insertAuxiliaryContactsBreakerInfoTransaction, getAuxiliaryContactsBreakerInfoByAssessmentLimitId, deleteAuxiliaryContactsBreakerInfoTransaction} from '@/function/cim/auxiliaryContactsBreakerInfo'
-import { insertTripOperationTransaction, getTripOperationByAuxiliaryContactsId, deleteTripOperationTransaction} from '@/function/cim/tripOperation'
-import { insertCloseOperationTransaction, getCloseOperationByAuxiliaryContactsId, deleteCloseOperationTransaction} from '@/function/cim/closeOperation'
-import {insertContactResistanceBreakerInfoTransaction, getContactResistanceBreakerInfoByAssessmentLimitBreakerInfoId, deleteContactResistanceBreakerInfoTransaction } from '@/function/cim/contactResistanceBreakerInfo'
-import {insertOperatingTimeBreakerInfoTransaction, getOperatingTimeBreakerInfoByAssessmentLimitBreakerInfoId, deleteOperatingTimeBreakerInfoTransaction} from '@/function/cim/operatingTimeBreakerInfo'
-import {insertContactTravelBreakerInfoTransaction, getContactTravelBreakerInfoByAssessmentLimitBreakerInfoId, deleteContactTravelBreakerInfoTransaction} from '@/function/cim/contactTravelBreakerInfo'
-import {insertMiscellaneousBreakerInfoTransaction, getMiscellaneousBreakerInfoByAssessmentLimitId, deleteMiscellaneousBreakerInfoTransaction} from '@/function/cim/miscellaneousBreakerInfo'
-import {insertCoilCharacteristicsBreakerInfoTransaction, getCoilCharacteristicsBreakerInfoByAssessmentLimitId, deleteCoilCharacteristicsBreakerInfoTransaction} from '@/function/cim/coilCharacteristicsBreakerInfo'
-import {insertPickupVoltageBreakerInfoTransaction, getPickupVoltageBreakerInfoByAssessmentLimitId, deletePickupVoltageBreakerInfoTransaction} from '@/function/cim/pickupVoltageBreakerInfo'
-import {insertMotorCharacteristicsBreakerInfoTransaction, getMotorCharacteristicsBreakerInfoByAssessmentLimitId, deleteMotorCharacteristicsBreakerInfoTransaction} from '@/function/cim/motorCharacteristicsBreakerInfo'
-import {insertUnderVoltageReleaseBreakerInfoTransaction, getUnderVoltageReleaseBreakerInfoByAssessmentLimitId, deleteUnderVoltageReleaseBreakerInfoTransaction} from '@/function/cim/underVoltageReleaseBreakerInfo'
-import {insertOvercurrentReleaseBreakerInfoTransaction, getOvercurrentReleaseBreakerInfoByAssessmentLimitId, deleteOvercurrentReleaseBreakerInfoTransaction} from '@/function/cim/overcurrentReleaseBreakerInfo'
+import { insertLengthTransaction, getLengthByIds, deleteLengthByIdTransaction } from '@/function/cim/length'
+import { insertMassTransaction, getMassByIds, deleteMassByIdTransaction } from '@/function/cim/mass'
+import { insertVolumeTransaction, getVolumeByIds, deleteVolumeByIdTransaction } from '@/function/cim/volume'
+import { insertPressureTransaction, getPressureByIds, deletePressureByIdTransaction } from '@/function/cim/pressure'
+import { insertTemperatureTransaction, getTemperatureByIds, deleteTemperatureByIdTransaction } from '@/function/cim/temperature'
+import { insertQuantityValueTransaction, getQuantityValueByIds, deleteQuantityValueTransaction } from '@/function/cim/quantityValue'
+import { insertCapacitanceTransaction, getCapacitanceByIds, deleteCapacitanceByIdTransaction } from '@/function/cim/capacitance'
+import { insertSecondsTransaction, getSecondByIds, deleteSecondsByIdTransaction } from '@/function/cim/seconds'
+import { insertActivePowerTransaction, getActivePowerByIds, deleteActivePowerByIdTransaction } from '@/function/cim/activePower'
+import { insertOldBreakerInfoTransaction, getOldBreakerInfoById, deleteOldBreakerInfoTransaction } from '@/function/cim/oldBreakerInfo'
+import { insertBreakerContactSystemInfoTransaction, deleteBreakerContactSystemInfoTransaction, getBreakerContactSystemInfoByBreakerInfoId } from '@/function/cim/breakerContactSystemInfo'
+import { insertBreakerRatingInfoTransaction, deleteBreakerRatingInfoTransaction, getBreakerRatingInfoByBreakerInfoId } from '@/function/cim/breakerRatingInfo'
+import { insertBreakerOtherInfoTransaction, deleteBreakerOtherInfoTransaction, getBreakerOtherInfoByBreakerInfoId } from '@/function/cim/breakerOtherInfo'
+import { insertOldOperatingMechanismTransaction, getOldOperatingMechanismByAssetIdTransaction, getOldOperatingMechanismById, deleteOldOperatingMechanismTransaction } from '@/function/cim/oldOperatingMechanism'
+import { insertOldOperatingMechanismInfoTransaction, getOldOperatingMechanismInfoById, deleteOldOperatingMechanismInfoTransaction } from '@/function/cim/oldOperatingMechanismInfo'
+import { insertOperatingMechanismComponentTransaction, deleteOperatingMechanismComponentTransaction, getOperatingMechanismComponentByOperatingMechanismId } from '@/function/cim/operatingMechanismComponent'
+import { insertAssessmentLimitBreakerInfoTransaction, getAssessmentLimitBreakerInfoByBreakerInfoId, deleteAssessmentLimitBreakerInfoTransaction } from '@/function/cim/assessmentLimitBreakerInfo'
+import { insertAuxiliaryContactsBreakerInfoTransaction, getAuxiliaryContactsBreakerInfoByAssessmentLimitId, deleteAuxiliaryContactsBreakerInfoTransaction } from '@/function/cim/auxiliaryContactsBreakerInfo'
+import { insertTripOperationTransaction, getTripOperationByAuxiliaryContactsId, deleteTripOperationTransaction } from '@/function/cim/tripOperation'
+import { insertCloseOperationTransaction, getCloseOperationByAuxiliaryContactsId, deleteCloseOperationTransaction } from '@/function/cim/closeOperation'
+import { insertContactResistanceBreakerInfoTransaction, getContactResistanceBreakerInfoByAssessmentLimitBreakerInfoId, deleteContactResistanceBreakerInfoTransaction } from '@/function/cim/contactResistanceBreakerInfo'
+import { insertOperatingTimeBreakerInfoTransaction, getOperatingTimeBreakerInfoByAssessmentLimitBreakerInfoId, deleteOperatingTimeBreakerInfoTransaction } from '@/function/cim/operatingTimeBreakerInfo'
+import { insertContactTravelBreakerInfoTransaction, getContactTravelBreakerInfoByAssessmentLimitBreakerInfoId, deleteContactTravelBreakerInfoTransaction } from '@/function/cim/contactTravelBreakerInfo'
+import { insertMiscellaneousBreakerInfoTransaction, getMiscellaneousBreakerInfoByAssessmentLimitId, deleteMiscellaneousBreakerInfoTransaction } from '@/function/cim/miscellaneousBreakerInfo'
+import { insertCoilCharacteristicsBreakerInfoTransaction, getCoilCharacteristicsBreakerInfoByAssessmentLimitId, deleteCoilCharacteristicsBreakerInfoTransaction } from '@/function/cim/coilCharacteristicsBreakerInfo'
+import { insertPickupVoltageBreakerInfoTransaction, getPickupVoltageBreakerInfoByAssessmentLimitId, deletePickupVoltageBreakerInfoTransaction } from '@/function/cim/pickupVoltageBreakerInfo'
+import { insertMotorCharacteristicsBreakerInfoTransaction, getMotorCharacteristicsBreakerInfoByAssessmentLimitId, deleteMotorCharacteristicsBreakerInfoTransaction } from '@/function/cim/motorCharacteristicsBreakerInfo'
+import { insertUnderVoltageReleaseBreakerInfoTransaction, getUnderVoltageReleaseBreakerInfoByAssessmentLimitId, deleteUnderVoltageReleaseBreakerInfoTransaction } from '@/function/cim/underVoltageReleaseBreakerInfo'
+import { insertOvercurrentReleaseBreakerInfoTransaction, getOvercurrentReleaseBreakerInfoByAssessmentLimitId, deleteOvercurrentReleaseBreakerInfoTransaction } from '@/function/cim/overcurrentReleaseBreakerInfo'
 
 
 export const insertBreakerEntity = async (old_entity, entity) => {
@@ -68,7 +68,7 @@ export const insertBreakerEntity = async (old_entity, entity) => {
             await runAsync('BEGIN TRANSACTION');
 
             const toDeleteUnit = {}
-            for(const unitType of unitTypes) {
+            for (const unitType of unitTypes) {
                 const newIds = entity[unitType].map(v => v.mrid).filter(id => id); // bỏ null/empty
                 const oldIds = old_entity[unitType].map(v => v.mrid).filter(id => id);
 
@@ -117,20 +117,20 @@ export const insertBreakerEntity = async (old_entity, entity) => {
             await insertOldOperatingMechanismTransaction(entity.oldOperatingMechanism, db);
 
             //operatingMechanismComponent
-            for(const component of entity.operatingMechanismComponent) {
+            for (const component of entity.operatingMechanismComponent) {
                 await insertOperatingMechanismComponentTransaction(component, db);
             }
-            
+
             //Assessment
             await insertAssessmentLimitBreakerInfoTransaction(entity.assessmentLimitBreakerInfo, db);
-            
+
             //AuxiliaryContacts
             await insertAuxiliaryContactsBreakerInfoTransaction(entity.auxiliaryContactsBreakerInfo, db);
 
             if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
                 const pathData = JSON.parse(entity.attachment.path);
                 const newPath = []
-                for(let i = 0; i < pathData.length; i++) {
+                for (let i = 0; i < pathData.length; i++) {
                     const namefile = path.basename(pathData[i].path);
                     pathData[i].path = path.join(attachmentContext.getAttachmentDir(), entity.asset.mrid, namefile);
                     newPath.push(pathData[i]);
@@ -141,7 +141,7 @@ export const insertBreakerEntity = async (old_entity, entity) => {
 
             //table
             let toDeleteTable = {}
-            for(const tableType of tableTypes) {
+            for (const tableType of tableTypes) {
                 const newIds = entity[tableType].map(v => v.mrid).filter(id => id); // bỏ null/empty
                 const oldIds = old_entity[tableType].map(v => v.mrid).filter(id => id);
 
@@ -158,18 +158,18 @@ export const insertBreakerEntity = async (old_entity, entity) => {
             }
 
 
-            for(const tableType of tableTypes) {
-                for(const t of toDeleteTable[tableType]) {
+            for (const tableType of tableTypes) {
+                for (const t of toDeleteTable[tableType]) {
                     await deleteTable(tableType, t.mrid, db);
                 }
             }
 
-            for(const unitType of unitTypes) {
-                for(const u of toDeleteUnit[unitType]) {
+            for (const unitType of unitTypes) {
+                for (const u of toDeleteUnit[unitType]) {
                     await deleteUnit(unitType, u.mrid, db);
                 }
             }
-            
+
             await runAsync('COMMIT');
             deleteBackupFiles(null, entity.asset.mrid);
             return { success: true, data: entity, message: 'Breaker entity inserted successfully' };
@@ -185,7 +185,7 @@ export const insertBreakerEntity = async (old_entity, entity) => {
 
 export const getBreakerEntity = async (id, psrId) => {
     try {
-        if(id == null || id === '') {
+        if (id == null || id === '') {
             return { success: false, error: new Error('Invalid ID') };
         } else {
             var resistanceIds = []
@@ -204,16 +204,16 @@ export const getBreakerEntity = async (id, psrId) => {
 
             const entity = new circuitBreakerEntity()
             const dataBreaker = await getAssetById(id);
-            if(dataBreaker.success) {
+            if (dataBreaker.success) {
                 entity.asset = dataBreaker.data;
 
                 const dataAssetPsr = await getAssetPsrByAssetIdAndPsrId(entity.asset.mrid, psrId);
-                if(dataAssetPsr.success) {
+                if (dataAssetPsr.success) {
                     entity.assetPsr = dataAssetPsr.data;
                 }
 
                 const dataLifecycleDate = await getLifecycleDateById(entity.asset.lifecycle_date);
-                if(dataLifecycleDate.success) {
+                if (dataLifecycleDate.success) {
                     entity.lifecycleDate = dataLifecycleDate.data;
                 }
 
@@ -223,13 +223,13 @@ export const getBreakerEntity = async (id, psrId) => {
                 }
 
                 const dataOldBreakerInfo = await getOldBreakerInfoById(entity.asset.asset_info);
-                if(dataOldBreakerInfo.success) {
+                if (dataOldBreakerInfo.success) {
                     entity.oldBreakerInfo = dataOldBreakerInfo.data;
                 }
 
                 const productAssetModelId = entity.oldBreakerInfo.product_asset_model;
                 const dataProductAssetModel = await getProductAssetModelById(productAssetModelId);
-                if(dataProductAssetModel.success) {
+                if (dataProductAssetModel.success) {
                     entity.productAssetModel = dataProductAssetModel.data;
                 }
 
@@ -240,7 +240,7 @@ export const getBreakerEntity = async (id, psrId) => {
                 currentFlowIds.push(entity.oldBreakerInfo.rated_current)
 
                 const dataBreakerRatingInfo = await getBreakerRatingInfoByBreakerInfoId(entity.oldBreakerInfo.mrid);
-                if(dataBreakerRatingInfo.success) {
+                if (dataBreakerRatingInfo.success) {
                     entity.breakerRatingInfo = dataBreakerRatingInfo.data;
                 }
 
@@ -253,7 +253,7 @@ export const getBreakerEntity = async (id, psrId) => {
                 voltageIds.push(entity.breakerRatingInfo.rated_insulation_level)
 
                 const dataBreakerContactSystemInfo = await getBreakerContactSystemInfoByBreakerInfoId(entity.oldBreakerInfo.mrid);
-                if(dataBreakerContactSystemInfo.success) {
+                if (dataBreakerContactSystemInfo.success) {
                     entity.breakerContactSystemInfo = dataBreakerContactSystemInfo.data;
                 }
 
@@ -262,7 +262,7 @@ export const getBreakerEntity = async (id, psrId) => {
                 lengthIds.push(entity.breakerContactSystemInfo.nozzle_length)
 
                 const dataBreakerOtherInfo = await getBreakerOtherInfoByBreakerInfoId(entity.oldBreakerInfo.mrid);
-                if(dataBreakerOtherInfo.success) {
+                if (dataBreakerOtherInfo.success) {
                     entity.breakerOtherInfo = dataBreakerOtherInfo.data;
                 }
 
@@ -273,22 +273,22 @@ export const getBreakerEntity = async (id, psrId) => {
                 temperatureIds.push(entity.breakerOtherInfo.rated_gas_temperature)
 
                 const dataOldOperatingMechanism = await getOldOperatingMechanismByAssetIdTransaction(entity.asset.mrid);
-                if(dataOldOperatingMechanism.success) {
+                if (dataOldOperatingMechanism.success) {
                     entity.oldOperatingMechanism = dataOldOperatingMechanism.data;
                 }
 
                 const dataLifecycleDateOperatingMechanism = await getLifecycleDateById(entity.oldOperatingMechanism.lifecycle_date);
-                if(dataLifecycleDateOperatingMechanism.success) {
+                if (dataLifecycleDateOperatingMechanism.success) {
                     entity.operatingLifecycleDate = dataLifecycleDateOperatingMechanism.data;
                 }
 
                 const dataOperatingProductAssetModel = await getProductAssetModelById(entity.oldOperatingMechanism.product_asset_model);
-                if(dataOperatingProductAssetModel.success) {
+                if (dataOperatingProductAssetModel.success) {
                     entity.operatingProductAssetModel = dataOperatingProductAssetModel.data;
                 }
 
                 const dataOldOperatingMechanismInfo = await getOldOperatingMechanismInfoById(entity.oldOperatingMechanism.asset_info);
-                if(dataOldOperatingMechanismInfo.success) {
+                if (dataOldOperatingMechanismInfo.success) {
                     entity.oldOperatingMechanismInfo = dataOldOperatingMechanismInfo.data;
                 }
 
@@ -302,9 +302,9 @@ export const getBreakerEntity = async (id, psrId) => {
                 temperatureIds.push(entity.oldOperatingMechanismInfo.rated_operating_pressure_temperature)
 
                 const dataOperatingMechanismComponent = await getOperatingMechanismComponentByOperatingMechanismId(entity.oldOperatingMechanism.mrid);
-                if(dataOperatingMechanismComponent.success) {
+                if (dataOperatingMechanismComponent.success) {
                     entity.operatingMechanismComponent = dataOperatingMechanismComponent.data;
-                    for(const component of entity.operatingMechanismComponent) {
+                    for (const component of entity.operatingMechanismComponent) {
                         frequencyIds.push(component.rated_frequency)
                         voltageIds.push(component.rated_voltage)
                         currentFlowIds.push(component.rated_current)
@@ -312,19 +312,19 @@ export const getBreakerEntity = async (id, psrId) => {
                 }
 
                 const dataAssessmentLimitBreakerInfo = await getAssessmentLimitBreakerInfoByBreakerInfoId(entity.oldBreakerInfo.mrid);
-                if(dataAssessmentLimitBreakerInfo.success) {
+                if (dataAssessmentLimitBreakerInfo.success) {
                     entity.assessmentLimitBreakerInfo = dataAssessmentLimitBreakerInfo.data;
                 }
 
                 const dataAuxiliaryContactsBreakerInfo = await getAuxiliaryContactsBreakerInfoByAssessmentLimitId(entity.assessmentLimitBreakerInfo.mrid);
-                if(dataAuxiliaryContactsBreakerInfo.success) {
+                if (dataAuxiliaryContactsBreakerInfo.success) {
                     entity.auxiliaryContactsBreakerInfo = dataAuxiliaryContactsBreakerInfo.data;
                 }
 
                 const dataContactResistance = await getContactResistanceBreakerInfoByAssessmentLimitBreakerInfoId(entity.assessmentLimitBreakerInfo.mrid);
-                if(dataContactResistance.success) {
+                if (dataContactResistance.success) {
                     entity.contactResistanceBreakerInfo = dataContactResistance.data;
-                    for(const resistance of entity.contactResistanceBreakerInfo) {
+                    for (const resistance of entity.contactResistanceBreakerInfo) {
                         resistanceIds.push(resistance.r_min)
                         resistanceIds.push(resistance.r_max)
                         resistanceIds.push(resistance.r_ref)
@@ -333,9 +333,9 @@ export const getBreakerEntity = async (id, psrId) => {
                 }
 
                 const dataOperatingTime = await getOperatingTimeBreakerInfoByAssessmentLimitBreakerInfoId(entity.assessmentLimitBreakerInfo.mrid);
-                if(dataOperatingTime.success) {
+                if (dataOperatingTime.success) {
                     entity.operatingTimeBreakerInfo = dataOperatingTime.data;
-                    for(const time of entity.operatingTimeBreakerInfo) {
+                    for (const time of entity.operatingTimeBreakerInfo) {
                         secondIds.push(time.t_min)
                         secondIds.push(time.t_max)
                         secondIds.push(time.t_ref)
@@ -345,9 +345,9 @@ export const getBreakerEntity = async (id, psrId) => {
                 }
 
                 const dataContactTravel = await getContactTravelBreakerInfoByAssessmentLimitBreakerInfoId(entity.assessmentLimitBreakerInfo.mrid);
-                if(dataContactTravel.success) {
+                if (dataContactTravel.success) {
                     entity.contactTravelBreakerInfo = dataContactTravel.data;
-                    for(const travel of entity.contactTravelBreakerInfo) {
+                    for (const travel of entity.contactTravelBreakerInfo) {
                         lengthIds.push(travel.d_min)
                         lengthIds.push(travel.d_max)
                         lengthIds.push(travel.d_ref)
@@ -356,9 +356,9 @@ export const getBreakerEntity = async (id, psrId) => {
                 }
 
                 const dataTripOperation = await getTripOperationByAuxiliaryContactsId(entity.auxiliaryContactsBreakerInfo.mrid);
-                if(dataTripOperation.success) {
+                if (dataTripOperation.success) {
                     entity.tripOperation = dataTripOperation.data;
-                    for(const trip of entity.tripOperation) {
+                    for (const trip of entity.tripOperation) {
                         secondIds.push(trip.t_min)
                         secondIds.push(trip.t_max)
                         secondIds.push(trip.t_ref)
@@ -367,9 +367,9 @@ export const getBreakerEntity = async (id, psrId) => {
                 }
 
                 const dataCloseOperation = await getCloseOperationByAuxiliaryContactsId(entity.auxiliaryContactsBreakerInfo.mrid);
-                if(dataCloseOperation.success) {
+                if (dataCloseOperation.success) {
                     entity.closeOperation = dataCloseOperation.data;
-                    for(const close of entity.closeOperation) {
+                    for (const close of entity.closeOperation) {
                         secondIds.push(close.t_min)
                         secondIds.push(close.t_max)
                         secondIds.push(close.t_ref)
@@ -378,9 +378,9 @@ export const getBreakerEntity = async (id, psrId) => {
                 }
 
                 const dataMiscellaneous = await getMiscellaneousBreakerInfoByAssessmentLimitId(entity.assessmentLimitBreakerInfo.mrid);
-                if(dataMiscellaneous.success) {
+                if (dataMiscellaneous.success) {
                     entity.miscellaneousBreakerInfo = dataMiscellaneous.data;
-                    for(const misc of entity.miscellaneousBreakerInfo) {
+                    for (const misc of entity.miscellaneousBreakerInfo) {
                         quantityIds.push(misc.min)
                         quantityIds.push(misc.max)
                         quantityIds.push(misc.ref)
@@ -389,22 +389,22 @@ export const getBreakerEntity = async (id, psrId) => {
                 }
 
                 const dataCoilCharacteristics = await getCoilCharacteristicsBreakerInfoByAssessmentLimitId(entity.assessmentLimitBreakerInfo.mrid)
-                if(dataCoilCharacteristics.success) {
+                if (dataCoilCharacteristics.success) {
                     entity.coilCharacteristicsBreakerInfo = dataCoilCharacteristics.data;
-                    for(const coil of entity.coilCharacteristicsBreakerInfo) {
+                    for (const coil of entity.coilCharacteristicsBreakerInfo) {
                         quantityIds.push(coil.min)
                         quantityIds.push(coil.max)
                         quantityIds.push(coil.ref)
                         quantityIds.push(coil.dev_negative)
                         quantityIds.push(coil.dev_positive)
-                    
+
                     }
                 }
 
                 const dataPickupVoltage = await getPickupVoltageBreakerInfoByAssessmentLimitId(entity.assessmentLimitBreakerInfo.mrid)
-                if(dataPickupVoltage.success) {
+                if (dataPickupVoltage.success) {
                     entity.pickupVoltageBreakerInfo = dataPickupVoltage.data;
-                    for(const pickup of entity.pickupVoltageBreakerInfo) {
+                    for (const pickup of entity.pickupVoltageBreakerInfo) {
                         voltageIds.push(pickup.v_min)
                         voltageIds.push(pickup.v_max)
                         voltageIds.push(pickup.v_ref)
@@ -413,9 +413,9 @@ export const getBreakerEntity = async (id, psrId) => {
                 }
 
                 const dataMotorCharacteristics = await getMotorCharacteristicsBreakerInfoByAssessmentLimitId(entity.assessmentLimitBreakerInfo.mrid)
-                if(dataMotorCharacteristics.success) {
+                if (dataMotorCharacteristics.success) {
                     entity.motorCharacteristicsBreakerInfo = dataMotorCharacteristics.data;
-                    for(const motor of entity.motorCharacteristicsBreakerInfo) {
+                    for (const motor of entity.motorCharacteristicsBreakerInfo) {
                         quantityIds.push(motor.min)
                         quantityIds.push(motor.max)
                         quantityIds.push(motor.ref)
@@ -424,9 +424,9 @@ export const getBreakerEntity = async (id, psrId) => {
                 }
 
                 const dataUnderVoltageRelease = await getUnderVoltageReleaseBreakerInfoByAssessmentLimitId(entity.assessmentLimitBreakerInfo.mrid)
-                if(dataUnderVoltageRelease.success) {
+                if (dataUnderVoltageRelease.success) {
                     entity.underVoltageReleaseBreakerInfo = dataUnderVoltageRelease.data;
-                    for(const under of entity.underVoltageReleaseBreakerInfo) {
+                    for (const under of entity.underVoltageReleaseBreakerInfo) {
                         voltageIds.push(under.min)
                         voltageIds.push(under.max)
                         voltageIds.push(under.ref)
@@ -435,9 +435,9 @@ export const getBreakerEntity = async (id, psrId) => {
                 }
 
                 const dataOvercurrentRelease = await getOvercurrentReleaseBreakerInfoByAssessmentLimitId(entity.assessmentLimitBreakerInfo.mrid)
-                if(dataOvercurrentRelease.success) {
+                if (dataOvercurrentRelease.success) {
                     entity.overcurrentReleaseBreakerInfo = dataOvercurrentRelease.data;
-                    for(const over of entity.overcurrentReleaseBreakerInfo) {
+                    for (const over of entity.overcurrentReleaseBreakerInfo) {
                         currentFlowIds.push(over.min)
                         currentFlowIds.push(over.max)
                         currentFlowIds.push(over.ref)
@@ -446,67 +446,67 @@ export const getBreakerEntity = async (id, psrId) => {
                 }
 
                 const dataVoltage = await getVoltageByIds(voltageIds);
-                if(dataVoltage.success) {
+                if (dataVoltage.success) {
                     entity.voltage = dataVoltage.data;
                 }
 
                 const dataCurrentFlow = await getCurrentFlowByIds(currentFlowIds);
-                if(dataCurrentFlow.success) {
+                if (dataCurrentFlow.success) {
                     entity.currentFlow = dataCurrentFlow.data;
                 }
 
                 const dataSecond = await getSecondByIds(secondIds);
-                if(dataSecond.success) {
+                if (dataSecond.success) {
                     entity.second = dataSecond.data;
                 }
 
                 const dataResistance = await getResistanceByIds(resistanceIds);
-                if(dataResistance.success) {
+                if (dataResistance.success) {
                     entity.resistance = dataResistance.data;
                 }
 
                 const dataCapacitance = await getCapacitanceByIds(capacitanceIds);
-                if(dataCapacitance.success) {
+                if (dataCapacitance.success) {
                     entity.capacitance = dataCapacitance.data;
                 }
 
                 const dataActivePower = await getActivePowerByIds(activePowerIds);
-                if(dataActivePower.success) {
+                if (dataActivePower.success) {
                     entity.activePower = dataActivePower.data;
                 }
 
                 const dataLength = await getLengthByIds(lengthIds);
-                if(dataLength.success) {
+                if (dataLength.success) {
                     entity.length = dataLength.data;
                 }
 
                 const dataMass = await getMassByIds(massIds);
-                if(dataMass.success) {
+                if (dataMass.success) {
                     entity.mass = dataMass.data;
                 }
 
                 const dataVolume = await getVolumeByIds(volumeIds);
-                if(dataVolume.success) {
+                if (dataVolume.success) {
                     entity.volume = dataVolume.data;
                 }
 
                 const dataTemperature = await getTemperatureByIds(temperatureIds);
-                if(dataTemperature.success) {
+                if (dataTemperature.success) {
                     entity.temperature = dataTemperature.data;
                 }
 
                 const dataFrequency = await getFrequencyByIds(frequencyIds);
-                if(dataFrequency.success) {
+                if (dataFrequency.success) {
                     entity.frequency = dataFrequency.data;
                 }
 
                 const dataQuantity = await getQuantityValueByIds(quantityIds);
-                if(dataQuantity.success) {
+                if (dataQuantity.success) {
                     entity.quantity = dataQuantity.data;
                 }
 
                 const dataPressure = await getPressureByIds(pressureIds);
-                if(dataPressure.success) {
+                if (dataPressure.success) {
                     entity.pressure = dataPressure.data;
                 }
 
@@ -542,211 +542,211 @@ export const deleteBreakerEntity = async (entity) => {
             await deleteAssetPsrTransaction(entity.assetPsr.mrid, db);
         }
 
-        for(const data of entity.contactResistanceBreakerInfo) {
-            if(data.mrid) {
+        for (const data of entity.contactResistanceBreakerInfo) {
+            if (data.mrid) {
                 await deleteContactResistanceBreakerInfoTransaction(data.mrid, db);
             }
         }
 
-        for(const data of entity.operatingTimeBreakerInfo) {
-            if(data.mrid) {
+        for (const data of entity.operatingTimeBreakerInfo) {
+            if (data.mrid) {
                 await deleteOperatingTimeBreakerInfoTransaction(data.mrid, db);
             }
         }
 
-        for(const data of entity.contactTravelBreakerInfo) {
-            if(data.mrid) {
+        for (const data of entity.contactTravelBreakerInfo) {
+            if (data.mrid) {
                 await deleteContactTravelBreakerInfoTransaction(data.mrid, db);
             }
         }
 
-        for(const data of entity.tripOperation) {
-            if(data.mrid) {
+        for (const data of entity.tripOperation) {
+            if (data.mrid) {
                 await deleteTripOperationTransaction(data.mrid, db);
             }
         }
 
-        for(const data of entity.closeOperation) {
-            if(data.mrid) {
+        for (const data of entity.closeOperation) {
+            if (data.mrid) {
                 await deleteCloseOperationTransaction(data.mrid, db);
             }
         }
 
-        if(entity.auxiliaryContactsBreakerInfo && entity.auxiliaryContactsBreakerInfo.mrid) {
+        if (entity.auxiliaryContactsBreakerInfo && entity.auxiliaryContactsBreakerInfo.mrid) {
             await deleteAuxiliaryContactsBreakerInfoTransaction(entity.auxiliaryContactsBreakerInfo.mrid, db);
         }
 
-        for(const data of entity.miscellaneousBreakerInfo) {
-            if(data.mrid) {
+        for (const data of entity.miscellaneousBreakerInfo) {
+            if (data.mrid) {
                 await deleteMiscellaneousBreakerInfoTransaction(data.mrid, db);
             }
         }
 
-        for(const data of entity.coilCharacteristicsBreakerInfo) {
-            if(data.mrid) {
+        for (const data of entity.coilCharacteristicsBreakerInfo) {
+            if (data.mrid) {
                 await deleteCoilCharacteristicsBreakerInfoTransaction(data.mrid, db);
             }
         }
 
-        for(const data of entity.pickupVoltageBreakerInfo) {
-            if(data.mrid) {
+        for (const data of entity.pickupVoltageBreakerInfo) {
+            if (data.mrid) {
                 await deletePickupVoltageBreakerInfoTransaction(data.mrid, db);
             }
         }
 
-        for(const data of entity.motorCharacteristicsBreakerInfo) {
-            if(data.mrid) {
+        for (const data of entity.motorCharacteristicsBreakerInfo) {
+            if (data.mrid) {
                 await deleteMotorCharacteristicsBreakerInfoTransaction(data.mrid, db);
             }
         }
 
-        for(const data of entity.underVoltageReleaseBreakerInfo) {
-            if(data.mrid) {
+        for (const data of entity.underVoltageReleaseBreakerInfo) {
+            if (data.mrid) {
                 await deleteUnderVoltageReleaseBreakerInfoTransaction(data.mrid, db);
             }
         }
 
-        for(const data of entity.overcurrentReleaseBreakerInfo) {
-            if(data.mrid) {
+        for (const data of entity.overcurrentReleaseBreakerInfo) {
+            if (data.mrid) {
                 await deleteOvercurrentReleaseBreakerInfoTransaction(data.mrid, db);
             }
         }
 
-        if(entity.assessmentLimitBreakerInfo && entity.assessmentLimitBreakerInfo.mrid) {
+        if (entity.assessmentLimitBreakerInfo && entity.assessmentLimitBreakerInfo.mrid) {
             await deleteAssessmentLimitBreakerInfoTransaction(entity.assessmentLimitBreakerInfo.mrid, db);
         }
 
-        for(const data of entity.operatingMechanismComponent) {
-            if(data.mrid) {
+        for (const data of entity.operatingMechanismComponent) {
+            if (data.mrid) {
                 await deleteOperatingMechanismComponentTransaction(data.mrid, db)
             }
         }
 
-        if(entity.oldOperatingMechanism && entity.oldOperatingMechanism.mrid) {
+        if (entity.oldOperatingMechanism && entity.oldOperatingMechanism.mrid) {
             await deleteOldOperatingMechanismTransaction(entity.oldOperatingMechanism.mrid, db);
         }
 
-        if(entity.operatingLifecycleDate && entity.operatingLifecycleDate.mrid) {
+        if (entity.operatingLifecycleDate && entity.operatingLifecycleDate.mrid) {
             await deleteLifecycleDateByIdTransaction(entity.operatingLifecycleDate.mrid, db);
         }
 
-        if(entity.oldOperatingMechanismInfo && entity.oldOperatingMechanismInfo.mrid) {
+        if (entity.oldOperatingMechanismInfo && entity.oldOperatingMechanismInfo.mrid) {
             await deleteOldOperatingMechanismInfoTransaction(entity.oldOperatingMechanismInfo.mrid, db);
         }
 
-        if(entity.operatingProductAssetModel && entity.operatingProductAssetModel.mrid) {
+        if (entity.operatingProductAssetModel && entity.operatingProductAssetModel.mrid) {
             await deleteProductAssetModelByIdTransaction(entity.operatingProductAssetModel.mrid, db);
         }
 
-        if(entity.breakerOtherInfo && entity.breakerOtherInfo.mrid) {
+        if (entity.breakerOtherInfo && entity.breakerOtherInfo.mrid) {
             deleteBreakerOtherInfoTransaction(entity.breakerOtherInfo.mrid, db);
         }
 
-        if(entity.breakerContactSystemInfo && entity.breakerContactSystemInfo.mrid) {
+        if (entity.breakerContactSystemInfo && entity.breakerContactSystemInfo.mrid) {
             deleteBreakerContactSystemInfoTransaction(entity.breakerContactSystemInfo.mrid, db);
         }
 
-        if(entity.breakerRatingInfo && entity.breakerRatingInfo.mrid) {
+        if (entity.breakerRatingInfo && entity.breakerRatingInfo.mrid) {
             deleteBreakerRatingInfoTransaction(entity.breakerRatingInfo.mrid, db);
         }
 
-        if(entity.asset && entity.asset.mrid) {
+        if (entity.asset && entity.asset.mrid) {
             await deleteAssetByIdTransaction(entity.asset.mrid, db);
         }
 
-        if(entity.lifecycleDate && entity.lifecycleDate.mrid) {
+        if (entity.lifecycleDate && entity.lifecycleDate.mrid) {
             await deleteLifecycleDateByIdTransaction(entity.lifecycleDate.mrid, db);
         }
 
-        if(entity.oldBreakerInfo && entity.oldBreakerInfo.mrid) {
+        if (entity.oldBreakerInfo && entity.oldBreakerInfo.mrid) {
             await deleteOldBreakerInfoTransaction(entity.oldBreakerInfo.mrid, db);
         }
 
-        if(entity.productAssetModel && entity.productAssetModel.mrid) {
+        if (entity.productAssetModel && entity.productAssetModel.mrid) {
             await deleteProductAssetModelByIdTransaction(entity.productAssetModel.mrid, db);
         }
 
-        for(const data of entity.voltage) {
-            if(data.mrid) {
+        for (const data of entity.voltage) {
+            if (data.mrid) {
                 await deleteVoltageByIdTransaction(data.mrid, db);
             }
         }
 
-        for(const data of entity.currentFlow) {
-            if(data.mrid) {
+        for (const data of entity.currentFlow) {
+            if (data.mrid) {
                 await deleteCurrentFlowByIdTransaction(data.mrid, db);
             }
         }
 
-        for(const data of entity.second) {
-            if(data.mrid) {
+        for (const data of entity.second) {
+            if (data.mrid) {
                 await deleteSecondsByIdTransaction(data.mrid, db);
             }
         }
 
-        for(const data of entity.resistance) {
-            if(data.mrid) {
+        for (const data of entity.resistance) {
+            if (data.mrid) {
                 await deleteResistanceByIdTransaction(data.mrid, db);
             }
         }
 
-        for(const data of entity.capacitance) {
-            if(data.mrid) {
+        for (const data of entity.capacitance) {
+            if (data.mrid) {
                 await deleteCapacitanceByIdTransaction(data.mrid, db);
             }
         }
 
-        for(const data of entity.activePower) {
-            if(data.mrid) {
+        for (const data of entity.activePower) {
+            if (data.mrid) {
                 await deleteActivePowerByIdTransaction(data.mrid, db);
             }
         }
 
-        for(const data of entity.length) {
-            if(data.mrid) {
+        for (const data of entity.length) {
+            if (data.mrid) {
                 await deleteLengthByIdTransaction(data.mrid, db);
             }
         }
 
-        for(const data of entity.mass) {
-            if(data.mrid) {
+        for (const data of entity.mass) {
+            if (data.mrid) {
                 await deleteMassByIdTransaction(data.mrid, db);
             }
         }
 
-        for(const data of entity.volume) {
-            if(data.mrid) {
+        for (const data of entity.volume) {
+            if (data.mrid) {
                 await deleteVolumeByIdTransaction(data.mrid, db);
             }
         }
 
-        for(const data of entity.temperature) {
-            if(data.mrid) {
+        for (const data of entity.temperature) {
+            if (data.mrid) {
                 await deleteTemperatureByIdTransaction(data.mrid, db);
             }
         }
 
-        for(const data of entity.frequency) {
-            if(data.mrid) {
+        for (const data of entity.frequency) {
+            if (data.mrid) {
                 await deleteFrequencyByIdTransaction(data.mrid, db);
             }
         }
 
-        for(const data of entity.quantity) {
-            if(data.mrid) {
+        for (const data of entity.quantity) {
+            if (data.mrid) {
                 await deleteQuantityValueTransaction(data.mrid, db);
             }
         }
 
-        for(const data of entity.pressure) {
-            if(data.mrid) {
+        for (const data of entity.pressure) {
+            if (data.mrid) {
                 await deletePressureByIdTransaction(data.mrid, db);
             }
         }
 
         await runAsync('COMMIT');
         return { success: true, message: 'Breaker entity deleted successfully' };
-        
+
     } catch (error) {
         await runAsync('ROLLBACK');
         console.error('Error deleting Breaker entity:', error);
@@ -755,117 +755,117 @@ export const deleteBreakerEntity = async (entity) => {
 }
 
 const insertUnit = async (unit, data, dbsql) => {
-    if(unit == 'voltage') {
+    if (unit == 'voltage') {
         await insertVoltageTransaction(data, dbsql);
-    } else if(unit == 'currentFlow') {
+    } else if (unit == 'currentFlow') {
         await insertCurrentFlowTransaction(data, dbsql);
-    } else if(unit == 'second') {
+    } else if (unit == 'second') {
         await insertSecondsTransaction(data, dbsql);
-    } else if(unit == 'activePower') {
+    } else if (unit == 'activePower') {
         await insertActivePowerTransaction(data, dbsql);
-    } else if(unit == 'length') {
+    } else if (unit == 'length') {
         await insertLengthTransaction(data, dbsql);
-    } else if(unit == 'mass') {
+    } else if (unit == 'mass') {
         await insertMassTransaction(data, dbsql);
-    } else if(unit == 'volume') {
+    } else if (unit == 'volume') {
         await insertVolumeTransaction(data, dbsql);
-    } else if(unit == 'temperature') {
+    } else if (unit == 'temperature') {
         await insertTemperatureTransaction(data, dbsql);
-    } else if(unit == 'frequency') {
+    } else if (unit == 'frequency') {
         await insertFrequencyTransaction(data, dbsql);
-    } else if(unit == 'quantity') {
+    } else if (unit == 'quantity') {
         await insertQuantityValueTransaction(data, dbsql);
-    } else if(unit == 'pressure') {
+    } else if (unit == 'pressure') {
         await insertPressureTransaction(data, dbsql);
-    } else if(unit == 'resistance') {
+    } else if (unit == 'resistance') {
         await insertResistanceTransaction(data, dbsql);
-    } else if(unit == 'capacitance') {
+    } else if (unit == 'capacitance') {
         await insertCapacitanceTransaction(data, dbsql);
     }
 }
 
 const deleteUnit = async (unit, data, dbsql) => {
-    if(unit == 'voltage') {
+    if (unit == 'voltage') {
         await deleteVoltageByIdTransaction(data, dbsql);
-    } else if(unit == 'currentFlow') {
+    } else if (unit == 'currentFlow') {
         await deleteCurrentFlowByIdTransaction(data, dbsql);
-    } else if(unit == 'second') {
+    } else if (unit == 'second') {
         await deleteSecondsByIdTransaction(data, dbsql);
-    } else if(unit == 'activePower') {
+    } else if (unit == 'activePower') {
         await deleteActivePowerByIdTransaction(data, dbsql);
-    } else if(unit == 'length') {
+    } else if (unit == 'length') {
         await deleteLengthByIdTransaction(data, dbsql);
-    } else if(unit == 'mass') {
+    } else if (unit == 'mass') {
         await deleteMassByIdTransaction(data, dbsql);
-    } else if(unit == 'volume') {
+    } else if (unit == 'volume') {
         await deleteVolumeByIdTransaction(data, dbsql);
-    } else if(unit == 'temperature') {
+    } else if (unit == 'temperature') {
         await deleteTemperatureByIdTransaction(data, dbsql);
-    } else if(unit == 'frequency') {
+    } else if (unit == 'frequency') {
         await deleteFrequencyByIdTransaction(data, dbsql);
-    } else if(unit == 'quantity') {
+    } else if (unit == 'quantity') {
         await deleteQuantityValueTransaction(data, dbsql);
-    } else if(unit == 'pressure') {
+    } else if (unit == 'pressure') {
         await deletePressureByIdTransaction(data, dbsql);
-    } else if(unit == 'resistance') {
+    } else if (unit == 'resistance') {
         await deleteResistanceByIdTransaction(data, dbsql);
-    } else if(unit == 'capacitance') {
+    } else if (unit == 'capacitance') {
         await deleteCapacitanceByIdTransaction(data, dbsql);
     }
 }
 
 const insertTable = async (table, data, dbsql) => {
-    if(table == 'operatingMechanismComponent') {
+    if (table == 'operatingMechanismComponent') {
         await insertOperatingMechanismComponentTransaction(data, dbsql);
-    }else if(table == 'contactResistanceBreakerInfo') {
+    } else if (table == 'contactResistanceBreakerInfo') {
         await insertContactResistanceBreakerInfoTransaction(data, dbsql);
-    }else if(table == 'operatingTimeBreakerInfo') {
+    } else if (table == 'operatingTimeBreakerInfo') {
         await insertOperatingTimeBreakerInfoTransaction(data, dbsql);
-    }else if(table == 'contactTravelBreakerInfo') {
+    } else if (table == 'contactTravelBreakerInfo') {
         await insertContactTravelBreakerInfoTransaction(data, dbsql);
-    }else if(table == 'tripOperation') {
+    } else if (table == 'tripOperation') {
         await insertTripOperationTransaction(data, dbsql);
-    }else if(table == 'closeOperation') {
+    } else if (table == 'closeOperation') {
         await insertCloseOperationTransaction(data, dbsql);
-    }else if(table == 'miscellaneousBreakerInfo') {
+    } else if (table == 'miscellaneousBreakerInfo') {
         await insertMiscellaneousBreakerInfoTransaction(data, dbsql);
-    }else if(table == 'coilCharacteristicsBreakerInfo') {
+    } else if (table == 'coilCharacteristicsBreakerInfo') {
         await insertCoilCharacteristicsBreakerInfoTransaction(data, dbsql);
-    }else if(table == 'pickupVoltageBreakerInfo') {
+    } else if (table == 'pickupVoltageBreakerInfo') {
         await insertPickupVoltageBreakerInfoTransaction(data, dbsql);
-    }else if(table == 'motorCharacteristicsBreakerInfo') {
+    } else if (table == 'motorCharacteristicsBreakerInfo') {
         await insertMotorCharacteristicsBreakerInfoTransaction(data, dbsql);
-    }else if(table == 'underVoltageReleaseBreakerInfo') {
+    } else if (table == 'underVoltageReleaseBreakerInfo') {
         await insertUnderVoltageReleaseBreakerInfoTransaction(data, dbsql);
-    }else if(table == 'overcurrentReleaseBreakerInfo') {
+    } else if (table == 'overcurrentReleaseBreakerInfo') {
         await insertOvercurrentReleaseBreakerInfoTransaction(data, dbsql);
     }
 }
 
 const deleteTable = async (table, data, dbsql) => {
-    if(table == 'operatingMechanismComponent') {
+    if (table == 'operatingMechanismComponent') {
         await deleteOperatingMechanismComponentTransaction(data, dbsql);
-    } else if(table == 'contactResistanceBreakerInfo') {
+    } else if (table == 'contactResistanceBreakerInfo') {
         await deleteContactResistanceBreakerInfoTransaction(data, dbsql);
-    } else if(table == 'operatingTimeBreakerInfo') {
+    } else if (table == 'operatingTimeBreakerInfo') {
         await deleteOperatingTimeBreakerInfoTransaction(data, dbsql);
-    } else if(table == 'contactTravelBreakerInfo') {
+    } else if (table == 'contactTravelBreakerInfo') {
         await deleteContactTravelBreakerInfoTransaction(data, dbsql);
-    } else if(table == 'tripOperation') {
+    } else if (table == 'tripOperation') {
         await deleteTripOperationTransaction(data, dbsql);
-    } else if(table == 'closeOperation') {
+    } else if (table == 'closeOperation') {
         await deleteCloseOperationTransaction(data, dbsql);
-    } else if(table == 'miscellaneousBreakerInfo') {
+    } else if (table == 'miscellaneousBreakerInfo') {
         await deleteMiscellaneousBreakerInfoTransaction(data, dbsql);
-    } else if(table == 'coilCharacteristicsBreakerInfo') {
+    } else if (table == 'coilCharacteristicsBreakerInfo') {
         await deleteCoilCharacteristicsBreakerInfoTransaction(data, dbsql);
-    } else if(table == 'pickupVoltageBreakerInfo') {
+    } else if (table == 'pickupVoltageBreakerInfo') {
         await deletePickupVoltageBreakerInfoTransaction(data, dbsql);
-    } else if(table == 'motorCharacteristicsBreakerInfo') {
+    } else if (table == 'motorCharacteristicsBreakerInfo') {
         await deleteMotorCharacteristicsBreakerInfoTransaction(data, dbsql);
-    } else if(table == 'underVoltageReleaseBreakerInfo') {
+    } else if (table == 'underVoltageReleaseBreakerInfo') {
         await deleteUnderVoltageReleaseBreakerInfoTransaction(data, dbsql);
-    } else if(table == 'overcurrentReleaseBreakerInfo') {
+    } else if (table == 'overcurrentReleaseBreakerInfo') {
         await deleteOvercurrentReleaseBreakerInfoTransaction(data, dbsql);
     }
 }

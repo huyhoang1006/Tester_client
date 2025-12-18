@@ -66,7 +66,11 @@ export default {
         return {
             title : 'Circuit breaker',
             switch : 'circuitBreaker',
-            parentData : JSON.parse(JSON.stringify(this.parent)),
+        }
+    },
+    computed: {
+        parentData() {
+            return this.parent
         }
     },
     mixins : [mixin],    

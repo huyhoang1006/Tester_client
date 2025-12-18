@@ -133,19 +133,17 @@ class PowerCableDTO {
 
       jointsData: {
         mrid: '',
-        cable_info_id: { mrid: '', value: '', unit: 'string' },
         rated_u: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.V },
-        rated_current: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.A },
+        rated_current: { mrid: '', value: '', unit: UnitSymbol.A },
         category: { mrid: '', value: '', unit: 'string' },
         construction: { mrid: '', value: '', unit: 'string' },
         service_condition: { mrid: '', value: '', unit: 'string' },
       },
       terminalsData: {
         mrid: '',
-        cable_info_id: { mrid: '', value: '', unit: 'string' },
         rated_u: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.V },
         bil: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.V },
-        bsl: { mrid: '', value: '', unit: UnitSymbol.Hz },
+        bsl: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.V },
         type: { mrid: '', value: '', unit: 'string' },
         connector_type: { mrid: '', value: '', unit: 'string' },
         service_condition: { mrid: '', value: '', unit: 'string' },
@@ -153,10 +151,9 @@ class PowerCableDTO {
       },
       sheathLimitsData: {
         mrid: '',
-        cable_info_id: { mrid: '', value: '', unit: 'string' },
         rated_voltage_ur: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.V },
         max_continuous_operating_voltage: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.V },
-        nominal_discharge_current: { mrid: '', value: '', unit: UnitSymbol.Hz },
+        nominal_discharge_current: { mrid: '', value: '', unit: UnitSymbol.A },
         high_current_impulse_withstand: { mrid: '', value: '', unit: 'string' },
         long_duration_current_impulse_withstand: { mrid: '', value: '', unit: 'string' },
         short_circuit_withstand: { mrid: '', value: '', unit: 'string' },

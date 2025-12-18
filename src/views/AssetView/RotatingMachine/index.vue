@@ -28,7 +28,11 @@ export default {
     data() {
         return {
             title : 'RotatingMachine',
-            parentData : JSON.parse(JSON.stringify(this.parent)),
+        }
+    },
+    computed: {
+        parentData() {
+            return this.parent
         }
     },
     mixins : [mixin],

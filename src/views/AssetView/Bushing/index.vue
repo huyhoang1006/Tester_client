@@ -16,9 +16,9 @@ export default {
         properties,
         bushing
     },
-    data() {
-        return {
-            parentData : JSON.parse(JSON.stringify(this.parent)),
+    computed: {
+        parentData() {
+            return this.parent
         }
     },
     mixins: [mixin],

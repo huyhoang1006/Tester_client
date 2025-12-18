@@ -95,7 +95,11 @@ export default {
         return {
             title : 'transformer',
             switch : 'Transformer',
-            parentData : JSON.parse(JSON.stringify(this.parent)),
+        }
+    },
+    computed: {
+        parentData() {
+            return this.parent
         }
     },
     methods: {

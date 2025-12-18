@@ -5,15 +5,15 @@ import * as Mapping from '@/views/Mapping/SurgeArrester/index.js';
 export default {
     data() {
         return {
-            attachmentData : [],
+            attachmentData: [],
             surge_arrester_data: new SurgeArresterDto(),
             surge_arrester_data_old: new SurgeArresterDto(),
         }
     },
-    methods : {
+    methods: {
         async saveAsset() {
             try {
-                if(this.surge_arrester_data.properties.serial_no !== null && this.surge_arrester_data.properties.serial_no !== '') {
+                if (this.surge_arrester_data.properties.serial_no !== null && this.surge_arrester_data.properties.serial_no !== '') {
                     const data = JSON.parse(JSON.stringify(this.surge_arrester_data));
                     const result = this.checkSurgeArresterData(data);
                     console.log(result)
@@ -21,7 +21,7 @@ export default {
                     const resultEntity = Mapping.mapDtoToEntity(result);
                     const oldResultEntity = Mapping.mapDtoToEntity(oldResult);
                     let rs = await window.electronAPI.insertSurgeArresterEntity(oldResultEntity, resultEntity)
-                    if(rs.success) {
+                    if (rs.success) {
                         return {
                             success: true,
                             data: rs.data,
@@ -50,7 +50,7 @@ export default {
 
         async saveCtrS() {
             const data = await this.saveAsset()
-            if(data.success) {
+            if (data.success) {
                 this.$message.success("Asset saved successfully")
             } else {
                 this.$message.error("Failed to save asset")
@@ -65,7 +65,7 @@ export default {
         loadData(data) {
             this.surge_arrester_data_old = JSON.parse(JSON.stringify(data));
             this.surge_arrester_data = data;
-            if(data.attachment && data.attachment.path) {
+            if (data.attachment && data.attachment.path) {
                 this.attachmentData = JSON.parse(data.attachment.path)
             } else {
                 this.attachmentData = []
@@ -89,43 +89,43 @@ export default {
         },
 
         checkProperty(data) {
-            if(data.properties.mrid == null || data.properties.mrid == '') {
+            if (data.properties.mrid == null || data.properties.mrid == '') {
                 data.properties.mrid = uuid.newUuid();
             }
         },
 
         checkLifecycleDate(data) {
-            if(data.lifecycleDateId == null || data.lifecycleDateId == '') {
+            if (data.lifecycleDateId == null || data.lifecycleDateId == '') {
                 data.lifecycleDateId = uuid.newUuid();
             }
         },
 
         checkPsrId(data) {
-            if(this.parentData.mrid !== null && this.parentData.mrid !== '' && this.parentData.mrid !== undefined) {
+            if (this.parentData.mrid !== null && this.parentData.mrid !== '' && this.parentData.mrid !== undefined) {
                 data.psrId = this.parentData.mrid
             }
         },
 
         checkProductAssetModel(data) {
-            if(data.productAssetModelId === null || data.productAssetModelId === '') {
+            if (data.productAssetModelId === null || data.productAssetModelId === '') {
                 data.productAssetModelId = uuid.newUuid()
             }
         },
 
         checkAssetPrs(data) {
-            if(data.assetPsrId === null || data.assetPsrId === '') {
+            if (data.assetPsrId === null || data.assetPsrId === '') {
                 data.assetPsrId = uuid.newUuid();
             }
         },
 
         checkProductAssetModelId(data) {
-            if(data.productAssetModelId === null || data.productAssetModelId === '') {
+            if (data.productAssetModelId === null || data.productAssetModelId === '') {
                 data.productAssetModelId = uuid.newUuid();
             }
         },
 
         checkAttachment(data) {
-            if(data.attachmentId === null || data.attachmentId === '') {
+            if (data.attachmentId === null || data.attachmentId === '') {
                 if (this.attachmentData.length > 0) {
                     data.attachmentId = uuid.newUuid()
                     data.attachment.id = data.attachmentId
@@ -140,36 +140,36 @@ export default {
         },
 
         checkTableRating(data) {
-            for(let i = 0; i < data.ratings.tableRating.length; i++) {
-                if(data.ratings.tableRating[i].mrid === null || data.ratings.tableRating[i].mrid === '') {
+            for (let i = 0; i < data.ratings.tableRating.length; i++) {
+                if (data.ratings.tableRating[i].mrid === null || data.ratings.tableRating[i].mrid === '') {
                     data.ratings.tableRating[i].mrid = uuid.newUuid();
                 }
-                if(data.ratings.tableRating[i].continousVoltage.mrid === null || data.ratings.tableRating[i].continousVoltage.mrid === '') {
+                if (data.ratings.tableRating[i].continousVoltage.mrid === null || data.ratings.tableRating[i].continousVoltage.mrid === '') {
                     data.ratings.tableRating[i].continousVoltage.mrid = uuid.newUuid();
                 }
-                if(data.ratings.tableRating[i].isoVoltage.mrid === null || data.ratings.tableRating[i].isoVoltage.mrid === '') {
+                if (data.ratings.tableRating[i].isoVoltage.mrid === null || data.ratings.tableRating[i].isoVoltage.mrid === '') {
                     data.ratings.tableRating[i].isoVoltage.mrid = uuid.newUuid();
                 }
-                if(data.ratings.tableRating[i].maximumVoltage.mrid === null || data.ratings.tableRating[i].maximumVoltage.mrid === '') {
+                if (data.ratings.tableRating[i].maximumVoltage.mrid === null || data.ratings.tableRating[i].maximumVoltage.mrid === '') {
                     data.ratings.tableRating[i].maximumVoltage.mrid = uuid.newUuid();
                 }
-                if(data.ratings.tableRating[i].polesVoltage.mrid === null || data.ratings.tableRating[i].polesVoltage.mrid === '') {
+                if (data.ratings.tableRating[i].polesVoltage.mrid === null || data.ratings.tableRating[i].polesVoltage.mrid === '') {
                     data.ratings.tableRating[i].polesVoltage.mrid = uuid.newUuid();
                 }
-                if(data.ratings.tableRating[i].ratedCircuit.mrid === null || data.ratings.tableRating[i].ratedCircuit.mrid === '') {
+                if (data.ratings.tableRating[i].ratedCircuit.mrid === null || data.ratings.tableRating[i].ratedCircuit.mrid === '') {
                     data.ratings.tableRating[i].ratedCircuit.mrid = uuid.newUuid();
                 }
-                if(data.ratings.tableRating[i].ratedVoltage.mrid === null || data.ratings.tableRating[i].ratedVoltage.mrid === '') {
+                if (data.ratings.tableRating[i].ratedVoltage.mrid === null || data.ratings.tableRating[i].ratedVoltage.mrid === '') {
                     data.ratings.tableRating[i].ratedVoltage.mrid = uuid.newUuid();
                 }
-                if(data.ratings.tableRating[i].shortCurrent.mrid === null || data.ratings.tableRating[i].shortCurrent.mrid === '') {
+                if (data.ratings.tableRating[i].shortCurrent.mrid === null || data.ratings.tableRating[i].shortCurrent.mrid === '') {
                     data.ratings.tableRating[i].shortCurrent.mrid = uuid.newUuid();
                 }
             }
         },
 
         checkLocationId(data) {
-            if(data.locationId === null || data.locationId === '') {
+            if (data.locationId === null || data.locationId === '') {
                 data.locationId = this.locationId;
             }
         }
