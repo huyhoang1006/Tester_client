@@ -53,8 +53,6 @@ const breakerEntityAPI = entityPreload.breakerEntityPreload.breakerEntityPreload
 const reactorEntityAPI = entityPreload.reactorEntityPreload.reactorEntityPreload()
 const assetPsrAPI = entityPreload.assetPsrPreload.assetPsrPreload()
 
-
-
 const ipcMain = Object.assign(userAPI, attachmentAPI, exportAPI, importAPI, uploadCustomAPI, surgeArresterAPI,
     parentOrganizationAPI, substationAPI, locationAPI, streetAddressAPI, streetDetailAPI, townDetailAPI,
     electronicAddressAPI, personAPI, personRoleAPI, telephoneNumberAPI, configurationEventAPI, substationEntityAPI, parentOrganizationEntityAPI,

@@ -1062,7 +1062,7 @@ export default {
             moveTreeProps: {
             children: 'children',
             label: 'name',
-            disabled: 'disabled' // Thuộc tính để chặn click vào node không hợp lệ
+            disabled: 'disabled'
         },
             properties: {
                 region: '',
@@ -1443,7 +1443,7 @@ export default {
             }
         },
         async handleImportJSONCIMFromContext(node) {
-            this.$message.info('Import JSON by CIM feature is coming soon')
+            this.$message.info('Import JSON by CIM ')
         },
         // Export một node duy nhất từ context menu (không dùng selectedNodes)
         async exportSingleNodeToJSON(node, type) {
