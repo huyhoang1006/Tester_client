@@ -39,7 +39,11 @@ export default {
     data() {
         return {
             title : 'capacitor',
-            parentData : JSON.parse(JSON.stringify(this.parent)),
+        }
+    },
+    computed: {
+        parentData() {
+            return this.parent
         }
     },
     mixins : [mixin],

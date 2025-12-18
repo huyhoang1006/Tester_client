@@ -869,10 +869,10 @@
                 <el-button size="small" type="primary" @click="handleFmecaConfirm">Save</el-button>
             </span>
         </el-dialog>
-        <el-dialog title="Move Node" :visible.sync="moveDialogVisible" width="500px" @close="handleMoveCancel">
+        <el-dialog title="Move Node" :visible.sync="moveDialogVisible" width="450px" @close="handleMoveCancel" custom-class="move-dialog" >
     <div style="height: 400px; overflow-y: auto;" >
-        <div class="child-nav" style="height: 100%;">
-            <ul>
+        <div class="child-nav" style="height: 100%; cursor: pointer;">
+            <ul style="list-style: none; padding-left: 0;">
                 <TreeNode 
                     v-for="item in moveTreeData" 
                     :key="item.mrid" 
@@ -3777,6 +3777,30 @@ export default {
                                 } else {
                                     this.$message.warning("Parent node not found in tree");
                                 }
+                            } else if (node.asset === 'Bushing') {
+                                const entity = await window.electronAPI.getBushingEntityByMrid(node.mrid, node.parentId);
+                                if (!entity.success) {
+                                    this.$message.error("Entity not found");
+                                    return;
+                                }
+                                const deleteSign = await window.electronAPI.deleteBushingEntity(entity.data);
+                                if (!deleteSign.success) {
+                                    this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
+                                    return;
+                                }
+                                // ✅ Xóa node khỏi cây organisationClientList
+                                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
+                                if (parentNode && Array.isArray(parentNode.children)) {
+                                    const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
+                                    if (index !== -1) {
+                                        parentNode.children.splice(index, 1); // Xóa khỏi mảng children
+                                        this.$message.success("Delete data successfully");
+                                    } else {
+                                        this.$message.warning("Node not found in tree structure");
+                                    }
+                                } else {
+                                    this.$message.warning("Parent node not found in tree");
+                                }
                             } else if (node.asset === 'Circuit breaker') {
                                 const entity = await window.electronAPI.getBreakerEntityByMrid(node.mrid, node.parentId);
                                 if (!entity.success) {
@@ -4706,6 +4730,10 @@ cleanDtoForDuplicate(dto) {
             if (dto.othersData) clearRecursive(dto.othersData);
             if (dto.ratingsData) clearRecursive(dto.ratingsData);
             if (dto.configsData) clearRecursive(dto.configsData);
+            if (dto.ctConfiguration) clearRecursive(dto.ctConfiguration); 
+            if (dto.vt_Configuration) clearRecursive(dto.vt_Configuration);
+            if (dto.capacitance) clearRecursive(dto.capacitance);
+            if (dto.dissipationFactor) clearRecursive(dto.dissipationFactor);
             // Reactor specific: reactorRating (includes inductance), reactorOther
             if (dto.reactorRating) clearRecursive(dto.reactorRating);
             if (dto.reactorOther) clearRecursive(dto.reactorOther);
@@ -4902,6 +4930,14 @@ cleanDtoForDuplicate(dto) {
         if (dto.othersData) generateMridForNestedObject(dto.othersData);
         if (dto.datasData) generateMridForNestedObject(dto.datasData);
         if (dto.configsData) generateMridForNestedObject(dto.configsData);
+
+        if (dto.ctConfiguration) generateMridForNestedObject(dto.ctConfiguration);
+
+        if (dto.vt_Configuration) generateMridForNestedObject(dto.vt_Configuration);
+
+        if (dto.capacitance) generateMridForNestedObject(dto.capacitance);
+        if (dto.dissipationFactor) generateMridForNestedObject(dto.dissipationFactor);
+        
         if (dto.reactorRating) generateMridForNestedObject(dto.reactorRating);
         if (dto.reactorOther) generateMridForNestedObject(dto.reactorOther);
 
@@ -5534,11 +5570,19 @@ async fetchChildrenForMove(node) {
         this.$message.warning("Node is already in this location");
         return;
     }
+    let sourceName = nodeToMove.name;
+        // Nếu name rỗng hoặc null, thử lấy serial_number hoặc serial_no
+        if (!sourceName || sourceName.toString().trim() === '') {
+            sourceName = nodeToMove.serial_number || nodeToMove.serial_no;
+        }
+        // Nếu vẫn không có, hiển thị giá trị mặc định
+        sourceName = sourceName || 'Unknown Item';
 
-    this.$confirm(`Move "${nodeToMove.name || nodeToMove.serial_no}" to "${newParent.name}"?`, 'Confirm Move', {
-        confirmButtonText: 'Move',
-        cancelButtonText: 'Cancel',
-        type: 'warning'
+        let targetName = newParent.name || 'Unknown Location';
+        this.$confirm(`Move "${sourceName}" to "${targetName}"?`, 'Confirm Move', {
+            confirmButtonText: 'Move',
+            cancelButtonText: 'Cancel',
+            type: 'warning'
     }).then(async () => {
         try {
             let success = false;
@@ -5681,6 +5725,10 @@ async fetchChildrenForMove(node) {
         } catch (error) {
             console.error(error);
             this.$message.error("Error: " + error.message);
+        }
+    }).catch((err) => { 
+        if (err !== 'cancel') {
+            console.error("Move confirmation error:", err);
         }
     });
 },
@@ -6272,6 +6320,10 @@ body.duplicating-mode .v-modal {
     opacity: 0 !important;
     pointer-events: none !important;
     transition: none !important;
+}
+
+.move-dialog .el-dialog__body {
+  padding-top: 0;
 }
 
 /* Ẩn tất cả backdrop ngay khi duplicate */

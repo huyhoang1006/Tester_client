@@ -4,10 +4,11 @@ import * as Mapping from "@/views/Mapping/Disconnector"
 export default {
     data() {
         return {
-            disconnector : new DisconnectorDTO,
-            attachmentData : []
+            disconnector: new DisconnectorDTO,
+            attachmentData: []
         }
     },
+
     async beforeMount() {
         try {
             const mode = this.$route && this.$route.query ? this.$route.query.mode : null
@@ -36,12 +37,12 @@ export default {
             console.error('Failed to load disconnector for edit:', e)
         }
     },
-    methods : {
+    methods: {
         async deleteAsset() {
             try {
                 const assetMrid = this.disconnector && this.disconnector.properties && this.disconnector.properties.mrid
                 const psrId = this.parentData && this.parentData.mrid ? this.parentData.mrid : null
-                if(!assetMrid) {
+                if (!assetMrid) {
                     this.$message.error('Không tìm thấy MRID của asset để xóa')
                     return { success: false }
                 }
@@ -54,13 +55,13 @@ export default {
 
                 // Lấy entity đầy đủ theo MRID để xóa theo đúng quan hệ
                 const entityRs = await window.electronAPI.getDisconnectorEntityByMrid(assetMrid, psrId)
-                if(!entityRs || !entityRs.success || !entityRs.data) {
+                if (!entityRs || !entityRs.success || !entityRs.data) {
                     this.$message.error('Không lấy được dữ liệu entity để xóa')
                     return { success: false }
                 }
 
                 const rt = await window.electronAPI.deleteDisconnectorEntity(entityRs.data)
-                if(rt && rt.success) {
+                if (rt && rt.success) {
                     this.$message.success('Đã xóa Disconnector')
                     // Optional: điều hướng về danh sách hoặc đóng tab hiện tại
                     if (this.$router) {
@@ -81,12 +82,12 @@ export default {
         },
         async saveAsset() {
             try {
-                if(this.disconnector.properties.serial_no !== null && this.disconnector.properties.serial_no !== '') {
+                if (this.disconnector.properties.serial_no !== null && this.disconnector.properties.serial_no !== '') {
                     const data = JSON.parse(JSON.stringify(this.disconnector));
                     const result = this.checkDisconnectorData(data);
                     const resultEntity = Mapping.disconnectorDtoToEntity(result);
                     let rs = await window.electronAPI.insertDisconnectorEntity(resultEntity)
-                    if(rs.success) {
+                    if (rs.success) {
                         return {
                             success: true,
                             data: rs.data,
@@ -135,7 +136,7 @@ export default {
 
         loadData(data) {
             this.disconnector = data;
-            if(data.attachment && data.attachment.path) {
+            if (data.attachment && data.attachment.path) {
                 this.attachmentData = JSON.parse(data.attachment.path)
             } else {
                 this.attachmentData = []
@@ -159,42 +160,42 @@ export default {
         },
 
         checkProperty(data) {
-            if(data.properties.mrid == null || data.properties.mrid == '') {
+            if (data.properties.mrid == null || data.properties.mrid == '') {
                 data.properties.mrid = uuid.newUuid();
             }
         },
         checkLifecycleDate(data) {
-            if(data.lifecycleDateId == null || data.lifecycleDateId == '') {
+            if (data.lifecycleDateId == null || data.lifecycleDateId == '') {
                 data.lifecycleDateId = uuid.newUuid();
             }
         },
 
         checkPsrId(data) {
-            if(this.parentData.mrid !== null && this.parentData.mrid !== '' && this.parentData.mrid !== undefined) {
+            if (this.parentData.mrid !== null && this.parentData.mrid !== '' && this.parentData.mrid !== undefined) {
                 data.psrId = this.parentData.mrid
             }
         },
 
         checkProductAssetModel(data) {
-            if(data.productAssetModelId === null || data.productAssetModelId === '') {
+            if (data.productAssetModelId === null || data.productAssetModelId === '') {
                 data.productAssetModelId = uuid.newUuid()
             }
         },
 
         checkAssetPrs(data) {
-            if(data.assetPsrId === null || data.assetPsrId === '') {
+            if (data.assetPsrId === null || data.assetPsrId === '') {
                 data.assetPsrId = uuid.newUuid();
             }
         },
 
         checkProductAssetModelId(data) {
-            if(data.productAssetModelId === null || data.productAssetModelId === '') {
+            if (data.productAssetModelId === null || data.productAssetModelId === '') {
                 data.productAssetModelId = uuid.newUuid();
             }
         },
 
         checkAttachment(data) {
-            if(data.attachmentId === null || data.attachmentId === '') {
+            if (data.attachmentId === null || data.attachmentId === '') {
                 if (this.attachmentData.length > 0) {
                     data.attachmentId = uuid.newUuid()
                     data.attachment.id = data.attachmentId
@@ -203,17 +204,17 @@ export default {
                     data.attachment.type = 'asset'
                     data.attachment.id_foreign = data.properties.mrid
                 }
-            } 
+            }
         },
 
         checkLocationId(data) {
-            if(data.locationId === null || data.locationId === '') {
+            if (data.locationId === null || data.locationId === '') {
                 data.locationId = this.locationId;
             }
         },
 
         checkAssetInfoId(data) {
-            if(data.assetInfoId === null || data.assetInfoId === '') {
+            if (data.assetInfoId === null || data.assetInfoId === '') {
                 data.assetInfoId = uuid.newUuid()
             }
         }

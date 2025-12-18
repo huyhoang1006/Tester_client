@@ -5,19 +5,19 @@ import * as Mapping from '@/views/Mapping/Bushing/index'
 export default {
     data() {
         return {
-            attachmentData : [],
+            attachmentData: [],
             bushing_data: new BushingAssetDto(),
         }
     },
     methods: {
         async saveAsset() {
             try {
-                if(this.bushing_data.properties.serial_no !== null && this.bushing_data.properties.serial_no !== '') {
+                if (this.bushing_data.properties.serial_no !== null && this.bushing_data.properties.serial_no !== '') {
                     const data = JSON.parse(JSON.stringify(this.bushing_data));
                     const result = this.checkBushingData(data);
                     const resultEntity = Mapping.mapDtoToEntity(result);
                     let rs = await window.electronAPI.insertBushingEntity(resultEntity)
-                    if(rs.success) {
+                    if (rs.success) {
                         return {
                             success: true,
                             data: rs.data,
@@ -46,7 +46,7 @@ export default {
 
         async saveCtrS() {
             const data = await this.saveAsset()
-            if(data.success) {
+            if (data.success) {
                 this.$message.success("Asset saved successfully")
             } else {
                 this.$message.error("Failed to save asset")
@@ -60,7 +60,7 @@ export default {
 
         loadData(data) {
             this.bushing_data = data;
-            if(data.attachment && data.attachment.path) {
+            if (data.attachment && data.attachment.path) {
                 this.attachmentData = JSON.parse(data.attachment.path)
             } else {
                 this.attachmentData = []
@@ -85,43 +85,43 @@ export default {
         },
 
         checkProperty(data) {
-            if(data.properties.mrid == null || data.properties.mrid == '') {
+            if (data.properties.mrid == null || data.properties.mrid == '') {
                 data.properties.mrid = uuid.newUuid();
             }
         },
 
         checkLifecycleDate(data) {
-            if(data.lifecycleDateId == null || data.lifecycleDateId == '') {
+            if (data.lifecycleDateId == null || data.lifecycleDateId == '') {
                 data.lifecycleDateId = uuid.newUuid();
             }
         },
 
         checkPsrId(data) {
-            if(this.parentData.mrid !== null && this.parentData.mrid !== '' && this.parentData.mrid !== undefined) {
+            if (this.parentData.mrid !== null && this.parentData.mrid !== '' && this.parentData.mrid !== undefined) {
                 data.psrId = this.parentData.mrid
             }
         },
 
         checkProductAssetModel(data) {
-            if(data.productAssetModelId === null || data.productAssetModelId === '') {
+            if (data.productAssetModelId === null || data.productAssetModelId === '') {
                 data.productAssetModelId = uuid.newUuid()
             }
         },
 
         checkAssetPrs(data) {
-            if(data.assetPsrId === null || data.assetPsrId === '') {
+            if (data.assetPsrId === null || data.assetPsrId === '') {
                 data.assetPsrId = uuid.newUuid();
             }
         },
 
         checkProductAssetModelId(data) {
-            if(data.productAssetModelId === null || data.productAssetModelId === '') {
+            if (data.productAssetModelId === null || data.productAssetModelId === '') {
                 data.productAssetModelId = uuid.newUuid();
             }
         },
 
         checkAttachment(data) {
-            if(data.attachmentId === null || data.attachmentId === '') {
+            if (data.attachmentId === null || data.attachmentId === '') {
                 if (this.attachmentData.length > 0) {
                     data.attachmentId = uuid.newUuid()
                     data.attachment.id = data.attachmentId
@@ -133,17 +133,17 @@ export default {
             } else {
                 console.log(this.attachmentData)
                 data.attachment.path = JSON.stringify(this.attachmentData)
-            } 
+            }
         },
 
         checkLocationId(data) {
-            if(data.locationId === null || data.locationId === '') {
+            if (data.locationId === null || data.locationId === '') {
                 data.locationId = this.locationId;
             }
         },
 
         checkAssetInfoId(data) {
-            if(data.assetInfoId === null || data.assetInfoId === '') {
+            if (data.assetInfoId === null || data.assetInfoId === '') {
                 data.assetInfoId = uuid.newUuid()
             }
         },
