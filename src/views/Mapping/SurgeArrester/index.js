@@ -31,7 +31,7 @@ export function mapDtoToEntity(dto) {
     entity.surgeArrester.lifecycle_date = dto.lifecycleDateId || null;
 
     //assetPsr
-    entity.assetPsr.mrid = dto.assetPsrId || null;
+    entity.assetPsr.mrid = dto.properties.mrid;
     entity.assetPsr.asset_id = dto.properties.mrid || null;
     entity.assetPsr.psr_id = dto.psrId || null;
 
