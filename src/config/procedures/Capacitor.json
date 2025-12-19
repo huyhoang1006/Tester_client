@@ -1,7 +1,7 @@
 [
-     { "mRID": "023040ae-85a0-4326-af7b-23287f76f26e", "code": "insulationResistance", "name": "Insulation resistance", "kind": "test" },
-     { "mRID": "3d6d2140-6d07-478c-b9c7-48ed0159279c", "code": "dfcap", "name": "DF & CAP", "kind": "test" },
-     { "mRID": "ad613ff4-4fe5-4f8a-8815-f633acb9ef00", "code": "acVoltageBetweenTerminals", "name": "AC voltage witstand test between terminals", "kind": "test" },
-     { "mRID": "153de48f-f657-45ef-9c0f-25a810d8b56b", "code": "acVoltageBetweenTerminalHousing", "name": "AC voltage witstand test between terminal and housing", "kind": "test" },
-     { "mRID": "a4503e60-1361-4e40-8a50-af0fef5c1dfe", "code": "generalInspection", "name": "General inspection", "kind": "test" }
+     { "mrid": "023040ae-85a0-4326-af7b-23287f76f26e", "code": "InsulationResistance", "name": "Insulation resistance", "kind": "test" },
+     { "mrid": "3d6d2140-6d07-478c-b9c7-48ed0159279c", "code": "DfCap", "name": "DF & CAP", "kind": "test" },
+     { "mrid": "ad613ff4-4fe5-4f8a-8815-f633acb9ef00", "code": "AcVoltageBetweenTerminals", "name": "AC voltage witstand test between terminals", "kind": "test" },
+     { "mrid": "153de48f-f657-45ef-9c0f-25a810d8b56b", "code": "AcVoltageBetweenTerminalHousing", "name": "AC voltage witstand test between terminal and housing", "kind": "test" },
+     { "mrid": "a4503e60-1361-4e40-8a50-af0fef5c1dfe", "code": "GeneralInspection", "name": "General inspection", "kind": "test" }
 ]

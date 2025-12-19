@@ -1,9 +1,10 @@
 import { userPreload } from '@/preload/index.js'
 import { importPreload } from '@/preload/index.js'
-import { entityPreload, cimPreload, uploadCustomPreload } from '@/preload/index.js'
+import { entityPreload, cimPreload, uploadCustomPreload, appOptionPreload } from '@/preload/index.js'
 
 const { contextBridge } = require('electron')
 
+const appOptionAPI = appOptionPreload.appOptionPreload()
 const uploadCustomAPI = uploadCustomPreload.uploadCustomPreload()
 const userAPI = userPreload.userPreload()
 const exportAPI = entityPreload.exportPreload.exportPreload()
@@ -60,7 +61,7 @@ const ipcMain = Object.assign(userAPI, attachmentAPI, exportAPI, importAPI, uplo
     productAssetModelAPI, surgeArresterJobAPI, powerCableJobAPI, oldWorkAPI, assetAPI, transformerEntityAPI, analogAPI,
     stringMeasurementAPI, discreteAPI, valueToAliasAPI, valueAliasSetAPI, powerCableEntityAPI, voltageTransformerEntityAPI, bushingEntityAPI,
     bushingAPI, disconnectorEntityAPI, rotatingMachineEntityAPI, currentTransformerEntityAPI, capacitorEntityAPI,
-    breakerEntityAPI, reactorEntityAPI, assetPsrAPI)
+    breakerEntityAPI, reactorEntityAPI, assetPsrAPI, appOptionAPI)
 contextBridge.exposeInMainWorld('electronAPI',
     ipcMain
 )

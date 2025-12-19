@@ -1,27 +1,61 @@
 {
-  "testId": "8163aa31-37bb-4905-adfa-d31c68d9f0cc",
-  "testCode": "insulationResistanceCircuit",
-  "testName": "Insulation resistance of circuit breaker",
+  "testId": "291bbd7d-0233-4e64-8539-f82a4d172a30",
+  "testCode": "CTDfcap",
+  "testName": "CT DF & CAP",
   "columns": [
     {
       "mrid": "99999999-aaaa-bbbb-cccc-000000000003",
-      "code": "measure",
+      "code": "measurement",
       "name": "Measurement",
       "type": "string"
     },
     {
-      "mrid": "c4d5e6f7-a8b9-4012-c3d4-e5f6g7h89012",
+      "mrid": "aaaaaaaa-test-mode-0000-000000000000",
+      "code": "testMode",
+      "name": "Test mode",
+      "type": "string"
+    },
+    {
+      "mrid": "aaaaaaaa-vtes-tkv0-0000-000000000000",
       "code": "test_voltage",
       "name": "Test voltage",
       "type": "analog",
-      "unit": "V"
+      "unit": "kV"
     },
     {
-      "mrid": "92183472-1254-463b-9123-128374651293",
-      "code": "r60s",
-      "name": "R60s",
+      "mrid": "aaaaaaaa-dfre-f000-0000-000000000000",
+      "code": "dfref",
+      "name": "DF ref",
       "type": "analog",
-      "unit": "M|Ω"
+      "unit": "%"
+    },
+    {
+      "mrid": "aaaaaaaa-cref-0000-0000-000000000000",
+      "code": "cref",
+      "name": "C ref",
+      "type": "analog",
+      "unit": "pF"
+    },
+    {
+      "mrid": "aaaaaaaa-dfme-as00-0000-000000000000",
+      "code": "dfmeas",
+      "name": "DF meas",
+      "type": "analog",
+      "unit": "%"
+    },
+    {
+      "mrid": "aaaaaaaa-cmea-s000-0000-000000000000",
+      "code": "cmeas",
+      "name": "C meas",
+      "type": "analog",
+      "unit": "pF"
+    },
+    {
+      "mrid": "aaaaaaaa-ccal-0000-0000-000000000000",
+      "code": "ccal",
+      "name": "△C cal",
+      "type": "analog",
+      "unit": "%"
     },
     {
       "mrid": "99999999-aaaa-bbbb-cccc-000000000001",
@@ -46,6 +80,12 @@
         { "value": 2, "alias": "Fair", "mrid": "e9969675-f549-4145-a384-141020274003" },
         { "value": 3, "alias": "Good", "mrid": "e9969675-f549-4145-a384-141020274004" }
       ]
+    }
+  ],
+  "defaultRows": [
+    {
+        "measurement": "C H-G",
+        "testMode": "GST"
     }
   ]
 }

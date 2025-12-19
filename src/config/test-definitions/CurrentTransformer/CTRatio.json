@@ -1,20 +1,45 @@
 {
-  "testId": "802bca64-119c-4d4b-b965-b54a152557e3",
-  "testCode": "dcWindingTripCoil",
-  "testName": "DC winding resistance of trip coil",
+  "testId": "f6c60697-396c-4167-8000-fcf529434b29",
+  "testCode": "CTRatio",
+  "testName": "CT ratio",
   "columns": [
     {
-      "mrid": "b1c2d3e4-f5a6-47b8-8c9d-0e1f2a3b4c5d",
-      "code": "trip_coil_no",
-      "name": "Trip Coil No",
+      "mrid": "aaaaaaaa-name-0000-0000-000000000000",
+      "code": "name",
+      "name": "Name",
       "type": "string"
     },
     {
-      "mrid": "66666666-aaaa-bbbb-cccc-000000000003",
-      "code": "r_meas",
-      "name": "R meas",
+      "mrid": "aaaaaaaa-ipr0-0000-0000-000000000000",
+      "code": "ipr",
+      "name": "IPR",
       "type": "analog",
-      "unit": "Ω"
+      "unit": "A"
+    },
+    {
+      "mrid": "aaaaaaaa-isr0-0000-0000-000000000000",
+      "code": "isr",
+      "name": "ISR",
+      "type": "analog",
+      "unit": "A"
+    },
+    {
+      "mrid": "aaaaaaaa-rati-omea-s000-000000000000",
+      "code": "ratio_meas",
+      "name": "Ratio meas",
+      "type": "string"
+    },
+    {
+      "mrid": "aaaaaaaa-rati-odev-0000-000000000000",
+      "code": "ratio_dev",
+      "name": "Ratio dev",
+      "type": "string"
+    },
+    {
+      "mrid": "aaaaaaaa-pola-rity-0000-000000000000",
+      "code": "polarity",
+      "name": "Polarity",
+      "type": "string"
     },
     {
       "mrid": "99999999-aaaa-bbbb-cccc-000000000001",
@@ -40,6 +65,5 @@
         { "value": 3, "alias": "Good", "mrid": "e9969675-f549-4145-a384-141020274004" }
       ]
     }
-  ],
-  "defaultRows": []
+  ]
 }

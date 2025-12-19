@@ -1,14 +1,8 @@
 {
-  "testId": "802bca64-119c-4d4b-b965-b54a152557e3",
-  "testCode": "dcWindingTripCoil",
-  "testName": "DC winding resistance of trip coil",
+  "testId": "ede47d51-0630-4f85-82af-3733474a9681",
+  "testCode": "DcWindingMotor",
+  "testName": "DC winding resistance of motor",
   "columns": [
-    {
-      "mrid": "b1c2d3e4-f5a6-47b8-8c9d-0e1f2a3b4c5d",
-      "code": "trip_coil_no",
-      "name": "Trip Coil No",
-      "type": "string"
-    },
     {
       "mrid": "66666666-aaaa-bbbb-cccc-000000000003",
       "code": "r_meas",
@@ -41,5 +35,7 @@
       ]
     }
   ],
-  "defaultRows": []
+  "defaultRows": [
+    { "r_meas": "" }
+  ]
 }

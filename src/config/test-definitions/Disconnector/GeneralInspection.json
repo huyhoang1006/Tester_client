@@ -1,20 +1,13 @@
 {
-  "testId": "802bca64-119c-4d4b-b965-b54a152557e3",
-  "testCode": "dcWindingTripCoil",
-  "testName": "DC winding resistance of trip coil",
+  "testId": "8093b329-1054-496c-9a69-baf71d5c1d24",
+  "testCode": "GeneralInspection",
+  "testName": "General inspection",
   "columns": [
     {
-      "mrid": "b1c2d3e4-f5a6-47b8-8c9d-0e1f2a3b4c5d",
-      "code": "trip_coil_no",
-      "name": "Trip Coil No",
+      "mrid": "62957320-9999-4000-1111-222222222222",
+      "code": "items",
+      "name": "Items",
       "type": "string"
-    },
-    {
-      "mrid": "66666666-aaaa-bbbb-cccc-000000000003",
-      "code": "r_meas",
-      "name": "R meas",
-      "type": "analog",
-      "unit": "Ω"
     },
     {
       "mrid": "99999999-aaaa-bbbb-cccc-000000000001",
@@ -41,5 +34,13 @@
       ]
     }
   ],
-  "defaultRows": []
+  "defaultRows": [
+    { "items": "Nameplate" },
+    { "items": "Installation check" },
+    { "items": "Insulation surface" },
+    { "items": "Ground frame" },
+    { "items": "Terminal box" },
+    { "items": "Marking of terminals" },
+    { "items": "Oil check" }
+  ]
 }

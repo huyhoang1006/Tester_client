@@ -31,14 +31,14 @@
             <div class="scroll-btn right" @click="scrollRight"><i class="fa-solid fa-angle-right"></i></div>
         </div>
         <div class="tabs-content">
-            <div class="mgr-20 mgt-20 mgb-20 mgl-20" v-for="(item, index) in tabs" :key="item.mrid">
-                <component mode="update" @reload="loadData" v-show="activeTab.mrid === item.mrid"
+            <div v-show="activeTab.mrid === item.mrid" class="mgr-20 mgt-20 mgb-20 mgl-20" v-for="(item, index) in tabs" :key="item.mrid">
+                <component mode="update" @reload="loadData"
                     ref="componentLoadData" :sideData="sideSign" :is="checkTab(item)" :organisationId="item.parentId"
                     :testTypeListData="testTypeListData" :assetData="assetData"
                     :productAssetModelData="productAssetModelData" :parent="parentOrganization"
                     :locationData="locationData" style="min-height: calc(100vh - 250px);">
                 </component>
-                <span class="tab-actions" v-show="activeTab.mrid === item.mrid">
+                <span class="tab-actions">
                     <el-button size="small" type="danger" @click="closeTab(index)">Close</el-button>
                     <el-button size="small" type="primary" @click="saveCtrlS()">Save</el-button>
                 </span>
