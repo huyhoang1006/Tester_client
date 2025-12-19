@@ -870,7 +870,7 @@
             </span>
         </el-dialog>
         <el-dialog title="Move Node" :visible.sync="moveDialogVisible" width="450px" @close="handleMoveCancel" custom-class="move-dialog" >
-    <div style="height: 400px; overflow-y: auto;" >
+    <div style="height: 300px; overflow-y: auto;" >
         <div class="child-nav" style="height: 100%; cursor: pointer;">
             <ul style="list-style: none; padding-left: 0;">
                 <TreeNode 
@@ -887,8 +887,71 @@
             </ul>
         </div>
     </div>
+    <!-- Dòng kẻ ngăn cách TreeNode và dòng chữ bên dưới -->
+    <div style="border-top: 1px solid #e0e0e0; margin: 6px 0 4px 0;"></div>
+    <div
+        v-if="moveDisplayText"
+        style="
+            margin-top: 8px;
+            font-size: 13px;
+            color: #606266;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 0 12px;
+            font-weight: bold;
+        "
+    >
+        <!-- Cột 1: Move from (trái) -->
+        <span style="flex: 1; text-align: center; color: black;">
+            {{ moveDisplayText.prefix }}
+        </span>
+
+        <!-- Cột 2: icon + node A (giữa trái) -->
+        <div style="flex: 1; display: flex; align-items: center; gap: 4px; justify-content: center;">
+            <icon                                               
+                v-if="moveDisplayData.sourceIcon"
+                :size="'16px'"
+                :folderType="moveDisplayData.sourceIcon.folderType"
+                :assetDetail="moveDisplayData.sourceIcon.assetDetail"
+                :badgeColor="moveDisplayData.sourceIcon.badgeColor"
+            ></icon>
+            <span style="font-weight: 600;" :title="moveDisplayText.sourceFull">
+                {{ moveDisplayText.source }}
+            </span>
+        </div>
+
+        <!-- Cột 3: to (ở gần giữa, sát 2 node hơn) -->
+        <span
+            style="
+                flex: 0;
+                padding: 0 8px;
+                text-align: center;
+                white-space: nowrap;
+                font-weight: bold;
+                color: black
+            "
+        >
+            {{ moveDisplayText.middle }}
+        </span>
+
+        <!-- Cột 4: icon + node B (phải) -->
+        <div style="flex: 1; display: flex; align-items: center; gap: 4px; justify-content: center;">
+            <icon
+                v-if="moveDisplayData.targetIcon"
+                :size="'16px'"
+                :folderType="moveDisplayData.targetIcon.folderType"
+                :assetDetail="moveDisplayData.targetIcon.assetDetail"
+                :badgeColor="moveDisplayData.targetIcon.badgeColor"
+            ></icon>
+            <span style="font-weight: 600;" :title="moveDisplayText.targetFull">
+                {{ moveDisplayText.target }}
+            </span>
+        </div>
+    </div>
     <span slot="footer" class="dialog-footer">
-        <el-button size="small" @click="moveDialogVisible = false">Cancel</el-button>
+        <el-button size="small" @click="moveDialogVisible = false" style="background-color: #D63743; color: #fff;">Cancel</el-button>
         <el-button size="small" type="primary" @click="confirmMoveNode" :disabled="!selectedTargetNode">Move</el-button>
     </span>
 </el-dialog>
@@ -1182,6 +1245,95 @@ export default {
             if (!selectedNode) return false;
             return this.getAllowedCommands(selectedNode).includes(cmd);
         }
+    },
+    // Text + data hiển thị ví dụ: "Move from SourceNode to TargetNode" cùng icon
+    // Nếu tên quá dài thì rút gọn 5 ký tự + '...' nhưng khi hover vẫn hiển thị full name
+    moveDisplayText() {
+        const nodeToMove = this.nodeToMove;
+        const targetNode = this.selectedTargetNode;
+
+        if (!nodeToMove || !targetNode) {
+            return null;
+        }
+
+        // Lấy tên đầy đủ của source
+        // Với asset node: ưu tiên serial_number/serial_no trước name (vì name có thể là Apparatus ID)
+        let sourceFull;
+        if (nodeToMove.mode === 'asset') {
+            sourceFull = nodeToMove.serial_number || nodeToMove.serial_no || nodeToMove.name;
+        } else {
+            sourceFull = nodeToMove.name || nodeToMove.serial_number || nodeToMove.serial_no;
+        }
+        sourceFull = sourceFull || 'Unknown';
+
+        // Lấy tên đầy đủ của target
+        // Với asset node: ưu tiên serial_number/serial_no trước name (vì name có thể là Apparatus ID)
+        let targetFull;
+        if (targetNode.mode === 'asset') {
+            targetFull = targetNode.serial_number || targetNode.serial_no || targetNode.name;
+        } else {
+            targetFull = targetNode.name || targetNode.serial_number || targetNode.serial_no;
+        }
+        targetFull = targetFull || 'Unknown';
+
+        // Rút gọn còn 5 ký tự + '...' nếu dài hơn 5
+        const truncate = (text) => {
+            const str = text != null ? text.toString() : '';
+            return str.length > 5 ? str.slice(0, 9) + '...' : str;
+        };
+
+        return {
+            prefix: 'Move from',
+            source: truncate(sourceFull),
+            sourceFull,
+            middle: 'to',
+            target: truncate(targetFull),
+            targetFull
+        };
+    },
+    moveDisplayData() {
+        const nodeToMove = this.nodeToMove;
+        const targetNode = this.selectedTargetNode;
+
+        if (!nodeToMove || !targetNode) {
+            return {
+                sourceIcon: null,
+                targetIcon: null
+            };
+        }
+
+        // Xác định icon cho source và target dựa trên mode
+        const getIconConfig = (node) => {
+            const mode = node.mode;
+            if (mode === 'substation') {
+                return { folderType: 'location', assetDetail: 'Unknown', badgeColor: '146EBE' };
+            }
+            if (mode === 'voltageLevel') {
+                return { folderType: 'voltageLevel', assetDetail: 'Unknown', badgeColor: '146EBE' };
+            }
+            if (mode === 'bay') {
+                return { folderType: 'bay', assetDetail: 'Unknown', badgeColor: '146EBE' };
+            }
+            if (mode === 'asset') {
+                return { folderType: 'asset', assetDetail: node.asset || 'Unknown', badgeColor: '146EBE' };
+            }
+            if (mode === 'job') {
+                return { folderType: 'job', assetDetail: 'Unknown', badgeColor: 'FF0000' };
+            }
+            if (mode === 'test') {
+                return { folderType: 'test', assetDetail: 'Unknown', badgeColor: '008001' };
+            }
+            // default: owner/building
+            return { folderType: 'building', assetDetail: 'Unknown', badgeColor: '008001' };
+        };
+
+        const sourceIcon = getIconConfig(nodeToMove);
+        const targetIcon = getIconConfig(targetNode);
+
+        return {
+            sourceIcon,
+            targetIcon
+        };
     }
 },
     mixins: [mixin],
@@ -1389,6 +1541,7 @@ export default {
         },
         // Import handlers từ context menu
         async handleImportJSONFromContext(node) {
+            console.log("Đích import (Node cha):", node.name, node.mrid);
             // Validate: Phải có node
             if (!node) {
                 this.$message.warning('Please select a node to import into')
@@ -1396,51 +1549,18 @@ export default {
             }
 
             try {
-                // Mở file picker để chọn JSON file
-                const fileResult = await window.electronAPI.importJSON()
-                
-                if (!fileResult.success || !fileResult.data) {
-                    if (fileResult.message !== 'Import cancelled') {
-                        this.$message.error(fileResult.message || 'Failed to load JSON file')
-                    }
-                    return
-                }
+        const fileResult = await window.electronAPI.importJSON();
+        console.log("Dữ liệu JSON đọc được:", fileResult.data);
 
-                const dtos = fileResult.data
-
-                // Prepare dependencies
-                const dependencies = {
-                    electronAPI: window.electronAPI,
-                    mappings: {
-                        SubstationMapping,
-                        OrganisationMapping,
-                        SurgeArresterMapping,
-                        PowerCableMapping,
-                        DisconnectorMapping,
-                        rotatingMachineMapping,
-                        CapacitorMapping,
-                        VoltageTransformerMapping,
-                        CurrentTransformerMapping,
-                        TransformerMapping,
-                        BreakerMapping,
-                        ReactorMapping,
-                        BushingMapping
-                    },
-                    userId: this.$store.state.user.user_id,
-                    messageHandler: this.$message
-                }
-
-                // Import với node làm parent
-                const result = await importNodeFromJSONUtil(dtos, node, dependencies)
-
-                // Refresh tree sau khi import thành công
-                if (result.success && result.successCount > 0) {
-                    this.refreshTreeAfterImport(node)
-                }
-            } catch (error) {
-                console.error('Error importing JSON:', error)
-                this.$message.error('An error occurred while importing JSON')
-            }
+        const result = await importNodeFromJSONUtil(fileResult.data, node, dependencies);
+        console.log("Kết quả Import:", result); // Xem lỗi cụ thể trả về là gì
+        
+        if (!result.success) {
+            this.$message.error("Lỗi: " + result.message);
+        }
+    } catch (e) {
+        console.error("Lỗi hệ thống:", e);
+    }
         },
         async handleImportJSONCIMFromContext(node) {
             this.$message.info('Import JSON by CIM ')
@@ -4426,6 +4546,7 @@ async handleDeleteNode() {
     this.$confirm(`Delete "${nodeName}"?`, 'Warning', {
         confirmButtonText: 'Delete',
         cancelButtonText: 'Cancel',
+        cancelButtonClass: 'el-button--danger',
         type: 'warning'
     }).then(async () => {
         try {
@@ -4707,7 +4828,7 @@ cleanDtoForDuplicate(dto) {
                     });
                 }
             };
-            
+            if (dto.bushing) clearRecursive(dto.bushing);
             if (dto.ratings) clearRecursive(dto.ratings);
             if (dto.circuitBreaker) clearRecursive(dto.circuitBreaker);
             if (dto.contactSystem) clearRecursive(dto.contactSystem);
@@ -4733,6 +4854,7 @@ cleanDtoForDuplicate(dto) {
             if (dto.ctConfiguration) clearRecursive(dto.ctConfiguration); 
             if (dto.vt_Configuration) clearRecursive(dto.vt_Configuration);
             if (dto.capacitance) clearRecursive(dto.capacitance);
+            if (dto.percent) clearRecursive(dto.percent); // Bushing specific: DF C1, DF C2
             if (dto.dissipationFactor) clearRecursive(dto.dissipationFactor);
             // Reactor specific: reactorRating (includes inductance), reactorOther
             if (dto.reactorRating) clearRecursive(dto.reactorRating);
@@ -4742,6 +4864,101 @@ cleanDtoForDuplicate(dto) {
        
     async processDuplicateAsset(node, apiGetEntity, mappingFunction, mixinObject, dataPropName) {
     try {
+        // Helper nội bộ: lấy label hiển thị trên Tree cho một node
+        const getDisplayLabel = (n) => {
+            if (!n) return '';
+            if (n.mode === 'asset') {
+                return (n.serial_number || n.serial_no || n.name || '').toString();
+            }
+            return (n.name || '').toString();
+        };
+
+        // Helper: chuẩn hóa base name (bỏ phần " - Copy" hoặc " - Copy (n)" nếu có)
+        // Ví dụ:
+        //   "1"               -> "1"
+        //   "1 - Copy"        -> "1"
+        //   "1 - Copy (2)"    -> "1"
+        //   "NodeA - Copy(3)" -> "NodeA" (trường hợp thiếu khoảng trắng vẫn xử lý)
+        const getBaseLabel = (label) => {
+            if (!label) return '';
+            const str = label.toString().trim();
+            // Regex: bắt đầu bằng bất cứ chuỗi nào (group 1),
+            // sau đó là " - Copy" (có thể có/không khoảng trắng trước ngoặc)
+            // và có thể có phần " (n)" phía sau
+            const m = str.match(/^(.*?)(?:\s*-\s*Copy(?:\s*\(\d+\))?)$/);
+            if (m && m[1] !== undefined) {
+                return m[1].trim();
+            }
+            return str;
+        };
+
+        // Helper: sinh tên duplicate tiếp theo trong cùng parent
+        const getNextDuplicateLabel = (currentNode, parent) => {
+            const currentLabel = getDisplayLabel(currentNode).trim();
+            const base = getBaseLabel(currentLabel) || 'Unknown';
+            const siblings = (parent && Array.isArray(parent.children)) ? parent.children : [];
+
+            // Nếu node hiện tại đã là một bản Copy (đã có " - Copy" / " - Copy (n)")
+            // thì dùng chính nhãn hiện tại làm base để đếm:
+            //   "1 - Copy (2)" -> lần 1:  "1 - Copy (2) - Copy"
+            //                    lần 2:  "1 - Copy (2) - Copy (2)"
+            //                    lần 3:  "1 - Copy (2) - Copy (3)" ...
+            if (base !== currentLabel) {
+                const prefix = `${currentLabel} - Copy`;
+                let maxIndex = 0;
+                let hasPlainCopy = false;
+
+                siblings.forEach((child) => {
+                    const label = getDisplayLabel(child).trim();
+                    if (!label) return;
+
+                    if (label === prefix) {
+                        hasPlainCopy = true;
+                        if (maxIndex < 1) maxIndex = 1;
+                    } else if (label.startsWith(prefix + ' (') && label.endsWith(')')) {
+                        const inside = label.substring((prefix.length + 2), label.length - 1);
+                        const num = parseInt(inside, 10);
+                        if (!isNaN(num) && num > maxIndex) {
+                            maxIndex = num;
+                        }
+                    }
+                });
+
+                if (!hasPlainCopy && maxIndex === 0) {
+                    return prefix;               // "X - Copy"
+                }
+                return `${prefix} (${maxIndex + 1})`; // "X - Copy (2)", "X - Copy (3)", ...
+            }
+
+            // Ngược lại, đây là node gốc (ví dụ "1"), khi duplicate nhiều lần:
+            // "1" -> "1 - Copy", "1 - Copy (2)", "1 - Copy (3)"...
+            const prefix = `${base} - Copy`;
+
+            let maxIndex = 0;
+            let hasPlainCopy = false;
+
+            siblings.forEach((child) => {
+                const label = getDisplayLabel(child).trim();
+                if (!label) return;
+
+                if (label === prefix) {
+                    hasPlainCopy = true;
+                    if (maxIndex < 1) maxIndex = 1;
+                } else if (label.startsWith(prefix + ' (') && label.endsWith(')')) {
+                    const inside = label.substring((prefix.length + 2), label.length - 1);
+                    const num = parseInt(inside, 10);
+                    if (!isNaN(num) && num > maxIndex) {
+                        maxIndex = num;
+                    }
+                }
+            });
+
+            if (!hasPlainCopy && maxIndex === 0) {
+                return prefix;               // "X - Copy"
+            }
+            return `${prefix} (${maxIndex + 1})`; // "X - Copy (2)", "X - Copy (3)", ...
+        };
+
         // 1. Tìm Node cha
         let parentNode = this.findNodeById(node.parentId, this.organisationClientList);
 
@@ -4791,6 +5008,17 @@ cleanDtoForDuplicate(dto) {
         }
         if (Array.isArray(dto.currentFlow)) {
             dto.currentFlow.forEach(item => {
+                if (item && !item.mrid) item.mrid = this.generateUuid();
+            });
+        }
+        // Bushing specific: capacitance, percent
+        if (Array.isArray(dto.capacitance)) {
+            dto.capacitance.forEach(item => {
+                if (item && !item.mrid) item.mrid = this.generateUuid();
+            });
+        }
+        if (Array.isArray(dto.percent)) {
+            dto.percent.forEach(item => {
                 if (item && !item.mrid) item.mrid = this.generateUuid();
             });
         }
@@ -4940,23 +5168,25 @@ cleanDtoForDuplicate(dto) {
         
         if (dto.reactorRating) generateMridForNestedObject(dto.reactorRating);
         if (dto.reactorOther) generateMridForNestedObject(dto.reactorOther);
-
+        if (dto.bushing) generateMridForNestedObject(dto.bushing); 
         // Xóa children để tránh duplicate con đệ quy (nếu không cần thiết)
         if (dto.children) dto.children = [];
         if (dto.voltageLevels) dto.voltageLevels = [];
         if (dto.bays) dto.bays = [];
         if (dto.assets) dto.assets = [];
 
-        // Đổi tên và serial number
-        const copySuffix = ` - Copy`;
-        if (dto.name) dto.name = `${dto.name}${copySuffix}`;
-        if (dto.properties) {
-            if (dto.properties.serial_no) {
-                dto.properties.serial_no = `${dto.properties.serial_no}${copySuffix}`;
-            } else {
-                const randomSuffix = Math.floor(Math.random() * 10000);
-                dto.properties.serial_no = `COPY_${randomSuffix}`;
-            }
+        // Đổi tên hiển thị theo quy tắc:
+        //   "X" -> "X - Copy" -> "X - Copy (2)" -> "X - Copy (3)" ...
+        const isAssetNode = node.mode === 'asset';
+        const nextLabel = getNextDuplicateLabel(node, parentNode);
+
+        if (isAssetNode) {
+            // Asset: dùng serial_no làm label chính trên cây
+            if (!dto.properties) dto.properties = {};
+            dto.properties.serial_no = nextLabel;
+        } else {
+            // Location / Job / Test: dùng name
+            dto.name = nextLabel;
         }
 
         // Location logic
@@ -5195,8 +5425,9 @@ cleanDtoForDuplicate(dto) {
     nodeName = nodeName || 'Unknown';
 
         this.$confirm(`Duplicate "${nodeName}"?`, 'Confirmation', {
-            confirmButtonText: 'Yes',
-            cancelButtonText: 'No',
+            confirmButtonText: 'Confirm',
+            cancelButtonText: 'Cancel',
+            cancelButtonClass: 'el-button--danger',
             type: 'info'
         }).then(async () => {
         let result = { success: false };
@@ -5580,8 +5811,9 @@ async fetchChildrenForMove(node) {
 
         let targetName = newParent.name || 'Unknown Location';
         this.$confirm(`Move "${sourceName}" to "${targetName}"?`, 'Confirm Move', {
-            confirmButtonText: 'Move',
+            confirmButtonText: 'Confirm',
             cancelButtonText: 'Cancel',
+            cancelButtonClass: 'el-button--danger',
             type: 'warning'
     }).then(async () => {
         try {

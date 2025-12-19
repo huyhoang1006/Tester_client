@@ -16,6 +16,7 @@ export default {
                     const data = JSON.parse(JSON.stringify(this.bushing_data));
                     const result = this.checkBushingData(data);
                     const resultEntity = Mapping.mapDtoToEntity(result);
+                    console.log("resultEntity: ", resultEntity)
                     let rs = await window.electronAPI.insertBushingEntity(resultEntity)
                     if (rs.success) {
                         return {
