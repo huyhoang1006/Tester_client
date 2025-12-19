@@ -10,7 +10,7 @@ import path from 'path'
 import { v4 as newUuid } from 'uuid'
 import { userFunc } from '@/function'
 import { ipcUploadCustom } from '@/ipcmain'
-import { ipcCim, ipcEntity } from '@/ipcmain'
+import { ipcCim, ipcEntity, ipcAppOption } from '@/ipcmain'
 let win;
 
 const nameDB = 'database.db'
@@ -197,7 +197,29 @@ app.on('ready', async () => {
             console.error('Vue Devtools failed to install:', e.toString())
         }
     }
+
     await updateModule.active()
+
+    const nameProcedure = 'procedure.json'
+    const userDataPath = app.getPath('userData')
+    const procedurePath = path.join(userDataPath, nameProcedure)
+    if (!fs.existsSync(procedurePath)) {
+        try {
+            await updateModule.updateProcedure()
+            const defaultData = {
+                createdAt: new Date().toISOString(),
+                version: 1
+            }
+            fs.writeFileSync(
+                procedurePath,
+                JSON.stringify(defaultData, null, 2),
+                'utf-8'
+            )
+        } catch (err) {
+            app.quit()
+            console.error('Error creating procedure file:', err)
+        }
+    }
 
     ipcMain.handle('login', async function (event, user) {
         const _user = await userFunc.getUser(user)
@@ -281,6 +303,9 @@ app.on('ready', async () => {
 
     //entity
     ipcEntity.active()
+
+    //app option
+    ipcAppOption.active()
 
     ipcMain.handle('getAllUser', async function (event) {
         const _users = await userFunc.getAllUser()
@@ -369,32 +394,31 @@ app.on('ready', async () => {
         }
     }),
 
-        ipcMain.handle('insertOnlineMonitoringData', async function (event, assetId, online_monitoring) {
-            try {
-                await insertOnlineMonitoringData(assetId, online_monitoring)
-                return {
-                    success: true,
-                    message: "Success"
-                }
-            } catch (error) {
-                return {
-                    success: false,
-                    message: error
-                }
+    ipcMain.handle('insertOnlineMonitoringData', async function (event, assetId, online_monitoring) {
+        try {
+            await insertOnlineMonitoringData(assetId, online_monitoring)
+            return {
+                success: true,
+                message: "Success"
             }
-        }),
+        } catch (error) {
+            return {
+                success: false,
+                message: error
+            }
+        }
+    }),
 
-        ipcMain.on("closeApp", () => {
-            db.close()
-            app.quit()
-        });
+    ipcMain.handle("closeApp", () => {
+        db.close()
+        app.quit()
+    });
 
-    ipcMain.on("minimizeApp", () => {
-
+    ipcMain.handle("minimizeApp", () => {
         win.minimize()
     });
 
-    ipcMain.on("maximizeApp", () => {
+    ipcMain.handle("maximizeApp", () => {
         win.isMaximized() ? win.unmaximize() : win.maximize();
     });
 

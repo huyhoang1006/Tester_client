@@ -3,11 +3,50 @@
   "testCode": "cTiming",
   "testName": "C Timing",
   "columns": [
-    { "mrid": "a2b3c4d5-e6f7-4890-a1b2-c3d4e5f67890", "code": "phase", "name": "Phase", "type": "string" },
-    { "mrid": "d47ac10b-58cc-4372-a567-0e02b2c3d479", "code": "closing_time", "name": "Closing time", "type": "analog", "unit": "m|s" },
-    { "mrid": "f69ce32d-70ee-4594-c789-2024d4e5f69b", "code": "closing_sync", "name": "Closing sync", "type": "analog", "unit": "m|s" },
-    { "mrid": "99999999-aaaa-bbbb-cccc-000000000001", "code": "assessment", "name": "Assessment", "type": "discrete", "valueAliasSetId": "40c60468-232a-4643-851f-50616900f601", "options": [{"value": 0, "alias": "Fail", "mrid": "d8858564-e438-4034-9273-030919163001"}, {"value": 1, "alias": "Pass", "mrid": "d8858564-e438-4034-9273-030919163002"}] },
-    { "mrid": "99999999-aaaa-bbbb-cccc-000000000002", "code": "condition_indicator", "name": "Condition indicator", "type": "discrete", "valueAliasSetId": "8e323053-481b-4348-89c0-67258380d701", "options": [{"value": 0, "alias": "Bad", "mrid": "e9969675-f549-4145-a384-141020274001"}, {"value": 1, "alias": "Poor", "mrid": "e9969675-f549-4145-a384-141020274002"}, {"value": 2, "alias": "Fair", "mrid": "e9969675-f549-4145-a384-141020274003"}, {"value": 3, "alias": "Good", "mrid": "e9969675-f549-4145-a384-141020274004"}] }
+    {
+      "mrid": "a2b3c4d5-e6f7-4890-a1b2-c3d4e5f67890",
+      "code": "phase",
+      "name": "Phase",
+      "type": "string"
+    },
+    {
+      "mrid": "d47ac10b-58cc-4372-a567-0e02b2c3d479",
+      "code": "closing_time",
+      "name": "Closing time",
+      "type": "analog",
+      "unit": "m|s"
+    },
+    {
+      "mrid": "f69ce32d-70ee-4594-c789-2024d4e5f69b",
+      "code": "closing_sync",
+      "name": "Closing sync",
+      "type": "analog",
+      "unit": "m|s"
+    },
+    {
+      "mrid": "99999999-aaaa-bbbb-cccc-000000000001",
+      "code": "assessment",
+      "name": "Assessment",
+      "type": "discrete",
+      "valueAliasSetId": "40c60468-232a-4643-851f-50616900f601",
+      "options": [
+        { "value": 0, "alias": "Fail", "mrid": "d8858564-e438-4034-9273-030919163001" },
+        { "value": 1, "alias": "Pass", "mrid": "d8858564-e438-4034-9273-030919163002" }
+      ]
+    },
+    {
+      "mrid": "99999999-aaaa-bbbb-cccc-000000000002",
+      "code": "condition_indicator",
+      "name": "Condition indicator",
+      "type": "discrete",
+      "valueAliasSetId": "8e323053-481b-4348-89c0-67258380d701",
+      "options": [
+        { "value": 0, "alias": "Bad", "mrid": "e9969675-f549-4145-a384-141020274001" },
+        { "value": 1, "alias": "Poor", "mrid": "e9969675-f549-4145-a384-141020274002" },
+        { "value": 2, "alias": "Fair", "mrid": "e9969675-f549-4145-a384-141020274003" },
+        { "value": 3, "alias": "Good", "mrid": "e9969675-f549-4145-a384-141020274004" }
+      ]
+    }
   ],
   "defaultRows": []
 }

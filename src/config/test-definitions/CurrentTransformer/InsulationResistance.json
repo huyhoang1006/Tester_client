@@ -1,20 +1,27 @@
 {
-  "testId": "802bca64-119c-4d4b-b965-b54a152557e3",
-  "testCode": "dcWindingTripCoil",
-  "testName": "DC winding resistance of trip coil",
+  "testId": "aac04d70-ca0e-466b-ab4f-969a0afb7fef",
+  "testCode": "InsulationResistance",
+  "testName": "Insulation resistance",
   "columns": [
     {
-      "mrid": "b1c2d3e4-f5a6-47b8-8c9d-0e1f2a3b4c5d",
-      "code": "trip_coil_no",
-      "name": "Trip Coil No",
+      "mrid": "99999999-aaaa-bbbb-cccc-000000000003",
+      "code": "measurement",
+      "name": "Measurement",
       "type": "string"
     },
     {
-      "mrid": "66666666-aaaa-bbbb-cccc-000000000003",
-      "code": "r_meas",
-      "name": "R meas",
+      "mrid": "c4d5e6f7-a8b9-4012-c3d4-e5f6g7h89012",
+      "code": "v_test",
+      "name": "V test",
       "type": "analog",
-      "unit": "Ω"
+      "unit": "V"
+    },
+    {
+      "mrid": "92183472-1254-463b-9123-128374651293",
+      "code": "r60s",
+      "name": "R60s",
+      "type": "analog",
+      "unit": "M|Ω"
     },
     {
       "mrid": "99999999-aaaa-bbbb-cccc-000000000001",
@@ -41,5 +48,7 @@
       ]
     }
   ],
-  "defaultRows": []
+  "defaultRows": [
+    { "measurement": "Prim - (Sec + GND)" }
+  ]
 }
