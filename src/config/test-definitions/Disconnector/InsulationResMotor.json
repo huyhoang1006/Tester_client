@@ -1,20 +1,21 @@
 {
-  "testId": "802bca64-119c-4d4b-b965-b54a152557e3",
-  "testCode": "dcWindingTripCoil",
-  "testName": "DC winding resistance of trip coil",
+  "testId": "a6a3b5d1-dd96-428a-a824-1c7ed5c2fea0",
+  "testCode": "InsulationResMotor",
+  "testName": "Insulation resistance of motor",
   "columns": [
     {
-      "mrid": "b1c2d3e4-f5a6-47b8-8c9d-0e1f2a3b4c5d",
-      "code": "trip_coil_no",
-      "name": "Trip Coil No",
-      "type": "string"
+      "mrid": "12739343-6523-455b-8016-5683267571b2",
+      "code": "test_voltage",
+      "name": "Test voltage",
+      "type": "analog",
+      "unit": "V"
     },
     {
-      "mrid": "66666666-aaaa-bbbb-cccc-000000000003",
-      "code": "r_meas",
-      "name": "R meas",
+      "mrid": "92183472-1254-463b-9123-128374651293",
+      "code": "r60s",
+      "name": "R60s",
       "type": "analog",
-      "unit": "Ω"
+      "unit": "M|Ω"
     },
     {
       "mrid": "99999999-aaaa-bbbb-cccc-000000000001",
@@ -41,5 +42,5 @@
       ]
     }
   ],
-  "defaultRows": []
+  "defaultRows": [{ "test_voltage": "" }]
 }

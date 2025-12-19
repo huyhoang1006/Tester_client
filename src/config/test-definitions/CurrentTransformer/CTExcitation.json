@@ -1,20 +1,27 @@
 {
-  "testId": "802bca64-119c-4d4b-b965-b54a152557e3",
-  "testCode": "dcWindingTripCoil",
-  "testName": "DC winding resistance of trip coil",
+  "testId": "9ef9e0da-0bc7-44ed-91b9-9656bd696342",
+  "testCode": "CTExcitation",
+  "testName": "CT Excitation",
   "columns": [
     {
-      "mrid": "b1c2d3e4-f5a6-47b8-8c9d-0e1f2a3b4c5d",
-      "code": "trip_coil_no",
-      "name": "Trip Coil No",
+      "mrid": "aaaaaaaa-name-0000-0000-000000000000",
+      "code": "name",
+      "name": "Name",
       "type": "string"
     },
     {
-      "mrid": "66666666-aaaa-bbbb-cccc-000000000003",
-      "code": "r_meas",
-      "name": "R meas",
+      "mrid": "aaaaaaaa-ikne-e000-0000-000000000000",
+      "code": "iknee",
+      "name": "I knee",
       "type": "analog",
-      "unit": "Ω"
+      "unit": "A"
+    },
+    {
+      "mrid": "aaaaaaaa-vkne-e000-0000-000000000000",
+      "code": "vknee",
+      "name": "V knee",
+      "type": "analog",
+      "unit": "V"
     },
     {
       "mrid": "99999999-aaaa-bbbb-cccc-000000000001",
@@ -40,6 +47,5 @@
         { "value": 3, "alias": "Good", "mrid": "e9969675-f549-4145-a384-141020274004" }
       ]
     }
-  ],
-  "defaultRows": []
+  ]
 }

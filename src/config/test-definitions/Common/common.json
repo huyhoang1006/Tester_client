@@ -1,0 +1,315 @@
+{
+  "assessment": {
+    "mrid": "99999999-aaaa-bbbb-cccc-000000000001",
+    "code": "assessment",
+    "name": "Assessment",
+    "type": "discrete",
+    "valueAliasSetId": "40c60468-232a-4643-851f-50616900f601",
+    "options": [
+      { "value": 0, "alias": "Fail", "mrid": "d8858564-e438-4034-9273-030919163001" },
+      { "value": 1, "alias": "Pass", "mrid": "d8858564-e438-4034-9273-030919163002" }
+    ]
+  },
+
+  "condition_indicator": {
+    "mrid": "99999999-aaaa-bbbb-cccc-000000000002",
+    "code": "condition_indicator",
+    "name": "Condition indicator",
+    "type": "discrete",
+    "valueAliasSetId": "8e323053-481b-4348-89c0-67258380d701",
+    "options": [
+      { "value": 0, "alias": "Bad", "mrid": "e9969675-f549-4145-a384-141020274001" },
+      { "value": 1, "alias": "Poor", "mrid": "e9969675-f549-4145-a384-141020274002" },
+      { "value": 2, "alias": "Fair", "mrid": "e9969675-f549-4145-a384-141020274003" },
+      { "value": 3, "alias": "Good", "mrid": "e9969675-f549-4145-a384-141020274004" }
+    ]
+  },
+
+  "items": {
+    "mrid": "62957320-9999-4000-1111-222222222222",
+    "code": "items",
+    "name": "Items",
+    "type": "string"
+  },
+
+  "measurement": {
+    "mrid": "908d1326-0616-4191-8973-10a905187001",
+    "code": "measurement",
+    "name": "Measurement",
+    "type": "string"
+  },
+
+  "phase": {
+    "mrid": "a2b3c4d5-e6f7-4890-a1b2-c3d4e5f67890",
+    "code": "phase",
+    "name": "Phase",
+    "type": "string"
+  },
+
+  "unit_no": {
+    "mrid": "b3c4d5e6-f7a8-4901-b2c3-d4e5f6g78901",
+    "code": "unit_no",
+    "name": "Unit number",
+    "type": "analog"
+  },
+
+  "interrupt_no": {
+    "mrid": "77777777-aaaa-bbbb-cccc-000000000001",
+    "code": "interrupt_no",
+    "name": "Interrupter No.",
+    "type": "string"
+  },
+
+  "close_coil_no": {
+    "mrid": "c2d3e4f5-a6b7-48c9-9d0e-1f2a3b4c5d6e",
+    "code": "close_coil_no",
+    "name": "Close Coil No",
+    "type": "string"
+  },
+
+  "trip_coil_no": {
+    "mrid": "b1c2d3e4-f5a6-47b8-8c9d-0e1f2a3b4c5d",
+    "code": "trip_coil_no",
+    "name": "Trip Coil No",
+    "type": "string"
+  },
+
+  "operation": {
+    "mrid": "28513986-5555-4666-7777-888888888881",
+    "code": "operation",
+    "name": "Operation",
+    "type": "string"
+  },
+
+  "test_voltage": {
+    "mrid": "c4d5e6f7-a8b9-4012-c3d4-e5f6g7h89012",
+    "code": "test_voltage",
+    "name": "Test voltage",
+    "type": "analog",
+    "unit": "V"
+  },
+
+  "v_meas": {
+    "mrid": "1d4e5f6a-7b8c-4d9e-9004-000000000012",
+    "code": "v_meas",
+    "name": "V measurement",
+    "type": "analog",
+    "unit": "k|V"
+  },
+
+  "i_meas": {
+    "mrid": "3f6a7b8c-9d0e-4f10-9006-000000000014",
+    "code": "i_meas",
+    "name": "I measurement",
+    "type": "analog",
+    "unit": "m|A"
+  },
+
+  "i_test": {
+    "mrid": "77777777-aaaa-bbbb-cccc-000000000002",
+    "code": "i_test",
+    "name": "I test",
+    "type": "analog",
+    "unit": "A"
+  },
+
+  "ref_current": {
+    "mrid": "5b8c9d0e-1f2a-4b12-9008-000000000016",
+    "code": "ref_current",
+    "name": "Reference current",
+    "type": "analog",
+    "unit": "m|A"
+  },
+
+  "trip_current": {
+    "mrid": "40735108-7777-4888-9999-000000000001",
+    "code": "trip_current",
+    "name": "Trip current",
+    "type": "analog",
+    "unit": "m|A"
+  },
+
+  "contact_resistance": {
+    "mrid": "77777777-aaaa-bbbb-cccc-000000000003",
+    "code": "contact_resistance",
+    "name": "Contact resistance",
+    "type": "analog",
+    "unit": "µ|Ω"
+  },
+
+  "r60s": {
+    "mrid": "92183472-1254-463b-9123-128374651293",
+    "code": "r60s",
+    "name": "R60s",
+    "type": "analog",
+    "unit": "M|Ω"
+  },
+
+  "r_meas": {
+    "mrid": "66666666-aaaa-bbbb-cccc-000000000003",
+    "code": "r_meas",
+    "name": "R meas",
+    "type": "analog",
+    "unit": "Ω"
+  },
+
+  "closing_time": {
+    "mrid": "d47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "code": "closing_time",
+    "name": "Closing time",
+    "type": "analog",
+    "unit": "m|s"
+  },
+
+  "closing_sync": {
+    "mrid": "f69ce32d-70ee-4594-c789-2024d4e5f69b",
+    "code": "closing_sync",
+    "name": "Closing sync",
+    "type": "analog",
+    "unit": "m|s"
+  },
+
+  "opening_time": {
+    "mrid": "e58bd21c-69dd-4483-b678-1f13c3d4e58a",
+    "code": "opening_time",
+    "name": "Opening time",
+    "type": "analog",
+    "unit": "m|s"
+  },
+
+  "opening_sync": {
+    "mrid": "a70df43e-81ff-4605-d890-3135e5f6a70c",
+    "code": "opening_sync",
+    "name": "Opening sync",
+    "type": "analog",
+    "unit": "m|s"
+  },
+
+  "close_open_time": {
+    "mrid": "b81eg54f-9200-4716-e901-4246f6a7b81d",
+    "code": "close_open_time",
+    "name": "Close-Open time",
+    "type": "analog",
+    "unit": "m|s"
+  },
+
+  "open_close_time": {
+    "mrid": "c92fh65g-a311-4827-f012-5357a7b8c92e",
+    "code": "open_close_time",
+    "name": "Open-Close time",
+    "type": "analog",
+    "unit": "m|s"
+  },
+
+  "v_pickup": {
+    "mrid": "39624097-6666-4777-8888-999999999992",
+    "code": "v_pickup",
+    "name": "V pickup",
+    "type": "analog",
+    "unit": "V"
+  },
+
+  "trip_voltage": {
+    "mrid": "51846219-8888-4999-0000-111111111111",
+    "code": "trip_voltage",
+    "name": "Trip voltage",
+    "type": "analog",
+    "unit": "V"
+  },
+
+  "mini_voltage": {
+    "mrid": "17402875-4444-4555-6666-777777777774",
+    "code": "mini_voltage",
+    "name": "Minimum voltage",
+    "type": "analog",
+    "unit": "V"
+  },
+
+  "inrush_current": {
+    "mrid": "84179542-1111-4222-3333-444444444441",
+    "code": "inrush_current",
+    "name": "Inrush current",
+    "type": "analog",
+    "unit": "A"
+  },
+
+  "charging_current": {
+    "mrid": "06391764-3333-4444-5555-666666666663",
+    "code": "charging_current",
+    "name": "Charging current",
+    "type": "analog",
+    "unit": "A"
+  },
+
+  "charging": {
+    "mrid": "95280653-2222-4333-4444-555555555552",
+    "code": "charging",
+    "name": "Charging",
+    "type": "analog",
+    "unit": "s"
+  },
+
+  "sf6_pressure": {
+    "mrid": "51846219-5432-4123-a456-7890abcdef01",
+    "code": "sf6_pressure",
+    "name": "SF6 pressure",
+    "type": "analog",
+    "unit": "MPa"
+  },
+
+  "alarm": {
+    "mrid": "62957320-6543-4234-b567-8901abcdef02",
+    "code": "alarm",
+    "name": "Alarm",
+    "type": "analog",
+    "unit": "MPa"
+  },
+
+  "lockout": {
+    "mrid": "73068431-7654-4345-c678-9012abcdef03",
+    "code": "lockout",
+    "name": "Lockout",
+    "type": "analog",
+    "unit": "MPa"
+  },
+
+  "decom_sf6": {
+    "mrid": "8129d3c5-9231-4876-a012-9843215560a1",
+    "code": "decom_sf6",
+    "name": "Decomposition of SF6",
+    "type": "analog",
+    "unit": "ppm"
+  },
+
+  "so2_sof2": {
+    "mrid": "2390e4f6-1283-4912-b543-8712399910b2",
+    "code": "so2_sof2",
+    "name": "SO2 + SOF2",
+    "type": "analog",
+    "unit": "ppm"
+  },
+
+  "hf": {
+    "mrid": "9012f5a7-5678-4321-c654-1234567890c3",
+    "code": "hf",
+    "name": "HF",
+    "type": "analog",
+    "unit": "ppm"
+  },
+
+  "moiture": {
+    "mrid": "1541c032-8419-450e-9407-7429188550d1",
+    "code": "moiture",
+    "name": "Moiture",
+    "type": "analog",
+    "unit": "ppm"
+  },
+
+  "purity": {
+    "mrid": "6791e0a8-3f56-42d3-9830-22a8300224d2",
+    "code": "purity",
+    "name": "Purity",
+    "type": "analog",
+    "unit": "%"
+  }
+}
