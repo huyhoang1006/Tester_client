@@ -3,11 +3,51 @@
   "testCode": "pressureGauge",
   "testName": "Pressure gauge",
   "columns": [
-    { "mrid": "51846219-5432-4123-a456-7890abcdef01", "code": "sf6_pressure", "name": "SF6 pressure", "type": "analog", "unit": "MPa" },
-    { "mrid": "62957320-6543-4234-b567-8901abcdef02", "code": "alarm", "name": "Alarm", "type": "analog", "unit": "MPa" },
-    { "mrid": "73068431-7654-4345-c678-9012abcdef03", "code": "lockout", "name": "Lockout", "type": "analog", "unit": "MPa" },
-    { "mrid": "99999999-aaaa-bbbb-cccc-000000000001", "code": "assessment", "name": "Assessment", "type": "discrete", "valueAliasSetId": "40c60468-232a-4643-851f-50616900f601", "options": [{"value": 0, "alias": "Fail", "mrid": "d8858564-e438-4034-9273-030919163001"}, {"value": 1, "alias": "Pass", "mrid": "d8858564-e438-4034-9273-030919163002"}] },
-    { "mrid": "99999999-aaaa-bbbb-cccc-000000000002", "code": "condition_indicator", "name": "Condition indicator", "type": "discrete", "valueAliasSetId": "8e323053-481b-4348-89c0-67258380d701", "options": [{"value": 0, "alias": "Bad", "mrid": "e9969675-f549-4145-a384-141020274001"}, {"value": 1, "alias": "Poor", "mrid": "e9969675-f549-4145-a384-141020274002"}, {"value": 2, "alias": "Fair", "mrid": "e9969675-f549-4145-a384-141020274003"}, {"value": 3, "alias": "Good", "mrid": "e9969675-f549-4145-a384-141020274004"}] }
+    {
+      "mrid": "51846219-5432-4123-a456-7890abcdef01",
+      "code": "sf6_pressure",
+      "name": "SF6 pressure",
+      "type": "analog",
+      "unit": "MPa"
+    },
+    {
+      "mrid": "62957320-6543-4234-b567-8901abcdef02",
+      "code": "alarm",
+      "name": "Alarm",
+      "type": "analog",
+      "unit": "MPa"
+    },
+    {
+      "mrid": "73068431-7654-4345-c678-9012abcdef03",
+      "code": "lockout",
+      "name": "Lockout",
+      "type": "analog",
+      "unit": "MPa"
+    },
+    {
+      "mrid": "99999999-aaaa-bbbb-cccc-000000000001",
+      "code": "assessment",
+      "name": "Assessment",
+      "type": "discrete",
+      "valueAliasSetId": "40c60468-232a-4643-851f-50616900f601",
+      "options": [
+        { "value": 0, "alias": "Fail", "mrid": "d8858564-e438-4034-9273-030919163001" },
+        { "value": 1, "alias": "Pass", "mrid": "d8858564-e438-4034-9273-030919163002" }
+      ]
+    },
+    {
+      "mrid": "99999999-aaaa-bbbb-cccc-000000000002",
+      "code": "condition_indicator",
+      "name": "Condition indicator",
+      "type": "discrete",
+      "valueAliasSetId": "8e323053-481b-4348-89c0-67258380d701",
+      "options": [
+        { "value": 0, "alias": "Bad", "mrid": "e9969675-f549-4145-a384-141020274001" },
+        { "value": 1, "alias": "Poor", "mrid": "e9969675-f549-4145-a384-141020274002" },
+        { "value": 2, "alias": "Fair", "mrid": "e9969675-f549-4145-a384-141020274003" },
+        { "value": 3, "alias": "Good", "mrid": "e9969675-f549-4145-a384-141020274004" }
+      ]
+    }
   ],
   "defaultRows": []
 }

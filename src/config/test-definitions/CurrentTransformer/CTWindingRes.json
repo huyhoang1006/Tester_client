@@ -1,20 +1,41 @@
 {
-  "testId": "802bca64-119c-4d4b-b965-b54a152557e3",
-  "testCode": "dcWindingTripCoil",
-  "testName": "DC winding resistance of trip coil",
+  "testId": "f1ec4c35-428a-49ce-8d9b-502f1cc7acbd",
+  "testCode": "CTWindingRes",
+  "testName": "CT Winding resistance",
   "columns": [
     {
-      "mrid": "b1c2d3e4-f5a6-47b8-8c9d-0e1f2a3b4c5d",
-      "code": "trip_coil_no",
-      "name": "Trip Coil No",
+      "mrid": "aaaaaaaa-name-0000-0000-000000000000",
+      "code": "name",
+      "name": "Name",
       "type": "string"
     },
     {
       "mrid": "66666666-aaaa-bbbb-cccc-000000000003",
-      "code": "r_meas",
+      "code": "rmeas",
       "name": "R meas",
       "type": "analog",
       "unit": "Ω"
+    },
+    {
+      "mrid": "aaaaaaaa-rref-0000-0000-000000000000",
+      "code": "rref",
+      "name": "R ref",
+      "type": "analog",
+      "unit": "Ω"
+    },
+    {
+      "mrid": "aaaaaaaa-rcor-r000-0000-000000000000",
+      "code": "rcorr",
+      "name": "R corr",
+      "type": "analog",
+      "unit": "Ω"
+    },
+    {
+      "mrid": "aaaaaaaa-rdev-0000-0000-000000000000",
+      "code": "rdev",
+      "name": "R dev",
+      "type": "analog",
+      "unit": "%"
     },
     {
       "mrid": "99999999-aaaa-bbbb-cccc-000000000001",
@@ -40,6 +61,5 @@
         { "value": 3, "alias": "Good", "mrid": "e9969675-f549-4145-a384-141020274004" }
       ]
     }
-  ],
-  "defaultRows": []
+  ]
 }

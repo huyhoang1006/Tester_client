@@ -1,20 +1,20 @@
 {
-  "testId": "802bca64-119c-4d4b-b965-b54a152557e3",
-  "testCode": "dcWindingTripCoil",
-  "testName": "DC winding resistance of trip coil",
+  "testId": "94914852-02f6-4bf2-8e19-cf9d66ba4a1e",
+  "testCode": "OperatingTest",
+  "testName": "Operating test",
   "columns": [
     {
-      "mrid": "b1c2d3e4-f5a6-47b8-8c9d-0e1f2a3b4c5d",
-      "code": "trip_coil_no",
-      "name": "Trip Coil No",
+      "mrid": "c2b9f0a1-1a9d-4a22-8e44-000000000004",
+      "code": "measurement",
+      "name": "Measurement",
       "type": "string"
     },
     {
-      "mrid": "66666666-aaaa-bbbb-cccc-000000000003",
-      "code": "r_meas",
-      "name": "R meas",
+      "mrid": "9f2a3b4c-5d6e-4f16-9012-000000000020",
+      "code": "working_time",
+      "name": "Working time",
       "type": "analog",
-      "unit": "Ω"
+      "unit": "s"
     },
     {
       "mrid": "99999999-aaaa-bbbb-cccc-000000000001",
@@ -41,5 +41,8 @@
       ]
     }
   ],
-  "defaultRows": []
+  "defaultRows": [
+    { "measurement": "Main contact" },
+    { "measurement": "Earth switch" }
+  ]
 }

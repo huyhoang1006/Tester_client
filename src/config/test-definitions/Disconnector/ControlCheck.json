@@ -1,20 +1,13 @@
 {
-  "testId": "802bca64-119c-4d4b-b965-b54a152557e3",
-  "testCode": "dcWindingTripCoil",
-  "testName": "DC winding resistance of trip coil",
+  "testId": "9b6edb37-df64-4e28-971b-819965d15d46",
+  "testCode": "ControlCheck",
+  "testName": "Control cabinet check",
   "columns": [
     {
-      "mrid": "b1c2d3e4-f5a6-47b8-8c9d-0e1f2a3b4c5d",
-      "code": "trip_coil_no",
-      "name": "Trip Coil No",
+      "mrid": "b4c5d6e7-f8a9-4012-c3d4-e5f6g7h89012",
+      "code": "item",
+      "name": "Item",
       "type": "string"
-    },
-    {
-      "mrid": "66666666-aaaa-bbbb-cccc-000000000003",
-      "code": "r_meas",
-      "name": "R meas",
-      "type": "analog",
-      "unit": "Ω"
     },
     {
       "mrid": "99999999-aaaa-bbbb-cccc-000000000001",
@@ -41,5 +34,11 @@
       ]
     }
   ],
-  "defaultRows": []
+  "defaultRows": [
+    { "item": "Heater check" },
+    { "item": "Thermostat check" },
+    { "item": "Lighting check" },
+    { "item": "Door seal check" },
+    { "item": "Wiring check" }
+  ]
 }

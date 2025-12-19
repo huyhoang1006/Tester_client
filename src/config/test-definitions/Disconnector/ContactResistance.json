@@ -1,20 +1,27 @@
 {
-  "testId": "802bca64-119c-4d4b-b965-b54a152557e3",
-  "testCode": "dcWindingTripCoil",
-  "testName": "DC winding resistance of trip coil",
+  "testId": "2456d847-c65f-4b0b-bb34-3f90b8f971ef",
+  "testCode": "ContactResistance",
+  "testName": "Contact resistance",
   "columns": [
     {
-      "mrid": "b1c2d3e4-f5a6-47b8-8c9d-0e1f2a3b4c5d",
-      "code": "trip_coil_no",
-      "name": "Trip Coil No",
+      "mrid": "c2b9f0a1-1a9d-4a22-8e44-000000000004",
+      "code": "measurement",
+      "name": "Measurement",
       "type": "string"
     },
     {
-      "mrid": "66666666-aaaa-bbbb-cccc-000000000003",
-      "code": "r_meas",
-      "name": "R meas",
+      "mrid": "2e5f6a7b-8c9d-4e0f-9005-000000000013",
+      "code": "i_test",
+      "name": "I test",
       "type": "analog",
-      "unit": "Ω"
+      "unit": "A"
+    },
+    {
+      "mrid": "8e1f2a3b-4c5d-4e15-9011-000000000019",
+      "code": "contact_resistance",
+      "name": "Contact resistance",
+      "type": "analog",
+      "unit": "µ|Ω"
     },
     {
       "mrid": "99999999-aaaa-bbbb-cccc-000000000001",
@@ -41,5 +48,8 @@
       ]
     }
   ],
-  "defaultRows": []
+  "defaultRows": [
+    { "measurement": "Main contact" },
+    { "measurement": "Earth switch" }
+  ]
 }

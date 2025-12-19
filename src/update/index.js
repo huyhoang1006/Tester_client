@@ -1,4 +1,5 @@
 import * as rootOrganisationFunc from './organisationRoot/index'
+import * as procedureFunc from './procedure/index'
 import db from '@/function/datacontext/index'
 
 export const createRootOrganisation = async () => {
@@ -11,6 +12,15 @@ export const createRootOrganisation = async () => {
         }
     } catch (err) {
         console.error('Error creating root organisation:', err)
+    }
+}
+
+export const updateProcedure = async () => {
+    try {
+        await procedureFunc.updateProcedure(db)
+    } catch (err) {
+        console.error('Error during update procedure:', err)
+        throw err
     }
 }
 
