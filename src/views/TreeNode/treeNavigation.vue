@@ -1,24 +1,24 @@
 <template>
     <div class="explorer">
         <!-- Thanh công cụ -->
-        <div v-show="!clientSlide" class="toolbar">
-            <div style="display: flex; align-items: center;">
-                <div @click="resetAllServer" class="path-hover">Database manage</div>
-                <i style="margin-left: 10px;" class="fa-solid fa-angle-right"></i>
-            </div>
-            <div style="display: flex; align-items: center;" v-for="(item, index) in pathMapServer" :key="index">
-                <div @click="resetPathServer(index)" class="path-hover"> {{ item.parent }}</div>
-                <i style="margin-left: 10px;" class="fa-solid fa-angle-right"></i>
-            </div>
-        </div>
         <div v-show="clientSlide" class="toolbar">
             <div style="display: flex; align-items: center;">
-                <div @click="resetAllClient" class="path-hover">Database manage</div>
-                <i style="margin-left: 10px;" class="fa-solid fa-angle-right"></i>
+                <div @click="resetAllClient" class="path-hover">Organisation</div>
+                <i v-if="pathMapClient && pathMapClient.length > 0" style="margin-left: 10px;" class="fa-solid fa-angle-right"></i>
             </div>
-            <div style="display: flex; align-items: center;" v-for="(item, index) in pathMapClient" :key="index">
-                <div class="path-hover"> {{ item.parent }}</div>
-                <i style="margin-left: 10px;" class="fa-solid fa-angle-right"></i>
+            <div style="display: flex; align-items: center;" v-for="(item, index) in pathMapClient" :key="`client-${item.id}-${index}`">
+                <div @click="resetPathClient(index)" class="path-hover"> {{ item.parent }}</div>
+                <i v-if="index < pathMapClient.length - 1" style="margin-left: 10px;" class="fa-solid fa-angle-right"></i>
+            </div>
+        </div>
+        <div v-show="!clientSlide" class="toolbar">
+            <div style="display: flex; align-items: center;">
+                <div @click="resetAllServer" class="path-hover">Organisation</div>
+                <i v-if="pathMapServer && pathMapServer.length > 0" style="margin-left: 10px;" class="fa-solid fa-angle-right"></i>
+            </div>
+            <div style="display: flex; align-items: center;" v-for="(item, index) in pathMapServer" :key="`server-${item.id}-${index}`">
+                <div @click="resetPathServer(index)" class="path-hover"> {{ item.parent }}</div>
+                <i v-if="index < pathMapServer.length - 1" style="margin-left: 10px;" class="fa-solid fa-angle-right"></i>
             </div>
         </div>
         <div id="toolbar-setting-id" class="toolbar-setting">
@@ -207,7 +207,7 @@
                     <ul>
                         <TreeNode v-for="item in organisationClientList" :key="item.id" :node="item"
                             @double-click-node="doubleClickNode" :selectedNodes.sync="selectedNodes"
-                            @fetch-children="fetchChildren" @show-properties="showPropertiesData"
+                            @fetch-children="fetchChildren" @show-properties="showPropertiesDataClient"
                             @update-selection="updateSelection" @clear-selection="clearSelection"
                             @open-context-menu="openContextMenuClient">
                         </TreeNode>
@@ -1227,6 +1227,7 @@ export default {
             sl: 10,
             count: '',
             ownerServerList: [],
+            clientList: [],
             ownerList: [],
             locationList: [],
             personList: [],
@@ -1541,7 +1542,6 @@ export default {
         },
         // Import handlers từ context menu
         async handleImportJSONFromContext(node) {
-            console.log("Đích import (Node cha):", node.name, node.mrid);
             // Validate: Phải có node
             if (!node) {
                 this.$message.warning('Please select a node to import into')
@@ -1549,18 +1549,47 @@ export default {
             }
 
             try {
-        const fileResult = await window.electronAPI.importJSON();
-        console.log("Dữ liệu JSON đọc được:", fileResult.data);
+                // Mở file picker để chọn JSON file
+                const fileResult = await window.electronAPI.importJSON()
+                
+                if (!fileResult.success || !fileResult.data) {
+                    if (fileResult.message !== 'Import cancelled') {
+                        this.$message.error(fileResult.message || 'Failed to load JSON file')
+                    }
+                    return
+                }
+                const dtos = fileResult.data
+                const dependencies = {
+                    electronAPI: window.electronAPI,
+                    mappings: {
+                        SubstationMapping,
+                        OrganisationMapping,
+                        SurgeArresterMapping,
+                        PowerCableMapping,
+                        DisconnectorMapping,
+                        rotatingMachineMapping,
+                        CapacitorMapping,
+                        VoltageTransformerMapping,
+                        CurrentTransformerMapping,
+                        TransformerMapping,
+                        BreakerMapping,
+                        ReactorMapping,
+                        BushingMapping
+                    },
+                    userId: this.$store.state.user.user_id,
+                    messageHandler: this.$message
+                }
+                 // Import với node làm parent
+                 const result = await importNodeFromJSONUtil(dtos, node, dependencies)
 
-        const result = await importNodeFromJSONUtil(fileResult.data, node, dependencies);
-        console.log("Kết quả Import:", result); // Xem lỗi cụ thể trả về là gì
-        
-        if (!result.success) {
-            this.$message.error("Lỗi: " + result.message);
-        }
-    } catch (e) {
-        console.error("Lỗi hệ thống:", e);
-    }
+// Refresh tree sau khi import thành công
+if (result.success && result.successCount > 0) {
+    this.refreshTreeAfterImport(node)
+}
+} catch (error) {
+console.error('Error importing JSON:', error)
+this.$message.error('An error occurred while importing JSON')
+}
         },
         async handleImportJSONCIMFromContext(node) {
             this.$message.info('Import JSON by CIM ')
@@ -2683,6 +2712,156 @@ export default {
             }
         },
 
+        async showPropertiesDataClient(node) {
+            this.assetPropertySignClient = false
+            this.jobPropertySignClient = false
+            if (node.asset != undefined) {
+                this.assetPropertySignClient = true
+                // Fetch dữ liệu asset từ API để lấy đầy đủ thông tin
+                let assetData = null
+                try {
+                    if (node.asset === 'Transformer') {
+                        const entityRes = await window.electronAPI.getTransformerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
+                        if (entityRes.success && entityRes.data) {
+                            assetData = TransformerMapping.transformerEntityToDto(entityRes.data)
+                        }
+                    } else if (node.asset === 'Bushing') {
+                        const entityRes = await window.electronAPI.getBushingEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
+                        if (entityRes.success && entityRes.data) {
+                            assetData = BushingMapping.mapEntityToDto(entityRes.data)
+                        }
+                    } else if (node.asset === 'Circuit breaker') {
+                        const entityRes = await window.electronAPI.getBreakerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
+                        if (entityRes.success && entityRes.data) {
+                            assetData = BreakerMapping.mapEntityToDto(entityRes.data)
+                        }
+                    } else if (node.asset === 'Surge arrester') {
+                        const entityRes = await window.electronAPI.getSurgeArresterEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
+                        if (entityRes.success && entityRes.data) {
+                            assetData = SurgeArresterMapping.mapEntityToDto(entityRes.data)
+                        }
+                    } else if (node.asset === 'Power cable') {
+                        const entityRes = await window.electronAPI.getPowerCableEntityByMrid(node.mrid, node.parentId)
+                        if (entityRes.success && entityRes.data) {
+                            assetData = PowerCableMapping.mapEntityToDto(entityRes.data)
+                        }
+                    } else if (node.asset === 'Disconnector') {
+                        const entityRes = await window.electronAPI.getDisconnectorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
+                        if (entityRes.success && entityRes.data) {
+                            assetData = DisconnectorMapping.mapEntityToDto(entityRes.data)
+                        }
+                    } else if (node.asset === 'Capacitor') {
+                        const entityRes = await window.electronAPI.getCapacitorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
+                        if (entityRes.success && entityRes.data) {
+                            assetData = CapacitorMapping.mapEntityToDto(entityRes.data)
+                        }
+                    } else if (node.asset === 'Voltage transformer') {
+                        const entityRes = await window.electronAPI.getVoltageTransformerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
+                        if (entityRes.success && entityRes.data) {
+                            assetData = VoltageTransformerMapping.mapEntityToDto(entityRes.data)
+                        }
+                    } else if (node.asset === 'Current transformer') {
+                        const entityRes = await window.electronAPI.getCurrentTransformerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
+                        if (entityRes.success && entityRes.data) {
+                            assetData = CurrentTransformerMapping.mapEntityToDto(entityRes.data)
+                        }
+                    } else if (node.asset === 'Reactor') {
+                        const entityRes = await window.electronAPI.getReactorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
+                        if (entityRes.success && entityRes.data) {
+                            assetData = ReactorMapping.mapEntityToDto(entityRes.data)
+                        }
+                    } else if (node.asset === 'Rotating machine') {
+                        const entityRes = await window.electronAPI.getRotatingMachineEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
+                        if (entityRes.success && entityRes.data) {
+                            assetData = rotatingMachineMapping.mapEntityToDto(entityRes.data)
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error fetching asset data:", error)
+                }
+                
+                // Map từ DTO nếu có, nếu không thì map từ node
+                if (assetData && assetData.properties) {
+                    await this.mappingAssetPropertiesClient(assetData.properties)
+                    // Set asset name từ node.asset
+                    this.assetPropertiesClient.asset = node.asset || ''
+                } else {
+                    await this.mappingAssetPropertiesClient(node)
+                }
+                
+                // Tìm parent thực sự từ cây dữ liệu thay vì dùng node.parent
+                const parentNode = node.parentId ? this.findNodeById(node.parentId, this.organisationClientList) : null
+                if (parentNode) {
+                    await this.mappingPropertiesClient(parentNode)
+                }
+                await this.loadPathMapClient(node)
+                // Với asset: ưu tiên serial_number/serial_no, nếu không có thì dùng name
+                const assetName = node.serial_number || node.serial_no || node.name || 'Unknown'
+                this.pathMapClient.push({
+                    id: node.id || node.mrid,
+                    mrid: node.mrid,
+                    parent: assetName
+                })
+            } else if (node.type == 'test') {
+                this.assetPropertySignClient = true
+                this.jobPropertySignClient = true
+                // Tìm parent thực sự từ cây dữ liệu
+                // Test -> Job (parent)
+                // Test -> Asset (parent.parent) 
+                // Test -> Location (parent.parent.parent)
+                const jobNode = node.parentId ? this.findNodeById(node.parentId, this.organisationClientList) : null
+                const assetNode = jobNode ? (jobNode.parentId ? this.findNodeById(jobNode.parentId, this.organisationClientList) : null) : null
+                const locationNode = assetNode ? (assetNode.parentId ? this.findNodeById(assetNode.parentId, this.organisationClientList) : null) : null
+                if (locationNode) {
+                    await this.mappingPropertiesClient(locationNode)
+                }
+                if (assetNode) {
+                    await this.mappingAssetPropertiesClient(assetNode)
+                }
+                if (jobNode) {
+                    await this.mappingJobPropertiesClient(jobNode)
+                }
+                await this.loadPathMapClient(node)
+                const testName = node.name || node.serial_number || node.serial_no || 'Unknown'
+                this.pathMapClient.push({
+                    id: node.id || node.mrid,
+                    mrid: node.mrid,
+                    parent: testName
+                })
+            } else if (node.type == 'job') {
+                this.assetPropertySignClient = true
+                this.jobPropertySignClient = true
+                // Tìm parent thực sự từ cây dữ liệu
+                // Job -> Asset (parent)
+                // Job -> Location (parent.parent)
+                const assetNode = node.parentId ? this.findNodeById(node.parentId, this.organisationClientList) : null
+                const locationNode = assetNode ? (assetNode.parentId ? this.findNodeById(assetNode.parentId, this.organisationClientList) : null) : null
+                if (locationNode) {
+                    await this.mappingPropertiesClient(locationNode)
+                }
+                if (assetNode) {
+                    await this.mappingAssetPropertiesClient(assetNode)
+                }
+                await this.mappingJobPropertiesClient(node)
+                await this.loadPathMapClient(node)
+                const jobName = node.name || node.serial_number || node.serial_no || 'Unknown'
+                this.pathMapClient.push({
+                    id: node.id || node.mrid,
+                    mrid: node.mrid,
+                    parent: jobName
+                })
+            } else {
+                await this.mappingPropertiesClient(node)
+                await this.loadPathMapClient(node)
+                const nodeName = node.name || node.serial_number || node.serial_no || 'Unknown'
+                this.pathMapClient.push({
+                    id: node.id || node.mrid,
+                    mrid: node.mrid,
+                    parent: nodeName
+                })
+            }
+        },
+
         async loadPathMap(node) {
             this.pathMapServer = []
             if (node != undefined) {
@@ -2692,10 +2871,20 @@ export default {
             }
         },
 
+        async loadPathMapClient(node) {
+            this.pathMapClient = []
+            if (node != undefined) {
+                if (node.parentArr != undefined) {
+                    this.pathMapClient = [...node.parentArr]
+                }
+            }
+        },
+
         async mappingProperties(data) {
             if (data != undefined) {
                 this.properties.name = data.name == undefined || data.name == null ? '' : data.name
                 this.properties.region = data.region == undefined || data.region == null ? '' : data.region
+                this.properties.plant = data.plant == undefined || data.plant == null ? '' : data.plant
                 this.properties.address = data.address == undefined || data.address == null ? '' : data.address
                 this.properties.city = data.city == undefined || data.city == null ? '' : data.city
                 this.properties.state_province = data.state_province == undefined || data.state_province == null ? '' : data.state_province
@@ -2729,6 +2918,51 @@ export default {
                 this.jobProperties.ambient_condition = data.ambient_condition == undefined || data.ambient_condition == null ? '' : data.ambient_condition
                 this.jobProperties.tested_by = data.tested_by == undefined || data.tested_by == null ? '' : data.tested_by
                 this.jobProperties.standard = data.standard == undefined || data.standard == null ? '' : data.standard
+            }
+        },
+
+        async mappingPropertiesClient(data) {
+            if (data != undefined) {
+                this.propertiesClient.name = data.name == undefined || data.name == null ? '' : data.name
+                this.propertiesClient.region = data.region == undefined || data.region == null ? '' : data.region
+                this.propertiesClient.plant = data.plant == undefined || data.plant == null ? '' : data.plant
+                this.propertiesClient.address = data.address == undefined || data.address == null ? '' : data.address
+                this.propertiesClient.city = data.city == undefined || data.city == null ? '' : data.city
+                this.propertiesClient.state_province = data.state_province == undefined || data.state_province == null ? '' : data.state_province
+                this.propertiesClient.postal_code = data.postal_code == undefined || data.postal_code == null ? '' : data.postal_code
+                this.propertiesClient.country = data.country == undefined || data.country == null ? '' : data.country
+                this.propertiesClient.phone_no = data.phone_no == undefined || data.phone_no == null ? '' : data.phone_no
+                this.propertiesClient.email = data.email == undefined || data.email == null ? '' : data.email
+            }
+        },
+
+        async mappingAssetPropertiesClient(data) {
+            if (data != undefined) {
+                // asset name sẽ được set riêng từ node.asset trong showPropertiesDataClient
+                // asset_type: có thể là type hoặc asset_type
+                this.assetPropertiesClient.asset_type = data.type == undefined || data.type == null ? (data.asset_type == undefined || data.asset_type == null ? '' : data.asset_type) : data.type
+                // serial_no: có thể là serial_no hoặc serial_number
+                this.assetPropertiesClient.serial_no = data.serial_no == undefined || data.serial_no == null ? '' : (data.serial_number || data.serial_no || '')
+                this.assetPropertiesClient.manufacturer = data.manufacturer == undefined || data.manufacturer == null ? '' : data.manufacturer
+                this.assetPropertiesClient.manufacturer_type = data.manufacturer_type == undefined || data.manufacturer_type == null ? '' : data.manufacturer_type
+                // manufacturing_year: có thể là manufacturing_year hoặc manufacturer_year
+                this.assetPropertiesClient.manufacturing_year = data.manufacturing_year == undefined || data.manufacturing_year == null ? (data.manufacturer_year == undefined || data.manufacturer_year == null ? '' : data.manufacturer_year) : data.manufacturing_year
+                // country: có thể là country hoặc country_of_origin
+                this.assetPropertiesClient.country = data.country == undefined || data.country == null ? (data.country_of_origin == undefined || data.country_of_origin == null ? '' : data.country_of_origin) : data.country
+                this.assetPropertiesClient.apparatus_id = data.apparatus_id == undefined || data.apparatus_id == null ? '' : data.apparatus_id
+            }
+        },
+
+        async mappingJobPropertiesClient(data) {
+            if (data != undefined) {
+                this.jobPropertiesClient.name = data.name == undefined || data.name == null ? '' : data.name
+                this.jobPropertiesClient.work_order = data.work_order == undefined || data.work_order == null ? '' : data.work_order
+                this.jobPropertiesClient.creation_date = data.creation_date == undefined || data.creation_date == null ? '' : data.creation_date
+                this.jobPropertiesClient.execution_date = data.execution_date == undefined || data.execution_date == null ? '' : data.execution_date
+                this.jobPropertiesClient.approved_by = data.approved_by == undefined || data.approved_by == null ? '' : data.approved_by
+                this.jobPropertiesClient.ambient_condition = data.ambient_condition == undefined || data.ambient_condition == null ? '' : data.ambient_condition
+                this.jobPropertiesClient.tested_by = data.tested_by == undefined || data.tested_by == null ? '' : data.tested_by
+                this.jobPropertiesClient.standard = data.standard == undefined || data.standard == null ? '' : data.standard
             }
         },
 
@@ -4516,6 +4750,7 @@ export default {
             // Nếu là client side, mở tab client
             if (this.clientSlide) {
                 await this.showDataClient(node);
+                await this.showPropertiesDataClient(node);
             } else {
                 // Nếu là server side, mở tab server
                 await this.showData(node);
@@ -4664,6 +4899,135 @@ async handleDeleteNode() {
         },
 
         async resetAllClient() {
+            this.selectedNodes = [],
+            this.assetPropertySignClient = false
+            this.jobPropertySignClient = false
+            this.pathMapClient = []
+            this.properties = {
+                region: '',
+                name: '',
+                plant: '',
+                address: '',
+                city: '',
+                state_province: '',
+                postal_code: '',
+                country: '',
+                phone_no: '',
+                email: ''
+            }
+            this.assetProperties = {
+                asset: '',
+                asset_type: '',
+                serial_no: '',
+                manufacturer: '',
+                manufacturer_type: '',
+                manufacturing_year: '',
+                apparatus_id: '',
+                country: '',
+            }
+            this.jobProperties = {
+                name: '',
+                work_order: '',
+                creation_date: '',
+                execution_date: '',
+                tested_by: '',
+                approved_by: '',
+                ambient_condition: '',
+                standard: ''
+            }
+            this.clientList = []
+            this.count = ''
+        },
+
+        async resetPathClient(index) {
+            // Tìm node tương ứng với index trong path
+            // Ưu tiên dùng mrid nếu có, sau đó mới dùng id
+            const targetId = this.pathMapClient[0].mrid || this.pathMapClient[0].id;
+            let currentNode = this.findNodeByIdOrMrid(targetId, this.organisationClientList);
+            if (!currentNode) {
+                return; // Không tìm thấy node đầu tiên
+            }
+            
+            // Tìm node theo path từ node đầu tiên đến index
+            for (let i = 1; i <= index; i++) {
+                if (!currentNode.children) return; // Nếu không có children thì dừng lại
+                
+                // Tìm trực tiếp trong children trước (không đệ quy)
+                // Ưu tiên tìm bằng mrid nếu có, sau đó mới tìm bằng id
+                const targetId = this.pathMapClient[i].mrid || this.pathMapClient[i].id;
+                let foundChild = currentNode.children.find(child => 
+                    child.mrid === targetId || child.id === targetId
+                );
+                
+                // Nếu không tìm thấy trực tiếp, mới tìm đệ quy
+                if (!foundChild) {
+                    foundChild = this.findNodeByIdOrMrid(targetId, currentNode.children);
+                }
+                
+                if (!foundChild) {
+                    return; // Không tìm thấy thì dừng lại
+                }
+                currentNode = foundChild;
+            }
+            
+            // Cập nhật pathMapClient để chỉ giữ lại path từ đầu đến node hiện tại
+            this.pathMapClient = this.pathMapClient.slice(0, index + 1);
+            // Force Vue update để đảm bảo UI được render lại đúng
+            await this.$nextTick();
+            
+            // Load properties cho node hiện tại nhưng không load lại path
+            await this.clearSelection()
+            
+            // Gọi mapping properties nhưng không gọi loadPathMapClient và push lại
+            this.assetPropertySignClient = false
+            this.jobPropertySignClient = false
+            if (currentNode.asset != undefined) {
+                this.assetPropertySignClient = true
+                await this.mappingAssetPropertiesClient(currentNode)
+                // Tìm parent thực sự từ cây dữ liệu thay vì dùng currentNode.parent
+                const parentNode = currentNode.parentId ? this.findNodeById(currentNode.parentId, this.organisationClientList) : null
+                if (parentNode) {
+                    await this.mappingPropertiesClient(parentNode)
+                }
+            } else if (currentNode.type == 'test') {
+                this.assetPropertySignClient = true
+                this.jobPropertySignClient = true
+                // Tìm parent thực sự từ cây dữ liệu
+                // Test -> Job (parent)
+                // Test -> Asset (parent.parent) 
+                // Test -> Location (parent.parent.parent)
+                const jobNode = currentNode.parentId ? this.findNodeById(currentNode.parentId, this.organisationClientList) : null
+                const assetNode = jobNode ? (jobNode.parentId ? this.findNodeById(jobNode.parentId, this.organisationClientList) : null) : null
+                const locationNode = assetNode ? (assetNode.parentId ? this.findNodeById(assetNode.parentId, this.organisationClientList) : null) : null
+                if (locationNode) {
+                    await this.mappingPropertiesClient(locationNode)
+                }
+                if (assetNode) {
+                    await this.mappingAssetPropertiesClient(assetNode)
+                }
+                if (jobNode) {
+                    await this.mappingJobPropertiesClient(jobNode)
+                }
+            } else if (currentNode.type == 'job') {
+                this.assetPropertySignClient = true
+                this.jobPropertySignClient = true
+                // Tìm parent thực sự từ cây dữ liệu
+                // Job -> Asset (parent)
+                // Job -> Location (parent.parent)
+                const assetNode = currentNode.parentId ? this.findNodeById(currentNode.parentId, this.organisationClientList) : null
+                const locationNode = assetNode ? (assetNode.parentId ? this.findNodeById(assetNode.parentId, this.organisationClientList) : null) : null
+                if (locationNode) {
+                    await this.mappingPropertiesClient(locationNode)
+                }
+                if (assetNode) {
+                    await this.mappingAssetPropertiesClient(assetNode)
+                }
+                await this.mappingJobPropertiesClient(currentNode)
+            } else {
+                await this.mappingPropertiesClient(currentNode)
+            }
+            
+            Vue.set(currentNode, "expanded", !currentNode.expanded);
         },
 
         async handleAddCommand(cmd) {
@@ -5576,8 +5940,20 @@ cleanDtoForDuplicate(dto) {
             return null;
         },
 
+        findNodeByIdOrMrid(idOrMrid, nodes) {
+            for (const node of nodes) {
+                if (node.id === idOrMrid || node.mrid === idOrMrid) return node;
+                if (node.children) {
+                    const result = this.findNodeByIdOrMrid(idOrMrid, node.children);
+                    if (result) return result;
+                }
+            }
+            return null;
+        },
+
         async doubleClickNode(node) {
             await this.showDataClient(node);
+            await this.showPropertiesDataClient(node);
         },
 
         async doubleClickNodeServer(node) {
