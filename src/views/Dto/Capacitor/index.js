@@ -19,6 +19,7 @@ class CapacitorsDTO {
         this.assetInfoId = ''
         this.assetPsrId = ''
         this.psrId = ''
+        this.locationId = '';
 
         this.configsData = {
             phase: '1',
