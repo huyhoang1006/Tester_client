@@ -1473,27 +1473,37 @@ export default {
                 // Import với parent node
                 const result = await importNodeFromJSONUtil(dtos, parentNode, dependencies)
 
-                // Refresh tree sau khi import thành công
+                // Tạo node trong tree UI sau khi import thành công
                 if (result.success && result.successCount > 0) {
-                    // Refresh tree bằng cách reload children của parent node
-                    this.refreshTreeAfterImport(parentNode)
+                    console.log('Import result:', result)
+                    // Tạo các node đã import vào tree UI
+                    if (result.importedNodes && result.importedNodes.length > 0) {
+                        console.log('Creating nodes in tree UI:', result.importedNodes)
+                        for (const newNodeData of result.importedNodes) {
+                            const node = this.findNodeById(newNodeData.parentId, this.organisationClientList)
+                            if (node) {
+                                const children = Array.isArray(node.children) ? node.children : []
+                                Vue.set(node, "children", [...children, newNodeData])
+                                console.log('Added node to tree:', newNodeData.mrid, 'to parent:', node.mrid)
+                            } else {
+                                console.warn(`Parent node not found for ${newNodeData.mrid}, parentId: ${newNodeData.parentId}`)
+                            }
+                        }
+                    } else {
+                        console.warn('No importedNodes in result:', result)
+                    }
+                    
+                    // Refresh tree để đồng bộ với database
+                    // Reset flag để force fetch lại từ server
+                    Vue.set(parentNode, "_childrenFetched", false)
+                    await this.fetchChildren(parentNode)
                 }
             } catch (error) {
                 console.error('Error importing JSON:', error)
                 this.$message.error('An error occurred while importing JSON')
             }
         },
-        refreshTreeAfterImport(parentNode) {
-            // Refresh tree bằng cách trigger reload children
-            if (parentNode) {
-                // Emit event để reload children của parent node
-                this.$nextTick(() => {
-                    // Có thể cần gọi method reload tree tùy vào implementation
-                    // Tạm thời chỉ log
-                    console.log('Tree should be refreshed after import')
-                })
-            }
-        },
+        
         handleCancelImport(){
             this.openImportDialog = false
         },
@@ -1542,7 +1552,6 @@ export default {
         },
         // Import handlers từ context menu
         async handleImportJSONFromContext(node) {
-            // Validate: Phải có node
             if (!node) {
                 this.$message.warning('Please select a node to import into')
                 return
@@ -1579,22 +1588,34 @@ export default {
                     userId: this.$store.state.user.user_id,
                     messageHandler: this.$message
                 }
-                 // Import với node làm parent
                  const result = await importNodeFromJSONUtil(dtos, node, dependencies)
+                 if (result.success && result.successCount > 0) {
+                    // Tạo các node đã import vào tree UI
+                    if (result.importedNodes && result.importedNodes.length > 0) {
+                        for (const newNodeData of result.importedNodes) {
+                            const parentNode = this.findNodeById(newNodeData.parentId, this.organisationClientList)
+                            if (parentNode) {
+                                const children = Array.isArray(parentNode.children) ? parentNode.children : []
+                                Vue.set(parentNode, "children", [...children, newNodeData])
+                            } else {
+                                console.warn(`Parent node not found for ${newNodeData.mrid}`)
+                            }
+                        }
+                    }
+                    
+                    // Refresh tree để đồng bộ với database
+                    Vue.set(node, "_childrenFetched", false)
+                    await this.fetchChildren(node)
+                }
+            } catch (error) {
+                 console.error('Error importing JSON:', error)
+                 this.$message.error('An error occurred while importing JSON')
+            }
 
-// Refresh tree sau khi import thành công
-if (result.success && result.successCount > 0) {
-    this.refreshTreeAfterImport(node)
-}
-} catch (error) {
-console.error('Error importing JSON:', error)
-this.$message.error('An error occurred while importing JSON')
-}
         },
         async handleImportJSONCIMFromContext(node) {
             this.$message.info('Import JSON by CIM ')
         },
-        // Export một node duy nhất từ context menu (không dùng selectedNodes)
         async exportSingleNodeToJSON(node, type) {
             if (!node) {
                 this.$message.warning('No node selected to export')
