@@ -849,6 +849,7 @@
         </el-dialog>
 
         <el-dialog title="Export" width="1000px" :visible.sync="openExportDialog">
+            <Export :exportType="exportType"></Export>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleCancelExport">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleExportConfirm">Save</el-button>
@@ -999,6 +1000,7 @@ import Attachment from '../Common/Attachment.vue';
 import * as demoAPI from '@/api/demo'
 import Icon from '@/views/Common/Icon.vue'
 import Fmeca from '@/views/Fmeca'
+import Export from '@/views/Export/index.vue'
 
 // Import Mappings (Quan trọng cho Duplicate)
 import * as BreakerMapping from '@/views/Mapping/Breaker/index'
@@ -1062,10 +1064,12 @@ export default {
         JobCircuitBreaker,
         JobTransformer,
         Icon,
-        Fmeca
+        Fmeca,
+        Export,
     },
     data() {
         return {
+            exportType: null,
             openExportDialog: false,
             openImportDialog: false,
             signFmeca: false,
@@ -1367,16 +1371,20 @@ export default {
             console.log("Command received:", cmd);
             if (cmd === 'exportExcel') {
                 this.openExportDialog = true
+                this.exportType = 'excel'
             } else if (cmd === 'exportJSON') {
                 this.exportTreeToJSON('dto')
             } else if (cmd === 'exportJSONCIM') {
                 this.exportTreeToJSON('cim')
             } else if (cmd === 'exportXML') {
                 this.openExportDialog = true
+                this.exportType = 'xml'
             } else if (cmd === 'exportWord') {
                 this.openExportDialog = true
+                this.exportType = 'word'
             } else if (cmd === 'exportPDF') {
                 this.openExportDialog = true
+                this.exportType = 'pdf'
             } 
         },
         async exportTreeToJSON(type) {
