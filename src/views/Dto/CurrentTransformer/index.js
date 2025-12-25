@@ -15,6 +15,7 @@ class CurrentTransformerDto {
         this.assetPsrId = ''
         this.psrId = ''
         this.attachmentId = ''
+        this.locationId = '';
 
     }
 }

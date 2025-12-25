@@ -13,6 +13,7 @@ class PowerCableDTO {
     this.assetInfoId = ''
     this.productAssetModelId = ''
     this.lifecycleDateId = ''
+    this.locationId = '';
     this.assetPsrId = ''
     this.psrId = ''
     this.attachmentId = ''
