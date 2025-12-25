@@ -2,7 +2,7 @@
     <div>
         <div>
             <div style= "font-size: 18px; font-weight: bold"> Fmeca table </div>
-            <div> 
+            <div style="height: 300px; width: 100%; overflow: auto;" class="overflow-layout"> 
                 <el-table
                     :data="fmecaTableData"
                     :span-method="cellSpanMethod"
@@ -62,47 +62,43 @@
                 </el-table>
 
             </div>
-
         </div>
         <div style="margin-top: 20px; font-size: 18px; font-weight: bold">
             <div> Fmeca weighting </div>
-            <div>  
+            <div style="width: 100%; overflow: auto; height: 300px;" class="overflow-layout">  
                  <el-table
                     :data="fmecaWeightingTableData"
-                    style="width: 100%;margin-bottom: 20px;"
+                    style="margin-bottom: 20px; width: 100%;"
                     row-key="no"
                     border
-                    :tree-props="{ children: 'children' }">
+                    :header-cell-style="headerStyle"
+                    :cell-style="cellStyle">
                     <el-table-column
                         prop="no"
                         label="No"
-                        width="100"
                         header-align="center"
                         align="center">
                     </el-table-column>
                     <el-table-column
                         prop="tranformerConditionCriteria"
                         label="Tranformer Condition Criteria"
-                        width="400"
-                        header-align="center">
+                        header-align="center"
+                        width="300">
                     </el-table-column>
                     <el-table-column
                         prop="totalRPN"
                         label="Total RPN"
-                        width="150"
                         header-align="center">
                     </el-table-column>
                     <el-table-column
                         prop="rpnProportion"
                         label="RPN Proportion"
-                        width="150"
                         header-align="center">
                     </el-table-column>
                     <el-table-column
                         prop="weightingFactor"
                         label="Weighting Factor"
-                        width="150"
-                        header-align="center">
+                    >
                     </el-table-column>  
                 </el-table>   
             </div>
@@ -198,7 +194,7 @@ export default {
                                             rpn: '',
                                         },
                                         {
-                                            no:'',
+                                            no:'1.2.1.2-a',
                                             failureMode: 'Aging, Moisture, contamination',
                                             sof: '',
                                             pof: '',
@@ -208,7 +204,7 @@ export default {
                                             rpn: '',
                                         },
                                         {
-                                            no:'1.2.1.3',
+                                            no:'1.2.1.2-b',
                                             failureMode: 'Partial Discharge',
                                             sof: '',
                                             pof: '',
@@ -218,7 +214,7 @@ export default {
                                             rpn: '',
                                         },
                                         {
-                                            no:'',
+                                            no:'1.2.1.3',
                                             failureMode: 'Partial Discharge',
                                             sof: '',
                                             pof: '',
@@ -260,7 +256,7 @@ export default {
                                             rpn: '',
                                         },
                                         {
-                                            no:'',
+                                            no:'1.2.2.1-a',
                                             failureMode: '',
                                             sof: '',
                                             pof: '',
@@ -280,7 +276,7 @@ export default {
                                             rpn: '',      
                                         },
                                         {
-                                            no:'',
+                                            no:'1.2.2.2-a',
                                             failureMode: 'Insulation flashover',
                                             sof: '',     
                                             pof: '',
@@ -290,7 +286,7 @@ export default {
                                             rpn: '',
                                         },
                                         {
-                                            no:'',
+                                            no:'1.2.2.2-b',
                                             failureMode: 'Insulation flashover',
                                             sof: '',
                                             pof: '',
@@ -409,7 +405,7 @@ export default {
                             rpn: '',
                         },
                         {
-                            no: '',
+                            no: '2.3',
                             failureMode: 'Winding turn to turn short circuit',
                             sof: '',
                             pof: '',
@@ -419,7 +415,7 @@ export default {
                             rpn: '',
                         },
                         {
-                            no: '',
+                            no: '2.4',
                             failureMode: 'Winding turn to turn short circuit',
                             sof: '',
                             pof: '',
@@ -429,7 +425,7 @@ export default {
                             rpn: '',
                         },
                         {
-                            no: '',
+                            no: '2.5',
                             failureMode: 'Winding turn to turn short circuit',
                             sof: '',
                             pof: '',
@@ -1215,9 +1211,30 @@ export default {
                 }    
                 }
             }
+        },
+        headerStyle() {
+            return {
+            textAlign: 'center',
+            fontWeight: 'bold',
+            background: '#f5f7fa',
+            borderBottom: '1px solid #dcdfe6'
+            }
+        },
+        cellStyle() {
+            return {
+            borderBottom: '1px solid #ebeef5'
+            }
         }
     }
 }
 </script>
-<style scoped>  
+<style>  
+.el-table .cell {
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.4;
+}
+.overflow-layout::-webkit-scrollbar {
+  width: 0;
+}
 </style>

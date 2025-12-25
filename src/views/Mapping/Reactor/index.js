@@ -37,6 +37,7 @@ export function mapDtoToEntity(dto) {
     entity.asset.product_asset_model = dto.productAssetModelId || null;
     entity.productAssetModel.manufacturer = dto.properties.manufacturer || null;
     entity.productAssetModel.mrid = dto.productAssetModelId || null;
+    entity.asset.location = dto.locationId || null;
 
     entity.productAssetModel.weight_total = dto.reactorOther.weight.mrid || null;
     const weight = new Mass();
@@ -111,6 +112,7 @@ export function mapEntityToDto(entity) {
     dto.properties.apparatus_id = entity.asset.name || null;
     dto.properties.comment = entity.asset.description || null;
     dto.properties.manufacturing_year = entity.lifecycleDate.manufactured_date || null;
+    dto.locationId = entity.asset.location || null;
 
     /** ---------- Asset Info & Product Asset Model ---------- */
     dto.assetInfoId = entity.reactor.mrid || null;
