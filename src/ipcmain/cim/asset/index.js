@@ -1,6 +1,6 @@
 'use strict'
-import {ipcMain} from 'electron'
-import {cimFunc} from "@/function"
+import { ipcMain } from 'electron'
+import { cimFunc } from "@/function"
 
 export const getAssetByMrid = () => {
     ipcMain.handle('getAssetByMrid', async function (event, id) {
@@ -56,7 +56,21 @@ export const getAssetByPsrIdAndKind = () => {
     })
 }
 
+export const updateAssetByMrid = () => {
+    ipcMain.handle('updateAssetByMrid', async function (event, mrid, data) {
+        try {
+            // Giả sử cimFunc.assetFunc có hàm updateAsset
+            const rs = await cimFunc.assetFunc.updateAsset(mrid, data)
+            return rs;
+        } catch (error) {
+            console.log(error)
+            return { success: false, message: error.message }
+        }
+    })
+}
+
 export const active = () => {
     getAssetByMrid()
     getAssetByPsrIdAndKind()
+    updateAssetByMrid()
 }
