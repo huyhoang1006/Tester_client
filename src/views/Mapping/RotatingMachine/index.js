@@ -33,6 +33,7 @@ export function mapDtoToEntity(dto) {
     entity.rotatingMachine.mrid = dto.assetInfoId || null;
     entity.asset.name = dto.properties.apparatus_id || null;
     entity.asset.description = dto.properties.comment || null;
+    entity.asset.location = dto.locationId || null;
 
     /** ================== lifecycle date ================== */
     entity.lifecycleDate.mrid = dto.lifecycleDateId || null;
@@ -108,6 +109,7 @@ export function mapEntityToDto(entity) {
     dto.assetInfoId = entity.rotatingMachine.mrid || null;
     dto.properties.apparatus_id = entity.asset.name || null;
     dto.properties.comment = entity.asset.description || null;
+    dto.locationId = entity.asset.location || null;
 
     // lifecycle date
     dto.properties.manufacturer_year = entity.lifecycleDate.manufactured_date || null;

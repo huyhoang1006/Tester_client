@@ -2023,22 +2023,6 @@ this.$message.error('An error occurred while importing JSON')
                             newRows.push(...assetCurrentTransformerReturn.data);
                         }
 
-                        if (assetCurrentTransformerReturn.success) {
-                            assetCurrentTransformerReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'asset';
-                                row.asset = 'Current transformer';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            });
-                            newRows.push(...assetCurrentTransformerReturn.data);
-                        }
-
                         if (assetBreakerReturn.success) {
                             assetBreakerReturn.data.forEach(row => {
                                 row.parentId = clickedRow.mrid;
@@ -2327,138 +2311,73 @@ this.$message.error('An error occurred while importing JSON')
         },
 
         async checkChildren(node) {
-            if (!node.children) {
-                try {
-                    let newRows = [];
-                    if (node.mode == 'asset') {
-                        if (node.asset && node.asset != 'Surge arrester') {
-                            const jobsReturn = await this.fetchJobsByAssetId(node.mode, node.mrid);
-                            if (jobsReturn.success) {
-                                newRows.push(...jobsReturn.data);
-                            }
-                        }
-                    } else if (node.mode == 'substation') {
-                        const clickedRow = node;
-                        const [voltageLevelReturn, bayReturn] = await Promise.all([
-                            window.electronAPI.getVoltageLevelBySubstationId(clickedRow.mrid),
-                            window.electronAPI.getBayByVoltageBySubstationId(null, clickedRow.mrid)
-                        ]);
-                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetReactorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
-                        if (assetSurgeReturn.success) {
-                            newRows.push(...assetSurgeReturn.data);
-                        }
+    // Kiểm tra nếu đã load children trong tree
+    if (node.children && node.children.length > 0) {
+        return { hasChildren: true }; // Có children trong tree → không xóa
+    }
 
-                        if (assetBushingReturn.success) {
-                            newRows.push(...assetBushingReturn.data);
-                        }
+    // Nếu chưa load, fetch từ DB để kiểm tra (KHÔNG load vào tree)
+    try {
+        let hasChildren = false;
 
-                        if (assetVtReturn.success) {
-                            newRows.push(...assetVtReturn.data);
-                        }
-
-                        if (assetDisconnectorReturn.success) {
-                            newRows.push(...assetDisconnectorReturn.data);
-                        }
-
-                        if (assetPowerCableReturn.success) {
-                            newRows.push(...assetPowerCableReturn.data);
-                        }
-
-                        if (assetRotatingMachineReturn.success) {
-                            newRows.push(...assetRotatingMachineReturn.data);
-                        }
-
-                        if (assetCurrentTransformerReturn.success) {
-                            newRows.push(...assetCurrentTransformerReturn.data);
-                        }
-
-                        if (assetCapacitorReturn.success) {
-                            newRows.push(...assetCapacitorReturn.data);
-                        }
-                        if (assetReactorReturn.success) {
-                            newRows.push(...assetReactorReturn.data);
-                        }
-
-                        if (voltageLevelReturn.success) {
-                            newRows.push(...voltageLevelReturn.data);
-                        }
-
-                        if (bayReturn.success) {
-                            newRows.push(...bayReturn.data);
-                        }
-
-                    } else if (node.mode == 'voltageLevel') {
-                        const clickedRow = node;
-                        const [bayReturn] = await Promise.all([
-                            window.electronAPI.getBayByVoltageBySubstationId(clickedRow.mrid, null)
-                        ]);
-
-                        if (bayReturn.success) {
-                            newRows.push(...bayReturn.data);
-                        }
-
-                    } else if (node.mode == 'bay') {
-                        const clickedRow = node;
-                        const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetReactorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
-                        if (assetSurgeReturn.success) {
-                            newRows.push(...assetSurgeReturn.data);
-                        }
-                        if (assetBushingReturn.success) {
-                            newRows.push(...assetBushingReturn.data);
-                        }
-                        if (assetVtReturn.success) {
-                            newRows.push(...assetVtReturn.data);
-                        }
-
-                        if (assetDisconnectorReturn.success) {
-                            newRows.push(...assetVtReturn.data);
-                        }
-
-                        if (assetPowerCableReturn.success) {
-                            newRows.push(...assetPowerCableReturn.data);
-                        }
-
-                        if (assetRotatingMachineReturn.success) {
-                            newRows.push(...assetRotatingMachineReturn.data);
-                        }
-
-                        if (assetCurrentTransformerReturn.success) {
-                            newRows.push(...assetCurrentTransformerReturn.data);
-                        }
-
-                        if (assetCapacitorReturn.success) {
-                            newRows.push(...assetCapacitorReturn.data);
-                        }
-                        if(assetReactorReturn.success){
-                            newRows.push(...assetReactorReturn.data);
-                        }
-                    }
-
-                    if (newRows.length > 0) {
-                        return {
-                            success: false,
-                            data: newRows
-                        }
-                    } else {
-                        return {
-                            success: false,
-                            data: []
-                        }
-                    }
-                } catch (error) {
-                    console.error("Error fetching children:", error);
-                    return {
-                        success: false,
-                        message: "Error fetching children data"
-                    }
-                }
-            } else {
-                return {
-                    success: false,
-                    message: "Error fetching children data"
+        if (node.mode == 'asset') {
+            if (node.asset && node.asset != 'Surge arrester') {
+                const jobsReturn = await this.fetchJobsByAssetId(node.mode, node.mrid);
+                if (jobsReturn.success && jobsReturn.data.length > 0) {
+                    hasChildren = true;
                 }
             }
-        },
+        } else if (node.mode == 'substation') {
+            const [voltageLevelReturn, bayReturn] = await Promise.all([
+                window.electronAPI.getVoltageLevelBySubstationId(node.mrid),
+                window.electronAPI.getBayByVoltageBySubstationId(null, node.mrid)
+            ]);
+            const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetReactorReturn] = await this.fetchAssetByPsr(node.mrid);
+
+            // Kiểm tra bất kỳ cái nào có data >0 thì hasChildren = true
+            if (
+                (voltageLevelReturn.success && voltageLevelReturn.data.length > 0) ||
+                (bayReturn.success && bayReturn.data.length > 0) ||
+                (assetSurgeReturn.success && assetSurgeReturn.data.length > 0) ||
+                (assetBushingReturn.success && assetBushingReturn.data.length > 0) ||
+                (assetVtReturn.success && assetVtReturn.data.length > 0) ||
+                (assetDisconnectorReturn.success && assetDisconnectorReturn.data.length > 0) ||
+                (assetPowerCableReturn.success && assetPowerCableReturn.data.length > 0) ||
+                (assetRotatingMachineReturn.success && assetRotatingMachineReturn.data.length > 0) ||
+                (assetCurrentTransformerReturn.success && assetCurrentTransformerReturn.data.length > 0) ||
+                (assetCapacitorReturn.success && assetCapacitorReturn.data.length > 0) ||
+                (assetReactorReturn.success && assetReactorReturn.data.length > 0)
+            ) {
+                hasChildren = true;
+            }
+        } else if (node.mode == 'voltageLevel') {
+            const bayReturn = await window.electronAPI.getBayByVoltageBySubstationId(node.mrid, null);
+            if (bayReturn.success && bayReturn.data.length > 0) {
+                hasChildren = true;
+            }
+        } else if (node.mode == 'bay') {
+            const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetReactorReturn] = await this.fetchAssetByPsr(node.mrid);
+            if (
+                (assetSurgeReturn.success && assetSurgeReturn.data.length > 0) ||
+                (assetBushingReturn.success && assetBushingReturn.data.length > 0) ||
+                (assetVtReturn.success && assetVtReturn.data.length > 0) ||
+                (assetDisconnectorReturn.success && assetDisconnectorReturn.data.length > 0) ||
+                (assetPowerCableReturn.success && assetPowerCableReturn.data.length > 0) ||
+                (assetRotatingMachineReturn.success && assetRotatingMachineReturn.data.length > 0) ||
+                (assetCurrentTransformerReturn.success && assetCurrentTransformerReturn.data.length > 0) ||
+                (assetCapacitorReturn.success && assetCapacitorReturn.data.length > 0) ||
+                (assetReactorReturn.success && assetReactorReturn.data.length > 0)
+            ) {
+                hasChildren = true;
+            }
+        }
+
+        return { hasChildren };
+    } catch (error) {
+        console.error("Error checking children:", error);
+        return { hasChildren: true }; // An toàn: giả sử có children nếu lỗi
+    }
+},
 
         async fetchChildrenServer(node) {
             if (!node.children) {
@@ -3827,15 +3746,11 @@ this.$message.error('An error occurred while importing JSON')
         },
 
         async deleteDataClient(node) {
-            if (node.children && node.children.length > 0) {
-                this.$message.error("Node has children, cannot delete");
-                return;
-            } else {
                 const checkDelete = await this.checkChildren(node)
-                if (checkDelete.success) {
+                if (checkDelete.hasChildren) {
                     this.$message.error("Node has children, cannot delete");
                     return;
-                } else {
+                } 
                     try {
                         if (node.mode == 'substation') {
 
@@ -4209,8 +4124,6 @@ this.$message.error('An error occurred while importing JSON')
                         this.$message.error("Some error occur when deleting data");
                         console.error(error);
                     }
-                }
-            }
         },
 
         async showAddSubs(organisationId) {
@@ -5237,18 +5150,9 @@ cleanDtoForDuplicate(dto) {
             return (n.name || '').toString();
         };
 
-        // Helper: chuẩn hóa base name (bỏ phần " - Copy" hoặc " - Copy (n)" nếu có)
-        // Ví dụ:
-        //   "1"               -> "1"
-        //   "1 - Copy"        -> "1"
-        //   "1 - Copy (2)"    -> "1"
-        //   "NodeA - Copy(3)" -> "NodeA" (trường hợp thiếu khoảng trắng vẫn xử lý)
         const getBaseLabel = (label) => {
             if (!label) return '';
             const str = label.toString().trim();
-            // Regex: bắt đầu bằng bất cứ chuỗi nào (group 1),
-            // sau đó là " - Copy" (có thể có/không khoảng trắng trước ngoặc)
-            // và có thể có phần " (n)" phía sau
             const m = str.match(/^(.*?)(?:\s*-\s*Copy(?:\s*\(\d+\))?)$/);
             if (m && m[1] !== undefined) {
                 return m[1].trim();
@@ -5262,11 +5166,6 @@ cleanDtoForDuplicate(dto) {
             const base = getBaseLabel(currentLabel) || 'Unknown';
             const siblings = (parent && Array.isArray(parent.children)) ? parent.children : [];
 
-            // Nếu node hiện tại đã là một bản Copy (đã có " - Copy" / " - Copy (n)")
-            // thì dùng chính nhãn hiện tại làm base để đếm:
-            //   "1 - Copy (2)" -> lần 1:  "1 - Copy (2) - Copy"
-            //                    lần 2:  "1 - Copy (2) - Copy (2)"
-            //                    lần 3:  "1 - Copy (2) - Copy (3)" ...
             if (base !== currentLabel) {
                 const prefix = `${currentLabel} - Copy`;
                 let maxIndex = 0;
@@ -5294,8 +5193,6 @@ cleanDtoForDuplicate(dto) {
                 return `${prefix} (${maxIndex + 1})`; // "X - Copy (2)", "X - Copy (3)", ...
             }
 
-            // Ngược lại, đây là node gốc (ví dụ "1"), khi duplicate nhiều lần:
-            // "1" -> "1 - Copy", "1 - Copy (2)", "1 - Copy (3)"...
             const prefix = `${base} - Copy`;
 
             let maxIndex = 0;
@@ -6196,66 +6093,57 @@ async fetchChildrenForMove(node) {
             let success = false;
             let updateResult = null;
 
-            // --- XỬ LÝ ASSET (Reactor, Breaker, etc.) ---
-            if (nodeToMove.mode === 'asset') {
-                const assetEntity = await window.electronAPI.getAssetByMrid(nodeToMove.mrid);
-                if (!assetEntity.success || !assetEntity.data) {
-                    this.$message.error("Failed to fetch asset data");
-                    return;
-                }
-                const assetData = assetEntity.data;
+// --- XỬ LÝ ASSET (Power Cable, Transformer, ...) ---
+if (nodeToMove.mode === 'asset') {
+    // 1. Lấy thông tin location của Substation đích (newParent)
+    const targetLocRes = await window.electronAPI.getLocationByPowerSystemResourceMrid(newParent.mrid);
+    let newLocationMrid = null;
+    if (targetLocRes.success && targetLocRes.data) {
+        newLocationMrid = targetLocRes.data.mrid;
+    }
 
-                // TRƯỜNG HỢP 1: Di chuyển vào LOCATION (Organisation)
-                if (newParent.mode === 'organisation' || newParent.mode === 'location') {
-                    // Cập nhật bảng Location
-                    if (assetData.location) {
-                        const locationEntity = await window.electronAPI.getLocationByMrid(assetData.location);
-                        if (locationEntity.success && locationEntity.data) {
-                            locationEntity.data.refId = newParent.mrid; // Trỏ về Org mới
-                            updateResult = await window.electronAPI.updateLocationByMrid(assetData.location, locationEntity.data);
-                            success = updateResult.success;
-                        }
-                    } 
-                    // Nếu asset chưa có location, cần tạo mới location (Logic bổ sung tùy hệ thống của bạn)
-                    
-                    // Quan trọng: Nếu trước đó nó nằm trong PSR (Bay/Sub), cần xóa liên kết AssetPsr cũ đi (nếu hệ thống yêu cầu 1 cha duy nhất)
-                    if (success) {
-                         // Tìm và xóa AssetPsr cũ nếu có (Optional - tùy business rule)
-                         // await window.electronAPI.deleteAssetPsrByAssetId...
-                    }
-                } 
-                // TRƯỜNG HỢP 2: Di chuyển vào PSR (Substation, VoltageLevel, Bay)
-                else if (['substation', 'voltageLevel', 'bay'].includes(newParent.mode)) {
-                    // Cần cập nhật hoặc tạo mới bản ghi trong bảng AssetPsr
-                    
-                    // B1: Tìm AssetPsr hiện tại
-                    let currentAssetPsr = null;
-                    // Tìm theo psr_id cũ (parentId)
-                    if (nodeToMove.parentId) {
-                        const searchRes = await window.electronAPI.getAssetPsrByAssetIdAndPsrId(nodeToMove.mrid, nodeToMove.parentId);
-                        if (searchRes.success && searchRes.data) {
-                            currentAssetPsr = searchRes.data;
-                        }
-                    }
+    // 2. Lấy dữ liệu chi tiết của Asset hiện tại để chuẩn bị update
+    const assetEntity = await window.electronAPI.getAssetByMrid(nodeToMove.mrid);
+    if (assetEntity.success && assetEntity.data) {
+        const assetData = assetEntity.data;
 
-                    if (currentAssetPsr) {
-                        // Update: Chuyển sang PSR mới
-                        currentAssetPsr.psr_id = newParent.mrid;
-                        updateResult = await window.electronAPI.updateAssetPsr(currentAssetPsr.mrid, currentAssetPsr);
-                        success = updateResult.success;
-                    } else {
-                        // Insert: Nếu trước đó nó ở Org (chưa có AssetPsr), giờ tạo mới
-                        const newAssetPsr = {
-                            mrid: this.generateUuid(),
-                            asset_id: nodeToMove.mrid,
-                            psr_id: newParent.mrid,
-                            // Các trường khác nếu cần
-                        };
-                        updateResult = await window.electronAPI.insertAssetPsr(newAssetPsr);
-                        success = updateResult.success;
-                    }
-                }
-            } 
+        // 3. CẬP NHẬT TRƯỜNG LOCATION CHO ASSET
+        if (newLocationMrid) {
+            assetData.location = newLocationMrid; // Gán ID location của Substation mới vào đây
+            
+            // Gọi API update bản ghi Asset (Sử dụng hàm updateAsset chung hoặc theo loại)
+            // Lưu ý: Đảm bảo preload đã expose hàm updateAssetByMrid
+            const updateAssetRes = await window.electronAPI.updateAssetByMrid(assetData.mrid, assetData);
+            if (!updateAssetRes.success) {
+                console.error("Lỗi khi cập nhật trường location của Asset:", updateAssetRes.message);
+            }
+        }
+    }
+
+    // 4. CẬP NHẬT LIÊN KẾT CÂY (AssetPsr) - Giữ nguyên hoặc tối ưu logic cũ của bạn
+    let currentAssetPsr = null;
+    if (nodeToMove.parentId) {
+        const searchRes = await window.electronAPI.getAssetPsrByAssetIdAndPsrId(nodeToMove.mrid, nodeToMove.parentId);
+        if (searchRes.success && searchRes.data) {
+            currentAssetPsr = searchRes.data;
+        }
+    }
+
+    if (currentAssetPsr) {
+        currentAssetPsr.psr_id = newParent.mrid; // Chuyển sang cha mới (Substation 2)
+        updateResult = await window.electronAPI.updateAssetPsr(currentAssetPsr.mrid, currentAssetPsr);
+        success = updateResult.success;
+    } else {
+        // Nếu trước đó không có cha (mồ côi), tạo mới liên kết
+        const newAssetPsr = {
+            mrid: this.generateUuid(),
+            asset_id: nodeToMove.mrid,
+            psr_id: newParent.mrid,
+        };
+        updateResult = await window.electronAPI.insertAssetPsr(newAssetPsr);
+        success = updateResult.success;
+    }
+}
             // --- XỬ LÝ CÁC LOẠI KHÁC (Giữ nguyên logic cũ của bạn) ---
             else if (nodeToMove.mode === 'organisation') {
                  // ... (Code cũ của bạn đúng rồi)
