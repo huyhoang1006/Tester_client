@@ -44,6 +44,7 @@ export function mapDtoToEntity(dto) {
     entity.capacitor.mrid = dto.assetInfoId || null;
     entity.asset.name = dto.properties.apparatus_id || null;
     entity.asset.description = dto.properties.comment || null;
+    entity.asset.location = dto.locationId || null;
 
     /** ---------- Lifecycle ---------- */
     entity.lifecycleDate.mrid = dto.lifecycleDateId || null;
@@ -202,6 +203,7 @@ export function mapEntityToDto(entity) {
     dto.assetInfoId = entity.capacitor.mrid || null;
     dto.properties.apparatus_id = entity.asset.name || null;
     dto.properties.comment = entity.asset.description || null;
+    dto.locationId = entity.asset.locationId || null;
 
     /** ---------- Lifecycle ---------- */
     dto.lifecycleDateId = entity.lifecycleDate.mrid || null;

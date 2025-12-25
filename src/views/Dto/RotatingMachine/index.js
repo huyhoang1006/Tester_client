@@ -14,6 +14,7 @@ class RotatingMachineDTO {
         this.attachmentId = ''
         this.assetInfoId = ''
         this.assetPsrId = ''
+        this.locationId = '';
 
         this.configsData = {
             star_point: '',
