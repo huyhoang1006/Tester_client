@@ -2675,7 +2675,7 @@ this.$message.error('An error occurred while importing JSON')
                     } else if (node.asset === 'Disconnector') {
                         const entityRes = await window.electronAPI.getDisconnectorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
                         if (entityRes.success && entityRes.data) {
-                            assetData = DisconnectorMapping.mapEntityToDto(entityRes.data)
+                            assetData = DisconnectorMapping.disconnectorEntityToDto(entityRes.data)
                         }
                     } else if (node.asset === 'Capacitor') {
                         const entityRes = await window.electronAPI.getCapacitorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
@@ -2732,10 +2732,6 @@ this.$message.error('An error occurred while importing JSON')
             } else if (node.type == 'test') {
                 this.assetPropertySignClient = true
                 this.jobPropertySignClient = true
-                // Tìm parent thực sự từ cây dữ liệu
-                // Test -> Job (parent)
-                // Test -> Asset (parent.parent) 
-                // Test -> Location (parent.parent.parent)
                 const jobNode = node.parentId ? this.findNodeById(node.parentId, this.organisationClientList) : null
                 const assetNode = jobNode ? (jobNode.parentId ? this.findNodeById(jobNode.parentId, this.organisationClientList) : null) : null
                 const locationNode = assetNode ? (assetNode.parentId ? this.findNodeById(assetNode.parentId, this.organisationClientList) : null) : null
@@ -2778,14 +2774,29 @@ this.$message.error('An error occurred while importing JSON')
                     parent: jobName
                 })
             } else {
-                await this.mappingPropertiesClient(node)
-                await this.loadPathMapClient(node)
-                const nodeName = node.name || node.serial_number || node.serial_no || 'Unknown'
-                this.pathMapClient.push({
-                    id: node.id || node.mrid,
-                    mrid: node.mrid,
-                    parent: nodeName
-                })
+        let detailData = node;
+        
+        // Nếu là Substation, gọi API lấy full thông tin
+        if (node.mode === 'substation') {
+            try {
+                const res = await window.electronAPI.getSubstationEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId);
+                if (res.success && res.data) {
+                    // Map từ Entity sang DTO để có các trường street, city, email...
+                    detailData = SubstationMapping.mapEntityToDto(res.data);
+                }
+            } catch (error) {
+                console.error("Error fetching substation detail:", error);
+            }
+        }
+
+        await this.mappingPropertiesClient(detailData)
+        await this.loadPathMapClient(node)
+        const nodeName = node.name || node.serial_number || node.serial_no || 'Unknown'
+        this.pathMapClient.push({
+            id: node.id || node.mrid,
+            mrid: node.mrid,
+            parent: nodeName
+        })
             }
         },
 
@@ -2849,24 +2860,27 @@ this.$message.error('An error occurred while importing JSON')
         },
 
         async mappingPropertiesClient(data) {
-            if (data != undefined) {
-                this.propertiesClient.name = data.name == undefined || data.name == null ? '' : data.name
-                this.propertiesClient.region = data.region == undefined || data.region == null ? '' : data.region
-                this.propertiesClient.plant = data.plant == undefined || data.plant == null ? '' : data.plant
-                this.propertiesClient.address = data.address == undefined || data.address == null ? '' : data.address
-                this.propertiesClient.city = data.city == undefined || data.city == null ? '' : data.city
-                this.propertiesClient.state_province = data.state_province == undefined || data.state_province == null ? '' : data.state_province
-                this.propertiesClient.postal_code = data.postal_code == undefined || data.postal_code == null ? '' : data.postal_code
-                this.propertiesClient.country = data.country == undefined || data.country == null ? '' : data.country
-                this.propertiesClient.phone_no = data.phone_no == undefined || data.phone_no == null ? '' : data.phone_no
-                this.propertiesClient.email = data.email == undefined || data.email == null ? '' : data.email
-            }
-        },
+    if (data != undefined) {
+        this.propertiesClient.name = data.name || ''
+        this.propertiesClient.region = data.region || data.generation || '' // Substation dùng generation
+        this.propertiesClient.plant = data.plant || data.industry || ''     // Substation dùng industry
+        
+        // Map địa chỉ từ Substation DTO
+        this.propertiesClient.address = data.street || data.address || ''
+        this.propertiesClient.city = data.city || ''
+        this.propertiesClient.state_province = data.state_or_province || data.state_province || ''
+        this.propertiesClient.postal_code = data.postal_code || ''
+        this.propertiesClient.country = data.country || ''
+        
+        // Map liên hệ từ Substation DTO
+        this.propertiesClient.phone_no = data.phoneNumber || data.phone_no || ''
+        this.propertiesClient.email = data.email || ''
+    }
+},
 
         async mappingAssetPropertiesClient(data) {
             if (data != undefined) {
-                // asset name sẽ được set riêng từ node.asset trong showPropertiesDataClient
-                // asset_type: có thể là type hoặc asset_type
+
                 this.assetPropertiesClient.asset_type = data.type == undefined || data.type == null ? (data.asset_type == undefined || data.asset_type == null ? '' : data.asset_type) : data.type
                 // serial_no: có thể là serial_no hoặc serial_number
                 this.assetPropertiesClient.serial_no = data.serial_no == undefined || data.serial_no == null ? '' : (data.serial_number || data.serial_no || '')
@@ -5959,12 +5973,6 @@ cleanDtoForDuplicate(dto) {
 
     const nodeToMove = this.selectedNodes[this.selectedNodes.length - 1];
     
-    // Kiểm tra logic nếu cần (ví dụ không cho move Root)
-    if (!nodeToMove.parentId || nodeToMove.parentId === this.$constant.ROOT) {
-         // this.$message.warning("Cannot move root nodes");
-         // return;
-    }
-
     const validTypes = this.getValidParentTypes(nodeToMove.mode);
     
     // Lưu nodeToMove và validTypes để dùng trong fetchChildrenForMove
