@@ -25,7 +25,7 @@
       "unit": "MPa"
     },
     {
-      "mrid": "99999999-aaaa-bbbb-cccc-000000000001",
+      "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",
       "code": "assessment",
       "name": "Assessment",
       "type": "discrete",
@@ -36,7 +36,7 @@
       ]
     },
     {
-      "mrid": "99999999-aaaa-bbbb-cccc-000000000002",
+      "mrid": "7e52c7e5-1c3b-4fd1-9a91-3e94db29a002",
       "code": "condition_indicator",
       "name": "Condition indicator",
       "type": "discrete",

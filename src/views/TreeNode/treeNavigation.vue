@@ -701,9 +701,9 @@
         <el-dialog title="Add Transformer" :visible.sync="signTransformer" width="1000px"
             @close="handleTransformerCancel"
             :modal="!isDuplicating" 
-    :show-close="!isDuplicating"
-    :transition="isDuplicating ? '' : 'dialog-fade'"
-    :custom-class="isDuplicating ? 'ghost-dialog' : ''">
+            :show-close="!isDuplicating"
+            :transition="isDuplicating ? '' : 'dialog-fade'"
+            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
             <Transformer :locationId="locationId" :parent="parentOrganization" ref="transformer"></Transformer>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleTransformerCancel">Cancel</el-button>
@@ -2443,6 +2443,7 @@ this.$message.error('An error occurred while importing JSON')
                         }
                         try {
                             const newRowsVoltageLevel = await demoAPI.getVoltageLevelBySubstationId(node.id)
+                            console.log(newRowsVoltageLevel)
                             if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
                                 newRowsVoltageLevel.forEach(row => {
                                     row.id = row.mrid;
@@ -2462,7 +2463,7 @@ this.$message.error('An error occurred while importing JSON')
                         }
 
                         try {
-                            const newRowsVoltageLevel = await demoAPI.getAssetByOwner('Substation')
+                            const newRowsVoltageLevel = await demoAPI.getAssetByOwner(node.mrid, 'Substation')
                             if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
                                 newRowsVoltageLevel.forEach(row => {
                                     row.id = row.mrid;
@@ -2480,12 +2481,10 @@ this.$message.error('An error occurred while importing JSON')
                         } catch (error) {
                             console.log(error)
                         }
-
-
-
                     } else if (node.mode == 'voltageLevel') {
                         try {
                             const newRowsBay = await demoAPI.getBayByVoltageLevel(node.id)
+                            console.log(newRowsBay)
                             if (newRowsBay && newRowsBay.length > 0) {
                                 newRowsBay.forEach(row => {
                                     row.parentId = node.mrid;
@@ -2502,28 +2501,9 @@ this.$message.error('An error occurred while importing JSON')
                         } catch (error) {
                             console.log(error)
                         }
-                        try {
-                            const newRowsVoltageLevel = await demoAPI.getAssetByOwner('VoltageLevel')
-                            if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
-                                newRowsVoltageLevel.forEach(row => {
-                                    row.id = row.mrid;
-                                    row.parentId = node.mrid;
-                                    row.mode = 'asset';
-                                    row.parentName = node.parentName + "/" + node.name;
-                                    row.parentArr = [...node.parentArr];
-                                    row.parentArr.push({
-                                        id: node.id,
-                                        parent: node.name
-                                    });
-                                });
-                                newRows.push(...newRowsVoltageLevel);
-                            }
-                        } catch (error) {
-                            console.log(error)
-                        }
                     } else if (node.mode == 'bay') {
                         try {
-                            const newRowsVoltageLevel = await demoAPI.getAssetByOwner('Bay')
+                            const newRowsVoltageLevel = await demoAPI.getAssetByOwner(node.mrid, 'Bay')
                             if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
                                 newRowsVoltageLevel.forEach(row => {
                                     row.id = row.mrid;

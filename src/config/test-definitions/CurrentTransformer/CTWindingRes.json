@@ -4,41 +4,41 @@
   "testName": "CT Winding resistance",
   "columns": [
     {
-      "mrid": "aaaaaaaa-name-0000-0000-000000000000",
+      "mrid": "f02b9353-bb57-40a6-a08b-0340346e2057",
       "code": "name",
       "name": "Name",
       "type": "string"
     },
     {
       "mrid": "66666666-aaaa-bbbb-cccc-000000000003",
-      "code": "rmeas",
+      "code": "r_meas",
       "name": "R meas",
       "type": "analog",
       "unit": "Ω"
     },
     {
-      "mrid": "aaaaaaaa-rref-0000-0000-000000000000",
-      "code": "rref",
+      "mrid": "23cd8c00-4073-4fa0-bac0-cbbe1d27b1c3",
+      "code": "r_ref",
       "name": "R ref",
       "type": "analog",
       "unit": "Ω"
     },
     {
-      "mrid": "aaaaaaaa-rcor-r000-0000-000000000000",
-      "code": "rcorr",
+      "mrid": "93b591f4-4c4c-4034-9d61-a544bdf49019",
+      "code": "r_corr",
       "name": "R corr",
       "type": "analog",
       "unit": "Ω"
     },
     {
-      "mrid": "aaaaaaaa-rdev-0000-0000-000000000000",
-      "code": "rdev",
+      "mrid": "494cc6d4-e98f-4895-84cc-03322b5bc610",
+      "code": "r_dev",
       "name": "R dev",
       "type": "analog",
       "unit": "%"
     },
     {
-      "mrid": "99999999-aaaa-bbbb-cccc-000000000001",
+      "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",
       "code": "assessment",
       "name": "Assessment",
       "type": "discrete",
@@ -49,7 +49,7 @@
       ]
     },
     {
-      "mrid": "99999999-aaaa-bbbb-cccc-000000000002",
+      "mrid": "7e52c7e5-1c3b-4fd1-9a91-3e94db29a002",
       "code": "condition_indicator",
       "name": "Condition indicator",
       "type": "discrete",
