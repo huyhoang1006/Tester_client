@@ -1590,14 +1590,14 @@ export default {
                  // Import với node làm parent
                  const result = await importNodeFromJSONUtil(dtos, node, dependencies)
 
-// Refresh tree sau khi import thành công
-if (result.success && result.successCount > 0) {
-    this.refreshTreeAfterImport(node)
-}
-} catch (error) {
-console.error('Error importing JSON:', error)
-this.$message.error('An error occurred while importing JSON')
-}
+                // Refresh tree sau khi import thành công
+                if (result.success && result.successCount > 0) {
+                    this.refreshTreeAfterImport(node)
+                }
+            } catch (error) {
+                console.error('Error importing JSON:', error)
+                this.$message.error('An error occurred while importing JSON')
+            }
         },
         async handleImportJSONCIMFromContext(node) {
             this.$message.info('Import JSON by CIM ')
@@ -2443,7 +2443,6 @@ this.$message.error('An error occurred while importing JSON')
                         }
                         try {
                             const newRowsVoltageLevel = await demoAPI.getVoltageLevelBySubstationId(node.id)
-                            console.log(newRowsVoltageLevel)
                             if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
                                 newRowsVoltageLevel.forEach(row => {
                                     row.id = row.mrid;
@@ -2484,7 +2483,6 @@ this.$message.error('An error occurred while importing JSON')
                     } else if (node.mode == 'voltageLevel') {
                         try {
                             const newRowsBay = await demoAPI.getBayByVoltageLevel(node.id)
-                            console.log(newRowsBay)
                             if (newRowsBay && newRowsBay.length > 0) {
                                 newRowsBay.forEach(row => {
                                     row.parentId = node.mrid;
@@ -4611,7 +4609,6 @@ this.$message.error('An error occurred while importing JSON')
                     const dataTestType = await window.electronAPI.getAllTestTypeCircuitBreaker();
                     const dataBreakerEntity = await window.electronAPI.getBreakerEntityByMrid(node.mrid);
                     const dto = BreakerMapping.mapEntityToDto(dataBreakerEntity.data);
-                    console.log("dto", dto)
                     if (dataBreakerEntity.success) {
                         this.assetData = dto
                     } else {
@@ -4628,9 +4625,7 @@ this.$message.error('An error occurred while importing JSON')
                 else if (node.asset == 'Transformer') {
                     const dataTestType = await window.electronAPI.getAllTestTypeTransformers();
                     const dataTransformerEntity = await window.electronAPI.getTransformerEntityByMrid(node.mrid);
-                    console.log("dataTransformerEntity", dataTransformerEntity)
                     const dto = TransformerMapping.transformerEntityToDto(dataTransformerEntity.data);
-                    console.log("dto", dto)
                     if (dataTransformerEntity.success) {
                         this.assetData = dto
                     } else {

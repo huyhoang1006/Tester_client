@@ -78,7 +78,7 @@
         <div class="tabs-content">
             <div class="mgr-20 mgt-20 mgb-20 mgl-20" v-for="(item) in tabs" :key="item.mrid">
                 <component mode="update" @reload="loadData" v-show="activeTab.mrid === item.mrid"
-                    ref="componentLoadData" :sideData="sideSign" :is="checkTab(item)" :organisationId="item.parentId"
+                    ref="componentLoadData" :sideData="sideSign" :is="checkTab(item)" :organisationId="String(item.parentId)"
                     :testTypeListData="testTypeListData" :assetData="assetData"
                     :productAssetModelData="productAssetModelData" :parent="parentOrganization"
                     :locationData="locationData" style="min-height: calc(100vh - 250px);">
@@ -111,6 +111,7 @@ import * as BreakerMapper from '@/views/Mapping/Breaker'
 import * as transformerMapper from '@/views/Mapping/Transformer'
 import * as reactorMapper from '@/views/Mapping/Reactor'
 
+import * as demoAPI from '@/api/demo/index.js'
 
 import VoltageLevel from '@/views/VoltageLevel/index.vue'
 import Bay from '@/views/Bay/index.vue'
@@ -613,7 +614,23 @@ export default {
             }
         },
         async loadDataServer(tab, index) {
-
+            try {
+                if (index == null) {
+                    index = this.tabs.findIndex(t => t.mrid === tab.mrid);
+                    if (index === -1) {
+                        this.$message.error("Tab not found");
+                        return;
+                    }
+                }
+                if(tab.mode == 'asset') {
+                    if(tab.asset === 'Power cable') {
+                        const response =  await demoAPI.getAssetById(tab.mrid, 'PowerCable')
+                        console.log("response : ", response)
+                    }
+                }
+            } catch (error) {
+                console.error("Error loading data from server:", error);
+            }
         },
         async selectTab(tab, index) {
             try {
