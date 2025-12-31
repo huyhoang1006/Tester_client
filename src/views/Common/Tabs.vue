@@ -181,6 +181,13 @@ export default {
     },
     methods: {
         async loadData(tab, index) {
+            if (this.side === 'client') {
+                await this.loadDataClient(tab, index)
+            } else {
+                await this.loadDataServer(tab, index)
+            }
+        },
+        async loadDataClient(tab, index) {
             try {
                 if (index == null) {
                     index = this.tabs.findIndex(t => t.mrid === tab.mrid);
@@ -604,6 +611,9 @@ export default {
             } catch (error) {
                 console.error("Error loading data:", error);
             }
+        },
+        async loadDataServer(tab, index) {
+
         },
         async selectTab(tab, index) {
             try {

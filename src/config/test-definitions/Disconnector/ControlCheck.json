@@ -4,13 +4,13 @@
   "testName": "Control cabinet check",
   "columns": [
     {
-      "mrid": "b4c5d6e7-f8a9-4012-c3d4-e5f6g7h89012",
+      "mrid": "9f1b8c4e-2e44-4b8a-9a33-000000000003",
       "code": "item",
       "name": "Item",
       "type": "string"
     },
     {
-      "mrid": "99999999-aaaa-bbbb-cccc-000000000001",
+      "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",
       "code": "assessment",
       "name": "Assessment",
       "type": "discrete",
@@ -21,7 +21,7 @@
       ]
     },
     {
-      "mrid": "99999999-aaaa-bbbb-cccc-000000000002",
+      "mrid": "7e52c7e5-1c3b-4fd1-9a91-3e94db29a002",
       "code": "condition_indicator",
       "name": "Condition indicator",
       "type": "discrete",

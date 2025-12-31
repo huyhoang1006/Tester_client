@@ -127,7 +127,6 @@ const getAllAttachment = async (id_foreign, type) => {
     })
 }
 
-
 const deleteAttachment = (id_foreign) => {
     return new Promise((resolve, reject) => {
         db.all("DELETE FROM attachment WHERE id_foreign = ?", [id_foreign], (err, row) => {

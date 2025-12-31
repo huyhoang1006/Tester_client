@@ -4,27 +4,27 @@
   "testName": "CT Excitation",
   "columns": [
     {
-      "mrid": "aaaaaaaa-name-0000-0000-000000000000",
+      "mrid": "f02b9353-bb57-40a6-a08b-0340346e2057",
       "code": "name",
       "name": "Name",
       "type": "string"
     },
     {
-      "mrid": "aaaaaaaa-ikne-e000-0000-000000000000",
-      "code": "iknee",
+      "mrid": "c15b48fc-d387-44c1-9b00-4c92092b5fdf",
+      "code": "i_knee",
       "name": "I knee",
       "type": "analog",
       "unit": "A"
     },
     {
-      "mrid": "aaaaaaaa-vkne-e000-0000-000000000000",
-      "code": "vknee",
+      "mrid": "9924d58c-26a7-4642-aebb-aabc2006029f",
+      "code": "v_knee",
       "name": "V knee",
       "type": "analog",
       "unit": "V"
     },
     {
-      "mrid": "99999999-aaaa-bbbb-cccc-000000000001",
+      "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",
       "code": "assessment",
       "name": "Assessment",
       "type": "discrete",
@@ -35,7 +35,7 @@
       ]
     },
     {
-      "mrid": "99999999-aaaa-bbbb-cccc-000000000002",
+      "mrid": "7e52c7e5-1c3b-4fd1-9a91-3e94db29a002",
       "code": "condition_indicator",
       "name": "Condition indicator",
       "type": "discrete",

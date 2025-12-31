@@ -1,3 +1,4 @@
+/* eslint-disable */
 import client from '@/utils/client'
 
 export const getOwnerOrganisation = () => {
@@ -25,7 +26,7 @@ export const getBayByVoltageLevel = (voltageLevelId) => {
     return client.get(`http://103.163.118.212:30830/api/bay/get-by-voltage-level/${voltageLevelId}`)
 }
 
-export const getAssetByOwner = (mode) => {
+export const getAssetByOwner = (ownerId, mode) => {
     // 1. Lấy chuỗi JSON từ Local Storage
     const userString = localStorage.getItem('user');
 
@@ -40,7 +41,6 @@ export const getAssetByOwner = (mode) => {
         const user = JSON.parse(userString);
 
         // 3. Truy cập thuộc tính user_id
-        const ownerId = user.user_id;
 
         // 4. Gọi API
         return client.get(`http://103.163.118.212:30830/api/asset/get-by-owner/${ownerId}/${mode}`);
