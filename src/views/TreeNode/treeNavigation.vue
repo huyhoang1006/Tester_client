@@ -176,8 +176,8 @@
                 <i title="Upload" style="font-size: 12px;" class="fa-solid fa-upload"></i>
             </div>
             <div v-if="!clientSlide">
-                <i title="Download" style="font-size: 12px;" class="fa-solid fa-download"></i>
-            </div>
+    <i @click="handleDownloadNode" title="Download" style="font-size: 12px;" class="fa-solid fa-download"></i>
+</div>
             <div>
                 <i @click="handleDeleteNode" title="Delete" style="font-size: 12px;" class="fa-solid fa-trash"></i>
             </div>
@@ -956,6 +956,29 @@
         <el-button size="small" type="primary" @click="confirmMoveNode" :disabled="!selectedTargetNode">Move</el-button>
     </span>
 </el-dialog>
+<!-- Dialog chọn cha khi download -->
+<el-dialog title="Select Parent Node for Downloaded Asset" :visible.sync="downloadDialogVisible" width="450px" @close="downloadDialogVisible = false">
+    <div style="height: 300px; overflow-y: auto;">
+        <div class="child-nav">
+            <ul style="list-style: none; padding-left: 0;">
+                <TreeNode 
+                    v-for="item in moveTreeData" 
+                    :key="item.mrid" 
+                    :node="item"
+                    :selectedNodes="selectedDownloadTargetNodes"
+                    @fetch-children="fetchChildren" 
+                    @update-selection="handleDownloadTargetSelection"
+                    @open-context-menu="() => {}"
+                >
+                </TreeNode>
+            </ul>
+        </div>
+    </div>
+    <span slot="footer" class="dialog-footer">
+        <el-button size="small" @click="downloadDialogVisible = false">Cancel</el-button>
+        <el-button size="small" type="primary" @click="confirmDownloadSelection" :disabled="!selectedDownloadTargetNode">Confirm Download</el-button>
+    </span>
+</el-dialog>
     </div>
     
 </template>
@@ -1123,9 +1146,14 @@ export default {
             moveDialogVisible: false,
             moveTreeData: [],
             selectedTargetNode: null,
+            selectedTargetNodes: [], // Dùng cho hiển thị highlight trong tree dialog
             expandedMoveKeys: [],
             nodeToMove: null, // Lưu node đang được move để dùng trong fetchChildrenForMove
-            validParentTypesForMove: [], // Lưu valid parent types để dùng trong fetchChildrenForMove
+            validParentTypesForMove: [],
+            downloadDialogVisible: false,
+nodeToDownloadData: null, // Lưu dữ liệu DTO từ server về
+selectedDownloadTargetNode: null, // Node cha được chọn thủ công
+selectedDownloadTargetNodes: [], // Lưu valid parent types để dùng trong fetchChildrenForMove
             moveTreeProps: {
             children: 'children',
             label: 'name',
@@ -6219,6 +6247,120 @@ if (nodeToMove.mode === 'asset') {
         }
     });
 },
+// 1. Khi nhấn nút Download trên toolbar
+async handleDownloadNode() {
+    if (!this.selectedNodes || this.selectedNodes.length === 0) {
+        this.$message.warning("Please select a node to download");
+        return;
+    }
+
+    const node = this.selectedNodes[this.selectedNodes.length - 1];
+    
+    try {
+        // 1. Lấy dữ liệu thô từ Server
+        const serverResponse = await demoAPI.getAssetById(node.mrid, 'PowerCable');
+        if (!serverResponse) return;
+
+        // 2. Map sang DTO bằng hàm của bạn
+        const PowerCableServerMapper = require('@/views/Mapping/PowerCableTest/index.js');
+        const dto = PowerCableServerMapper.mapServerToDto(serverResponse);
+
+        // 3. QUAN TRỌNG: Gán các ID quan hệ để Map về Entity local không bị lỗi
+        // Vì Database local của bạn chia làm nhiều bảng (Asset, AssetInfo, Model...)
+        dto.assetInfoId = serverResponse.cableInfo?.mRID || serverResponse.cableInfo?.mrid || this.generateUuid();
+        dto.productAssetModelId = serverResponse.assetData?.productAssetModel?.mRID || this.generateUuid();
+        dto.lifecycleDateId = this.generateUuid(); // Thường server không trả về ID bảng này, nên tạo mới
+        dto.oldCableInfoId = dto.assetInfoId; // Trong PowerCable, OldCableInfo dùng chung ID với AssetInfo
+        dto.assetPsrId = this.generateUuid();
+
+        // 4. Kiểm tra node cha trên Client
+        // node.parentId là ID của cha (Substation/Bay) từ server
+        const clientParent = this.findNodeById(node.parentId, this.organisationClientList);
+
+        if (clientParent) {
+            // Trường hợp 1: Đã có cha trên Client -> Tự động gắn
+            dto.psrId = clientParent.mrid;
+            dto.locationId = clientParent.location || clientParent.mrid; 
+            await this.executeDownloadAndSave(dto, clientParent);
+        } else {
+            // Trường hợp 2: Chưa có cha -> Hiện cây Client để chọn cha
+            this.nodeToDownloadData = dto;
+            this.moveTreeData = this.buildMoveTreeData(this.organisationClientList, { mrid: 'none' }, this.getValidParentTypes('asset'));
+            this.downloadDialogVisible = true;
+        }
+    } catch (error) {
+        console.error("Download error:", error);
+        this.$message.error("Download failed: " + error.message);
+    }
+},
+
+// 2. Hàm thực hiện lưu vào DB (Xử lý ghi đè nếu đã tồn tại)
+async executeDownloadAndSave(dto, parentNode) {
+    try {
+        const PowerCableMapping = require('@/views/Mapping/PowerCable/index');
+        
+        // 1. Kiểm tra xem node này đã có ở client chưa (Dựa vào MRID từ server)
+        const existingLocalRes = await window.electronAPI.getPowerCableEntityByMrid(dto.properties.mrid, dto.psrId);
+        
+        let oldEntity;
+        if (existingLocalRes.success && existingLocalRes.data) {
+            // ĐÃ CÓ -> Đây là trường hợp GHI ĐÈ
+            oldEntity = existingLocalRes.data;
+        } else {
+            // CHƯA CÓ -> Tạo mới hoàn toàn
+            const PowerCableEntity = require('@/views/Flatten/PowerCable/index').default;
+            oldEntity = new PowerCableEntity();
+        }
+
+        // 2. Chuyển DTO thành Entity chuẩn của client
+        const newEntity = PowerCableMapping.mapDtoToEntity(dto);
+
+        // 3. Lưu vào Database local
+        // Nhờ lệnh "ON CONFLICT(mrid) DO UPDATE" trong các hàm của bạn, 
+        // dữ liệu mới sẽ tự động ghi đè lên các bản ghi cũ cùng MRID.
+        const saveRs = await window.electronAPI.insertPowerCableEntity(oldEntity, newEntity);
+
+        if (saveRs.success) {
+            this.$message.success("Download and overwrite successful!");
+            this.downloadDialogVisible = false;
+
+            // 4. Refresh lại cây bên Client để thấy node mới/cập nhật
+            if (parentNode) {
+                this.$set(parentNode, '_childrenFetched', false);
+                await this.fetchChildren(parentNode);
+                this.$set(parentNode, 'expanded', true);
+            }
+        } else {
+            this.$message.error("Save failed: " + saveRs.message);
+        }
+    } catch (error) {
+        console.error("Save error:", error);
+        this.$message.error("Error saving to local database");
+    }
+},
+
+// 3. Xử lý khi chọn cha thủ công trong Dialog và nhấn Confirm
+async confirmDownloadSelection() {
+    if (!this.selectedDownloadTargetNode) {
+        this.$message.warning("Please select a target parent node");
+        return;
+    }
+    
+    this.nodeToDownloadData.psrId = this.selectedDownloadTargetNode.mrid;
+    await this.executeDownloadAndSave(this.nodeToDownloadData, this.selectedDownloadTargetNode);
+},
+
+// 4. Handler cho việc chọn node trong tree dialog (tương tự move node)
+handleDownloadTargetSelection(node) {
+    const targetNode = Array.isArray(node) ? node[node.length - 1] : node;
+    if (!targetNode || targetNode.disabled) {
+        this.selectedDownloadTargetNodes = [];
+        this.selectedDownloadTargetNode = null;
+        return;
+    }
+    this.selectedDownloadTargetNodes = [targetNode];
+    this.selectedDownloadTargetNode = targetNode;
+}
     }
 }
 </script>

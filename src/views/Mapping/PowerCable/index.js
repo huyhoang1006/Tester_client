@@ -35,7 +35,7 @@ export function mapDtoToEntity(dto) {
     entity.asset.description = dto.properties.comment || null;
     entity.productAssetModel.mrid = dto.productAssetModelId || null;
     entity.asset.location = dto.locationId || null;
-    entity.asset.product_asset_model = dto.productAssetModelId || null;
+    entity.concentricNeutral.product_asset_model = dto.productAssetModelId || null;
     entity.concentricNeutral.mrid = dto.assetInfoId || null;
     entity.joint.mrid = dto.datasData.jointsData.mrid || null;
     entity.terminal.mrid = dto.datasData.terminalsData.mrid || null;
