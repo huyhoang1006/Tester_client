@@ -112,6 +112,7 @@ import * as transformerMapper from '@/views/Mapping/Transformer'
 import * as reactorMapper from '@/views/Mapping/Reactor'
 
 import * as demoAPI from '@/api/demo/index.js'
+import * as PowerCableServerMapper from '@/views/Mapping/PowerCableTest/index.js'
 
 import VoltageLevel from '@/views/VoltageLevel/index.vue'
 import Bay from '@/views/Bay/index.vue'
@@ -613,25 +614,29 @@ export default {
                 console.error("Error loading data:", error);
             }
         },
-        async loadDataServer(tab, index) {
-            try {
-                if (index == null) {
-                    index = this.tabs.findIndex(t => t.mrid === tab.mrid);
-                    if (index === -1) {
-                        this.$message.error("Tab not found");
-                        return;
+       // Trong src/views/Common/Tabs.vue
+async loadDataServer(tab, index) {
+    try {
+        if (tab.mode == 'asset' && tab.asset === 'Power cable') {
+            const response = await demoAPI.getAssetById(tab.mrid, 'PowerCable');
+            console.log("Server Response Raw:", response); // Kiểm tra xem data có về không
+
+            if (response) {
+                // Đảm bảo import đúng PowerCableServerMapper từ file vừa tạo ở trên
+                const dto = PowerCableServerMapper.mapServerToDto(response);
+                console.log("Mapped DTO:", dto); // Kiểm tra DTO sau khi map có giá trị không
+
+                this.$nextTick(() => {
+                    if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                        this.$refs.componentLoadData[index].loadData(dto);
                     }
-                }
-                if(tab.mode == 'asset') {
-                    if(tab.asset === 'Power cable') {
-                        const response =  await demoAPI.getAssetById(tab.mrid, 'PowerCable')
-                        console.log("response : ", response)
-                    }
-                }
-            } catch (error) {
-                console.error("Error loading data from server:", error);
+                });
             }
-        },
+        }
+    } catch (error) {
+        console.error("Error loading data from server:", error);
+    }
+},
         async selectTab(tab, index) {
             try {
                 this.indexTab = index
