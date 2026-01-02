@@ -113,15 +113,23 @@ export const insertPowerCableEntity = async (old_entity, entity) => {
             for (const item of toDeleteTemperature) await deleteUnitSafely(deleteTemperatureByIdTransaction, item.mrid, db);
 
             // Other components
+            await insertLifecycleDateTransaction(entity.lifecycleDate, db);
+            await insertProductAssetModelTransaction(entity.productAssetModel, db);
+
+            // 3. INSERT BẢNG INFO (Kế thừa từ AssetInfo -> WireInfo -> CableInfo)
+            // Bảng này tham chiếu đến ProductAssetModel
             await insertConcentricNeutralCableInfoTransaction(entity.concentricNeutral, db);
+
+            // 4. INSERT CÁC BẢNG PHỤ TRỢ (Tham chiếu đến Info)
             await insertJointCableInfoTransaction(entity.joint, db);
             await insertSheathVoltageLimiterTransaction(entity.sheathVoltageLimiter, db);
             await insertTerminalCableInfoTransaction(entity.terminal, db);
-            await insertLifecycleDateTransaction(entity.lifecycleDate, db);
-            await insertProductAssetModelTransaction(entity.productAssetModel, db);
+            await insertOldCableInfoTransaction(entity.oldCableInfo, db);
+
+            // 5. CUỐI CÙNG LÀ INSERT ASSET VÀ LIÊN KẾT CÂY
+            // Bảng asset tham chiếu đến Info, Model và LifecycleDate
             await insertAssetTransaction(entity.asset, db);
             await insertAssetPsrTransaction(entity.assetPsr, db);
-            await insertOldCableInfoTransaction(entity.oldCableInfo, db);
 
             //attachment
             if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
@@ -301,15 +309,20 @@ export const deletePowerCableEntity = async (entity) => {
         }
 
         // Xóa các bảng cha/bảng quan hệ trước (để nhả khóa ngoại)
-        if (entity.oldCableInfo && entity.oldCableInfo.mrid) await deleteOldCableInfoTransaction(entity.oldCableInfo.mrid, db);
+
         if (entity.assetPsr && entity.assetPsr.mrid) await deleteAssetPsrTransaction(entity.assetPsr.mrid, db);
         if (entity.asset && entity.asset.mrid) await deleteAssetByIdTransaction(entity.asset.mrid, db);
-        if (entity.productAssetModel && entity.productAssetModel.mrid) await deleteProductAssetModelByIdTransaction(entity.productAssetModel.mrid, db);
-        if (entity.lifecycleDate && entity.lifecycleDate.mrid) await deleteLifecycleDateByIdTransaction(entity.lifecycleDate.mrid, db);
+        if (entity.oldCableInfo && entity.oldCableInfo.mrid) await deleteOldCableInfoTransaction(entity.oldCableInfo.mrid, db);
         if (entity.terminal && entity.terminal.mrid) await deleteTerminalCableInfoTransaction(entity.terminal.mrid, db);
         if (entity.sheathVoltageLimiter && entity.sheathVoltageLimiter.mrid) await deleteSheathVoltageLimiterTransaction(entity.sheathVoltageLimiter.mrid, db);
         if (entity.joint && entity.joint.mrid) await deleteJointCableInfoById(entity.joint.mrid, db);
         if (entity.concentricNeutral && entity.concentricNeutral.mrid) await deleteConcentricNeutralCableInfoTransaction(entity.concentricNeutral.mrid, db);
+        if (entity.productAssetModel && entity.productAssetModel.mrid) await deleteProductAssetModelByIdTransaction(entity.productAssetModel.mrid, db);
+        if (entity.lifecycleDate && entity.lifecycleDate.mrid) await deleteLifecycleDateByIdTransaction(entity.lifecycleDate.mrid, db);
+
+
+
+
 
         // Xóa các Unit (Voltage, Length...) - Sử dụng hàm deleteUnitSafely để bỏ qua lỗi Constraint
         for (const item of entity.temperature || []) await deleteUnitSafely(deleteTemperatureByIdTransaction, item.mrid, db);
