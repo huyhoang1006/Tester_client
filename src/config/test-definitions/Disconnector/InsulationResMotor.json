@@ -4,21 +4,21 @@
   "testName": "Insulation resistance of motor",
   "columns": [
     {
-      "mrid": "12739343-6523-455b-8016-5683267571b2",
+      "mrid": "8a1f2b3c-4d5e-4a6b-9c01-0f1e2d3c4b5a",
       "code": "test_voltage",
       "name": "Test voltage",
       "type": "analog",
-      "unit": "V"
+      "unit": "k|V"
     },
     {
-      "mrid": "92183472-1254-463b-9123-128374651293",
+      "mrid": "6c9d0e1f-2a3b-4c13-9009-000000000017",
       "code": "r60s",
       "name": "R60s",
       "type": "analog",
       "unit": "M|Ω"
     },
     {
-      "mrid": "99999999-aaaa-bbbb-cccc-000000000001",
+      "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",
       "code": "assessment",
       "name": "Assessment",
       "type": "discrete",
@@ -29,7 +29,7 @@
       ]
     },
     {
-      "mrid": "99999999-aaaa-bbbb-cccc-000000000002",
+      "mrid": "7e52c7e5-1c3b-4fd1-9a91-3e94db29a002",
       "code": "condition_indicator",
       "name": "Condition indicator",
       "type": "discrete",

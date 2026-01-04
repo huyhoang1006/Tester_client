@@ -78,7 +78,7 @@
         <div class="tabs-content">
             <div class="mgr-20 mgt-20 mgb-20 mgl-20" v-for="(item) in tabs" :key="item.mrid">
                 <component mode="update" @reload="loadData" v-show="activeTab.mrid === item.mrid"
-                    ref="componentLoadData" :sideData="sideSign" :is="checkTab(item)" :organisationId="item.parentId"
+                    ref="componentLoadData" :sideData="sideSign" :is="checkTab(item)" :organisationId="String(item.parentId)"
                     :testTypeListData="testTypeListData" :assetData="assetData"
                     :productAssetModelData="productAssetModelData" :parent="parentOrganization"
                     :locationData="locationData" style="min-height: calc(100vh - 250px);">
@@ -111,6 +111,8 @@ import * as BreakerMapper from '@/views/Mapping/Breaker'
 import * as transformerMapper from '@/views/Mapping/Transformer'
 import * as reactorMapper from '@/views/Mapping/Reactor'
 
+import * as demoAPI from '@/api/demo/index.js'
+import * as PowerCableServerMapper from '@/views/Mapping/PowerCableTest/index.js'
 
 import VoltageLevel from '@/views/VoltageLevel/index.vue'
 import Bay from '@/views/Bay/index.vue'
@@ -181,6 +183,13 @@ export default {
     },
     methods: {
         async loadData(tab, index) {
+            if (this.side === 'client') {
+                await this.loadDataClient(tab, index)
+            } else {
+                await this.loadDataServer(tab, index)
+            }
+        },
+        async loadDataClient(tab, index) {
             try {
                 if (index == null) {
                     index = this.tabs.findIndex(t => t.mrid === tab.mrid);
@@ -605,6 +614,29 @@ export default {
                 console.error("Error loading data:", error);
             }
         },
+       // Trong src/views/Common/Tabs.vue
+async loadDataServer(tab, index) {
+    try {
+        if (tab.mode == 'asset' && tab.asset === 'Power cable') {
+            const response = await demoAPI.getAssetById(tab.mrid, 'PowerCable');
+            console.log("Server Response Raw:", response); // Kiểm tra xem data có về không
+
+            if (response) {
+                // Đảm bảo import đúng PowerCableServerMapper từ file vừa tạo ở trên
+                const dto = PowerCableServerMapper.mapServerToDto(response);
+                console.log("Mapped DTO:", dto); // Kiểm tra DTO sau khi map có giá trị không
+
+                this.$nextTick(() => {
+                    if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                        this.$refs.componentLoadData[index].loadData(dto);
+                    }
+                });
+            }
+        }
+    } catch (error) {
+        console.error("Error loading data from server:", error);
+    }
+},
         async selectTab(tab, index) {
             try {
                 this.indexTab = index
