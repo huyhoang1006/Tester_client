@@ -4,61 +4,61 @@
   "testName": "CT DF & CAP",
   "columns": [
     {
-      "mrid": "99999999-aaaa-bbbb-cccc-000000000003",
+      "mrid": "c2b9f0a1-1a9d-4a22-8e44-000000000004",
       "code": "measurement",
       "name": "Measurement",
       "type": "string"
     },
     {
-      "mrid": "aaaaaaaa-test-mode-0000-000000000000",
-      "code": "testMode",
+      "mrid": "01c47c67-4295-4bf6-a0c5-9c14ec8d905e",
+      "code": "test_mode",
       "name": "Test mode",
       "type": "string"
     },
     {
-      "mrid": "aaaaaaaa-vtes-tkv0-0000-000000000000",
+      "mrid": "8a1f2b3c-4d5e-4a6b-9c01-0f1e2d3c4b5a",
       "code": "test_voltage",
       "name": "Test voltage",
       "type": "analog",
-      "unit": "kV"
+      "unit": "k|V"
     },
     {
-      "mrid": "aaaaaaaa-dfre-f000-0000-000000000000",
-      "code": "dfref",
+      "mrid": "c74b6a9a-5e33-4040-be57-a2e7c82e5e19",
+      "code": "df_ref",
       "name": "DF ref",
       "type": "analog",
       "unit": "%"
     },
     {
-      "mrid": "aaaaaaaa-cref-0000-0000-000000000000",
-      "code": "cref",
+      "mrid": "610bb02e-0e71-452e-80b3-34753b9cf484",
+      "code": "c_ref",
       "name": "C ref",
       "type": "analog",
       "unit": "pF"
     },
     {
-      "mrid": "aaaaaaaa-dfme-as00-0000-000000000000",
-      "code": "dfmeas",
+      "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+      "code": "df_meas",
       "name": "DF meas",
       "type": "analog",
       "unit": "%"
     },
     {
-      "mrid": "aaaaaaaa-cmea-s000-0000-000000000000",
-      "code": "cmeas",
+      "mrid": "1d340ee5-9c57-422a-a049-ea57d2beedb7",
+      "code": "c_meas",
       "name": "C meas",
       "type": "analog",
       "unit": "pF"
     },
     {
-      "mrid": "aaaaaaaa-ccal-0000-0000-000000000000",
-      "code": "ccal",
+      "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+      "code": "c_cal",
       "name": "△C cal",
       "type": "analog",
       "unit": "%"
     },
     {
-      "mrid": "99999999-aaaa-bbbb-cccc-000000000001",
+      "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",
       "code": "assessment",
       "name": "Assessment",
       "type": "discrete",
@@ -69,7 +69,7 @@
       ]
     },
     {
-      "mrid": "99999999-aaaa-bbbb-cccc-000000000002",
+      "mrid": "7e52c7e5-1c3b-4fd1-9a91-3e94db29a002",
       "code": "condition_indicator",
       "name": "Condition indicator",
       "type": "discrete",

@@ -2,58 +2,46 @@
     <div class="explorer">
         <!-- Thanh công cụ -->
         <div v-show="clientSlide" class="toolbar">
-            <div style="display: flex; align-items: center;">
+            <div style="display: flex; align-items: center">
                 <div @click="resetAllClient" class="path-hover">Organisation</div>
-                <i v-if="pathMapClient && pathMapClient.length > 0" style="margin-left: 10px;" class="fa-solid fa-angle-right"></i>
+                <i v-if="pathMapClient && pathMapClient.length > 0" style="margin-left: 10px" class="fa-solid fa-angle-right"></i>
             </div>
-            <div style="display: flex; align-items: center;" v-for="(item, index) in pathMapClient" :key="`client-${item.id}-${index}`">
-                <div @click="resetPathClient(index)" class="path-hover"> {{ item.parent }}</div>
-                <i v-if="index < pathMapClient.length - 1" style="margin-left: 10px;" class="fa-solid fa-angle-right"></i>
+            <div style="display: flex; align-items: center" v-for="(item, index) in pathMapClient" :key="`client-${item.id}-${index}`">
+                <div @click="resetPathClient(index)" class="path-hover">{{ item.parent }}</div>
+                <i v-if="index < pathMapClient.length - 1" style="margin-left: 10px" class="fa-solid fa-angle-right"></i>
             </div>
         </div>
         <div v-show="!clientSlide" class="toolbar">
-            <div style="display: flex; align-items: center;">
+            <div style="display: flex; align-items: center">
                 <div @click="resetAllServer" class="path-hover">Organisation</div>
-                <i v-if="pathMapServer && pathMapServer.length > 0" style="margin-left: 10px;" class="fa-solid fa-angle-right"></i>
+                <i v-if="pathMapServer && pathMapServer.length > 0" style="margin-left: 10px" class="fa-solid fa-angle-right"></i>
             </div>
-            <div style="display: flex; align-items: center;" v-for="(item, index) in pathMapServer" :key="`server-${item.id}-${index}`">
-                <div @click="resetPathServer(index)" class="path-hover"> {{ item.parent }}</div>
-                <i v-if="index < pathMapServer.length - 1" style="margin-left: 10px;" class="fa-solid fa-angle-right"></i>
+            <div style="display: flex; align-items: center" v-for="(item, index) in pathMapServer" :key="`server-${item.id}-${index}`">
+                <div @click="resetPathServer(index)" class="path-hover">{{ item.parent }}</div>
+                <i v-if="index < pathMapServer.length - 1" style="margin-left: 10px" class="fa-solid fa-angle-right"></i>
             </div>
         </div>
         <div id="toolbar-setting-id" class="toolbar-setting">
             <div>
-                <el-dropdown 
-                ref="addDropdown"
-                @command="handleAddCommand" 
-                @visible-change="handleDropdownVisibleChange"
-                trigger="click">
+                <el-dropdown ref="addDropdown" @command="handleAddCommand" @visible-change="handleDropdownVisibleChange" trigger="click">
                     <span class="icon-wrapper">
-                        <i title="Add" style="font-size: 12px;" class="fa-solid fa-square-plus"></i>
+                        <i title="Add" style="font-size: 12px" class="fa-solid fa-square-plus"></i>
                     </span>
                     <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item 
-                            v-if="isCommandAllowed('organisation')" 
-                            command="organisation">
+                        <el-dropdown-item v-if="isCommandAllowed('organisation')" command="organisation">
                             <icon size="12px" folderType="building" badgeColor="146EBE"></icon> add Organisation
                         </el-dropdown-item>
-                        <el-dropdown-item 
-                            v-if="isCommandAllowed('substation')" 
-                            command="substation">
+                        <el-dropdown-item v-if="isCommandAllowed('substation')" command="substation">
                             <icon size="12px" folderType="location" badgeColor="146EBE"></icon> add Substation
                         </el-dropdown-item>
-                        <el-dropdown-item 
-                            v-if="isCommandAllowed('voltageLevel')" 
-                            command="voltageLevel">
+                        <el-dropdown-item v-if="isCommandAllowed('voltageLevel')" command="voltageLevel">
                             <icon size="12px" folderType="voltageLevel" badgeColor="146EBE"></icon> add Voltage Level
                         </el-dropdown-item>
-                        <el-dropdown-item 
-                            v-if="isCommandAllowed('bay')" 
-                            command="bay">
+                        <el-dropdown-item v-if="isCommandAllowed('bay')" command="bay">
                             <icon size="12px" folderType="bay" badgeColor="146EBE"></icon> add Bay
                         </el-dropdown-item>
-                        <el-dropdown-item 
-                            v-if="isCommandAllowed('asset')" 
+                        <el-dropdown-item
+                            v-if="isCommandAllowed('asset')"
                             command="asset"
                             class="asset-submenu-parent"
                             @mouseenter.native="showAssetSub = true"
@@ -106,23 +94,21 @@
                                 </div>
                             </div>
                         </el-dropdown-item>
-                        <el-dropdown-item 
-                            v-if="isCommandAllowed('job')" 
-                            command="job">
+                        <el-dropdown-item v-if="isCommandAllowed('job')" command="job">
                             <icon size="12px" folderType="job" badgeColor="146EBE"></icon> add Job
                         </el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
             </div>
             <div>
-                <i @click="handleOpenNode" title="Open" style="font-size: 12px;" class="fa-regular fa-folder-open"></i>
+                <i @click="handleOpenNode" title="Open" style="font-size: 12px" class="fa-regular fa-folder-open"></i>
             </div>
             <div>
-                <i @click="duplicateSelectedNodes" title="Duplicate" style="font-size: 12px;" class="fa-solid fa-clone"></i>
+                <i @click="duplicateSelectedNodes" title="Duplicate" style="font-size: 12px" class="fa-solid fa-clone"></i>
             </div>
             <div>
                 <el-dropdown @command="handleImportCommand" trigger="click">
-                    <i title="Import" style="font-size: 12px;" class="fa-solid fa-file-import"></i>
+                    <i title="Import" style="font-size: 12px" class="fa-solid fa-file-import"></i>
                     <el-dropdown-menu slot="dropdown">
                         <el-dropdown-item class="import-json-parent" @mouseenter.native="showSubImport = 'json'" @mouseleave.native="showSubImport = null">
                             <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon> import from JSON
@@ -137,18 +123,18 @@
                         <el-dropdown-item command="importExcel">
                             <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon> import from Excel
                         </el-dropdown-item>
-                        <el-dropdown-item command="importWord"> 
+                        <el-dropdown-item command="importWord">
                             <icon size="12px" fileTypeDetail="word" folderType="fileType" badgeColor="146EBE"></icon> import from Word
                         </el-dropdown-item>
                         <el-dropdown-item command="importPDF">
                             <icon size="12px" fileTypeDetail="pdf" folderType="fileType" badgeColor="146EBE"></icon> import from PDF
                         </el-dropdown-item>
                     </el-dropdown-menu>
-                </el-dropdown>        
+                </el-dropdown>
             </div>
             <div>
                 <el-dropdown @command="handleCommand" trigger="click">
-                    <i title="Export" style="font-size: 12px;" class="fa-solid fa-file-export"></i>
+                    <i title="Export" style="font-size: 12px" class="fa-solid fa-file-export"></i>
                     <el-dropdown-menu slot="dropdown">
                         <el-dropdown-item class="export-json-parent" @mouseenter.native="showSub = 'json'" @mouseleave.native="showSub = null">
                             <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon> export to JSON
@@ -163,7 +149,7 @@
                         <el-dropdown-item command="exportExcel">
                             <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon> export to Excel
                         </el-dropdown-item>
-                        <el-dropdown-item command="exportWord"> 
+                        <el-dropdown-item command="exportWord">
                             <icon size="12px" fileTypeDetail="word" folderType="fileType" badgeColor="146EBE"></icon> export to Word
                         </el-dropdown-item>
                         <el-dropdown-item command="exportPDF">
@@ -173,19 +159,19 @@
                 </el-dropdown>
             </div>
             <div v-if="clientSlide">
-                <i title="Upload" style="font-size: 12px;" class="fa-solid fa-upload"></i>
+                <i title="Upload" style="font-size: 12px" class="fa-solid fa-upload"></i>
             </div>
             <div v-if="!clientSlide">
-                <i title="Download" style="font-size: 12px;" class="fa-solid fa-download"></i>
+                <i @click="handleDownloadNode" title="Download" style="font-size: 12px" class="fa-solid fa-download"></i>
             </div>
             <div>
-                <i @click="handleDeleteNode" title="Delete" style="font-size: 12px;" class="fa-solid fa-trash"></i>
+                <i @click="handleDeleteNode" title="Delete" style="font-size: 12px" class="fa-solid fa-trash"></i>
             </div>
             <div @click="handleClickFmeca">
-                <i title="Fmeca" style="font-size: 12px;" class="fa-solid fa-table"></i>
+                <i title="Fmeca" style="font-size: 12px" class="fa-solid fa-table"></i>
             </div>
             <div>
-                <i @click="handleMoveNode" title="Move" style="font-size: 12px;" class="fa-solid fa-arrows-up-down-left-right"></i>
+                <i @click="handleMoveNode" title="Move" style="font-size: 12px" class="fa-solid fa-arrows-up-down-left-right"></i>
             </div>
         </div>
         <!-- Thanh điều hướng có thể kéo rộng/kéo hẹp -->
@@ -193,67 +179,92 @@
             <div ref="sidebarClient" v-show="clientSlide" class="sidebar">
                 <div class="title-temp">
                     <div ref="tabContainer" class="tab-container">
-                        <div @contextmenu.prevent="showContext" ref="locationRoot" @click="showLocationRoot"
-                            class="location">
-                            Location
-                        </div>
-                        <div ref="ownerRoot" class="tab">
-                            Owner
-                        </div>
+                        <div @contextmenu.prevent="showContext" ref="locationRoot" @click="showLocationRoot" class="location">Location</div>
+                        <div ref="ownerRoot" class="tab">Owner</div>
                     </div>
                     <contextMenu @show-addSubs="showAddSubs" ref="contextSubstation"></contextMenu>
                 </div>
                 <div class="child-nav">
                     <ul>
-                        <TreeNode v-for="item in organisationClientList" :key="item.id" :node="item"
-                            @double-click-node="doubleClickNode" :selectedNodes.sync="selectedNodes"
-                            @fetch-children="fetchChildren" @show-properties="showPropertiesDataClient"
-                            @update-selection="updateSelection" @clear-selection="clearSelection"
+                        <TreeNode
+                            v-for="item in organisationClientList"
+                            :key="item.id"
+                            :node="item"
+                            @double-click-node="doubleClickNode"
+                            :selectedNodes.sync="selectedNodes"
+                            @fetch-children="fetchChildren"
+                            @show-properties="showPropertiesDataClient"
+                            @update-selection="updateSelection"
+                            @clear-selection="clearSelection"
                             @open-context-menu="openContextMenuClient">
                         </TreeNode>
                     </ul>
-                    <contextMenu @delete-data="deleteDataClient" @show-addSubsInTree="showAddSubsInTree"
-                        @show-addOrganisation="showAddOrganisation" @show-addVoltageLevel="showAddVoltageLevel"
-                        @show-addTransformer="showAddTransformer" @show-addJob="showAddJob"
-                        @show-addBushing="showAddBushing" @show-addSurgeArrester="showAddSurgeArrester"
-                        @show-addCircuit="showAddCircuitBreaker" @show-addVt="showAddVt" @show-addCt="showAddCt"
-                        @show-addPowerCable="showAddPowerCable" @show-addDisconnector="showAddDisconnector"
-                        @show-addCapacitor="showAddCapacitor" @show-addReactor="showAddReactor"
-                        @show-addRotatingMachine="showAddRotatingMachine" @show-addBay="showAddBay"
-                        @export-json="handleExportJSONFromContext" @export-json-cim="handleExportJSONCIMFromContext"
-                        @export-xml="handleExportXMLFromContext" @export-excel="handleExportExcelFromContext"
-                        @export-word="handleExportWordFromContext" @export-pdf="handleExportPDFFromContext"
+                    <contextMenu
+                        @delete-data="deleteDataClient"
+                        @show-addSubsInTree="showAddSubsInTree"
+                        @show-addOrganisation="showAddOrganisation"
+                        @show-addVoltageLevel="showAddVoltageLevel"
+                        @show-addTransformer="showAddTransformer"
+                        @show-addJob="showAddJob"
+                        @show-addBushing="showAddBushing"
+                        @show-addSurgeArrester="showAddSurgeArrester"
+                        @show-addCircuit="showAddCircuitBreaker"
+                        @show-addVt="showAddVt"
+                        @show-addCt="showAddCt"
+                        @show-addPowerCable="showAddPowerCable"
+                        @show-addDisconnector="showAddDisconnector"
+                        @show-addCapacitor="showAddCapacitor"
+                        @show-addReactor="showAddReactor"
+                        @show-addRotatingMachine="showAddRotatingMachine"
+                        @show-addBay="showAddBay"
+                        @export-json="handleExportJSONFromContext"
+                        @export-json-cim="handleExportJSONCIMFromContext"
+                        @export-xml="handleExportXMLFromContext"
+                        @export-excel="handleExportExcelFromContext"
+                        @export-word="handleExportWordFromContext"
+                        @export-pdf="handleExportPDFFromContext"
                         @duplicate-node="handleDuplicateFromContext"
                         @move-node="handleMoveFromContext"
-                        @import-json="handleImportJSONFromContext" @import-json-cim="handleImportJSONCIMFromContext"
-                        @show-data="showDataClient" ref="contextMenuClient">
+                        @import-json="handleImportJSONFromContext"
+                        @import-json-cim="handleImportJSONCIMFromContext"
+                        @show-data="showDataClient"
+                        ref="contextMenuClient">
                     </contextMenu>
                 </div>
             </div>
             <div ref="sidebarServer" v-show="!clientSlide" class="sidebar">
                 <div class="title-temp">
                     <div ref="tabContainer" class="tab-container">
-                        <div ref="ownerRootServer" @click="showOwnerServerRoot" class="tab">
-                            Owner
-                        </div>
+                        <div ref="ownerRootServer" @click="showOwnerServerRoot" class="tab">Owner</div>
                     </div>
                 </div>
                 <div class="child-nav">
                     <ul>
-                        <TreeNode v-for="item in ownerServerList" :key="item.id" :node="item"
-                            :selectedNodes.sync="selectedNodes" @fetch-children="fetchChildrenServer"
-                            @show-properties="showPropertiesData" @update-selection="updateSelection"
-                            @clear-selection="clearSelection" @open-context-menu="openContextMenu"
+                        <TreeNode
+                            v-for="item in ownerServerList"
+                            :key="item.id"
+                            :node="item"
+                            :selectedNodes.sync="selectedNodes"
+                            @fetch-children="fetchChildrenServer"
+                            @show-properties="showPropertiesData"
+                            @update-selection="updateSelection"
+                            @clear-selection="clearSelection"
+                            @open-context-menu="openContextMenu"
                             @double-click-node="doubleClickNodeServer">
                         </TreeNode>
                     </ul>
-                    <contextMenu @show-data="showData" 
-                        @export-json="handleExportJSONFromContext" @export-json-cim="handleExportJSONCIMFromContext"
-                        @export-xml="handleExportXMLFromContext" @export-excel="handleExportExcelFromContext"
-                        @export-word="handleExportWordFromContext" @export-pdf="handleExportPDFFromContext"
+                    <contextMenu
+                        @show-data="showData"
+                        @export-json="handleExportJSONFromContext"
+                        @export-json-cim="handleExportJSONCIMFromContext"
+                        @export-xml="handleExportXMLFromContext"
+                        @export-excel="handleExportExcelFromContext"
+                        @export-word="handleExportWordFromContext"
+                        @export-pdf="handleExportPDFFromContext"
                         @duplicate-node="handleDuplicateFromContext"
                         @move-node="handleMoveFromContext"
-                        @import-json="handleImportJSONFromContext" @import-json-cim="handleImportJSONCIMFromContext"
+                        @import-json="handleImportJSONFromContext"
+                        @import-json-cim="handleImportJSONCIMFromContext"
                         ref="contextMenu"></contextMenu>
                 </div>
             </div>
@@ -264,67 +275,56 @@
                     <div ref="content" class="content">
                         <div class="title-content"></div>
                         <div class="content-content">
-                            <Tabs :side="'server'" ref="serverTabs" v-model="activeTab" :tabs="tabs"
-                                @close-tab="removeTab" />
+                            <Tabs :side="'server'" ref="serverTabs" v-model="activeTab" :tabs="tabs" @close-tab="removeTab" />
                         </div>
                     </div>
                     <div @mousedown="startResizeContentServer" ref="resizerContentServer" class="resizer"></div>
                     <div v-if="propertiesSign" ref="properties" class="properties">
                         <div class="title-properties">
                             <div class="title-wrapper">
-                                <div class="title-name">
-                                    Object Properties
-                                </div>
-                                <div style="margin-right: 5px;">
+                                <div class="title-name">Object Properties</div>
+                                <div style="margin-right: 5px">
                                     <i @click="hideProperties" class="fa-solid fa-square-caret-right"></i>
                                 </div>
                             </div>
                         </div>
                         <div class="content-properties">
                             <div class="content-properties-header">
-                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px;"></i>
+                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px"></i>
                                 Owner & Position
                             </div>
                             <div class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Name</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        properties.name }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.name }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Region</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        properties.region }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.region }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Plant</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        properties.plant }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.plant }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Address</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        properties.address }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.address }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">City</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        properties.city }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.city }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">State/Province</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        properties.state_province }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.state_province }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Postal code</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        properties.postal_code }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.postal_code }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Country</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        properties.country }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.country }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Geo coordinates</div>
@@ -332,109 +332,91 @@
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Phone number</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        properties.phone_no }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.phone_no }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Email</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        properties.email }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.email }}</div>
                                 </div>
                             </div>
                             <div v-if="assetPropertySign" class="content-properties-header">
-                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px;"></i>
+                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px"></i>
                                 Asset Properties
                             </div>
                             <div v-if="assetPropertySign" class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Asset</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetProperties.asset }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.asset }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Asset type</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetProperties.asset_type }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.asset_type }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Serial number</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetProperties.serial_no }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.serial_no }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Manufacturer</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetProperties.manufacturer }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.manufacturer }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Manufacturer type</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetProperties.manufacturer_type }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.manufacturer_type }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Manufacturing year</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetProperties.manufacturing_year }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.manufacturing_year }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Country</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetProperties.country }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.country }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Apparatus id</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetProperties.apparatus_id }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.apparatus_id }}</div>
                                 </div>
                             </div>
                             <div v-if="jobPropertySign" class="content-properties-header">
-                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px;"></i>
+                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px"></i>
                                 Job Properties
                             </div>
                             <div v-if="jobPropertySign" class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Name</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobProperties.name }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.name }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Work order</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobProperties.work_order }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.work_order }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Creation date</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobProperties.creation_date }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.creation_date }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Execution date</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobProperties.execution_date }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.execution_date }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Tested by</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobProperties.tested_by }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.tested_by }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Approved by</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobProperties.approved_by }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.approved_by }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Ambient condition</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobProperties.ambient_condition }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.ambient_condition }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Standard</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobProperties.standard }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.standard }}</div>
                                 </div>
                             </div>
                             <div class="content-properties-header">
-                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px;"></i>
+                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px"></i>
                                 Configuration Version
                             </div>
                             <div class="content-properties-table">
@@ -453,8 +435,7 @@
                             </div>
                         </div>
                     </div>
-                    <div v-if="!propertiesSign" @click="showProperties" class="trapezoid">
-                    </div>
+                    <div v-if="!propertiesSign" @click="showProperties" class="trapezoid"></div>
                 </div>
                 <div ref="logBar" v-if="logSign" class="log-bar">
                     <LogBar :logData="logDataServer" @hideLogBar="hideLogBar"></LogBar>
@@ -465,178 +446,166 @@
                     <div ref="contentClient" class="content">
                         <div class="title-content"></div>
                         <div class="content-content">
-                            <Tabs :side="'client'" ref="clientTabs" v-model="activeTabClient" :tabs="tabsClient"
-                                @close-tab="removeTabClient" />
+                            <Tabs :side="'client'" ref="clientTabs" v-model="activeTabClient" :tabs="tabsClient" @close-tab="removeTabClient" />
                         </div>
                     </div>
                     <div @mousedown="startResizeContentClient" ref="resizerContentClient" class="resizer"></div>
                     <div v-if="propertiesSignClient" ref="propertiesClient" class="properties">
                         <div class="title-properties">
                             <div class="title-wrapper">
-                                <div class="title-name">
-                                    Object Properties
-                                </div>
-                                <div style="margin-right: 5px;">
+                                <div class="title-name">Object Properties</div>
+                                <div style="margin-right: 5px">
                                     <i @click="hidePropertiesClient" class="fa-solid fa-square-caret-right"></i>
                                 </div>
                             </div>
                         </div>
                         <div class="content-properties">
                             <div class="content-properties-header">
-                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px;"></i>
+                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px"></i>
                                 Owner & Position
                             </div>
                             <div class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Name</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word"> {{
-                                        propertiesClient.name || '&nbsp;' }} </div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.name || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Region</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.region || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.region || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Plant</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.plant || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.plant || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Address</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.address || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.address || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">City</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.city || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.city || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">State/Province</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.state_province || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">
+                                        {{ propertiesClient.state_province || '&nbsp;' }}
+                                    </div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Postal code</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.postal_code || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.postal_code || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Country</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.country || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.country || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Geo coordinates</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.geo_coordinates || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">
+                                        {{ propertiesClient.geo_coordinates || '&nbsp;' }}
+                                    </div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Phone number</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.phone_no || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.phone_no || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Email</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.email || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.email || '&nbsp;' }}</div>
                                 </div>
                             </div>
                             <div v-if="assetPropertySignClient" class="content-properties-header">
-                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px;"></i>
+                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px"></i>
                                 Asset Properties
                             </div>
                             <div v-if="assetPropertySignClient" class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Asset</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetPropertiesClient.asset || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.asset || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Asset type</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetPropertiesClient.asset_type || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">
+                                        {{ assetPropertiesClient.asset_type || '&nbsp;' }}
+                                    </div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Serial number</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetPropertiesClient.serial_no || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">
+                                        {{ assetPropertiesClient.serial_no || '&nbsp;' }}
+                                    </div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Manufacturer</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetPropertiesClient.manufacturer || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">
+                                        {{ assetPropertiesClient.manufacturer || '&nbsp;' }}
+                                    </div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Manufacturer type</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetPropertiesClient.manufacturer_type || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">
+                                        {{ assetPropertiesClient.manufacturer_type || '&nbsp;' }}
+                                    </div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Manufacturing year</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetPropertiesClient.manufacturing_year || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">
+                                        {{ assetPropertiesClient.manufacturing_year || '&nbsp;' }}
+                                    </div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Country</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetPropertiesClient.country || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">
+                                        {{ assetPropertiesClient.country || '&nbsp;' }}
+                                    </div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Apparatus id</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetPropertiesClient.apparatus_id || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">
+                                        {{ assetPropertiesClient.apparatus_id || '&nbsp;' }}
+                                    </div>
                                 </div>
                             </div>
                             <div v-if="jobPropertySignClient" class="content-properties-header">
-                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px;"></i>
+                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px"></i>
                                 Job Properties
                             </div>
                             <div v-if="jobPropertySignClient" class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Name</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobPropertiesClient.name }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.name }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Work order</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobPropertiesClient.work_order }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.work_order }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Creation date</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobPropertiesClient.creation_date }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.creation_date }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Execution date</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobPropertiesClient.execution_date }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.execution_date }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Tested by</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobPropertiesClient.tested_by }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.tested_by }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Approved by</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobPropertiesClient.approved_by }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.approved_by }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Ambient condition</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobPropertiesClient.ambient_condition }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.ambient_condition }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Standard</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobPropertiesClient.standard }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.standard }}</div>
                                 </div>
                             </div>
                             <div class="content-properties-header">
-                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px;"></i>
+                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px"></i>
                                 Configuration Version
                             </div>
                             <div class="content-properties-table">
@@ -655,18 +624,20 @@
                             </div>
                         </div>
                     </div>
-                    <div v-if="!propertiesSignClient" @click="showPropertiesClient" class="trapezoid">
-                    </div>
+                    <div v-if="!propertiesSignClient" @click="showPropertiesClient" class="trapezoid"></div>
                 </div>
                 <div ref="logBarClient" v-if="logSignClient" class="log-bar">
-                    <LogBar @reloadLog="reloadLogClient" :logData="logDataClient" @hideLogBar="hideLogBarClient">
-                    </LogBar>
+                    <LogBar @reloadLog="reloadLogClient" :logData="logDataClient" @hideLogBar="hideLogBarClient"> </LogBar>
                 </div>
             </div>
         </div>
         <el-dialog title="Add Substation" :visible.sync="signSubs" width="1000px" @close="handleSubsCancel">
-            <Substation :parentOrganization="parentOrganization" :personList="personList" :locationList="locationList"
-                :organisationId="organisationId" ref="substation"></Substation>
+            <Substation
+                :parentOrganization="parentOrganization"
+                :personList="personList"
+                :locationList="locationList"
+                :organisationId="organisationId"
+                ref="substation"></Substation>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleSubsCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleSubsConfirm">Save</el-button>
@@ -681,8 +652,7 @@
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Voltage Level" :visible.sync="signVoltageLevel" width="1000px"
-            @close="handleVoltageLevelCancel">
+        <el-dialog title="Add Voltage Level" :visible.sync="signVoltageLevel" width="1000px" @close="handleVoltageLevelCancel">
             <VoltageLevel :locationId="locationId" :parent="parentOrganization" ref="voltageLevel"></VoltageLevel>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleVoltageLevelCancel">Cancel</el-button>
@@ -698,12 +668,15 @@
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Transformer" :visible.sync="signTransformer" width="1000px"
+        <el-dialog
+            title="Add Transformer"
+            :visible.sync="signTransformer"
+            width="1000px"
             @close="handleTransformerCancel"
-            :modal="!isDuplicating" 
-    :show-close="!isDuplicating"
-    :transition="isDuplicating ? '' : 'dialog-fade'"
-    :custom-class="isDuplicating ? 'ghost-dialog' : ''">
+            :modal="!isDuplicating"
+            :show-close="!isDuplicating"
+            :transition="isDuplicating ? '' : 'dialog-fade'"
+            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
             <Transformer :locationId="locationId" :parent="parentOrganization" ref="transformer"></Transformer>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleTransformerCancel">Cancel</el-button>
@@ -711,8 +684,12 @@
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Bushing" :visible.sync="signBushing" width="1000px" @close="handleBushingCancel"
-            :modal="!isDuplicating" 
+        <el-dialog
+            title="Add Bushing"
+            :visible.sync="signBushing"
+            width="1000px"
+            @close="handleBushingCancel"
+            :modal="!isDuplicating"
             :show-close="!isDuplicating"
             :transition="isDuplicating ? '' : 'dialog-fade'"
             :custom-class="isDuplicating ? 'ghost-dialog' : ''">
@@ -723,8 +700,12 @@
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Surge Arrester" :visible.sync="signSurge" width="1000px" @close="handleSurgeCancel"
-            :modal="!isDuplicating" 
+        <el-dialog
+            title="Add Surge Arrester"
+            :visible.sync="signSurge"
+            width="1000px"
+            @close="handleSurgeCancel"
+            :modal="!isDuplicating"
             :show-close="!isDuplicating"
             :transition="isDuplicating ? '' : 'dialog-fade'"
             :custom-class="isDuplicating ? 'ghost-dialog' : ''">
@@ -735,8 +716,12 @@
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Circuit Breaker" :visible.sync="signCircuit" width="1000px" @close="handleCircuitCancel"
-            :modal="!isDuplicating" 
+        <el-dialog
+            title="Add Circuit Breaker"
+            :visible.sync="signCircuit"
+            width="1000px"
+            @close="handleCircuitCancel"
+            :modal="!isDuplicating"
             :show-close="!isDuplicating"
             :transition="isDuplicating ? '' : 'dialog-fade'"
             :custom-class="isDuplicating ? 'ghost-dialog' : ''">
@@ -747,34 +732,44 @@
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Current Transformer" :visible.sync="signCt" width="1000px" @close="handleCtCancel"
-            :modal="!isDuplicating" 
+        <el-dialog
+            title="Add Current Transformer"
+            :visible.sync="signCt"
+            width="1000px"
+            @close="handleCtCancel"
+            :modal="!isDuplicating"
             :show-close="!isDuplicating"
             :transition="isDuplicating ? '' : 'dialog-fade'"
             :custom-class="isDuplicating ? 'ghost-dialog' : ''">
-            <CurrentTransformer :locationId="locationId" :parent="parentOrganization" ref="currentTransformer">
-            </CurrentTransformer>
+            <CurrentTransformer :locationId="locationId" :parent="parentOrganization" ref="currentTransformer"> </CurrentTransformer>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleCtCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleCtConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Voltage Transformer" :visible.sync="signVt" width="1000px" @close="handleVtCancel"
-            :modal="!isDuplicating" 
+        <el-dialog
+            title="Add Voltage Transformer"
+            :visible.sync="signVt"
+            width="1000px"
+            @close="handleVtCancel"
+            :modal="!isDuplicating"
             :show-close="!isDuplicating"
             :transition="isDuplicating ? '' : 'dialog-fade'"
             :custom-class="isDuplicating ? 'ghost-dialog' : ''">
-            <VoltageTransformer :locationId="locationId" :parent="parentOrganization" ref="voltageTransformer">
-            </VoltageTransformer>
+            <VoltageTransformer :locationId="locationId" :parent="parentOrganization" ref="voltageTransformer"> </VoltageTransformer>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleVtCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleVtConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Power Cable" :visible.sync="signPower" width="1000px" @close="handlePowerCancel"
-            :modal="!isDuplicating" 
+        <el-dialog
+            title="Add Power Cable"
+            :visible.sync="signPower"
+            width="1000px"
+            @close="handlePowerCancel"
+            :modal="!isDuplicating"
             :show-close="!isDuplicating"
             :transition="isDuplicating ? '' : 'dialog-fade'"
             :custom-class="isDuplicating ? 'ghost-dialog' : ''">
@@ -785,9 +780,12 @@
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Disconnector" :visible.sync="signDisconnector" width="1000px"
+        <el-dialog
+            title="Add Disconnector"
+            :visible.sync="signDisconnector"
+            width="1000px"
             @close="handleDisconnectorCancel"
-            :modal="!isDuplicating" 
+            :modal="!isDuplicating"
             :show-close="!isDuplicating"
             :transition="isDuplicating ? '' : 'dialog-fade'"
             :custom-class="isDuplicating ? 'ghost-dialog' : ''">
@@ -798,39 +796,47 @@
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Rotating Machine" :visible.sync="signRotating" width="1000px"
+        <el-dialog
+            title="Add Rotating Machine"
+            :visible.sync="signRotating"
+            width="1000px"
             @close="handleRotatingCancel"
-            :modal="!isDuplicating" 
+            :modal="!isDuplicating"
             :show-close="!isDuplicating"
             :transition="isDuplicating ? '' : 'dialog-fade'"
             :custom-class="isDuplicating ? 'ghost-dialog' : ''">
-            <RotatingMachine :locationId="locationId" :parent="parentOrganization" ref="rotatingMachine">
-            </RotatingMachine>
+            <RotatingMachine :locationId="locationId" :parent="parentOrganization" ref="rotatingMachine"> </RotatingMachine>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleRotatingCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleRotatingConfirm">Save</el-button>
             </span>
         </el-dialog>
-        <el-dialog title="Add Capacitor" :visible.sync="signCapacitor" width="1000px" @close="handleCapacitorCancel"
-            :modal="!isDuplicating" 
+        <el-dialog
+            title="Add Capacitor"
+            :visible.sync="signCapacitor"
+            width="1000px"
+            @close="handleCapacitorCancel"
+            :modal="!isDuplicating"
             :show-close="!isDuplicating"
             :transition="isDuplicating ? '' : 'dialog-fade'"
             :custom-class="isDuplicating ? 'ghost-dialog' : ''">
-            <Capacitor :locationId="locationId" :parent="parentOrganization" ref="capacitor">
-            </Capacitor>
+            <Capacitor :locationId="locationId" :parent="parentOrganization" ref="capacitor"> </Capacitor>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleCapacitorCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleCapacitorConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Reactor" :visible.sync="signReactor" width="1000px" @close="handleReactorCancel"
-            :modal="!isDuplicating" 
+        <el-dialog
+            title="Add Reactor"
+            :visible.sync="signReactor"
+            width="1000px"
+            @close="handleReactorCancel"
+            :modal="!isDuplicating"
             :show-close="!isDuplicating"
             :transition="isDuplicating ? '' : 'dialog-fade'"
             :custom-class="isDuplicating ? 'ghost-dialog' : ''">
-            <Reactor :locationId="locationId" :parent="parentOrganization" ref="reactor">
-            </Reactor>
+            <Reactor :locationId="locationId" :parent="parentOrganization" ref="reactor"> </Reactor>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleReactorCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleReactorConfirm">Save</el-button>
@@ -838,8 +844,13 @@
         </el-dialog>
 
         <el-dialog title="Add Job" :visible.sync="signJob" width="1000px" @close="handleJobCancel">
-            <component ref="jobData" :is="checkJobType" :locationData="locationData" :assetData="assetData"
-                :productAssetModelData="productAssetModelData" :parent="parentOrganization"
+            <component
+                ref="jobData"
+                :is="checkJobType"
+                :locationData="locationData"
+                :assetData="assetData"
+                :productAssetModelData="productAssetModelData"
+                :parent="parentOrganization"
                 :testTypeListData="testTypeListData">
             </component>
             <span slot="footer" class="dialog-footer">
@@ -870,104 +881,112 @@
                 <el-button size="small" type="primary" @click="handleFmecaConfirm">Save</el-button>
             </span>
         </el-dialog>
-        <el-dialog title="Move Node" :visible.sync="moveDialogVisible" width="450px" @close="handleMoveCancel" custom-class="move-dialog" >
-    <div style="height: 300px; overflow-y: auto;" >
-        <div class="child-nav" style="height: 100%; cursor: pointer;">
-            <ul style="list-style: none; padding-left: 0;">
-                <TreeNode 
-                    v-for="item in moveTreeData" 
-                    :key="item.mrid" 
-                    :node="item"
-                    :selectedNodes="selectedTargetNodes"
-                    @fetch-children="fetchChildrenForMove" 
-                    @update-selection="handleMoveNodeSelection"
-                    @open-context-menu="() => {}"
-                    style="width: 100%;"
-                >
-                </TreeNode>
-            </ul>
-        </div>
-    </div>
-    <!-- Dòng kẻ ngăn cách TreeNode và dòng chữ bên dưới -->
-    <div style="border-top: 1px solid #e0e0e0; margin: 6px 0 4px 0;"></div>
-    <div
-        v-if="moveDisplayText"
-        style="
-            margin-top: 8px;
-            font-size: 13px;
-            color: #606266;
-            display: flex;
-            align-items: center;
-            width: 100%;
-            box-sizing: border-box;
-            padding: 0 12px;
-            font-weight: bold;
-        "
-    >
-        <!-- Cột 1: Move from (trái) -->
-        <span style="flex: 1; text-align: center; color: black;">
-            {{ moveDisplayText.prefix }}
-        </span>
+        <el-dialog title="Move Node" :visible.sync="moveDialogVisible" width="450px" @close="handleMoveCancel" custom-class="move-dialog">
+            <div style="height: 300px; overflow-y: auto">
+                <div class="child-nav" style="height: 100%; cursor: pointer">
+                    <ul style="list-style: none; padding-left: 0">
+                        <TreeNode
+                            v-for="item in moveTreeData"
+                            :key="item.mrid"
+                            :node="item"
+                            :selectedNodes="selectedTargetNodes"
+                            @fetch-children="fetchChildrenForMove"
+                            @update-selection="handleMoveNodeSelection"
+                            @open-context-menu="() => {}"
+                            style="width: 100%">
+                        </TreeNode>
+                    </ul>
+                </div>
+            </div>
+            <!-- Dòng kẻ ngăn cách TreeNode và dòng chữ bên dưới -->
+            <div style="border-top: 1px solid #e0e0e0; margin: 6px 0 4px 0"></div>
+            <div
+                v-if="moveDisplayText"
+                style="
+                    margin-top: 8px;
+                    font-size: 13px;
+                    color: #606266;
+                    display: flex;
+                    align-items: center;
+                    width: 100%;
+                    box-sizing: border-box;
+                    padding: 0 12px;
+                    font-weight: bold;
+                ">
+                <!-- Cột 1: Move from (trái) -->
+                <span style="flex: 1; text-align: center; color: black">
+                    {{ moveDisplayText.prefix }}
+                </span>
 
-        <!-- Cột 2: icon + node A (giữa trái) -->
-        <div style="flex: 1; display: flex; align-items: center; gap: 4px; justify-content: center;">
-            <icon                                               
-                v-if="moveDisplayData.sourceIcon"
-                :size="'16px'"
-                :folderType="moveDisplayData.sourceIcon.folderType"
-                :assetDetail="moveDisplayData.sourceIcon.assetDetail"
-                :badgeColor="moveDisplayData.sourceIcon.badgeColor"
-            ></icon>
-            <span style="font-weight: 600;" :title="moveDisplayText.sourceFull">
-                {{ moveDisplayText.source }}
+                <!-- Cột 2: icon + node A (giữa trái) -->
+                <div style="flex: 1; display: flex; align-items: center; gap: 4px; justify-content: center">
+                    <icon
+                        v-if="moveDisplayData.sourceIcon"
+                        :size="'16px'"
+                        :folderType="moveDisplayData.sourceIcon.folderType"
+                        :assetDetail="moveDisplayData.sourceIcon.assetDetail"
+                        :badgeColor="moveDisplayData.sourceIcon.badgeColor"></icon>
+                    <span style="font-weight: 600" :title="moveDisplayText.sourceFull">
+                        {{ moveDisplayText.source }}
+                    </span>
+                </div>
+
+                <!-- Cột 3: to (ở gần giữa, sát 2 node hơn) -->
+                <span style="flex: 0; padding: 0 8px; text-align: center; white-space: nowrap; font-weight: bold; color: black">
+                    {{ moveDisplayText.middle }}
+                </span>
+
+                <!-- Cột 4: icon + node B (phải) -->
+                <div style="flex: 1; display: flex; align-items: center; gap: 4px; justify-content: center">
+                    <icon
+                        v-if="moveDisplayData.targetIcon"
+                        :size="'16px'"
+                        :folderType="moveDisplayData.targetIcon.folderType"
+                        :assetDetail="moveDisplayData.targetIcon.assetDetail"
+                        :badgeColor="moveDisplayData.targetIcon.badgeColor"></icon>
+                    <span style="font-weight: 600" :title="moveDisplayText.targetFull">
+                        {{ moveDisplayText.target }}
+                    </span>
+                </div>
+            </div>
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" @click="moveDialogVisible = false" style="background-color: #d63743; color: #fff">Cancel</el-button>
+                <el-button size="small" type="primary" @click="confirmMoveNode" :disabled="!selectedTargetNode">Move</el-button>
             </span>
-        </div>
-
-        <!-- Cột 3: to (ở gần giữa, sát 2 node hơn) -->
-        <span
-            style="
-                flex: 0;
-                padding: 0 8px;
-                text-align: center;
-                white-space: nowrap;
-                font-weight: bold;
-                color: black
-            "
-        >
-            {{ moveDisplayText.middle }}
-        </span>
-
-        <!-- Cột 4: icon + node B (phải) -->
-        <div style="flex: 1; display: flex; align-items: center; gap: 4px; justify-content: center;">
-            <icon
-                v-if="moveDisplayData.targetIcon"
-                :size="'16px'"
-                :folderType="moveDisplayData.targetIcon.folderType"
-                :assetDetail="moveDisplayData.targetIcon.assetDetail"
-                :badgeColor="moveDisplayData.targetIcon.badgeColor"
-            ></icon>
-            <span style="font-weight: 600;" :title="moveDisplayText.targetFull">
-                {{ moveDisplayText.target }}
+        </el-dialog>
+        <!-- Dialog chọn cha khi download -->
+        <el-dialog title="Select Parent Node for Downloaded Asset" :visible.sync="downloadDialogVisible" width="450px" @close="downloadDialogVisible = false">
+            <div style="height: 300px; overflow-y: auto">
+                <div class="child-nav">
+                    <ul style="list-style: none; padding-left: 0">
+                        <TreeNode
+                            v-for="item in moveTreeData"
+                            :key="item.mrid"
+                            :node="item"
+                            :selectedNodes="selectedDownloadTargetNodes"
+                            @fetch-children="fetchChildren"
+                            @update-selection="handleDownloadTargetSelection"
+                            @open-context-menu="() => {}">
+                        </TreeNode>
+                    </ul>
+                </div>
+            </div>
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" @click="downloadDialogVisible = false">Cancel</el-button>
+                <el-button size="small" type="primary" @click="confirmDownloadSelection" :disabled="!selectedDownloadTargetNode">Confirm Download</el-button>
             </span>
-        </div>
+        </el-dialog>
     </div>
-    <span slot="footer" class="dialog-footer">
-        <el-button size="small" @click="moveDialogVisible = false" style="background-color: #D63743; color: #fff;">Cancel</el-button>
-        <el-button size="small" type="primary" @click="confirmMoveNode" :disabled="!selectedTargetNode">Move</el-button>
-    </span>
-</el-dialog>
-    </div>
-    
 </template>
 <script>
 /* eslint-disable */
 import LogBar from '@/components/LogBar'
 import TreeNode from '@/views/Common/TreeNode.vue'
-import Vue from "vue";
+import Vue from 'vue'
 import pageAlign from '@/views/PageAlign/pageAlign.vue'
 import spinner from '@/views/Common/Spinner.vue'
 import Tabs from '@/views/Common/Tabs.vue'
-import contextMenu from "@/views/Common/ContextMenu.vue";
+import contextMenu from '@/views/Common/ContextMenu.vue'
 
 // Import Components
 import Substation from '../LocationInsert/locationLevelView.vue'
@@ -996,7 +1015,7 @@ import JobCircuitBreaker from '@/views/JobView/CircuitBreaker/index.vue'
 import JobTransformer from '@/views/JobView/Transformer/index.vue'
 
 import mixin from './mixin'
-import Attachment from '../Common/Attachment.vue';
+import Attachment from '../Common/Attachment.vue'
 import * as demoAPI from '@/api/demo'
 import Icon from '@/views/Common/Icon.vue'
 import Fmeca from '@/views/Fmeca'
@@ -1015,10 +1034,10 @@ import * as VoltageTransformerMapping from '@/views/Mapping/VoltageTransformer/i
 import * as CurrentTransformerMapping from '@/views/Mapping/CurrentTransformer/index'
 import * as ReactorMapping from '@/views/Mapping/Reactor/index'
 import * as BushingMapping from '@/views/Mapping/Bushing/index'
-import * as rotatingMachineMapping from "@/views/Mapping/RotatingMachine/index"
+import * as rotatingMachineMapping from '@/views/Mapping/RotatingMachine/index'
 
-import { exportNodeToJSON as exportNodeToJSONUtil } from '@/function/entity/export/index'
-import { importNodeFromJSON as importNodeFromJSONUtil } from '@/function/entity/import/index'
+import {exportNodeToJSON as exportNodeToJSONUtil} from '@/function/entity/export/index'
+import {importNodeFromJSON as importNodeFromJSONUtil} from '@/function/entity/import/index'
 
 import TransformerMixin from '@/views/AssetView/Transformer/mixin/index.js'
 import SurgeArresterMixin from '@/views/AssetView/SurgeArrester/mixin/index.js'
@@ -1065,7 +1084,7 @@ export default {
         JobTransformer,
         Icon,
         Fmeca,
-        Export,
+        Export
     },
     data() {
         return {
@@ -1073,8 +1092,8 @@ export default {
             openExportDialog: false,
             openImportDialog: false,
             signFmeca: false,
-            showSub : null,
-            showSubImport : null,
+            showSub: null,
+            showSubImport: null,
             parentOrganization: null,
             logDataServer: [],
             logDataClient: [],
@@ -1119,18 +1138,23 @@ export default {
             hideTabContentClient: [],
             showAssetSub: false,
             currentTabServer: '',
-            isDuplicating: false, 
+            isDuplicating: false,
             moveDialogVisible: false,
             moveTreeData: [],
             selectedTargetNode: null,
+            selectedTargetNodes: [], // Dùng cho hiển thị highlight trong tree dialog
             expandedMoveKeys: [],
             nodeToMove: null, // Lưu node đang được move để dùng trong fetchChildrenForMove
-            validParentTypesForMove: [], // Lưu valid parent types để dùng trong fetchChildrenForMove
+            validParentTypesForMove: [],
+            downloadDialogVisible: false,
+            nodeToDownloadData: null, // Lưu dữ liệu DTO từ server về
+            selectedDownloadTargetNode: null, // Node cha được chọn thủ công
+            selectedDownloadTargetNodes: [], // Lưu valid parent types để dùng trong fetchChildrenForMove
             moveTreeProps: {
-            children: 'children',
-            label: 'name',
-            disabled: 'disabled'
-        },
+                children: 'children',
+                label: 'name',
+                disabled: 'disabled'
+            },
             properties: {
                 region: '',
                 name: '',
@@ -1151,7 +1175,7 @@ export default {
                 manufacturer_type: '',
                 manufacturing_year: '',
                 apparatus_id: '',
-                country: '',
+                country: ''
             },
             jobProperties: {
                 name: '',
@@ -1183,7 +1207,7 @@ export default {
                 manufacturer_type: '',
                 manufacturing_year: '',
                 apparatus_id: '',
-                country: '',
+                country: ''
             },
             jobPropertiesClient: {
                 name: '',
@@ -1204,8 +1228,8 @@ export default {
                 first: 1,
                 second: 2,
                 third: 3,
-                dot: "...",
-                end: 10,
+                dot: '...',
+                end: 10
             },
             displayPageLocationSync: {
                 second: true,
@@ -1214,16 +1238,16 @@ export default {
                 end: true
             },
             pageLocationSyncInstance: {
-                first: "",
-                second: "",
-                third: "",
-                dot: "",
-                end: "",
+                first: '',
+                second: '',
+                third: '',
+                dot: '',
+                end: ''
             },
             currentLocationSync: {
                 nextP: '',
                 previousP: '',
-                current: 1,
+                current: 1
             },
             optionLocationSync: {
                 mode: ''
@@ -1235,140 +1259,138 @@ export default {
             ownerList: [],
             locationList: [],
             personList: [],
-            AssetType: ["Transformer", "Circuit breaker", "Current transformer", "Voltage transformer", "Disconnector", "Power cable", "Surge arrester"],
-            LocationType: ["location", "voltage", "feeder"]
+            AssetType: ['Transformer', 'Circuit breaker', 'Current transformer', 'Voltage transformer', 'Disconnector', 'Power cable', 'Surge arrester'],
+            LocationType: ['location', 'voltage', 'feeder']
         }
     },
     computed: {
-    // ...existing computed properties...
-    isCommandAllowed() {
-        return (cmd) => {
-            const selectedNode = this.selectedNodes && this.selectedNodes.length > 0 
-                ? this.selectedNodes[this.selectedNodes.length - 1] 
-                : null;
-            
-            if (!selectedNode) return false;
-            return this.getAllowedCommands(selectedNode).includes(cmd);
-        }
-    },
-    // Text + data hiển thị ví dụ: "Move from SourceNode to TargetNode" cùng icon
-    // Nếu tên quá dài thì rút gọn 5 ký tự + '...' nhưng khi hover vẫn hiển thị full name
-    moveDisplayText() {
-        const nodeToMove = this.nodeToMove;
-        const targetNode = this.selectedTargetNode;
+        // ...existing computed properties...
+        isCommandAllowed() {
+            return (cmd) => {
+                const selectedNode = this.selectedNodes && this.selectedNodes.length > 0 ? this.selectedNodes[this.selectedNodes.length - 1] : null
 
-        if (!nodeToMove || !targetNode) {
-            return null;
-        }
+                if (!selectedNode) return false
+                return this.getAllowedCommands(selectedNode).includes(cmd)
+            }
+        },
+        // Text + data hiển thị ví dụ: "Move from SourceNode to TargetNode" cùng icon
+        // Nếu tên quá dài thì rút gọn 5 ký tự + '...' nhưng khi hover vẫn hiển thị full name
+        moveDisplayText() {
+            const nodeToMove = this.nodeToMove
+            const targetNode = this.selectedTargetNode
 
-        // Lấy tên đầy đủ của source
-        // Với asset node: ưu tiên serial_number/serial_no trước name (vì name có thể là Apparatus ID)
-        let sourceFull;
-        if (nodeToMove.mode === 'asset') {
-            sourceFull = nodeToMove.serial_number || nodeToMove.serial_no || nodeToMove.name;
-        } else {
-            sourceFull = nodeToMove.name || nodeToMove.serial_number || nodeToMove.serial_no;
-        }
-        sourceFull = sourceFull || 'Unknown';
+            if (!nodeToMove || !targetNode) {
+                return null
+            }
 
-        // Lấy tên đầy đủ của target
-        // Với asset node: ưu tiên serial_number/serial_no trước name (vì name có thể là Apparatus ID)
-        let targetFull;
-        if (targetNode.mode === 'asset') {
-            targetFull = targetNode.serial_number || targetNode.serial_no || targetNode.name;
-        } else {
-            targetFull = targetNode.name || targetNode.serial_number || targetNode.serial_no;
-        }
-        targetFull = targetFull || 'Unknown';
+            // Lấy tên đầy đủ của source
+            // Với asset node: ưu tiên serial_number/serial_no trước name (vì name có thể là Apparatus ID)
+            let sourceFull
+            if (nodeToMove.mode === 'asset') {
+                sourceFull = nodeToMove.serial_number || nodeToMove.serial_no || nodeToMove.name
+            } else {
+                sourceFull = nodeToMove.name || nodeToMove.serial_number || nodeToMove.serial_no
+            }
+            sourceFull = sourceFull || 'Unknown'
 
-        // Rút gọn còn 5 ký tự + '...' nếu dài hơn 5
-        const truncate = (text) => {
-            const str = text != null ? text.toString() : '';
-            return str.length > 5 ? str.slice(0, 9) + '...' : str;
-        };
+            // Lấy tên đầy đủ của target
+            // Với asset node: ưu tiên serial_number/serial_no trước name (vì name có thể là Apparatus ID)
+            let targetFull
+            if (targetNode.mode === 'asset') {
+                targetFull = targetNode.serial_number || targetNode.serial_no || targetNode.name
+            } else {
+                targetFull = targetNode.name || targetNode.serial_number || targetNode.serial_no
+            }
+            targetFull = targetFull || 'Unknown'
 
-        return {
-            prefix: 'Move from',
-            source: truncate(sourceFull),
-            sourceFull,
-            middle: 'to',
-            target: truncate(targetFull),
-            targetFull
-        };
-    },
-    moveDisplayData() {
-        const nodeToMove = this.nodeToMove;
-        const targetNode = this.selectedTargetNode;
+            // Rút gọn còn 5 ký tự + '...' nếu dài hơn 5
+            const truncate = (text) => {
+                const str = text != null ? text.toString() : ''
+                return str.length > 5 ? str.slice(0, 9) + '...' : str
+            }
 
-        if (!nodeToMove || !targetNode) {
             return {
-                sourceIcon: null,
-                targetIcon: null
-            };
+                prefix: 'Move from',
+                source: truncate(sourceFull),
+                sourceFull,
+                middle: 'to',
+                target: truncate(targetFull),
+                targetFull
+            }
+        },
+        moveDisplayData() {
+            const nodeToMove = this.nodeToMove
+            const targetNode = this.selectedTargetNode
+
+            if (!nodeToMove || !targetNode) {
+                return {
+                    sourceIcon: null,
+                    targetIcon: null
+                }
+            }
+
+            // Xác định icon cho source và target dựa trên mode
+            const getIconConfig = (node) => {
+                const mode = node.mode
+                if (mode === 'substation') {
+                    return {folderType: 'location', assetDetail: 'Unknown', badgeColor: '146EBE'}
+                }
+                if (mode === 'voltageLevel') {
+                    return {folderType: 'voltageLevel', assetDetail: 'Unknown', badgeColor: '146EBE'}
+                }
+                if (mode === 'bay') {
+                    return {folderType: 'bay', assetDetail: 'Unknown', badgeColor: '146EBE'}
+                }
+                if (mode === 'asset') {
+                    return {folderType: 'asset', assetDetail: node.asset || 'Unknown', badgeColor: '146EBE'}
+                }
+                if (mode === 'job') {
+                    return {folderType: 'job', assetDetail: 'Unknown', badgeColor: 'FF0000'}
+                }
+                if (mode === 'test') {
+                    return {folderType: 'test', assetDetail: 'Unknown', badgeColor: '008001'}
+                }
+                // default: owner/building
+                return {folderType: 'building', assetDetail: 'Unknown', badgeColor: '008001'}
+            }
+
+            const sourceIcon = getIconConfig(nodeToMove)
+            const targetIcon = getIconConfig(targetNode)
+
+            return {
+                sourceIcon,
+                targetIcon
+            }
         }
-
-        // Xác định icon cho source và target dựa trên mode
-        const getIconConfig = (node) => {
-            const mode = node.mode;
-            if (mode === 'substation') {
-                return { folderType: 'location', assetDetail: 'Unknown', badgeColor: '146EBE' };
-            }
-            if (mode === 'voltageLevel') {
-                return { folderType: 'voltageLevel', assetDetail: 'Unknown', badgeColor: '146EBE' };
-            }
-            if (mode === 'bay') {
-                return { folderType: 'bay', assetDetail: 'Unknown', badgeColor: '146EBE' };
-            }
-            if (mode === 'asset') {
-                return { folderType: 'asset', assetDetail: node.asset || 'Unknown', badgeColor: '146EBE' };
-            }
-            if (mode === 'job') {
-                return { folderType: 'job', assetDetail: 'Unknown', badgeColor: 'FF0000' };
-            }
-            if (mode === 'test') {
-                return { folderType: 'test', assetDetail: 'Unknown', badgeColor: '008001' };
-            }
-            // default: owner/building
-            return { folderType: 'building', assetDetail: 'Unknown', badgeColor: '008001' };
-        };
-
-        const sourceIcon = getIconConfig(nodeToMove);
-        const targetIcon = getIconConfig(targetNode);
-
-        return {
-            sourceIcon,
-            targetIcon
-        };
-    }
-},
+    },
     mixins: [mixin],
     async beforeMount() {
         try {
             const data = await window.electronAPI.getAllConfigurationEvents()
             if (data && data.success) {
-                this.logDataClient = data.data;
+                this.logDataClient = data.data
             }
         } catch (error) {
-            console.error("Error fetching server log data:", error);
-            this.$message.error("Failed to fetch log data.");
+            console.error('Error fetching server log data:', error)
+            this.$message.error('Failed to fetch log data.')
         }
     },
     methods: {
         handleDropdownVisibleChange(visible) {
-        // Nếu dropdown muốn mở mà chưa có node selected, ngăn nó mở
-        if (visible && (!this.selectedNodes || this.selectedNodes.length === 0)) {
-            this.$message.warning("Please select a node first");
-            // Ngăn dropdown mở bằng cách set visible = false
-            this.$nextTick(() => {
-                // Tìm ref dropdown và close nó
-                if (this.$refs.addDropdown) {
-                    this.$refs.addDropdown.visible = false;
-                }
-            });
-        }
-    },
+            // Nếu dropdown muốn mở mà chưa có node selected, ngăn nó mở
+            if (visible && (!this.selectedNodes || this.selectedNodes.length === 0)) {
+                this.$message.warning('Please select a node first')
+                // Ngăn dropdown mở bằng cách set visible = false
+                this.$nextTick(() => {
+                    // Tìm ref dropdown và close nó
+                    if (this.$refs.addDropdown) {
+                        this.$refs.addDropdown.visible = false
+                    }
+                })
+            }
+        },
         handleCommand(cmd) {
-            console.log("Command received:", cmd);
+            console.log('Command received:', cmd)
             if (cmd === 'exportExcel') {
                 this.openExportDialog = true
                 this.exportType = 'excel'
@@ -1385,7 +1407,7 @@ export default {
             } else if (cmd === 'exportPDF') {
                 this.openExportDialog = true
                 this.exportType = 'pdf'
-            } 
+            }
         },
         async exportTreeToJSON(type) {
             // Yêu cầu phải chọn ít nhất 1 node để export
@@ -1418,20 +1440,20 @@ export default {
             await exportNodeToJSONUtil(this.selectedNodes, type, dependencies)
         },
         async handleImportCommand(cmd) {
-           if (cmd === 'importExcel') {
+            if (cmd === 'importExcel') {
                 this.openImportDialog = true
-            } else if(cmd === 'importJSON'){
+            } else if (cmd === 'importJSON') {
                 await this.importTreeFromJSON('dto')
-            } else if(cmd === 'importJSONCIM'){
+            } else if (cmd === 'importJSONCIM') {
                 // TODO: Implement import JSON by CIM (sau khi có import JSON thường)
                 this.$message.info('Import JSON by CIM feature is coming soon')
-            } else if(cmd === 'importXML'){
+            } else if (cmd === 'importXML') {
                 this.openImportDialog = true
-            } else if(cmd === 'importWord'){
+            } else if (cmd === 'importWord') {
                 this.openImportDialog = true
-            } else if(cmd === 'importPDF'){
+            } else if (cmd === 'importPDF') {
                 this.openImportDialog = true
-            }  
+            }
         },
         async importTreeFromJSON(type) {
             // Validate: Phải có selectedNode (giống export)
@@ -1446,7 +1468,7 @@ export default {
             try {
                 // Mở file picker để chọn JSON file
                 const fileResult = await window.electronAPI.importJSON()
-                
+
                 if (!fileResult.success || !fileResult.data) {
                     if (fileResult.message !== 'Import cancelled') {
                         this.$message.error(fileResult.message || 'Failed to load JSON file')
@@ -1491,7 +1513,7 @@ export default {
                             const node = this.findNodeById(newNodeData.parentId, this.organisationClientList)
                             if (node) {
                                 const children = Array.isArray(node.children) ? node.children : []
-                                Vue.set(node, "children", [...children, newNodeData])
+                                Vue.set(node, 'children', [...children, newNodeData])
                                 console.log('Added node to tree:', newNodeData.mrid, 'to parent:', node.mrid)
                             } else {
                                 console.warn(`Parent node not found for ${newNodeData.mrid}, parentId: ${newNodeData.parentId}`)
@@ -1500,10 +1522,10 @@ export default {
                     } else {
                         console.warn('No importedNodes in result:', result)
                     }
-                    
+
                     // Refresh tree để đồng bộ với database
                     // Reset flag để force fetch lại từ server
-                    Vue.set(parentNode, "_childrenFetched", false)
+                    Vue.set(parentNode, '_childrenFetched', false)
                     await this.fetchChildren(parentNode)
                 }
             } catch (error) {
@@ -1511,22 +1533,22 @@ export default {
                 this.$message.error('An error occurred while importing JSON')
             }
         },
-        
-        handleCancelImport(){
+
+        handleCancelImport() {
             this.openImportDialog = false
         },
 
-        handleImportConfirm(){
+        handleImportConfirm() {
             this.openImportDialog = false
-            this.$message.success("Import successfully")
+            this.$message.success('Import successfully')
         },
-        handleCancelExport(){
+        handleCancelExport() {
             this.openExportDialog = false
         },
 
         handleExportConfirm() {
             this.openExportDialog = false
-            this.$message.success("Export successfully")
+            this.$message.success('Export successfully')
         },
 
         handleFmecaCancel() {
@@ -1535,11 +1557,11 @@ export default {
 
         handleFmecaConfirm() {
             this.signFmeca = false
-            this.$message.success("Save successfully")
+            this.$message.success('Save successfully')
         },
 
         handleClickFmeca() {
-            this.signFmeca = true;
+            this.signFmeca = true
         },
         async handleExportJSONFromContext(node) {
             await this.exportSingleNodeToJSON(node, 'dto')
@@ -1549,14 +1571,14 @@ export default {
         },
         async handleDuplicateFromContext(node) {
             // Set selectedNodes để duplicateSelectedNodes có thể sử dụng
-            this.selectedNodes = [node];
+            this.selectedNodes = [node]
             // Gọi hàm duplicate
-            await this.duplicateSelectedNodes();
+            await this.duplicateSelectedNodes()
         },
         async handleMoveFromContext(node) {
             // Set selectedNodes để handleMoveNode có thể sử dụng
-            this.selectedNodes = [node];
-            await this.handleMoveNode();
+            this.selectedNodes = [node]
+            await this.handleMoveNode()
         },
         // Import handlers từ context menu
         async handleImportJSONFromContext(node) {
@@ -1568,7 +1590,7 @@ export default {
             try {
                 // Mở file picker để chọn JSON file
                 const fileResult = await window.electronAPI.importJSON()
-                
+
                 if (!fileResult.success || !fileResult.data) {
                     if (fileResult.message !== 'Import cancelled') {
                         this.$message.error(fileResult.message || 'Failed to load JSON file')
@@ -1596,30 +1618,34 @@ export default {
                     userId: this.$store.state.user.user_id,
                     messageHandler: this.$message
                 }
-                 const result = await importNodeFromJSONUtil(dtos, node, dependencies)
-                 if (result.success && result.successCount > 0) {
+                const result = await importNodeFromJSONUtil(dtos, node, dependencies)
+                if (result.success && result.successCount > 0) {
                     // Tạo các node đã import vào tree UI
                     if (result.importedNodes && result.importedNodes.length > 0) {
                         for (const newNodeData of result.importedNodes) {
                             const parentNode = this.findNodeById(newNodeData.parentId, this.organisationClientList)
                             if (parentNode) {
                                 const children = Array.isArray(parentNode.children) ? parentNode.children : []
-                                Vue.set(parentNode, "children", [...children, newNodeData])
+                                Vue.set(parentNode, 'children', [...children, newNodeData])
                             } else {
                                 console.warn(`Parent node not found for ${newNodeData.mrid}`)
                             }
                         }
                     }
-                    
+
                     // Refresh tree để đồng bộ với database
-                    Vue.set(node, "_childrenFetched", false)
+                    Vue.set(node, '_childrenFetched', false)
                     await this.fetchChildren(node)
                 }
             } catch (error) {
-                 console.error('Error importing JSON:', error)
-                 this.$message.error('An error occurred while importing JSON')
+                console.error('Error importing JSON:', error)
+                this.$message.error('An error occurred while importing JSON')
             }
 
+            // Refresh tree sau khi import thành công
+            if (result.success && result.successCount > 0) {
+                this.refreshTreeAfterImport(node)
+            }
         },
         async handleImportJSONCIMFromContext(node) {
             this.$message.info('Import JSON by CIM ')
@@ -1671,143 +1697,142 @@ export default {
             try {
                 const data = await window.electronAPI.getAllConfigurationEvents()
                 if (data && data.success) {
-                    this.logDataClient = data.data;
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    this.$message.success("Log data reloaded successfully.");
+                    this.logDataClient = data.data
+                    await new Promise((resolve) => setTimeout(resolve, 500))
+                    this.$message.success('Log data reloaded successfully.')
                 }
             } catch (error) {
-                console.error("Error fetching server log data:", error);
-                this.$message.error("Failed to fetch log data.");
+                console.error('Error fetching server log data:', error)
+                this.$message.error('Failed to fetch log data.')
             } finally {
-                if (typeof doneCallback === 'function') doneCallback();
+                if (typeof doneCallback === 'function') doneCallback()
             }
         },
         removeTab(index) {
             if (this.activeTab.id == this.tabs[index].id) {
                 this.activeTab = {}
             }
-            this.tabs.splice(index, 1);
+            this.tabs.splice(index, 1)
         },
         removeTabClient(index) {
             if (this.activeTabClient.mrid == this.tabsClient[index].mrid) {
                 this.activeTabClient = {}
             }
-            this.tabsClient.splice(index, 1);
+            this.tabsClient.splice(index, 1)
         },
         hideLogBar(sign) {
             this.logSign = false
-            const element = this.$refs.contentData;
-            element.style.height = "100%";
+            const element = this.$refs.contentData
+            element.style.height = '100%'
         },
 
         hideLogBarClient(sign) {
             this.logSignClient = false
-            const element = this.$refs.contentDataClient;
-            element.style.height = "100%";
+            const element = this.$refs.contentDataClient
+            element.style.height = '100%'
         },
         startResizeClient() {
-            document.addEventListener("mousemove", this.resizeClient);
-            document.addEventListener("mouseup", this.stopResizeClient);
+            document.addEventListener('mousemove', this.resizeClient)
+            document.addEventListener('mouseup', this.stopResizeClient)
         },
         resizeClient(event) {
             if (!this.$refs.sidebarClient) return
-            let newWidth = (event.clientX / window.innerWidth) * 100;
-            let finalWidth = Math.max(10, Math.min(40, newWidth));
+            let newWidth = (event.clientX / window.innerWidth) * 100
+            let finalWidth = Math.max(10, Math.min(40, newWidth))
             // Cập nhật width của sidebar và context-data
-            this.$refs.sidebarClient.style.width = finalWidth + "vw";
-            this.$refs.contextDataClient.style.width = 100 - finalWidth + "vw";
+            this.$refs.sidebarClient.style.width = finalWidth + 'vw'
+            this.$refs.contextDataClient.style.width = 100 - finalWidth + 'vw'
         },
         stopResizeClient() {
-            document.removeEventListener("mousemove", this.resizeClient);
-            document.removeEventListener("mouseup", this.stopResizeClient);
+            document.removeEventListener('mousemove', this.resizeClient)
+            document.removeEventListener('mouseup', this.stopResizeClient)
         },
         startResizeContentClient() {
-            document.addEventListener("mousemove", this.resizeContentClient);
-            document.addEventListener("mouseup", this.stopResizeContentClient);
+            document.addEventListener('mousemove', this.resizeContentClient)
+            document.addEventListener('mouseup', this.stopResizeContentClient)
         },
         resizeContentClient(event) {
-            if (!this.$refs.propertiesClient || !this.$refs.contentDataClient) return;
-            const parentWidth = this.$refs.contextDataClient.clientWidth;
-            let newWidth = parentWidth - event.clientX + this.$refs.contextDataClient.getBoundingClientRect().left;
-            const minWidth = parentWidth * 0.1;
-            const maxWidth = parentWidth * 0.4;
-            newWidth = Math.max(minWidth, Math.min(newWidth, maxWidth));
+            if (!this.$refs.propertiesClient || !this.$refs.contentDataClient) return
+            const parentWidth = this.$refs.contextDataClient.clientWidth
+            let newWidth = parentWidth - event.clientX + this.$refs.contextDataClient.getBoundingClientRect().left
+            const minWidth = parentWidth * 0.1
+            const maxWidth = parentWidth * 0.4
+            newWidth = Math.max(minWidth, Math.min(newWidth, maxWidth))
             newWidth = (newWidth / parentWidth) * 100
             // Cập nhật width của sidebar và context-data
-            this.$refs.propertiesClient.style.width = `${newWidth}%`;
-            this.$refs.contentClient.style.width = `${100 - newWidth}%`;
+            this.$refs.propertiesClient.style.width = `${newWidth}%`
+            this.$refs.contentClient.style.width = `${100 - newWidth}%`
         },
         stopResizeContentClient() {
-            document.removeEventListener("mousemove", this.resizeContentClient);
-            document.removeEventListener("mouseup", this.stopResizeContentClient);
+            document.removeEventListener('mousemove', this.resizeContentClient)
+            document.removeEventListener('mouseup', this.stopResizeContentClient)
         },
         startResizeServer() {
-            document.addEventListener("mousemove", this.resizeServer);
-            document.addEventListener("mouseup", this.stopResizeServer);
+            document.addEventListener('mousemove', this.resizeServer)
+            document.addEventListener('mouseup', this.stopResizeServer)
         },
         resizeServer(event) {
             if (!this.$refs.sidebarServer) return
-            let newWidth = (event.clientX / window.innerWidth) * 100;
-            let finalWidth = Math.max(10, Math.min(40, newWidth));
+            let newWidth = (event.clientX / window.innerWidth) * 100
+            let finalWidth = Math.max(10, Math.min(40, newWidth))
             // Cập nhật width của sidebar và context-data
-            this.$refs.sidebarServer.style.width = finalWidth + "vw";
-            this.$refs.contextDataServer.style.width = 100 - finalWidth + "vw";
-
+            this.$refs.sidebarServer.style.width = finalWidth + 'vw'
+            this.$refs.contextDataServer.style.width = 100 - finalWidth + 'vw'
         },
         stopResizeServer() {
-            document.removeEventListener("mousemove", this.resizeServer);
-            document.removeEventListener("mouseup", this.stopResizeServer);
+            document.removeEventListener('mousemove', this.resizeServer)
+            document.removeEventListener('mouseup', this.stopResizeServer)
         },
         startResizeContentServer() {
-            document.addEventListener("mousemove", this.resizeContentServer);
-            document.addEventListener("mouseup", this.stopResizeContentServer);
+            document.addEventListener('mousemove', this.resizeContentServer)
+            document.addEventListener('mouseup', this.stopResizeContentServer)
         },
         resizeContentServer(event) {
-            if (!this.$refs.properties || !this.$refs.contentData) return;
-            const parentWidth = this.$refs.contextDataServer.clientWidth;
-            let newWidth = parentWidth - event.clientX + this.$refs.contextDataServer.getBoundingClientRect().left;
-            const minWidth = parentWidth * 0.1;
-            const maxWidth = parentWidth * 0.4;
-            newWidth = Math.max(minWidth, Math.min(newWidth, maxWidth));
+            if (!this.$refs.properties || !this.$refs.contentData) return
+            const parentWidth = this.$refs.contextDataServer.clientWidth
+            let newWidth = parentWidth - event.clientX + this.$refs.contextDataServer.getBoundingClientRect().left
+            const minWidth = parentWidth * 0.1
+            const maxWidth = parentWidth * 0.4
+            newWidth = Math.max(minWidth, Math.min(newWidth, maxWidth))
             newWidth = (newWidth / parentWidth) * 100
             // Cập nhật width của sidebar và context-data
-            this.$refs.properties.style.width = `${newWidth}%`;
-            this.$refs.content.style.width = `${100 - newWidth}%`;
+            this.$refs.properties.style.width = `${newWidth}%`
+            this.$refs.content.style.width = `${100 - newWidth}%`
         },
         stopResizeContentServer() {
-            document.removeEventListener("mousemove", this.resizeContentServer);
-            document.removeEventListener("mouseup", this.stopResizeContentServer);
+            document.removeEventListener('mousemove', this.resizeContentServer)
+            document.removeEventListener('mouseup', this.stopResizeContentServer)
         },
         showLogBar(sign) {
             this.logSign = true
-            const element = this.$refs.contentData;
-            element.style.height = "80%";
+            const element = this.$refs.contentData
+            element.style.height = '80%'
             this.$nextTick(() => {
-                const elementLog = this.$refs.logBar;
-                elementLog.style.height = "20%";
-            });
+                const elementLog = this.$refs.logBar
+                elementLog.style.height = '20%'
+            })
         },
 
         showLogBarClient(sign) {
             this.logSignClient = true
-            const element = this.$refs.contentDataClient;
-            element.style.height = "80%";
+            const element = this.$refs.contentDataClient
+            element.style.height = '80%'
             this.$nextTick(() => {
-                const elementLog = this.$refs.logBarClient;
-                elementLog.style.height = "20%";
-            });
+                const elementLog = this.$refs.logBarClient
+                elementLog.style.height = '20%'
+            })
         },
 
         showLocationRoot() {
-            const locationRoot = this.$refs.locationRoot;
-            const ownerRoot = this.$refs.ownerRoot;
+            const locationRoot = this.$refs.locationRoot
+            const ownerRoot = this.$refs.ownerRoot
             if (locationRoot) {
-                locationRoot.style.borderBottom = "2px #aba7a7 solid"; // Thêm viền màu đen dày 2px
-                locationRoot.style.color = "rgba(0, 0, 0, 1)"; // Chữ rõ nét
+                locationRoot.style.borderBottom = '2px #aba7a7 solid' // Thêm viền màu đen dày 2px
+                locationRoot.style.color = 'rgba(0, 0, 0, 1)' // Chữ rõ nét
             }
             if (ownerRoot) {
-                ownerRoot.style.borderBottom = "2px #e6e4e4 solid";
-                ownerRoot.style.color = "rgba(0, 0, 0, 0.5)"; // Chữ bị làm mờ nhưng border vẫn giữ nguyên
+                ownerRoot.style.borderBottom = '2px #e6e4e4 solid'
+                ownerRoot.style.color = 'rgba(0, 0, 0, 0.5)' // Chữ bị làm mờ nhưng border vẫn giữ nguyên
             }
 
             this.$nextTick(async () => {
@@ -1816,11 +1841,11 @@ export default {
                     if (rs.success) {
                         this.organisationClientList = [rs.data] || []
                     } else {
-                        this.$message.error("Cannot load root organisation")
+                        this.$message.error('Cannot load root organisation')
                     }
                 } catch (error) {
-                    this.$message.error("Error fetching root data")
-                    console.error("Error fetching data:", error)
+                    this.$message.error('Error fetching root data')
+                    console.error('Error fetching data:', error)
                 }
             })
         },
@@ -1828,480 +1853,510 @@ export default {
         async fetchChildren(node) {
             // Lưu children hiện có (nếu có) để merge sau
             // Điều này đảm bảo không mất asset đã add trước đó khi node chưa được expand
-            const existingChildren = Array.isArray(node.children) ? [...node.children] : [];
-            
+            const existingChildren = Array.isArray(node.children) ? [...node.children] : []
+
             // Chỉ fetch nếu:
             // 1. Chưa có children (chưa fetch lần nào)
             // 2. Hoặc có children nhưng chưa được fetch từ server (chỉ có asset mới add)
             // 3. Hoặc có children đã fetch nhưng có asset mới add (cần merge)
-            const hasExistingChildren = existingChildren.length > 0;
-            const needsFetch = !node.children || !node._childrenFetched || hasExistingChildren;
+            const hasExistingChildren = existingChildren.length > 0
+            const needsFetch = !node.children || !node._childrenFetched || hasExistingChildren
             if (needsFetch) {
                 try {
-                    let newRows = [];
+                    let newRows = []
                     if (node.mode == 'asset') {
-                        const clickedRow = node;
+                        const clickedRow = node
                         if (node.asset && node.asset == 'Surge arrester') {
-                            const jobsReturn = await this.fetchJobsByAssetId(node.mrid);
+                            const jobsReturn = await this.fetchJobsByAssetId(node.mrid)
                             if (jobsReturn.success) {
-                                jobsReturn.data.forEach(row => {
-                                    row.parentId = clickedRow.mrid;
-                                    row.mode = 'job';
-                                    row.job = 'Surge arrester';
-                                    let parentName = clickedRow.parentName + "/" + clickedRow.name
+                                jobsReturn.data.forEach((row) => {
+                                    row.parentId = clickedRow.mrid
+                                    row.mode = 'job'
+                                    row.job = 'Surge arrester'
+                                    let parentName = clickedRow.parentName + '/' + clickedRow.name
                                     row.parentName = parentName
-                                    row.parentArr = [...clickedRow.parentArr || []]
+                                    row.parentArr = [...(clickedRow.parentArr || [])]
                                     row.parentArr.push({
                                         mrid: clickedRow.mrid,
                                         parent: clickedRow.name
                                     })
-                                });
-                                newRows.push(...jobsReturn.data);
+                                })
+                                newRows.push(...jobsReturn.data)
                             }
                         }
                     } else if (node.mode == 'substation') {
-                        const clickedRow = node;
+                        const clickedRow = node
                         const [voltageLevelReturn, bayReturn] = await Promise.all([
                             window.electronAPI.getVoltageLevelBySubstationId(clickedRow.mrid),
                             window.electronAPI.getBayByVoltageBySubstationId(null, clickedRow.mrid)
-                        ]);
-                        const [assetTransformerReturn, assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn,
-                            assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetBreakerReturn, assetReactorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                        ])
+                        const [
+                            assetTransformerReturn,
+                            assetSurgeReturn,
+                            assetBushingReturn,
+                            assetVtReturn,
+                            assetDisconnectorReturn,
+                            assetPowerCableReturn,
+                            assetRotatingMachineReturn,
+                            assetCurrentTransformerReturn,
+                            assetCapacitorReturn,
+                            assetBreakerReturn,
+                            assetReactorReturn
+                        ] = await this.fetchAssetByPsr(clickedRow.mrid)
                         if (voltageLevelReturn.success) {
-                            voltageLevelReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'voltageLevel';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            voltageLevelReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'voltageLevel'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
-                            });
-                            newRows.push(...voltageLevelReturn.data);
+                            })
+                            newRows.push(...voltageLevelReturn.data)
                         }
 
                         if (bayReturn.success) {
-                            bayReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'bay';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            bayReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'bay'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
-                            });
-                            newRows.push(...bayReturn.data);
+                            })
+                            newRows.push(...bayReturn.data)
                         }
 
                         if (assetTransformerReturn.success) {
-                            assetTransformerReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'asset';
-                                row.asset = 'Transformer';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            assetTransformerReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'asset'
+                                row.asset = 'Transformer'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
-                            });
-                            newRows.push(...assetTransformerReturn.data);
+                            })
+                            newRows.push(...assetTransformerReturn.data)
                         }
 
                         if (assetSurgeReturn.success) {
-                            assetSurgeReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'asset';
-                                row.asset = 'Surge arrester';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            assetSurgeReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'asset'
+                                row.asset = 'Surge arrester'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
-                            });
-                            newRows.push(...assetSurgeReturn.data);
+                            })
+                            newRows.push(...assetSurgeReturn.data)
                         }
 
                         if (assetBushingReturn.success) {
-                            assetBushingReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'asset';
-                                row.asset = 'Bushing';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            assetBushingReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'asset'
+                                row.asset = 'Bushing'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
-                            });
-                            newRows.push(...assetBushingReturn.data);
+                            })
+                            newRows.push(...assetBushingReturn.data)
                         }
 
                         if (assetVtReturn.success) {
-                            assetVtReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'asset';
-                                row.asset = 'Voltage transformer';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            assetVtReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'asset'
+                                row.asset = 'Voltage transformer'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
-                            });
-                            newRows.push(...assetVtReturn.data);
+                            })
+                            newRows.push(...assetVtReturn.data)
                         }
 
                         if (assetDisconnectorReturn.success) {
-                            assetDisconnectorReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'asset';
-                                row.asset = 'Disconnector';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            assetDisconnectorReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'asset'
+                                row.asset = 'Disconnector'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
-                            });
-                            newRows.push(...assetDisconnectorReturn.data);
+                            })
+                            newRows.push(...assetDisconnectorReturn.data)
                         }
 
                         if (assetPowerCableReturn.success) {
-                            assetPowerCableReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'asset';
-                                row.asset = 'Power cable';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            assetPowerCableReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'asset'
+                                row.asset = 'Power cable'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
-                            });
-                            newRows.push(...assetPowerCableReturn.data);
+                            })
+                            newRows.push(...assetPowerCableReturn.data)
                         }
 
                         if (assetRotatingMachineReturn.success) {
-                            assetRotatingMachineReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'asset';
-                                row.asset = 'Rotating machine';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            assetRotatingMachineReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'asset'
+                                row.asset = 'Rotating machine'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
-                            });
-                            newRows.push(...assetRotatingMachineReturn.data);
+                            })
+                            newRows.push(...assetRotatingMachineReturn.data)
                         }
 
                         if (assetCapacitorReturn.success) {
-                            assetCapacitorReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'asset';
-                                row.asset = 'Capacitor';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            assetCapacitorReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'asset'
+                                row.asset = 'Capacitor'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                            });
-                            newRows.push(...assetCapacitorReturn.data);
+                            })
+                            newRows.push(...assetCapacitorReturn.data)
                         }
 
                         if (assetReactorReturn.success) {
-                            assetReactorReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'asset';
-                                row.asset = 'Reactor';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            assetReactorReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'asset'
+                                row.asset = 'Reactor'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
-                            });
-                            newRows.push(...assetReactorReturn.data);
+                            })
+                            newRows.push(...assetReactorReturn.data)
                         }
 
                         if (assetCurrentTransformerReturn.success) {
-                            assetCurrentTransformerReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'asset';
-                                row.asset = 'Current transformer';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            assetCurrentTransformerReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'asset'
+                                row.asset = 'Current transformer'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
-                            });
-                            newRows.push(...assetCurrentTransformerReturn.data);
+                            })
+                            newRows.push(...assetCurrentTransformerReturn.data)
                         }
 
                         if (assetBreakerReturn.success) {
-                            assetBreakerReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'asset';
-                                row.asset = 'Circuit breaker';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            assetBreakerReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'asset'
+                                row.asset = 'Circuit breaker'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
-                            });
-                            newRows.push(...assetBreakerReturn.data);
+                            })
+                            newRows.push(...assetBreakerReturn.data)
                         }
-
                     } else if (node.mode == 'voltageLevel') {
-                        const clickedRow = node;
-                        const [bayReturn] = await Promise.all([
-                            window.electronAPI.getBayByVoltageBySubstationId(clickedRow.mrid, null)
-                        ]);
+                        const clickedRow = node
+                        const [bayReturn] = await Promise.all([window.electronAPI.getBayByVoltageBySubstationId(clickedRow.mrid, null)])
 
                         if (bayReturn.success) {
-                            bayReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'bay';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            bayReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'bay'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
-                            });
-                            newRows.push(...bayReturn.data);
+                            })
+                            newRows.push(...bayReturn.data)
                         }
-
                     } else if (node.mode == 'bay') {
-                        const clickedRow = node;
-                        const [assetTransformerReturn, assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn,
-                            assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetBreakerReturn, assetReactorReturn] = await this.fetchAssetByPsr(clickedRow.mrid);
+                        const clickedRow = node
+                        const [
+                            assetTransformerReturn,
+                            assetSurgeReturn,
+                            assetBushingReturn,
+                            assetVtReturn,
+                            assetDisconnectorReturn,
+                            assetPowerCableReturn,
+                            assetRotatingMachineReturn,
+                            assetCurrentTransformerReturn,
+                            assetCapacitorReturn,
+                            assetBreakerReturn,
+                            assetReactorReturn
+                        ] = await this.fetchAssetByPsr(clickedRow.mrid)
                         if (assetTransformerReturn.success) {
-                            assetTransformerReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'asset';
-                                row.asset = 'Transformer';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            assetTransformerReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'asset'
+                                row.asset = 'Transformer'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
-                            });
-                            newRows.push(...assetTransformerReturn.data);
+                            })
+                            newRows.push(...assetTransformerReturn.data)
                         }
                         if (assetSurgeReturn.success) {
-                            assetSurgeReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'asset';
-                                row.asset = 'Surge arrester';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            assetSurgeReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'asset'
+                                row.asset = 'Surge arrester'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
-                            });
-                            newRows.push(...assetSurgeReturn.data);
+                            })
+                            newRows.push(...assetSurgeReturn.data)
                         }
                         if (assetBushingReturn.success) {
-                            assetBushingReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'asset';
-                                row.asset = 'Bushing';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            assetBushingReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'asset'
+                                row.asset = 'Bushing'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
-                            });
-                            newRows.push(...assetBushingReturn.data);
+                            })
+                            newRows.push(...assetBushingReturn.data)
                         }
                         if (assetVtReturn.success) {
-                            assetVtReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'asset';
-                                row.asset = 'Voltage transformer';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            assetVtReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'asset'
+                                row.asset = 'Voltage transformer'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
-                            });
-                            newRows.push(...assetVtReturn.data);
+                            })
+                            newRows.push(...assetVtReturn.data)
                         }
                         if (assetDisconnectorReturn.success) {
-                            assetDisconnectorReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'asset';
-                                row.asset = 'Disconnector';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            assetDisconnectorReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'asset'
+                                row.asset = 'Disconnector'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
-                            });
-                            newRows.push(...assetVtReturn.data);
+                            })
+                            newRows.push(...assetVtReturn.data)
                         }
                         if (assetPowerCableReturn.success) {
-                            assetPowerCableReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'asset';
-                                row.asset = 'Power cable';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            assetPowerCableReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'asset'
+                                row.asset = 'Power cable'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
-                            });
-                            newRows.push(...assetPowerCableReturn.data);
+                            })
+                            newRows.push(...assetPowerCableReturn.data)
                         }
                         if (assetCurrentTransformerReturn.success) {
-                            assetCurrentTransformerReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'asset';
-                                row.asset = 'Current transformer';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            assetCurrentTransformerReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'asset'
+                                row.asset = 'Current transformer'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
-                            });
-                            newRows.push(...assetCurrentTransformerReturn.data);
+                            })
+                            newRows.push(...assetCurrentTransformerReturn.data)
                         }
                         if (assetRotatingMachineReturn.success) {
-                            assetRotatingMachineReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'asset';
-                                row.asset = 'Rotating machine';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            assetRotatingMachineReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'asset'
+                                row.asset = 'Rotating machine'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
-                            });
-                            newRows.push(...assetRotatingMachineReturn.data);
+                            })
+                            newRows.push(...assetRotatingMachineReturn.data)
                         }
                         if (assetCapacitorReturn.success) {
-                            assetCapacitorReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'asset';
-                                row.asset = 'Capacitor';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            assetCapacitorReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'asset'
+                                row.asset = 'Capacitor'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
-                            });
-                            newRows.push(...assetCapacitorReturn.data);
+                            })
+                            newRows.push(...assetCapacitorReturn.data)
                         }
-                        
+
                         if (assetReactorReturn.success) {
-                            assetReactorReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'asset';
-                                row.asset = 'Reactor';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            assetReactorReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'asset'
+                                row.asset = 'Reactor'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
-                            });
-                            newRows.push(...assetReactorReturn.data);
+                            })
+                            newRows.push(...assetReactorReturn.data)
                         }
                     } else {
-                        const clickedRow = node;
+                        const clickedRow = node
                         const [organisationReturn, substationReturn] = await Promise.all([
                             window.electronAPI.getParentOrganizationByParentMrid(clickedRow.mrid),
                             window.electronAPI.getSubstationsInOrganisationForUser(clickedRow.mrid, this.$store.state.user.user_id)
-                        ]);
+                        ])
                         if (organisationReturn.success && organisationReturn.data && organisationReturn.data.length > 0) {
-                            organisationReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'organisation';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            organisationReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'organisation'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
-                            });
-                            newRows.push(...organisationReturn.data);
+                            })
+                            newRows.push(...organisationReturn.data)
                         }
 
                         if (substationReturn.success && substationReturn.data && substationReturn.data.length > 0) {
-                            substationReturn.data.forEach(row => {
-                                row.parentId = clickedRow.mrid;
-                                row.mode = 'substation';
-                                let parentName = clickedRow.parentName + "/" + clickedRow.name
+                            substationReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'substation'
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
-                                row.parentArr = [...clickedRow.parentArr || []]
+                                row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
-                            });
-                            newRows.push(...substationReturn.data);
+                            })
+                            newRows.push(...substationReturn.data)
                         }
                     }
                     // Merge với children hiện có (nếu có) để không mất asset đã add trước đó
                     if (existingChildren.length > 0) {
                         // Tạo map của mrid để tránh duplicate
-                        const existingMrids = new Set(existingChildren.map(c => c.mrid));
+                        const existingMrids = new Set(existingChildren.map((c) => c.mrid))
                         // Chỉ thêm children mới nếu chưa có trong existingChildren
-                        const newChildrenToAdd = newRows.filter(row => !existingMrids.has(row.mrid));
-                        Vue.set(node, "children", [...existingChildren, ...newChildrenToAdd]);
+                        const newChildrenToAdd = newRows.filter((row) => !existingMrids.has(row.mrid))
+                        Vue.set(node, 'children', [...existingChildren, ...newChildrenToAdd])
                     } else {
-                    Vue.set(node, "children", newRows); // Đảm bảo Vue reactive
+                        Vue.set(node, 'children', newRows) // Đảm bảo Vue reactive
                     }
                     // Đánh dấu đã fetch để tránh fetch lại không cần thiết
-                    Vue.set(node, "_childrenFetched", true);
+                    Vue.set(node, '_childrenFetched', true)
                 } catch (error) {
-                    console.error("Error fetching children:", error);
-                    this.$message.error("Có lỗi xảy ra khi tải dữ liệu: " + error.message);
+                    console.error('Error fetching children:', error)
+                    this.$message.error('Có lỗi xảy ra khi tải dữ liệu: ' + error.message)
                 }
             }
         },
 
         async fetchAssetByPsr(psrId) {
             try {
-                const [responseTransformer, responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer, responseCapacitor, responseBreaker , responseReactor] = await Promise.all([
+                const [
+                    responseTransformer,
+                    responseSurge,
+                    responseBushing,
+                    responseVT,
+                    responseDisconnector,
+                    responsePowerCale,
+                    responseRotatingMachine,
+                    responseCurrentTransformer,
+                    responseCapacitor,
+                    responseBreaker,
+                    responseReactor
+                ] = await Promise.all([
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Transformer'),
                     window.electronAPI.getSurgeArresterByPsrId(psrId),
                     window.electronAPI.getBushingByPsrId(psrId),
@@ -2314,150 +2369,182 @@ export default {
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Circuit breaker'),
                     window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Reactor')
                 ])
-                return [responseTransformer, responseSurge, responseBushing, responseVT, responseDisconnector, responsePowerCale, responseRotatingMachine, responseCurrentTransformer, responseCapacitor, responseBreaker, responseReactor];
+                return [
+                    responseTransformer,
+                    responseSurge,
+                    responseBushing,
+                    responseVT,
+                    responseDisconnector,
+                    responsePowerCale,
+                    responseRotatingMachine,
+                    responseCurrentTransformer,
+                    responseCapacitor,
+                    responseBreaker,
+                    responseReactor
+                ]
             } catch (error) {
-                console.error("Error fetching asset by substation:", error);
+                console.error('Error fetching asset by substation:', error)
                 return {
                     success: false,
                     data: [],
-                    message: "Error fetching asset by substation"
-                };
+                    message: 'Error fetching asset by substation'
+                }
             }
         },
 
         async fetchJobsByAssetId(assetId) {
             try {
-                const result = await window.electronAPI.getOldWorkByAssetId(assetId);
-                return result;
+                const result = await window.electronAPI.getOldWorkByAssetId(assetId)
+                return result
             } catch (error) {
-                console.error("Error fetching jobs by asset ID:", error);
+                console.error('Error fetching jobs by asset ID:', error)
                 return {
                     success: false,
                     data: [],
-                    message: "Error fetching jobs by asset ID"
-                };
+                    message: 'Error fetching jobs by asset ID'
+                }
             }
         },
 
         async checkChildren(node) {
-    // Kiểm tra nếu đã load children trong tree
-    if (node.children && node.children.length > 0) {
-        return { hasChildren: true }; // Có children trong tree → không xóa
-    }
+            // Kiểm tra nếu đã load children trong tree
+            if (node.children && node.children.length > 0) {
+                return {hasChildren: true} // Có children trong tree → không xóa
+            }
 
-    // Nếu chưa load, fetch từ DB để kiểm tra (KHÔNG load vào tree)
-    try {
-        let hasChildren = false;
+            // Nếu chưa load, fetch từ DB để kiểm tra (KHÔNG load vào tree)
+            try {
+                let hasChildren = false
 
-        if (node.mode == 'asset') {
-            if (node.asset && node.asset != 'Surge arrester') {
-                const jobsReturn = await this.fetchJobsByAssetId(node.mode, node.mrid);
-                if (jobsReturn.success && jobsReturn.data.length > 0) {
-                    hasChildren = true;
+                if (node.mode == 'asset') {
+                    if (node.asset && node.asset != 'Surge arrester') {
+                        const jobsReturn = await this.fetchJobsByAssetId(node.mode, node.mrid)
+                        if (jobsReturn.success && jobsReturn.data.length > 0) {
+                            hasChildren = true
+                        }
+                    }
+                } else if (node.mode == 'substation') {
+                    const [voltageLevelReturn, bayReturn] = await Promise.all([
+                        window.electronAPI.getVoltageLevelBySubstationId(node.mrid),
+                        window.electronAPI.getBayByVoltageBySubstationId(null, node.mrid)
+                    ])
+                    const [
+                        assetSurgeReturn,
+                        assetBushingReturn,
+                        assetVtReturn,
+                        assetDisconnectorReturn,
+                        assetPowerCableReturn,
+                        assetRotatingMachineReturn,
+                        assetCurrentTransformerReturn,
+                        assetCapacitorReturn,
+                        assetReactorReturn
+                    ] = await this.fetchAssetByPsr(node.mrid)
+
+                    // Kiểm tra bất kỳ cái nào có data >0 thì hasChildren = true
+                    if (
+                        (voltageLevelReturn.success && voltageLevelReturn.data.length > 0) ||
+                        (bayReturn.success && bayReturn.data.length > 0) ||
+                        (assetSurgeReturn.success && assetSurgeReturn.data.length > 0) ||
+                        (assetBushingReturn.success && assetBushingReturn.data.length > 0) ||
+                        (assetVtReturn.success && assetVtReturn.data.length > 0) ||
+                        (assetDisconnectorReturn.success && assetDisconnectorReturn.data.length > 0) ||
+                        (assetPowerCableReturn.success && assetPowerCableReturn.data.length > 0) ||
+                        (assetRotatingMachineReturn.success && assetRotatingMachineReturn.data.length > 0) ||
+                        (assetCurrentTransformerReturn.success && assetCurrentTransformerReturn.data.length > 0) ||
+                        (assetCapacitorReturn.success && assetCapacitorReturn.data.length > 0) ||
+                        (assetReactorReturn.success && assetReactorReturn.data.length > 0)
+                    ) {
+                        hasChildren = true
+                    }
+                } else if (node.mode == 'voltageLevel') {
+                    const bayReturn = await window.electronAPI.getBayByVoltageBySubstationId(node.mrid, null)
+                    if (bayReturn.success && bayReturn.data.length > 0) {
+                        hasChildren = true
+                    }
+                } else if (node.mode == 'bay') {
+                    const [
+                        assetSurgeReturn,
+                        assetBushingReturn,
+                        assetVtReturn,
+                        assetDisconnectorReturn,
+                        assetPowerCableReturn,
+                        assetRotatingMachineReturn,
+                        assetCurrentTransformerReturn,
+                        assetCapacitorReturn,
+                        assetReactorReturn
+                    ] = await this.fetchAssetByPsr(node.mrid)
+                    if (
+                        (assetSurgeReturn.success && assetSurgeReturn.data.length > 0) ||
+                        (assetBushingReturn.success && assetBushingReturn.data.length > 0) ||
+                        (assetVtReturn.success && assetVtReturn.data.length > 0) ||
+                        (assetDisconnectorReturn.success && assetDisconnectorReturn.data.length > 0) ||
+                        (assetPowerCableReturn.success && assetPowerCableReturn.data.length > 0) ||
+                        (assetRotatingMachineReturn.success && assetRotatingMachineReturn.data.length > 0) ||
+                        (assetCurrentTransformerReturn.success && assetCurrentTransformerReturn.data.length > 0) ||
+                        (assetCapacitorReturn.success && assetCapacitorReturn.data.length > 0) ||
+                        (assetReactorReturn.success && assetReactorReturn.data.length > 0)
+                    ) {
+                        hasChildren = true
+                    }
                 }
-            }
-        } else if (node.mode == 'substation') {
-            const [voltageLevelReturn, bayReturn] = await Promise.all([
-                window.electronAPI.getVoltageLevelBySubstationId(node.mrid),
-                window.electronAPI.getBayByVoltageBySubstationId(null, node.mrid)
-            ]);
-            const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetReactorReturn] = await this.fetchAssetByPsr(node.mrid);
 
-            // Kiểm tra bất kỳ cái nào có data >0 thì hasChildren = true
-            if (
-                (voltageLevelReturn.success && voltageLevelReturn.data.length > 0) ||
-                (bayReturn.success && bayReturn.data.length > 0) ||
-                (assetSurgeReturn.success && assetSurgeReturn.data.length > 0) ||
-                (assetBushingReturn.success && assetBushingReturn.data.length > 0) ||
-                (assetVtReturn.success && assetVtReturn.data.length > 0) ||
-                (assetDisconnectorReturn.success && assetDisconnectorReturn.data.length > 0) ||
-                (assetPowerCableReturn.success && assetPowerCableReturn.data.length > 0) ||
-                (assetRotatingMachineReturn.success && assetRotatingMachineReturn.data.length > 0) ||
-                (assetCurrentTransformerReturn.success && assetCurrentTransformerReturn.data.length > 0) ||
-                (assetCapacitorReturn.success && assetCapacitorReturn.data.length > 0) ||
-                (assetReactorReturn.success && assetReactorReturn.data.length > 0)
-            ) {
-                hasChildren = true;
+                return {hasChildren}
+            } catch (error) {
+                console.error('Error checking children:', error)
+                return {hasChildren: true} // An toàn: giả sử có children nếu lỗi
             }
-        } else if (node.mode == 'voltageLevel') {
-            const bayReturn = await window.electronAPI.getBayByVoltageBySubstationId(node.mrid, null);
-            if (bayReturn.success && bayReturn.data.length > 0) {
-                hasChildren = true;
-            }
-        } else if (node.mode == 'bay') {
-            const [assetSurgeReturn, assetBushingReturn, assetVtReturn, assetDisconnectorReturn, assetPowerCableReturn, assetRotatingMachineReturn, assetCurrentTransformerReturn, assetCapacitorReturn, assetReactorReturn] = await this.fetchAssetByPsr(node.mrid);
-            if (
-                (assetSurgeReturn.success && assetSurgeReturn.data.length > 0) ||
-                (assetBushingReturn.success && assetBushingReturn.data.length > 0) ||
-                (assetVtReturn.success && assetVtReturn.data.length > 0) ||
-                (assetDisconnectorReturn.success && assetDisconnectorReturn.data.length > 0) ||
-                (assetPowerCableReturn.success && assetPowerCableReturn.data.length > 0) ||
-                (assetRotatingMachineReturn.success && assetRotatingMachineReturn.data.length > 0) ||
-                (assetCurrentTransformerReturn.success && assetCurrentTransformerReturn.data.length > 0) ||
-                (assetCapacitorReturn.success && assetCapacitorReturn.data.length > 0) ||
-                (assetReactorReturn.success && assetReactorReturn.data.length > 0)
-            ) {
-                hasChildren = true;
-            }
-        }
-
-        return { hasChildren };
-    } catch (error) {
-        console.error("Error checking children:", error);
-        return { hasChildren: true }; // An toàn: giả sử có children nếu lỗi
-    }
-},
+        },
 
         async fetchChildrenServer(node) {
             if (!node.children) {
                 try {
-                    let newRows = [];
+                    let newRows = []
                     if (node.mode == 'organisation') {
                         const newRowsOwner = await demoAPI.getChildOrganisation(node.id)
                         if (newRowsOwner && newRowsOwner.length > 0) {
-                            newRowsOwner.forEach(row => {
-                                row.id = row.mrid;
-                                row.parentId = node.mrid;
-                                row.mode = 'organisation';
-                                row.parentName = node.parentName + "/" + node.name;
-                                row.parentArr = [...node.parentArr];
+                            newRowsOwner.forEach((row) => {
+                                row.id = row.mrid
+                                row.parentId = node.mrid
+                                row.mode = 'organisation'
+                                row.parentName = node.parentName + '/' + node.name
+                                row.parentArr = [...node.parentArr]
                                 row.parentArr.push({
                                     id: node.id,
                                     parent: node.name
-                                });
-                            });
-                            newRows.push(...newRowsOwner);
+                                })
+                            })
+                            newRows.push(...newRowsOwner)
                         }
                         const newRowsSubstation = await demoAPI.getChildSubstation(node.id)
                         if (newRowsSubstation && newRowsSubstation.length > 0) {
-                            newRowsSubstation.forEach(row => {
-                                row.id = row.mrid;
-                                row.parentId = node.mrid;
-                                row.mode = 'substation';
-                                row.parentName = node.parentName + "/" + node.name;
-                                row.parentArr = [...node.parentArr];
+                            newRowsSubstation.forEach((row) => {
+                                row.id = row.mrid
+                                row.parentId = node.mrid
+                                row.mode = 'substation'
+                                row.parentName = node.parentName + '/' + node.name
+                                row.parentArr = [...node.parentArr]
                                 row.parentArr.push({
                                     id: node.id,
                                     parent: node.name
-                                });
-                            });
-                            newRows.push(...newRowsSubstation);
+                                })
+                            })
+                            newRows.push(...newRowsSubstation)
                         }
                     } else if (node.mode == 'substation') {
                         try {
                             const newRowsBay = await demoAPI.getChildBay(node.id)
                             if (newRowsBay && newRowsBay.length > 0) {
-                                newRowsBay.forEach(row => {
-                                    row.parentId = node.mrid;
-                                    row.mode = 'bay';
-                                    row.parentName = node.parentName + "/" + node.name;
-                                    row.parentArr = [...node.parentArr];
+                                newRowsBay.forEach((row) => {
+                                    row.parentId = node.mrid
+                                    row.mode = 'bay'
+                                    row.parentName = node.parentName + '/' + node.name
+                                    row.parentArr = [...node.parentArr]
                                     row.parentArr.push({
                                         id: node.id,
                                         parent: node.name
-                                    });
-                                });
-                                newRows.push(...newRowsBay);
+                                    })
+                                })
+                                newRows.push(...newRowsBay)
                             }
                         } catch (error) {
                             console.log(error)
@@ -2465,136 +2552,113 @@ export default {
                         try {
                             const newRowsVoltageLevel = await demoAPI.getVoltageLevelBySubstationId(node.id)
                             if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
-                                newRowsVoltageLevel.forEach(row => {
-                                    row.id = row.mrid;
-                                    row.parentId = node.mrid;
-                                    row.mode = 'voltageLevel';
-                                    row.parentName = node.parentName + "/" + node.name;
-                                    row.parentArr = [...node.parentArr];
+                                newRowsVoltageLevel.forEach((row) => {
+                                    row.id = row.mrid
+                                    row.parentId = node.mrid
+                                    row.mode = 'voltageLevel'
+                                    row.parentName = node.parentName + '/' + node.name
+                                    row.parentArr = [...node.parentArr]
                                     row.parentArr.push({
                                         id: node.id,
                                         parent: node.name
-                                    });
-                                });
-                                newRows.push(...newRowsVoltageLevel);
+                                    })
+                                })
+                                newRows.push(...newRowsVoltageLevel)
                             }
                         } catch (error) {
                             console.log(error)
                         }
 
                         try {
-                            const newRowsVoltageLevel = await demoAPI.getAssetByOwner('Substation')
+                            const newRowsVoltageLevel = await demoAPI.getAssetByOwner(node.mrid, 'Substation')
                             if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
-                                newRowsVoltageLevel.forEach(row => {
-                                    row.id = row.mrid;
-                                    row.parentId = node.mrid;
-                                    row.mode = 'asset';
-                                    row.parentName = node.parentName + "/" + node.name;
-                                    row.parentArr = [...node.parentArr];
+                                newRowsVoltageLevel.forEach((row) => {
+                                    row.id = row.mrid
+                                    row.parentId = node.mrid
+                                    row.mode = 'asset'
+                                    row.parentName = node.parentName + '/' + node.name
+                                    row.parentArr = [...node.parentArr]
                                     row.parentArr.push({
                                         id: node.id,
                                         parent: node.name
-                                    });
-                                });
-                                newRows.push(...newRowsVoltageLevel);
+                                    })
+                                })
+                                newRows.push(...newRowsVoltageLevel)
                             }
                         } catch (error) {
                             console.log(error)
                         }
-
-
-
                     } else if (node.mode == 'voltageLevel') {
                         try {
                             const newRowsBay = await demoAPI.getBayByVoltageLevel(node.id)
                             if (newRowsBay && newRowsBay.length > 0) {
-                                newRowsBay.forEach(row => {
-                                    row.parentId = node.mrid;
-                                    row.mode = 'bay';
-                                    row.parentName = node.parentName + "/" + node.name;
-                                    row.parentArr = [...node.parentArr];
+                                newRowsBay.forEach((row) => {
+                                    row.parentId = node.mrid
+                                    row.mode = 'bay'
+                                    row.parentName = node.parentName + '/' + node.name
+                                    row.parentArr = [...node.parentArr]
                                     row.parentArr.push({
                                         id: node.id,
                                         parent: node.name
-                                    });
-                                });
-                                newRows.push(...newRowsBay);
-                            }
-                        } catch (error) {
-                            console.log(error)
-                        }
-                        try {
-                            const newRowsVoltageLevel = await demoAPI.getAssetByOwner('VoltageLevel')
-                            if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
-                                newRowsVoltageLevel.forEach(row => {
-                                    row.id = row.mrid;
-                                    row.parentId = node.mrid;
-                                    row.mode = 'asset';
-                                    row.parentName = node.parentName + "/" + node.name;
-                                    row.parentArr = [...node.parentArr];
-                                    row.parentArr.push({
-                                        id: node.id,
-                                        parent: node.name
-                                    });
-                                });
-                                newRows.push(...newRowsVoltageLevel);
+                                    })
+                                })
+                                newRows.push(...newRowsBay)
                             }
                         } catch (error) {
                             console.log(error)
                         }
                     } else if (node.mode == 'bay') {
                         try {
-                            const newRowsVoltageLevel = await demoAPI.getAssetByOwner('Bay')
+                            const newRowsVoltageLevel = await demoAPI.getAssetByOwner(node.mrid, 'Bay')
                             if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
-                                newRowsVoltageLevel.forEach(row => {
-                                    row.id = row.mrid;
-                                    row.parentId = node.mrid;
-                                    row.mode = 'asset';
-                                    row.serial_number = row.serialNumber;
-                                    row.parentName = node.parentName + "/" + node.name;
-                                    row.parentArr = [...node.parentArr];
+                                newRowsVoltageLevel.forEach((row) => {
+                                    row.id = row.mrid
+                                    row.parentId = node.mrid
+                                    row.mode = 'asset'
+                                    row.serial_number = row.serialNumber
+                                    row.parentName = node.parentName + '/' + node.name
+                                    row.parentArr = [...node.parentArr]
                                     row.parentArr.push({
                                         id: node.id,
                                         parent: node.name
-                                    });
-                                });
-                                newRows.push(...newRowsVoltageLevel);
+                                    })
+                                })
+                                newRows.push(...newRowsVoltageLevel)
                             }
                         } catch (error) {
                             console.log(error)
                         }
                     }
 
-
-                    Vue.set(node, "children", newRows);
+                    Vue.set(node, 'children', newRows)
                 } catch (error) {
-                    console.error("Lỗi khi lấy dữ liệu:", error);
+                    console.error('Lỗi khi lấy dữ liệu:', error)
                 }
             }
         },
 
         async hideProperties() {
             this.propertiesSign = false
-            const content = this.$refs.content;
-            content.style.width = "100%";
+            const content = this.$refs.content
+            content.style.width = '100%'
         },
 
         async hidePropertiesClient() {
             this.propertiesSignClient = false
-            const content = this.$refs.contentClient;
-            content.style.width = "100%";
+            const content = this.$refs.contentClient
+            content.style.width = '100%'
         },
 
         async showProperties() {
             this.propertiesSign = true
-            const content = this.$refs.content;
-            content.style.width = `calc(75% - 5px)`;
+            const content = this.$refs.content
+            content.style.width = `calc(75% - 5px)`
         },
 
         async showPropertiesClient() {
             this.propertiesSignClient = true
-            const content = this.$refs.contentClient;
-            content.style.width = `calc(75% - 5px)`;
+            const content = this.$refs.contentClient
+            content.style.width = `calc(75% - 5px)`
         },
 
         serverSwap(serverSign) {
@@ -2606,10 +2670,10 @@ export default {
         },
 
         async showOwnerServerRoot() {
-            const ownerRootServer = this.$refs.ownerRootServer;
+            const ownerRootServer = this.$refs.ownerRootServer
             if (ownerRootServer) {
-                ownerRootServer.style.borderBottom = "2px #aba7a7 solid"; // Thêm viền màu đen dày 2px
-                ownerRootServer.style.color = "rgba(0, 0, 0, 1)"; // Chữ rõ nét
+                ownerRootServer.style.borderBottom = '2px #aba7a7 solid' // Thêm viền màu đen dày 2px
+                ownerRootServer.style.color = 'rgba(0, 0, 0, 1)' // Chữ rõ nét
             }
             this.$nextTick(async () => {
                 await this.getOwnerLocation()
@@ -2696,7 +2760,7 @@ export default {
                     } else if (node.asset === 'Disconnector') {
                         const entityRes = await window.electronAPI.getDisconnectorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
                         if (entityRes.success && entityRes.data) {
-                            assetData = DisconnectorMapping.mapEntityToDto(entityRes.data)
+                            assetData = DisconnectorMapping.disconnectorEntityToDto(entityRes.data)
                         }
                     } else if (node.asset === 'Capacitor') {
                         const entityRes = await window.electronAPI.getCapacitorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
@@ -2725,9 +2789,9 @@ export default {
                         }
                     }
                 } catch (error) {
-                    console.error("Error fetching asset data:", error)
+                    console.error('Error fetching asset data:', error)
                 }
-                
+
                 // Map từ DTO nếu có, nếu không thì map từ node
                 if (assetData && assetData.properties) {
                     await this.mappingAssetPropertiesClient(assetData.properties)
@@ -2736,7 +2800,7 @@ export default {
                 } else {
                     await this.mappingAssetPropertiesClient(node)
                 }
-                
+
                 // Tìm parent thực sự từ cây dữ liệu thay vì dùng node.parent
                 const parentNode = node.parentId ? this.findNodeById(node.parentId, this.organisationClientList) : null
                 if (parentNode) {
@@ -2753,10 +2817,6 @@ export default {
             } else if (node.type == 'test') {
                 this.assetPropertySignClient = true
                 this.jobPropertySignClient = true
-                // Tìm parent thực sự từ cây dữ liệu
-                // Test -> Job (parent)
-                // Test -> Asset (parent.parent) 
-                // Test -> Location (parent.parent.parent)
                 const jobNode = node.parentId ? this.findNodeById(node.parentId, this.organisationClientList) : null
                 const assetNode = jobNode ? (jobNode.parentId ? this.findNodeById(jobNode.parentId, this.organisationClientList) : null) : null
                 const locationNode = assetNode ? (assetNode.parentId ? this.findNodeById(assetNode.parentId, this.organisationClientList) : null) : null
@@ -2799,7 +2859,22 @@ export default {
                     parent: jobName
                 })
             } else {
-                await this.mappingPropertiesClient(node)
+                let detailData = node
+
+                // Nếu là Substation, gọi API lấy full thông tin
+                if (node.mode === 'substation') {
+                    try {
+                        const res = await window.electronAPI.getSubstationEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
+                        if (res.success && res.data) {
+                            // Map từ Entity sang DTO để có các trường street, city, email...
+                            detailData = SubstationMapping.mapEntityToDto(res.data)
+                        }
+                    } catch (error) {
+                        console.error('Error fetching substation detail:', error)
+                    }
+                }
+
+                await this.mappingPropertiesClient(detailData)
                 await this.loadPathMapClient(node)
                 const nodeName = node.name || node.serial_number || node.serial_no || 'Unknown'
                 this.pathMapClient.push({
@@ -2871,32 +2946,46 @@ export default {
 
         async mappingPropertiesClient(data) {
             if (data != undefined) {
-                this.propertiesClient.name = data.name == undefined || data.name == null ? '' : data.name
-                this.propertiesClient.region = data.region == undefined || data.region == null ? '' : data.region
-                this.propertiesClient.plant = data.plant == undefined || data.plant == null ? '' : data.plant
-                this.propertiesClient.address = data.address == undefined || data.address == null ? '' : data.address
-                this.propertiesClient.city = data.city == undefined || data.city == null ? '' : data.city
-                this.propertiesClient.state_province = data.state_province == undefined || data.state_province == null ? '' : data.state_province
-                this.propertiesClient.postal_code = data.postal_code == undefined || data.postal_code == null ? '' : data.postal_code
-                this.propertiesClient.country = data.country == undefined || data.country == null ? '' : data.country
-                this.propertiesClient.phone_no = data.phone_no == undefined || data.phone_no == null ? '' : data.phone_no
-                this.propertiesClient.email = data.email == undefined || data.email == null ? '' : data.email
+                this.propertiesClient.name = data.name || ''
+                this.propertiesClient.region = data.region || data.generation || '' // Substation dùng generation
+                this.propertiesClient.plant = data.plant || data.industry || '' // Substation dùng industry
+
+                // Map địa chỉ từ Substation DTO
+                this.propertiesClient.address = data.street || data.address || ''
+                this.propertiesClient.city = data.city || ''
+                this.propertiesClient.state_province = data.state_or_province || data.state_province || ''
+                this.propertiesClient.postal_code = data.postal_code || ''
+                this.propertiesClient.country = data.country || ''
+
+                // Map liên hệ từ Substation DTO
+                this.propertiesClient.phone_no = data.phoneNumber || data.phone_no || ''
+                this.propertiesClient.email = data.email || ''
             }
         },
 
         async mappingAssetPropertiesClient(data) {
             if (data != undefined) {
-                // asset name sẽ được set riêng từ node.asset trong showPropertiesDataClient
-                // asset_type: có thể là type hoặc asset_type
-                this.assetPropertiesClient.asset_type = data.type == undefined || data.type == null ? (data.asset_type == undefined || data.asset_type == null ? '' : data.asset_type) : data.type
+                this.assetPropertiesClient.asset_type =
+                    data.type == undefined || data.type == null ? (data.asset_type == undefined || data.asset_type == null ? '' : data.asset_type) : data.type
                 // serial_no: có thể là serial_no hoặc serial_number
-                this.assetPropertiesClient.serial_no = data.serial_no == undefined || data.serial_no == null ? '' : (data.serial_number || data.serial_no || '')
+                this.assetPropertiesClient.serial_no = data.serial_no == undefined || data.serial_no == null ? '' : data.serial_number || data.serial_no || ''
                 this.assetPropertiesClient.manufacturer = data.manufacturer == undefined || data.manufacturer == null ? '' : data.manufacturer
-                this.assetPropertiesClient.manufacturer_type = data.manufacturer_type == undefined || data.manufacturer_type == null ? '' : data.manufacturer_type
+                this.assetPropertiesClient.manufacturer_type =
+                    data.manufacturer_type == undefined || data.manufacturer_type == null ? '' : data.manufacturer_type
                 // manufacturing_year: có thể là manufacturing_year hoặc manufacturer_year
-                this.assetPropertiesClient.manufacturing_year = data.manufacturing_year == undefined || data.manufacturing_year == null ? (data.manufacturer_year == undefined || data.manufacturer_year == null ? '' : data.manufacturer_year) : data.manufacturing_year
+                this.assetPropertiesClient.manufacturing_year =
+                    data.manufacturing_year == undefined || data.manufacturing_year == null
+                        ? data.manufacturer_year == undefined || data.manufacturer_year == null
+                            ? ''
+                            : data.manufacturer_year
+                        : data.manufacturing_year
                 // country: có thể là country hoặc country_of_origin
-                this.assetPropertiesClient.country = data.country == undefined || data.country == null ? (data.country_of_origin == undefined || data.country_of_origin == null ? '' : data.country_of_origin) : data.country
+                this.assetPropertiesClient.country =
+                    data.country == undefined || data.country == null
+                        ? data.country_of_origin == undefined || data.country_of_origin == null
+                            ? ''
+                            : data.country_of_origin
+                        : data.country
                 this.assetPropertiesClient.apparatus_id = data.apparatus_id == undefined || data.apparatus_id == null ? '' : data.apparatus_id
             }
         },
@@ -2916,9 +3005,9 @@ export default {
 
         async getOwnerLocation() {
             try {
-                const res = await demoAPI.getOwnerOrganisation();
+                const res = await demoAPI.getOwnerOrganisation()
                 if (res !== null) {
-                    this.ownerServerList = [res].map(item => {
+                    this.ownerServerList = [res].map((item) => {
                         return {
                             id: item.mrid || '',
                             name: item.name || '',
@@ -2926,40 +3015,40 @@ export default {
                             parentArr: [],
                             mode: item.mode || '',
                             parentId: '',
-                            mode: 'organisation',
+                            mode: 'organisation'
                         }
-                    });
+                    })
                 } else {
-                    this.ownerServerList = [];
-                    this.$message.warning("Không tìm thấy dữ liệu tổ chức chủ sở hữu.");
+                    this.ownerServerList = []
+                    this.$message.warning('Không tìm thấy dữ liệu tổ chức chủ sở hữu.')
                 }
             } catch (error) {
-                this.$message.error("Có lỗi xảy ra khi lấy danh sách tổ chức chủ sở hữu.");
-                console.error("getOwnerLocation error:", error);
-                this.ownerServerList = [];
+                this.$message.error('Có lỗi xảy ra khi lấy danh sách tổ chức chủ sở hữu.')
+                console.error('getOwnerLocation error:', error)
+                this.ownerServerList = []
             }
         },
 
         async updateSelection(node) {
-            this.selectedNodes = [...this.selectedNodes];
+            this.selectedNodes = [...this.selectedNodes]
             if (Array.isArray(node)) {
                 // Click thường → bỏ hết, chỉ chọn 1 dòng
-                this.selectedNodes = [node];
+                this.selectedNodes = [node]
             } else {
                 // Ctrl + Click → bật/tắt node cha mà KHÔNG ảnh hưởng con
                 // So sánh bằng mrid (vì mrid là unique) để nhất quán với TreeNode.vue
                 // Chỉ so sánh khi cả hai node đều có mrid
-                const index = this.selectedNodes.findIndex(n => {
-                    if (!n || !node) return false;
-                    if (!n.mrid || !node.mrid) return false;
-                    return n.mrid === node.mrid;
-                });
+                const index = this.selectedNodes.findIndex((n) => {
+                    if (!n || !node) return false
+                    if (!n.mrid || !node.mrid) return false
+                    return n.mrid === node.mrid
+                })
                 if (index === -1) {
                     // Chưa có trong selection → thêm vào
-                    this.selectedNodes.push(node);
+                    this.selectedNodes.push(node)
                 } else {
                     // Đã có trong selection → xóa khỏi selection
-                    this.selectedNodes.splice(index, 1);
+                    this.selectedNodes.splice(index, 1)
                 }
             }
         },
@@ -2969,40 +3058,40 @@ export default {
         },
 
         async openContextMenu(event, node) {
-            this.$refs.contextMenu.openContextMenu(event, node);
+            this.$refs.contextMenu.openContextMenu(event, node)
         },
 
         async openContextMenuClient(event, node) {
-            const menu = this.$refs.contextMenuClient.$el;
-            const menuHeight = menu.offsetHeight || 320; // fallback nếu chưa render
-            const menuWidth = menu.offsetWidth || 180;
+            const menu = this.$refs.contextMenuClient.$el
+            const menuHeight = menu.offsetHeight || 320 // fallback nếu chưa render
+            const menuWidth = menu.offsetWidth || 180
             // Lấy vị trí click
-            const clickX = event.clientX;
-            const clickY = event.clientY;
+            const clickX = event.clientX
+            const clickY = event.clientY
             // Lấy kích thước cửa sổ
-            const windowHeight = window.innerHeight;
-            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight
+            const windowWidth = window.innerWidth
 
             // Tính toán vị trí hiển thị
-            let top = clickY;
-            let left = clickX;
+            let top = clickY
+            let left = clickX
 
             // Nếu click quá gần mép dưới, hiện menu lên trên
             if (clickY + menuHeight > windowHeight) {
-                top = clickY - menuHeight;
-                if (top < 0) top = 0;
+                top = clickY - menuHeight
+                if (top < 0) top = 0
             }
 
             // Nếu click quá gần mép phải, hiện menu sang trái
             if (clickX + menuWidth > windowWidth) {
-                left = clickX - menuWidth;
-                if (left < 0) left = 0;
+                left = clickX - menuWidth
+                if (left < 0) left = 0
             }
-            this.$refs.contextMenuClient.openContextMenu(event, node, { top, left });
+            this.$refs.contextMenuClient.openContextMenu(event, node, {top, left})
         },
 
         async showContext(event) {
-            this.$refs.contextSubstation.openContextMenuSubstation(event, this.$constant.ROOT);
+            this.$refs.contextSubstation.openContextMenuSubstation(event, this.$constant.ROOT)
         },
 
         async handleSubsCancel() {
@@ -3073,9 +3162,9 @@ export default {
             try {
                 const subs = this.$refs.substation
                 if (subs) {
-                    const { success, data } = await subs.saveSubstation()
+                    const {success, data} = await subs.saveSubstation()
                     if (success) {
-                        this.$message.success("Substation saved successfully")
+                        this.$message.success('Substation saved successfully')
                         this.signSubs = false
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
@@ -3085,21 +3174,21 @@ export default {
                                 parentId: this.parentOrganization.mrid,
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
-                                mode: 'substation',
+                                mode: 'substation'
                             }
-                            newRows.push(newRow);
-                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            newRows.push(newRow)
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
                             if (node) {
-                                const children = Array.isArray(node.children) ? node.children : [];
-                                Vue.set(node, "children", [...children, ...newRows]);
+                                const children = Array.isArray(node.children) ? node.children : []
+                                Vue.set(node, 'children', [...children, ...newRows])
                             } else {
-                                this.$message.error("Parent node not found in tree");
+                                this.$message.error('Parent node not found in tree')
                             }
                         }
                     }
                 }
             } catch (error) {
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
@@ -3108,9 +3197,9 @@ export default {
             try {
                 const org = this.$refs.organisation
                 if (org) {
-                    const { success, data } = await org.saveOrganisation()
+                    const {success, data} = await org.saveOrganisation()
                     if (success) {
-                        this.$message.success("Organisation saved successfully")
+                        this.$message.success('Organisation saved successfully')
                         this.signOrg = false
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
@@ -3120,21 +3209,21 @@ export default {
                                 parentId: this.parentOrganization.mrid,
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
-                                mode: 'organisation',
+                                mode: 'organisation'
                             }
-                            newRows.push(newRow);
-                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            newRows.push(newRow)
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
                             if (node) {
-                                const children = Array.isArray(node.children) ? node.children : [];
-                                Vue.set(node, "children", [...children, ...newRows]);
+                                const children = Array.isArray(node.children) ? node.children : []
+                                Vue.set(node, 'children', [...children, ...newRows])
                             } else {
-                                this.$message.error("Parent node not found in tree");
+                                this.$message.error('Parent node not found in tree')
                             }
                         }
                     }
                 }
             } catch (error) {
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
@@ -3143,9 +3232,9 @@ export default {
             try {
                 const voltageLevel = this.$refs.voltageLevel
                 if (voltageLevel) {
-                    const { success, data } = await voltageLevel.saveVoltageLevel()
+                    const {success, data} = await voltageLevel.saveVoltageLevel()
                     if (success) {
-                        this.$message.success("Voltage Level saved successfully")
+                        this.$message.success('Voltage Level saved successfully')
                         this.signVoltageLevel = false
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
@@ -3155,21 +3244,21 @@ export default {
                                 parentId: this.parentOrganization.mrid,
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
-                                mode: 'voltageLevel',
+                                mode: 'voltageLevel'
                             }
-                            newRows.push(newRow);
-                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            newRows.push(newRow)
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
                             if (node) {
-                                const children = Array.isArray(node.children) ? node.children : [];
-                                Vue.set(node, "children", [...children, ...newRows]);
+                                const children = Array.isArray(node.children) ? node.children : []
+                                Vue.set(node, 'children', [...children, ...newRows])
                             } else {
-                                this.$message.error("Parent node not found in tree");
+                                this.$message.error('Parent node not found in tree')
                             }
                         }
                     }
                 }
             } catch (error) {
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
@@ -3178,9 +3267,9 @@ export default {
             try {
                 const bay = this.$refs.bay
                 if (bay) {
-                    const { success, data } = await bay.saveBay()
+                    const {success, data} = await bay.saveBay()
                     if (success) {
-                        this.$message.success("Bay saved successfully")
+                        this.$message.success('Bay saved successfully')
                         this.signBay = false
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
@@ -3190,23 +3279,23 @@ export default {
                                 parentId: this.parentOrganization.mrid,
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
-                                mode: 'bay',
+                                mode: 'bay'
                             }
-                            newRows.push(newRow);
-                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            newRows.push(newRow)
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
                             if (node) {
-                                const children = Array.isArray(node.children) ? node.children : [];
-                                Vue.set(node, "children", [...children, ...newRows]);
+                                const children = Array.isArray(node.children) ? node.children : []
+                                Vue.set(node, 'children', [...children, ...newRows])
                             } else {
-                                this.$message.error("Parent node not found in tree");
+                                this.$message.error('Parent node not found in tree')
                             }
                         }
                     } else {
-                        this.$message.error("Failed to save bay")
+                        this.$message.error('Failed to save bay')
                     }
                 }
             } catch (error) {
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
@@ -3215,9 +3304,9 @@ export default {
             try {
                 const transformer = this.$refs.transformer
                 if (transformer) {
-                    const { success, data } = await transformer.saveAsset()
+                    const {success, data} = await transformer.saveAsset()
                     if (success) {
-                        this.$message.success("Transformer saved successfully")
+                        this.$message.success('Transformer saved successfully')
                         this.signTransformer = false
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
@@ -3229,23 +3318,23 @@ export default {
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
                                 mode: 'asset',
-                                asset: 'Transformer',
+                                asset: 'Transformer'
                             }
-                            newRows.push(newRow);
-                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            newRows.push(newRow)
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
                             if (node) {
-                                const children = Array.isArray(node.children) ? node.children : [];
-                                Vue.set(node, "children", [...children, ...newRows]);
+                                const children = Array.isArray(node.children) ? node.children : []
+                                Vue.set(node, 'children', [...children, ...newRows])
                             } else {
-                                this.$message.error("Parent node not found in tree");
+                                this.$message.error('Parent node not found in tree')
                             }
                         }
                     } else {
-                        this.$message.error("Failed to save transformer")
+                        this.$message.error('Failed to save transformer')
                     }
                 }
             } catch (error) {
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
@@ -3254,9 +3343,9 @@ export default {
             try {
                 const bushing = this.$refs.bushing
                 if (bushing) {
-                    const { success, data } = await bushing.saveAsset()
+                    const {success, data} = await bushing.saveAsset()
                     if (success) {
-                        this.$message.success("Bushing saved successfully")
+                        this.$message.success('Bushing saved successfully')
                         this.signBushing = false
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
@@ -3268,23 +3357,23 @@ export default {
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
                                 mode: 'asset',
-                                asset: 'Bushing',
+                                asset: 'Bushing'
                             }
-                            newRows.push(newRow);
-                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            newRows.push(newRow)
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
                             if (node) {
-                                const children = Array.isArray(node.children) ? node.children : [];
-                                Vue.set(node, "children", [...children, ...newRows]);
+                                const children = Array.isArray(node.children) ? node.children : []
+                                Vue.set(node, 'children', [...children, ...newRows])
                             } else {
-                                this.$message.error("Parent node not found in tree");
+                                this.$message.error('Parent node not found in tree')
                             }
                         }
                     } else {
-                        this.$message.error("Failed to save bushing")
+                        this.$message.error('Failed to save bushing')
                     }
                 }
             } catch (error) {
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
@@ -3293,9 +3382,9 @@ export default {
             try {
                 const surgeArrester = this.$refs.surgeArrester
                 if (surgeArrester) {
-                    const { success, data } = await surgeArrester.saveAsset();
+                    const {success, data} = await surgeArrester.saveAsset()
                     if (success) {
-                        this.$message.success("Surge Arrester saved successfully")
+                        this.$message.success('Surge Arrester saved successfully')
                         this.signSurge = false
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
@@ -3307,23 +3396,23 @@ export default {
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
                                 mode: 'asset',
-                                asset: 'Surge arrester',
+                                asset: 'Surge arrester'
                             }
-                            newRows.push(newRow);
-                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            newRows.push(newRow)
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
                             if (node) {
-                                const children = Array.isArray(node.children) ? node.children : [];
-                                Vue.set(node, "children", [...children, ...newRows]);
+                                const children = Array.isArray(node.children) ? node.children : []
+                                Vue.set(node, 'children', [...children, ...newRows])
                             } else {
-                                this.$message.error("Parent node not found in tree");
+                                this.$message.error('Parent node not found in tree')
                             }
                         }
                     } else {
-                        this.$message.error("Failed to save Surge Arrester")
+                        this.$message.error('Failed to save Surge Arrester')
                     }
                 }
             } catch (error) {
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
@@ -3332,9 +3421,9 @@ export default {
             try {
                 const breaker = this.$refs.circuitBreaker
                 if (breaker) {
-                    const { success, data } = await breaker.saveAsset();
+                    const {success, data} = await breaker.saveAsset()
                     if (success) {
-                        this.$message.success("Circuit breaker saved successfully")
+                        this.$message.success('Circuit breaker saved successfully')
                         this.signCircuit = false
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
@@ -3346,23 +3435,23 @@ export default {
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
                                 mode: 'asset',
-                                asset: 'Circuit breaker',
+                                asset: 'Circuit breaker'
                             }
-                            newRows.push(newRow);
-                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            newRows.push(newRow)
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
                             if (node) {
-                                const children = Array.isArray(node.children) ? node.children : [];
-                                Vue.set(node, "children", [...children, ...newRows]);
+                                const children = Array.isArray(node.children) ? node.children : []
+                                Vue.set(node, 'children', [...children, ...newRows])
                             } else {
-                                this.$message.error("Parent node not found in tree");
+                                this.$message.error('Parent node not found in tree')
                             }
                         }
                     } else {
-                        this.$message.error("Failed to save Circuit breaker")
+                        this.$message.error('Failed to save Circuit breaker')
                     }
                 }
             } catch (error) {
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
@@ -3371,9 +3460,9 @@ export default {
             try {
                 const currentTransformer = this.$refs.currentTransformer
                 if (currentTransformer) {
-                    const { success, data } = await currentTransformer.saveAsset();
+                    const {success, data} = await currentTransformer.saveAsset()
                     if (success) {
-                        this.$message.success("Current transformer saved successfully")
+                        this.$message.success('Current transformer saved successfully')
                         this.signCt = false
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
@@ -3385,23 +3474,23 @@ export default {
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
                                 mode: 'asset',
-                                asset: 'Current transformer',
+                                asset: 'Current transformer'
                             }
-                            newRows.push(newRow);
-                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            newRows.push(newRow)
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
                             if (node) {
-                                const children = Array.isArray(node.children) ? node.children : [];
-                                Vue.set(node, "children", [...children, ...newRows]);
+                                const children = Array.isArray(node.children) ? node.children : []
+                                Vue.set(node, 'children', [...children, ...newRows])
                             } else {
-                                this.$message.error("Parent node not found in tree");
+                                this.$message.error('Parent node not found in tree')
                             }
                         }
                     } else {
-                        this.$message.error("Failed to save Current transformer")
+                        this.$message.error('Failed to save Current transformer')
                     }
                 }
             } catch (error) {
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
@@ -3410,9 +3499,9 @@ export default {
             try {
                 const voltageTransformer = this.$refs.voltageTransformer
                 if (voltageTransformer) {
-                    const { success, data } = await voltageTransformer.saveAsset();
+                    const {success, data} = await voltageTransformer.saveAsset()
                     if (success) {
-                        this.$message.success("Voltage transformer saved successfully")
+                        this.$message.success('Voltage transformer saved successfully')
                         this.signVt = false
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
@@ -3424,23 +3513,23 @@ export default {
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
                                 mode: 'asset',
-                                asset: 'Voltage transformer',
+                                asset: 'Voltage transformer'
                             }
-                            newRows.push(newRow);
-                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            newRows.push(newRow)
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
                             if (node) {
-                                const children = Array.isArray(node.children) ? node.children : [];
-                                Vue.set(node, "children", [...children, ...newRows]);
+                                const children = Array.isArray(node.children) ? node.children : []
+                                Vue.set(node, 'children', [...children, ...newRows])
                             } else {
-                                this.$message.error("Parent node not found in tree");
+                                this.$message.error('Parent node not found in tree')
                             }
                         }
                     } else {
-                        this.$message.error("Failed to save Voltage transformer")
+                        this.$message.error('Failed to save Voltage transformer')
                     }
                 }
             } catch (error) {
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
@@ -3449,9 +3538,9 @@ export default {
             try {
                 const powerCable = this.$refs.powerCable
                 if (powerCable) {
-                    const { success, data } = await powerCable.saveAsset();
+                    const {success, data} = await powerCable.saveAsset()
                     if (success) {
-                        this.$message.success("Power cable saved successfully")
+                        this.$message.success('Power cable saved successfully')
                         this.signPower = false
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
@@ -3463,23 +3552,23 @@ export default {
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
                                 mode: 'asset',
-                                asset: 'Power cable',
+                                asset: 'Power cable'
                             }
-                            newRows.push(newRow);
-                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            newRows.push(newRow)
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
                             if (node) {
-                                const children = Array.isArray(node.children) ? node.children : [];
-                                Vue.set(node, "children", [...children, ...newRows]);
+                                const children = Array.isArray(node.children) ? node.children : []
+                                Vue.set(node, 'children', [...children, ...newRows])
                             } else {
-                                this.$message.error("Parent node not found in tree");
+                                this.$message.error('Parent node not found in tree')
                             }
                         }
                     } else {
-                        this.$message.error("Failed to save Power Cable")
+                        this.$message.error('Failed to save Power Cable')
                     }
                 }
             } catch (error) {
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
@@ -3488,9 +3577,9 @@ export default {
             try {
                 const disconnector = this.$refs.disconnector
                 if (disconnector) {
-                    const { success, data } = await disconnector.saveAsset();
+                    const {success, data} = await disconnector.saveAsset()
                     if (success) {
-                        this.$message.success("Disconnector saved successfully")
+                        this.$message.success('Disconnector saved successfully')
                         this.signDisconnector = false
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
@@ -3502,23 +3591,23 @@ export default {
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
                                 mode: 'asset',
-                                asset: 'Disconnector',
+                                asset: 'Disconnector'
                             }
-                            newRows.push(newRow);
-                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            newRows.push(newRow)
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
                             if (node) {
-                                const children = Array.isArray(node.children) ? node.children : [];
-                                Vue.set(node, "children", [...children, ...newRows]);
+                                const children = Array.isArray(node.children) ? node.children : []
+                                Vue.set(node, 'children', [...children, ...newRows])
                             } else {
-                                this.$message.error("Parent node not found in tree");
+                                this.$message.error('Parent node not found in tree')
                             }
                         }
                     } else {
-                        this.$message.error("Failed to save Voltage transformer")
+                        this.$message.error('Failed to save Voltage transformer')
                     }
                 }
             } catch (error) {
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
@@ -3527,9 +3616,9 @@ export default {
             try {
                 const rotatingMachine = this.$refs.rotatingMachine
                 if (rotatingMachine) {
-                    const { success, data } = await rotatingMachine.saveAsset();
+                    const {success, data} = await rotatingMachine.saveAsset()
                     if (success) {
-                        this.$message.success("Rotating machine saved successfully")
+                        this.$message.success('Rotating machine saved successfully')
                         this.signRotating = false
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
@@ -3541,23 +3630,23 @@ export default {
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
                                 mode: 'asset',
-                                asset: 'Rotating machine',
+                                asset: 'Rotating machine'
                             }
-                            newRows.push(newRow);
-                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            newRows.push(newRow)
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
                             if (node) {
-                                const children = Array.isArray(node.children) ? node.children : [];
-                                Vue.set(node, "children", [...children, ...newRows]);
+                                const children = Array.isArray(node.children) ? node.children : []
+                                Vue.set(node, 'children', [...children, ...newRows])
                             } else {
-                                this.$message.error("Parent node not found in tree");
+                                this.$message.error('Parent node not found in tree')
                             }
                         }
                     } else {
-                        this.$message.error("Failed to save Rotating machine")
+                        this.$message.error('Failed to save Rotating machine')
                     }
                 }
             } catch (error) {
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
@@ -3566,9 +3655,9 @@ export default {
             try {
                 const capacitor = this.$refs.capacitor
                 if (capacitor) {
-                    const { success, data } = await capacitor.saveAsset();
+                    const {success, data} = await capacitor.saveAsset()
                     if (success) {
-                        this.$message.success("Capacitor saved successfully")
+                        this.$message.success('Capacitor saved successfully')
                         this.signCapacitor = false
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
@@ -3580,34 +3669,34 @@ export default {
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
                                 mode: 'asset',
-                                asset: 'Capacitor',
+                                asset: 'Capacitor'
                             }
-                            newRows.push(newRow);
-                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            newRows.push(newRow)
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
                             if (node) {
-                                const children = Array.isArray(node.children) ? node.children : [];
-                                Vue.set(node, "children", [...children, ...newRows]);
+                                const children = Array.isArray(node.children) ? node.children : []
+                                Vue.set(node, 'children', [...children, ...newRows])
                             } else {
-                                this.$message.error("Parent node not found in tree");
+                                this.$message.error('Parent node not found in tree')
                             }
                         }
                     } else {
-                        this.$message.error("Failed to save Capacitor")
+                        this.$message.error('Failed to save Capacitor')
                     }
                 }
             } catch (error) {
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
 
         async handleReactorConfirm() {
-           try {
+            try {
                 const reactor = this.$refs.reactor
                 if (reactor) {
-                    const { success, data } = await reactor.saveAsset();
+                    const {success, data} = await reactor.saveAsset()
                     if (success) {
-                        this.$message.success("Reactor saved successfully")
+                        this.$message.success('Reactor saved successfully')
                         this.signReactor = false
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
@@ -3619,62 +3708,59 @@ export default {
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
                                 mode: 'asset',
-                                asset: 'Reactor',
+                                asset: 'Reactor'
                             }
-                            newRows.push(newRow);
-                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            newRows.push(newRow)
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
                             if (node) {
-                                const children = Array.isArray(node.children) ? node.children : [];
-                                Vue.set(node, "children", [...children, ...newRows]);
+                                const children = Array.isArray(node.children) ? node.children : []
+                                Vue.set(node, 'children', [...children, ...newRows])
                             } else {
-                                this.$message.error("Parent node not found in tree");
+                                this.$message.error('Parent node not found in tree')
                             }
                         }
                     } else {
-                        this.$message.error("Failed to save Capacitor")
+                        this.$message.error('Failed to save Capacitor')
                     }
                 }
             } catch (error) {
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
         generateUuid() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            const r = Math.random() * 16 | 0,
-                v = c === 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
-    },
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                const r = (Math.random() * 16) | 0,
+                    v = c === 'x' ? r : (r & 0x3) | 0x8
+                return v.toString(16)
+            })
+        },
         async handleJobConfirm() {
             try {
                 const job = this.$refs.jobData
                 if (job) {
-                    const { success, data } = await job.saveJob();
+                    const {success, data} = await job.saveJob()
                     if (success) {
-                        this.$message.success("Job saved successfully")
+                        this.$message.success('Job saved successfully')
                         this.signJob = false
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
-                            let jobType = '';
+                            let jobType = ''
                             // Xác định loại job, ví dụ dựa vào checkJobType hoặc assetData
                             if (this.checkJobType === 'JobSurgeArrester') {
-                                jobType = 'Surge arrester';
+                                jobType = 'Surge arrester'
                             } else if (this.checkJobType === 'JobPowerCable') {
-                                jobType = 'Power cable';
+                                jobType = 'Power cable'
                             } else if (this.checkJobType === 'JobDisconnector') {
-                                jobType = 'Disconnector';
+                                jobType = 'Disconnector'
                             } else if (this.checkJobType === 'JobCurrentTransformer') {
-                                jobType = 'Current transformer';
-                            }
-                            else if (this.checkJobType === 'JobVoltageTransformer') {
-                                jobType = 'Voltage transformer';
-                            }
-                            else if (this.checkJobType === 'JobCircuitBreaker') {
-                                jobType = 'Circuit breaker';
-                            }
-                            else if (this.checkJobType === 'JobTransformer') {
-                                jobType = 'Transformer';
+                                jobType = 'Current transformer'
+                            } else if (this.checkJobType === 'JobVoltageTransformer') {
+                                jobType = 'Voltage transformer'
+                            } else if (this.checkJobType === 'JobCircuitBreaker') {
+                                jobType = 'Circuit breaker'
+                            } else if (this.checkJobType === 'JobTransformer') {
+                                jobType = 'Transformer'
                             }
                             const newRow = {
                                 mrid: data.oldWork.mrid,
@@ -3683,23 +3769,23 @@ export default {
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
                                 mode: 'job',
-                                job: jobType,
+                                job: jobType
                             }
-                            newRows.push(newRow);
-                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList);
+                            newRows.push(newRow)
+                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
                             if (node) {
-                                const children = Array.isArray(node.children) ? node.children : [];
-                                Vue.set(node, "children", [...children, ...newRows]);
+                                const children = Array.isArray(node.children) ? node.children : []
+                                Vue.set(node, 'children', [...children, ...newRows])
                             } else {
-                                this.$message.error("Parent node not found in tree");
+                                this.$message.error('Parent node not found in tree')
                             }
                         }
                     } else {
-                        this.$message.error("Failed to save Job")
+                        this.$message.error('Failed to save Job')
                     }
                 }
             } catch (error) {
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
@@ -3707,452 +3793,451 @@ export default {
         async showData(node) {
             try {
                 // Tạo bản sao của node để đảm bảo reactivity
-                const newNode = { ...node };
+                const newNode = {...node}
                 // Sử dụng mrid hoặc id để check tab đã tồn tại
-                const nodeKey = newNode.mrid || newNode.id;
-                const existingTab = this.tabs.find(item => (item.mrid || item.id) === nodeKey);
+                const nodeKey = newNode.mrid || newNode.id
+                const existingTab = this.tabs.find((item) => (item.mrid || item.id) === nodeKey)
 
                 if (existingTab) {
                     // Nếu tab đã tồn tại, active nó
-                    this.activeTab = existingTab;
-                    const index = this.tabs.findIndex(item => (item.mrid || item.id) === nodeKey);
-                    this.$refs.serverTabs.selectTab(this.activeTab, index);
+                    this.activeTab = existingTab
+                    const index = this.tabs.findIndex((item) => (item.mrid || item.id) === nodeKey)
+                    this.$refs.serverTabs.selectTab(this.activeTab, index)
                 } else {
-                    const newTabs = [...this.tabs]; // Tạo mảng mới
-                    let insertIndex;
+                    const newTabs = [...this.tabs] // Tạo mảng mới
+                    let insertIndex
                     if (this.activeTab?.mrid || this.activeTab?.id) {
-                        const activeKey = this.activeTab.mrid || this.activeTab.id;
-                        const index = newTabs.findIndex(item => (item.mrid || item.id) === activeKey);
-                        insertIndex = index + 1;
-                        newTabs.splice(insertIndex, 0, newNode);
+                        const activeKey = this.activeTab.mrid || this.activeTab.id
+                        const index = newTabs.findIndex((item) => (item.mrid || item.id) === activeKey)
+                        insertIndex = index + 1
+                        newTabs.splice(insertIndex, 0, newNode)
                     } else {
-                        insertIndex = newTabs.length;
-                        newTabs.push(newNode);
+                        insertIndex = newTabs.length
+                        newTabs.push(newNode)
                     }
                     // Gán lại để trigger reactivity
-                    this.tabs = newTabs;
-                    this.activeTab = newNode;
+                    this.tabs = newTabs
+                    this.activeTab = newNode
                     this.$nextTick(() => {
                         if (this.$refs.serverTabs) {
-                            this.$refs.serverTabs.selectTab(this.activeTab, insertIndex);
-                            this.$refs.serverTabs.loadData(newNode, insertIndex);
+                            this.$refs.serverTabs.selectTab(this.activeTab, insertIndex)
+                            this.$refs.serverTabs.loadData(newNode, insertIndex)
                         }
-                    });
+                    })
                 }
             } catch (error) {
-                this.$message.error("Some error occur when loading data");
-                console.error(error);
+                this.$message.error('Some error occur when loading data')
+                console.error(error)
             }
         },
 
         async showDataClient(node) {
             try {
                 // Tạo bản sao của node để đảm bảo reactivity
-                const newNode = { ...node };
-                const index = this.tabsClient.findIndex(item => item.mrid === newNode.mrid);
+                const newNode = {...node}
+                const index = this.tabsClient.findIndex((item) => item.mrid === newNode.mrid)
                 if (index !== -1) {
                     // Nếu tab đã tồn tại, active nó
-                    this.activeTabClient = newNode;
-                    this.$refs.clientTabs.selectTab(this.activeTabClient, index);
+                    this.activeTabClient = newNode
+                    this.$refs.clientTabs.selectTab(this.activeTabClient, index)
                 } else {
-                    const newTabs = [...this.tabsClient]; // Tạo mảng mới
+                    const newTabs = [...this.tabsClient] // Tạo mảng mới
                     if (this.activeTabClient?.mrid) {
-                        const index = newTabs.findIndex(item => item.mrid === this.activeTabClient.mrid);
-                        newTabs.splice(index + 1, 0, newNode);
+                        const index = newTabs.findIndex((item) => item.mrid === this.activeTabClient.mrid)
+                        newTabs.splice(index + 1, 0, newNode)
                     } else {
-                        newTabs.push(newNode);
+                        newTabs.push(newNode)
                     }
                     // Gán lại để trigger reactivity
-                    this.tabsClient = newTabs;
-                    this.activeTabClient = newNode;
-                    this.$refs.clientTabs.selectTab(this.activeTabClient, newTabs.length - 1);
-                    this.$refs.clientTabs.loadData(newNode, newTabs.length - 1);
+                    this.tabsClient = newTabs
+                    this.activeTabClient = newNode
+                    this.$refs.clientTabs.selectTab(this.activeTabClient, newTabs.length - 1)
+                    this.$refs.clientTabs.loadData(newNode, newTabs.length - 1)
                 }
             } catch (error) {
-                this.$message.error("Some error occur when loading data")
+                this.$message.error('Some error occur when loading data')
                 console.error(error)
             }
         },
 
         async deleteDataClient(node) {
-                const checkDelete = await this.checkChildren(node)
-                if (checkDelete.hasChildren) {
-                    this.$message.error("Node has children, cannot delete");
-                    return;
-                } 
-                    try {
-                        if (node.mode == 'substation') {
-
-                            const entity = await window.electronAPI.getSubstationEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                            if (!entity.success) {
-                                this.$message.error("Entity not found");
-                                return;
-                            }
-                            const deleteSign = await window.electronAPI.deleteSubstationEntityByMrid(entity.data);
-                            if (!deleteSign.success) {
-                                this.$message.error("Delete data failed");
-                                return;
-                            }
-
-                            // ✅ Xóa node khỏi cây organisationClientList
-                            const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
-                            if (parentNode && Array.isArray(parentNode.children)) {
-                                const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
-                                if (index !== -1) {
-                                    parentNode.children.splice(index, 1); // Xóa khỏi mảng children
-                                    this.$message.success("Delete data successfully");
-                                } else {
-                                    this.$message.warning("Node not found in tree structure");
-                                }
-                            } else {
-                                this.$message.warning("Parent node not found in tree");
-                            }
-                        } else if (node.mode == 'organisation') {
-                            const entity = await window.electronAPI.getOrganisationEntityByMrid(node.mrid)
-                            if (!entity.success) {
-                                this.$message.error("Entity not found");
-                                return;
-                            }
-                            const deleteSign = await window.electronAPI.deleteParentOrganizationEntity(entity.data);
-                            if (!deleteSign.success) {
-                                this.$message.error("Delete data failed");
-                                return;
-                            }
-
-                            // ✅ Xóa node khỏi cây organisationClientList
-                            const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
-                            if (parentNode && Array.isArray(parentNode.children)) {
-                                const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
-                                if (index !== -1) {
-                                    parentNode.children.splice(index, 1); // Xóa khỏi mảng children
-                                    this.$message.success("Delete data successfully");
-                                } else {
-                                    this.$message.warning("Node not found in tree structure");
-                                }
-                            } else {
-                                this.$message.warning("Parent node not found in tree");
-                            }
-                        } else if (node.mode == 'voltageLevel') {
-                            const entity = await window.electronAPI.getVoltageLevelEntityByMrid(node.mrid)
-                            if (!entity.success) {
-                                this.$message.error("Entity not found");
-                                return;
-                            }
-                            const deleteSign = await window.electronAPI.deleteVoltageLevelEntityByMrid(entity.data);
-                            if (!deleteSign.success) {
-                                this.$message.error("Delete data failed");
-                                return;
-                            }
-
-                            // ✅ Xóa node khỏi cây organisationClientList
-                            const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
-                            if (parentNode && Array.isArray(parentNode.children)) {
-                                const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
-                                if (index !== -1) {
-                                    parentNode.children.splice(index, 1); // Xóa khỏi mảng children
-                                    this.$message.success("Delete data successfully");
-                                } else {
-                                    this.$message.warning("Node not found in tree structure");
-                                }
-                            } else {
-                                this.$message.warning("Parent node not found in tree");
-                            }
-                        } else if (node.mode == 'bay') {
-                            const entity = await window.electronAPI.getBayEntityByMrid(node.mrid)
-                            if (!entity.success) {
-                                this.$message.error("Entity not found");
-                                return;
-                            }
-                            const deleteSign = await window.electronAPI.deleteBayEntityByMrid(entity.data);
-                            if (!deleteSign.success) {
-                                this.$message.error("Delete data failed");
-                                return;
-                            }
-
-                            // ✅ Xóa node khỏi cây organisationClientList
-                            const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
-                            if (parentNode && Array.isArray(parentNode.children)) {
-                                const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
-                                if (index !== -1) {
-                                    parentNode.children.splice(index, 1); // Xóa khỏi mảng children
-                                    this.$message.success("Delete data successfully");
-                                } else {
-                                    this.$message.warning("Node not found in tree structure");
-                                }
-                            } else {
-                                this.$message.warning("Parent node not found in tree");
-                            }
-                        } else if (node.mode == 'asset') {
-                            if (node.asset === 'Surge arrester') {
-                                const entity = await window.electronAPI.getSurgeArresterEntityByMrid(node.mrid);
-                                if (!entity.success) {
-                                    this.$message.error("Entity not found");
-                                    return;
-                                }
-                                const deleteSign = await window.electronAPI.deleteSurgeArresterEntity(entity.data);
-                                if (!deleteSign.success) {
-                                    this.$message.error("Delete data failed");
-                                    return;
-                                }
-                                // ✅ Xóa node khỏi cây organisationClientList
-                                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
-                                if (parentNode && Array.isArray(parentNode.children)) {
-                                    const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
-                                    if (index !== -1) {
-                                        parentNode.children.splice(index, 1); // Xóa khỏi mảng children
-                                        this.$message.success("Delete data successfully");
-                                    } else {
-                                        this.$message.warning("Node not found in tree structure");
-                                    }
-                                } else {
-                                    this.$message.warning("Parent node not found in tree");
-                                }
-                            } else if (node.asset === 'Power cable') {
-                                const entity = await window.electronAPI.getPowerCableEntityByMrid(node.mrid, node.parentId);
-                                if (!entity.success) {
-                                    this.$message.error("Entity not found");
-                                    return;
-                                }
-                                const deleteSign = await window.electronAPI.deletePowerCableEntity(entity.data);
-                                if (!deleteSign.success) {
-                                    this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
-                                    return;
-                                }
-                                // ✅ Xóa node khỏi cây organisationClientList
-                                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
-                                if (parentNode && Array.isArray(parentNode.children)) {
-                                    const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
-                                    if (index !== -1) {
-                                        parentNode.children.splice(index, 1); // Xóa khỏi mảng children
-                                        this.$message.success("Delete data successfully");
-                                    } else {
-                                        this.$message.warning("Node not found in tree structure");
-                                    }
-                                } else {
-                                    this.$message.warning("Parent node not found in tree");
-                                }
-                            } else if (node.asset === 'Disconnector') {
-                                const entity = await window.electronAPI.getDisconnectorEntityByMrid(node.mrid, node.parentId);
-                                if (!entity.success) {
-                                    this.$message.error("Entity not found");
-                                    return;
-                                }
-                                const deleteSign = await window.electronAPI.deleteDisconnectorEntity(entity.data);
-                                if (!deleteSign.success) {
-                                    this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
-                                    return;
-                                }
-                                // ✅ Xóa node khỏi cây organisationClientList
-                                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
-                                if (parentNode && Array.isArray(parentNode.children)) {
-                                    const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
-                                    if (index !== -1) {
-                                        parentNode.children.splice(index, 1); // Xóa khỏi mảng children
-                                        this.$message.success("Delete data successfully");
-                                    } else {
-                                        this.$message.warning("Node not found in tree structure");
-                                    }
-                                } else {
-                                    this.$message.warning("Parent node not found in tree");
-                                }
-                            } else if (node.asset === 'Rotating machine') {
-                                const entity = await window.electronAPI.getRotatingMachineEntityByMrid(node.mrid, node.parentId);
-                                if (!entity.success) {
-                                    this.$message.error("Entity not found");
-                                    return;
-                                }
-                                const deleteSign = await window.electronAPI.deleteRotatingMachineEntity(entity.data);
-                                if (!deleteSign.success) {
-                                    this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
-                                    return;
-                                }
-                                // ✅ Xóa node khỏi cây organisationClientList
-                                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
-                                if (parentNode && Array.isArray(parentNode.children)) {
-                                    const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
-                                    if (index !== -1) {
-                                        parentNode.children.splice(index, 1); // Xóa khỏi mảng children
-                                        this.$message.success("Delete data successfully");
-                                    } else {
-                                        this.$message.warning("Node not found in tree structure");
-                                    }
-                                } else {
-                                    this.$message.warning("Parent node not found in tree");
-                                }
-                            } else if (node.asset === 'Capacitor') {
-                                const entity = await window.electronAPI.getCapacitorEntityByMrid(node.mrid, node.parentId);
-                                if (!entity.success) {
-                                    this.$message.error("Entity not found");
-                                    return;
-                                }
-                                const deleteSign = await window.electronAPI.deleteCapacitorEntity(entity.data);
-                                if (!deleteSign.success) {
-                                    this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
-                                    return;
-                                }
-                                // ✅ Xóa node khỏi cây organisationClientList
-                                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
-                                if (parentNode && Array.isArray(parentNode.children)) {
-                                    const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
-                                    if (index !== -1) {
-                                        parentNode.children.splice(index, 1); // Xóa khỏi mảng children
-                                        this.$message.success("Delete data successfully");
-                                    } else {
-                                        this.$message.warning("Node not found in tree structure");
-                                    }
-                                } else {
-                                    this.$message.warning("Parent node not found in tree");
-                                }
-                            }else if (node.asset === 'Reactor') {
-                                const entity = await window.electronAPI.getReactorEntityByMrid(node.mrid, node.parentId);
-                                if (!entity.success) {
-                                    this.$message.error("Entity not found");
-                                    return;
-                                }
-                                const deleteSign = await window.electronAPI.deleteReactorEntity(entity.data);
-                                if (!deleteSign.success) {
-                                    this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
-                                    return;
-                                }
-                                // ✅ Xóa node khỏi cây organisationClientList
-                                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
-                                if (parentNode && Array.isArray(parentNode.children)) {
-                                    const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
-                                    if (index !== -1) {
-                                        parentNode.children.splice(index, 1); // Xóa khỏi mảng children
-                                        this.$message.success("Delete data successfully");
-                                    } else {
-                                        this.$message.warning("Node not found in tree structure");
-                                    }
-                                } else {
-                                    this.$message.warning("Parent node not found in tree");
-                                }
-                            } else if (node.asset === 'Voltage transformer') {
-                                const entity = await window.electronAPI.getVoltageTransformerEntityByMrid(node.mrid, node.parentId);
-                                if (!entity.success) {
-                                    this.$message.error("Entity not found");
-                                    return;
-                                }
-                                const deleteSign = await window.electronAPI.deleteVoltageTransformerEntity(entity.data);
-                                if (!deleteSign.success) {
-                                    this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
-                                    return;
-                                }
-                                // ✅ Xóa node khỏi cây organisationClientList
-                                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
-                                if (parentNode && Array.isArray(parentNode.children)) {
-                                    const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
-                                    if (index !== -1) {
-                                        parentNode.children.splice(index, 1); // Xóa khỏi mảng children
-                                        this.$message.success("Delete data successfully");
-                                    } else {
-                                        this.$message.warning("Node not found in tree structure");
-                                    }
-                                } else {
-                                    this.$message.warning("Parent node not found in tree");
-                                }
-                            } else if (node.asset === 'Current transformer') {
-                                const entity = await window.electronAPI.getCurrentTransformerEntityByMrid(node.mrid, node.parentId);
-                                if (!entity.success) {
-                                    this.$message.error("Entity not found");
-                                    return;
-                                }
-                                const deleteSign = await window.electronAPI.deleteCurrentTransformerEntity(entity.data);
-                                if (!deleteSign.success) {
-                                    this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
-                                    return;
-                                }
-                                // ✅ Xóa node khỏi cây organisationClientList
-                                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
-                                if (parentNode && Array.isArray(parentNode.children)) {
-                                    const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
-                                    if (index !== -1) {
-                                        parentNode.children.splice(index, 1); // Xóa khỏi mảng children
-                                        this.$message.success("Delete data successfully");
-                                    } else {
-                                        this.$message.warning("Node not found in tree structure");
-                                    }
-                                } else {
-                                    this.$message.warning("Parent node not found in tree");
-                                }
-                            } else if (node.asset === 'Bushing') {
-                                const entity = await window.electronAPI.getBushingEntityByMrid(node.mrid, node.parentId);
-                                if (!entity.success) {
-                                    this.$message.error("Entity not found");
-                                    return;
-                                }
-                                const deleteSign = await window.electronAPI.deleteBushingEntity(entity.data);
-                                if (!deleteSign.success) {
-                                    this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
-                                    return;
-                                }
-                                // ✅ Xóa node khỏi cây organisationClientList
-                                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
-                                if (parentNode && Array.isArray(parentNode.children)) {
-                                    const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
-                                    if (index !== -1) {
-                                        parentNode.children.splice(index, 1); // Xóa khỏi mảng children
-                                        this.$message.success("Delete data successfully");
-                                    } else {
-                                        this.$message.warning("Node not found in tree structure");
-                                    }
-                                } else {
-                                    this.$message.warning("Parent node not found in tree");
-                                }
-                            } else if (node.asset === 'Circuit breaker') {
-                                const entity = await window.electronAPI.getBreakerEntityByMrid(node.mrid, node.parentId);
-                                if (!entity.success) {
-                                    this.$message.error("Entity not found");
-                                    return;
-                                }
-                                const deleteSign = await window.electronAPI.deleteBreakerEntity(entity.data);
-                                if (!deleteSign.success) {
-                                    this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
-                                    return;
-                                }
-                                // ✅ Xóa node khỏi cây organisationClientList
-                                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
-                                if (parentNode && Array.isArray(parentNode.children)) {
-                                    const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
-                                    if (index !== -1) {
-                                        parentNode.children.splice(index, 1); // Xóa khỏi mảng children
-                                        this.$message.success("Delete data successfully");
-                                    } else {
-                                        this.$message.warning("Node not found in tree structure");
-                                    }
-                                } else {
-                                    this.$message.warning("Parent node not found in tree");
-                                }
-                            } else if (node.asset === 'Transformer') {
-                                const entity = await window.electronAPI.getTransformerEntityByMrid(node.mrid, node.parentId);
-                                if (!entity.success) {
-                                    this.$message.error("Entity not found");
-                                    return;
-                                }
-                                const deleteSign = await window.electronAPI.deleteTransformerEntity(entity.data);
-                                if (!deleteSign.success) {
-                                    this.$message.error("Delete data failed: " + (deleteSign.message || 'Unknown error'));
-                                    return;
-                                }
-                                // ✅ Xóa node khỏi cây organisationClientList
-                                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
-                                if (parentNode && Array.isArray(parentNode.children)) {
-                                    const index = parentNode.children.findIndex(child => child.mrid === node.mrid);
-                                    if (index !== -1) {
-                                        parentNode.children.splice(index, 1); // Xóa khỏi mảng children
-                                        this.$message.success("Delete data successfully");
-                                    } else {
-                                        this.$message.warning("Node not found in tree structure");
-                                    }
-                                } else {
-                                    this.$message.warning("Parent node not found in tree");
-                                }
-                            }
-                        }
-                    } catch (error) {
-                        this.$message.error("Some error occur when deleting data");
-                        console.error(error);
+            const checkDelete = await this.checkChildren(node)
+            if (checkDelete.hasChildren) {
+                this.$message.error('Node has children, cannot delete')
+                return
+            }
+            try {
+                if (node.mode == 'substation') {
+                    const entity = await window.electronAPI.getSubstationEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
+                    if (!entity.success) {
+                        this.$message.error('Entity not found')
+                        return
                     }
+                    const deleteSign = await window.electronAPI.deleteSubstationEntityByMrid(entity.data)
+                    if (!deleteSign.success) {
+                        this.$message.error('Delete data failed')
+                        return
+                    }
+
+                    // ✅ Xóa node khỏi cây organisationClientList
+                    const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                    if (parentNode && Array.isArray(parentNode.children)) {
+                        const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                        if (index !== -1) {
+                            parentNode.children.splice(index, 1) // Xóa khỏi mảng children
+                            this.$message.success('Delete data successfully')
+                        } else {
+                            this.$message.warning('Node not found in tree structure')
+                        }
+                    } else {
+                        this.$message.warning('Parent node not found in tree')
+                    }
+                } else if (node.mode == 'organisation') {
+                    const entity = await window.electronAPI.getOrganisationEntityByMrid(node.mrid)
+                    if (!entity.success) {
+                        this.$message.error('Entity not found')
+                        return
+                    }
+                    const deleteSign = await window.electronAPI.deleteParentOrganizationEntity(entity.data)
+                    if (!deleteSign.success) {
+                        this.$message.error('Delete data failed')
+                        return
+                    }
+
+                    // ✅ Xóa node khỏi cây organisationClientList
+                    const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                    if (parentNode && Array.isArray(parentNode.children)) {
+                        const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                        if (index !== -1) {
+                            parentNode.children.splice(index, 1) // Xóa khỏi mảng children
+                            this.$message.success('Delete data successfully')
+                        } else {
+                            this.$message.warning('Node not found in tree structure')
+                        }
+                    } else {
+                        this.$message.warning('Parent node not found in tree')
+                    }
+                } else if (node.mode == 'voltageLevel') {
+                    const entity = await window.electronAPI.getVoltageLevelEntityByMrid(node.mrid)
+                    if (!entity.success) {
+                        this.$message.error('Entity not found')
+                        return
+                    }
+                    const deleteSign = await window.electronAPI.deleteVoltageLevelEntityByMrid(entity.data)
+                    if (!deleteSign.success) {
+                        this.$message.error('Delete data failed')
+                        return
+                    }
+
+                    // ✅ Xóa node khỏi cây organisationClientList
+                    const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                    if (parentNode && Array.isArray(parentNode.children)) {
+                        const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                        if (index !== -1) {
+                            parentNode.children.splice(index, 1) // Xóa khỏi mảng children
+                            this.$message.success('Delete data successfully')
+                        } else {
+                            this.$message.warning('Node not found in tree structure')
+                        }
+                    } else {
+                        this.$message.warning('Parent node not found in tree')
+                    }
+                } else if (node.mode == 'bay') {
+                    const entity = await window.electronAPI.getBayEntityByMrid(node.mrid)
+                    if (!entity.success) {
+                        this.$message.error('Entity not found')
+                        return
+                    }
+                    const deleteSign = await window.electronAPI.deleteBayEntityByMrid(entity.data)
+                    if (!deleteSign.success) {
+                        this.$message.error('Delete data failed')
+                        return
+                    }
+
+                    // ✅ Xóa node khỏi cây organisationClientList
+                    const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                    if (parentNode && Array.isArray(parentNode.children)) {
+                        const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                        if (index !== -1) {
+                            parentNode.children.splice(index, 1) // Xóa khỏi mảng children
+                            this.$message.success('Delete data successfully')
+                        } else {
+                            this.$message.warning('Node not found in tree structure')
+                        }
+                    } else {
+                        this.$message.warning('Parent node not found in tree')
+                    }
+                } else if (node.mode == 'asset') {
+                    if (node.asset === 'Surge arrester') {
+                        const entity = await window.electronAPI.getSurgeArresterEntityByMrid(node.mrid)
+                        if (!entity.success) {
+                            this.$message.error('Entity not found')
+                            return
+                        }
+                        const deleteSign = await window.electronAPI.deleteSurgeArresterEntity(entity.data)
+                        if (!deleteSign.success) {
+                            this.$message.error('Delete data failed')
+                            return
+                        }
+                        // ✅ Xóa node khỏi cây organisationClientList
+                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                        if (parentNode && Array.isArray(parentNode.children)) {
+                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                            if (index !== -1) {
+                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
+                                this.$message.success('Delete data successfully')
+                            } else {
+                                this.$message.warning('Node not found in tree structure')
+                            }
+                        } else {
+                            this.$message.warning('Parent node not found in tree')
+                        }
+                    } else if (node.asset === 'Power cable') {
+                        const entity = await window.electronAPI.getPowerCableEntityByMrid(node.mrid, node.parentId)
+                        if (!entity.success) {
+                            this.$message.error('Entity not found')
+                            return
+                        }
+                        const deleteSign = await window.electronAPI.deletePowerCableEntity(entity.data)
+                        if (!deleteSign.success) {
+                            this.$message.error('Delete data failed: ' + (deleteSign.message || 'Unknown error'))
+                            return
+                        }
+                        // ✅ Xóa node khỏi cây organisationClientList
+                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                        if (parentNode && Array.isArray(parentNode.children)) {
+                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                            if (index !== -1) {
+                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
+                                this.$message.success('Delete data successfully')
+                            } else {
+                                this.$message.warning('Node not found in tree structure')
+                            }
+                        } else {
+                            this.$message.warning('Parent node not found in tree')
+                        }
+                    } else if (node.asset === 'Disconnector') {
+                        const entity = await window.electronAPI.getDisconnectorEntityByMrid(node.mrid, node.parentId)
+                        if (!entity.success) {
+                            this.$message.error('Entity not found')
+                            return
+                        }
+                        const deleteSign = await window.electronAPI.deleteDisconnectorEntity(entity.data)
+                        if (!deleteSign.success) {
+                            this.$message.error('Delete data failed: ' + (deleteSign.message || 'Unknown error'))
+                            return
+                        }
+                        // ✅ Xóa node khỏi cây organisationClientList
+                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                        if (parentNode && Array.isArray(parentNode.children)) {
+                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                            if (index !== -1) {
+                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
+                                this.$message.success('Delete data successfully')
+                            } else {
+                                this.$message.warning('Node not found in tree structure')
+                            }
+                        } else {
+                            this.$message.warning('Parent node not found in tree')
+                        }
+                    } else if (node.asset === 'Rotating machine') {
+                        const entity = await window.electronAPI.getRotatingMachineEntityByMrid(node.mrid, node.parentId)
+                        if (!entity.success) {
+                            this.$message.error('Entity not found')
+                            return
+                        }
+                        const deleteSign = await window.electronAPI.deleteRotatingMachineEntity(entity.data)
+                        if (!deleteSign.success) {
+                            this.$message.error('Delete data failed: ' + (deleteSign.message || 'Unknown error'))
+                            return
+                        }
+                        // ✅ Xóa node khỏi cây organisationClientList
+                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                        if (parentNode && Array.isArray(parentNode.children)) {
+                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                            if (index !== -1) {
+                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
+                                this.$message.success('Delete data successfully')
+                            } else {
+                                this.$message.warning('Node not found in tree structure')
+                            }
+                        } else {
+                            this.$message.warning('Parent node not found in tree')
+                        }
+                    } else if (node.asset === 'Capacitor') {
+                        const entity = await window.electronAPI.getCapacitorEntityByMrid(node.mrid, node.parentId)
+                        if (!entity.success) {
+                            this.$message.error('Entity not found')
+                            return
+                        }
+                        const deleteSign = await window.electronAPI.deleteCapacitorEntity(entity.data)
+                        if (!deleteSign.success) {
+                            this.$message.error('Delete data failed: ' + (deleteSign.message || 'Unknown error'))
+                            return
+                        }
+                        // ✅ Xóa node khỏi cây organisationClientList
+                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                        if (parentNode && Array.isArray(parentNode.children)) {
+                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                            if (index !== -1) {
+                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
+                                this.$message.success('Delete data successfully')
+                            } else {
+                                this.$message.warning('Node not found in tree structure')
+                            }
+                        } else {
+                            this.$message.warning('Parent node not found in tree')
+                        }
+                    } else if (node.asset === 'Reactor') {
+                        const entity = await window.electronAPI.getReactorEntityByMrid(node.mrid, node.parentId)
+                        if (!entity.success) {
+                            this.$message.error('Entity not found')
+                            return
+                        }
+                        const deleteSign = await window.electronAPI.deleteReactorEntity(entity.data)
+                        if (!deleteSign.success) {
+                            this.$message.error('Delete data failed: ' + (deleteSign.message || 'Unknown error'))
+                            return
+                        }
+                        // ✅ Xóa node khỏi cây organisationClientList
+                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                        if (parentNode && Array.isArray(parentNode.children)) {
+                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                            if (index !== -1) {
+                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
+                                this.$message.success('Delete data successfully')
+                            } else {
+                                this.$message.warning('Node not found in tree structure')
+                            }
+                        } else {
+                            this.$message.warning('Parent node not found in tree')
+                        }
+                    } else if (node.asset === 'Voltage transformer') {
+                        const entity = await window.electronAPI.getVoltageTransformerEntityByMrid(node.mrid, node.parentId)
+                        if (!entity.success) {
+                            this.$message.error('Entity not found')
+                            return
+                        }
+                        const deleteSign = await window.electronAPI.deleteVoltageTransformerEntity(entity.data)
+                        if (!deleteSign.success) {
+                            this.$message.error('Delete data failed: ' + (deleteSign.message || 'Unknown error'))
+                            return
+                        }
+                        // ✅ Xóa node khỏi cây organisationClientList
+                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                        if (parentNode && Array.isArray(parentNode.children)) {
+                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                            if (index !== -1) {
+                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
+                                this.$message.success('Delete data successfully')
+                            } else {
+                                this.$message.warning('Node not found in tree structure')
+                            }
+                        } else {
+                            this.$message.warning('Parent node not found in tree')
+                        }
+                    } else if (node.asset === 'Current transformer') {
+                        const entity = await window.electronAPI.getCurrentTransformerEntityByMrid(node.mrid, node.parentId)
+                        if (!entity.success) {
+                            this.$message.error('Entity not found')
+                            return
+                        }
+                        const deleteSign = await window.electronAPI.deleteCurrentTransformerEntity(entity.data)
+                        if (!deleteSign.success) {
+                            this.$message.error('Delete data failed: ' + (deleteSign.message || 'Unknown error'))
+                            return
+                        }
+                        // ✅ Xóa node khỏi cây organisationClientList
+                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                        if (parentNode && Array.isArray(parentNode.children)) {
+                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                            if (index !== -1) {
+                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
+                                this.$message.success('Delete data successfully')
+                            } else {
+                                this.$message.warning('Node not found in tree structure')
+                            }
+                        } else {
+                            this.$message.warning('Parent node not found in tree')
+                        }
+                    } else if (node.asset === 'Bushing') {
+                        const entity = await window.electronAPI.getBushingEntityByMrid(node.mrid, node.parentId)
+                        if (!entity.success) {
+                            this.$message.error('Entity not found')
+                            return
+                        }
+                        const deleteSign = await window.electronAPI.deleteBushingEntity(entity.data)
+                        if (!deleteSign.success) {
+                            this.$message.error('Delete data failed: ' + (deleteSign.message || 'Unknown error'))
+                            return
+                        }
+                        // ✅ Xóa node khỏi cây organisationClientList
+                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                        if (parentNode && Array.isArray(parentNode.children)) {
+                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                            if (index !== -1) {
+                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
+                                this.$message.success('Delete data successfully')
+                            } else {
+                                this.$message.warning('Node not found in tree structure')
+                            }
+                        } else {
+                            this.$message.warning('Parent node not found in tree')
+                        }
+                    } else if (node.asset === 'Circuit breaker') {
+                        const entity = await window.electronAPI.getBreakerEntityByMrid(node.mrid, node.parentId)
+                        if (!entity.success) {
+                            this.$message.error('Entity not found')
+                            return
+                        }
+                        const deleteSign = await window.electronAPI.deleteBreakerEntity(entity.data)
+                        if (!deleteSign.success) {
+                            this.$message.error('Delete data failed: ' + (deleteSign.message || 'Unknown error'))
+                            return
+                        }
+                        // ✅ Xóa node khỏi cây organisationClientList
+                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                        if (parentNode && Array.isArray(parentNode.children)) {
+                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                            if (index !== -1) {
+                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
+                                this.$message.success('Delete data successfully')
+                            } else {
+                                this.$message.warning('Node not found in tree structure')
+                            }
+                        } else {
+                            this.$message.warning('Parent node not found in tree')
+                        }
+                    } else if (node.asset === 'Transformer') {
+                        const entity = await window.electronAPI.getTransformerEntityByMrid(node.mrid, node.parentId)
+                        if (!entity.success) {
+                            this.$message.error('Entity not found')
+                            return
+                        }
+                        const deleteSign = await window.electronAPI.deleteTransformerEntity(entity.data)
+                        if (!deleteSign.success) {
+                            this.$message.error('Delete data failed: ' + (deleteSign.message || 'Unknown error'))
+                            return
+                        }
+                        // ✅ Xóa node khỏi cây organisationClientList
+                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                        if (parentNode && Array.isArray(parentNode.children)) {
+                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                            if (index !== -1) {
+                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
+                                this.$message.success('Delete data successfully')
+                            } else {
+                                this.$message.warning('Node not found in tree structure')
+                            }
+                        } else {
+                            this.$message.warning('Parent node not found in tree')
+                        }
+                    }
+                }
+            } catch (error) {
+                this.$message.error('Some error occur when deleting data')
+                console.error(error)
+            }
         },
 
         async showAddSubs(organisationId) {
@@ -4161,7 +4246,7 @@ export default {
                     window.electronAPI.getLocationByOrganisationId(organisationId),
                     window.electronAPI.getPersonByOrganisationId(organisationId),
                     window.electronAPI.getParentOrganizationByMrid(organisationId)
-                ]);
+                ])
                 if (dataLocation.success) {
                     this.locationList = dataLocation.data
                 } else {
@@ -4183,17 +4268,16 @@ export default {
                 this.organisationId = organisationId
                 this.signSubs = true
                 this.$nextTick(() => {
-                    const substation = this.$refs.substation;
+                    const substation = this.$refs.substation
                     if (substation) {
-                        substation.resetForm();
+                        substation.resetForm()
                     }
-                });
+                })
             } catch (error) {
                 this.parentOrganization = null
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
-
         },
 
         async showAddSubsInTree(node) {
@@ -4201,8 +4285,8 @@ export default {
                 this.parentOrganization = node
                 const [dataLocation, dataPerson] = await Promise.all([
                     window.electronAPI.getLocationByOrganisationId(node.mrid),
-                    window.electronAPI.getPersonByOrganisationId(node.mrid),
-                ]);
+                    window.electronAPI.getPersonByOrganisationId(node.mrid)
+                ])
                 if (dataLocation.success) {
                     this.locationList = dataLocation.data
                 } else {
@@ -4217,14 +4301,14 @@ export default {
                 this.organisationId = node.mrid
                 this.signSubs = true
                 this.$nextTick(() => {
-                    const substation = this.$refs.substation;
+                    const substation = this.$refs.substation
                     if (substation) {
-                        substation.resetForm();
+                        substation.resetForm()
                     }
-                });
+                })
             } catch (error) {
                 this.parentOrganization = null
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
@@ -4234,21 +4318,21 @@ export default {
                 this.parentOrganization = node
                 this.signOrg = true
                 this.$nextTick(() => {
-                    const organisation = this.$refs.organisation;
+                    const organisation = this.$refs.organisation
                     if (organisation) {
-                        organisation.resetForm();
+                        organisation.resetForm()
                     }
-                });
+                })
             } catch (error) {
                 this.parentOrganization = null
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
 
         async showAddVoltageLevel(node) {
             try {
-                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
+                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
                 if (dataLocation.success) {
                     this.locationId = dataLocation.data.mrid
                 } else {
@@ -4257,21 +4341,21 @@ export default {
                 this.parentOrganization = node
                 this.signVoltageLevel = true
                 this.$nextTick(() => {
-                    const voltageLevel = this.$refs.voltageLevel;
+                    const voltageLevel = this.$refs.voltageLevel
                     if (voltageLevel) {
-                        voltageLevel.resetForm();
+                        voltageLevel.resetForm()
                     }
-                });
+                })
             } catch (error) {
                 this.parentOrganization = null
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
 
         async showAddBay(node) {
             try {
-                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
+                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
                 if (dataLocation.success) {
                     this.locationId = dataLocation.data.mrid
                 } else {
@@ -4280,28 +4364,28 @@ export default {
                 this.parentOrganization = node
                 this.signBay = true
                 this.$nextTick(() => {
-                    const bay = this.$refs.bay;
+                    const bay = this.$refs.bay
                     if (bay) {
-                        bay.resetForm();
+                        bay.resetForm()
                     }
-                });
+                })
             } catch (error) {
                 this.parentOrganization = null
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
 
         async showAddTransformer(node) {
             try {
-                this.locationId = null;
-                let psrId = null;
+                this.locationId = null
+                let psrId = null
                 if (node.parentArr && node.parentArr.length >= 2) {
-                    psrId = node.parentArr[1].mrid;
+                    psrId = node.parentArr[1].mrid
                 } else {
-                    psrId = node.mrid;
+                    psrId = node.mrid
                 }
-                const dataLoction = await window.electronAPI.getLocationByPowerSystemResourceMrid(psrId);
+                const dataLoction = await window.electronAPI.getLocationByPowerSystemResourceMrid(psrId)
                 if (dataLoction.success) {
                     this.locationId = dataLoction.data.mrid
                 } else {
@@ -4310,21 +4394,21 @@ export default {
                 this.parentOrganization = node
                 this.signTransformer = true
                 this.$nextTick(() => {
-                    const transformer = this.$refs.transformer;
+                    const transformer = this.$refs.transformer
                     if (transformer) {
-                        transformer.resetForm();
+                        transformer.resetForm()
                     }
-                });
+                })
             } catch (error) {
                 this.parentOrganization = null
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
 
         async showAddBushing(node) {
             try {
-                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
+                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
                 if (dataLocation.success) {
                     this.locationId = dataLocation.data.mrid
                 } else {
@@ -4333,21 +4417,21 @@ export default {
                 this.parentOrganization = node
                 this.signBushing = true
                 this.$nextTick(() => {
-                    const bushing = this.$refs.bushing;
+                    const bushing = this.$refs.bushing
                     if (bushing) {
-                        bushing.resetForm();
+                        bushing.resetForm()
                     }
-                });
+                })
             } catch (error) {
                 this.parentOrganization = null
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
 
         async showAddSurgeArrester(node) {
             try {
-                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
+                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
                 if (dataLocation.success) {
                     this.locationId = dataLocation.data.mrid
                 } else {
@@ -4356,21 +4440,21 @@ export default {
                 this.parentOrganization = node
                 this.signSurge = true
                 this.$nextTick(() => {
-                    const surgeArrester = this.$refs.surgeArrester;
+                    const surgeArrester = this.$refs.surgeArrester
                     if (surgeArrester) {
-                        surgeArrester.resetForm();
+                        surgeArrester.resetForm()
                     }
-                });
+                })
             } catch (error) {
                 this.parentOrganization = null
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
 
         async showAddCapacitor(node) {
             try {
-                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
+                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
                 if (dataLocation.success) {
                     this.locationId = dataLocation.data.mrid
                 } else {
@@ -4379,21 +4463,21 @@ export default {
                 this.parentOrganization = node
                 this.signCapacitor = true
                 this.$nextTick(() => {
-                    const capacitor = this.$refs.capacitor;
+                    const capacitor = this.$refs.capacitor
                     if (capacitor) {
-                        capacitor.resetForm();
+                        capacitor.resetForm()
                     }
-                });
+                })
             } catch (error) {
                 this.parentOrganization = null
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
 
         async showAddReactor(node) {
             try {
-                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
+                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
                 if (dataLocation.success) {
                     this.locationId = dataLocation.data.mrid
                 } else {
@@ -4402,21 +4486,21 @@ export default {
                 this.parentOrganization = node
                 this.signReactor = true
                 this.$nextTick(() => {
-                    const reactor = this.$refs.reactor;
+                    const reactor = this.$refs.reactor
                     if (reactor) {
-                        reactor.resetForm();
+                        reactor.resetForm()
                     }
-                });
+                })
             } catch (error) {
                 this.parentOrganization = null
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
 
         async showAddCt(node) {
             try {
-                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
+                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
                 if (dataLocation.success) {
                     this.locationId = dataLocation.data.mrid
                 } else {
@@ -4425,21 +4509,21 @@ export default {
                 this.parentOrganization = node
                 this.signCt = true
                 this.$nextTick(() => {
-                    const currentTransformer = this.$refs.currentTransformer;
+                    const currentTransformer = this.$refs.currentTransformer
                     if (currentTransformer) {
-                        currentTransformer.resetForm();
+                        currentTransformer.resetForm()
                     }
-                });
+                })
             } catch (error) {
                 this.parentOrganization = null
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
 
         async showAddVt(node) {
             try {
-                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
+                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
                 if (dataLocation.success) {
                     this.locationId = dataLocation.data.mrid
                 } else {
@@ -4448,21 +4532,21 @@ export default {
                 this.parentOrganization = node
                 this.signVt = true
                 this.$nextTick(() => {
-                    const voltageTransformer = this.$refs.voltageTransformer;
+                    const voltageTransformer = this.$refs.voltageTransformer
                     if (voltageTransformer) {
-                        voltageTransformer.resetForm();
+                        voltageTransformer.resetForm()
                     }
-                });
+                })
             } catch (error) {
                 this.parentOrganization = null
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
 
         async showAddPowerCable(node) {
             try {
-                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
+                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
                 if (dataLocation.success) {
                     this.locationId = dataLocation.data.mrid
                 } else {
@@ -4471,21 +4555,21 @@ export default {
                 this.parentOrganization = node
                 this.signPower = true
                 this.$nextTick(() => {
-                    const powerCable = this.$refs.powerCable;
+                    const powerCable = this.$refs.powerCable
                     if (powerCable) {
-                        powerCable.resetForm();
+                        powerCable.resetForm()
                     }
-                });
+                })
             } catch (error) {
                 this.parentOrganization = null
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
 
         async showAddRotatingMachine(node) {
             try {
-                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
+                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
                 if (dataLocation.success) {
                     this.locationId = dataLocation.data.mrid
                 } else {
@@ -4494,21 +4578,21 @@ export default {
                 this.parentOrganization = node
                 this.signRotating = true
                 this.$nextTick(() => {
-                    const rotatingMachine = this.$refs.rotatingMachine;
+                    const rotatingMachine = this.$refs.rotatingMachine
                     if (rotatingMachine) {
-                        rotatingMachine.resetForm();
+                        rotatingMachine.resetForm()
                     }
-                });
+                })
             } catch (error) {
                 this.parentOrganization = null
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
 
         async showAddDisconnector(node) {
             try {
-                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
+                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
                 if (dataLocation.success) {
                     this.locationId = dataLocation.data.mrid
                 } else {
@@ -4517,21 +4601,21 @@ export default {
                 this.parentOrganization = node
                 this.signDisconnector = true
                 this.$nextTick(() => {
-                    const disconnector = this.$refs.disconnector;
+                    const disconnector = this.$refs.disconnector
                     if (disconnector) {
-                        disconnector.resetForm();
+                        disconnector.resetForm()
                     }
-                });
+                })
             } catch (error) {
                 this.parentOrganization = null
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
 
         async showAddCircuitBreaker(node) {
             try {
-                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid);
+                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
                 if (dataLocation.success) {
                     this.locationId = dataLocation.data.mrid
                 } else {
@@ -4540,27 +4624,27 @@ export default {
                 this.parentOrganization = node
                 this.signCircuit = true
                 this.$nextTick(() => {
-                    const circuitBreaker = this.$refs.circuitBreaker;
+                    const circuitBreaker = this.$refs.circuitBreaker
                     if (circuitBreaker) {
-                        circuitBreaker.resetForm();
+                        circuitBreaker.resetForm()
                     }
-                });
+                })
             } catch (error) {
                 this.parentOrganization = null
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
 
         async showAddJob(node) {
             try {
-                const dataAsset = await window.electronAPI.getAssetByMrid(node.mrid);
+                const dataAsset = await window.electronAPI.getAssetByMrid(node.mrid)
                 if (dataAsset.success) {
                     this.assetData = dataAsset.data
                     const [dataLocation, dataProductAssetModel] = await Promise.all([
                         window.electronAPI.getLocationDetailByMrid(dataAsset.data.location),
                         window.electronAPI.getProductAssetModelByMrid(dataAsset.data.product_asset_model)
-                    ]);
+                    ])
                     if (dataLocation.success) {
                         this.locationData = dataLocation.data
                     } else {
@@ -4573,14 +4657,14 @@ export default {
                         this.productAssetModelData = {}
                     }
                 } else {
-                    this.$message.error("Asset not found")
+                    this.$message.error('Asset not found')
                 }
 
                 this.parentOrganization = node
 
                 if (node.asset == 'Surge arrester') {
-                    const dataTestType = await window.electronAPI.getAllTestTypeSurgeArrester();
-                    const dataSurgeArrester = await window.electronAPI.getSurgeArresterByMrid(node.mrid);
+                    const dataTestType = await window.electronAPI.getAllTestTypeSurgeArrester()
+                    const dataSurgeArrester = await window.electronAPI.getSurgeArresterByMrid(node.mrid)
                     if (dataSurgeArrester.success) {
                         this.assetData = dataSurgeArrester.data
                     } else {
@@ -4592,53 +4676,47 @@ export default {
                         this.testTypeListData = []
                     }
                     this.checkJobType = 'JobSurgeArrester'
-                    this.signJob = true;
-                }
-                else if (node.asset == 'Power cable') {
-                    const dataTestType = await window.electronAPI.getAllTestTypePowerCable();
+                    this.signJob = true
+                } else if (node.asset == 'Power cable') {
+                    const dataTestType = await window.electronAPI.getAllTestTypePowerCable()
                     if (dataTestType.success) {
                         this.testTypeListData = dataTestType.data
                     } else {
                         this.testTypeListData = []
                     }
                     this.checkJobType = 'JobPowerCable'
-                    this.signJob = true;
-                }
-                else if (node.asset == 'Disconnector') {
-                    const dataTestType = await window.electronAPI.getAllTestTypeDisconnector();
+                    this.signJob = true
+                } else if (node.asset == 'Disconnector') {
+                    const dataTestType = await window.electronAPI.getAllTestTypeDisconnector()
                     if (dataTestType.success) {
                         this.testTypeListData = dataTestType.data
                     } else {
                         this.testTypeListData = []
                     }
                     this.checkJobType = 'JobDisconnector'
-                    this.signJob = true;
-                }
-                else if (node.asset == 'Current transformer') {
-                    const dataTestType = await window.electronAPI.getAllTestTypeCT();
+                    this.signJob = true
+                } else if (node.asset == 'Current transformer') {
+                    const dataTestType = await window.electronAPI.getAllTestTypeCT()
                     if (dataTestType.success) {
                         this.testTypeListData = dataTestType.data
                     } else {
                         this.testTypeListData = []
                     }
                     this.checkJobType = 'JobCurrentTransformer'
-                    this.signJob = true;
-                }
-                else if (node.asset == 'Voltage transformer') {
-                    const dataTestType = await window.electronAPI.getAllTestTypeVT();
+                    this.signJob = true
+                } else if (node.asset == 'Voltage transformer') {
+                    const dataTestType = await window.electronAPI.getAllTestTypeVT()
                     if (dataTestType.success) {
                         this.testTypeListData = dataTestType.data
                     } else {
                         this.testTypeListData = []
                     }
                     this.checkJobType = 'JobVoltageTransformer'
-                    this.signJob = true;
-                }
-                else if (node.asset == 'Circuit breaker') {
-                    const dataTestType = await window.electronAPI.getAllTestTypeCircuitBreaker();
-                    const dataBreakerEntity = await window.electronAPI.getBreakerEntityByMrid(node.mrid);
-                    const dto = BreakerMapping.mapEntityToDto(dataBreakerEntity.data);
-                    console.log("dto", dto)
+                    this.signJob = true
+                } else if (node.asset == 'Circuit breaker') {
+                    const dataTestType = await window.electronAPI.getAllTestTypeCircuitBreaker()
+                    const dataBreakerEntity = await window.electronAPI.getBreakerEntityByMrid(node.mrid)
+                    const dto = BreakerMapping.mapEntityToDto(dataBreakerEntity.data)
                     if (dataBreakerEntity.success) {
                         this.assetData = dto
                     } else {
@@ -4650,14 +4728,11 @@ export default {
                         this.testTypeListData = []
                     }
                     this.checkJobType = 'JobCircuitBreaker'
-                    this.signJob = true;
-                }
-                else if (node.asset == 'Transformer') {
-                    const dataTestType = await window.electronAPI.getAllTestTypeTransformers();
-                    const dataTransformerEntity = await window.electronAPI.getTransformerEntityByMrid(node.mrid);
-                    console.log("dataTransformerEntity", dataTransformerEntity)
-                    const dto = TransformerMapping.transformerEntityToDto(dataTransformerEntity.data);
-                    console.log("dto", dto)
+                    this.signJob = true
+                } else if (node.asset == 'Transformer') {
+                    const dataTestType = await window.electronAPI.getAllTestTypeTransformers()
+                    const dataTransformerEntity = await window.electronAPI.getTransformerEntityByMrid(node.mrid)
+                    const dto = TransformerMapping.transformerEntityToDto(dataTransformerEntity.data)
                     if (dataTransformerEntity.success) {
                         this.assetData = dto
                     } else {
@@ -4669,84 +4744,84 @@ export default {
                         this.testTypeListData = []
                     }
                     this.checkJobType = 'JobTransformer'
-                    this.signJob = true;
+                    this.signJob = true
                 } else {
-                    this.$message.error("This asset type not support for job")
+                    this.$message.error('This asset type not support for job')
                 }
             } catch (error) {
                 this.parentOrganization = null
-                this.$message.error("Some error occur")
+                this.$message.error('Some error occur')
                 console.error(error)
             }
         },
 
         async handleOpenNode() {
-    if (!this.selectedNodes || this.selectedNodes.length === 0) {
-        this.$message.warning("Please select a node first");
-        return;
-    }
-
-    try {
-        // Mở tất cả các node được chọn
-        for (const node of this.selectedNodes) {
-            // Nếu là client side, mở tab client
-            if (this.clientSlide) {
-                await this.showDataClient(node);
-                await this.showPropertiesDataClient(node);
-            } else {
-                // Nếu là server side, mở tab server
-                await this.showData(node);
-                await this.showPropertiesData(node);
+            if (!this.selectedNodes || this.selectedNodes.length === 0) {
+                this.$message.warning('Please select a node first')
+                return
             }
-        }
-    } catch (error) {
-        this.$message.error("Error opening node");
-        console.error(error);
-    }
-},
 
-async handleDeleteNode() {
-    if (!this.selectedNodes || this.selectedNodes.length === 0) {
-        this.$message.warning("Please select a node first");
-        return;
-    }
-
-    const node = this.selectedNodes[this.selectedNodes.length - 1];
-    
-    // Lấy tên node - kiểm tra nhiều field khả năng
-    let nodeName = node.serial_no || node.serial_number;
-    if (!nodeName || nodeName.toString().trim() === '') {
-        nodeName = node.name;
-    }
-    nodeName = nodeName || 'Unknown';
-    // Confirm before delete
-    this.$confirm(`Delete "${nodeName}"?`, 'Warning', {
-        confirmButtonText: 'Delete',
-        cancelButtonText: 'Cancel',
-        cancelButtonClass: 'el-button--danger',
-        type: 'warning'
-    }).then(async () => {
-        try {
-            if (this.clientSlide) {
-                // Delete from client side
-                await this.deleteDataClient(node);
-            } else {
-                // Delete from server side - cần implement tương tự
-                this.$message.info("Delete from server side not yet implemented");
+            try {
+                // Mở tất cả các node được chọn
+                for (const node of this.selectedNodes) {
+                    // Nếu là client side, mở tab client
+                    if (this.clientSlide) {
+                        await this.showDataClient(node)
+                        await this.showPropertiesDataClient(node)
+                    } else {
+                        // Nếu là server side, mở tab server
+                        await this.showData(node)
+                        await this.showPropertiesData(node)
+                    }
+                }
+            } catch (error) {
+                this.$message.error('Error opening node')
+                console.error(error)
             }
-            // Clear selection sau khi xóa
-            this.selectedNodes = [];
-        } catch (error) {
-            this.$message.error("Error deleting node: " + error.message);
-            console.error(error);
-        }
-    }).catch(() => {
-    });
-},
+        },
+
+        async handleDeleteNode() {
+            if (!this.selectedNodes || this.selectedNodes.length === 0) {
+                this.$message.warning('Please select a node first')
+                return
+            }
+
+            const node = this.selectedNodes[this.selectedNodes.length - 1]
+
+            // Lấy tên node - kiểm tra nhiều field khả năng
+            let nodeName = node.serial_no || node.serial_number
+            if (!nodeName || nodeName.toString().trim() === '') {
+                nodeName = node.name
+            }
+            nodeName = nodeName || 'Unknown'
+            // Confirm before delete
+            this.$confirm(`Delete "${nodeName}"?`, 'Warning', {
+                confirmButtonText: 'Delete',
+                cancelButtonText: 'Cancel',
+                cancelButtonClass: 'el-button--danger',
+                type: 'warning'
+            })
+                .then(async () => {
+                    try {
+                        if (this.clientSlide) {
+                            // Delete from client side
+                            await this.deleteDataClient(node)
+                        } else {
+                            // Delete from server side - cần implement tương tự
+                            this.$message.info('Delete from server side not yet implemented')
+                        }
+                        // Clear selection sau khi xóa
+                        this.selectedNodes = []
+                    } catch (error) {
+                        this.$message.error('Error deleting node: ' + error.message)
+                        console.error(error)
+                    }
+                })
+                .catch(() => {})
+        },
 
         async resetAllServer() {
-            this.selectedNodes = [],
-                this.assetPropertySign = false
+            ;(this.selectedNodes = []), (this.assetPropertySign = false)
             this.jobPropertySign = false
             this.pathMapServer = []
             this.properties = {
@@ -4769,7 +4844,7 @@ async handleDeleteNode() {
                 manufacturer_type: '',
                 manufacturing_year: '',
                 apparatus_id: '',
-                country: '',
+                country: ''
             }
             this.jobProperties = {
                 name: '',
@@ -4785,8 +4860,8 @@ async handleDeleteNode() {
                 first: 1,
                 second: 2,
                 third: 3,
-                dot: "...",
-                end: 10,
+                dot: '...',
+                end: 10
             }
             this.displayPageLocationSync = {
                 second: true,
@@ -4795,16 +4870,16 @@ async handleDeleteNode() {
                 end: true
             }
             this.pageLocationSyncInstance = {
-                first: "",
-                second: "",
-                third: "",
-                dot: "",
-                end: "",
+                first: '',
+                second: '',
+                third: '',
+                dot: '',
+                end: ''
             }
             this.currentLocationSync = {
                 nextP: '',
                 previousP: '',
-                current: 1,
+                current: 1
             }
             this.optionLocationSync = {
                 mode: ''
@@ -4815,34 +4890,33 @@ async handleDeleteNode() {
 
         async resetPathServer(index) {
             if (index == 0) {
-                let currentNode = this.ownerServerList.find(node => node.id === this.pathMapServer[0].id);
+                let currentNode = this.ownerServerList.find((node) => node.id === this.pathMapServer[0].id)
                 if (!currentNode) {
-                    return; // Không tìm thấy node đầu tiên
+                    return // Không tìm thấy node đầu tiên
                 }
                 await this.clearSelection()
                 await this.showPropertiesData(currentNode)
-                Vue.set(currentNode, "expanded", !currentNode.expanded);
+                Vue.set(currentNode, 'expanded', !currentNode.expanded)
             } else {
-                let currentNode = this.ownerServerList.find(node => node.id === this.pathMapServer[0].id);
+                let currentNode = this.ownerServerList.find((node) => node.id === this.pathMapServer[0].id)
                 if (!currentNode) {
-                    return; // Không tìm thấy node đầu tiên
+                    return // Không tìm thấy node đầu tiên
                 }
                 for (let i = 1; i <= index; i++) {
-                    if (!currentNode.children) return; // Nếu không có children thì dừng lại
-                    currentNode = currentNode.children.find(child => child.id === this.pathMapServer[i].id);
+                    if (!currentNode.children) return // Nếu không có children thì dừng lại
+                    currentNode = currentNode.children.find((child) => child.id === this.pathMapServer[i].id)
                     if (!currentNode) {
-                        return; // Không tìm thấy thì dừng lại
+                        return // Không tìm thấy thì dừng lại
                     }
                 }
                 await this.clearSelection()
                 await this.showPropertiesData(currentNode)
-                Vue.set(currentNode, "expanded", !currentNode.expanded);
+                Vue.set(currentNode, 'expanded', !currentNode.expanded)
             }
         },
 
         async resetAllClient() {
-            this.selectedNodes = [],
-            this.assetPropertySignClient = false
+            ;(this.selectedNodes = []), (this.assetPropertySignClient = false)
             this.jobPropertySignClient = false
             this.pathMapClient = []
             this.properties = {
@@ -4865,7 +4939,7 @@ async handleDeleteNode() {
                 manufacturer_type: '',
                 manufacturing_year: '',
                 apparatus_id: '',
-                country: '',
+                country: ''
             }
             this.jobProperties = {
                 name: '',
@@ -4884,42 +4958,40 @@ async handleDeleteNode() {
         async resetPathClient(index) {
             // Tìm node tương ứng với index trong path
             // Ưu tiên dùng mrid nếu có, sau đó mới dùng id
-            const targetId = this.pathMapClient[0].mrid || this.pathMapClient[0].id;
-            let currentNode = this.findNodeByIdOrMrid(targetId, this.organisationClientList);
+            const targetId = this.pathMapClient[0].mrid || this.pathMapClient[0].id
+            let currentNode = this.findNodeByIdOrMrid(targetId, this.organisationClientList)
             if (!currentNode) {
-                return; // Không tìm thấy node đầu tiên
+                return // Không tìm thấy node đầu tiên
             }
-            
+
             // Tìm node theo path từ node đầu tiên đến index
             for (let i = 1; i <= index; i++) {
-                if (!currentNode.children) return; // Nếu không có children thì dừng lại
-                
+                if (!currentNode.children) return // Nếu không có children thì dừng lại
+
                 // Tìm trực tiếp trong children trước (không đệ quy)
                 // Ưu tiên tìm bằng mrid nếu có, sau đó mới tìm bằng id
-                const targetId = this.pathMapClient[i].mrid || this.pathMapClient[i].id;
-                let foundChild = currentNode.children.find(child => 
-                    child.mrid === targetId || child.id === targetId
-                );
-                
+                const targetId = this.pathMapClient[i].mrid || this.pathMapClient[i].id
+                let foundChild = currentNode.children.find((child) => child.mrid === targetId || child.id === targetId)
+
                 // Nếu không tìm thấy trực tiếp, mới tìm đệ quy
                 if (!foundChild) {
-                    foundChild = this.findNodeByIdOrMrid(targetId, currentNode.children);
+                    foundChild = this.findNodeByIdOrMrid(targetId, currentNode.children)
                 }
-                
+
                 if (!foundChild) {
-                    return; // Không tìm thấy thì dừng lại
+                    return // Không tìm thấy thì dừng lại
                 }
-                currentNode = foundChild;
+                currentNode = foundChild
             }
-            
+
             // Cập nhật pathMapClient để chỉ giữ lại path từ đầu đến node hiện tại
-            this.pathMapClient = this.pathMapClient.slice(0, index + 1);
+            this.pathMapClient = this.pathMapClient.slice(0, index + 1)
             // Force Vue update để đảm bảo UI được render lại đúng
-            await this.$nextTick();
-            
+            await this.$nextTick()
+
             // Load properties cho node hiện tại nhưng không load lại path
             await this.clearSelection()
-            
+
             // Gọi mapping properties nhưng không gọi loadPathMapClient và push lại
             this.assetPropertySignClient = false
             this.jobPropertySignClient = false
@@ -4936,7 +5008,7 @@ async handleDeleteNode() {
                 this.jobPropertySignClient = true
                 // Tìm parent thực sự từ cây dữ liệu
                 // Test -> Job (parent)
-                // Test -> Asset (parent.parent) 
+                // Test -> Asset (parent.parent)
                 // Test -> Location (parent.parent.parent)
                 const jobNode = currentNode.parentId ? this.findNodeById(currentNode.parentId, this.organisationClientList) : null
                 const assetNode = jobNode ? (jobNode.parentId ? this.findNodeById(jobNode.parentId, this.organisationClientList) : null) : null
@@ -4968,1295 +5040,1413 @@ async handleDeleteNode() {
             } else {
                 await this.mappingPropertiesClient(currentNode)
             }
-            
-            Vue.set(currentNode, "expanded", !currentNode.expanded);
+
+            Vue.set(currentNode, 'expanded', !currentNode.expanded)
         },
 
         async handleAddCommand(cmd) {
-    const selectedNode = this.selectedNodes && this.selectedNodes.length > 0 
-        ? this.selectedNodes[this.selectedNodes.length - 1] 
-        : null;
+            const selectedNode = this.selectedNodes && this.selectedNodes.length > 0 ? this.selectedNodes[this.selectedNodes.length - 1] : null
 
-    if (!selectedNode) {
-        this.$message.warning("Please select a node first");
-        return;
-    }
+            if (!selectedNode) {
+                this.$message.warning('Please select a node first')
+                return
+            }
 
-    // Validate command against node type
-    const allowedCommands = this.getAllowedCommands(selectedNode);
-    if (!allowedCommands.includes(cmd)) {
-        this.$message.warning("This action is not allowed for this node type");
-        return;
-    }
+            // Validate command against node type
+            const allowedCommands = this.getAllowedCommands(selectedNode)
+            if (!allowedCommands.includes(cmd)) {
+                this.$message.warning('This action is not allowed for this node type')
+                return
+            }
 
-    switch(cmd) {
-        case 'organisation':
-            this.showAddOrganisation(selectedNode);
-            break;
-        case 'substation':
-            this.showAddSubsInTree(selectedNode);
-            break;
-        case 'voltageLevel':
-            this.showAddVoltageLevel(selectedNode);
-            break;
-        case 'bay':
-            this.showAddBay(selectedNode);
-            break;
-        case 'asset':
-            this.showAddTransformer(selectedNode);
-            break;
-        case 'job':
-            this.showAddJob(selectedNode);
-            break;
-    }
-},
+            switch (cmd) {
+                case 'organisation':
+                    this.showAddOrganisation(selectedNode)
+                    break
+                case 'substation':
+                    this.showAddSubsInTree(selectedNode)
+                    break
+                case 'voltageLevel':
+                    this.showAddVoltageLevel(selectedNode)
+                    break
+                case 'bay':
+                    this.showAddBay(selectedNode)
+                    break
+                case 'asset':
+                    this.showAddTransformer(selectedNode)
+                    break
+                case 'job':
+                    this.showAddJob(selectedNode)
+                    break
+            }
+        },
 
-getAllowedCommands(node) {
-    const commands = [];
-    
-    if (node.mode === 'organisation') {
-        commands.push('organisation', 'substation');
-    } else if (node.mode === 'substation') {
-        commands.push('voltageLevel', 'bay', 'asset');
-    } else if (node.mode === 'voltageLevel') {
-        commands.push('bay');
-    } else if (node.mode === 'bay') {
-        commands.push('asset', 'job');
-    } else if (node.mode === 'asset') {
-        commands.push('job');
-    }
-    
-    return commands;
-},
+        getAllowedCommands(node) {
+            const commands = []
 
-async handleAssetCommand(assetType) {
-    const selectedNode = this.selectedNodes && this.selectedNodes.length > 0 
-        ? this.selectedNodes[this.selectedNodes.length - 1] 
-        : null;
+            if (node.mode === 'organisation') {
+                commands.push('organisation', 'substation')
+            } else if (node.mode === 'substation') {
+                commands.push('voltageLevel', 'bay', 'asset')
+            } else if (node.mode === 'voltageLevel') {
+                commands.push('bay')
+            } else if (node.mode === 'bay') {
+                commands.push('asset', 'job')
+            } else if (node.mode === 'asset') {
+                commands.push('job')
+            }
 
-    if (!selectedNode) {
-        this.$message.warning("Please select a node first");
-        return;
-    }
+            return commands
+        },
 
-    // Map asset type to show* method
-    const assetMethodMap = {
-        'Transformer': this.showAddTransformer,
-        'Surge arrester': this.showAddSurgeArrester,
-        'Bushing': this.showAddBushing,
-        'Voltage transformer': this.showAddVt,
-        'Disconnector': this.showAddDisconnector,
-        'Power cable': this.showAddPowerCable,
-        'Current transformer': this.showAddCt,
-        'Circuit breaker': this.showAddCircuitBreaker,
-        'Rotating machine': this.showAddRotatingMachine,
-        'Capacitor': this.showAddCapacitor,
-        'Reactor': this.showAddReactor,
-    };
+        async handleAssetCommand(assetType) {
+            const selectedNode = this.selectedNodes && this.selectedNodes.length > 0 ? this.selectedNodes[this.selectedNodes.length - 1] : null
 
-    const method = assetMethodMap[assetType];
-    if (method) {
-        await method.call(this, selectedNode);
-    } else {
-        this.$message.warning(`Asset type "${assetType}" not supported`);
-    }
-},
-cloneNodeRecursive(node) {
-           const copy = JSON.parse(JSON.stringify(node));
-           const walk = (n) => {
-               n.mrid = this.generateUuid();
-               if (n.id !== undefined) n.id = n.mrid;
-               if (n.parentArr && Array.isArray(n.parentArr)) {
-                   // keep parentArr of copy pointing to same ancestors (not changing)
-               }
-               if (n.children && n.children.length) {
-                   n.children = n.children.map(child => walk(child));
-               }
-               return n;
-           };
-           return walk(copy);
-       },
-       
-cleanDtoForDuplicate(dto) {
-            if (!dto) return;
-            
+            if (!selectedNode) {
+                this.$message.warning('Please select a node first')
+                return
+            }
+
+            // Map asset type to show* method
+            const assetMethodMap = {
+                Transformer: this.showAddTransformer,
+                'Surge arrester': this.showAddSurgeArrester,
+                Bushing: this.showAddBushing,
+                'Voltage transformer': this.showAddVt,
+                Disconnector: this.showAddDisconnector,
+                'Power cable': this.showAddPowerCable,
+                'Current transformer': this.showAddCt,
+                'Circuit breaker': this.showAddCircuitBreaker,
+                'Rotating machine': this.showAddRotatingMachine,
+                Capacitor: this.showAddCapacitor,
+                Reactor: this.showAddReactor
+            }
+
+            const method = assetMethodMap[assetType]
+            if (method) {
+                await method.call(this, selectedNode)
+            } else {
+                this.$message.warning(`Asset type "${assetType}" not supported`)
+            }
+        },
+        cloneNodeRecursive(node) {
+            const copy = JSON.parse(JSON.stringify(node))
+            const walk = (n) => {
+                n.mrid = this.generateUuid()
+                if (n.id !== undefined) n.id = n.mrid
+                if (n.parentArr && Array.isArray(n.parentArr)) {
+                    // keep parentArr of copy pointing to same ancestors (not changing)
+                }
+                if (n.children && n.children.length) {
+                    n.children = n.children.map((child) => walk(child))
+                }
+                return n
+            }
+            return walk(copy)
+        },
+
+        cleanDtoForDuplicate(dto) {
+            if (!dto) return
+
             // Xóa IDs của entity chính (cần tạo mới)
-            if (dto.properties) dto.properties.mrid = null;
-            dto.mrid = null;
-            dto.id = null;
-            dto.assetInfoId = null;
-            dto.lifecycleDateId = null;
-            dto.assetPsrId = null;
-            dto.attachmentId = null;
-            dto.productAssetModelId = null; // Tạo ProductAssetModel mới
-            
+            if (dto.properties) dto.properties.mrid = null
+            dto.mrid = null
+            dto.id = null
+            dto.assetInfoId = null
+            dto.lifecycleDateId = null
+            dto.assetPsrId = null
+            dto.attachmentId = null
+            dto.productAssetModelId = null // Tạo ProductAssetModel mới
+
             // Old info IDs
-            if (dto.oldSurgeArresterInfoId) dto.oldSurgeArresterInfoId = null;
-            if (dto.oldPowerTransformerInfoId) dto.oldPowerTransformerInfoId = null;
-            if (dto.oldCableInfoId) dto.oldCableInfoId = null;
-            
+            if (dto.oldSurgeArresterInfoId) dto.oldSurgeArresterInfoId = null
+            if (dto.oldPowerTransformerInfoId) dto.oldPowerTransformerInfoId = null
+            if (dto.oldCableInfoId) dto.oldCableInfoId = null
+
             // Giữ lại foreign keys: locationId, psrId (tham chiếu đến entities độc lập)
-            if (dto.breakerRatingInfoId) dto.breakerRatingInfoId = null;
-            if (dto.breakerContactSystemInfoId) dto.breakerContactSystemInfoId = null;
-            if (dto.breakerOtherInfoId) dto.breakerOtherInfoId = null;
-            if (dto.operatingMechanismId) dto.operatingMechanismId = null;
-            if (dto.operatingMechanismInfoId) dto.operatingMechanismInfoId = null;
-            if (dto.operatingMechanismLifecycleDateId) dto.operatingMechanismLifecycleDateId = null;
-            if (dto.operatingMechanismProductAssetModelId) dto.operatingMechanismProductAssetModelId = null;
-            if (dto.assessmentLimitBreakerInfoId) dto.assessmentLimitBreakerInfoId = null;
+            if (dto.breakerRatingInfoId) dto.breakerRatingInfoId = null
+            if (dto.breakerContactSystemInfoId) dto.breakerContactSystemInfoId = null
+            if (dto.breakerOtherInfoId) dto.breakerOtherInfoId = null
+            if (dto.operatingMechanismId) dto.operatingMechanismId = null
+            if (dto.operatingMechanismInfoId) dto.operatingMechanismInfoId = null
+            if (dto.operatingMechanismLifecycleDateId) dto.operatingMechanismLifecycleDateId = null
+            if (dto.operatingMechanismProductAssetModelId) dto.operatingMechanismProductAssetModelId = null
+            if (dto.assessmentLimitBreakerInfoId) dto.assessmentLimitBreakerInfoId = null
             // Xóa mrid trong ratings (giữ value và unit)
             if (dto.ratings) {
                 const ratingFields = [
-                    'rated_voltage', 'rated_frequency', 'rated_current',
-                    'short_time_withstand_current', 'rated_duration_of_short_circuit',
+                    'rated_voltage',
+                    'rated_frequency',
+                    'rated_current',
+                    'short_time_withstand_current',
+                    'rated_duration_of_short_circuit',
                     'power_freq_withstand_voltage_earth_poles',
                     'power_freq_withstand_voltage_isolating_distance'
-                ];
-                ratingFields.forEach(field => {
+                ]
+                ratingFields.forEach((field) => {
                     if (dto.ratings[field] && dto.ratings[field].mrid) {
-                        dto.ratings[field].mrid = null;
+                        dto.ratings[field].mrid = null
                     }
-                });
+                })
             }
-            
+
             // Xóa mrid/id trong nested objects (giữ dữ liệu)
             const clearRecursive = (obj, depth = 0) => {
-                if (depth > 5) return;
+                if (depth > 5) return
                 if (Array.isArray(obj)) {
-                    obj.forEach(item => clearRecursive(item, depth + 1));
+                    obj.forEach((item) => clearRecursive(item, depth + 1))
                 } else if (obj && typeof obj === 'object') {
-                    if ('mrid' in obj && obj.mrid !== null) obj.mrid = null;
-                    if ('id' in obj && obj.id !== null) obj.id = null;
-                    Object.values(obj).forEach(val => {
+                    if ('mrid' in obj && obj.mrid !== null) obj.mrid = null
+                    if ('id' in obj && obj.id !== null) obj.id = null
+                    Object.values(obj).forEach((val) => {
                         if (val !== null && typeof val === 'object') {
-                            clearRecursive(val, depth + 1);
+                            clearRecursive(val, depth + 1)
                         }
-                    });
+                    })
                 }
-            };
-            if (dto.bushing) clearRecursive(dto.bushing);
-            if (dto.ratings) clearRecursive(dto.ratings);
-            if (dto.circuitBreaker) clearRecursive(dto.circuitBreaker);
-            if (dto.contactSystem) clearRecursive(dto.contactSystem);
-            if (dto.others) clearRecursive(dto.others);
-            if (dto.operating) clearRecursive(dto.operating);
-            if (dto.assessmentLimits) clearRecursive(dto.assessmentLimits);
-            if (dto.winding_configuration) clearRecursive(dto.winding_configuration);
-            if (dto.impedances) clearRecursive(dto.impedances);
-            if (dto.others) clearRecursive(dto.others);
-            if (dto.tap_changers) clearRecursive(dto.tap_changers);
-            if (dto.voltage) clearRecursive(dto.voltage);
-            if (dto.frequency) clearRecursive(dto.frequency);
-            if (dto.currentFlow) clearRecursive(dto.currentFlow);
-            if (dto.seconds) clearRecursive(dto.seconds);
+            }
+            if (dto.bushing) clearRecursive(dto.bushing)
+            if (dto.ratings) clearRecursive(dto.ratings)
+            if (dto.circuitBreaker) clearRecursive(dto.circuitBreaker)
+            if (dto.contactSystem) clearRecursive(dto.contactSystem)
+            if (dto.others) clearRecursive(dto.others)
+            if (dto.operating) clearRecursive(dto.operating)
+            if (dto.assessmentLimits) clearRecursive(dto.assessmentLimits)
+            if (dto.winding_configuration) clearRecursive(dto.winding_configuration)
+            if (dto.impedances) clearRecursive(dto.impedances)
+            if (dto.others) clearRecursive(dto.others)
+            if (dto.tap_changers) clearRecursive(dto.tap_changers)
+            if (dto.voltage) clearRecursive(dto.voltage)
+            if (dto.frequency) clearRecursive(dto.frequency)
+            if (dto.currentFlow) clearRecursive(dto.currentFlow)
+            if (dto.seconds) clearRecursive(dto.seconds)
             // Power Cable specific: temperature, area, length, datasData, othersData, ratingsData
-            if (dto.temperature) clearRecursive(dto.temperature);
-            if (dto.area) clearRecursive(dto.area);
-            if (dto.length) clearRecursive(dto.length);
-            if (dto.datasData) clearRecursive(dto.datasData);
-            if (dto.othersData) clearRecursive(dto.othersData);
-            if (dto.ratingsData) clearRecursive(dto.ratingsData);
-            if (dto.configsData) clearRecursive(dto.configsData);
-            if (dto.ctConfiguration) clearRecursive(dto.ctConfiguration); 
-            if (dto.vt_Configuration) clearRecursive(dto.vt_Configuration);
-            if (dto.capacitance) clearRecursive(dto.capacitance);
-            if (dto.percent) clearRecursive(dto.percent); // Bushing specific: DF C1, DF C2
-            if (dto.dissipationFactor) clearRecursive(dto.dissipationFactor);
+            if (dto.temperature) clearRecursive(dto.temperature)
+            if (dto.area) clearRecursive(dto.area)
+            if (dto.length) clearRecursive(dto.length)
+            if (dto.datasData) clearRecursive(dto.datasData)
+            if (dto.othersData) clearRecursive(dto.othersData)
+            if (dto.ratingsData) clearRecursive(dto.ratingsData)
+            if (dto.configsData) clearRecursive(dto.configsData)
+            if (dto.ctConfiguration) clearRecursive(dto.ctConfiguration)
+            if (dto.vt_Configuration) clearRecursive(dto.vt_Configuration)
+            if (dto.capacitance) clearRecursive(dto.capacitance)
+            if (dto.percent) clearRecursive(dto.percent) // Bushing specific: DF C1, DF C2
+            if (dto.dissipationFactor) clearRecursive(dto.dissipationFactor)
             // Reactor specific: reactorRating (includes inductance), reactorOther
-            if (dto.reactorRating) clearRecursive(dto.reactorRating);
-            if (dto.reactorOther) clearRecursive(dto.reactorOther);
-    },
-       
-       
-    async processDuplicateAsset(node, apiGetEntity, mappingFunction, mixinObject, dataPropName) {
-    try {
-        // Helper nội bộ: lấy label hiển thị trên Tree cho một node
-        const getDisplayLabel = (n) => {
-            if (!n) return '';
-            if (n.mode === 'asset') {
-                return (n.serial_number || n.serial_no || n.name || '').toString();
-            }
-            return (n.name || '').toString();
-        };
+            if (dto.reactorRating) clearRecursive(dto.reactorRating)
+            if (dto.reactorOther) clearRecursive(dto.reactorOther)
+        },
 
-        const getBaseLabel = (label) => {
-            if (!label) return '';
-            const str = label.toString().trim();
-            const m = str.match(/^(.*?)(?:\s*-\s*Copy(?:\s*\(\d+\))?)$/);
-            if (m && m[1] !== undefined) {
-                return m[1].trim();
-            }
-            return str;
-        };
+        async processDuplicateAsset(node, apiGetEntity, mappingFunction, mixinObject, dataPropName) {
+            try {
+                // Helper nội bộ: lấy label hiển thị trên Tree cho một node
+                const getDisplayLabel = (n) => {
+                    if (!n) return ''
+                    if (n.mode === 'asset') {
+                        return (n.serial_number || n.serial_no || n.name || '').toString()
+                    }
+                    return (n.name || '').toString()
+                }
 
-        // Helper: sinh tên duplicate tiếp theo trong cùng parent
-        const getNextDuplicateLabel = (currentNode, parent) => {
-            const currentLabel = getDisplayLabel(currentNode).trim();
-            const base = getBaseLabel(currentLabel) || 'Unknown';
-            const siblings = (parent && Array.isArray(parent.children)) ? parent.children : [];
+                const getBaseLabel = (label) => {
+                    if (!label) return ''
+                    const str = label.toString().trim()
+                    const m = str.match(/^(.*?)(?:\s*-\s*Copy(?:\s*\(\d+\))?)$/)
+                    if (m && m[1] !== undefined) {
+                        return m[1].trim()
+                    }
+                    return str
+                }
 
-            if (base !== currentLabel) {
-                const prefix = `${currentLabel} - Copy`;
-                let maxIndex = 0;
-                let hasPlainCopy = false;
+                // Helper: sinh tên duplicate tiếp theo trong cùng parent
+                const getNextDuplicateLabel = (currentNode, parent) => {
+                    const currentLabel = getDisplayLabel(currentNode).trim()
+                    const base = getBaseLabel(currentLabel) || 'Unknown'
+                    const siblings = parent && Array.isArray(parent.children) ? parent.children : []
 
-                siblings.forEach((child) => {
-                    const label = getDisplayLabel(child).trim();
-                    if (!label) return;
+                    if (base !== currentLabel) {
+                        const prefix = `${currentLabel} - Copy`
+                        let maxIndex = 0
+                        let hasPlainCopy = false
 
-                    if (label === prefix) {
-                        hasPlainCopy = true;
-                        if (maxIndex < 1) maxIndex = 1;
-                    } else if (label.startsWith(prefix + ' (') && label.endsWith(')')) {
-                        const inside = label.substring((prefix.length + 2), label.length - 1);
-                        const num = parseInt(inside, 10);
-                        if (!isNaN(num) && num > maxIndex) {
-                            maxIndex = num;
+                        siblings.forEach((child) => {
+                            const label = getDisplayLabel(child).trim()
+                            if (!label) return
+
+                            if (label === prefix) {
+                                hasPlainCopy = true
+                                if (maxIndex < 1) maxIndex = 1
+                            } else if (label.startsWith(prefix + ' (') && label.endsWith(')')) {
+                                const inside = label.substring(prefix.length + 2, label.length - 1)
+                                const num = parseInt(inside, 10)
+                                if (!isNaN(num) && num > maxIndex) {
+                                    maxIndex = num
+                                }
+                            }
+                        })
+
+                        if (!hasPlainCopy && maxIndex === 0) {
+                            return prefix // "X - Copy"
+                        }
+                        return `${prefix} (${maxIndex + 1})` // "X - Copy (2)", "X - Copy (3)", ...
+                    }
+
+                    const prefix = `${base} - Copy`
+
+                    let maxIndex = 0
+                    let hasPlainCopy = false
+
+                    siblings.forEach((child) => {
+                        const label = getDisplayLabel(child).trim()
+                        if (!label) return
+
+                        if (label === prefix) {
+                            hasPlainCopy = true
+                            if (maxIndex < 1) maxIndex = 1
+                        } else if (label.startsWith(prefix + ' (') && label.endsWith(')')) {
+                            const inside = label.substring(prefix.length + 2, label.length - 1)
+                            const num = parseInt(inside, 10)
+                            if (!isNaN(num) && num > maxIndex) {
+                                maxIndex = num
+                            }
+                        }
+                    })
+
+                    if (!hasPlainCopy && maxIndex === 0) {
+                        return prefix // "X - Copy"
+                    }
+                    return `${prefix} (${maxIndex + 1})` // "X - Copy (2)", "X - Copy (3)", ...
+                }
+
+                // 1. Tìm Node cha
+                let parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+
+                if (!parentNode) {
+                    const isRoot = node.parentId === this.$constant.ROOT || !node.parentId
+                    if (isRoot)
+                        parentNode = {
+                            mrid: this.$constant.ROOT,
+                            name: 'Root',
+                            mode: 'root'
+                        }
+                    else {
+                        this.$message.error(`Cannot find parent node.`)
+                        return {
+                            success: false
                         }
                     }
-                });
-
-                if (!hasPlainCopy && maxIndex === 0) {
-                    return prefix;               // "X - Copy"
                 }
-                return `${prefix} (${maxIndex + 1})`; // "X - Copy (2)", "X - Copy (3)", ...
-            }
 
-            const prefix = `${base} - Copy`;
-
-            let maxIndex = 0;
-            let hasPlainCopy = false;
-
-            siblings.forEach((child) => {
-                const label = getDisplayLabel(child).trim();
-                if (!label) return;
-
-                if (label === prefix) {
-                    hasPlainCopy = true;
-                    if (maxIndex < 1) maxIndex = 1;
-                } else if (label.startsWith(prefix + ' (') && label.endsWith(')')) {
-                    const inside = label.substring((prefix.length + 2), label.length - 1);
-                    const num = parseInt(inside, 10);
-                    if (!isNaN(num) && num > maxIndex) {
-                        maxIndex = num;
-                    }
-                }
-            });
-
-            if (!hasPlainCopy && maxIndex === 0) {
-                return prefix;               // "X - Copy"
-            }
-            return `${prefix} (${maxIndex + 1})`; // "X - Copy (2)", "X - Copy (3)", ...
-        };
-
-        // 1. Tìm Node cha
-        let parentNode = this.findNodeById(node.parentId, this.organisationClientList);
-
-        if (!parentNode) {
-            const isRoot = node.parentId === this.$constant.ROOT || !node.parentId;
-            if (isRoot) parentNode = {
-                mrid: this.$constant.ROOT,
-                name: 'Root',
-                mode: 'root'
-            };
-            else {
-                this.$message.error(`Cannot find parent node.`);
-                return {
-                    success: false
-                };
-            }
-        }
-
-        // 2. Lấy dữ liệu gốc từ API
-        const entityRes = await apiGetEntity(node.mrid, this.$store.state.user.user_id, node.parentId);
-        if (!entityRes.success || !entityRes.data) {
-            this.$message.error("Failed to fetch original data.");
-            return {
-                success: false
-            };
-        }
-
-        // 3. Map sang DTO & Clean dữ liệu (Xóa ID cũ)
-        const dto = mappingFunction(entityRes.data);
-        this.cleanDtoForDuplicate(dto);
-
-        // --- Generate UUID mới cho các nested objects ---
-        if (Array.isArray(dto.voltage)) {
-            dto.voltage.forEach(item => {
-                if (item && !item.mrid) item.mrid = this.generateUuid();
-            });
-        }
-        if (Array.isArray(dto.frequency)) {
-            dto.frequency.forEach(item => {
-                if (item && !item.mrid) item.mrid = this.generateUuid();
-            });
-        }
-        if (Array.isArray(dto.seconds)) {
-            dto.seconds.forEach(item => {
-                if (item && !item.mrid) item.mrid = this.generateUuid();
-            });
-        }
-        if (Array.isArray(dto.currentFlow)) {
-            dto.currentFlow.forEach(item => {
-                if (item && !item.mrid) item.mrid = this.generateUuid();
-            });
-        }
-        // Bushing specific: capacitance, percent
-        if (Array.isArray(dto.capacitance)) {
-            dto.capacitance.forEach(item => {
-                if (item && !item.mrid) item.mrid = this.generateUuid();
-            });
-        }
-        if (Array.isArray(dto.percent)) {
-            dto.percent.forEach(item => {
-                if (item && !item.mrid) item.mrid = this.generateUuid();
-            });
-        }
-        // Power Cable specific
-        if (Array.isArray(dto.temperature)) {
-            dto.temperature.forEach(item => {
-                if (item && !item.mrid) item.mrid = this.generateUuid();
-            });
-        }
-        if (Array.isArray(dto.area)) {
-            dto.area.forEach(item => {
-                if (item && !item.mrid) item.mrid = this.generateUuid();
-            });
-        }
-        if (Array.isArray(dto.length)) {
-            dto.length.forEach(item => {
-                if (item && !item.mrid) item.mrid = this.generateUuid();
-            });
-        }
-        // Reactor specific
-        if (Array.isArray(dto.inductance)) {
-            dto.inductance.forEach(item => {
-                if (item && !item.mrid) item.mrid = this.generateUuid();
-            });
-        }
-        if (Array.isArray(dto.reactivePower)) {
-            dto.reactivePower.forEach(item => {
-                if (item && !item.mrid) item.mrid = this.generateUuid();
-            });
-        }
-        if (Array.isArray(dto.mass)) {
-            dto.mass.forEach(item => {
-                if (item && !item.mrid) item.mrid = this.generateUuid();
-            });
-        }
-
-        // Generate mrid cho objects chính
-        if (dto.properties && !dto.properties.mrid) {
-            dto.properties.mrid = this.generateUuid();
-        }
-        if (!dto.lifecycleDateId) {
-            dto.lifecycleDateId = this.generateUuid();
-        }
-        if (!dto.productAssetModelId) {
-            dto.productAssetModelId = this.generateUuid();
-        }
-        if (!dto.assetPsrId) {
-            dto.assetPsrId = this.generateUuid();
-        }
-        if (!dto.assetInfoId) {
-            dto.assetInfoId = this.generateUuid();
-        }
-        if (!dto.psrId && parentNode && parentNode.mrid) {
-            dto.psrId = parentNode.mrid;
-        }
-
-        // Setup attachment
-        if (!dto.attachment) {
-            dto.attachment = {};
-        }
-        if (!dto.attachment.path || dto.attachment.path === '') {
-            dto.attachment.path = "[]";
-        } else if (typeof dto.attachment.path !== 'string') {
-            try {
-                dto.attachment.path = JSON.stringify(dto.attachment.path);
-            } catch (e) {
-                dto.attachment.path = "[]";
-            }
-        } else {
-            try {
-                JSON.parse(dto.attachment.path);
-            } catch (e) {
-                dto.attachment.path = "[]";
-            }
-        }
-        if (!dto.attachmentId) {
-            dto.attachmentId = this.generateUuid();
-        }
-        dto.attachment.id = dto.attachmentId;
-        dto.attachment.id_foreign = dto.properties?.mrid || null;
-        dto.attachment.type = dto.attachment.type || 'asset';
-        dto.attachment.name = dto.attachment.name || null;
-
-        // Generate mrid cho ratings
-        if (dto.ratings) {
-            const ratingFields = [
-                'rated_voltage', 'rated_frequency', 'rated_current',
-                'short_time_withstand_current', 'rated_duration_of_short_circuit',
-                'power_freq_withstand_voltage_earth_poles',
-                'power_freq_withstand_voltage_isolating_distance'
-            ];
-            ratingFields.forEach(field => {
-                if (dto.ratings[field] && !dto.ratings[field].mrid) {
-                    dto.ratings[field].mrid = this.generateUuid();
-                }
-            });
-        }
-
-        // Reactor specific nested objects
-        if (dto.reactorRating) {
-            const reactorRatingFields = [
-                'rated_voltage', 'rated_frequency', 'rated_current',
-                'rated_power', 'inductance'
-            ];
-            reactorRatingFields.forEach(field => {
-                if (dto.reactorRating[field] && !dto.reactorRating[field].mrid) {
-                    dto.reactorRating[field].mrid = this.generateUuid();
-                }
-            });
-        }
-        if (dto.reactorOther) {
-            if (dto.reactorOther.weight && !dto.reactorOther.weight.mrid) {
-                dto.reactorOther.weight.mrid = this.generateUuid();
-            }
-        }
-
-        // Helper recursive generation
-        const generateMridForNestedObject = (obj) => {
-            if (!obj || typeof obj !== 'object') return;
-            if (Array.isArray(obj)) {
-                obj.forEach(item => generateMridForNestedObject(item));
-            } else {
-                if (obj.mrid === null || obj.mrid === '') {
-                    obj.mrid = this.generateUuid();
-                }
-                Object.values(obj).forEach(val => {
-                    if (val && typeof val === 'object' && val !== null) {
-                        generateMridForNestedObject(val);
-                    }
-                });
-            }
-        };
-
-        if (dto.ratings) generateMridForNestedObject(dto.ratings); 
-
-        if (dto.ratingsData) generateMridForNestedObject(dto.ratingsData);
-        if (dto.othersData) generateMridForNestedObject(dto.othersData);
-        if (dto.datasData) generateMridForNestedObject(dto.datasData);
-        if (dto.configsData) generateMridForNestedObject(dto.configsData);
-
-        if (dto.ctConfiguration) generateMridForNestedObject(dto.ctConfiguration);
-
-        if (dto.vt_Configuration) generateMridForNestedObject(dto.vt_Configuration);
-
-        if (dto.capacitance) generateMridForNestedObject(dto.capacitance);
-        if (dto.dissipationFactor) generateMridForNestedObject(dto.dissipationFactor);
-        
-        if (dto.reactorRating) generateMridForNestedObject(dto.reactorRating);
-        if (dto.reactorOther) generateMridForNestedObject(dto.reactorOther);
-        if (dto.bushing) generateMridForNestedObject(dto.bushing); 
-        // Xóa children để tránh duplicate con đệ quy (nếu không cần thiết)
-        if (dto.children) dto.children = [];
-        if (dto.voltageLevels) dto.voltageLevels = [];
-        if (dto.bays) dto.bays = [];
-        if (dto.assets) dto.assets = [];
-
-        // Đổi tên hiển thị theo quy tắc:
-        //   "X" -> "X - Copy" -> "X - Copy (2)" -> "X - Copy (3)" ...
-        const isAssetNode = node.mode === 'asset';
-        const nextLabel = getNextDuplicateLabel(node, parentNode);
-
-        if (isAssetNode) {
-            // Asset: dùng serial_no làm label chính trên cây
-            if (!dto.properties) dto.properties = {};
-            dto.properties.serial_no = nextLabel;
-        } else {
-            // Location / Job / Test: dùng name
-            dto.name = nextLabel;
-        }
-
-        // Location logic
-        let targetLocationId = dto.locationId;
-        if (!targetLocationId && ['substation', 'organisation', 'root'].includes(parentNode.mode)) {
-            try {
-                const locRes = await window.electronAPI.getLocationByPowerSystemResourceMrid(parentNode.mrid);
-                if (locRes.success) targetLocationId = locRes.data.mrid;
-            } catch (e) {
-                console.warn("Failed to fetch location from parent node:", e);
-            }
-        }
-        if (!dto.locationId && targetLocationId) {
-            dto.locationId = targetLocationId;
-        }
-
-        // --- BẮT ĐẦU PHẦN SỬA LỖI QUAN TRỌNG ---
-        
-        // Lấy dữ liệu mặc định từ Mixin (để đảm bảo biến Old là RỖNG/MỚI)
-        let defaultMixinData = {};
-        if (typeof mixinObject.data === 'function') {
-            defaultMixinData = mixinObject.data();
-        }
-
-        // Tạo context từ mixin
-        const context = {
-            // Dữ liệu mới (đã clone và đổi ID)
-            [dataPropName]: dto,
-            
-            // FIX: Dùng dữ liệu mặc định cho biến Old. 
-            // KHÔNG copy từ dto sang Old, vì backend sẽ tưởng là update và insert vào bảng lịch sử gây lỗi.
-            [dataPropName + 'Old']: defaultMixinData[dataPropName + 'Old'],
-            
-            parentData: parentNode,
-            locationId: targetLocationId,
-            attachmentData: [],
-            ...mixinObject.methods,
-            $message: this.$message,
-            $store: this.$store,
-            $constant: this.$constant,
-            $config: this.$config,
-            $common: this.$common,
-            $helper: this.$helper,
-            $uuid: this.$uuid
-        };
-
-        // Bind methods để 'this' trong mixin trỏ đúng vào context
-        const vuePrototypeProps = ['$message', '$store', '$constant', '$config', '$common', '$helper', '$uuid', '$nextTick', '$set', '$delete'];
-        Object.keys(context).forEach(key => {
-            if (typeof context[key] === 'function' && !vuePrototypeProps.includes(key) && !key.startsWith('$')) {
-                context[key] = context[key].bind(context);
-            }
-        });
-
-        // Copy các data khác từ mixin (nếu có)
-        Object.keys(defaultMixinData).forEach(k => {
-            if (k !== dataPropName && k !== dataPropName + 'Old') {
-                context[k] = defaultMixinData[k];
-            }
-        });
-
-        // --- KẾT THÚC PHẦN SỬA LỖI ---
-
-        // Gọi hàm save tương ứng
-        let saveResult;
-        if (typeof context.saveAsset === 'function') {
-            saveResult = await context.saveAsset();
-        } else if (typeof context.saveSubstation === 'function') {
-            saveResult = await context.saveSubstation();
-        } else if (typeof context.saveOrganisation === 'function') {
-            saveResult = await context.saveOrganisation();
-        } else if (typeof context.saveBay === 'function') {
-            saveResult = await context.saveBay();
-        } else if (typeof context.saveVoltageLevel === 'function') {
-            saveResult = await context.saveVoltageLevel();
-        } else {
-            return {
-                success: false,
-                message: "Save method not found in mixin"
-            };
-        }
-
-        // Xử lý kết quả trả về
-        if (saveResult && saveResult.success) {
-            let newNodeData = {
-                mrid: '',
-                name: dto.name || (dto.properties ? dto.properties.apparatus_id : `${node.name} - Copy`),
-                serial_number: dto.properties ? dto.properties.serial_no : '',
-                parentId: parentNode.mrid,
-                parentName: parentNode.name,
-                parentArr: [...(parentNode.parentArr || []), {
-                    mrid: parentNode.mrid,
-                    parent: parentNode.name
-                }],
-                mode: node.mode,
-                asset: node.asset,
-                job: node.job,
-                children: [],
-                expanded: false,
-                isLeaf: true
-            };
-
-            const resData = saveResult.data;
-            if (resData) {
-                const keys = ['substation', 'organisation', 'voltageLevel', 'bay', 'asset', 'surgeArrester', 'transformer', 'circuitBreaker', 'breaker', 'disconnector', 'powerCable', 'voltageTransformer', 'currentTransformer', 'rotatingMachine', 'capacitor', 'reactor', 'bushing'];
-                let mainObj = null;
-                for (const k of keys) {
-                    if (resData[k]) {
-                        mainObj = resData[k];
-                        break;
+                // 2. Lấy dữ liệu gốc từ API
+                const entityRes = await apiGetEntity(node.mrid, this.$store.state.user.user_id, node.parentId)
+                if (!entityRes.success || !entityRes.data) {
+                    this.$message.error('Failed to fetch original data.')
+                    return {
+                        success: false
                     }
                 }
 
-                if (mainObj) {
-                    newNodeData.mrid = mainObj.mrid;
-                    newNodeData.id = mainObj.mrid;
-                    if (mainObj.name && mainObj.name !== mainObj.mrid) newNodeData.name = mainObj.name;
-                } else if (resData.mrid) {
-                    newNodeData.mrid = resData.mrid;
-                    newNodeData.id = resData.mrid;
-                    if (resData.name) newNodeData.name = resData.name;
-                }
-            }
-            return {
-                success: true,
-                data: newNodeData
-            };
-        } else {
-            return {
-                success: false,
-                message: saveResult ? saveResult.error : "Save failed"
-            };
-        }
+                // 3. Map sang DTO & Clean dữ liệu (Xóa ID cũ)
+                const dto = mappingFunction(entityRes.data)
+                this.cleanDtoForDuplicate(dto)
 
-    } catch (error) {
-        console.error("Duplicate Error:", error);
-        return {
-            success: false,
-            message: error.message
-        };
-    }
-},
-    async duplicateSelectedNodes() {
-    if (!this.selectedNodes || this.selectedNodes.length === 0) {
-        this.$message.warning("Please select a node to duplicate");
-        return;
-    }
+                // --- Generate UUID mới cho các nested objects ---
+                if (Array.isArray(dto.voltage)) {
+                    dto.voltage.forEach((item) => {
+                        if (item && !item.mrid) item.mrid = this.generateUuid()
+                    })
+                }
+                if (Array.isArray(dto.frequency)) {
+                    dto.frequency.forEach((item) => {
+                        if (item && !item.mrid) item.mrid = this.generateUuid()
+                    })
+                }
+                if (Array.isArray(dto.seconds)) {
+                    dto.seconds.forEach((item) => {
+                        if (item && !item.mrid) item.mrid = this.generateUuid()
+                    })
+                }
+                if (Array.isArray(dto.currentFlow)) {
+                    dto.currentFlow.forEach((item) => {
+                        if (item && !item.mrid) item.mrid = this.generateUuid()
+                    })
+                }
+                // Bushing specific: capacitance, percent
+                if (Array.isArray(dto.capacitance)) {
+                    dto.capacitance.forEach((item) => {
+                        if (item && !item.mrid) item.mrid = this.generateUuid()
+                    })
+                }
+                if (Array.isArray(dto.percent)) {
+                    dto.percent.forEach((item) => {
+                        if (item && !item.mrid) item.mrid = this.generateUuid()
+                    })
+                }
+                // Power Cable specific
+                if (Array.isArray(dto.temperature)) {
+                    dto.temperature.forEach((item) => {
+                        if (item && !item.mrid) item.mrid = this.generateUuid()
+                    })
+                }
+                if (Array.isArray(dto.area)) {
+                    dto.area.forEach((item) => {
+                        if (item && !item.mrid) item.mrid = this.generateUuid()
+                    })
+                }
+                if (Array.isArray(dto.length)) {
+                    dto.length.forEach((item) => {
+                        if (item && !item.mrid) item.mrid = this.generateUuid()
+                    })
+                }
+                // Reactor specific
+                if (Array.isArray(dto.inductance)) {
+                    dto.inductance.forEach((item) => {
+                        if (item && !item.mrid) item.mrid = this.generateUuid()
+                    })
+                }
+                if (Array.isArray(dto.reactivePower)) {
+                    dto.reactivePower.forEach((item) => {
+                        if (item && !item.mrid) item.mrid = this.generateUuid()
+                    })
+                }
+                if (Array.isArray(dto.mass)) {
+                    dto.mass.forEach((item) => {
+                        if (item && !item.mrid) item.mrid = this.generateUuid()
+                    })
+                }
 
-    const node = this.selectedNodes[this.selectedNodes.length - 1];
-    let nodeName = node.serial_no || node.serial_number;
-    
-    // Logic cũ: ưu tiên serial_no nếu name rỗng
-    if (!nodeName || nodeName.trim() === '') {
-        nodeName = node.name;
-    }
-    
-    // Nếu vẫn chưa có tên, gọi API lấy chi tiết
-    if ((!nodeName || nodeName.toString().trim() === '') && node.mode === 'asset' && node.mrid) {
-        try {
-            let entityRes = null;
-            const getNameFromEntity = (assetData) => {
-                if (!assetData) return 'Unknown';
-                // Ưu tiên Serial Number
-                if (assetData.serial_number && assetData.serial_number.toString().trim() !== '') {
-                    return assetData.serial_number;
+                // Generate mrid cho objects chính
+                if (dto.properties && !dto.properties.mrid) {
+                    dto.properties.mrid = this.generateUuid()
                 }
-                // Sau đó đến Name
-                if (assetData.name && assetData.name.toString().trim() !== '') {
-                    return assetData.name;
+                if (!dto.lifecycleDateId) {
+                    dto.lifecycleDateId = this.generateUuid()
                 }
-                // Cuối cùng là Apparatus ID (nếu có)
-                return assetData.apparatus_id || 'Unknown';
-            };
-            // --- SURGE ARRESTER ---
-            if (node.asset === 'Surge arrester') {
-                entityRes = await window.electronAPI.getSurgeArresterEntityByMrid(node.mrid);
-                if (entityRes.success && entityRes.data) {
-                    nodeName = getNameFromEntity(entityRes.data.surgeArrester);
-                }   
-            } else if (node.asset === 'Transformer') {
-                entityRes = await window.electronAPI.getTransformerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId);
-                if (entityRes.success && entityRes.data) {
-                    nodeName = getNameFromEntity(entityRes.data.asset);
+                if (!dto.productAssetModelId) {
+                    dto.productAssetModelId = this.generateUuid()
                 }
-            } else if (node.asset === 'Circuit breaker') {
-                entityRes = await window.electronAPI.getBreakerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId);
-                if (entityRes.success && entityRes.data) {
-                    nodeName = getNameFromEntity(entityRes.data.asset);
+                if (!dto.assetPsrId) {
+                    dto.assetPsrId = this.generateUuid()
                 }
-            } else if (node.asset === 'Disconnector') {
-                entityRes = await window.electronAPI.getDisconnectorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId);
-                if (entityRes.success && entityRes.data) {
-                    nodeName = getNameFromEntity(entityRes.data.asset);
+                if (!dto.assetInfoId) {
+                    dto.assetInfoId = this.generateUuid()
                 }
-            } else if (node.asset === 'Power cable') {
-                entityRes = await window.electronAPI.getPowerCableEntityByMrid(node.mrid, node.parentId);
-                if (entityRes.success && entityRes.data) {
-                    nodeName = getNameFromEntity(entityRes.data.asset);
+                if (!dto.psrId && parentNode && parentNode.mrid) {
+                    dto.psrId = parentNode.mrid
                 }
-            } else if (node.asset === 'Rotating machine') {
-                entityRes = await window.electronAPI.getRotatingMachineEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId);
-                if (entityRes.success && entityRes.data) {
-                    nodeName = getNameFromEntity(entityRes.data.asset);
-                }
-            } else if (node.asset === 'Voltage transformer') {
-                entityRes = await window.electronAPI.getVoltageTransformerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId);
-                if (entityRes.success && entityRes.data) {
-                    nodeName = getNameFromEntity(entityRes.data.asset);
-                }
-            } else if (node.asset === 'Current transformer') {
-                entityRes = await window.electronAPI.getCurrentTransformerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId);
-                if (entityRes.success && entityRes.data) {
-                    nodeName = getNameFromEntity(entityRes.data.asset);
-                }
-            } else if (node.asset === 'Capacitor') {
-                entityRes = await window.electronAPI.getCapacitorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId);
-                if (entityRes.success && entityRes.data) {
-                    nodeName = getNameFromEntity(entityRes.data.asset);
-                }
-            } else if (node.asset === 'Reactor') {
-                entityRes = await window.electronAPI.getReactorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId);
-                if (entityRes.success && entityRes.data) {
-                    nodeName = getNameFromEntity(entityRes.data.asset);
-                }
-            } else if (node.asset === 'Bushing') {
-                entityRes = await window.electronAPI.getBushingEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId);
-                if (entityRes.success && entityRes.data) {
-                    nodeName = getNameFromEntity(entityRes.data.asset); // Bushing thường dùng name hoặc serial
-                }
-            }
-        } catch (error) {
-            console.error("Error fetching entity for name:", error);
-        }
-    }
-    
-    nodeName = nodeName || 'Unknown';
 
-        this.$confirm(`Duplicate "${nodeName}"?`, 'Confirmation', {
-            confirmButtonText: 'Confirm',
-            cancelButtonText: 'Cancel',
-            cancelButtonClass: 'el-button--danger',
-            type: 'info'
-        }).then(async () => {
-        let result = { success: false };
-
-        if (node.asset === 'Transformer') {
-            result = await this.processDuplicateAsset(
-                node,
-                window.electronAPI.getTransformerEntityByMrid,
-                TransformerMapping.transformerEntityToDto,
-                TransformerMixin,   // Mixin Object
-                'transformerDto'    // Tên biến data trong Mixin
-            );
-        }
-        else if (node.asset === 'Surge arrester') {
-            result = await this.processDuplicateAsset(
-                node,
-                window.electronAPI.getSurgeArresterEntityByMrid,
-                SurgeArresterMapping.mapEntityToDto,
-                SurgeArresterMixin,
-                'surge_arrester_data' // Tên biến data trong Mixin Surge
-            );
-        }
-        else if (node.asset === 'Circuit breaker') {
-            result = await this.processDuplicateAsset(
-                node,
-                window.electronAPI.getBreakerEntityByMrid,
-                BreakerMapping.mapEntityToDto,
-                CircuitBreakerMixin,
-                'circuitBreakerDto'
-            );
-        }
-        else if (node.asset === 'Disconnector') {
-            result = await this.processDuplicateAsset(
-                node,
-                window.electronAPI.getDisconnectorEntityByMrid,
-                DisconnectorMapping.disconnectorEntityToDto,
-                DisconnectorMixin,
-                'disconnector'
-            );
-        }
-        else if (node.asset === 'Power cable') {
-            result = await this.processDuplicateAsset(
-                node,
-                window.electronAPI.getPowerCableEntityByMrid,
-                PowerCableMapping.mapEntityToDto,
-                PowerCableMixin,
-                'powerCable'
-            );
-        }
-        else if (node.asset === 'Voltage transformer') {
-            result = await this.processDuplicateAsset(
-                node,
-                window.electronAPI.getVoltageTransformerEntityByMrid,
-                VoltageTransformerMapping.mapEntityToDto,
-                VoltageTransformerMixin,
-                'voltageTransformer'
-            );
-        }
-        else if (node.asset === 'Current transformer') {
-            result = await this.processDuplicateAsset(
-                node,
-                window.electronAPI.getCurrentTransformerEntityByMrid,
-                CurrentTransformerMapping.mapEntityToDto,
-                CurrentTransformerMixin,
-                'currentTransformer'
-            );
-        }
-        else if (node.asset === 'Rotating machine') {
-            result = await this.processDuplicateAsset(
-                node,
-                window.electronAPI.getRotatingMachineEntityByMrid,
-                rotatingMachineMapping.mapEntityToDto,
-                RotatingMachineMixin,
-                'rotatingMachine'
-            );
-        }
-        else if (node.asset === 'Capacitor') {
-            result = await this.processDuplicateAsset(
-                node,
-                window.electronAPI.getCapacitorEntityByMrid,
-                CapacitorMapping.mapEntityToDto,
-                CapacitorMixin,
-                'capacitor'
-            );
-        }
-        else if (node.asset === 'Reactor') {
-            result = await this.processDuplicateAsset(
-                node,
-                window.electronAPI.getReactorEntityByMrid,
-                ReactorMapping.mapEntityToDto,
-                ReactorMixin,
-                'reactor'
-            );
-        }
-        else if (node.asset === 'Bushing') {
-            result = await this.processDuplicateAsset(
-                node,
-                window.electronAPI.getBushingEntityByMrid,
-                BushingMapping.mapEntityToDto,
-                BushingMixin,
-                'bushing_data'
-            );
-        }
-        // --- LOCATIONS ---
-        else if (node.mode === 'bay') {
-             result = await this.processDuplicateAsset(
-                node,
-                window.electronAPI.getBayEntityByMrid,
-                (entity) => { return { mrid: entity.mrid, name: entity.name, ...entity }; },
-                BayMixin,
-                'properties'
-            );
-        }
-        // ... Các location khác tương tự (Substation, Organisation) ...
-
-        if (result.success && result.data) {
-            this.$message.success("Duplicate successful!");
-            const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
-                    if (parentNode) {
-                if (!Array.isArray(parentNode.children)) this.$set(parentNode, 'children', []);
-                const index = parentNode.children.findIndex(c => c.mrid === node.mrid);
-                if (index !== -1) parentNode.children.splice(index + 1, 0, result.data);
-                else parentNode.children.push(result.data);
-                this.$set(parentNode, 'expanded', true);
-                    this.clearSelection();
-                this.updateSelection(result.data);
-            }
+                // Setup attachment
+                if (!dto.attachment) {
+                    dto.attachment = {}
+                }
+                if (!dto.attachment.path || dto.attachment.path === '') {
+                    dto.attachment.path = '[]'
+                } else if (typeof dto.attachment.path !== 'string') {
+                    try {
+                        dto.attachment.path = JSON.stringify(dto.attachment.path)
+                    } catch (e) {
+                        dto.attachment.path = '[]'
+                    }
                 } else {
-            this.$message.error(result.message || "Failed to duplicate.");
+                    try {
+                        JSON.parse(dto.attachment.path)
+                    } catch (e) {
+                        dto.attachment.path = '[]'
+                    }
+                }
+                if (!dto.attachmentId) {
+                    dto.attachmentId = this.generateUuid()
+                }
+                dto.attachment.id = dto.attachmentId
+                dto.attachment.id_foreign = dto.properties?.mrid || null
+                dto.attachment.type = dto.attachment.type || 'asset'
+                dto.attachment.name = dto.attachment.name || null
+
+                // Generate mrid cho ratings
+                if (dto.ratings) {
+                    const ratingFields = [
+                        'rated_voltage',
+                        'rated_frequency',
+                        'rated_current',
+                        'short_time_withstand_current',
+                        'rated_duration_of_short_circuit',
+                        'power_freq_withstand_voltage_earth_poles',
+                        'power_freq_withstand_voltage_isolating_distance'
+                    ]
+                    ratingFields.forEach((field) => {
+                        if (dto.ratings[field] && !dto.ratings[field].mrid) {
+                            dto.ratings[field].mrid = this.generateUuid()
+                        }
+                    })
                 }
 
-    }).catch((e) => {
-        if(e !== 'cancel') console.error(e);
-        });
-    },
+                // Reactor specific nested objects
+                if (dto.reactorRating) {
+                    const reactorRatingFields = ['rated_voltage', 'rated_frequency', 'rated_current', 'rated_power', 'inductance']
+                    reactorRatingFields.forEach((field) => {
+                        if (dto.reactorRating[field] && !dto.reactorRating[field].mrid) {
+                            dto.reactorRating[field].mrid = this.generateUuid()
+                        }
+                    })
+                }
+                if (dto.reactorOther) {
+                    if (dto.reactorOther.weight && !dto.reactorOther.weight.mrid) {
+                        dto.reactorOther.weight.mrid = this.generateUuid()
+                    }
+                }
 
+                // Helper recursive generation
+                const generateMridForNestedObject = (obj) => {
+                    if (!obj || typeof obj !== 'object') return
+                    if (Array.isArray(obj)) {
+                        obj.forEach((item) => generateMridForNestedObject(item))
+                    } else {
+                        if (obj.mrid === null || obj.mrid === '') {
+                            obj.mrid = this.generateUuid()
+                        }
+                        Object.values(obj).forEach((val) => {
+                            if (val && typeof val === 'object' && val !== null) {
+                                generateMridForNestedObject(val)
+                            }
+                        })
+                    }
+                }
+
+                if (dto.ratings) generateMridForNestedObject(dto.ratings)
+
+                if (dto.ratingsData) generateMridForNestedObject(dto.ratingsData)
+                if (dto.othersData) generateMridForNestedObject(dto.othersData)
+                if (dto.datasData) generateMridForNestedObject(dto.datasData)
+                if (dto.configsData) generateMridForNestedObject(dto.configsData)
+
+                if (dto.ctConfiguration) generateMridForNestedObject(dto.ctConfiguration)
+
+                if (dto.vt_Configuration) generateMridForNestedObject(dto.vt_Configuration)
+
+                if (dto.capacitance) generateMridForNestedObject(dto.capacitance)
+                if (dto.dissipationFactor) generateMridForNestedObject(dto.dissipationFactor)
+
+                if (dto.reactorRating) generateMridForNestedObject(dto.reactorRating)
+                if (dto.reactorOther) generateMridForNestedObject(dto.reactorOther)
+                if (dto.bushing) generateMridForNestedObject(dto.bushing)
+                // Xóa children để tránh duplicate con đệ quy (nếu không cần thiết)
+                if (dto.children) dto.children = []
+                if (dto.voltageLevels) dto.voltageLevels = []
+                if (dto.bays) dto.bays = []
+                if (dto.assets) dto.assets = []
+
+                // Đổi tên hiển thị theo quy tắc:
+                //   "X" -> "X - Copy" -> "X - Copy (2)" -> "X - Copy (3)" ...
+                const isAssetNode = node.mode === 'asset'
+                const nextLabel = getNextDuplicateLabel(node, parentNode)
+
+                if (isAssetNode) {
+                    // Asset: dùng serial_no làm label chính trên cây
+                    if (!dto.properties) dto.properties = {}
+                    dto.properties.serial_no = nextLabel
+                } else {
+                    // Location / Job / Test: dùng name
+                    dto.name = nextLabel
+                }
+
+                // Location logic
+                let targetLocationId = dto.locationId
+                if (!targetLocationId && ['substation', 'organisation', 'root'].includes(parentNode.mode)) {
+                    try {
+                        const locRes = await window.electronAPI.getLocationByPowerSystemResourceMrid(parentNode.mrid)
+                        if (locRes.success) targetLocationId = locRes.data.mrid
+                    } catch (e) {
+                        console.warn('Failed to fetch location from parent node:', e)
+                    }
+                }
+                if (!dto.locationId && targetLocationId) {
+                    dto.locationId = targetLocationId
+                }
+
+                // --- BẮT ĐẦU PHẦN SỬA LỖI QUAN TRỌNG ---
+
+                // Lấy dữ liệu mặc định từ Mixin (để đảm bảo biến Old là RỖNG/MỚI)
+                let defaultMixinData = {}
+                if (typeof mixinObject.data === 'function') {
+                    defaultMixinData = mixinObject.data()
+                }
+
+                // Tạo context từ mixin
+                const context = {
+                    // Dữ liệu mới (đã clone và đổi ID)
+                    [dataPropName]: dto,
+
+                    // FIX: Dùng dữ liệu mặc định cho biến Old.
+                    // KHÔNG copy từ dto sang Old, vì backend sẽ tưởng là update và insert vào bảng lịch sử gây lỗi.
+                    [dataPropName + 'Old']: defaultMixinData[dataPropName + 'Old'],
+
+                    parentData: parentNode,
+                    locationId: targetLocationId,
+                    attachmentData: [],
+                    ...mixinObject.methods,
+                    $message: this.$message,
+                    $store: this.$store,
+                    $constant: this.$constant,
+                    $config: this.$config,
+                    $common: this.$common,
+                    $helper: this.$helper,
+                    $uuid: this.$uuid
+                }
+
+                // Bind methods để 'this' trong mixin trỏ đúng vào context
+                const vuePrototypeProps = ['$message', '$store', '$constant', '$config', '$common', '$helper', '$uuid', '$nextTick', '$set', '$delete']
+                Object.keys(context).forEach((key) => {
+                    if (typeof context[key] === 'function' && !vuePrototypeProps.includes(key) && !key.startsWith('$')) {
+                        context[key] = context[key].bind(context)
+                    }
+                })
+
+                // Copy các data khác từ mixin (nếu có)
+                Object.keys(defaultMixinData).forEach((k) => {
+                    if (k !== dataPropName && k !== dataPropName + 'Old') {
+                        context[k] = defaultMixinData[k]
+                    }
+                })
+
+                // --- KẾT THÚC PHẦN SỬA LỖI ---
+
+                // Gọi hàm save tương ứng
+                let saveResult
+                if (typeof context.saveAsset === 'function') {
+                    saveResult = await context.saveAsset()
+                } else if (typeof context.saveSubstation === 'function') {
+                    saveResult = await context.saveSubstation()
+                } else if (typeof context.saveOrganisation === 'function') {
+                    saveResult = await context.saveOrganisation()
+                } else if (typeof context.saveBay === 'function') {
+                    saveResult = await context.saveBay()
+                } else if (typeof context.saveVoltageLevel === 'function') {
+                    saveResult = await context.saveVoltageLevel()
+                } else {
+                    return {
+                        success: false,
+                        message: 'Save method not found in mixin'
+                    }
+                }
+
+                // Xử lý kết quả trả về
+                if (saveResult && saveResult.success) {
+                    let newNodeData = {
+                        mrid: '',
+                        name: dto.name || (dto.properties ? dto.properties.apparatus_id : `${node.name} - Copy`),
+                        serial_number: dto.properties ? dto.properties.serial_no : '',
+                        parentId: parentNode.mrid,
+                        parentName: parentNode.name,
+                        parentArr: [
+                            ...(parentNode.parentArr || []),
+                            {
+                                mrid: parentNode.mrid,
+                                parent: parentNode.name
+                            }
+                        ],
+                        mode: node.mode,
+                        asset: node.asset,
+                        job: node.job,
+                        children: [],
+                        expanded: false,
+                        isLeaf: true
+                    }
+
+                    const resData = saveResult.data
+                    if (resData) {
+                        const keys = [
+                            'substation',
+                            'organisation',
+                            'voltageLevel',
+                            'bay',
+                            'asset',
+                            'surgeArrester',
+                            'transformer',
+                            'circuitBreaker',
+                            'breaker',
+                            'disconnector',
+                            'powerCable',
+                            'voltageTransformer',
+                            'currentTransformer',
+                            'rotatingMachine',
+                            'capacitor',
+                            'reactor',
+                            'bushing'
+                        ]
+                        let mainObj = null
+                        for (const k of keys) {
+                            if (resData[k]) {
+                                mainObj = resData[k]
+                                break
+                            }
+                        }
+
+                        if (mainObj) {
+                            newNodeData.mrid = mainObj.mrid
+                            newNodeData.id = mainObj.mrid
+                            if (mainObj.name && mainObj.name !== mainObj.mrid) newNodeData.name = mainObj.name
+                        } else if (resData.mrid) {
+                            newNodeData.mrid = resData.mrid
+                            newNodeData.id = resData.mrid
+                            if (resData.name) newNodeData.name = resData.name
+                        }
+                    }
+                    return {
+                        success: true,
+                        data: newNodeData
+                    }
+                } else {
+                    return {
+                        success: false,
+                        message: saveResult ? saveResult.error : 'Save failed'
+                    }
+                }
+            } catch (error) {
+                console.error('Duplicate Error:', error)
+                return {
+                    success: false,
+                    message: error.message
+                }
+            }
+        },
+        async duplicateSelectedNodes() {
+            if (!this.selectedNodes || this.selectedNodes.length === 0) {
+                this.$message.warning('Please select a node to duplicate')
+                return
+            }
+
+            const node = this.selectedNodes[this.selectedNodes.length - 1]
+            let nodeName = node.serial_no || node.serial_number
+
+            // Logic cũ: ưu tiên serial_no nếu name rỗng
+            if (!nodeName || nodeName.trim() === '') {
+                nodeName = node.name
+            }
+
+            // Nếu vẫn chưa có tên, gọi API lấy chi tiết
+            if ((!nodeName || nodeName.toString().trim() === '') && node.mode === 'asset' && node.mrid) {
+                try {
+                    let entityRes = null
+                    const getNameFromEntity = (assetData) => {
+                        if (!assetData) return 'Unknown'
+                        // Ưu tiên Serial Number
+                        if (assetData.serial_number && assetData.serial_number.toString().trim() !== '') {
+                            return assetData.serial_number
+                        }
+                        // Sau đó đến Name
+                        if (assetData.name && assetData.name.toString().trim() !== '') {
+                            return assetData.name
+                        }
+                        // Cuối cùng là Apparatus ID (nếu có)
+                        return assetData.apparatus_id || 'Unknown'
+                    }
+                    // --- SURGE ARRESTER ---
+                    if (node.asset === 'Surge arrester') {
+                        entityRes = await window.electronAPI.getSurgeArresterEntityByMrid(node.mrid)
+                        if (entityRes.success && entityRes.data) {
+                            nodeName = getNameFromEntity(entityRes.data.surgeArrester)
+                        }
+                    } else if (node.asset === 'Transformer') {
+                        entityRes = await window.electronAPI.getTransformerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
+                        if (entityRes.success && entityRes.data) {
+                            nodeName = getNameFromEntity(entityRes.data.asset)
+                        }
+                    } else if (node.asset === 'Circuit breaker') {
+                        entityRes = await window.electronAPI.getBreakerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
+                        if (entityRes.success && entityRes.data) {
+                            nodeName = getNameFromEntity(entityRes.data.asset)
+                        }
+                    } else if (node.asset === 'Disconnector') {
+                        entityRes = await window.electronAPI.getDisconnectorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
+                        if (entityRes.success && entityRes.data) {
+                            nodeName = getNameFromEntity(entityRes.data.asset)
+                        }
+                    } else if (node.asset === 'Power cable') {
+                        entityRes = await window.electronAPI.getPowerCableEntityByMrid(node.mrid, node.parentId)
+                        if (entityRes.success && entityRes.data) {
+                            nodeName = getNameFromEntity(entityRes.data.asset)
+                        }
+                    } else if (node.asset === 'Rotating machine') {
+                        entityRes = await window.electronAPI.getRotatingMachineEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
+                        if (entityRes.success && entityRes.data) {
+                            nodeName = getNameFromEntity(entityRes.data.asset)
+                        }
+                    } else if (node.asset === 'Voltage transformer') {
+                        entityRes = await window.electronAPI.getVoltageTransformerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
+                        if (entityRes.success && entityRes.data) {
+                            nodeName = getNameFromEntity(entityRes.data.asset)
+                        }
+                    } else if (node.asset === 'Current transformer') {
+                        entityRes = await window.electronAPI.getCurrentTransformerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
+                        if (entityRes.success && entityRes.data) {
+                            nodeName = getNameFromEntity(entityRes.data.asset)
+                        }
+                    } else if (node.asset === 'Capacitor') {
+                        entityRes = await window.electronAPI.getCapacitorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
+                        if (entityRes.success && entityRes.data) {
+                            nodeName = getNameFromEntity(entityRes.data.asset)
+                        }
+                    } else if (node.asset === 'Reactor') {
+                        entityRes = await window.electronAPI.getReactorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
+                        if (entityRes.success && entityRes.data) {
+                            nodeName = getNameFromEntity(entityRes.data.asset)
+                        }
+                    } else if (node.asset === 'Bushing') {
+                        entityRes = await window.electronAPI.getBushingEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
+                        if (entityRes.success && entityRes.data) {
+                            nodeName = getNameFromEntity(entityRes.data.asset) // Bushing thường dùng name hoặc serial
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error fetching entity for name:', error)
+                }
+            }
+
+            nodeName = nodeName || 'Unknown'
+
+            this.$confirm(`Duplicate "${nodeName}"?`, 'Confirmation', {
+                confirmButtonText: 'Confirm',
+                cancelButtonText: 'Cancel',
+                cancelButtonClass: 'el-button--danger',
+                type: 'info'
+            })
+                .then(async () => {
+                    let result = {success: false}
+
+                    if (node.asset === 'Transformer') {
+                        result = await this.processDuplicateAsset(
+                            node,
+                            window.electronAPI.getTransformerEntityByMrid,
+                            TransformerMapping.transformerEntityToDto,
+                            TransformerMixin, // Mixin Object
+                            'transformerDto' // Tên biến data trong Mixin
+                        )
+                    } else if (node.asset === 'Surge arrester') {
+                        result = await this.processDuplicateAsset(
+                            node,
+                            window.electronAPI.getSurgeArresterEntityByMrid,
+                            SurgeArresterMapping.mapEntityToDto,
+                            SurgeArresterMixin,
+                            'surge_arrester_data' // Tên biến data trong Mixin Surge
+                        )
+                    } else if (node.asset === 'Circuit breaker') {
+                        result = await this.processDuplicateAsset(
+                            node,
+                            window.electronAPI.getBreakerEntityByMrid,
+                            BreakerMapping.mapEntityToDto,
+                            CircuitBreakerMixin,
+                            'circuitBreakerDto'
+                        )
+                    } else if (node.asset === 'Disconnector') {
+                        result = await this.processDuplicateAsset(
+                            node,
+                            window.electronAPI.getDisconnectorEntityByMrid,
+                            DisconnectorMapping.disconnectorEntityToDto,
+                            DisconnectorMixin,
+                            'disconnector'
+                        )
+                    } else if (node.asset === 'Power cable') {
+                        result = await this.processDuplicateAsset(
+                            node,
+                            window.electronAPI.getPowerCableEntityByMrid,
+                            PowerCableMapping.mapEntityToDto,
+                            PowerCableMixin,
+                            'powerCable'
+                        )
+                    } else if (node.asset === 'Voltage transformer') {
+                        result = await this.processDuplicateAsset(
+                            node,
+                            window.electronAPI.getVoltageTransformerEntityByMrid,
+                            VoltageTransformerMapping.mapEntityToDto,
+                            VoltageTransformerMixin,
+                            'voltageTransformer'
+                        )
+                    } else if (node.asset === 'Current transformer') {
+                        result = await this.processDuplicateAsset(
+                            node,
+                            window.electronAPI.getCurrentTransformerEntityByMrid,
+                            CurrentTransformerMapping.mapEntityToDto,
+                            CurrentTransformerMixin,
+                            'currentTransformer'
+                        )
+                    } else if (node.asset === 'Rotating machine') {
+                        result = await this.processDuplicateAsset(
+                            node,
+                            window.electronAPI.getRotatingMachineEntityByMrid,
+                            rotatingMachineMapping.mapEntityToDto,
+                            RotatingMachineMixin,
+                            'rotatingMachine'
+                        )
+                    } else if (node.asset === 'Capacitor') {
+                        result = await this.processDuplicateAsset(
+                            node,
+                            window.electronAPI.getCapacitorEntityByMrid,
+                            CapacitorMapping.mapEntityToDto,
+                            CapacitorMixin,
+                            'capacitor'
+                        )
+                    } else if (node.asset === 'Reactor') {
+                        result = await this.processDuplicateAsset(
+                            node,
+                            window.electronAPI.getReactorEntityByMrid,
+                            ReactorMapping.mapEntityToDto,
+                            ReactorMixin,
+                            'reactor'
+                        )
+                    } else if (node.asset === 'Bushing') {
+                        result = await this.processDuplicateAsset(
+                            node,
+                            window.electronAPI.getBushingEntityByMrid,
+                            BushingMapping.mapEntityToDto,
+                            BushingMixin,
+                            'bushing_data'
+                        )
+                    }
+                    // --- LOCATIONS ---
+                    else if (node.mode === 'bay') {
+                        result = await this.processDuplicateAsset(
+                            node,
+                            window.electronAPI.getBayEntityByMrid,
+                            (entity) => {
+                                return {mrid: entity.mrid, name: entity.name, ...entity}
+                            },
+                            BayMixin,
+                            'properties'
+                        )
+                    }
+                    // ... Các location khác tương tự (Substation, Organisation) ...
+
+                    if (result.success && result.data) {
+                        this.$message.success('Duplicate successful!')
+                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                        if (parentNode) {
+                            if (!Array.isArray(parentNode.children)) this.$set(parentNode, 'children', [])
+                            const index = parentNode.children.findIndex((c) => c.mrid === node.mrid)
+                            if (index !== -1) parentNode.children.splice(index + 1, 0, result.data)
+                            else parentNode.children.push(result.data)
+                            this.$set(parentNode, 'expanded', true)
+                            this.clearSelection()
+                            this.updateSelection(result.data)
+                        }
+                    } else {
+                        this.$message.error(result.message || 'Failed to duplicate.')
+                    }
+                })
+                .catch((e) => {
+                    if (e !== 'cancel') console.error(e)
+                })
+        },
 
         findNodeById(mrid, nodes) {
             for (const node of nodes) {
-                if (node.mrid === mrid) return node;
+                if (node.mrid === mrid) return node
                 if (node.children) {
-                    const result = this.findNodeById(mrid, node.children);
-                    if (result) return result;
+                    const result = this.findNodeById(mrid, node.children)
+                    if (result) return result
                 }
             }
-            return null;
+            return null
         },
 
         findNodeByIdOrMrid(idOrMrid, nodes) {
             for (const node of nodes) {
-                if (node.id === idOrMrid || node.mrid === idOrMrid) return node;
+                if (node.id === idOrMrid || node.mrid === idOrMrid) return node
                 if (node.children) {
-                    const result = this.findNodeByIdOrMrid(idOrMrid, node.children);
-                    if (result) return result;
+                    const result = this.findNodeByIdOrMrid(idOrMrid, node.children)
+                    if (result) return result
                 }
             }
-            return null;
+            return null
         },
 
         async doubleClickNode(node) {
-            await this.showDataClient(node);
-            await this.showPropertiesDataClient(node);
+            await this.showDataClient(node)
+            await this.showPropertiesDataClient(node)
         },
 
         async doubleClickNodeServer(node) {
-            await this.showData(node);
-            await this.showPropertiesData(node);
+            await this.showData(node)
+            await this.showPropertiesData(node)
         },
 
         getValidParentTypes(nodeMode) {
-        switch (nodeMode) {
-            case 'organisation':
-                return ['organisation']; // Org chỉ nằm trong Org
-            case 'substation':
-                return ['organisation']; // Substation nằm trong Org
-            case 'voltageLevel':
-                return ['substation'];   // Voltage nằm trong Substation
-            case 'bay':
-                return ['voltageLevel', 'substation']; // Bay nằm trong Voltage hoặc Substation
-            case 'asset':
-                return ['bay', 'voltageLevel', 'substation', 'organisation']; // Asset nằm được nhiều chỗ
-            case 'job':
-                return ['asset']; // Job nằm trong Asset
-            default:
-                return [];
-        }
-    },
-
-    // Helper: Kiểm tra xem node hoặc children của nó có chứa valid target không
-    hasValidTargetInTree(node, nodeToMove, validParentTypes) {
-        // Bỏ qua node đang được move
-        if (node.mrid === nodeToMove.mrid) return false;
-        
-        // Nếu node này là valid target
-        if (validParentTypes.includes(node.mode)) {
-            return true;
-        }
-        
-        // Kiểm tra children
-        if (node.children && node.children.length > 0) {
-            for (const child of node.children) {
-                if (this.hasValidTargetInTree(child, nodeToMove, validParentTypes)) {
-                    return true;
-                }
+            switch (nodeMode) {
+                case 'organisation':
+                    return ['organisation'] // Org chỉ nằm trong Org
+                case 'substation':
+                    return ['organisation'] // Substation nằm trong Org
+                case 'voltageLevel':
+                    return ['substation'] // Voltage nằm trong Substation
+                case 'bay':
+                    return ['voltageLevel', 'substation'] // Bay nằm trong Voltage hoặc Substation
+                case 'asset':
+                    return ['bay', 'voltageLevel', 'substation', 'organisation'] // Asset nằm được nhiều chỗ
+                case 'job':
+                    return ['asset'] // Job nằm trong Asset
+                default:
+                    return []
             }
-        }
-        
-        return false;
-    },
+        },
 
-    // 2. Hàm đệ quy xây dựng cây cho Dialog Move
-    // nodeToMove: Node đang được chọn để di chuyển (để ẩn đi khỏi cây đích)
-    // validParentTypes: Danh sách các loại node cha hợp lệ
-    buildMoveTreeData(nodes, nodeToMove, validParentTypes) {
-    let tree = [];
-    if (!nodes) return tree;
+        // Helper: Kiểm tra xem node hoặc children của nó có chứa valid target không
+        hasValidTargetInTree(node, nodeToMove, validParentTypes) {
+            // Bỏ qua node đang được move
+            if (node.mrid === nodeToMove.mrid) return false
 
-    nodes.forEach(node => {
-        // 1. Không hiển thị chính node đang di chuyển (và con của nó)
-        if (node.mrid === nodeToMove.mrid) return;
-
-        // 2. Chỉ hiển thị node nếu:
-        // - Node này là valid target, HOẶC
-        // - Node này có children chứa valid target (để user có thể mở rộng tìm node hợp lệ)
-        if (!this.hasValidTargetInTree(node, nodeToMove, validParentTypes)) {
-            return; // Bỏ qua node này hoàn toàn
-        }
-
-        // 3. Logic: Node này có được phép làm cha không?
-        const isValidTarget = validParentTypes.includes(node.mode);
-
-        // 4. Đệ quy xử lý con trước để lọc children
-        let filteredChildren = [];
-        if (node.children && node.children.length > 0) {
-            filteredChildren = this.buildMoveTreeData(node.children, nodeToMove, validParentTypes);
-        }
-
-        // 5. Chỉ thêm node vào tree nếu:
-        // - Node này là valid target, HOẶC
-        // - Node này có children hợp lệ (đã được lọc)
-        if (isValidTarget || filteredChildren.length > 0) {
-            let newNode = { 
-                ...node,
-                disabled: !isValidTarget, 
-                isValidTarget: isValidTarget,
-                children: filteredChildren
-            }; 
-            tree.push(newNode);
-        }
-    });
-    return tree;
-},
-
-    // 3. Xử lý khi nhấn nút Move trên toolbar
-    async handleMoveNode() {
-    if (!this.selectedNodes || this.selectedNodes.length === 0) {
-        this.$message.warning("Please select a node to move");
-        return;
-    }
-
-    const nodeToMove = this.selectedNodes[this.selectedNodes.length - 1];
-    
-    // Kiểm tra logic nếu cần (ví dụ không cho move Root)
-    if (!nodeToMove.parentId || nodeToMove.parentId === this.$constant.ROOT) {
-         // this.$message.warning("Cannot move root nodes");
-         // return;
-    }
-
-    const validTypes = this.getValidParentTypes(nodeToMove.mode);
-    
-    // Lưu nodeToMove và validTypes để dùng trong fetchChildrenForMove
-    this.nodeToMove = nodeToMove;
-    this.validParentTypesForMove = validTypes;
-    
-    // Lấy nguồn dữ liệu (Server hoặc Client side)
-    const sourceData = this.clientSlide ? this.organisationClientList : this.ownerServerList;
-    
-    // Build cây dữ liệu đã lọc
-    this.moveTreeData = this.buildMoveTreeData(sourceData, nodeToMove, validTypes);
-    
-    // Reset trạng thái chọn trong Dialog
-    this.selectedTargetNode = null;
-    this.selectedTargetNodes = []; 
-    
-    this.moveDialogVisible = true;
-},
-
-// 3. Xử lý khi click chọn 1 node trong Dialog (Thay thế handleTargetNodeClick cũ)
-handleMoveNodeSelection(node) {
-    // Nếu là mảng (do TreeNode emit), lấy phần tử cuối hoặc phần tử duy nhất
-    const targetNode = Array.isArray(node) ? node[node.length - 1] : node;
-
-    if (!targetNode) {
-        this.selectedTargetNodes = [];
-        this.selectedTargetNode = null;
-        return;
-    }
-
-    // Nếu node chưa có isValidTarget (có thể là node mới được fetch), tính toán lại
-    if (targetNode.isValidTarget === undefined && this.validParentTypesForMove.length > 0) {
-        const isValidTarget = this.validParentTypesForMove.includes(targetNode.mode);
-        Vue.set(targetNode, 'disabled', !isValidTarget);
-        Vue.set(targetNode, 'isValidTarget', isValidTarget);
-    }
-
-    // Chặn nếu node không hợp lệ
-    if (targetNode.disabled || !targetNode.isValidTarget) {
-        // this.$message.warning(`Cannot move here. Invalid parent type.`);
-        // Reset selection để không highlight node sai
-        this.selectedTargetNodes = []; 
-        this.selectedTargetNode = null;
-        return;
-    }
-
-    // Nếu hợp lệ
-    this.selectedTargetNodes = [targetNode];
-    this.selectedTargetNode = targetNode;
-},
-
-// 4. Reset khi đóng dialog
-handleMoveCancel() {
-    this.moveDialogVisible = false;
-    this.selectedTargetNodes = [];
-    this.selectedTargetNode = null;
-    this.nodeToMove = null;
-    this.validParentTypesForMove = [];
-},
-
-// 5. Fetch children cho move dialog (lọc và set disabled, isValidTarget cho các node mới)
-async fetchChildrenForMove(node) {
-    // Gọi fetchChildren bình thường
-    await this.fetchChildren(node);
-    
-    // Sau khi fetch xong, lọc children bằng buildMoveTreeData để chỉ giữ lại node hợp lệ
-    if (node.children && node.children.length > 0 && this.validParentTypesForMove.length > 0 && this.nodeToMove) {
-        // Sử dụng buildMoveTreeData để lọc children (tự động loại bỏ node không hợp lệ)
-        const filteredChildren = this.buildMoveTreeData(node.children, this.nodeToMove, this.validParentTypesForMove);
-        
-        // Cập nhật children của node đã lọc
-        Vue.set(node, 'children', filteredChildren);
-    }
-},
-
-    // 4. Xử lý khi click chọn node đích trong Dialog
-    handleTargetNodeClick(data, node, component) {
-        if (data.disabled) {
-            this.$message.warning("Cannot move to this node type");
-            this.selectedTargetNode = null;
-            return;
-        }
-        this.selectedTargetNode = data;
-    },
-
-    // 5. Xác nhận di chuyển
-    async confirmMoveNode() {
-    if (!this.selectedTargetNode) {
-        this.$message.warning("Please select a target node");
-        return;
-    }
-    
-    // Sử dụng nodeToMove đã được lưu trong handleMoveNode thay vì selectedNodes
-    // vì selectedNodes có thể bị clear khi user tương tác với dialog
-    if (!this.nodeToMove) {
-        this.$message.warning("No node selected to move");
-        return;
-    }
-    
-    const nodeToMove = this.nodeToMove;
-    const newParent = this.selectedTargetNode;
-
-    if (!nodeToMove) {
-        this.$message.error("Cannot find node to move");
-        return;
-    }
-
-    if (!newParent) {
-        this.$message.error("Cannot find target parent");
-        return;
-    }
-
-    // Kiểm tra trùng cha
-    if (nodeToMove.parentId === newParent.mrid) {
-        this.$message.warning("Node is already in this location");
-        return;
-    }
-    let sourceName = nodeToMove.name;
-        // Nếu name rỗng hoặc null, thử lấy serial_number hoặc serial_no
-        if (!sourceName || sourceName.toString().trim() === '') {
-            sourceName = nodeToMove.serial_number || nodeToMove.serial_no;
-        }
-        // Nếu vẫn không có, hiển thị giá trị mặc định
-        sourceName = sourceName || 'Unknown Item';
-
-        let targetName = newParent.name || 'Unknown Location';
-        this.$confirm(`Move "${sourceName}" to "${targetName}"?`, 'Confirm Move', {
-            confirmButtonText: 'Confirm',
-            cancelButtonText: 'Cancel',
-            cancelButtonClass: 'el-button--danger',
-            type: 'warning'
-    }).then(async () => {
-        try {
-            let success = false;
-            let updateResult = null;
-
-// --- XỬ LÝ ASSET (Power Cable, Transformer, ...) ---
-if (nodeToMove.mode === 'asset') {
-    // 1. Lấy thông tin location của Substation đích (newParent)
-    const targetLocRes = await window.electronAPI.getLocationByPowerSystemResourceMrid(newParent.mrid);
-    let newLocationMrid = null;
-    if (targetLocRes.success && targetLocRes.data) {
-        newLocationMrid = targetLocRes.data.mrid;
-    }
-
-    // 2. Lấy dữ liệu chi tiết của Asset hiện tại để chuẩn bị update
-    const assetEntity = await window.electronAPI.getAssetByMrid(nodeToMove.mrid);
-    if (assetEntity.success && assetEntity.data) {
-        const assetData = assetEntity.data;
-
-        // 3. CẬP NHẬT TRƯỜNG LOCATION CHO ASSET
-        if (newLocationMrid) {
-            assetData.location = newLocationMrid; // Gán ID location của Substation mới vào đây
-            
-            // Gọi API update bản ghi Asset (Sử dụng hàm updateAsset chung hoặc theo loại)
-            // Lưu ý: Đảm bảo preload đã expose hàm updateAssetByMrid
-            const updateAssetRes = await window.electronAPI.updateAssetByMrid(assetData.mrid, assetData);
-            if (!updateAssetRes.success) {
-                console.error("Lỗi khi cập nhật trường location của Asset:", updateAssetRes.message);
+            // Nếu node này là valid target
+            if (validParentTypes.includes(node.mode)) {
+                return true
             }
-        }
-    }
 
-    // 4. CẬP NHẬT LIÊN KẾT CÂY (AssetPsr) - Giữ nguyên hoặc tối ưu logic cũ của bạn
-    let currentAssetPsr = null;
-    if (nodeToMove.parentId) {
-        const searchRes = await window.electronAPI.getAssetPsrByAssetIdAndPsrId(nodeToMove.mrid, nodeToMove.parentId);
-        if (searchRes.success && searchRes.data) {
-            currentAssetPsr = searchRes.data;
-        }
-    }
-
-    if (currentAssetPsr) {
-        currentAssetPsr.psr_id = newParent.mrid; // Chuyển sang cha mới (Substation 2)
-        updateResult = await window.electronAPI.updateAssetPsr(currentAssetPsr.mrid, currentAssetPsr);
-        success = updateResult.success;
-    } else {
-        // Nếu trước đó không có cha (mồ côi), tạo mới liên kết
-        const newAssetPsr = {
-            mrid: this.generateUuid(),
-            asset_id: nodeToMove.mrid,
-            psr_id: newParent.mrid,
-        };
-        updateResult = await window.electronAPI.insertAssetPsr(newAssetPsr);
-        success = updateResult.success;
-    }
-}
-            // --- XỬ LÝ CÁC LOẠI KHÁC (Giữ nguyên logic cũ của bạn) ---
-            else if (nodeToMove.mode === 'organisation') {
-                 // ... (Code cũ của bạn đúng rồi)
-                 const orgEntity = await window.electronAPI.getOrganisationEntityByMrid(nodeToMove.mrid);
-                 if(orgEntity.success) {
-                    orgEntity.data.organisation.parent_organization = newParent.mrid;
-                    updateResult = await window.electronAPI.updateParentOrganizationByMrid(nodeToMove.mrid, orgEntity.data.organisation);
-                    success = updateResult.success;
-                 }
-            }
-            else if (nodeToMove.mode === 'substation') {
-                 // ... (Code cũ của bạn)
-                 // Lưu ý: Substation thường update Location refId
-                 const subData = await window.electronAPI.getSubstationByMrid(nodeToMove.mrid);
-                 if(subData.success && subData.data.location) {
-                    const locData = await window.electronAPI.getLocationByMrid(subData.data.location);
-                    if(locData.success) {
-                        locData.data.refId = newParent.mrid;
-                        updateResult = await window.electronAPI.updateLocationByMrid(subData.data.location, locData.data);
-                        success = updateResult.success;
+            // Kiểm tra children
+            if (node.children && node.children.length > 0) {
+                for (const child of node.children) {
+                    if (this.hasValidTargetInTree(child, nodeToMove, validParentTypes)) {
+                        return true
                     }
-                 }
-            }
-            // ... (Voltage, Bay logic giữ nguyên) ...
-            else if (nodeToMove.mode === 'voltageLevel') {
-                const vl = await window.electronAPI.getVoltageLevelByMrid(nodeToMove.mrid);
-                if(vl.success) {
-                    vl.data.substation = newParent.mrid;
-                    updateResult = await window.electronAPI.updateVoltageLevelByMrid(nodeToMove.mrid, vl.data);
-                    success = updateResult.success;
                 }
             }
-            else if (nodeToMove.mode === 'bay') {
-                const bay = await window.electronAPI.getBayByMrid(nodeToMove.mrid);
-                if(bay.success) {
-                    if (newParent.mode === 'voltageLevel') {
-                        bay.data.voltage_level = newParent.mrid;
-                        bay.data.substation = null;
-                    } else {
-                        bay.data.substation = newParent.mrid;
-                        bay.data.voltage_level = null;
+
+            return false
+        },
+
+        // 2. Hàm đệ quy xây dựng cây cho Dialog Move
+        // nodeToMove: Node đang được chọn để di chuyển (để ẩn đi khỏi cây đích)
+        // validParentTypes: Danh sách các loại node cha hợp lệ
+        buildMoveTreeData(nodes, nodeToMove, validParentTypes) {
+            let tree = []
+            if (!nodes) return tree
+
+            nodes.forEach((node) => {
+                // 1. Không hiển thị chính node đang di chuyển (và con của nó)
+                if (node.mrid === nodeToMove.mrid) return
+
+                // 2. Chỉ hiển thị node nếu:
+                // - Node này là valid target, HOẶC
+                // - Node này có children chứa valid target (để user có thể mở rộng tìm node hợp lệ)
+                if (!this.hasValidTargetInTree(node, nodeToMove, validParentTypes)) {
+                    return // Bỏ qua node này hoàn toàn
+                }
+
+                // 3. Logic: Node này có được phép làm cha không?
+                const isValidTarget = validParentTypes.includes(node.mode)
+
+                // 4. Đệ quy xử lý con trước để lọc children
+                let filteredChildren = []
+                if (node.children && node.children.length > 0) {
+                    filteredChildren = this.buildMoveTreeData(node.children, nodeToMove, validParentTypes)
+                }
+
+                // 5. Chỉ thêm node vào tree nếu:
+                // - Node này là valid target, HOẶC
+                // - Node này có children hợp lệ (đã được lọc)
+                if (isValidTarget || filteredChildren.length > 0) {
+                    let newNode = {
+                        ...node,
+                        disabled: !isValidTarget,
+                        isValidTarget: isValidTarget,
+                        children: filteredChildren
                     }
-                    updateResult = await window.electronAPI.updateBayByMrid(nodeToMove.mrid, bay.data);
-                    success = updateResult.success;
+                    tree.push(newNode)
                 }
+            })
+            return tree
+        },
+
+        // 3. Xử lý khi nhấn nút Move trên toolbar
+        async handleMoveNode() {
+            if (!this.selectedNodes || this.selectedNodes.length === 0) {
+                this.$message.warning('Please select a node to move')
+                return
             }
 
-            // --- CẬP NHẬT UI SAU KHI THÀNH CÔNG ---
-            if (success) {
-                // 1. Xóa khỏi cha cũ
-                const sourceList = this.clientSlide ? this.organisationClientList : this.ownerServerList;
-                const oldParentNode = this.findNodeById(nodeToMove.parentId, sourceList);
-                
-                if (oldParentNode && oldParentNode.children) {
-                    const idx = oldParentNode.children.findIndex(c => c.mrid === nodeToMove.mrid);
-                    if (idx !== -1) oldParentNode.children.splice(idx, 1);
-                }
+            const nodeToMove = this.selectedNodes[this.selectedNodes.length - 1]
 
-                // 2. Thêm vào cha mới
-                const newParentInTree = this.findNodeById(newParent.mrid, sourceList);
-                if (newParentInTree) {
-                    // Force reload children từ server để đảm bảo dữ liệu đúng
-                    this.$set(newParentInTree, '_childrenFetched', false);
-                    await this.fetchChildren(newParentInTree);
-                    this.$set(newParentInTree, 'expanded', true);
-                }
+            const validTypes = this.getValidParentTypes(nodeToMove.mode)
 
-                this.$message.success("Moved successfully");
-                this.moveDialogVisible = false;
-                this.selectedNodes = [];
-            } else {
-                this.$message.error("Move failed: " + (updateResult?.message || "Unknown error"));
+            // Lưu nodeToMove và validTypes để dùng trong fetchChildrenForMove
+            this.nodeToMove = nodeToMove
+            this.validParentTypesForMove = validTypes
+
+            // Lấy nguồn dữ liệu (Server hoặc Client side)
+            const sourceData = this.clientSlide ? this.organisationClientList : this.ownerServerList
+
+            // Build cây dữ liệu đã lọc
+            this.moveTreeData = this.buildMoveTreeData(sourceData, nodeToMove, validTypes)
+
+            // Reset trạng thái chọn trong Dialog
+            this.selectedTargetNode = null
+            this.selectedTargetNodes = []
+
+            this.moveDialogVisible = true
+        },
+
+        // 3. Xử lý khi click chọn 1 node trong Dialog (Thay thế handleTargetNodeClick cũ)
+        handleMoveNodeSelection(node) {
+            // Nếu là mảng (do TreeNode emit), lấy phần tử cuối hoặc phần tử duy nhất
+            const targetNode = Array.isArray(node) ? node[node.length - 1] : node
+
+            if (!targetNode) {
+                this.selectedTargetNodes = []
+                this.selectedTargetNode = null
+                return
             }
 
-        } catch (error) {
-            console.error(error);
-            this.$message.error("Error: " + error.message);
+            // Nếu node chưa có isValidTarget (có thể là node mới được fetch), tính toán lại
+            if (targetNode.isValidTarget === undefined && this.validParentTypesForMove.length > 0) {
+                const isValidTarget = this.validParentTypesForMove.includes(targetNode.mode)
+                Vue.set(targetNode, 'disabled', !isValidTarget)
+                Vue.set(targetNode, 'isValidTarget', isValidTarget)
+            }
+
+            // Chặn nếu node không hợp lệ
+            if (targetNode.disabled || !targetNode.isValidTarget) {
+                // this.$message.warning(`Cannot move here. Invalid parent type.`);
+                // Reset selection để không highlight node sai
+                this.selectedTargetNodes = []
+                this.selectedTargetNode = null
+                return
+            }
+
+            // Nếu hợp lệ
+            this.selectedTargetNodes = [targetNode]
+            this.selectedTargetNode = targetNode
+        },
+
+        // 4. Reset khi đóng dialog
+        handleMoveCancel() {
+            this.moveDialogVisible = false
+            this.selectedTargetNodes = []
+            this.selectedTargetNode = null
+            this.nodeToMove = null
+            this.validParentTypesForMove = []
+        },
+
+        // 5. Fetch children cho move dialog (lọc và set disabled, isValidTarget cho các node mới)
+        async fetchChildrenForMove(node) {
+            // Gọi fetchChildren bình thường
+            await this.fetchChildren(node)
+
+            // Sau khi fetch xong, lọc children bằng buildMoveTreeData để chỉ giữ lại node hợp lệ
+            if (node.children && node.children.length > 0 && this.validParentTypesForMove.length > 0 && this.nodeToMove) {
+                // Sử dụng buildMoveTreeData để lọc children (tự động loại bỏ node không hợp lệ)
+                const filteredChildren = this.buildMoveTreeData(node.children, this.nodeToMove, this.validParentTypesForMove)
+
+                // Cập nhật children của node đã lọc
+                Vue.set(node, 'children', filteredChildren)
+            }
+        },
+
+        // 4. Xử lý khi click chọn node đích trong Dialog
+        handleTargetNodeClick(data, node, component) {
+            if (data.disabled) {
+                this.$message.warning('Cannot move to this node type')
+                this.selectedTargetNode = null
+                return
+            }
+            this.selectedTargetNode = data
+        },
+
+        // 5. Xác nhận di chuyển
+        async confirmMoveNode() {
+            if (!this.selectedTargetNode) {
+                this.$message.warning('Please select a target node')
+                return
+            }
+
+            // Sử dụng nodeToMove đã được lưu trong handleMoveNode thay vì selectedNodes
+            // vì selectedNodes có thể bị clear khi user tương tác với dialog
+            if (!this.nodeToMove) {
+                this.$message.warning('No node selected to move')
+                return
+            }
+
+            const nodeToMove = this.nodeToMove
+            const newParent = this.selectedTargetNode
+
+            if (!nodeToMove) {
+                this.$message.error('Cannot find node to move')
+                return
+            }
+
+            if (!newParent) {
+                this.$message.error('Cannot find target parent')
+                return
+            }
+
+            // Kiểm tra trùng cha
+            if (nodeToMove.parentId === newParent.mrid) {
+                this.$message.warning('Node is already in this location')
+                return
+            }
+            let sourceName = nodeToMove.name
+            // Nếu name rỗng hoặc null, thử lấy serial_number hoặc serial_no
+            if (!sourceName || sourceName.toString().trim() === '') {
+                sourceName = nodeToMove.serial_number || nodeToMove.serial_no
+            }
+            // Nếu vẫn không có, hiển thị giá trị mặc định
+            sourceName = sourceName || 'Unknown Item'
+
+            let targetName = newParent.name || 'Unknown Location'
+            this.$confirm(`Move "${sourceName}" to "${targetName}"?`, 'Confirm Move', {
+                confirmButtonText: 'Confirm',
+                cancelButtonText: 'Cancel',
+                cancelButtonClass: 'el-button--danger',
+                type: 'warning'
+            })
+                .then(async () => {
+                    try {
+                        let success = false
+                        let updateResult = null
+
+                        // --- XỬ LÝ ASSET (Power Cable, Transformer, ...) ---
+                        if (nodeToMove.mode === 'asset') {
+                            // 1. Lấy thông tin location của Substation đích (newParent)
+                            const targetLocRes = await window.electronAPI.getLocationByPowerSystemResourceMrid(newParent.mrid)
+                            let newLocationMrid = null
+                            if (targetLocRes.success && targetLocRes.data) {
+                                newLocationMrid = targetLocRes.data.mrid
+                            }
+
+                            // 2. Lấy dữ liệu chi tiết của Asset hiện tại để chuẩn bị update
+                            const assetEntity = await window.electronAPI.getAssetByMrid(nodeToMove.mrid)
+                            if (assetEntity.success && assetEntity.data) {
+                                const assetData = assetEntity.data
+
+                                // 3. CẬP NHẬT TRƯỜNG LOCATION CHO ASSET
+                                if (newLocationMrid) {
+                                    assetData.location = newLocationMrid // Gán ID location của Substation mới vào đây
+
+                                    // Gọi API update bản ghi Asset (Sử dụng hàm updateAsset chung hoặc theo loại)
+                                    // Lưu ý: Đảm bảo preload đã expose hàm updateAssetByMrid
+                                    const updateAssetRes = await window.electronAPI.updateAssetByMrid(assetData.mrid, assetData)
+                                    if (!updateAssetRes.success) {
+                                        console.error('Lỗi khi cập nhật trường location của Asset:', updateAssetRes.message)
+                                    }
+                                }
+                            }
+
+                            // 4. CẬP NHẬT LIÊN KẾT CÂY (AssetPsr) - Giữ nguyên hoặc tối ưu logic cũ của bạn
+                            let currentAssetPsr = null
+                            if (nodeToMove.parentId) {
+                                const searchRes = await window.electronAPI.getAssetPsrByAssetIdAndPsrId(nodeToMove.mrid, nodeToMove.parentId)
+                                if (searchRes.success && searchRes.data) {
+                                    currentAssetPsr = searchRes.data
+                                }
+                            }
+
+                            if (currentAssetPsr) {
+                                currentAssetPsr.psr_id = newParent.mrid // Chuyển sang cha mới (Substation 2)
+                                updateResult = await window.electronAPI.updateAssetPsr(currentAssetPsr.mrid, currentAssetPsr)
+                                success = updateResult.success
+                            } else {
+                                // Nếu trước đó không có cha (mồ côi), tạo mới liên kết
+                                const newAssetPsr = {
+                                    mrid: this.generateUuid(),
+                                    asset_id: nodeToMove.mrid,
+                                    psr_id: newParent.mrid
+                                }
+                                updateResult = await window.electronAPI.insertAssetPsr(newAssetPsr)
+                                success = updateResult.success
+                            }
+                        }
+                        // --- XỬ LÝ CÁC LOẠI KHÁC (Giữ nguyên logic cũ của bạn) ---
+                        else if (nodeToMove.mode === 'organisation') {
+                            // ... (Code cũ của bạn đúng rồi)
+                            const orgEntity = await window.electronAPI.getOrganisationEntityByMrid(nodeToMove.mrid)
+                            if (orgEntity.success) {
+                                orgEntity.data.organisation.parent_organization = newParent.mrid
+                                updateResult = await window.electronAPI.updateParentOrganizationByMrid(nodeToMove.mrid, orgEntity.data.organisation)
+                                success = updateResult.success
+                            }
+                        } else if (nodeToMove.mode === 'substation') {
+                            // ... (Code cũ của bạn)
+                            // Lưu ý: Substation thường update Location refId
+                            const subData = await window.electronAPI.getSubstationByMrid(nodeToMove.mrid)
+                            if (subData.success && subData.data.location) {
+                                const locData = await window.electronAPI.getLocationByMrid(subData.data.location)
+                                if (locData.success) {
+                                    locData.data.refId = newParent.mrid
+                                    updateResult = await window.electronAPI.updateLocationByMrid(subData.data.location, locData.data)
+                                    success = updateResult.success
+                                }
+                            }
+                        }
+                        // ... (Voltage, Bay logic giữ nguyên) ...
+                        else if (nodeToMove.mode === 'voltageLevel') {
+                            const vl = await window.electronAPI.getVoltageLevelByMrid(nodeToMove.mrid)
+                            if (vl.success) {
+                                vl.data.substation = newParent.mrid
+                                updateResult = await window.electronAPI.updateVoltageLevelByMrid(nodeToMove.mrid, vl.data)
+                                success = updateResult.success
+                            }
+                        } else if (nodeToMove.mode === 'bay') {
+                            const bay = await window.electronAPI.getBayByMrid(nodeToMove.mrid)
+                            if (bay.success) {
+                                if (newParent.mode === 'voltageLevel') {
+                                    bay.data.voltage_level = newParent.mrid
+                                    bay.data.substation = null
+                                } else {
+                                    bay.data.substation = newParent.mrid
+                                    bay.data.voltage_level = null
+                                }
+                                updateResult = await window.electronAPI.updateBayByMrid(nodeToMove.mrid, bay.data)
+                                success = updateResult.success
+                            }
+                        }
+
+                        // --- CẬP NHẬT UI SAU KHI THÀNH CÔNG ---
+                        if (success) {
+                            // 1. Xóa khỏi cha cũ
+                            const sourceList = this.clientSlide ? this.organisationClientList : this.ownerServerList
+                            const oldParentNode = this.findNodeById(nodeToMove.parentId, sourceList)
+
+                            if (oldParentNode && oldParentNode.children) {
+                                const idx = oldParentNode.children.findIndex((c) => c.mrid === nodeToMove.mrid)
+                                if (idx !== -1) oldParentNode.children.splice(idx, 1)
+                            }
+
+                            // 2. Thêm vào cha mới
+                            const newParentInTree = this.findNodeById(newParent.mrid, sourceList)
+                            if (newParentInTree) {
+                                // Force reload children từ server để đảm bảo dữ liệu đúng
+                                this.$set(newParentInTree, '_childrenFetched', false)
+                                await this.fetchChildren(newParentInTree)
+                                this.$set(newParentInTree, 'expanded', true)
+                            }
+
+                            this.$message.success('Moved successfully')
+                            this.moveDialogVisible = false
+                            this.selectedNodes = []
+                        } else {
+                            this.$message.error('Move failed: ' + (updateResult?.message || 'Unknown error'))
+                        }
+                    } catch (error) {
+                        console.error(error)
+                        this.$message.error('Error: ' + error.message)
+                    }
+                })
+                .catch((err) => {
+                    if (err !== 'cancel') {
+                        console.error('Move confirmation error:', err)
+                    }
+                })
+        },
+        // 1. Khi nhấn nút Download trên toolbar
+        async handleDownloadNode() {
+            if (!this.selectedNodes || this.selectedNodes.length === 0) {
+                this.$message.warning('Please select a node to download')
+                return
+            }
+
+            const node = this.selectedNodes[this.selectedNodes.length - 1]
+
+            try {
+                // 1. Lấy dữ liệu thô từ Server
+                const serverResponse = await demoAPI.getAssetById(node.mrid, 'PowerCable')
+                if (!serverResponse) return
+
+                // 2. Map sang DTO bằng hàm của bạn
+                const PowerCableServerMapper = require('@/views/Mapping/PowerCableTest/index.js')
+                const dto = PowerCableServerMapper.mapServerToDto(serverResponse)
+
+                // 3. QUAN TRỌNG: Gán các ID quan hệ để Map về Entity local không bị lỗi
+                // Vì Database local của bạn chia làm nhiều bảng (Asset, AssetInfo, Model...)
+                dto.assetInfoId = serverResponse.cableInfo?.mRID || serverResponse.cableInfo?.mrid || this.generateUuid()
+                dto.productAssetModelId = serverResponse.assetData?.productAssetModel?.mRID || this.generateUuid()
+                dto.lifecycleDateId = this.generateUuid() // Thường server không trả về ID bảng này, nên tạo mới
+                dto.oldCableInfoId = dto.assetInfoId // Trong PowerCable, OldCableInfo dùng chung ID với AssetInfo
+                dto.assetPsrId = this.generateUuid()
+
+                // 4. Kiểm tra node cha trên Client
+                // node.parentId là ID của cha (Substation/Bay) từ server
+                const clientParent = this.findNodeById(node.parentId, this.organisationClientList)
+
+                if (clientParent) {
+                    // Trường hợp 1: Đã có cha trên Client -> Tự động gắn
+                    dto.psrId = clientParent.mrid
+                    dto.locationId = clientParent.location || clientParent.mrid
+                    await this.executeDownloadAndSave(dto, clientParent)
+                } else {
+                    // Trường hợp 2: Chưa có cha -> Hiện cây Client để chọn cha
+                    this.nodeToDownloadData = dto
+                    this.moveTreeData = this.buildMoveTreeData(this.organisationClientList, {mrid: 'none'}, this.getValidParentTypes('asset'))
+                    this.downloadDialogVisible = true
+                }
+            } catch (error) {
+                console.error('Download error:', error)
+                this.$message.error('Download failed: ' + error.message)
+            }
+        },
+
+        // 2. Hàm thực hiện lưu vào DB (Xử lý ghi đè nếu đã tồn tại)
+        async executeDownloadAndSave(dto, parentNode) {
+            try {
+                const PowerCableMapping = require('@/views/Mapping/PowerCable/index')
+
+                // 1. Kiểm tra xem node này đã có ở client chưa (Dựa vào MRID từ server)
+                const existingLocalRes = await window.electronAPI.getPowerCableEntityByMrid(dto.properties.mrid, dto.psrId)
+
+                let oldEntity
+                if (existingLocalRes.success && existingLocalRes.data) {
+                    // ĐÃ CÓ -> Đây là trường hợp GHI ĐÈ
+                    oldEntity = existingLocalRes.data
+                } else {
+                    // CHƯA CÓ -> Tạo mới hoàn toàn
+                    const PowerCableEntity = require('@/views/Flatten/PowerCable/index').default
+                    oldEntity = new PowerCableEntity()
+                }
+
+                // 2. Chuyển DTO thành Entity chuẩn của client
+                const newEntity = PowerCableMapping.mapDtoToEntity(dto)
+
+                // 3. Lưu vào Database local
+                // Nhờ lệnh "ON CONFLICT(mrid) DO UPDATE" trong các hàm của bạn,
+                // dữ liệu mới sẽ tự động ghi đè lên các bản ghi cũ cùng MRID.
+                const saveRs = await window.electronAPI.insertPowerCableEntity(oldEntity, newEntity)
+
+                if (saveRs.success) {
+                    this.$message.success('Download and overwrite successful!')
+                    this.downloadDialogVisible = false
+
+                    // 4. Refresh lại cây bên Client để thấy node mới/cập nhật
+                    if (parentNode) {
+                        this.$set(parentNode, '_childrenFetched', false)
+                        await this.fetchChildren(parentNode)
+                        this.$set(parentNode, 'expanded', true)
+                    }
+                } else {
+                    this.$message.error('Save failed: ' + saveRs.message)
+                }
+            } catch (error) {
+                console.error('Save error:', error)
+                this.$message.error('Error saving to local database')
+            }
+        },
+
+        // 3. Xử lý khi chọn cha thủ công trong Dialog và nhấn Confirm
+        async confirmDownloadSelection() {
+            if (!this.selectedDownloadTargetNode) {
+                this.$message.warning('Please select a target parent node')
+                return
+            }
+
+            this.nodeToDownloadData.psrId = this.selectedDownloadTargetNode.mrid
+            await this.executeDownloadAndSave(this.nodeToDownloadData, this.selectedDownloadTargetNode)
+        },
+
+        // 4. Handler cho việc chọn node trong tree dialog (tương tự move node)
+        handleDownloadTargetSelection(node) {
+            const targetNode = Array.isArray(node) ? node[node.length - 1] : node
+            if (!targetNode || targetNode.disabled) {
+                this.selectedDownloadTargetNodes = []
+                this.selectedDownloadTargetNode = null
+                return
+            }
+            this.selectedDownloadTargetNodes = [targetNode]
+            this.selectedDownloadTargetNode = targetNode
         }
-    }).catch((err) => { 
-        if (err !== 'cancel') {
-            console.error("Move confirmation error:", err);
-        }
-    });
-},
     }
 }
 </script>
@@ -6368,7 +6558,6 @@ if (nodeToMove.mode === 'asset') {
     overflow: auto;
 }
 
-
 .folder-item {
     text-align: center;
     padding: 10px;
@@ -6407,11 +6596,11 @@ if (nodeToMove.mode === 'asset') {
 }
 
 .toolbar {
-    background-color: #D9D9D9;
+    background-color: #d9d9d9;
     height: 30px;
     display: flex;
     gap: 10px;
-    border-bottom: 1px solid #CCCCCC;
+    border-bottom: 1px solid #cccccc;
     /* Độ dày 2px, màu đen */
     align-items: center;
     font-size: 12px;
@@ -6427,7 +6616,7 @@ if (nodeToMove.mode === 'asset') {
     height: 30px;
     display: flex;
     gap: 30px;
-    border-bottom: 1px solid #CCCCCC;
+    border-bottom: 1px solid #cccccc;
     /* Độ dày 2px, màu đen */
     align-items: center;
     font-size: 12px;
@@ -6486,7 +6675,7 @@ if (nodeToMove.mode === 'asset') {
     overflow-y: scroll;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    background-color: #E2E8F0;
+    background-color: #e2e8f0;
 }
 
 .content-properties::-webkit-scrollbar {
@@ -6497,7 +6686,7 @@ if (nodeToMove.mode === 'asset') {
     width: 100%;
     height: 40px;
     display: flex;
-    background-color: #E2E8F0;
+    background-color: #e2e8f0;
     align-items: center;
     box-sizing: border-box;
     padding-left: 10px;
@@ -6533,7 +6722,7 @@ if (nodeToMove.mode === 'asset') {
     padding-top: 5px;
     padding-bottom: 5px;
     box-sizing: border-box;
-    border-left: 3px #E2E8F0 solid;
+    border-left: 3px #e2e8f0 solid;
 }
 
 .context-data {
@@ -6607,7 +6796,7 @@ if (nodeToMove.mode === 'asset') {
     /* Độ rộng */
     height: 10vh;
     /* Độ cao */
-    background: #D9D9D9;
+    background: #d9d9d9;
     clip-path: polygon(100% 0%, 100% 100%, 0% 80%, 0% 20%);
 }
 
@@ -6707,7 +6896,7 @@ if (nodeToMove.mode === 'asset') {
     background: #fff;
     border: 1px solid #e4e7ed;
     border-radius: 4px;
-    box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
     min-width: 170px;
     z-index: 1000;
     padding: 1px 0;
@@ -6736,7 +6925,7 @@ if (nodeToMove.mode === 'asset') {
     background: #fff;
     border: 1px solid #e4e7ed;
     border-radius: 4px;
-    box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
     min-width: 170px;
     z-index: 1000;
     padding: 1px 0;
@@ -6765,7 +6954,7 @@ if (nodeToMove.mode === 'asset') {
     background: #fff;
     border: 1px solid #e4e7ed;
     border-radius: 4px;
-    box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
     min-width: 200px;
     z-index: 1000;
     padding: 5px 0;
@@ -6795,7 +6984,7 @@ if (nodeToMove.mode === 'asset') {
 <style>
 /* Ẩn dialog và tất cả nội dung */
 .ghost-dialog {
-    visibility: hidden !important; 
+    visibility: hidden !important;
     opacity: 0 !important;
     display: none !important;
     pointer-events: none !important;
@@ -6848,7 +7037,7 @@ body.duplicating-mode .v-modal {
 }
 
 .move-dialog .el-dialog__body {
-  padding-top: 0;
+    padding-top: 0;
 }
 
 /* Ẩn tất cả backdrop ngay khi duplicate */

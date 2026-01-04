@@ -4,45 +4,45 @@
   "testName": "CT ratio",
   "columns": [
     {
-      "mrid": "aaaaaaaa-name-0000-0000-000000000000",
+      "mrid": "f02b9353-bb57-40a6-a08b-0340346e2057",
       "code": "name",
       "name": "Name",
       "type": "string"
     },
     {
-      "mrid": "aaaaaaaa-ipr0-0000-0000-000000000000",
+      "mrid": "e2953697-15fa-4e3c-bff5-e0398e44dd6f",
       "code": "ipr",
       "name": "IPR",
       "type": "analog",
       "unit": "A"
     },
     {
-      "mrid": "aaaaaaaa-isr0-0000-0000-000000000000",
+      "mrid": "0e762f1e-bcb4-401f-b218-064a45f0a09b",
       "code": "isr",
       "name": "ISR",
       "type": "analog",
       "unit": "A"
     },
     {
-      "mrid": "aaaaaaaa-rati-omea-s000-000000000000",
+      "mrid": "126fc51c-a0b5-470b-9017-47e56131cc56",
       "code": "ratio_meas",
       "name": "Ratio meas",
       "type": "string"
     },
     {
-      "mrid": "aaaaaaaa-rati-odev-0000-000000000000",
+      "mrid": "1d510b78-7413-4777-a344-4b65d4e3e920",
       "code": "ratio_dev",
       "name": "Ratio dev",
       "type": "string"
     },
     {
-      "mrid": "aaaaaaaa-pola-rity-0000-000000000000",
+      "mrid": "e6527699-a044-4633-8572-ac1f84fe78f6",
       "code": "polarity",
       "name": "Polarity",
       "type": "string"
     },
     {
-      "mrid": "99999999-aaaa-bbbb-cccc-000000000001",
+      "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",
       "code": "assessment",
       "name": "Assessment",
       "type": "discrete",
@@ -53,7 +53,7 @@
       ]
     },
     {
-      "mrid": "99999999-aaaa-bbbb-cccc-000000000002",
+      "mrid": "7e52c7e5-1c3b-4fd1-9a91-3e94db29a002",
       "code": "condition_indicator",
       "name": "Condition indicator",
       "type": "discrete",
