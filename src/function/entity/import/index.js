@@ -110,6 +110,11 @@ export const importNodeFromJSON = async (dtos, parentNode, dependencies) => {
  */
 async function importSubstation(dto, parentNode, { electronAPI, mappings }) {
     try {
+        // Substation chỉ được import vào Organisation
+        if (parentNode && parentNode.mode && parentNode.mode !== 'organisation') {
+            return { success: false, message: 'Substation can only be imported under an Organisation' }
+        }
+
         // Convert DTO to Entity
         const entity = mappings.SubstationMapping.mapDtoToEntity(dto)
         
@@ -157,6 +162,11 @@ async function importVoltageLevel(dto, parentNode, { electronAPI }) {
         // VoltageLevel doesn't have mapping, use data directly
         const entity = dto
         
+        // VoltageLevel chỉ được import vào Substation
+        if (parentNode && parentNode.mode && parentNode.mode !== 'substation') {
+            return { success: false, message: 'Voltage level can only be imported under a Substation' }
+        }
+
         // Update parent if provided
         if (parentNode && parentNode.mrid) {
             entity.location_id = parentNode.mrid
@@ -179,9 +189,15 @@ async function importBay(dto, parentNode, { electronAPI }) {
         // Bay doesn't have mapping, use data directly
         const entity = dto
         
-        // Update parent if provided
-        if (parentNode && parentNode.mrid) {
-            entity.voltage_level_id = parentNode.mrid
+        // Bay chỉ được import vào VoltageLevel hoặc Substation
+        if (parentNode && parentNode.mode) {
+            if (parentNode.mode === 'voltageLevel') {
+                entity.voltage_level = parentNode.mrid
+            } else if (parentNode.mode === 'substation') {
+                entity.substation = parentNode.mrid
+            } else {
+                return { success: false, message: 'Bay can only be imported under a Voltage Level or Substation' }
+            }
         }
 
         // Insert/Update entity
@@ -198,6 +214,11 @@ async function importBay(dto, parentNode, { electronAPI }) {
  */
 async function importSurgeArrester(dto, parentNode, { electronAPI, mappings }) {
     try {
+        // Asset chỉ import vào Bay
+        if (parentNode && parentNode.mode && parentNode.mode !== 'bay') {
+            return { success: false, message: 'Surge arrester can only be imported under a Bay' }
+        }
+
         const entity = mappings.SurgeArresterMapping.mapDtoToEntity(dto)
 
         let oldEntity = null
@@ -225,6 +246,11 @@ async function importSurgeArrester(dto, parentNode, { electronAPI, mappings }) {
  */
 async function importPowerCable(dto, parentNode, { electronAPI, mappings }) {
     try {
+        // Asset chỉ import vào Bay
+        if (parentNode && parentNode.mode && parentNode.mode !== 'bay') {
+            return { success: false, message: 'Power cable can only be imported under a Bay' }
+        }
+
         // Convert DTO to Entity
         const entity = mappings.PowerCableMapping.mapDtoToEntity(dto)
         
@@ -256,6 +282,11 @@ async function importPowerCable(dto, parentNode, { electronAPI, mappings }) {
  */
 async function importDisconnector(dto, parentNode, { electronAPI, mappings }) {
     try {
+        // Asset chỉ import vào Bay
+        if (parentNode && parentNode.mode && parentNode.mode !== 'bay') {
+            return { success: false, message: 'Disconnector can only be imported under a Bay' }
+        }
+
         // Convert DTO to Entity
         const entity = mappings.DisconnectorMapping.disconnectorDtoToEntity(dto)
         
@@ -278,6 +309,11 @@ async function importDisconnector(dto, parentNode, { electronAPI, mappings }) {
  */
 async function importRotatingMachine(dto, parentNode, { electronAPI, mappings }) {
     try {
+        // Asset chỉ import vào Bay
+        if (parentNode && parentNode.mode && parentNode.mode !== 'bay') {
+            return { success: false, message: 'Rotating machine can only be imported under a Bay' }
+        }
+
         // Convert DTO to Entity
         const entity = mappings.rotatingMachineMapping.mapDtoToEntity(dto)
         
@@ -300,6 +336,11 @@ async function importRotatingMachine(dto, parentNode, { electronAPI, mappings })
  */
 async function importCapacitor(dto, parentNode, { electronAPI, mappings }) {
     try {
+        // Asset chỉ import vào Bay
+        if (parentNode && parentNode.mode && parentNode.mode !== 'bay') {
+            return { success: false, message: 'Capacitor can only be imported under a Bay' }
+        }
+
         // Convert DTO to Entity
         const entity = mappings.CapacitorMapping.mapDtoToEntity(dto)
         
@@ -331,6 +372,11 @@ async function importCapacitor(dto, parentNode, { electronAPI, mappings }) {
  */
 async function importVoltageTransformer(dto, parentNode, { electronAPI, mappings }) {
     try {
+        // Asset chỉ import vào Bay
+        if (parentNode && parentNode.mode && parentNode.mode !== 'bay') {
+            return { success: false, message: 'Voltage transformer can only be imported under a Bay' }
+        }
+
         // Convert DTO to Entity
         const entity = mappings.VoltageTransformerMapping.mapDtoToEntity(dto)
         
@@ -362,6 +408,10 @@ async function importVoltageTransformer(dto, parentNode, { electronAPI, mappings
  */
 async function importCurrentTransformer(dto, parentNode, { electronAPI, mappings }) {
     try {
+        if (parentNode && parentNode.mode && parentNode.mode !== 'bay') {
+            return { success: false, message: 'Current transformer can only be imported under a Bay' }
+        }
+
         // Convert DTO to Entity
         const entity = mappings.CurrentTransformerMapping.mapDtoToEntity(dto)
         
@@ -393,6 +443,11 @@ async function importCurrentTransformer(dto, parentNode, { electronAPI, mappings
  */
 async function importTransformer(dto, parentNode, { electronAPI, mappings }) {
     try {
+        // Asset chỉ import vào Bay
+        if (parentNode && parentNode.mode && parentNode.mode !== 'bay') {
+            return { success: false, message: 'Transformer can only be imported under a Bay' }
+        }
+
         // Convert DTO to Entity
         const entity = mappings.TransformerMapping.transformerDtoToEntity(dto)
         
@@ -424,6 +479,11 @@ async function importTransformer(dto, parentNode, { electronAPI, mappings }) {
  */
 async function importBreaker(dto, parentNode, { electronAPI, mappings }) {
     try {
+        // Asset chỉ import vào Bay
+        if (parentNode && parentNode.mode && parentNode.mode !== 'bay') {
+            return { success: false, message: 'Breaker can only be imported under a Bay' }
+        }
+
         // Convert DTO to Entity
         const entity = mappings.BreakerMapping.mapDtoToEntity(dto)
         
@@ -455,6 +515,11 @@ async function importBreaker(dto, parentNode, { electronAPI, mappings }) {
  */
 async function importReactor(dto, parentNode, { electronAPI, mappings }) {
     try {
+        // Asset chỉ import vào Bay
+        if (parentNode && parentNode.mode && parentNode.mode !== 'bay') {
+            return { success: false, message: 'Reactor can only be imported under a Bay' }
+        }
+
         // Convert DTO to Entity
         const entity = mappings.ReactorMapping.mapDtoToEntity(dto)
         
