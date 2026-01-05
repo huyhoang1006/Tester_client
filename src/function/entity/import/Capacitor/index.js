@@ -1,4 +1,5 @@
 import uuid from '@/utils/uuid'
+import CapacitorEntity from '@/views/Flatten/Capacitor'
 
 export const importCapacitor = async (dto, parentNode, { electronAPI, mappings }) => {
     try {
