@@ -148,8 +148,10 @@ export const insertCapacitorEntity = async (old_entity, entity) => {
             // asset
             await insertAssetTransaction(entity.asset, db);
 
-            // assetPsr
-            await insertAssetPsrTransaction(entity.assetPsr, db);
+            // assetPsr - chỉ insert nếu có psr_id hợp lệ
+            if (entity.assetPsr && entity.assetPsr.psr_id) {
+                await insertAssetPsrTransaction(entity.assetPsr, db);
+            }
 
             // attachment
             if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
@@ -395,9 +397,9 @@ export const deleteCapacitorEntity = async (entity) => {
     try {
         await runAsync('BEGIN TRANSACTION');
 
-        // 1. Xóa attachment trước (thứ tự ngược với insert)
+        // 1. Xóa attachment
         if (entity.attachment && entity.attachment.id) {
-            await deleteAttachmentByIdTransaction(entity.attachment.id, db);
+            await runAsync("DELETE FROM attachment WHERE id=?", [entity.attachment.id]);
             if (entity.asset && entity.asset.mrid) {
                 const dirPath = path.join(attachmentContext.getAttachmentDir(), entity.asset.mrid);
                 await deleteDirectory(dirPath);
@@ -406,91 +408,103 @@ export const deleteCapacitorEntity = async (entity) => {
 
         // 2. Xóa assetPsr
         if (entity.assetPsr && entity.assetPsr.mrid) {
-            await deleteAssetPsrTransaction(entity.assetPsr.mrid, db);
+            await runAsync("DELETE FROM asset_psr WHERE mrid=?", [entity.assetPsr.mrid]);
         }
 
-        // 3. Xóa asset
+        // 3. Xóa asset (có FK đến asset_info, product_asset_model, lifecycle_date)
         if (entity.asset && entity.asset.mrid) {
-            await deleteAssetByIdTransaction(entity.asset.mrid, db);
+            await runAsync("DELETE FROM asset WHERE mrid=?", [entity.asset.mrid]);
         }
 
-        // 4. Xóa productAssetModel
-        if (entity.productAssetModel && entity.productAssetModel.mrid) {
-            await deleteProductAssetModelByIdTransaction(entity.productAssetModel.mrid, db);
-        }
-
-        // 5. Xóa lifecycleDate
-        if (entity.lifecycleDate && entity.lifecycleDate.mrid) {
-            await deleteLifecycleDateByIdTransaction(entity.lifecycleDate.mrid, db);
-        }
-
-        // 6. Xóa dissipationFactorCapacitorInfo
-        for (const dissipationFactorInfo of entity.dissipationFactorCapacitorInfo || []) {
-            if (dissipationFactorInfo.mrid) {
-                await deleteDissipationFactorCapacitorInfoTransaction(dissipationFactorInfo.mrid, db);
+        // 4. Xóa dissipationFactorCapacitorInfo (có FK đến capacitor_info)
+        for (const df of entity.dissipationFactorCapacitorInfo || []) {
+            if (df.mrid) {
+                await runAsync("DELETE FROM dissipation_factor_capacitor_info WHERE mrid=?", [df.mrid]);
             }
         }
 
-        // 7. Xóa capacitanceCapacitorInfo
-        for (const capacitanceInfo of entity.capacitanceCapacitorInfo || []) {
-            if (capacitanceInfo.mrid) {
-                await deleteCapacitanceInfoTransaction(capacitanceInfo.mrid, db);
+        // 5. Xóa capacitanceCapacitorInfo (có FK đến capacitor_info)
+        for (const cap of entity.capacitanceCapacitorInfo || []) {
+            if (cap.mrid) {
+                await runAsync("DELETE FROM capacitance_capacitor_info WHERE mrid=?", [cap.mrid]);
             }
         }
 
-        // 8. Xóa capacitorInfo
+        // 6. Xóa capacitor_info (có FK đến asset_info)
         if (entity.capacitor && entity.capacitor.mrid) {
-            await deleteCapacitorInfoTransaction(entity.capacitor.mrid, db);
+            await runAsync("DELETE FROM capacitor_info WHERE mrid=?", [entity.capacitor.mrid]);
         }
 
-        // 9. Xóa percent
-        for (const percent of entity.percent || []) {
-            if (percent.mrid) {
-                await deletePercentByIdTransaction(percent.mrid, db);
+        // 7. Xóa asset_info (có FK đến identified_object)
+        if (entity.capacitor && entity.capacitor.mrid) {
+            await runAsync("DELETE FROM asset_info WHERE mrid=?", [entity.capacitor.mrid]);
+        }
+
+        // 8. Xóa identified_object của capacitor_info
+        if (entity.capacitor && entity.capacitor.mrid) {
+            await runAsync("DELETE FROM identified_object WHERE mrid=?", [entity.capacitor.mrid]);
+        }
+
+        // 9. Xóa product_asset_model
+        if (entity.productAssetModel && entity.productAssetModel.mrid) {
+            await runAsync("DELETE FROM product_asset_model WHERE mrid=?", [entity.productAssetModel.mrid]);
+            await runAsync("DELETE FROM identified_object WHERE mrid=?", [entity.productAssetModel.mrid]);
+        }
+
+        // 10. Xóa lifecycle_date
+        if (entity.lifecycleDate && entity.lifecycleDate.mrid) {
+            await runAsync("DELETE FROM lifecycle_date WHERE mrid=?", [entity.lifecycleDate.mrid]);
+        }
+
+        // 11. Xóa percent (dissipation factor values)
+        for (const p of entity.percent || []) {
+            if (p.mrid) {
+                await runAsync("DELETE FROM percent WHERE mrid=?", [p.mrid]);
             }
         }
 
-        // 10. Xóa mass
-        for (const mass of entity.mass || []) {
-            if (mass.mrid) {
-                await deleteMassByIdTransaction(mass.mrid, db);
+        // 12. Xóa mass
+        for (const m of entity.mass || []) {
+            if (m.mrid) {
+                await runAsync("DELETE FROM mass WHERE mrid=?", [m.mrid]);
             }
         }
 
-        // 11. Xóa capacitance
-        for (const capacitance of entity.capacitance || []) {
-            if (capacitance.mrid) {
-                await deleteCapacitanceByIdTransaction(capacitance.mrid, db);
+        // 13. Xóa capacitance
+        for (const c of entity.capacitance || []) {
+            if (c.mrid) {
+                await runAsync("DELETE FROM capacitance WHERE mrid=?", [c.mrid]);
             }
         }
 
-        // 12. Xóa reactivePower
-        for (const power of entity.reactivePower || []) {
-            if (power.mrid) {
-                await deleteReactivePowerByIdTransaction(power.mrid, db);
+        // 14. Xóa reactive_power
+        for (const rp of entity.reactivePower || []) {
+            if (rp.mrid) {
+                await runAsync("DELETE FROM reactive_power WHERE mrid=?", [rp.mrid]);
             }
         }
 
-        // 13. Xóa voltage
-        for (const volt of entity.voltage || []) {
-            if (volt.mrid) {
-                await deleteVoltageByIdTransaction(volt.mrid, db);
+        // 15. Xóa voltage
+        for (const v of entity.voltage || []) {
+            if (v.mrid) {
+                await runAsync("DELETE FROM voltage WHERE mrid=?", [v.mrid]);
             }
         }
 
-        // 14. Xóa frequency
-        for (const freq of entity.frequency || []) {
-            if (freq.mrid) {
-                await deleteFrequencyByIdTransaction(freq.mrid, db);
+        // 16. Xóa frequency
+        for (const f of entity.frequency || []) {
+            if (f.mrid) {
+                await runAsync("DELETE FROM frequency WHERE mrid=?", [f.mrid]);
             }
         }
 
-        // 15. Xóa currentFlow (cuối cùng)
-        for (const currentFlow of entity.currentFlow || []) {
-            if (currentFlow.mrid) {
-                await deleteCurrentFlowByIdTransaction(currentFlow.mrid, db);
+        // 17. Xóa current_flow
+        for (const cf of entity.currentFlow || []) {
+            if (cf.mrid) {
+                await runAsync("DELETE FROM current_flow WHERE mrid=?", [cf.mrid]);
             }
         }
+
         await runAsync('COMMIT');
         return { success: true, message: 'Capacitor entity deleted successfully' };
     } catch (error) {

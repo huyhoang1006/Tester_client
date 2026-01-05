@@ -41,6 +41,10 @@
 // Thêm mới ctCoreInfo
 // Thêm mới ctCoreInfo (UPSERT)
 import dbsql from '@/function/datacontext/index'
+
+// Helper: convert empty string to null for FK fields
+const emptyToNull = (val) => (val === '' || val === undefined) ? null : val
+
 export const insertCtCoreInfoTransaction = (info, dbsql) => {
     return new Promise((resolve, reject) => {
         const sql = `
@@ -91,7 +95,7 @@ export const insertCtCoreInfoTransaction = (info, dbsql) => {
             info.core_class,
             info.fs,
             info.alf,
-            info.winding_resistance,
+            emptyToNull(info.winding_resistance),
             info.ts,
             info.ek,
             info.e1,
@@ -107,12 +111,12 @@ export const insertCtCoreInfoTransaction = (info, dbsql) => {
             info.kx,
             info.current_transformer_info_id,
             info.ex,
-            info.vb,
+            emptyToNull(info.vb),
             info.vk,
             info.vk1,
             info.ik,
             info.ik1,
-            info.ratio_error,
+            emptyToNull(info.ratio_error),
             info.core_index
         ];
 

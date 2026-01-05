@@ -94,11 +94,16 @@ export const insertReactorEntity = async (old_entity, entity) => {
             await insertProductAssetModelTransaction(entity.productAssetModel, db);
             console.log("Inserted product asset model");
             // asset
-            await insertAssetTransaction(entity.asset, db);
+            const assetResult = await insertAssetTransaction(entity.asset, db);
+            if (!assetResult.success) {
+                throw new Error(assetResult.message || 'Insert asset failed');
+            }
             console.log("Inserted asset");
-            // assetPsr
-            await insertAssetPsrTransaction(entity.assetPsr, db);
-            console.log("Inserted asset psr");
+            // assetPsr - chỉ insert nếu có dữ liệu
+            if (entity.assetPsr && entity.assetPsr.mrid) {
+                await insertAssetPsrTransaction(entity.assetPsr, db);
+                console.log("Inserted asset psr");
+            }
             // attachment
             if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
                 const pathData = JSON.parse(entity.attachment.path);
@@ -188,7 +193,7 @@ export const getReactorEntity = async (id, psrId) => {
 
                 for (const key in reactor_arr) {
                     for (const item of reactor_arr[key]) {
-                        if (entity.reactor[item]) {
+                        if (entity.reactor && entity.reactor[item]) {
                             switch (key) {
                                 case 'voltage':
                                     voltage.push(entity.reactor[item]);
@@ -210,7 +215,7 @@ export const getReactorEntity = async (id, psrId) => {
                     }
                 }
 
-                if (entity.productAssetModel.weight_total) {
+                if (entity.productAssetModel && entity.productAssetModel.weight_total) {
                     mass.push(entity.productAssetModel.weight_total);
                 }
 
