@@ -1,4 +1,5 @@
 import uuid from '@/utils/uuid'
+import ReactorEntity from '@/views/Flatten/Reactor'
 
 export const importReactor = async (dto, parentNode, {electronAPI, mappings}) => {
     try {
@@ -13,7 +14,7 @@ export const importReactor = async (dto, parentNode, {electronAPI, mappings}) =>
 
         // Map DTO sang Entity
         const entity = mappings.ReactorMapping.mapDtoToEntity(dto)
-        let oldEntity = null
+        let existingEntity = null
         let needNewMrids = false
 
         const resetMrid = () => {
@@ -42,7 +43,7 @@ export const importReactor = async (dto, parentNode, {electronAPI, mappings}) =>
                     )
 
                     if (existing.success && existing.data && existing.data.asset && existing.data.asset.location === parentMrid) {
-                        oldEntity = existing.data
+                        existingEntity = existing.data
                     } else {
                         resetMrid()
                     }
@@ -162,6 +163,7 @@ export const importReactor = async (dto, parentNode, {electronAPI, mappings}) =>
             entity.attachment.path = '[]'
         }
 
+        const emptyEntity = existingEntity || new ReactorEntity()
         const result = await electronAPI.insertReactorEntity(emptyEntity, entity)
         return { ...result, entity }
 
