@@ -1,92 +1,178 @@
+import { importBushing as importBushingFromFile } from './Bushing'
+import { importTransformer as importTransformerFromFile } from './Transformer'
+import { importVoltageTransformer as importVoltageTransformerFromFile } from './VoltageTransformer'
+import { importCurrentTransformer as importCurrentTransformerFromFile } from './CurrentTransformer'
+import { importBreaker as importBreakerFromFile } from './Breaker'
+import { importReactor as importReactorFromFile } from './Reactor'
+import { importCapacitor as importCapacitorFromFile } from './Capacitor'
+import { importRotatingMachine as importRotatingMachineFromFile } from './RotatingMachine'
+import { importDisconnector as importDisconnectorFromFile } from './Disconnector'
+import { importPowerCable as importPowerCableFromFile } from './PowerCable'
+import { importSurgeArrester as importSurgeArresterFromFile } from './SurgeArrester'
+import { importBay as importBayFromFile } from './Bay'
+import { importVoltageLevel as importVoltageLevelFromFile } from './VoltageLevel'
+import { importSubstation as importSubstationFromFile } from './Substation'
+import { importOrganisation as importOrganisationFromFile } from './Organisation'
+
 export const importNodeFromJSON = async (dtos, parentNode, dependencies) => {
-    const { electronAPI, mappings, messageHandler } = dependencies
+    const { electronAPI, mappings, messageHandler } = dependencies || {}
 
     try {
-        if (!dtos || !Array.isArray(dtos) || dtos.length === 0) {
-            if (messageHandler) {
-                messageHandler.warning('No data found to import')
-            }
+        if (!Array.isArray(dtos) || dtos.length === 0) {
+            messageHandler?.warning?.('No data found to import')
             return { success: false, message: 'No data found to import' }
         }
 
         let successCount = 0
         let errorCount = 0
         const errors = []
+        const importedNodes = []
 
-        // Process each DTO
+        // ============================
+        // MAP IMPORT FUNCTION THEO TYPE
+        // ============================
+        const importMap = {
+            organisation: (dto) => importOrganisationFromFile(dto, parentNode, { electronAPI, mappings }),
+            substation: (dto) => importSubstationFromFile(dto, parentNode, { electronAPI, mappings }),
+            voltageLevel: (dto) => importVoltageLevelFromFile(dto, parentNode, { electronAPI, mappings }),
+            bay: (dto) => importBayFromFile(dto, parentNode, { electronAPI }),
+
+            surgeArrester: (dto) => importSurgeArresterFromFile(dto, parentNode, { electronAPI, mappings }),
+            powerCable: (dto) => importPowerCableFromFile(dto, parentNode, { electronAPI, mappings }),
+            disconnector: (dto) => importDisconnectorFromFile(dto, parentNode, { electronAPI, mappings }),
+            rotatingMachine: (dto) => importRotatingMachineFromFile(dto, parentNode, { electronAPI, mappings }),
+            capacitor: (dto) => importCapacitorFromFile(dto, parentNode, { electronAPI, mappings }),
+            voltageTransformer: (dto) => importVoltageTransformerFromFile(dto, parentNode, { electronAPI, mappings }),
+            currentTransformer: (dto) => importCurrentTransformerFromFile(dto, parentNode, { electronAPI, mappings }),
+            transformer: (dto) => importTransformerFromFile(dto, parentNode, { electronAPI, mappings }),
+            breaker: (dto) => importBreakerFromFile(dto, parentNode, { electronAPI, mappings }),
+            reactor: (dto) => importReactorFromFile(dto, parentNode, { electronAPI, mappings }),
+            bushing: (dto) => importBushingFromFile(dto, parentNode, { electronAPI, mappings }),
+        }
+
+        const typeDisplayMap = {
+            rotatingMachine: 'Rotating machine',
+            disconnector: 'Disconnector',
+            voltageTransformer: 'Voltage transformer',
+            currentTransformer: 'Current transformer',
+            powerCable: 'Power cable',
+            capacitor: 'Capacitor',
+            transformer: 'Transformer',
+            breaker: 'Circuit breaker',
+            reactor: 'Reactor',
+            bushing: 'Bushing',
+            surgeArrester: 'Surge arrester',
+            bay: 'Bay',
+            voltageLevel: 'Voltage level',
+            substation: 'Substation',
+            organisation: 'Organisation'
+        }
+
         for (const dtoItem of dtos) {
             try {
-                const { type, data: dto } = dtoItem
+                const { type, data: dto } = dtoItem || {}
 
                 if (!type || !dto) {
                     errorCount++
-                    errors.push(`Invalid DTO format: missing type or data`)
+                    errors.push('Invalid DTO format: missing type or data')
                     continue
                 }
 
-                let result
+                const handler = importMap[type]
 
-                // Convert DTO to Entity and insert/update
-                if (type === 'substation') {
-                    result = await importSubstation(dto, parentNode, { electronAPI, mappings })
-                } else if (type === 'organisation') {
-                    result = await importOrganisation(dto, parentNode, { electronAPI, mappings })
-                } else if (type === 'voltageLevel') {
-                    result = await importVoltageLevel(dto, parentNode, { electronAPI })
-                } else if (type === 'bay') {
-                    result = await importBay(dto, parentNode, { electronAPI })
-                } else if (type === 'surgeArrester') {
-                    result = await importSurgeArrester(dto, parentNode, { electronAPI, mappings })
-                } else if (type === 'powerCable') {
-                    result = await importPowerCable(dto, parentNode, { electronAPI, mappings })
-                } else if (type === 'disconnector') {
-                    result = await importDisconnector(dto, parentNode, { electronAPI, mappings })
-                } else if (type === 'rotatingMachine') {
-                    result = await importRotatingMachine(dto, parentNode, { electronAPI, mappings })
-                } else if (type === 'capacitor') {
-                    result = await importCapacitor(dto, parentNode, { electronAPI, mappings })
-                } else if (type === 'voltageTransformer') {
-                    result = await importVoltageTransformer(dto, parentNode, { electronAPI, mappings })
-                } else if (type === 'currentTransformer') {
-                    result = await importCurrentTransformer(dto, parentNode, { electronAPI, mappings })
-                } else if (type === 'transformer') {
-                    result = await importTransformer(dto, parentNode, { electronAPI, mappings })
-                } else if (type === 'breaker') {
-                    result = await importBreaker(dto, parentNode, { electronAPI, mappings })
-                } else if (type === 'reactor') {
-                    result = await importReactor(dto, parentNode, { electronAPI, mappings })
-                } else if (type === 'bushing') {
-                    result = await importBushing(dto, { electronAPI, mappings })
-                } else {
+                if (!handler) {
                     errorCount++
                     errors.push(`Unknown type: ${type}`)
                     continue
                 }
 
-                if (result && result.success) {
+                const result = await handler(dto)
+
+                if (result?.success) {
                     successCount++
+
+                    const ent = result.entity || result.data
+                    console.log('Import success - type:', type, 'entity:', ent?.asset?.mrid || ent?.voltageLevel?.mrid || ent?.substation?.mrid || ent?.bay?.mrid || ent?.organisation?.mrid)
+                    
+                    // Xử lý cho asset types (breaker, transformer, etc.)
+                    if (ent?.asset?.mrid && parentNode?.mrid) {
+                        const nodeToAdd = {
+                            mrid: ent.asset.mrid,
+                            name: ent.asset.name || null,
+                            serial_number: ent.asset.serial_number || null,
+                            parentId: parentNode.mrid,
+                            parentName: parentNode.name || null,
+                            parentArr: parentNode.parentArr || [],
+                            mode: 'asset',
+                            asset: typeDisplayMap[type] || type
+                        }
+                        console.log('Adding to importedNodes:', nodeToAdd)
+                        importedNodes.push(nodeToAdd)
+                    }
+                    // Xử lý cho VoltageLevel
+                    else if (ent?.voltageLevel?.mrid && parentNode?.mrid) {
+                        importedNodes.push({
+                            mrid: ent.voltageLevel.mrid,
+                            name: ent.voltageLevel.name || null,
+                            parentId: parentNode.mrid,
+                            parentName: parentNode.name || null,
+                            parentArr: parentNode.parentArr || [],
+                            mode: 'voltageLevel'
+                        })
+                    }
+                    // Xử lý cho Substation
+                    else if (ent?.substation?.mrid && parentNode?.mrid) {
+                        importedNodes.push({
+                            mrid: ent.substation.mrid,
+                            name: ent.substation.name || null,
+                            parentId: parentNode.mrid,
+                            parentName: parentNode.name || null,
+                            parentArr: parentNode.parentArr || [],
+                            mode: 'substation'
+                        })
+                    }
+                    // Xử lý cho Bay
+                    else if (ent?.bay?.mrid && parentNode?.mrid) {
+                        importedNodes.push({
+                            mrid: ent.bay.mrid,
+                            name: ent.bay.name || null,
+                            parentId: parentNode.mrid,
+                            parentName: parentNode.name || null,
+                            parentArr: parentNode.parentArr || [],
+                            mode: 'bay'
+                        })
+                    }
+                    // Xử lý cho Organisation
+                    else if (ent?.organisation?.mrid && parentNode?.mrid) {
+                        importedNodes.push({
+                            mrid: ent.organisation.mrid,
+                            name: ent.organisation.name || null,
+                            parentId: parentNode.mrid,
+                            parentName: parentNode.name || null,
+                            parentArr: parentNode.parentArr || [],
+                            mode: 'organisation'
+                        })
+                    }
                 } else {
                     errorCount++
                     errors.push(`${type}: ${result?.message || 'Import failed'}`)
                 }
-            } catch (error) {
+
+            } catch (err) {
                 errorCount++
-                errors.push(`Error importing ${dtoItem.type}: ${error.message}`)
-                console.error(`Error importing ${dtoItem.type}:`, error)
+                errors.push(`Error importing ${dtoItem?.type}: ${err?.message}`)
+                console.error(`Error importing ${dtoItem?.type}:`, err)
             }
         }
 
-        // Return summary
-        const message = `Imported ${successCount} item(s) successfully${errorCount > 0 ? `, ${errorCount} failed` : ''}`
-        
+        const message =
+            `Imported ${successCount} item(s) successfully` +
+            (errorCount > 0 ? `, ${errorCount} failed` : '')
+
         if (messageHandler) {
-            if (errorCount === 0) {
-                messageHandler.success(message)
-            } else if (successCount > 0) {
-                messageHandler.warning(message)
-            } else {
-                messageHandler.error(`Import failed: ${errors.join('; ')}`)
-            }
+            if (errorCount === 0) messageHandler.success?.(message)
+            else if (successCount > 0) messageHandler.warning?.(message)
+            else messageHandler.error?.(`Import failed: ${errors.join('; ')}`)
         }
 
         return {
@@ -94,471 +180,13 @@ export const importNodeFromJSON = async (dtos, parentNode, dependencies) => {
             message,
             successCount,
             errorCount,
-            errors
+            errors,
+            importedNodes
         }
+
     } catch (error) {
         console.error('Error importing nodes from JSON:', error)
-        if (messageHandler) {
-            messageHandler.error('An error occurred while importing nodes from JSON')
-        }
-        return { success: false, message: error.message || 'Import failed' }
-    }
-}
-
-/**
- * Import Substation
- */
-async function importSubstation(dto, parentNode, { electronAPI, mappings }) {
-    try {
-        // Substation chỉ được import vào Organisation
-        if (parentNode && parentNode.mode && parentNode.mode !== 'organisation') {
-            return { success: false, message: 'Substation can only be imported under an Organisation' }
-        }
-
-        // Convert DTO to Entity
-        const entity = mappings.SubstationMapping.mapDtoToEntity(dto)
-        
-        // Update parent if provided
-        if (parentNode && parentNode.mrid) {
-            entity.organisationLocation.organisation_id = parentNode.mrid
-        }
-
-        // Insert/Update entity (insertSubstationEntity handles update internally if mrid exists)
-        const result = await electronAPI.insertSubstationEntity(entity)
-        return result
-    } catch (error) {
-        console.error('Error importing substation:', error)
-        return { success: false, message: error.message }
-    }
-}
-
-/**
- * Import Organisation
- */
-async function importOrganisation(dto, parentNode, { electronAPI, mappings }) {
-    try {
-        // Convert DTO to Entity
-        const entity = mappings.OrganisationMapping.OrgDtoToOrgEntity(dto)
-        
-        // Update parent if provided
-        if (parentNode && parentNode.mrid) {
-            entity.organisation.parent_organisation = parentNode.mrid
-        }
-
-        // Insert/Update entity (insertOrganisationEntity handles update internally if mrid exists)
-        const result = await electronAPI.insertOrganisationEntity(entity)
-        return result
-    } catch (error) {
-        console.error('Error importing organisation:', error)
-        return { success: false, message: error.message }
-    }
-}
-
-/**
- * Import Voltage Level
- */
-async function importVoltageLevel(dto, parentNode, { electronAPI }) {
-    try {
-        // VoltageLevel doesn't have mapping, use data directly
-        const entity = dto
-        
-        // VoltageLevel chỉ được import vào Substation
-        if (parentNode && parentNode.mode && parentNode.mode !== 'substation') {
-            return { success: false, message: 'Voltage level can only be imported under a Substation' }
-        }
-
-        // Update parent if provided
-        if (parentNode && parentNode.mrid) {
-            entity.location_id = parentNode.mrid
-        }
-
-        // Insert/Update entity
-        const result = await electronAPI.insertVoltageLevelEntity(entity)
-        return result
-    } catch (error) {
-        console.error('Error importing voltage level:', error)
-        return { success: false, message: error.message }
-    }
-}
-
-/**
- * Import Bay
- */
-async function importBay(dto, parentNode, { electronAPI }) {
-    try {
-        // Bay doesn't have mapping, use data directly
-        const entity = dto
-        
-        // Bay chỉ được import vào VoltageLevel hoặc Substation
-        if (parentNode && parentNode.mode) {
-            if (parentNode.mode === 'voltageLevel') {
-                entity.voltage_level = parentNode.mrid
-            } else if (parentNode.mode === 'substation') {
-                entity.substation = parentNode.mrid
-            } else {
-                return { success: false, message: 'Bay can only be imported under a Voltage Level or Substation' }
-            }
-        }
-
-        // Insert/Update entity
-        const result = await electronAPI.insertBayEntity(entity)
-        return result
-    } catch (error) {
-        console.error('Error importing bay:', error)
-        return { success: false, message: error.message }
-    }
-}
-
-/**
- * Import Surge Arrester
- */
-async function importSurgeArrester(dto, parentNode, { electronAPI, mappings }) {
-    try {
-        // Asset chỉ import vào Bay
-        if (parentNode && parentNode.mode && parentNode.mode !== 'bay') {
-            return { success: false, message: 'Surge arrester can only be imported under a Bay' }
-        }
-
-        const entity = mappings.SurgeArresterMapping.mapDtoToEntity(dto)
-
-        let oldEntity = null
-        if (entity.surgeArrester.mrid) {
-            const existing = await electronAPI.getSurgeArresterEntityByMrid(
-                entity.surgeArrester.mrid
-            )
-            if (existing.success && existing.data) {
-                oldEntity = existing.data
-            }
-        }
-
-        return await electronAPI.insertSurgeArresterEntity(
-            oldEntity || {},
-            entity
-        )
-    } catch (error) {
-        console.error('Error importing surge arrester:', error)
-        return { success: false, message: error.message }
-    }
-}
-
-/**
- * Import Power Cable
- */
-async function importPowerCable(dto, parentNode, { electronAPI, mappings }) {
-    try {
-        // Asset chỉ import vào Bay
-        if (parentNode && parentNode.mode && parentNode.mode !== 'bay') {
-            return { success: false, message: 'Power cable can only be imported under a Bay' }
-        }
-
-        // Convert DTO to Entity
-        const entity = mappings.PowerCableMapping.mapDtoToEntity(dto)
-        
-        // Check if mrid exists to get old_entity
-        let oldEntity = null
-        if (entity.asset.mrid) {
-            const existing = await electronAPI.getPowerCableEntityByMrid(entity.asset.mrid, parentNode?.mrid || null)
-            if (existing.success && existing.data) {
-                oldEntity = existing.data
-            }
-        }
-
-        // Update parent if provided
-        if (parentNode && parentNode.mrid) {
-            entity.asset.location = parentNode.mrid
-        }
-
-        // Insert/Update entity (PowerCable uses old_entity pattern)
-        const result = await electronAPI.insertPowerCableEntity(oldEntity || {}, entity)
-        return result
-    } catch (error) {
-        console.error('Error importing power cable:', error)
-        return { success: false, message: error.message }
-    }
-}
-
-/**
- * Import Disconnector
- */
-async function importDisconnector(dto, parentNode, { electronAPI, mappings }) {
-    try {
-        // Asset chỉ import vào Bay
-        if (parentNode && parentNode.mode && parentNode.mode !== 'bay') {
-            return { success: false, message: 'Disconnector can only be imported under a Bay' }
-        }
-
-        // Convert DTO to Entity
-        const entity = mappings.DisconnectorMapping.disconnectorDtoToEntity(dto)
-        
-        // Update parent if provided
-        if (parentNode && parentNode.mrid) {
-            entity.asset.location = parentNode.mrid
-        }
-
-        // Insert/Update entity (insertDisconnectorEntity doesn't use old_entity pattern)
-        const result = await electronAPI.insertDisconnectorEntity(entity)
-        return result
-    } catch (error) {
-        console.error('Error importing disconnector:', error)
-        return { success: false, message: error.message }
-    }
-}
-
-/**
- * Import Rotating Machine
- */
-async function importRotatingMachine(dto, parentNode, { electronAPI, mappings }) {
-    try {
-        // Asset chỉ import vào Bay
-        if (parentNode && parentNode.mode && parentNode.mode !== 'bay') {
-            return { success: false, message: 'Rotating machine can only be imported under a Bay' }
-        }
-
-        // Convert DTO to Entity
-        const entity = mappings.rotatingMachineMapping.mapDtoToEntity(dto)
-        
-        // Update parent if provided
-        if (parentNode && parentNode.mrid) {
-            entity.asset.location = parentNode.mrid
-        }
-
-        // Insert/Update entity (insertRotatingMachineEntity doesn't use old_entity pattern)
-        const result = await electronAPI.insertRotatingMachineEntity(entity)
-        return result
-    } catch (error) {
-        console.error('Error importing rotating machine:', error)
-        return { success: false, message: error.message }
-    }
-}
-
-/**
- * Import Capacitor
- */
-async function importCapacitor(dto, parentNode, { electronAPI, mappings }) {
-    try {
-        // Asset chỉ import vào Bay
-        if (parentNode && parentNode.mode && parentNode.mode !== 'bay') {
-            return { success: false, message: 'Capacitor can only be imported under a Bay' }
-        }
-
-        // Convert DTO to Entity
-        const entity = mappings.CapacitorMapping.mapDtoToEntity(dto)
-        
-        // Check if mrid exists to get old_entity
-        let oldEntity = null
-        if (entity.asset.mrid) {
-            const existing = await electronAPI.getCapacitorEntityByMrid(entity.asset.mrid, parentNode?.mrid || null)
-            if (existing.success && existing.data) {
-                oldEntity = existing.data
-            }
-        }
-
-        // Update parent if provided
-        if (parentNode && parentNode.mrid) {
-            entity.asset.location = parentNode.mrid
-        }
-
-        // Insert/Update entity (Capacitor uses old_entity pattern)
-        const result = await electronAPI.insertCapacitorEntity(oldEntity || {}, entity)
-        return result
-    } catch (error) {
-        console.error('Error importing capacitor:', error)
-        return { success: false, message: error.message }
-    }
-}
-
-/**
- * Import Voltage Transformer
- */
-async function importVoltageTransformer(dto, parentNode, { electronAPI, mappings }) {
-    try {
-        // Asset chỉ import vào Bay
-        if (parentNode && parentNode.mode && parentNode.mode !== 'bay') {
-            return { success: false, message: 'Voltage transformer can only be imported under a Bay' }
-        }
-
-        // Convert DTO to Entity
-        const entity = mappings.VoltageTransformerMapping.mapDtoToEntity(dto)
-        
-        // Check if mrid exists to get old_entity
-        let oldEntity = null
-        if (entity.asset.mrid) {
-            const existing = await electronAPI.getVoltageTransformerEntityByMrid(entity.asset.mrid, parentNode?.mrid || null)
-            if (existing.success && existing.data) {
-                oldEntity = existing.data
-            }
-        }
-
-        // Update parent if provided
-        if (parentNode && parentNode.mrid) {
-            entity.asset.location = parentNode.mrid
-        }
-
-        // Insert/Update entity (VoltageTransformer uses old_entity pattern)
-        const result = await electronAPI.insertVoltageTransformerEntity(oldEntity || {}, entity)
-        return result
-    } catch (error) {
-        console.error('Error importing voltage transformer:', error)
-        return { success: false, message: error.message }
-    }
-}
-
-/**
- * Import Current Transformer
- */
-async function importCurrentTransformer(dto, parentNode, { electronAPI, mappings }) {
-    try {
-        if (parentNode && parentNode.mode && parentNode.mode !== 'bay') {
-            return { success: false, message: 'Current transformer can only be imported under a Bay' }
-        }
-
-        // Convert DTO to Entity
-        const entity = mappings.CurrentTransformerMapping.mapDtoToEntity(dto)
-        
-        // Check if mrid exists to get old_entity
-        let oldEntity = null
-        if (entity.asset.mrid) {
-            const existing = await electronAPI.getCurrentTransformerEntityByMrid(entity.asset.mrid, parentNode?.mrid || null)
-            if (existing.success && existing.data) {
-                oldEntity = existing.data
-            }
-        }
-
-        // Update parent if provided
-        if (parentNode && parentNode.mrid) {
-            entity.asset.location = parentNode.mrid
-        }
-
-        // Insert/Update entity (CurrentTransformer uses old_entity pattern)
-        const result = await electronAPI.insertCurrentTransformerEntity(oldEntity || {}, entity)
-        return result
-    } catch (error) {
-        console.error('Error importing current transformer:', error)
-        return { success: false, message: error.message }
-    }
-}
-
-/**
- * Import Transformer
- */
-async function importTransformer(dto, parentNode, { electronAPI, mappings }) {
-    try {
-        // Asset chỉ import vào Bay
-        if (parentNode && parentNode.mode && parentNode.mode !== 'bay') {
-            return { success: false, message: 'Transformer can only be imported under a Bay' }
-        }
-
-        // Convert DTO to Entity
-        const entity = mappings.TransformerMapping.transformerDtoToEntity(dto)
-        
-        // Check if mrid exists to get old_entity
-        let oldEntity = null
-        if (entity.asset.mrid) {
-            const existing = await electronAPI.getTransformerEntityByMrid(entity.asset.mrid, parentNode?.mrid || null)
-            if (existing.success && existing.data) {
-                oldEntity = existing.data
-            }
-        }
-
-        // Update parent if provided
-        if (parentNode && parentNode.mrid) {
-            entity.asset.location = parentNode.mrid
-        }
-
-        // Insert/Update entity (Transformer uses old_entity pattern)
-        const result = await electronAPI.insertTransformerEntity(oldEntity || {}, entity)
-        return result
-    } catch (error) {
-        console.error('Error importing transformer:', error)
-        return { success: false, message: error.message }
-    }
-}
-
-/**
- * Import Breaker
- */
-async function importBreaker(dto, parentNode, { electronAPI, mappings }) {
-    try {
-        // Asset chỉ import vào Bay
-        if (parentNode && parentNode.mode && parentNode.mode !== 'bay') {
-            return { success: false, message: 'Breaker can only be imported under a Bay' }
-        }
-
-        // Convert DTO to Entity
-        const entity = mappings.BreakerMapping.mapDtoToEntity(dto)
-        
-        // Check if mrid exists to get old_entity
-        let oldEntity = null
-        if (entity.asset.mrid) {
-            const existing = await electronAPI.getBreakerEntityByMrid(entity.asset.mrid, parentNode?.mrid || null)
-            if (existing.success && existing.data) {
-                oldEntity = existing.data
-            }
-        }
-
-        // Update parent if provided
-        if (parentNode && parentNode.mrid) {
-            entity.asset.location = parentNode.mrid
-        }
-
-        // Insert/Update entity (Breaker uses old_entity pattern)
-        const result = await electronAPI.insertBreakerEntity(oldEntity || {}, entity)
-        return result
-    } catch (error) {
-        console.error('Error importing breaker:', error)
-        return { success: false, message: error.message }
-    }
-}
-
-/**
- * Import Reactor
- */
-async function importReactor(dto, parentNode, { electronAPI, mappings }) {
-    try {
-        // Asset chỉ import vào Bay
-        if (parentNode && parentNode.mode && parentNode.mode !== 'bay') {
-            return { success: false, message: 'Reactor can only be imported under a Bay' }
-        }
-
-        // Convert DTO to Entity
-        const entity = mappings.ReactorMapping.mapDtoToEntity(dto)
-        
-        // Check if mrid exists to get old_entity
-        let oldEntity = null
-        if (entity.asset.mrid) {
-            const existing = await electronAPI.getReactorEntityByMrid(entity.asset.mrid, parentNode?.mrid || null)
-            if (existing.success && existing.data) {
-                oldEntity = existing.data
-            }
-        }
-
-        // Update parent if provided
-        if (parentNode && parentNode.mrid) {
-            entity.asset.location = parentNode.mrid
-        }
-
-        // Insert/Update entity (Reactor uses old_entity pattern)
-        const result = await electronAPI.insertReactorEntity(oldEntity || {}, entity)
-        return result
-    } catch (error) {
-        console.error('Error importing reactor:', error)
-        return { success: false, message: error.message }
-    }
-}
-
-/**
- * Import Bushing
- */
-async function importBushing(dto, { electronAPI, mappings }) {
-    try {
-        // Convert DTO to Entity
-        const entity = mappings.BushingMapping.mapDtoToEntity(dto)
-
-        // Insert/Update entity (insertBushingEntity doesn't use old_entity pattern)
-        const result = await electronAPI.insertBushingEntity(entity)
-        return result
-    } catch (error) {
-        console.error('Error importing bushing:', error)
-        return { success: false, message: error.message }
+        messageHandler?.error?.('An error occurred while importing nodes from JSON')
+        return { success: false, message: error?.message || 'Import failed' }
     }
 }
