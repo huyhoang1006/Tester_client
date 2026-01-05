@@ -1034,8 +1034,8 @@ import * as VoltageTransformerMapping from '@/views/Mapping/VoltageTransformer/i
 import * as CurrentTransformerMapping from '@/views/Mapping/CurrentTransformer/index'
 import * as ReactorMapping from '@/views/Mapping/Reactor/index'
 import * as BushingMapping from '@/views/Mapping/Bushing/index'
-import * as rotatingMachineMapping from '@/views/Mapping/RotatingMachine/index'
-
+import * as rotatingMachineMapping from "@/views/Mapping/RotatingMachine/index"
+import * as VoltageLevelMapping from '@/views/Mapping/VoltageLevel/index'
 import {exportNodeToJSON as exportNodeToJSONUtil} from '@/function/entity/export/index'
 import {importNodeFromJSON as importNodeFromJSONUtil} from '@/function/entity/import/index'
 
@@ -1431,7 +1431,8 @@ export default {
                     TransformerMapping,
                     BreakerMapping,
                     ReactorMapping,
-                    BushingMapping
+                    BushingMapping,
+                    VoltageLevelMapping
                 },
                 userId: this.$store.state.user.user_id,
                 messageHandler: this.$message
@@ -1494,7 +1495,8 @@ export default {
                         TransformerMapping,
                         BreakerMapping,
                         ReactorMapping,
-                        BushingMapping
+                        BushingMapping,
+                        VoltageLevelMapping
                     },
                     userId: this.$store.state.user.user_id,
                     messageHandler: this.$message
@@ -1613,7 +1615,8 @@ export default {
                         TransformerMapping,
                         BreakerMapping,
                         ReactorMapping,
-                        BushingMapping
+                        BushingMapping,
+                        VoltageLevelMapping
                     },
                     userId: this.$store.state.user.user_id,
                     messageHandler: this.$message
@@ -1622,15 +1625,19 @@ export default {
                 if (result.success && result.successCount > 0) {
                     // Tạo các node đã import vào tree UI
                     if (result.importedNodes && result.importedNodes.length > 0) {
+                        console.log('importedNodes:', result.importedNodes)
                         for (const newNodeData of result.importedNodes) {
                             const parentNode = this.findNodeById(newNodeData.parentId, this.organisationClientList)
                             if (parentNode) {
                                 const children = Array.isArray(parentNode.children) ? parentNode.children : []
-                                Vue.set(parentNode, 'children', [...children, newNodeData])
+                                Vue.set(parentNode, "children", [...children, newNodeData])
+                                console.log('Added node:', newNodeData.mrid, 'to parent:', parentNode.mrid)
                             } else {
                                 console.warn(`Parent node not found for ${newNodeData.mrid}`)
                             }
                         }
+                    } else {
+                        console.warn('No importedNodes in result')
                     }
 
                     // Refresh tree để đồng bộ với database
@@ -1671,7 +1678,8 @@ export default {
                     TransformerMapping,
                     BreakerMapping,
                     ReactorMapping,
-                    BushingMapping
+                    BushingMapping,
+                    VoltageLevelMapping
                 },
                 userId: this.$store.state.user.user_id,
                 messageHandler: this.$message
