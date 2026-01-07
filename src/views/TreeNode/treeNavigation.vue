@@ -2,14 +2,11 @@
     <div class="explorer">
         <!-- Thanh công cụ -->
         <div v-show="clientSlide" class="toolbar">
-            <div style="display: flex; align-items: center">
-                <div @click="resetAllClient" class="path-hover">Organisation</div>
-                <i v-if="pathMapClient && pathMapClient.length > 0" style="margin-left: 10px" class="fa-solid fa-angle-right"></i>
-            </div>
-            <div style="display: flex; align-items: center" v-for="(item, index) in pathMapClient" :key="`client-${item.id}-${index}`">
-                <div @click="resetPathClient(index)" class="path-hover">{{ item.parent }}</div>
-                <i v-if="index < pathMapClient.length - 1" style="margin-left: 10px" class="fa-solid fa-angle-right"></i>
-            </div>
+            <TopBarClient
+                :pathMapClient.sync="pathMapClient"
+                :organisationClientList="organisationClientList"
+                @clear-selection="clearSelection"
+            />
         </div>
         <div v-show="!clientSlide" class="toolbar">
             <div style="display: flex; align-items: center">
@@ -988,6 +985,14 @@ import spinner from '@/views/Common/Spinner.vue'
 import Tabs from '@/views/Common/Tabs.vue'
 import contextMenu from '@/views/Common/ContextMenu.vue'
 
+//client
+import TopBarClient from './Client/Topbar/index.vue'
+
+// Import Mappers
+import mapClientProperties from '@/utils/MapperClient/mapClientProperties'
+import mapClientAssetProperties from '@/utils/MapperClient/mapClientAssetProperties'
+import mapClientJobProperties from '@/utils/MapperClient/mapClientJobProperties'
+
 // Import Components
 import Substation from '../LocationInsert/locationLevelView.vue'
 import Organisation from '@/views/Organisation/index.vue'
@@ -1051,9 +1056,14 @@ import RotatingMachineMixin from '@/views/AssetView/RotatingMachine/mixin/index.
 import CapacitorMixin from '@/views/AssetView/Capacitor/mixin/index.js'
 import ReactorMixin from '@/views/AssetView/Reactor/mixin/index.js'
 import BayMixin from '@/views/Bay/mixin/index.js'
+import treeNodeFind from './mixin/treeNodeFindMixin'
 export default {
     name: 'TreeNavigation',
     components: {
+        TopBarClient,
+        mapClientProperties,
+        mapClientJobProperties,
+        mapClientAssetProperties,
         LogBar,
         TreeNode,
         pageAlign,
@@ -1363,7 +1373,7 @@ export default {
             }
         }
     },
-    mixins: [mixin],
+    mixins: [mixin, treeNodeFind],
     async beforeMount() {
         try {
             const data = await window.electronAPI.getAllConfigurationEvents()
@@ -1649,10 +1659,10 @@ export default {
                 this.$message.error('An error occurred while importing JSON')
             }
 
-            // Refresh tree sau khi import thành công
-            if (result.success && result.successCount > 0) {
-                this.refreshTreeAfterImport(node)
-            }
+            // // Refresh tree sau khi import thành công
+            // if (result.success && result.successCount > 0) {
+            //     this.refreshTreeAfterImport(node)
+            // }
         },
         async handleImportJSONCIMFromContext(node) {
             this.$message.info('Import JSON by CIM ')
@@ -2953,22 +2963,7 @@ export default {
         },
 
         async mappingPropertiesClient(data) {
-            if (data != undefined) {
-                this.propertiesClient.name = data.name || ''
-                this.propertiesClient.region = data.region || data.generation || '' // Substation dùng generation
-                this.propertiesClient.plant = data.plant || data.industry || '' // Substation dùng industry
-
-                // Map địa chỉ từ Substation DTO
-                this.propertiesClient.address = data.street || data.address || ''
-                this.propertiesClient.city = data.city || ''
-                this.propertiesClient.state_province = data.state_or_province || data.state_province || ''
-                this.propertiesClient.postal_code = data.postal_code || ''
-                this.propertiesClient.country = data.country || ''
-
-                // Map liên hệ từ Substation DTO
-                this.propertiesClient.phone_no = data.phoneNumber || data.phone_no || ''
-                this.propertiesClient.email = data.email || ''
-            }
+            this.propertiesClient = mapClientProperties(data)
         },
 
         async mappingAssetPropertiesClient(data) {
@@ -4923,135 +4918,6 @@ export default {
             }
         },
 
-        async resetAllClient() {
-            ;(this.selectedNodes = []), (this.assetPropertySignClient = false)
-            this.jobPropertySignClient = false
-            this.pathMapClient = []
-            this.properties = {
-                region: '',
-                name: '',
-                plant: '',
-                address: '',
-                city: '',
-                state_province: '',
-                postal_code: '',
-                country: '',
-                phone_no: '',
-                email: ''
-            }
-            this.assetProperties = {
-                asset: '',
-                asset_type: '',
-                serial_no: '',
-                manufacturer: '',
-                manufacturer_type: '',
-                manufacturing_year: '',
-                apparatus_id: '',
-                country: ''
-            }
-            this.jobProperties = {
-                name: '',
-                work_order: '',
-                creation_date: '',
-                execution_date: '',
-                tested_by: '',
-                approved_by: '',
-                ambient_condition: '',
-                standard: ''
-            }
-            this.clientList = []
-            this.count = ''
-        },
-
-        async resetPathClient(index) {
-            // Tìm node tương ứng với index trong path
-            // Ưu tiên dùng mrid nếu có, sau đó mới dùng id
-            const targetId = this.pathMapClient[0].mrid || this.pathMapClient[0].id
-            let currentNode = this.findNodeByIdOrMrid(targetId, this.organisationClientList)
-            if (!currentNode) {
-                return // Không tìm thấy node đầu tiên
-            }
-
-            // Tìm node theo path từ node đầu tiên đến index
-            for (let i = 1; i <= index; i++) {
-                if (!currentNode.children) return // Nếu không có children thì dừng lại
-
-                // Tìm trực tiếp trong children trước (không đệ quy)
-                // Ưu tiên tìm bằng mrid nếu có, sau đó mới tìm bằng id
-                const targetId = this.pathMapClient[i].mrid || this.pathMapClient[i].id
-                let foundChild = currentNode.children.find((child) => child.mrid === targetId || child.id === targetId)
-
-                // Nếu không tìm thấy trực tiếp, mới tìm đệ quy
-                if (!foundChild) {
-                    foundChild = this.findNodeByIdOrMrid(targetId, currentNode.children)
-                }
-
-                if (!foundChild) {
-                    return // Không tìm thấy thì dừng lại
-                }
-                currentNode = foundChild
-            }
-
-            // Cập nhật pathMapClient để chỉ giữ lại path từ đầu đến node hiện tại
-            this.pathMapClient = this.pathMapClient.slice(0, index + 1)
-            // Force Vue update để đảm bảo UI được render lại đúng
-            await this.$nextTick()
-
-            // Load properties cho node hiện tại nhưng không load lại path
-            await this.clearSelection()
-
-            // Gọi mapping properties nhưng không gọi loadPathMapClient và push lại
-            this.assetPropertySignClient = false
-            this.jobPropertySignClient = false
-            if (currentNode.asset != undefined) {
-                this.assetPropertySignClient = true
-                await this.mappingAssetPropertiesClient(currentNode)
-                // Tìm parent thực sự từ cây dữ liệu thay vì dùng currentNode.parent
-                const parentNode = currentNode.parentId ? this.findNodeById(currentNode.parentId, this.organisationClientList) : null
-                if (parentNode) {
-                    await this.mappingPropertiesClient(parentNode)
-                }
-            } else if (currentNode.type == 'test') {
-                this.assetPropertySignClient = true
-                this.jobPropertySignClient = true
-                // Tìm parent thực sự từ cây dữ liệu
-                // Test -> Job (parent)
-                // Test -> Asset (parent.parent)
-                // Test -> Location (parent.parent.parent)
-                const jobNode = currentNode.parentId ? this.findNodeById(currentNode.parentId, this.organisationClientList) : null
-                const assetNode = jobNode ? (jobNode.parentId ? this.findNodeById(jobNode.parentId, this.organisationClientList) : null) : null
-                const locationNode = assetNode ? (assetNode.parentId ? this.findNodeById(assetNode.parentId, this.organisationClientList) : null) : null
-                if (locationNode) {
-                    await this.mappingPropertiesClient(locationNode)
-                }
-                if (assetNode) {
-                    await this.mappingAssetPropertiesClient(assetNode)
-                }
-                if (jobNode) {
-                    await this.mappingJobPropertiesClient(jobNode)
-                }
-            } else if (currentNode.type == 'job') {
-                this.assetPropertySignClient = true
-                this.jobPropertySignClient = true
-                // Tìm parent thực sự từ cây dữ liệu
-                // Job -> Asset (parent)
-                // Job -> Location (parent.parent)
-                const assetNode = currentNode.parentId ? this.findNodeById(currentNode.parentId, this.organisationClientList) : null
-                const locationNode = assetNode ? (assetNode.parentId ? this.findNodeById(assetNode.parentId, this.organisationClientList) : null) : null
-                if (locationNode) {
-                    await this.mappingPropertiesClient(locationNode)
-                }
-                if (assetNode) {
-                    await this.mappingAssetPropertiesClient(assetNode)
-                }
-                await this.mappingJobPropertiesClient(currentNode)
-            } else {
-                await this.mappingPropertiesClient(currentNode)
-            }
-
-            Vue.set(currentNode, 'expanded', !currentNode.expanded)
-        },
-
         async handleAddCommand(cmd) {
             const selectedNode = this.selectedNodes && this.selectedNodes.length > 0 ? this.selectedNodes[this.selectedNodes.length - 1] : null
 
@@ -5946,27 +5812,9 @@ export default {
                 })
         },
 
-        findNodeById(mrid, nodes) {
-            for (const node of nodes) {
-                if (node.mrid === mrid) return node
-                if (node.children) {
-                    const result = this.findNodeById(mrid, node.children)
-                    if (result) return result
-                }
-            }
-            return null
-        },
+        
 
-        findNodeByIdOrMrid(idOrMrid, nodes) {
-            for (const node of nodes) {
-                if (node.id === idOrMrid || node.mrid === idOrMrid) return node
-                if (node.children) {
-                    const result = this.findNodeByIdOrMrid(idOrMrid, node.children)
-                    if (result) return result
-                }
-            }
-            return null
-        },
+        
 
         async doubleClickNode(node) {
             await this.showDataClient(node)
