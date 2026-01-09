@@ -2521,7 +2521,7 @@ export default {
                         const newRowsOwner = await demoAPI.getChildOrganisation(node.id)
                         if (newRowsOwner && newRowsOwner.length > 0) {
                             newRowsOwner.forEach((row) => {
-                                row.id = row.mrid
+                                row.id = row.mrid || row.id || ''
                                 row.parentId = node.mrid
                                 row.mode = 'organisation'
                                 row.parentName = node.parentName + '/' + node.name
@@ -2536,7 +2536,7 @@ export default {
                         const newRowsSubstation = await demoAPI.getChildSubstation(node.id)
                         if (newRowsSubstation && newRowsSubstation.length > 0) {
                             newRowsSubstation.forEach((row) => {
-                                row.id = row.mrid
+                                row.id = row.mrid || row.id || ''
                                 row.parentId = node.mrid
                                 row.mode = 'substation'
                                 row.parentName = node.parentName + '/' + node.name
@@ -2553,6 +2553,7 @@ export default {
                             const newRowsBay = await demoAPI.getChildBay(node.id)
                             if (newRowsBay && newRowsBay.length > 0) {
                                 newRowsBay.forEach((row) => {
+                                    row.id = row.mrid || row.id || ''
                                     row.parentId = node.mrid
                                     row.mode = 'bay'
                                     row.parentName = node.parentName + '/' + node.name
@@ -2571,7 +2572,7 @@ export default {
                             const newRowsVoltageLevel = await demoAPI.getVoltageLevelBySubstationId(node.id)
                             if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
                                 newRowsVoltageLevel.forEach((row) => {
-                                    row.id = row.mrid
+                                    row.id = row.mrid || row.id || ''
                                     row.parentId = node.mrid
                                     row.mode = 'voltageLevel'
                                     row.parentName = node.parentName + '/' + node.name
@@ -2591,7 +2592,7 @@ export default {
                             const newRowsVoltageLevel = await demoAPI.getAssetByOwner(node.mrid, 'Substation')
                             if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
                                 newRowsVoltageLevel.forEach((row) => {
-                                    row.id = row.mrid
+                                    row.id = row.mrid || row.id || ''
                                     row.parentId = node.mrid
                                     row.mode = 'asset'
                                     row.parentName = node.parentName + '/' + node.name
@@ -2611,6 +2612,7 @@ export default {
                             const newRowsBay = await demoAPI.getBayByVoltageLevel(node.id)
                             if (newRowsBay && newRowsBay.length > 0) {
                                 newRowsBay.forEach((row) => {
+                                    row.id = row.mrid || row.id || ''
                                     row.parentId = node.mrid
                                     row.mode = 'bay'
                                     row.parentName = node.parentName + '/' + node.name
@@ -2630,7 +2632,7 @@ export default {
                             const newRowsVoltageLevel = await demoAPI.getAssetByOwner(node.mrid, 'Bay')
                             if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
                                 newRowsVoltageLevel.forEach((row) => {
-                                    row.id = row.mrid
+                                    row.id = row.mrid || row.id || ''
                                     row.parentId = node.mrid
                                     row.mode = 'asset'
                                     row.serial_number = row.serialNumber
@@ -3012,7 +3014,7 @@ export default {
                 if (res !== null) {
                     this.ownerServerList = [res].map((item) => {
                         return {
-                            id: item.mrid || '',
+                            id: item.id || item.mrid || '',
                             name: item.name || '',
                             parentName: '',
                             parentArr: [],
