@@ -27,11 +27,11 @@ export const getBayByVoltageLevel = (voltageLevelId) => {
 }
 
 export const getAssetById = (assetId, mode) => {
-    if(!assetId) {
+    if (!assetId) {
         return Promise.reject(new Error("assetId is required"));
     }
     else {
-        if(mode == 'PowerCable') {
+        if (mode == 'PowerCable') {
             return client.get(`http://103.163.118.212:30830/api/cim/power-cable/${assetId}`);
         }
     }
