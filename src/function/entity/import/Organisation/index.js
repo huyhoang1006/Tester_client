@@ -2,15 +2,14 @@ import uuid from '@/utils/uuid'
 
 export const importOrganisation = async (dto, parentNode, {electronAPI, mappings}) => {
     try {
-        if (parentNode?.mode && parentNode.mode !== 'organisation') {
+        if (parentNode && parentNode.mode && parentNode.mode !== 'organisation') {
             return { success: false, message: 'Organisation can only be imported under Organisation' }
         }
 
         const entity = mappings.OrganisationMapping.OrgDtoToOrgEntity(dto)
-        let oldEntity = null
 
         const resetMrid = () => {
-            if (entity?.organisation) {
+            if (entity && entity.organisation) {
                 entity.organisation.mrid = null
                 entity.organisation.parent_organisation = null
             }
@@ -19,15 +18,14 @@ export const importOrganisation = async (dto, parentNode, {electronAPI, mappings
         if (dto.clone === true) {
             resetMrid()
         }
-        else if (entity.organisation?.mrid) {
+        else if (entity.organisation && entity.organisation.mrid) {
             try {
-                const existing = await electronAPI.getOrganisationByMrid(entity.organisation.mrid)
+                const existing = await electronAPI.getOrganisationEntityByMrid(entity.organisation.mrid)
                 if (
-                    existing.success &&
-                    existing.data?.organisation?.parent_organisation === parentNode?.mrid
+                    !(existing.success &&
+                    existing.data && existing.data.organisation &&
+                    existing.data.organisation.parent_organisation === (parentNode && parentNode.mrid))
                 ) {
-                    oldEntity = existing.data
-                } else {
                     resetMrid()
                 }
             } catch (e) {
@@ -36,15 +34,15 @@ export const importOrganisation = async (dto, parentNode, {electronAPI, mappings
             }
         }
 
-        if (!entity.organisation?.mrid) {
+        if (!(entity.organisation && entity.organisation.mrid)) {
             entity.organisation.mrid = uuid.newUuid()
         }
 
-        if (parentNode?.mrid) {
+        if (parentNode && parentNode.mrid) {
             entity.organisation.parent_organisation = parentNode.mrid
         }
 
-        return await electronAPI.insertOrganisationEntity(oldEntity || {}, entity)
+        return await electronAPI.insertParentOrganizationEntity(entity)
 
     } catch (error) {
         console.error('Error importing organisation:', error)
