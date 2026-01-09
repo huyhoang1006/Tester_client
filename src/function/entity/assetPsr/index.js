@@ -55,6 +55,15 @@ export const insertAssetPsr = async (data) => {
 // Transaction: Thêm mới assetPsr
 export const insertAssetPsrTransaction = (data, dbsql) => {
     return new Promise((resolve, reject) => {
+        // Validate required fields
+        if (!data || !data.mrid || !data.asset_id || !data.psr_id) {
+            return reject({ 
+                success: false, 
+                err: new Error('Missing required fields: mrid, asset_id, or psr_id'), 
+                message: 'Insert assetPsr transaction failed - missing required fields' 
+            })
+        }
+        
         dbsql.run(
             `INSERT INTO asset_psr(
                 mrid, asset_id, psr_id
@@ -70,6 +79,8 @@ export const insertAssetPsrTransaction = (data, dbsql) => {
             ],
             function (err) {
                 if (err) {
+                    console.error('AssetPsr insert error:', err)
+                    console.error('AssetPsr data:', data)
                     return reject({ success: false, err: err, message: 'Insert assetPsr transaction failed' })
                 }
                 return resolve({ success: true, data: data, message: 'Insert assetPsr transaction completed' })
