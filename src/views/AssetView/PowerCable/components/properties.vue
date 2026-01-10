@@ -1,7 +1,7 @@
 <template>
     <div id="properties">
         <el-row :gutter="20" class="content">
-            <el-col :span="12" class="col-content">
+            <el-col :xs="24" :md="12" class="col-content">
                 <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Properties</span>
                     <el-divider></el-divider>
@@ -52,7 +52,7 @@
                     </el-form-item>
                 </el-form>
             </el-col>
-            <el-col :span="12" class="col-content">
+            <el-col :xs="24" :md="12" class="col-content">
                 <el-form :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Comment</span>
                     <el-divider></el-divider>

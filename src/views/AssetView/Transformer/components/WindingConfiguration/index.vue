@@ -12,9 +12,9 @@
 
         <div class="content-toggle" v-if="openWindingConfiguration">
             <el-row :gutter="20" class="content">
-                <el-col :span="12">
+                <el-col :xs="24" :sm="24" :md="12">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
-                        <el-form-item label="Phases">
+                        <el-form-item label="Phases" class="inline-phases">
                             <el-radio-group @change="onChangePhase" v-model="windingConfigurationData.phases">
                                 <el-radio type="number" label="1"></el-radio>
                                 <el-radio type="number" label="3"></el-radio>
@@ -248,4 +248,44 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+    @media (max-width: 768px) {
+        ::v-deep(.el-form-item) {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        ::v-deep(.el-form-item__label) {
+            width: auto !important;
+            margin-left: 0 !important;
+            padding: 0 0 4px 0;
+            text-align: left;
+            line-height: 1.2;
+        }
+
+        ::v-deep(.el-form-item__content) {
+            width: 100%;
+            margin-left: 0 !important;
+        }
+
+        ::v-deep(.inline-phases) {
+            flex-direction: row;
+            align-items: center;
+        }
+        
+        ::v-deep(.inline-phases .el-form-item__label) {
+            width: 80px !important;
+            padding-bottom: 0;
+        }
+        
+        ::v-deep(.inline-phases .el-form-item__content) {
+            width: auto;
+        }
+        
+        ::v-deep(.inline-phases .el-radio-group) {
+            display: flex;
+            gap: 12px;
+        }
+    }
+</style>

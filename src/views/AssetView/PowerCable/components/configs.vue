@@ -1,7 +1,7 @@
 <template>
     <div id="properties">
         <el-row style="margin-top: 50px;" :gutter="20" class="content">
-            <el-col :span="8" class="col-content">
+            <el-col :xs="24" :md="12" class="col-content">
                 <div style="min-height: 200px;">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <span class="bolder">Phase</span>
@@ -55,36 +55,35 @@
                     </el-form>
                 </div>
             </el-col>
-            <el-col :span="8" class="col-content">
+            <el-col :xs="24" :md="12" class="col-content">
                 <div style="min-height: 200px;">
                     <el-form :label-width="labelWidth" size="mini">
                         <span class="bolder">Layer construction</span>
                         <el-divider></el-divider>
                         <el-row style="margin-top: 20px; width: 100%;">
                             <el-col :span="12">
-                                <el-checkbox style="width: 100%; margin-top: 10px;" v-model="layersData.conductor"
-                                    label="Conductor" @change="onLayerCheckboxChange"/>
-                                <el-checkbox style="width: 100%; margin-top: 10px;"
-                                    v-model="layersData.conductor_shield" label="Conductor shield" @change="onLayerCheckboxChange"/>
-                                <el-checkbox style="width: 100%; margin-top: 10px;" v-model="layersData.insulation"
-                                    label="Insulation" @change="onLayerCheckboxChange"/>
-                                <el-checkbox style="width: 100%; margin-top: 10px;"
-                                    v-model="layersData.insulation_screen" label="Insulation screen" @change="onLayerCheckboxChange"/>
-                                <el-checkbox style="width: 100%; margin-top: 10px;" v-model="layersData.sheath"
-                                    label="Sheath" @change="onLayerCheckboxChange"/>
+                                <el-checkbox class="checkbox-full" v-model="layersData.conductor" label="Conductor"
+                                    @change="onLayerCheckboxChange" />
+                                <el-checkbox class="checkbox-full" v-model="layersData.conductor_shield"
+                                    label="Conductor shield" @change="onLayerCheckboxChange" />
+                                <el-checkbox class="checkbox-full" v-model="layersData.insulation" label="Insulation"
+                                    @change="onLayerCheckboxChange" />
+                                <el-checkbox class="checkbox-full" v-model="layersData.insulation_screen"
+                                    label="Insulation screen" @change="onLayerCheckboxChange" />
+                                <el-checkbox class="checkbox-full" v-model="layersData.sheath" label="Sheath"
+                                    @change="onLayerCheckboxChange" />
                             </el-col>
                             <el-col :span="12">
-                                <el-checkbox style="width: 100%; margin-top: 10px;"
-                                    v-model="layersData.sheath_reinforcing"
-                                    label="Sheath reinforcing tap" @change="onLayerCheckboxChange"/>
-                                <el-checkbox style="width: 100%; margin-top: 10px;"
-                                    v-model="layersData.concentric_neutral" label="Concentric neutral" @change="onLayerCheckboxChange"/>
-                                <el-checkbox style="width: 100%; margin-top: 10px;" v-model="layersData.armour_bedding"
-                                    label="Amour bedding" @change="onLayerCheckboxChange"/>
-                                <el-checkbox style="width: 100%; margin-top: 10px;" v-model="layersData.armour"
-                                    label="Amour" @change="onLayerCheckboxChange"/>
-                                <el-checkbox style="width: 100%; margin-top: 10px;" v-model="layersData.oversheath"
-                                    label="Oversheath/Jacket/Serving" @change="onLayerCheckboxChange"/>
+                                <el-checkbox class="checkbox-full" v-model="layersData.sheath_reinforcing"
+                                    label="Sheath reinforcing tap" @change="onLayerCheckboxChange" />
+                                <el-checkbox class="checkbox-full" v-model="layersData.concentric_neutral"
+                                    label="Concentric neutral" @change="onLayerCheckboxChange" />
+                                <el-checkbox class="checkbox-full" v-model="layersData.armour_bedding"
+                                    label="Amour bedding" @change="onLayerCheckboxChange" />
+                                <el-checkbox class="checkbox-full" v-model="layersData.armour" label="Amour"
+                                    @change="onLayerCheckboxChange" />
+                                <el-checkbox class="checkbox-full" v-model="layersData.oversheath"
+                                    label="Oversheath/Jacket/Serving" @change="onLayerCheckboxChange" />
                             </el-col>
                         </el-row>
                     </el-form>
@@ -126,7 +125,7 @@
             </el-col>
         </el-row>
         <el-row :gutter="20" class="content">
-            <el-col :span="8" class="col-content">
+            <el-col :xs="24" :md="12" :lg="8" class="col-content">
                 <el-form class="height_form" v-if="layersData.conductor" style="margin-top: 50px;"
                     :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Conductor</span>
@@ -348,7 +347,7 @@
                     </el-form-item>
                 </el-form>
             </el-col>
-            <el-col :span="8" class="col-content">
+            <el-col :xs="24" :md="12" :lg="8" class="col-content">
                 <el-form class="height_form" v-if="layersData.conductor_shield" style="margin-top: 50px;"
                     :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Conductor shield</span>
@@ -493,7 +492,7 @@
                     </el-form-item>
                 </el-form>
             </el-col>
-            <el-col :span="8" class="col-content">
+            <el-col :xs="24" :md="12" :lg="8" class="col-content">
                 <el-form class="height_form" v-if="layersData.sheath" style="margin-top: 50px;" :inline-message="true"
                     :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Sheath</span>
@@ -607,7 +606,7 @@ export default {
         return {
             openRatings: "true",
             labelWidth: `200px`,
-            autoLayerTicked: false 
+            autoLayerTicked: false
         }
     },
     mounted() {
@@ -721,5 +720,16 @@ div.el-input-group__append {
 
 .bolder {
     font-size: 12px;
+}
+
+::v-deep(.checkbox-full) {
+    display: flex;
+    align-items: flex-start;
+}
+
+::v-deep(.checkbox-full .el-checkbox__label) {
+    white-space: normal;
+    line-height: 18px;
+    padding-left: 6px;
 }
 </style>
