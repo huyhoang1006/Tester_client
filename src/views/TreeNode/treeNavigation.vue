@@ -2,25 +2,26 @@
     <div class="explorer">
         <!-- Thanh công cụ -->
         <div v-show="clientSlide" class="toolbar">
-            <TopBarClient
-                :pathMapClient.sync="pathMapClient"
-                :organisationClientList="organisationClientList"
-                @clear-selection="clearSelection"
-            />
+            <TopBarClient :pathMapClient.sync="pathMapClient" :organisationClientList="organisationClientList"
+                @clear-selection="clearSelection" />
         </div>
         <div v-show="!clientSlide" class="toolbar">
             <div style="display: flex; align-items: center">
                 <div @click="resetAllServer" class="path-hover">Organisation</div>
-                <i v-if="pathMapServer && pathMapServer.length > 0" style="margin-left: 10px" class="fa-solid fa-angle-right"></i>
+                <i v-if="pathMapServer && pathMapServer.length > 0" style="margin-left: 10px"
+                    class="fa-solid fa-angle-right"></i>
             </div>
-            <div style="display: flex; align-items: center" v-for="(item, index) in pathMapServer" :key="`server-${item.id}-${index}`">
+            <div style="display: flex; align-items: center" v-for="(item, index) in pathMapServer"
+                :key="`server-${item.id}-${index}`">
                 <div @click="resetPathServer(index)" class="path-hover">{{ item.parent }}</div>
-                <i v-if="index < pathMapServer.length - 1" style="margin-left: 10px" class="fa-solid fa-angle-right"></i>
+                <i v-if="index < pathMapServer.length - 1" style="margin-left: 10px"
+                    class="fa-solid fa-angle-right"></i>
             </div>
         </div>
         <div id="toolbar-setting-id" class="toolbar-setting">
             <div>
-                <el-dropdown ref="addDropdown" @command="handleAddCommand" @visible-change="handleDropdownVisibleChange" trigger="click">
+                <el-dropdown ref="addDropdown" @command="handleAddCommand" @visible-change="handleDropdownVisibleChange"
+                    trigger="click">
                     <span class="icon-wrapper">
                         <i title="Add" style="font-size: 12px" class="fa-solid fa-square-plus"></i>
                     </span>
@@ -37,14 +38,11 @@
                         <el-dropdown-item v-if="isCommandAllowed('bay')" command="bay">
                             <icon size="12px" folderType="bay" badgeColor="146EBE"></icon> add Bay
                         </el-dropdown-item>
-                        <el-dropdown-item
-                            v-if="isCommandAllowed('asset')"
-                            command="asset"
-                            class="asset-submenu-parent"
-                            @mouseenter.native="showAssetSub = true"
-                            @mouseleave.native="showAssetSub = false">
+                        <el-dropdown-item v-if="isCommandAllowed('asset')" command="asset" class="asset-submenu-parent"
+                            @mouseenter.native="showAssetSub = true" @mouseleave.native="showAssetSub = false">
                             <icon size="12px" folderType="asset" badgeColor="146EBE"></icon> add Asset
-                            <div class="asset-submenu" v-if="showAssetSub" @click.stop @mouseenter.stop @mouseleave.stop>
+                            <div class="asset-submenu" v-if="showAssetSub" @click.stop @mouseenter.stop
+                                @mouseleave.stop>
                                 <div class="submenu-item" @click="handleAssetCommand('Transformer')">
                                     <i class="fa-solid fa-bolt"></i>
                                     <span>Add Transformer</span>
@@ -101,30 +99,39 @@
                 <i @click="handleOpenNode" title="Open" style="font-size: 12px" class="fa-regular fa-folder-open"></i>
             </div>
             <div>
-                <i @click="duplicateSelectedNodes" title="Duplicate" style="font-size: 12px" class="fa-solid fa-clone"></i>
+                <i @click="duplicateSelectedNodes" title="Duplicate" style="font-size: 12px"
+                    class="fa-solid fa-clone"></i>
             </div>
             <div>
                 <el-dropdown @command="handleImportCommand" trigger="click">
                     <i title="Import" style="font-size: 12px" class="fa-solid fa-file-import"></i>
                     <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item class="import-json-parent" @mouseenter.native="showSubImport = 'json'" @mouseleave.native="showSubImport = null">
-                            <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon> import from JSON
-                            <div class="import-json-submenu" v-if="showSubImport === 'json'" @click.stop @mouseenter.stop @mouseleave.stop>
+                        <el-dropdown-item class="import-json-parent" @mouseenter.native="showSubImport = 'json'"
+                            @mouseleave.native="showSubImport = null">
+                            <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon>
+                            import from JSON
+                            <div class="import-json-submenu" v-if="showSubImport === 'json'" @click.stop
+                                @mouseenter.stop @mouseleave.stop>
                                 <div class="submenu-item" @click="handleImportCommand('importJSON')">import JSON</div>
-                                <div class="submenu-item" @click="handleImportCommand('importJSONCIM')">import JSON by CIM</div>
+                                <div class="submenu-item" @click="handleImportCommand('importJSONCIM')">import JSON by
+                                    CIM</div>
                             </div>
                         </el-dropdown-item>
                         <el-dropdown-item command="importXML">
-                            <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon> import from XML
+                            <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon>
+                            import from XML
                         </el-dropdown-item>
                         <el-dropdown-item command="importExcel">
-                            <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon> import from Excel
+                            <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon>
+                            import from Excel
                         </el-dropdown-item>
                         <el-dropdown-item command="importWord">
-                            <icon size="12px" fileTypeDetail="word" folderType="fileType" badgeColor="146EBE"></icon> import from Word
+                            <icon size="12px" fileTypeDetail="word" folderType="fileType" badgeColor="146EBE"></icon>
+                            import from Word
                         </el-dropdown-item>
                         <el-dropdown-item command="importPDF">
-                            <icon size="12px" fileTypeDetail="pdf" folderType="fileType" badgeColor="146EBE"></icon> import from PDF
+                            <icon size="12px" fileTypeDetail="pdf" folderType="fileType" badgeColor="146EBE"></icon>
+                            import from PDF
                         </el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
@@ -133,24 +140,32 @@
                 <el-dropdown @command="handleCommand" trigger="click">
                     <i title="Export" style="font-size: 12px" class="fa-solid fa-file-export"></i>
                     <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item class="export-json-parent" @mouseenter.native="showSub = 'json'" @mouseleave.native="showSub = null">
-                            <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon> export to JSON
-                            <div class="export-json-submenu" v-if="showSub === 'json'" @click.stop @mouseenter.stop @mouseleave.stop>
+                        <el-dropdown-item class="export-json-parent" @mouseenter.native="showSub = 'json'"
+                            @mouseleave.native="showSub = null">
+                            <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon>
+                            export to JSON
+                            <div class="export-json-submenu" v-if="showSub === 'json'" @click.stop @mouseenter.stop
+                                @mouseleave.stop>
                                 <div class="submenu-item" @click="handleCommand('exportJSON')">export JSON</div>
-                                <div class="submenu-item" @click="handleCommand('exportJSONCIM')">export JSON by CIM</div>
+                                <div class="submenu-item" @click="handleCommand('exportJSONCIM')">export JSON by CIM
+                                </div>
                             </div>
                         </el-dropdown-item>
                         <el-dropdown-item command="exportXML">
-                            <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon> export to XML
+                            <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon>
+                            export to XML
                         </el-dropdown-item>
                         <el-dropdown-item command="exportExcel">
-                            <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon> export to Excel
+                            <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon>
+                            export to Excel
                         </el-dropdown-item>
                         <el-dropdown-item command="exportWord">
-                            <icon size="12px" fileTypeDetail="word" folderType="fileType" badgeColor="146EBE"></icon> export to Word
+                            <icon size="12px" fileTypeDetail="word" folderType="fileType" badgeColor="146EBE"></icon>
+                            export to Word
                         </el-dropdown-item>
                         <el-dropdown-item command="exportPDF">
-                            <icon size="12px" fileTypeDetail="pdf" folderType="fileType" badgeColor="146EBE"></icon> export to PDF
+                            <icon size="12px" fileTypeDetail="pdf" folderType="fileType" badgeColor="146EBE"></icon>
+                            export to PDF
                         </el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
@@ -159,7 +174,8 @@
                 <i title="Upload" style="font-size: 12px" class="fa-solid fa-upload"></i>
             </div>
             <div v-if="!clientSlide">
-                <i @click="handleDownloadNode" title="Download" style="font-size: 12px" class="fa-solid fa-download"></i>
+                <i @click="handleDownloadNode" title="Download" style="font-size: 12px"
+                    class="fa-solid fa-download"></i>
             </div>
             <div>
                 <i @click="handleDeleteNode" title="Delete" style="font-size: 12px" class="fa-solid fa-trash"></i>
@@ -168,7 +184,8 @@
                 <i title="Fmeca" style="font-size: 12px" class="fa-solid fa-table"></i>
             </div>
             <div>
-                <i @click="handleMoveNode" title="Move" style="font-size: 12px" class="fa-solid fa-arrows-up-down-left-right"></i>
+                <i @click="handleMoveNode" title="Move" style="font-size: 12px"
+                    class="fa-solid fa-arrows-up-down-left-right"></i>
             </div>
         </div>
         <!-- Thanh điều hướng có thể kéo rộng/kéo hẹp -->
@@ -176,56 +193,35 @@
             <div ref="sidebarClient" v-show="clientSlide" class="sidebar">
                 <div class="title-temp">
                     <div ref="tabContainer" class="tab-container">
-                        <div @contextmenu.prevent="showContext" ref="locationRoot" @click="showLocationRoot" class="location">Location</div>
+                        <div @contextmenu.prevent="showContext" ref="locationRoot" @click="showLocationRoot"
+                            class="location">Location</div>
                         <div ref="ownerRoot" class="tab">Owner</div>
                     </div>
                     <contextMenu @show-addSubs="showAddSubs" ref="contextSubstation"></contextMenu>
                 </div>
                 <div class="child-nav">
                     <ul>
-                        <TreeNode
-                            v-for="item in organisationClientList"
-                            :key="item.id"
-                            :node="item"
-                            @double-click-node="doubleClickNode"
-                            :selectedNodes.sync="selectedNodes"
-                            @fetch-children="fetchChildren"
-                            @show-properties="showPropertiesDataClient"
-                            @update-selection="updateSelection"
-                            @clear-selection="clearSelection"
+                        <TreeNode v-for="item in organisationClientList" :key="item.id" :node="item"
+                            @double-click-node="doubleClickNode" :selectedNodes.sync="selectedNodes"
+                            @fetch-children="fetchChildren" @show-properties="showPropertiesDataClient"
+                            @update-selection="updateSelection" @clear-selection="clearSelection"
                             @open-context-menu="openContextMenuClient">
                         </TreeNode>
                     </ul>
-                    <contextMenu
-                        @delete-data="deleteDataClient"
-                        @show-addSubsInTree="showAddSubsInTree"
-                        @show-addOrganisation="showAddOrganisation"
-                        @show-addVoltageLevel="showAddVoltageLevel"
-                        @show-addTransformer="showAddTransformer"
-                        @show-addJob="showAddJob"
-                        @show-addBushing="showAddBushing"
-                        @show-addSurgeArrester="showAddSurgeArrester"
-                        @show-addCircuit="showAddCircuitBreaker"
-                        @show-addVt="showAddVt"
-                        @show-addCt="showAddCt"
-                        @show-addPowerCable="showAddPowerCable"
-                        @show-addDisconnector="showAddDisconnector"
-                        @show-addCapacitor="showAddCapacitor"
-                        @show-addReactor="showAddReactor"
-                        @show-addRotatingMachine="showAddRotatingMachine"
-                        @show-addBay="showAddBay"
-                        @export-json="handleExportJSONFromContext"
-                        @export-json-cim="handleExportJSONCIMFromContext"
-                        @export-xml="handleExportXMLFromContext"
-                        @export-excel="handleExportExcelFromContext"
-                        @export-word="handleExportWordFromContext"
-                        @export-pdf="handleExportPDFFromContext"
-                        @duplicate-node="handleDuplicateFromContext"
-                        @move-node="handleMoveFromContext"
-                        @import-json="handleImportJSONFromContext"
-                        @import-json-cim="handleImportJSONCIMFromContext"
-                        @show-data="showDataClient"
-                        ref="contextMenuClient">
+                    <contextMenu @delete-data="deleteDataClient" @show-addSubsInTree="showAddSubsInTree"
+                        @show-addOrganisation="showAddOrganisation" @show-addVoltageLevel="showAddVoltageLevel"
+                        @show-addTransformer="showAddTransformer" @show-addJob="showAddJob"
+                        @show-addBushing="showAddBushing" @show-addSurgeArrester="showAddSurgeArrester"
+                        @show-addCircuit="showAddCircuitBreaker" @show-addVt="showAddVt" @show-addCt="showAddCt"
+                        @show-addPowerCable="showAddPowerCable" @show-addDisconnector="showAddDisconnector"
+                        @show-addCapacitor="showAddCapacitor" @show-addReactor="showAddReactor"
+                        @show-addRotatingMachine="showAddRotatingMachine" @show-addBay="showAddBay"
+                        @export-json="handleExportJSONFromContext" @export-json-cim="handleExportJSONCIMFromContext"
+                        @export-xml="handleExportXMLFromContext" @export-excel="handleExportExcelFromContext"
+                        @export-word="handleExportWordFromContext" @export-pdf="handleExportPDFFromContext"
+                        @duplicate-node="handleDuplicateFromContext" @move-node="handleMoveFromContext"
+                        @import-json="handleImportJSONFromContext" @import-json-cim="handleImportJSONCIMFromContext"
+                        @show-data="showDataClient" ref="contextMenuClient">
                     </contextMenu>
                 </div>
             </div>
@@ -237,32 +233,19 @@
                 </div>
                 <div class="child-nav">
                     <ul>
-                        <TreeNode
-                            v-for="item in ownerServerList"
-                            :key="item.id"
-                            :node="item"
-                            :selectedNodes.sync="selectedNodes"
-                            @fetch-children="fetchChildrenServer"
-                            @show-properties="showPropertiesData"
-                            @update-selection="updateSelection"
-                            @clear-selection="clearSelection"
-                            @open-context-menu="openContextMenu"
+                        <TreeNode v-for="item in ownerServerList" :key="item.id" :node="item"
+                            :selectedNodes.sync="selectedNodes" @fetch-children="fetchChildrenServer"
+                            @show-properties="showPropertiesData" @update-selection="updateSelection"
+                            @clear-selection="clearSelection" @open-context-menu="openContextMenu"
                             @double-click-node="doubleClickNodeServer">
                         </TreeNode>
                     </ul>
-                    <contextMenu
-                        @show-data="showData"
-                        @export-json="handleExportJSONFromContext"
-                        @export-json-cim="handleExportJSONCIMFromContext"
-                        @export-xml="handleExportXMLFromContext"
-                        @export-excel="handleExportExcelFromContext"
-                        @export-word="handleExportWordFromContext"
-                        @export-pdf="handleExportPDFFromContext"
-                        @duplicate-node="handleDuplicateFromContext"
-                        @move-node="handleMoveFromContext"
-                        @import-json="handleImportJSONFromContext"
-                        @import-json-cim="handleImportJSONCIMFromContext"
-                        ref="contextMenu"></contextMenu>
+                    <contextMenu @show-data="showData" @export-json="handleExportJSONFromContext"
+                        @export-json-cim="handleExportJSONCIMFromContext" @export-xml="handleExportXMLFromContext"
+                        @export-excel="handleExportExcelFromContext" @export-word="handleExportWordFromContext"
+                        @export-pdf="handleExportPDFFromContext" @duplicate-node="handleDuplicateFromContext"
+                        @move-node="handleMoveFromContext" @import-json="handleImportJSONFromContext"
+                        @import-json-cim="handleImportJSONCIMFromContext" ref="contextMenu"></contextMenu>
                 </div>
             </div>
             <div @mousedown="startResizeClient" v-if="clientSlide" ref="resizerClient" class="resizer"></div>
@@ -272,7 +255,8 @@
                     <div ref="content" class="content">
                         <div class="title-content"></div>
                         <div class="content-content">
-                            <Tabs :side="'server'" ref="serverTabs" v-model="activeTab" :tabs="tabs" @close-tab="removeTab" />
+                            <Tabs :side="'server'" ref="serverTabs" v-model="activeTab" :tabs="tabs"
+                                @close-tab="removeTab" />
                         </div>
                     </div>
                     <div @mousedown="startResizeContentServer" ref="resizerContentServer" class="resizer"></div>
@@ -293,35 +277,43 @@
                             <div class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Name</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.name }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.name }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Region</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.region }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.region }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Plant</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.plant }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.plant }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Address</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.address }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.address }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">City</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.city }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.city }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">State/Province</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.state_province }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.state_province }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Postal code</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.postal_code }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.postal_code }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Country</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.country }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.country }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Geo coordinates</div>
@@ -329,11 +321,13 @@
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Phone number</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.phone_no }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.phone_no }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Email</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.email }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.email }}</div>
                                 </div>
                             </div>
                             <div v-if="assetPropertySign" class="content-properties-header">
@@ -343,35 +337,43 @@
                             <div v-if="assetPropertySign" class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Asset</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.asset }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetProperties.asset }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Asset type</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.asset_type }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetProperties.asset_type }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Serial number</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.serial_no }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetProperties.serial_no }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Manufacturer</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.manufacturer }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetProperties.manufacturer }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Manufacturer type</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.manufacturer_type }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetProperties.manufacturer_type }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Manufacturing year</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.manufacturing_year }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetProperties.manufacturing_year }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Country</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.country }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetProperties.country }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Apparatus id</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.apparatus_id }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetProperties.apparatus_id }}</div>
                                 </div>
                             </div>
                             <div v-if="jobPropertySign" class="content-properties-header">
@@ -381,35 +383,43 @@
                             <div v-if="jobPropertySign" class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Name</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.name }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobProperties.name }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Work order</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.work_order }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobProperties.work_order }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Creation date</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.creation_date }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobProperties.creation_date }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Execution date</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.execution_date }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobProperties.execution_date }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Tested by</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.tested_by }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobProperties.tested_by }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Approved by</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.approved_by }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobProperties.approved_by }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Ambient condition</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.ambient_condition }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobProperties.ambient_condition }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Standard</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.standard }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobProperties.standard }}</div>
                                 </div>
                             </div>
                             <div class="content-properties-header">
@@ -443,7 +453,8 @@
                     <div ref="contentClient" class="content">
                         <div class="title-content"></div>
                         <div class="content-content">
-                            <Tabs :side="'client'" ref="clientTabs" v-model="activeTabClient" :tabs="tabsClient" @close-tab="removeTabClient" />
+                            <Tabs :side="'client'" ref="clientTabs" v-model="activeTabClient" :tabs="tabsClient"
+                                @close-tab="removeTabClient" />
                         </div>
                     </div>
                     <div @mousedown="startResizeContentClient" ref="resizerContentClient" class="resizer"></div>
@@ -464,23 +475,28 @@
                             <div class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Name</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.name || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.name || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Region</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.region || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.region || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Plant</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.plant || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.plant || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Address</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.address || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.address || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">City</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.city || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.city || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">State/Province</div>
@@ -490,11 +506,13 @@
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Postal code</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.postal_code || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.postal_code || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Country</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.country || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.country || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Geo coordinates</div>
@@ -504,11 +522,13 @@
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Phone number</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.phone_no || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.phone_no || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Email</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.email || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.email || '&nbsp;' }}</div>
                                 </div>
                             </div>
                             <div v-if="assetPropertySignClient" class="content-properties-header">
@@ -518,7 +538,8 @@
                             <div v-if="assetPropertySignClient" class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Asset</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.asset || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetPropertiesClient.asset || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Asset type</div>
@@ -570,35 +591,43 @@
                             <div v-if="jobPropertySignClient" class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Name</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.name }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobPropertiesClient.name }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Work order</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.work_order }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobPropertiesClient.work_order }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Creation date</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.creation_date }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobPropertiesClient.creation_date }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Execution date</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.execution_date }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobPropertiesClient.execution_date }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Tested by</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.tested_by }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobPropertiesClient.tested_by }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Approved by</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.approved_by }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobPropertiesClient.approved_by }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Ambient condition</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.ambient_condition }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobPropertiesClient.ambient_condition }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Standard</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.standard }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobPropertiesClient.standard }}</div>
                                 </div>
                             </div>
                             <div class="content-properties-header">
@@ -624,17 +653,14 @@
                     <div v-if="!propertiesSignClient" @click="showPropertiesClient" class="trapezoid"></div>
                 </div>
                 <div ref="logBarClient" v-if="logSignClient" class="log-bar">
-                    <LogBar @reloadLog="reloadLogClient" :logData="logDataClient" @hideLogBar="hideLogBarClient"> </LogBar>
+                    <LogBar @reloadLog="reloadLogClient" :logData="logDataClient" @hideLogBar="hideLogBarClient">
+                    </LogBar>
                 </div>
             </div>
         </div>
         <el-dialog title="Add Substation" :visible.sync="signSubs" width="1000px" @close="handleSubsCancel">
-            <Substation
-                :parentOrganization="parentOrganization"
-                :personList="personList"
-                :locationList="locationList"
-                :organisationId="organisationId"
-                ref="substation"></Substation>
+            <Substation :parentOrganization="parentOrganization" :personList="personList" :locationList="locationList"
+                :organisationId="organisationId" ref="substation"></Substation>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleSubsCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleSubsConfirm">Save</el-button>
@@ -649,7 +675,8 @@
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Voltage Level" :visible.sync="signVoltageLevel" width="1000px" @close="handleVoltageLevelCancel">
+        <el-dialog title="Add Voltage Level" :visible.sync="signVoltageLevel" width="1000px"
+            @close="handleVoltageLevelCancel">
             <VoltageLevel :locationId="locationId" :parent="parentOrganization" ref="voltageLevel"></VoltageLevel>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleVoltageLevelCancel">Cancel</el-button>
@@ -665,15 +692,9 @@
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Transformer"
-            :visible.sync="signTransformer"
-            width="1000px"
-            @close="handleTransformerCancel"
-            :modal="!isDuplicating"
-            :show-close="!isDuplicating"
-            :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
+        <el-dialog title="Add Transformer" :visible.sync="signTransformer" width="65%"
+            @close="handleTransformerCancel" :modal="!isDuplicating" :show-close="!isDuplicating"
+            :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="isDuplicating ? 'ghost-dialog' : ''">
             <Transformer :locationId="locationId" :parent="parentOrganization" ref="transformer"></Transformer>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleTransformerCancel">Cancel</el-button>
@@ -681,14 +702,8 @@
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Bushing"
-            :visible.sync="signBushing"
-            width="1000px"
-            @close="handleBushingCancel"
-            :modal="!isDuplicating"
-            :show-close="!isDuplicating"
-            :transition="isDuplicating ? '' : 'dialog-fade'"
+        <el-dialog title="Add Bushing" :visible.sync="signBushing" width="65%" @close="handleBushingCancel"
+            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
             :custom-class="isDuplicating ? 'ghost-dialog' : ''">
             <Bushing :locationId="locationId" :parent="parentOrganization" ref="bushing"></Bushing>
             <span slot="footer" class="dialog-footer">
@@ -697,14 +712,8 @@
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Surge Arrester"
-            :visible.sync="signSurge"
-            width="1000px"
-            @close="handleSurgeCancel"
-            :modal="!isDuplicating"
-            :show-close="!isDuplicating"
-            :transition="isDuplicating ? '' : 'dialog-fade'"
+        <el-dialog title="Add Surge Arrester" :visible.sync="signSurge" width="65%" @close="handleSurgeCancel"
+            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
             :custom-class="isDuplicating ? 'ghost-dialog' : ''">
             <SurgeArrester :locationId="locationId" :parent="parentOrganization" ref="surgeArrester"></SurgeArrester>
             <span slot="footer" class="dialog-footer">
@@ -713,14 +722,8 @@
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Circuit Breaker"
-            :visible.sync="signCircuit"
-            width="1000px"
-            @close="handleCircuitCancel"
-            :modal="!isDuplicating"
-            :show-close="!isDuplicating"
-            :transition="isDuplicating ? '' : 'dialog-fade'"
+        <el-dialog title="Add Circuit Breaker" :visible.sync="signCircuit" width="65%" @close="handleCircuitCancel"
+            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
             :custom-class="isDuplicating ? 'ghost-dialog' : ''">
             <CircuitBreaker :locationId="locationId" :parent="parentOrganization" ref="circuitBreaker"></CircuitBreaker>
             <span slot="footer" class="dialog-footer">
@@ -729,46 +732,30 @@
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Current Transformer"
-            :visible.sync="signCt"
-            width="1000px"
-            @close="handleCtCancel"
-            :modal="!isDuplicating"
-            :show-close="!isDuplicating"
-            :transition="isDuplicating ? '' : 'dialog-fade'"
+        <el-dialog title="Add Current Transformer" :visible.sync="signCt" width="65%" @close="handleCtCancel"
+            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
             :custom-class="isDuplicating ? 'ghost-dialog' : ''">
-            <CurrentTransformer :locationId="locationId" :parent="parentOrganization" ref="currentTransformer"> </CurrentTransformer>
+            <CurrentTransformer :locationId="locationId" :parent="parentOrganization" ref="currentTransformer">
+            </CurrentTransformer>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleCtCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleCtConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Voltage Transformer"
-            :visible.sync="signVt"
-            width="1000px"
-            @close="handleVtCancel"
-            :modal="!isDuplicating"
-            :show-close="!isDuplicating"
-            :transition="isDuplicating ? '' : 'dialog-fade'"
+        <el-dialog title="Add Voltage Transformer" :visible.sync="signVt" width="65%" @close="handleVtCancel"
+            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
             :custom-class="isDuplicating ? 'ghost-dialog' : ''">
-            <VoltageTransformer :locationId="locationId" :parent="parentOrganization" ref="voltageTransformer"> </VoltageTransformer>
+            <VoltageTransformer :locationId="locationId" :parent="parentOrganization" ref="voltageTransformer">
+            </VoltageTransformer>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleVtCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleVtConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Power Cable"
-            :visible.sync="signPower"
-            width="1000px"
-            @close="handlePowerCancel"
-            :modal="!isDuplicating"
-            :show-close="!isDuplicating"
-            :transition="isDuplicating ? '' : 'dialog-fade'"
+        <el-dialog title="Add Power Cable" :visible.sync="signPower" width="65%" @close="handlePowerCancel"
+            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
             :custom-class="isDuplicating ? 'ghost-dialog' : ''">
             <PowerCable :locationId="locationId" :parent="parentOrganization" ref="powerCable"></PowerCable>
             <span slot="footer" class="dialog-footer">
@@ -777,15 +764,9 @@
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Disconnector"
-            :visible.sync="signDisconnector"
-            width="1000px"
-            @close="handleDisconnectorCancel"
-            :modal="!isDuplicating"
-            :show-close="!isDuplicating"
-            :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
+        <el-dialog title="Add Disconnector" :visible.sync="signDisconnector" width="65%"
+            @close="handleDisconnectorCancel" :modal="!isDuplicating" :show-close="!isDuplicating"
+            :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="isDuplicating ? 'ghost-dialog' : ''">
             <Disconnector :locationId="locationId" :parent="parentOrganization" ref="disconnector"></Disconnector>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleDisconnectorCancel">Cancel</el-button>
@@ -793,29 +774,18 @@
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Rotating Machine"
-            :visible.sync="signRotating"
-            width="1000px"
-            @close="handleRotatingCancel"
-            :modal="!isDuplicating"
-            :show-close="!isDuplicating"
-            :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
-            <RotatingMachine :locationId="locationId" :parent="parentOrganization" ref="rotatingMachine"> </RotatingMachine>
+        <el-dialog title="Add Rotating Machine" :visible.sync="signRotating" width="65%"
+            @close="handleRotatingCancel" :modal="!isDuplicating" :show-close="!isDuplicating"
+            :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="isDuplicating ? 'ghost-dialog' : ''">
+            <RotatingMachine :locationId="locationId" :parent="parentOrganization" ref="rotatingMachine">
+            </RotatingMachine>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" type="danger" @click="handleRotatingCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleRotatingConfirm">Save</el-button>
             </span>
         </el-dialog>
-        <el-dialog
-            title="Add Capacitor"
-            :visible.sync="signCapacitor"
-            width="1000px"
-            @close="handleCapacitorCancel"
-            :modal="!isDuplicating"
-            :show-close="!isDuplicating"
-            :transition="isDuplicating ? '' : 'dialog-fade'"
+        <el-dialog title="Add Capacitor" :visible.sync="signCapacitor" width="65%" @close="handleCapacitorCancel"
+            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
             :custom-class="isDuplicating ? 'ghost-dialog' : ''">
             <Capacitor :locationId="locationId" :parent="parentOrganization" ref="capacitor"> </Capacitor>
             <span slot="footer" class="dialog-footer">
@@ -824,14 +794,8 @@
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Reactor"
-            :visible.sync="signReactor"
-            width="1000px"
-            @close="handleReactorCancel"
-            :modal="!isDuplicating"
-            :show-close="!isDuplicating"
-            :transition="isDuplicating ? '' : 'dialog-fade'"
+        <el-dialog title="Add Reactor" :visible.sync="signReactor" width="65%" @close="handleReactorCancel"
+            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
             :custom-class="isDuplicating ? 'ghost-dialog' : ''">
             <Reactor :locationId="locationId" :parent="parentOrganization" ref="reactor"> </Reactor>
             <span slot="footer" class="dialog-footer">
@@ -841,13 +805,8 @@
         </el-dialog>
 
         <el-dialog title="Add Job" :visible.sync="signJob" width="1000px" @close="handleJobCancel">
-            <component
-                ref="jobData"
-                :is="checkJobType"
-                :locationData="locationData"
-                :assetData="assetData"
-                :productAssetModelData="productAssetModelData"
-                :parent="parentOrganization"
+            <component ref="jobData" :is="checkJobType" :locationData="locationData" :assetData="assetData"
+                :productAssetModelData="productAssetModelData" :parent="parentOrganization"
                 :testTypeListData="testTypeListData">
             </component>
             <span slot="footer" class="dialog-footer">
@@ -878,18 +837,14 @@
                 <el-button size="small" type="primary" @click="handleFmecaConfirm">Save</el-button>
             </span>
         </el-dialog>
-        <el-dialog title="Move Node" :visible.sync="moveDialogVisible" width="450px" @close="handleMoveCancel" custom-class="move-dialog">
+        <el-dialog title="Move Node" :visible.sync="moveDialogVisible" width="450px" @close="handleMoveCancel"
+            custom-class="move-dialog">
             <div style="height: 300px; overflow-y: auto">
                 <div class="child-nav" style="height: 100%; cursor: pointer">
                     <ul style="list-style: none; padding-left: 0">
-                        <TreeNode
-                            v-for="item in moveTreeData"
-                            :key="item.mrid"
-                            :node="item"
-                            :selectedNodes="selectedTargetNodes"
-                            @fetch-children="fetchChildrenForMove"
-                            @update-selection="handleMoveNodeSelection"
-                            @open-context-menu="() => {}"
+                        <TreeNode v-for="item in moveTreeData" :key="item.mrid" :node="item"
+                            :selectedNodes="selectedTargetNodes" @fetch-children="fetchChildrenForMove"
+                            @update-selection="handleMoveNodeSelection" @open-context-menu="() => { }"
                             style="width: 100%">
                         </TreeNode>
                     </ul>
@@ -897,9 +852,7 @@
             </div>
             <!-- Dòng kẻ ngăn cách TreeNode và dòng chữ bên dưới -->
             <div style="border-top: 1px solid #e0e0e0; margin: 6px 0 4px 0"></div>
-            <div
-                v-if="moveDisplayText"
-                style="
+            <div v-if="moveDisplayText" style="
                     margin-top: 8px;
                     font-size: 13px;
                     color: #606266;
@@ -917,9 +870,7 @@
 
                 <!-- Cột 2: icon + node A (giữa trái) -->
                 <div style="flex: 1; display: flex; align-items: center; gap: 4px; justify-content: center">
-                    <icon
-                        v-if="moveDisplayData.sourceIcon"
-                        :size="'16px'"
+                    <icon v-if="moveDisplayData.sourceIcon" :size="'16px'"
                         :folderType="moveDisplayData.sourceIcon.folderType"
                         :assetDetail="moveDisplayData.sourceIcon.assetDetail"
                         :badgeColor="moveDisplayData.sourceIcon.badgeColor"></icon>
@@ -929,15 +880,14 @@
                 </div>
 
                 <!-- Cột 3: to (ở gần giữa, sát 2 node hơn) -->
-                <span style="flex: 0; padding: 0 8px; text-align: center; white-space: nowrap; font-weight: bold; color: black">
+                <span
+                    style="flex: 0; padding: 0 8px; text-align: center; white-space: nowrap; font-weight: bold; color: black">
                     {{ moveDisplayText.middle }}
                 </span>
 
                 <!-- Cột 4: icon + node B (phải) -->
                 <div style="flex: 1; display: flex; align-items: center; gap: 4px; justify-content: center">
-                    <icon
-                        v-if="moveDisplayData.targetIcon"
-                        :size="'16px'"
+                    <icon v-if="moveDisplayData.targetIcon" :size="'16px'"
                         :folderType="moveDisplayData.targetIcon.folderType"
                         :assetDetail="moveDisplayData.targetIcon.assetDetail"
                         :badgeColor="moveDisplayData.targetIcon.badgeColor"></icon>
@@ -947,30 +897,29 @@
                 </div>
             </div>
             <span slot="footer" class="dialog-footer">
-                <el-button size="small" @click="moveDialogVisible = false" style="background-color: #d63743; color: #fff">Cancel</el-button>
-                <el-button size="small" type="primary" @click="confirmMoveNode" :disabled="!selectedTargetNode">Move</el-button>
+                <el-button size="small" @click="moveDialogVisible = false"
+                    style="background-color: #d63743; color: #fff">Cancel</el-button>
+                <el-button size="small" type="primary" @click="confirmMoveNode"
+                    :disabled="!selectedTargetNode">Move</el-button>
             </span>
         </el-dialog>
         <!-- Dialog chọn cha khi download -->
-        <el-dialog title="Select Parent Node for Downloaded Asset" :visible.sync="downloadDialogVisible" width="450px" @close="downloadDialogVisible = false">
+        <el-dialog title="Select Parent Node for Downloaded Asset" :visible.sync="downloadDialogVisible" width="450px"
+            @close="downloadDialogVisible = false">
             <div style="height: 300px; overflow-y: auto">
                 <div class="child-nav">
                     <ul style="list-style: none; padding-left: 0">
-                        <TreeNode
-                            v-for="item in moveTreeData"
-                            :key="item.mrid"
-                            :node="item"
-                            :selectedNodes="selectedDownloadTargetNodes"
-                            @fetch-children="fetchChildren"
-                            @update-selection="handleDownloadTargetSelection"
-                            @open-context-menu="() => {}">
+                        <TreeNode v-for="item in moveTreeData" :key="item.mrid" :node="item"
+                            :selectedNodes="selectedDownloadTargetNodes" @fetch-children="fetchChildren"
+                            @update-selection="handleDownloadTargetSelection" @open-context-menu="() => { }">
                         </TreeNode>
                     </ul>
                 </div>
             </div>
             <span slot="footer" class="dialog-footer">
                 <el-button size="small" @click="downloadDialogVisible = false">Cancel</el-button>
-                <el-button size="small" type="primary" @click="confirmDownloadSelection" :disabled="!selectedDownloadTargetNode">Confirm Download</el-button>
+                <el-button size="small" type="primary" @click="confirmDownloadSelection"
+                    :disabled="!selectedDownloadTargetNode">Confirm Download</el-button>
             </span>
         </el-dialog>
     </div>
@@ -1041,8 +990,8 @@ import * as ReactorMapping from '@/views/Mapping/Reactor/index'
 import * as BushingMapping from '@/views/Mapping/Bushing/index'
 import * as rotatingMachineMapping from "@/views/Mapping/RotatingMachine/index"
 import * as VoltageLevelMapping from '@/views/Mapping/VoltageLevel/index'
-import {exportNodeToJSON as exportNodeToJSONUtil} from '@/function/entity/export/index'
-import {importNodeFromJSON as importNodeFromJSONUtil} from '@/function/entity/import/index'
+import { exportNodeToJSON as exportNodeToJSONUtil } from '@/function/entity/export/index'
+import { importNodeFromJSON as importNodeFromJSONUtil } from '@/function/entity/import/index'
 
 import TransformerMixin from '@/views/AssetView/Transformer/mixin/index.js'
 import SurgeArresterMixin from '@/views/AssetView/SurgeArrester/mixin/index.js'
@@ -1343,25 +1292,25 @@ export default {
             const getIconConfig = (node) => {
                 const mode = node.mode
                 if (mode === 'substation') {
-                    return {folderType: 'location', assetDetail: 'Unknown', badgeColor: '146EBE'}
+                    return { folderType: 'location', assetDetail: 'Unknown', badgeColor: '146EBE' }
                 }
                 if (mode === 'voltageLevel') {
-                    return {folderType: 'voltageLevel', assetDetail: 'Unknown', badgeColor: '146EBE'}
+                    return { folderType: 'voltageLevel', assetDetail: 'Unknown', badgeColor: '146EBE' }
                 }
                 if (mode === 'bay') {
-                    return {folderType: 'bay', assetDetail: 'Unknown', badgeColor: '146EBE'}
+                    return { folderType: 'bay', assetDetail: 'Unknown', badgeColor: '146EBE' }
                 }
                 if (mode === 'asset') {
-                    return {folderType: 'asset', assetDetail: node.asset || 'Unknown', badgeColor: '146EBE'}
+                    return { folderType: 'asset', assetDetail: node.asset || 'Unknown', badgeColor: '146EBE' }
                 }
                 if (mode === 'job') {
-                    return {folderType: 'job', assetDetail: 'Unknown', badgeColor: 'FF0000'}
+                    return { folderType: 'job', assetDetail: 'Unknown', badgeColor: 'FF0000' }
                 }
                 if (mode === 'test') {
-                    return {folderType: 'test', assetDetail: 'Unknown', badgeColor: '008001'}
+                    return { folderType: 'test', assetDetail: 'Unknown', badgeColor: '008001' }
                 }
                 // default: owner/building
-                return {folderType: 'building', assetDetail: 'Unknown', badgeColor: '008001'}
+                return { folderType: 'building', assetDetail: 'Unknown', badgeColor: '008001' }
             }
 
             const sourceIcon = getIconConfig(nodeToMove)
@@ -2427,7 +2376,7 @@ export default {
         async checkChildren(node) {
             // Kiểm tra nếu đã load children trong tree
             if (node.children && node.children.length > 0) {
-                return {hasChildren: true} // Có children trong tree → không xóa
+                return { hasChildren: true } // Có children trong tree → không xóa
             }
 
             // Nếu chưa load, fetch từ DB để kiểm tra (KHÔNG load vào tree)
@@ -2506,10 +2455,10 @@ export default {
                     }
                 }
 
-                return {hasChildren}
+                return { hasChildren }
             } catch (error) {
                 console.error('Error checking children:', error)
-                return {hasChildren: true} // An toàn: giả sử có children nếu lỗi
+                return { hasChildren: true } // An toàn: giả sử có children nếu lỗi
             }
         },
 
@@ -3092,7 +3041,7 @@ export default {
                 left = clickX - menuWidth
                 if (left < 0) left = 0
             }
-            this.$refs.contextMenuClient.openContextMenu(event, node, {top, left})
+            this.$refs.contextMenuClient.openContextMenu(event, node, { top, left })
         },
 
         async showContext(event) {
@@ -3167,7 +3116,7 @@ export default {
             try {
                 const subs = this.$refs.substation
                 if (subs) {
-                    const {success, data} = await subs.saveSubstation()
+                    const { success, data } = await subs.saveSubstation()
                     if (success) {
                         this.$message.success('Substation saved successfully')
                         this.signSubs = false
@@ -3202,7 +3151,7 @@ export default {
             try {
                 const org = this.$refs.organisation
                 if (org) {
-                    const {success, data} = await org.saveOrganisation()
+                    const { success, data } = await org.saveOrganisation()
                     if (success) {
                         this.$message.success('Organisation saved successfully')
                         this.signOrg = false
@@ -3237,7 +3186,7 @@ export default {
             try {
                 const voltageLevel = this.$refs.voltageLevel
                 if (voltageLevel) {
-                    const {success, data} = await voltageLevel.saveVoltageLevel()
+                    const { success, data } = await voltageLevel.saveVoltageLevel()
                     if (success) {
                         this.$message.success('Voltage Level saved successfully')
                         this.signVoltageLevel = false
@@ -3272,7 +3221,7 @@ export default {
             try {
                 const bay = this.$refs.bay
                 if (bay) {
-                    const {success, data} = await bay.saveBay()
+                    const { success, data } = await bay.saveBay()
                     if (success) {
                         this.$message.success('Bay saved successfully')
                         this.signBay = false
@@ -3309,7 +3258,7 @@ export default {
             try {
                 const transformer = this.$refs.transformer
                 if (transformer) {
-                    const {success, data} = await transformer.saveAsset()
+                    const { success, data } = await transformer.saveAsset()
                     if (success) {
                         this.$message.success('Transformer saved successfully')
                         this.signTransformer = false
@@ -3348,7 +3297,7 @@ export default {
             try {
                 const bushing = this.$refs.bushing
                 if (bushing) {
-                    const {success, data} = await bushing.saveAsset()
+                    const { success, data } = await bushing.saveAsset()
                     if (success) {
                         this.$message.success('Bushing saved successfully')
                         this.signBushing = false
@@ -3387,7 +3336,7 @@ export default {
             try {
                 const surgeArrester = this.$refs.surgeArrester
                 if (surgeArrester) {
-                    const {success, data} = await surgeArrester.saveAsset()
+                    const { success, data } = await surgeArrester.saveAsset()
                     if (success) {
                         this.$message.success('Surge Arrester saved successfully')
                         this.signSurge = false
@@ -3426,7 +3375,7 @@ export default {
             try {
                 const breaker = this.$refs.circuitBreaker
                 if (breaker) {
-                    const {success, data} = await breaker.saveAsset()
+                    const { success, data } = await breaker.saveAsset()
                     if (success) {
                         this.$message.success('Circuit breaker saved successfully')
                         this.signCircuit = false
@@ -3465,7 +3414,7 @@ export default {
             try {
                 const currentTransformer = this.$refs.currentTransformer
                 if (currentTransformer) {
-                    const {success, data} = await currentTransformer.saveAsset()
+                    const { success, data } = await currentTransformer.saveAsset()
                     if (success) {
                         this.$message.success('Current transformer saved successfully')
                         this.signCt = false
@@ -3504,7 +3453,7 @@ export default {
             try {
                 const voltageTransformer = this.$refs.voltageTransformer
                 if (voltageTransformer) {
-                    const {success, data} = await voltageTransformer.saveAsset()
+                    const { success, data } = await voltageTransformer.saveAsset()
                     if (success) {
                         this.$message.success('Voltage transformer saved successfully')
                         this.signVt = false
@@ -3543,7 +3492,7 @@ export default {
             try {
                 const powerCable = this.$refs.powerCable
                 if (powerCable) {
-                    const {success, data} = await powerCable.saveAsset()
+                    const { success, data } = await powerCable.saveAsset()
                     if (success) {
                         this.$message.success('Power cable saved successfully')
                         this.signPower = false
@@ -3582,7 +3531,7 @@ export default {
             try {
                 const disconnector = this.$refs.disconnector
                 if (disconnector) {
-                    const {success, data} = await disconnector.saveAsset()
+                    const { success, data } = await disconnector.saveAsset()
                     if (success) {
                         this.$message.success('Disconnector saved successfully')
                         this.signDisconnector = false
@@ -3621,7 +3570,7 @@ export default {
             try {
                 const rotatingMachine = this.$refs.rotatingMachine
                 if (rotatingMachine) {
-                    const {success, data} = await rotatingMachine.saveAsset()
+                    const { success, data } = await rotatingMachine.saveAsset()
                     if (success) {
                         this.$message.success('Rotating machine saved successfully')
                         this.signRotating = false
@@ -3660,7 +3609,7 @@ export default {
             try {
                 const capacitor = this.$refs.capacitor
                 if (capacitor) {
-                    const {success, data} = await capacitor.saveAsset()
+                    const { success, data } = await capacitor.saveAsset()
                     if (success) {
                         this.$message.success('Capacitor saved successfully')
                         this.signCapacitor = false
@@ -3699,7 +3648,7 @@ export default {
             try {
                 const reactor = this.$refs.reactor
                 if (reactor) {
-                    const {success, data} = await reactor.saveAsset()
+                    const { success, data } = await reactor.saveAsset()
                     if (success) {
                         this.$message.success('Reactor saved successfully')
                         this.signReactor = false
@@ -3744,7 +3693,7 @@ export default {
             try {
                 const job = this.$refs.jobData
                 if (job) {
-                    const {success, data} = await job.saveJob()
+                    const { success, data } = await job.saveJob()
                     if (success) {
                         this.$message.success('Job saved successfully')
                         this.signJob = false
@@ -3798,7 +3747,7 @@ export default {
         async showData(node) {
             try {
                 // Tạo bản sao của node để đảm bảo reactivity
-                const newNode = {...node}
+                const newNode = { ...node }
                 // Sử dụng mrid hoặc id để check tab đã tồn tại
                 const nodeKey = newNode.mrid || newNode.id
                 const existingTab = this.tabs.find((item) => (item.mrid || item.id) === nodeKey)
@@ -3839,7 +3788,7 @@ export default {
         async showDataClient(node) {
             try {
                 // Tạo bản sao của node để đảm bảo reactivity
-                const newNode = {...node}
+                const newNode = { ...node }
                 const index = this.tabsClient.findIndex((item) => item.mrid === newNode.mrid)
                 if (index !== -1) {
                     // Nếu tab đã tồn tại, active nó
@@ -4822,11 +4771,11 @@ export default {
                         console.error(error)
                     }
                 })
-                .catch(() => {})
+                .catch(() => { })
         },
 
         async resetAllServer() {
-            ;(this.selectedNodes = []), (this.assetPropertySign = false)
+            ; (this.selectedNodes = []), (this.assetPropertySign = false)
             this.jobPropertySign = false
             this.pathMapServer = []
             this.properties = {
@@ -5688,7 +5637,7 @@ export default {
                 type: 'info'
             })
                 .then(async () => {
-                    let result = {success: false}
+                    let result = { success: false }
 
                     if (node.asset === 'Transformer') {
                         result = await this.processDuplicateAsset(
@@ -5785,7 +5734,7 @@ export default {
                             node,
                             window.electronAPI.getBayEntityByMrid,
                             (entity) => {
-                                return {mrid: entity.mrid, name: entity.name, ...entity}
+                                return { mrid: entity.mrid, name: entity.name, ...entity }
                             },
                             BayMixin,
                             'properties'
@@ -5814,9 +5763,9 @@ export default {
                 })
         },
 
-        
 
-        
+
+
 
         async doubleClickNode(node) {
             await this.showDataClient(node)
@@ -6229,7 +6178,7 @@ export default {
                 } else {
                     // Trường hợp 2: Chưa có cha -> Hiện cây Client để chọn cha
                     this.nodeToDownloadData = dto
-                    this.moveTreeData = this.buildMoveTreeData(this.organisationClientList, {mrid: 'none'}, this.getValidParentTypes('asset'))
+                    this.moveTreeData = this.buildMoveTreeData(this.organisationClientList, { mrid: 'none' }, this.getValidParentTypes('asset'))
                     this.downloadDialogVisible = true
                 }
             } catch (error) {
@@ -6855,7 +6804,7 @@ export default {
 }
 
 /* Ẩn backdrop/modal mask - Ẩn TẤT CẢ backdrop khi có dialog với class ghost-dialog */
-body > .v-modal {
+body>.v-modal {
     transition: none !important;
 }
 
@@ -6899,7 +6848,7 @@ body.duplicating-mode .v-modal {
 }
 
 /* Ẩn tất cả backdrop ngay khi duplicate */
-body.duplicating-mode > .v-modal {
+body.duplicating-mode>.v-modal {
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;

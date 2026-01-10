@@ -12,7 +12,7 @@
 
         <div class="content-toggle" v-if="openOthers">
             <el-row :gutter="20" class="content">
-                <el-col :span="12" class="col-content">
+                <el-col :span="16" class="col-content">
                     <el-form :model="othersData" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Category">
                             <el-select
@@ -67,29 +67,19 @@
                                 <el-option label="Other" value="Other"></el-option>
                             </el-select>
                         </el-form-item>
-                        <el-form-item label="Insulation">
-                            <el-radio-group v-model="othersData.insulation.key" class="w-100">
-                                <el-row :gutter="0" class="mgb-5">
-                                    <el-col :span="8">
-                                        <el-radio label="Weight" value="Weight" style="line-height: 28px"> Weight </el-radio>
-                                    </el-col>
-                                    <el-col :span="16">
-                                        <el-input v-model="othersData.insulation.weight.value">
-                                            <template slot="append">{{ othersData.insulation.weight.unit }}</template>
-                                        </el-input>
-                                    </el-col>
-                                </el-row>
-                                <el-row :gutter="0">
-                                    <el-col :span="8">
-                                        <el-radio label="Volume" value="Volume" style="line-height: 28px"> Volume </el-radio>
-                                    </el-col>
-                                    <el-col :span="16">
-                                        <el-input v-model="othersData.insulation.volume.value">
-                                            <template slot="append">{{ othersData.insulation.volume.unit }}</template>
-                                        </el-input>
-                                    </el-col>
-                                </el-row>
-                            </el-radio-group>
+                        <el-form-item label="Insulation" class="insulation-item">
+                            <div class="insulation-row">
+                                <el-radio label="Weight" v-model="othersData.insulation.key">Weight</el-radio>
+                                <el-input v-model="othersData.insulation.weight.value" size="mini" class="insulation-input">
+                                    <template slot="append">{{ othersData.insulation.weight.unit }}</template>
+                                </el-input>
+                            </div>
+                            <div class="insulation-row">
+                                <el-radio label="Volume" v-model="othersData.insulation.key">Volume</el-radio>
+                                <el-input v-model="othersData.insulation.volume.value" class="insulation-input">
+                                    <template slot="append">{{ othersData.insulation.volume.unit }}</template>
+                                </el-input>
+                            </div>                                        
                         </el-form-item>
                         <el-form-item label="Total weight">
                             <el-input v-model="othersData.total_weight.value">
@@ -217,4 +207,26 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+    ::v-deep(.insulation-item .el-form-item__content) {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    ::v-deep(.insulation-row) {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    ::v-deep(.insulation-row .el-radio) {
+        width: 90px;
+        margin-right: 0;
+    }
+
+    ::v-deep(.insulation-input) {
+        max-width: 160px;
+        flex-shrink: 0;
+    }
+</style>

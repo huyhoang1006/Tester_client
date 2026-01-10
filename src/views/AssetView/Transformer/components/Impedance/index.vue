@@ -12,10 +12,10 @@
         <div class="content-toggle" v-if="openImpedances">
             <!-- ref temp -->
             <el-row :gutter="20" class="content">
-                <el-col :span="8" class="col-content">
-                    <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
+                <el-col :span="10" :xs="24" class="col-content ref-temp-col">
+                    <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left" class="ref-temp-form">
                         <el-form-item label="Ref. temp">
-                            <el-input v-model="impedancesData.ref_temp.value">
+                            <el-input v-model="impedancesData.ref_temp.value" class="ref-temp-input">
                                 <template slot="append">{{ unitSymbol.degC }}</template>
                             </el-input>
                         </el-form-item>
@@ -28,13 +28,24 @@
                 <el-col :span="24" class="col-content">
                     <span class="bolder">Short-circuit impedance Prim-Sec</span>
                     <el-divider></el-divider>
-                    <el-row :gutter="20">
-                        <el-col :span="24">
-                            <el-button size="mini" type="primary" class="btn-action" @click="addPrimSec"> <i class="fas fa-plus"></i> Add </el-button>
-                            <el-button size="mini" type="primary" class="btn-action" @click="removeAllPrimSec">
-                                <i class="fas fa-xmark"></i>
-                                Remove all
-                            </el-button>
+                </el-col>
+                <el-col :span="24" class="col-content">
+                    <el-row :gutter="8" class="mgt-10">
+                        <el-col :xs="24" :md="12">
+                            <el-row :gutter="8">
+                                <el-col :span="12">
+                                    <el-button size="mini" type="primary" class="btn-fluid" @click="addPrimSec">
+                                        <i class="fas fa-plus"></i>
+                                        Add
+                                    </el-button>
+                                </el-col>
+                                <el-col :span="12">
+                                    <el-button size="mini" type="primary" class="btn-fluid" @click="removeAllPrimSec">
+                                        <i class="fas fa-xmark"></i>
+                                        Remove all
+                                    </el-button>
+                                </el-col>
+                            </el-row>
                         </el-col>
                     </el-row>
                     <table class="mgt-5 table-strip-input-data" style="width: 100%; table-layout: fixed;">
@@ -120,6 +131,8 @@
                 <el-col :span="24" class="col-content">
                     <span class="bolder">Short-circuit impedance Prim-Tert</span>
                     <el-divider></el-divider>
+                </el-col>
+                <el-col :span="24" class="col-content">
                     <el-row :gutter="20">
                         <el-col :span="24">
                             <el-button size="mini" type="primary" class="btn-action" @click="addPrimTert"> <i class="fas fa-plus"></i> Add </el-button>
@@ -299,12 +312,14 @@
 
             <!-- zero sequence impedances -->
             <el-row :gutter="20" class="content mgt-10">
-                <el-col :span="8" class="col-content">
+                <el-col :span="24" class="col-content">
                     <span class="bolder">Zero sequence impedance</span>
                     <el-divider></el-divider>
+                </el-col>
+                <el-col :span="24">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Base power">
-                            <el-input v-model="impedancesData.zero_sequence_impedance.base_power.data.value">
+                            <el-input v-model="impedancesData.zero_sequence_impedance.base_power.data.value" class="ref-temp-input">
                                 <el-select size="mini" class="select-in-input" v-model="impedancesData.zero_sequence_impedance.base_power.data.unit" slot="append">
                                     <el-option :label="unitMultiplier.m + unitSymbol.VA" :value="unitMultiplier.m + '|' + unitSymbol.VA"></el-option>
                                     <el-option :label="unitMultiplier.k + unitSymbol.VA" :value="unitMultiplier.k + '|' + unitSymbol.VA"></el-option>
@@ -312,7 +327,7 @@
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Base voltage">
-                            <el-input v-model="impedancesData.zero_sequence_impedance.base_voltage.data.value">
+                            <el-input v-model="impedancesData.zero_sequence_impedance.base_voltage.data.value" class="ref-temp-input">
                                 <el-select size="mini" class="select-in-input" v-model="impedancesData.zero_sequence_impedance.base_voltage.data.unit" slot="append">
                                     <el-option :label="unitMultiplier.k + unitSymbol.V" :value="unitMultiplier.k + '|' + unitSymbol.V"></el-option>
                                     <el-option :label="unitSymbol.V" :value="unitSymbol.V"></el-option>
@@ -320,7 +335,7 @@
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Zero sequence Z0(%)">
-                            <el-input v-model="impedancesData.zero_sequence_impedance.zero_percent.zero.data.value" v-if="properties.type === $constant.TWO_WINDING || properties.type === $constant.THREE_WINDING">
+                            <el-input v-model="impedancesData.zero_sequence_impedance.zero_percent.zero.data.value" v-if="properties.type === $constant.TWO_WINDING || properties.type === $constant.THREE_WINDING" class="ref-temp-input">
                                 <template slot="append">{{ unitSymbol.percent }}</template>
                             </el-input>
 
@@ -604,4 +619,20 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+    ::v-deep(.ref-temp-form .el-form-item) {
+        margin-bottom: 0;
+    }
+
+    ::v-deep(.ref-temp-input) {
+        width: 130px;
+    }
+
+    ::v-deep(.btn-fluid) {
+        width: 100%;
+        min-width: 0 !important;
+        padding-left: 8px;
+        padding-right: 8px;
+        box-sizing: border-box;
+    }
+</style>

@@ -12,22 +12,20 @@
         <div class="content-toggle" v-if="openRatings">
             <!-- rated frequency -->
             <el-row :gutter="20" class="content">
-                <el-col :span="12" class="col-content">
+                <el-col :xs="24" :md="16" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
-                        <el-form-item label="Rated frequency">
-                            <el-col :span="12" class="pdl-0">
+                        <el-form-item label="Rated frequency" class="inline-two-input">
+                            <div class="rf-wrap">
                                 <el-select v-model="ratingsData.rated_frequency.value">
                                     <el-option label="Custom" value="Custom"></el-option>
                                     <el-option :label="'60' + unitSymbol.Hz" value="60"></el-option>
                                     <el-option :label="'50' + unitSymbol.Hz" value="50"></el-option>
                                     <el-option :label="'16.7' + unitSymbol.Hz" value="16.7"></el-option>
                                 </el-select>
-                            </el-col>
-                            <el-col :span="12" class="pdr-0" v-if="ratingsData.rated_frequency.value === 'Custom'">
                                 <el-input v-model="ratingsData.rated_frequency.custom_value" size="mini">
                                     <template slot="append">{{ unitSymbol.Hz }}</template>
                                 </el-input>
-                            </el-col>
+                            </div>
                         </el-form-item>
                     </el-form>
                 </el-col>
@@ -35,19 +33,25 @@
 
             <!-- voltage ratings -->
             <el-row :gutter="20" class="content mgt-10">
-                <el-col :span="20" class="col-content">
+                <el-col :span="24" class="col-content">
                     <span class="bolder">Voltage ratings</span>
                     <el-divider></el-divider>
-                    <el-row :gutter="20" class="mgt-10">
-                        <el-col :span="24">
-                            <el-button size="mini" type="primary" class="btn-action" @click="addVoltageRating">
-                                <i class="fas fa-plus"></i>
-                                Add
-                            </el-button>
-                            <el-button size="mini" type="primary" class="btn-action" @click="removeAllVoltageRating">
-                                <i class="fas fa-xmark"></i>
-                                Remove all
-                            </el-button>
+                    <el-row :gutter="8" class="mgt-10">
+                        <el-col :xs="24" :md="12" :lg="12">
+                            <el-row :gutter="8">
+                                <el-col :span="12">
+                                    <el-button size="mini" type="primary" class="btn-fluid" @click="addVoltageRating">
+                                        <i class="fas fa-plus"></i>
+                                        Add
+                                    </el-button>
+                                </el-col>
+                                <el-col :span="12">
+                                    <el-button size="mini" type="primary" class="btn-fluid" @click="removeAllVoltageRating">
+                                        <i class="fas fa-xmark"></i>
+                                        Remove all
+                                    </el-button>
+                                </el-col>
+                            </el-row>
                         </el-col>
                     </el-row>
                     <table class="mgt-5 table-strip-input-data" style="width: 100%; table-layout: fixed;">
@@ -113,10 +117,14 @@
             </el-row>
 
             <!-- Voltage regulation -->
-            <el-row :gutter="20" class="content mgt-10">
-                <el-col :span="12" class="col-content">
+            <el-row class="content mgt-10">
+                <el-col :span="24">
                     <span class="bolder">Voltage regulation</span>
                     <el-divider></el-divider>
+                </el-col>
+            </el-row>
+            <el-row class="content">
+                <el-col :xs="24" :md="12">
                     <table class="mgt-5 table-strip-input-data" style="width: 100%; table-layout: fixed;">
                         <thead>
                             <tr>
@@ -134,8 +142,7 @@
                                     </el-select>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="item.voltage_regulation">
-                                    </el-input>
+                                    <el-input size="mini" v-model="item.voltage_regulation"></el-input>
                                 </td>
                             </tr>
                         </tbody>
@@ -145,18 +152,29 @@
 
             <!-- power ratings -->
             <el-row :gutter="20" class="content mgt-10">
-                <el-col :span="16" class="col-content">
+                <el-col :span="24" class="col-content">
                     <span class="bolder">Power ratings</span>
                     <el-divider></el-divider>
-                    <el-row :gutter="20" class="mgt-10">
-                        <el-col :span="24">
-                            <el-button size="mini" type="primary" class="btn-action" @click="addPowerRating"> <i class="fas fa-plus"></i> Add </el-button>
-                            <el-button size="mini" type="primary" class="btn-action" @click="removeAllPowerRating">
-                                <i class="fas fa-xmark"></i>
-                                Remove all
-                            </el-button>
+                    <el-row :gutter="8" class="mgt-10">
+                        <el-col :xs="24" :md="12">
+                            <el-row :gutter="8">
+                                <el-col :span="12">
+                                    <el-button size="mini" type="primary" class="btn-fluid" @click="addPowerRating">
+                                        <i class="fas fa-plus"></i>
+                                        Add
+                                    </el-button>
+                                </el-col>
+                                <el-col :span="12">
+                                    <el-button size="mini" type="primary" class="btn-fluid" @click="removeAllPowerRating">
+                                        <i class="fas fa-xmark"></i>
+                                        Remove all
+                                    </el-button>
+                                </el-col>
+                            </el-row>
                         </el-col>
                     </el-row>
+                </el-col>
+                <el-col :xs="24" :md="20">
                     <table class="mgt-5 table-strip-input-data" style="width: 100%; table-layout: fixed;">
                         <thead>
                             <tr>
@@ -215,9 +233,11 @@
 
             <!-- current ratings -->
             <el-row :gutter="20" class="content mgt-10">
-                <el-col :span="16" class="col-content">
+                <el-col :span="24" class="col-content">
                     <span class="bolder">Current ratings at rated power</span>
                     <el-divider></el-divider>
+                </el-col>
+                <el-col :xs="24" :md="20">
                     <table class="mgt-5 table-strip-input-data" style="width: 100%; table-layout: fixed;">
                         <thead>
                             <tr>
@@ -247,7 +267,7 @@
                                 </td>
                                 <td v-if="properties.type === $constant.THREE_WINDING">
                                     <el-input size="mini" v-model="item.tert.data.value">
-                                        <el-select size="mini" class="select-in-input" v-model="item.tert.data.unit" slot="append">
+                                    <el-select size="mini" class="select-in-input" v-model="item.tert.data.unit" slot="append">
                                             <el-option :label="unitSymbol.A" :value="unitSymbol.A"></el-option>
                                             <el-option :label="unitMultiplier.k + unitSymbol.A" :value="unitMultiplier.k + '|' + unitSymbol.A"></el-option>
                                         </el-select>
@@ -274,28 +294,24 @@
 
             <!-- short-circuit -->
             <el-row :gutter="20" class="content mgt-10">
-                <el-col :span="12" class="col-content">
+                <el-col :span="24" class="col-content">
                     <span class="bolder">Short-circuit rating</span>
                     <el-divider></el-divider>
+                </el-col>
+                <el-col :xs="24" :md="16" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
-                        <el-form-item label="Max short-circuit current">
-                            <el-col :span="12" class="pdl-0">
-                                <el-form-item>
-                                    <el-input v-model="ratingsData.short_circuit.ka.value" style="width: 100%">
-                                        <el-select size="mini" class="select-in-input" v-model="ratingsData.short_circuit.ka.unit" slot="append">
-                                            <el-option :label="unitMultiplier.k + unitSymbol.A" :value="unitMultiplier.k + '|' + unitSymbol.A"></el-option>
-                                            <el-option :label="unitSymbol.A" :value="unitSymbol.A"></el-option>
-                                        </el-select>
-                                    </el-input>
-                                </el-form-item>
-                            </el-col>
-                            <el-col :span="12" class="pdr-0">
-                                <el-form-item>
-                                    <el-input v-model="ratingsData.short_circuit.s.value" style="width: 100%">
-                                        <template slot="append">{{ ratingsData.short_circuit.s.unit }}</template>
-                                    </el-input>
-                                </el-form-item>
-                            </el-col>
+                        <el-form-item label="Max short-circuit current" class="inline-two-input">
+                            <div class="rf-wrap">
+                                <el-input v-model="ratingsData.short_circuit.ka.value">
+                                    <el-select size="mini" class="select-in-input" v-model="ratingsData.short_circuit.ka.unit" slot="append">
+                                        <el-option :label="unitMultiplier.k + unitSymbol.A" :value="unitMultiplier.k + '|' + unitSymbol.A"></el-option>
+                                        <el-option :label="unitSymbol.A" :value="unitSymbol.A"></el-option>
+                                    </el-select>
+                                </el-input>
+                                <el-input v-model="ratingsData.short_circuit.s.value">
+                                    <template slot="append">{{ ratingsData.short_circuit.s.unit }}</template>
+                                </el-input>
+                            </div>
                         </el-form-item>
                     </el-form>
                 </el-col>
@@ -498,11 +514,30 @@ const arr = ['Prim', 'Sec', 'Tert']
 </script>
 
 <style lang="scss" scoped>
-.bolder {
-    font-size: 12px !important;
-}
+    .bolder {
+        font-size: 12px !important;
+    }
 
-.table-strip-input-data {
-    font-size: 12px !important;
-}
+    .table-strip-input-data {
+        font-size: 12px !important;
+    }
+
+    ::v-deep(.inline-two-input .rf-wrap) {
+        display: flex;
+        gap: 8px;
+    }
+
+    ::v-deep(.inline-two-input .el-select),
+    ::v-deep(.inline-two-input .el-input) {
+        flex: 1;
+        min-width: 0;
+    }
+
+    ::v-deep(.btn-fluid) {
+        width: 100%;
+        min-width: 0 !important;
+        padding-left: 8px;
+        padding-right: 8px;
+        box-sizing: border-box;
+    }
 </style>

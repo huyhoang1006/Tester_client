@@ -116,13 +116,40 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.property {
+    width: 100%;
+    display: flex;
+    gap: 20px;
+}
+
 .col-content {
     width: 50%;
     box-sizing: border-box;
 }
-.property {
-    width: 100%;
-    display: flex;
-    gap: 20px
+
+@media (max-width: 992px) {
+    .property {
+        flex-direction: column;
+    }
+
+    .col-content {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    ::v-deep(.el-form-item) {
+        display: block;
+    }
+
+    ::v-deep(.el-form-item__label) {
+        width: 100%;
+        text-align: left;
+        margin-bottom: 4px;
+    }
+
+    ::v-deep(.el-form-item__content) {
+        margin-left: 0 !important;
+    }
 }
 </style>

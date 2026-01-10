@@ -1,9 +1,10 @@
 <template>
     <div>
         <el-row :gutter="20">
-            <el-col :span="12">
+            <el-col :xs="24" :md="12">
                 <div class="col-content">
-                    <el-form :model="properties" :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
+                    <el-form :model="properties" :inline-message="true" :label-width="labelWidth" size="mini"
+                        label-position="left">
                         <span class="bolder">Properties</span>
                         <el-divider class="thick-divider"></el-divider>
                         <el-form-item label="Name">
@@ -13,24 +14,29 @@
                         </el-form-item>
                         <el-form-item label="Substation" class="custom-label">
                             <el-select style="width: 100%;" filterable v-model="properties.type">
-                                <el-option v-for="item in substationType" :key="item" :label="item" :value="item"> </el-option>
+                                <el-option v-for="item in substationType" :key="item" :label="item" :value="item">
+                                </el-option>
                             </el-select>
                         </el-form-item>
                         <el-form-item label="Generation" class="custom-label">
                             <el-select style="width: 100%;" filterable v-model="properties.generation">
-                                <el-option v-for="item in generationType" :key="item" :label="item" :value="item"> </el-option>
+                                <el-option v-for="item in generationType" :key="item" :label="item" :value="item">
+                                </el-option>
                             </el-select>
                         </el-form-item>
                         <el-form-item label="Industry" class="custom-label">
                             <el-select style="width: 100%;" filterable v-model="properties.industry">
-                                <el-option v-for="item in industryType" :key="item" :label="item" :value="item"> </el-option>
+                                <el-option v-for="item in industryType" :key="item" :label="item" :value="item">
+                                </el-option>
                             </el-select>
                         </el-form-item>
                         <el-form-item label="Location">
                         </el-form-item>
                         <el-form-item label="Location name" class="custom-label">
-                            <el-select @change="changeLocationName" style="width: 100%;" filterable allow-create v-model="locationTemp">
-                                <el-option v-for="(item, index) in locationListData" :key="index" :label="item.name" :value="item.mrid"> </el-option>
+                            <el-select @change="changeLocationName" style="width: 100%;" filterable allow-create
+                                v-model="locationTemp">
+                                <el-option v-for="(item, index) in locationListData" :key="index" :label="item.name"
+                                    :value="item.mrid"> </el-option>
                             </el-select>
                         </el-form-item>
                         <el-form-item label="Street" class="custom-label">
@@ -50,56 +56,75 @@
                         </el-form-item>
                         <el-form-item label="Country" class="custom-label">
                             <el-select style="width: 100%;" filterable v-model="properties.country">
-                                <el-option v-for="item in countryData" :key="item" :label="item" :value="item"> </el-option>
-                            </el-select>
-                        </el-form-item>
-                        <el-form-item  label="Geo position x" class="custom-label">
-                            <el-select style="width: 75%;" @change="changeValueGeo" v-model="properties.x_position">
-                                <el-option v-for="(item,index) in properties.positionPoints.x" :key="index" :value="index">
-                                    <div class="option-content">
-                                        <span>
-                                            {{ item.coor }}
-                                        </span>
-                                        <div class="icons">
-                                            <i @click="editCoor(index)" class="fa-solid fa-pen-to-square" style="color: green"></i>
-                                            <i @click="deleteCoor(index)" class="fa-solid fa-trash" style="color: red;"></i>
-                                        </div>
-                                    </div>
+                                <el-option v-for="item in countryData" :key="item" :label="item" :value="item">
                                 </el-option>
                             </el-select>
-                            <el-button @click="openAddGeo" type="primary" style="width:calc(25% - 10px); margin-left: 10px;"><i class="fa-solid fa-plus"></i></el-button>
                         </el-form-item>
-                        <el-form-item label="Geo position y" class="custom-label">
-                            <el-select style="width: 75%;" @change="changeValueGeo" v-model="properties.y_position">
-                                <el-option v-for="(item,index) in properties.positionPoints.y" :key="index" :value="index">
-                                    <div class="option-content">
-                                        <span>
-                                            {{ item.coor }}
-                                        </span>
-                                        <div class="icons">
-                                            <i @click="editCoor(index)" class="fa-solid fa-pen-to-square" style="color: green"></i>
-                                            <i @click="deleteCoor(index)" class="fa-solid fa-trash" style="color: red;"></i>
+                        <el-form-item label="Geo position x" class="custom-label geo-item">
+                            <div class="geo-row">
+                                <el-select class="geo-select" @change="changeValueGeo" v-model="properties.x_position">
+                                    <el-option v-for="(item, index) in properties.positionPoints.x" :key="index"
+                                        :value="index">
+                                        <div class="option-content">
+                                            <span>
+                                                {{ item.coor }}
+                                            </span>
+                                            <div class="icons">
+                                                <i @click="editCoor(index)" class="fa-solid fa-pen-to-square"
+                                                    style="color: green"></i>
+                                                <i @click="deleteCoor(index)" class="fa-solid fa-trash"
+                                                    style="color: red;"></i>
+                                            </div>
                                         </div>
-                                    </div>
-                                </el-option>
-                            </el-select>
-                            <el-button @click="openAddGeo" type="primary" style="width:calc(25% - 10px); margin-left: 10px;"><i class="fa-solid fa-plus"></i></el-button>
+                                    </el-option>
+                                </el-select>
+                                <el-button class="geo-add-btn" @click="openAddGeo" type="primary"><i
+                                        class="fa-solid fa-plus"></i></el-button>
+                            </div>
                         </el-form-item>
-                        <el-form-item label="Geo position z" class="custom-label">
-                            <el-select style="width: 75%;" @change="changeValueGeo" v-model="properties.z_position">
-                                <el-option v-for="(item,index) in properties.positionPoints.z" :key="index" :value="index">
-                                    <div class="option-content">
-                                        <span>
-                                            {{ item.coor }}
-                                        </span>
-                                        <div class="icons">
-                                            <i @click="editCoor(index)" class="fa-solid fa-pen-to-square" style="color: green"></i>
-                                            <i @click="deleteCoor(index)" class="fa-solid fa-trash" style="color: red;"></i>
+                        <el-form-item label="Geo position y" class="custom-label geo-item">
+                            <div class="geo-row">
+                                <el-select class="geo-select" @change="changeValueGeo" v-model="properties.y_position">
+                                    <el-option v-for="(item, index) in properties.positionPoints.y" :key="index"
+                                        :value="index">
+                                        <div class="option-content">
+                                            <span>
+                                                {{ item.coor }}
+                                            </span>
+                                            <div class="icons">
+                                                <i @click="editCoor(index)" class="fa-solid fa-pen-to-square"
+                                                    style="color: green"></i>
+                                                <i @click="deleteCoor(index)" class="fa-solid fa-trash"
+                                                    style="color: red;"></i>
+                                            </div>
                                         </div>
-                                    </div>
-                                </el-option>
-                            </el-select>
-                            <el-button @click="openAddGeo" type="primary" style="width:calc(25% - 10px); margin-left: 10px;"><i class="fa-solid fa-plus"></i></el-button>
+                                    </el-option>
+                                </el-select>
+                                <el-button class="geo-add-btn" @click="openAddGeo" type="primary"><i
+                                        class="fa-solid fa-plus"></i></el-button>
+                            </div>
+                        </el-form-item>
+                        <el-form-item label="Geo position z" class="custom-label geo-item">
+                            <div class="geo-row">
+                                <el-select class="geo-select" @change="changeValueGeo" v-model="properties.z_position">
+                                    <el-option v-for="(item, index) in properties.positionPoints.z" :key="index"
+                                        :value="index">
+                                        <div class="option-content">
+                                            <span>
+                                                {{ item.coor }}
+                                            </span>
+                                            <div class="icons">
+                                                <i @click="editCoor(index)" class="fa-solid fa-pen-to-square"
+                                                    style="color: green"></i>
+                                                <i @click="deleteCoor(index)" class="fa-solid fa-trash"
+                                                    style="color: red;"></i>
+                                            </div>
+                                        </div>
+                                    </el-option>
+                                </el-select>
+                                <el-button class="geo-add-btn" @click="openAddGeo" type="primary"><i
+                                        class="fa-solid fa-plus"></i></el-button>
+                            </div>
                         </el-form-item>
                         <Transition>
                             <geo-map class="mgt-20" ref='geoMap' :locationGeo='{}'></geo-map>
@@ -107,14 +132,16 @@
                     </el-form>
                 </div>
             </el-col>
-            <el-col :span="12">
+            <el-col :xs="24" :md="12">
                 <div class="col-content">
                     <el-form :label-width="labelWidth" size="mini" label-position="left">
                         <span class="bolder">Contact person</span>
                         <el-divider></el-divider>
                         <el-form-item label="Name">
-                            <el-select @change="changePersonName" style="width: 100%;" filterable allow-create v-model="personTemp">
-                                <el-option v-for="(item, index) in personListData" :key="index" :label="item.name" :value="item.mrid"> </el-option>
+                            <el-select @change="changePersonName" style="width: 100%;" filterable allow-create
+                                v-model="personTemp">
+                                <el-option v-for="(item, index) in personListData" :key="index" :label="item.name"
+                                    :value="item.mrid"> </el-option>
                             </el-select>
                         </el-form-item>
                         <el-form-item label="Phone number">
@@ -136,22 +163,18 @@
                 </div>
                 <div class="col-content mgt-20">
                     <el-form :label-width="labelWidth" size="mini" label-position="left">
-                        <span class="bolder">Comment </span>
+                        <span class="bolder">Comment</span>
                         <el-divider></el-divider>
                         <el-input type="textarea" rows="5" v-model="properties.comment"></el-input>
-                        <Attachment :dataParent="this.properties" :deleteList="deleteList" :attachment_="this.attachmentData" title="substation" height="120px" @data-attachment = "getDataAttachment"></Attachment>
+                        <Attachment :dataParent="this.properties" :deleteList="deleteList"
+                            :attachment_="this.attachmentData" title="substation" height="120px"
+                            @data-attachment="getDataAttachment"></Attachment>
                     </el-form>
                 </div>
-            </el-col>        
+            </el-col>
         </el-row>
-        <el-dialog
-            :visible.sync="signAddGeo"
-            :title="titleGeo"
-            width="35%"
-            align-center
-            :before-close="handleCloseGeo"
-            :modal="false"
-        >
+        <el-dialog :visible.sync="signAddGeo" :title="titleGeo" width="35%" align-center :before-close="handleCloseGeo"
+            :modal="true">
             <el-form :label-width="labelWidth" size="mini" label-position="left">
                 <el-form-item label="Geographic coordinate x">
                     <el-input type="number" v-model="geoChosen.x"></el-input>
@@ -163,11 +186,11 @@
                     <el-input type="number" v-model="geoChosen.z"></el-input>
                 </el-form-item>
             </el-form>
-            <span slot="footer" class="dialog-footer">
-                <el-button type="danger" @click="handleCloseGeo()" size="small">Cancel</el-button>
-                <el-button type="primary" @click="handleConfirmGeo()" size="small">Confirm</el-button>
+            <span slot="footer" class="dialog-footer custom-footer">
+                <el-button class="footer-btn" type="danger" @click="handleCloseGeo()" size="small">Cancel</el-button>
+                <el-button class="footer-btn" type="primary" @click="handleConfirmGeo()"
+                    size="small">Confirm</el-button>
             </span>
-
         </el-dialog>
     </div>
 </template>
@@ -177,18 +200,18 @@
 import mixin from './mixin'
 import Attachment from '@/views/Common/Attachment.vue'
 import namePlate from '@/views/Common/NamePlate.vue'
-import {country} from '../ConstantAsset/index'
+import { country } from '../ConstantAsset/index'
 import geoMap from '@/views/Common/GeoMap.vue'
 
 export default {
-    components: { 
+    components: {
         Attachment,
         namePlate,
         geoMap
     },
     name: 'LocationViewData',
     mixins: [mixin],
-    props : {
+    props: {
         organisationId: {
             type: String,
             default: '00000000-0000-0000-0000-000000000000'
@@ -212,26 +235,26 @@ export default {
     },
     data() {
         return {
-            geoChosen : {
-                x : '',
-                y : '',
-                z : ''
+            geoChosen: {
+                x: '',
+                y: '',
+                z: ''
             },
-            substationType : ["Step-Up Substation", "Step-Down Substation", "Transmission Substation",
-             "Distribution Substation", "Switching Substation", "Converter Substation", "Interconnection Substation", ""],
-            generationType : ["Hydro Power Plant", "Thermal Power Plant", "Solar Power Plant", 
-            "Wind Power Plant", "Nuclear Power Plant", "Battery Energy Storage Systems", ""],
-            industryType : ["Industrial Zone", "Manufacturer Factory", "Steel Plant", "Cement Plant", 
-            "Oil Refinery Plant", "Mining Plant", ""],
-            indexGeo : '',
-            signAddGeo : false,
-            titleGeo : 'Add coordinate',
+            substationType: ["Step-Up Substation", "Step-Down Substation", "Transmission Substation",
+                "Distribution Substation", "Switching Substation", "Converter Substation", "Interconnection Substation", ""],
+            generationType: ["Hydro Power Plant", "Thermal Power Plant", "Solar Power Plant",
+                "Wind Power Plant", "Nuclear Power Plant", "Battery Energy Storage Systems", ""],
+            industryType: ["Industrial Zone", "Manufacturer Factory", "Steel Plant", "Cement Plant",
+                "Oil Refinery Plant", "Mining Plant", ""],
+            indexGeo: '',
+            signAddGeo: false,
+            titleGeo: 'Add coordinate',
             saved: false,
             labelWidth: `150px`,
-            countryData : country.default,
-            voltageList : ['500 kV', '220 kV', '110 kV', '35 kV', '26 kV', '22 kV', '21 kV', '15.75 kV', '13.8 kV', '10 kV', '6.6 kV', '0.4 kV'],
-            deleteList : [],
-            deleteImage : {}
+            countryData: country.default,
+            voltageList: ['500 kV', '220 kV', '110 kV', '35 kV', '26 kV', '22 kV', '21 kV', '15.75 kV', '13.8 kV', '10 kV', '6.6 kV', '0.4 kV'],
+            deleteList: [],
+            deleteImage: {}
         }
     },
     methods: {
@@ -243,16 +266,16 @@ export default {
             this.properties.x_position = this.properties.positionPoints.x[index].coor
             this.properties.y_position = this.properties.positionPoints.y[index].coor
             this.properties.z_position = this.properties.positionPoints.z[index].coor
-            try{
+            try {
                 await this.$refs.geoMap.loadMap(
                     {
-                        x : this.properties.x_position,
-                        y : this.properties.y_position,
-                        z : this.properties.z_position
+                        x: this.properties.x_position,
+                        y: this.properties.y_position,
+                        z: this.properties.z_position
                     },
                     true
                 )
-            } catch(e) {
+            } catch (e) {
                 console.log(e)
                 this.$message.error('Cannot load location in map')
             }
@@ -260,7 +283,7 @@ export default {
         async loadMapFirst() {
             try {
                 await this.$refs.geoMap.loadMap(undefined, false)
-            } catch(e) {
+            } catch (e) {
                 console.log(e)
                 this.$message.error('Cannot load location in map')
             }
@@ -273,32 +296,32 @@ export default {
             this.signAddGeo = false
         },
         async handleConfirmGeo() {
-            if(this.titleGeo == 'Add coordinate') {
-                if(this.geoChosen.x == '' || this.geoChosen.y == '') {
+            if (this.titleGeo == 'Add coordinate') {
+                if (this.geoChosen.x == '' || this.geoChosen.y == '') {
                     this.$message.error("X or Y cannot be null or empty")
                 } else {
                     try {
                         this.properties.positionPoints.x.push(
                             {
-                                id : '',
-                                coor : JSON.parse(JSON.stringify(this.geoChosen.x))
+                                id: '',
+                                coor: JSON.parse(JSON.stringify(this.geoChosen.x))
                             }
                         )
                         this.properties.positionPoints.y.push(
                             {
-                                id : '',
-                                coor : JSON.parse(JSON.stringify(this.geoChosen.y))
+                                id: '',
+                                coor: JSON.parse(JSON.stringify(this.geoChosen.y))
                             }
                         )
                         this.properties.positionPoints.z.push(
                             {
-                                id : '',
-                                coor : JSON.parse(JSON.stringify(this.geoChosen.z))
+                                id: '',
+                                coor: JSON.parse(JSON.stringify(this.geoChosen.z))
                             }
                         )
                         this.$message.success("Insert coordinate successful")
                         this.signAddGeo = false
-                    } catch(e) {
+                    } catch (e) {
                         this.$message.error("Cannot add coordinate")
                     }
                 }
@@ -310,7 +333,7 @@ export default {
                     this.$message.success("Update coordinate successful")
                     this.signAddGeo = false
                     await this.changeValueGeo(this.indexGeo)
-                } catch(e) {
+                } catch (e) {
                     this.$message.error("Cannot update coordinate")
                 }
             }
@@ -341,7 +364,7 @@ export default {
                     this.properties.y_position = ''
                     this.properties.z_position = ''
                     await this.loadMapFirst()
-                } catch(e) {
+                } catch (e) {
                     this.$message.error("Cannot delete coordinate")
                 }
             }).catch(() => {
@@ -353,10 +376,10 @@ export default {
         },
         async loadMapForView() {
             try {
-                if(this.$refs.geoMap) {
+                if (this.$refs.geoMap) {
                     this.$refs.geoMap.reloadMap()
                 }
-            } catch(e) {
+            } catch (e) {
                 console.log(e)
                 this.$message.error('Cannot load location in map')
             }
@@ -374,22 +397,15 @@ export default {
     width: 100%
 }
 
-::v-deep(.el-form-item__label) {
-    font-size: 12px !important;
-}
-
-::v-deep(.el-input__inner) {
-    height: 3.2vh !important; /* Đặt chiều cao */
-}
-
 .last-right-parent {
     position: relative;
     float: right;
 }
+
 .option-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .bolder {
@@ -398,15 +414,142 @@ export default {
 }
 
 .icons {
-  display: flex;
-  gap: 8px; /* Khoảng cách giữa các icon */
+    display: flex;
+    gap: 8px;
 }
 
+.geo-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.geo-select {
+    flex: 1;
+}
+
+.geo-add-btn {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.geo-add-btn i {
+    font-size: 14px;
+    line-height: 1;
+}
+
+::v-deep(.el-form-item__label) {
+    font-size: 12px !important;
+}
+
+::v-deep(.el-input__inner) {
+    height: 3.2vh !important;
+}
+
+::v-deep(.custom-footer) {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+::v-deep(.custom-footer .footer-btn) {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+::v-deep(.el-dialog) {
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+::v-deep(el.dialog__body) {
+    overflow-y: auto;
+    flex: 1;
+}
+
+::v-deep(.el-dialog .el-form-item__label) {
+    word-break: normal !important;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+
+@media (max-width: 992px) {
+    .col-content {
+        margin-bottom: 20px;
+    }
+
+    ::v-deep(.el-form-item.voltage-item) {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    ::v-deep(.el-form-item.voltage-item .el-form-item__label) {
+        width: auto !important;
+        margin-left: 0 !important;
+        padding-left: 20px;
+        padding-bottom: 4px;
+        text-align: left;
+    }
+
+    ::v-deep(.el-form-item.voltage-item .el-form-item__content) {
+        width: 100%;
+        margin-left: 0 !important;
+    }
+}
+
+@media (max-width: 768px) {
+    ::v-deep(.el-form-item) {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    ::v-deep(.el-form-item__label) {
+        width: auto !important;
+        margin-left: 0 !important;
+        padding-bottom: 0;
+        text-align: left;
+    }
+
+    ::v-deep(.el-form-item__content) {
+        width: 100%;
+        margin-left: 0 !important;
+    }
+
+    ::v-deep(.el-form-item.custom-label .el-form-item__label) {
+        padding-left: 20px;
+    }
+
+    ::v-deep(.custom-footer) {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    ::v-deep(.custom-footer .footer-btn) {
+        width: 100%;
+        margin: 0;
+    }
+}
 </style>
+
 <style>
 .el-form-item.custom-label .el-form-item__label {
-  margin-left: 20px;
-  width: 130px !important; /* Đặt chiều rộng cố định cho nhãn */
-  font-style: italic;
+    margin-left: 20px;
+    width: 130px !important;
+    /* Đặt chiều rộng cố định cho nhãn */
+    font-style: italic;
 }
 </style>

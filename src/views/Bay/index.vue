@@ -1,7 +1,7 @@
 <template>
     <div>
         <el-row :gutter="20">
-            <el-col :span="12">
+            <el-col :xs="24" :md="12">
                 <div class="col-content">
                     <el-form :model="properties" :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <span class="bolder">Properties</span>
@@ -24,7 +24,7 @@
                     </el-form>
                 </div>
             </el-col>
-            <el-col :span="12">
+            <el-col :xs="24" :md="12">
                 <div class="col-content">
                     <el-form :label-width="labelWidth" size="mini" label-position="left">
                         <span class="bolder">Comment </span>
@@ -63,5 +63,36 @@ export default {
 .bolder {
     font-weight: bold;
     font-size: 12px;
+}
+
+@media (max-width: 992px) {
+    .col-content {
+        margin-bottom: 20px;
+    }
+}
+
+@media (max-width:768px) {
+    ::v-deep(.el-form-item) {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    ::v-deep(.el-form-item__label) {
+        width: auto !important;
+        margin-left: 0 !important;
+        padding-bottom: 0;
+        text-align: left;
+    }
+
+    ::v-deep(.el-form-item__content) {
+        width: 100%;
+        margin-left: 0 !important;
+    }
+
+    ::v-deep(.el-form-item.custom-label .el-form-item__label) {
+        padding-left: 20px;
+        white-space: nowrap;
+    }
 }
 </style>
