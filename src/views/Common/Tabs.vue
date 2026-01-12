@@ -49,9 +49,9 @@
         <div class="tabs-header">
             <div class="scroll-btn left" @click="scrollLeft"><i class="fa-solid fa-chevron-left"></i></div>
             <div class="tabs-header-data" ref="tabsHeader" @scroll="checkScroll">
-                <div v-for="(tab, index) in tabs" :key="tab.mrid" @click="selectTab(tab, index)"
+                <div v-for="(tab, index) in tabs" :key="tab.mrid || tab.id" @click="selectTab(tab, index)"
                     @mouseover="hoveredTab = tab.mrid" @mouseleave="hoveredTab = null" class="tab-item"
-                    :class="{ active: activeTab.mrid === tab.mrid }" ref="tabItems">
+                    :class="{ active: compareTab(activeTab, tab) }" ref="tabItems">
                     <div class="icon-wrapper mgl-10">
                         <icon v-if="tab.mode == 'substation'" size="16px" folderType="location" badgeColor="146EBE"></icon>
                         <icon v-else-if="tab.mode == 'voltageLevel'" size="16px" folderType="voltageLevel" badgeColor="146EBE"></icon>
@@ -60,7 +60,7 @@
                         <icon v-else-if="tab.mode == 'job'" size="16px" folderType="job" badgeColor="FF0000"></icon>
                         <icon v-else-if="tab.mode == 'test'" size="16px" folderType="test" badgeColor="008001"></icon>
                         <icon v-else size="16px" folderType="building" badgeColor="008001"></icon>
-                        <span v-if="tab.mode == 'organisation'" class="tab-label">{{ tab.name }}</span>
+                        <span v-if="tab.mode == 'organisation'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
                         <span v-else-if="tab.mode == 'substation'" class="tab-label">{{ tab.name }}</span>
                         <span v-else-if="tab.mode == 'voltageLevel'" class="tab-label">{{ tab.name }}</span>
                         <span v-else-if="tab.mode == 'bay'" class="tab-label">{{ tab.name }}</span>
@@ -76,8 +76,8 @@
             <div class="scroll-btn right" @click="scrollRight"><i class="fa-solid fa-angle-right"></i></div>
         </div>
         <div class="tabs-content">
-            <div class="mgr-20 mgt-20 mgb-20 mgl-20" v-for="(item) in tabs" :key="item.mrid">
-                <component mode="update" @reload="loadData" v-show="activeTab.mrid === item.mrid"
+            <div class="mgr-20 mgt-20 mgb-20 mgl-20" v-for="(item, index) in tabs" :key="item.mrid || item.id">
+                <component mode="update" @reload="loadData" v-show="compareTab(activeTab, item)"
                     ref="componentLoadData" :sideData="sideSign" :is="checkTab(item)" :organisationId="String(item.parentId)"
                     :testTypeListData="testTypeListData" :assetData="assetData"
                     :productAssetModelData="productAssetModelData" :parent="parentOrganization"
@@ -179,6 +179,14 @@ export default {
             hoveredTab: null,
             canScrollLeft: false,
             canScrollRight: false,
+        }
+    },
+    watch: {
+        value: {
+            handler(newVal) {
+                this.activeTab = newVal; // Cập nhật activeTab nội bộ khi prop value thay đổi
+            },
+            deep: true
         }
     },
     methods: {
@@ -616,15 +624,60 @@ export default {
         },
        // Trong src/views/Common/Tabs.vue
 async loadDataServer(tab, index) {
-    try {
-        if (tab.mode == 'asset' && tab.asset === 'Power cable') {
+    try { if (tab.mode === 'substation') {
+            const serverData = tab; 
+
+            
+            const SubstationDto = require('@/views/Dto/Substation').default;
+            const dto = new SubstationDto();
+
+            
+            dto.subsId = String(serverData.id || serverData.mrid || ''); 
+            dto.name = serverData.name || '';
+            dto.generation = serverData.generation || '';
+            dto.industry = serverData.industry || '';
+            dto.comment = serverData.description || ''; 
+            
+            dto.organisationId = String(serverData.parentId || '');
+
+            this.$nextTick(() => {
+                if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                    this.$refs.componentLoadData[index].loadData({
+                        dto: dto,
+                        locationList: [], 
+                        personList: []
+                    });
+                }
+            });
+        } 
+        
+        else if (tab.mode === 'organisation') {
+            const serverData = tab;
+
+            const OrganisationDto = require('@/views/Dto/Organisation').default;
+            const dto = new OrganisationDto();
+
+            dto.organisationId = String(serverData.id || ''); 
+            dto.name = serverData.name || '';
+            dto.tax_code = serverData.taxCode || '';         
+            dto.comment = serverData.description || '';      
+            dto.parentId = String(serverData.parentOrganisation || '');
+            
+            if (serverData.address) dto.street = serverData.address;
+
+            this.$nextTick(() => {
+                if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                    this.$refs.componentLoadData[index].loadData(dto);
+                }
+            });
+        } 
+        else if (tab.mode == 'asset' && tab.asset === 'Power cable') {
             const response = await demoAPI.getAssetById(tab.mrid, 'PowerCable');
-            console.log("Server Response Raw:", response); // Kiểm tra xem data có về không
+            console.log("Server Response Raw:", response); 
 
             if (response) {
-                // Đảm bảo import đúng PowerCableServerMapper từ file vừa tạo ở trên
                 const dto = PowerCableServerMapper.mapServerToDto(response);
-                console.log("Mapped DTO:", dto); // Kiểm tra DTO sau khi map có giá trị không
+                console.log("Mapped DTO:", dto); 
 
                 this.$nextTick(() => {
                     if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
@@ -637,19 +690,24 @@ async loadDataServer(tab, index) {
         console.error("Error loading data from server:", error);
     }
 },
-        async selectTab(tab, index) {
-            try {
-                this.indexTab = index
-                this.activeTab = tab
-                this.$emit('input', tab)
-                this.$nextTick(() => {
-                    if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
-                        this.$refs.componentLoadData[index].loadMapForView()
+async selectTab(tab, index) {
+            this.activeTab = tab;
+            this.indexTab = index;
+            this.$emit('input', tab); // Gửi ngược lại cho TreeNavigation qua v-model
+            
+            this.$nextTick(() => {
+                if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                    if (this.$refs.componentLoadData[index].loadMapForView) {
+                        this.$refs.componentLoadData[index].loadMapForView();
                     }
-                })
-            } catch (error) {
-                console.error("Error selecting tab:", error);
-            }
+                }
+            });
+        },
+        compareTab(tab1, tab2) {
+            if (!tab1 || !tab2) return false;
+            const id1 = tab1.mrid || tab1.id;
+            const id2 = tab2.mrid || tab2.id;
+            return id1 === id2;
         },
         closeTab(index) {
             this.$emit('close-tab', index)
