@@ -1057,6 +1057,7 @@ import CapacitorMixin from '@/views/AssetView/Capacitor/mixin/index.js'
 import ReactorMixin from '@/views/AssetView/Reactor/mixin/index.js'
 import BayMixin from '@/views/Bay/mixin/index.js'
 import treeNodeFind from './mixin/treeNodeFindMixin'
+import { importTransformer } from '@/function/entity/import/Transformer'
 export default {
     name: 'TreeNavigation',
     components: {
@@ -2519,9 +2520,12 @@ export default {
                     let newRows = []
                     if (node.mode == 'organisation') {
                         const newRowsOwner = await demoAPI.getChildOrganisation(node.id)
+                        console.log('newRowsOwner', newRowsOwner)
                         if (newRowsOwner && newRowsOwner.length > 0) {
                             newRowsOwner.forEach((row) => {
                                 row.id = row.mrid || row.id || ''
+                                row.name = row.name || ''
+                                row.aliasName = row.shortName || row.name || ''
                                 row.parentId = node.mrid
                                 row.mode = 'organisation'
                                 row.parentName = node.parentName + '/' + node.name
@@ -2534,9 +2538,12 @@ export default {
                             newRows.push(...newRowsOwner)
                         }
                         const newRowsSubstation = await demoAPI.getChildSubstation(node.id)
+                        console.log('newRowsSubstation', newRowsSubstation)
                         if (newRowsSubstation && newRowsSubstation.length > 0) {
                             newRowsSubstation.forEach((row) => {
                                 row.id = row.mrid || row.id || ''
+                                row.name = row.name || ''
+                                row.aliasName = row.shortName || row.name || ''
                                 row.parentId = node.mrid
                                 row.mode = 'substation'
                                 row.parentName = node.parentName + '/' + node.name
@@ -2551,9 +2558,12 @@ export default {
                     } else if (node.mode == 'substation') {
                         try {
                             const newRowsBay = await demoAPI.getChildBay(node.id)
+                            console.log('newRowsBay', newRowsBay)
                             if (newRowsBay && newRowsBay.length > 0) {
                                 newRowsBay.forEach((row) => {
                                     row.id = row.mrid || row.id || ''
+                                    row.name = row.name || ''
+                                    row.aliasName = row.shortName || row.name || ''
                                     row.parentId = node.mrid
                                     row.mode = 'bay'
                                     row.parentName = node.parentName + '/' + node.name
@@ -2573,6 +2583,8 @@ export default {
                             if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
                                 newRowsVoltageLevel.forEach((row) => {
                                     row.id = row.mrid || row.id || ''
+                                    row.name =  row.name || ''
+                                    row.aliasName = row.shortName || row.name || ''
                                     row.parentId = node.mrid
                                     row.mode = 'voltageLevel'
                                     row.parentName = node.parentName + '/' + node.name
@@ -2593,6 +2605,8 @@ export default {
                             if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
                                 newRowsVoltageLevel.forEach((row) => {
                                     row.id = row.mrid || row.id || ''
+                                    row.name = row.name || ''
+                                    row.aliasName = row.shortName || row.name || ''
                                     row.parentId = node.mrid
                                     row.mode = 'asset'
                                     row.parentName = node.parentName + '/' + node.name
@@ -2613,6 +2627,8 @@ export default {
                             if (newRowsBay && newRowsBay.length > 0) {
                                 newRowsBay.forEach((row) => {
                                     row.id = row.mrid || row.id || ''
+                                    row.name = row.name || ''
+                                    row.aliasName = row.shortName || row.name || ''
                                     row.parentId = node.mrid
                                     row.mode = 'bay'
                                     row.parentName = node.parentName + '/' + node.name
@@ -2633,6 +2649,8 @@ export default {
                             if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
                                 newRowsVoltageLevel.forEach((row) => {
                                     row.id = row.mrid || row.id || ''
+                                    row.name = row.name || ''
+                                    row.aliasName = row.shortName || row.name || ''
                                     row.parentId = node.mrid
                                     row.mode = 'asset'
                                     row.serial_number = row.serialNumber
@@ -3011,11 +3029,13 @@ export default {
         async getOwnerLocation() {
             try {
                 const res = await demoAPI.getOwnerOrganisation()
+                console.log('Owner organisation data:', res)
                 if (res !== null) {
                     this.ownerServerList = [res].map((item) => {
                         return {
                             id: item.id || item.mrid || '',
-                            name: item.name || '',
+                            name: item.name ||'',
+                            aliasName: item.shortName || item.name || item.aliasName || '',
                             parentName: '',
                             parentArr: [],
                             mode: item.mode || '',
@@ -3037,7 +3057,6 @@ export default {
         async updateSelection(node) {
             this.selectedNodes = [...this.selectedNodes]
             if (Array.isArray(node)) {
-                // Click thường → bỏ hết, chỉ chọn 1 dòng
                 this.selectedNodes = [node]
             } else {
                 // Ctrl + Click → bật/tắt node cha mà KHÔNG ảnh hưởng con
@@ -3796,45 +3815,34 @@ export default {
         },
 
         async showData(node) {
-            try {
-                // Tạo bản sao của node để đảm bảo reactivity
-                const newNode = {...node}
-                // Sử dụng mrid hoặc id để check tab đã tồn tại
-                const nodeKey = newNode.mrid || newNode.id
-                const existingTab = this.tabs.find((item) => (item.mrid || item.id) === nodeKey)
+    try {
+        const newNode = { ...node };
+        const nodeKey = newNode.mrid || newNode.id;
+        
+        // Tìm index của tab
+        const index = this.tabs.findIndex(t => (t.mrid || t.id) === nodeKey);
 
-                if (existingTab) {
-                    // Nếu tab đã tồn tại, active nó
-                    this.activeTab = existingTab
-                    const index = this.tabs.findIndex((item) => (item.mrid || item.id) === nodeKey)
-                    this.$refs.serverTabs.selectTab(this.activeTab, index)
-                } else {
-                    const newTabs = [...this.tabs] // Tạo mảng mới
-                    let insertIndex
-                    if (this.activeTab?.mrid || this.activeTab?.id) {
-                        const activeKey = this.activeTab.mrid || this.activeTab.id
-                        const index = newTabs.findIndex((item) => (item.mrid || item.id) === activeKey)
-                        insertIndex = index + 1
-                        newTabs.splice(insertIndex, 0, newNode)
-                    } else {
-                        insertIndex = newTabs.length
-                        newTabs.push(newNode)
-                    }
-                    // Gán lại để trigger reactivity
-                    this.tabs = newTabs
-                    this.activeTab = newNode
-                    this.$nextTick(() => {
-                        if (this.$refs.serverTabs) {
-                            this.$refs.serverTabs.selectTab(this.activeTab, insertIndex)
-                            this.$refs.serverTabs.loadData(newNode, insertIndex)
-                        }
-                    })
+        if (index !== -1) {
+            // Nếu tab đã mở:
+            this.activeTab = this.tabs[index]; // Cập nhật biến bind v-model
+            this.$refs.serverTabs.selectTab(this.activeTab, index);
+        } else {
+            // Nếu tab chưa mở:
+            this.tabs.push(newNode);
+            this.activeTab = newNode; // Cập nhật biến bind v-model
+            const newIndex = this.tabs.length - 1;
+
+            this.$nextTick(() => {
+                if (this.$refs.serverTabs) {
+                    this.$refs.serverTabs.selectTab(newNode, newIndex);
+                    this.$refs.serverTabs.loadDataServer(newNode, newIndex);
                 }
-            } catch (error) {
-                this.$message.error('Some error occur when loading data')
-                console.error(error)
-            }
-        },
+            });
+        }
+    } catch (error) {
+        console.error(error);
+    }
+},
 
         async showDataClient(node) {
             try {
@@ -4683,43 +4691,43 @@ export default {
                     this.checkJobType = 'JobSurgeArrester'
                     this.signJob = true
                 } else if (node.asset == 'Power cable') {
-                    const dataTestType = await window.electronAPI.getAllTestTypePowerCable()
-                    if (dataTestType.success) {
-                        this.testTypeListData = dataTestType.data
-                    } else {
-                        this.testTypeListData = []
-                    }
+                    // const dataTestType = await window.electronAPI.getAllTestTypePowerCable()
+                    // if (dataTestType.success) {
+                    //     this.testTypeListData = dataTestType.data
+                    // } else {
+                    //     this.testTypeListData = []
+                    // }
                     this.checkJobType = 'JobPowerCable'
                     this.signJob = true
                 } else if (node.asset == 'Disconnector') {
-                    const dataTestType = await window.electronAPI.getAllTestTypeDisconnector()
-                    if (dataTestType.success) {
-                        this.testTypeListData = dataTestType.data
-                    } else {
-                        this.testTypeListData = []
-                    }
+                    // const dataTestType = await window.electronAPI.getAllTestTypeDisconnector()
+                    // if (dataTestType.success) {
+                    //     this.testTypeListData = dataTestType.data
+                    // } else {
+                    //     this.testTypeListData = []
+                    // }
                     this.checkJobType = 'JobDisconnector'
                     this.signJob = true
                 } else if (node.asset == 'Current transformer') {
-                    const dataTestType = await window.electronAPI.getAllTestTypeCT()
-                    if (dataTestType.success) {
-                        this.testTypeListData = dataTestType.data
-                    } else {
-                        this.testTypeListData = []
-                    }
+                    // const dataTestType = await window.electronAPI.getAllTestTypeCT()
+                    // if (dataTestType.success) {
+                    //     this.testTypeListData = dataTestType.data
+                    // } else {
+                    //     this.testTypeListData = []
+                    // }
                     this.checkJobType = 'JobCurrentTransformer'
                     this.signJob = true
                 } else if (node.asset == 'Voltage transformer') {
-                    const dataTestType = await window.electronAPI.getAllTestTypeVT()
-                    if (dataTestType.success) {
-                        this.testTypeListData = dataTestType.data
-                    } else {
-                        this.testTypeListData = []
-                    }
+                    // const dataTestType = await window.electronAPI.getAllTestTypeVT()
+                    // if (dataTestType.success) {
+                    //     this.testTypeListData = dataTestType.data
+                    // } else {
+                    //     this.testTypeListData = []
+                    // }
                     this.checkJobType = 'JobVoltageTransformer'
                     this.signJob = true
                 } else if (node.asset == 'Circuit breaker') {
-                    const dataTestType = await window.electronAPI.getAllTestTypeCircuitBreaker()
+                    // const dataTestType = await window.electronAPI.getAllTestTypeCircuitBreaker()
                     const dataBreakerEntity = await window.electronAPI.getBreakerEntityByMrid(node.mrid)
                     const dto = BreakerMapping.mapEntityToDto(dataBreakerEntity.data)
                     if (dataBreakerEntity.success) {
@@ -4727,15 +4735,15 @@ export default {
                     } else {
                         this.assetData = {}
                     }
-                    if (dataTestType.success) {
-                        this.testTypeListData = dataTestType.data
-                    } else {
-                        this.testTypeListData = []
-                    }
+                    // if (dataTestType.success) {
+                    //     this.testTypeListData = dataTestType.data
+                    // } else {
+                    //     this.testTypeListData = []
+                    // }
                     this.checkJobType = 'JobCircuitBreaker'
                     this.signJob = true
                 } else if (node.asset == 'Transformer') {
-                    const dataTestType = await window.electronAPI.getAllTestTypeTransformers()
+                    // const dataTestType = await window.electronAPI.getAllTestTypeTransformers()
                     const dataTransformerEntity = await window.electronAPI.getTransformerEntityByMrid(node.mrid)
                     const dto = TransformerMapping.transformerEntityToDto(dataTransformerEntity.data)
                     if (dataTransformerEntity.success) {
@@ -4743,11 +4751,11 @@ export default {
                     } else {
                         this.assetData = {}
                     }
-                    if (dataTestType.success) {
-                        this.testTypeListData = dataTestType.data
-                    } else {
-                        this.testTypeListData = []
-                    }
+                    // if (dataTestType.success) {
+                    //     this.testTypeListData = dataTestType.data
+                    // } else {
+                    //     this.testTypeListData = []
+                    // }
                     this.checkJobType = 'JobTransformer'
                     this.signJob = true
                 } else {
