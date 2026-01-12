@@ -8,7 +8,7 @@
             <span @contextmenu.prevent="openContextMenu($event, node)" :class="{ selected: selectedNodes.some(n => n.mrid === node.mrid) }" class="folder" @click="toggle" @dblclick="doubleToggle">
                 <div v-if="node.mode == 'substation'" class="icon-wrapper">
                     <icon size="16px" folderType="location" badgeColor="146EBE"></icon>
-                    <span class="node-name">{{ node.name }}</span>
+                    <span class="node-name">{{ node.name  }}</span>
                 </div>
                 <div v-else-if="node.mode == 'voltageLevel'" class="icon-wrapper">
                     <icon size="16px" folderType="voltageLevel" badgeColor="146EBE"></icon>
@@ -32,7 +32,7 @@
                 </div>
                 <div v-else class="icon-wrapper">
                     <icon size="14px" folderType="building" badgeColor="008001"></icon>
-                    <span class="node-name">{{ node.name }}</span>
+                    <span class="node-name">{{ node.aliasName || node.name }}</span>
                 </div>
             </span>
         </div>
