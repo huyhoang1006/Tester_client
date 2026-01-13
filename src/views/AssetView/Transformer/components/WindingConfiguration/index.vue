@@ -9,37 +9,36 @@
                 </div>
             </el-col>
         </el-row>
-
         <div class="content-toggle" v-if="openWindingConfiguration">
             <el-row :gutter="20" class="content">
-                <el-col :span="12">
+                <el-col :xs="24" :sm="24" :md="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
-                        <el-form-item label="Phases">
+                        <el-form-item label="Phases" class="inline-phases">
                             <el-radio-group @change="onChangePhase" v-model="windingConfigurationData.phases">
-                                <el-radio type="number" label="1"></el-radio>
-                                <el-radio type="number" label="3"></el-radio>
+                                <el-radio type="number" label="1">1</el-radio>
+                                <el-radio type="number" label="3">3</el-radio>
                             </el-radio-group>
                         </el-form-item>
                         <el-form-item label="Vector group">
-                            <div v-if="vectorGroup !== null && vectorGroup !== '' && vectorGroup !== undefined" style="font-weight: bold; font-size: 12px; text-transform: uppercase">{{ vectorGroup }}</div>
-                            <el-input size="mini" v-model="windingConfigurationData.vector_group_custom" placeholder="Enter custom vector group"></el-input>
-                            <el-button type="primary" style="width: 100%; margin-top: 10px" @click="onOpenVectorGroup"> Select winding configuration </el-button>
+                            <div v-if="vectorGroup !== null && vectorGroup !== '' && vectorGroup !== undefined"
+                                style="font-weight: bold; font-size: 12px; text-transform: uppercase">{{ vectorGroup }}
+                            </div>
+                            <el-input size="mini" v-model="windingConfigurationData.vector_group_custom"
+                                placeholder="Enter custom vector group"></el-input>
+                            <el-button type="primary"
+                                style="width: 100%; margin-top: 10px; display: flex; flex: 1; align-items: center; justify-content: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                                @click="onOpenVectorGroup"> Select winding configuration </el-button>
                             <div style="color: black; font-size: 12px;">Unsupported vector group</div>
-                            <el-input size="mini" v-model="windingConfigurationData.unsupported_vector_group" placeholder="Enter unsupported vector group"></el-input>
+                            <el-input size="mini" v-model="windingConfigurationData.unsupported_vector_group"
+                                placeholder="Enter unsupported vector group"></el-input>
                         </el-form-item>
                     </el-form>
                 </el-col>
             </el-row>
         </div>
-
-        <vector-group
-            ref="vectorGroup"
-            :openDialog="openDialog"
-            :asset_type="properties.type"
-            :asset_phase="windingConfigurationData.phases"
-            :asset_winding_config="windingConfigurationData.vector_group"
-            @close-dialog="onCloseDialog"
-            @cancel-dialog="onCancelDialog">
+        <vector-group ref="vectorGroup" :openDialog="openDialog" :asset_type="properties.type"
+            :asset_phase="windingConfigurationData.phases" :asset_winding_config="windingConfigurationData.vector_group"
+            @close-dialog="onCloseDialog" @cancel-dialog="onCancelDialog">
         </vector-group>
     </div>
 </template>
@@ -226,13 +225,13 @@ export default {
             }
         },
         onOpenVectorGroup() {
-            if((this.properties.type === "" || this.properties.type === undefined) || (this.windingConfigurationData.phases === "" || this.windingConfigurationData.phases === undefined)) {
+            if ((this.properties.type === "" || this.properties.type === undefined) || (this.windingConfigurationData.phases === "" || this.windingConfigurationData.phases === undefined)) {
                 this.$message.error('Please select transformer type and phases')
                 return
             }
             this.openDialog = true
             this.$nextTick(() => {
-                if(this.$refs.vectorGroup) {
+                if (this.$refs.vectorGroup) {
                     this.$refs.vectorGroup.loadData()
                 }
             })
@@ -248,4 +247,48 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+::v-deep(.el-radio__label) {
+    font-size: 12px;
+}
+
+@media (max-width: 767px) {
+    ::v-deep(.el-form-item) {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    ::v-deep(.el-form-item__label) {
+        width: auto !important;
+        margin-left: 0 !important;
+        padding: 0 0 4px 0;
+        text-align: left;
+        line-height: 1.2;
+    }
+
+    ::v-deep(.el-form-item__content) {
+        width: 100%;
+        margin-left: 0 !important;
+    }
+
+    ::v-deep(.inline-phases) {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    ::v-deep(.inline-phases .el-form-item__label) {
+        width: 80px !important;
+        padding-bottom: 0;
+    }
+
+    ::v-deep(.inline-phases .el-form-item__content) {
+        width: auto;
+    }
+
+    ::v-deep(.inline-phases .el-radio-group) {
+        display: flex;
+        gap: 12px;
+    }
+}
+</style>

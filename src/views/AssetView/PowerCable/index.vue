@@ -1,12 +1,20 @@
 <template>
     <div id="asset">
         <div style="min-height: 500px; display: flex; flex-direction: column;">
-            <div style="width: calc(100% - 20px)">
-                <el-button @click="switchData('powerCable')" size="mini" style="width: calc(50% / 4);"
-                    type="primary">Power Cable</el-button>
-                <el-button @click="switchData('assessories')" size="mini" style="width: calc(50% / 4 - 10px);"
-                    type="primary">Assessories</el-button>
-            </div>
+            <el-row justify="center" class="top-switch">
+                <el-col :span="24">
+                    <el-row :gutter="8">
+                        <el-col :xs="12" :sm="12" :md="6">
+                            <el-button @click="switchData('powerCable')" size="mini" class="switch-btn" type="primary"
+                                style="width: 100%">Power Cable</el-button>
+                        </el-col>
+                        <el-col :xs="12" :sm="12" :md="6">
+                            <el-button @click="switchData('assessories')" size="mini" class="switch-btn" type="primary"
+                                style="width: 100%">Assessories</el-button>
+                        </el-col>
+                    </el-row>
+                </el-col>
+            </el-row>
             <div style="flex: 1; display: flex; flex-direction: column; margin-top: 20px">
                 <div v-if="this.switch == 'powerCable'">
                     <powerCableProperty :properties.sync="powerCable.properties"></powerCableProperty>
@@ -16,9 +24,8 @@
                     </configs>
                 </div>
                 <div v-else-if="this.switch == 'assessories'">
-                    <assessories :joint="powerCable.datasData.jointsData"
-                :terminal="powerCable.datasData.terminalsData"
-                :sheathLimit="powerCable.datasData.sheathLimitsData"></assessories>
+                    <assessories :joint="powerCable.datasData.jointsData" :terminal="powerCable.datasData.terminalsData"
+                        :sheathLimit="powerCable.datasData.sheathLimitsData"></assessories>
                 </div>
             </div>
         </div>
@@ -72,7 +79,7 @@ export default {
         updateAttachment(attachment) {
             this.attachmentData = attachment
         },
-        loadMapForView() {},
+        loadMapForView() { },
     }
 }
 </script>
@@ -100,6 +107,27 @@ th,
 td {
     padding: 0px 10px;
     height: 30px;
+}
+
+::v-deep(.top-switch) {
+    ::v-deep(.el-button) {
+        white-space: nowrap;
+        line-height: 1.4;
+        padding: 4px;
+        text-align: center;
+        text-overflow: ellipsis;
+        font-size: 12px;
+    }
+}
+
+::v-deep(.top-switch .switch-btn) {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 ::v-deep(.el-form-item__label) {

@@ -1,11 +1,24 @@
 <template>
     <div style="min-height: 500px; display: flex; flex-direction: column;">
-        <div style="width: calc(100% - 20px)">
-            <el-button @click="switchData('Transformer')" size="mini" style="width: calc(50% / 4);" type="primary">Transformer</el-button>
-            <el-button @click="switchData('Bushings')" size="mini" style="width: calc(50% / 4 - 10px);" type="primary">Bushings</el-button>
-            <el-button @click="switchData('Tap changer')" size="mini" style="width: calc(50% / 4 - 10px);" type="primary">Tap changer</el-button>
-            <el-button @click="switchData('Surge Arrester')" size="mini" style="width: calc(50% / 4 - 10px);" type="primary">Surge Arrester</el-button>
-        </div>
+        <el-row justify="center" class="top-switch">
+            <el-col :xs="24" :md="12">
+                <el-row :gutter="8">
+                    <el-col :xs="12" :sm="6" :md="6">
+                        <el-button class="trs-btn" size="mini" type="primary" style="width: 100%" @click="switchData('Transformer')">Transformer</el-button>
+                    </el-col>
+                    <el-col :xs="12" :sm="6" :md="6">
+                        <el-button class="trs-btn" size="mini" type="primary" style="width: 100%" @click="switchData('Bushings')">Bushings</el-button>
+                    </el-col>
+                    <el-col :xs="12" :sm="6" :md="6">
+                        <el-button class="trs-btn" size="mini" type="primary" style="width: 100%" @click="switchData('Tap changer')">Tap changer</el-button>
+                    </el-col>
+                    <el-col :xs="12" :sm="6" :md="6">
+                        <el-button class="trs-btn" size="mini" type="primary" style="width: 100%" @click="switchData('Surge Arrester')">Surge Arrester</el-button>
+                    </el-col>
+                </el-row>
+            </el-col>
+        </el-row>
+
         <div style="flex: 1; display: flex; flex-direction: column;">
             <div v-if="this.switch == 'Transformer'">
                 <!-- Properties -->
@@ -146,9 +159,37 @@ td {
     font-size: 12px !important;
 }
 
-::v-deep .el-input__inner,
-::v-deep .el-select .el-input__inner {
+::v-deep(.el-input__inner),
+::v-deep(.el-select .el-input__inner) {
   font-size: 12px !important;
 }
 
+::v-deep(.top-switch) {
+    ::v-deep(.el-button) {
+        white-space: nowrap;
+        line-height: 1.4;
+        padding: 4px;
+        text-align: center;
+        text-overflow: ellipsis;
+        font-size: 12px;
+    }
+}
+
+::v-deep(.top-switch .trs-btn) {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 768px) {
+    .top-switch {
+        ::v-deep(.el-col) {
+            margin-bottom: 8px;
+        }
+    }
+}
 </style>
