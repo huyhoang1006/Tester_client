@@ -173,7 +173,7 @@
                 </div>
             </el-col>
         </el-row>
-        <el-dialog :visible.sync="signAddGeo" :title="titleGeo" width="35%" align-center :before-close="handleCloseGeo"
+        <el-dialog :visible.sync="signAddGeo" :title="titleGeo" align-center :before-close="handleCloseGeo"
             :modal="true">
             <el-form :label-width="labelWidth" size="mini" label-position="left">
                 <el-form-item label="Geographic coordinate x">
@@ -472,9 +472,10 @@ export default {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    width: 35%;
 }
 
-::v-deep(el.dialog__body) {
+::v-deep(.el.dialog__body) {
     overflow-y: auto;
     flex: 1;
 }
@@ -485,7 +486,7 @@ export default {
     white-space: normal;
 }
 
-@media (max-width: 992px) {
+@media (max-width: 991px) {
     .col-content {
         margin-bottom: 20px;
     }
@@ -500,7 +501,6 @@ export default {
         width: auto !important;
         margin-left: 0 !important;
         padding-left: 20px;
-        padding-bottom: 4px;
         text-align: left;
     }
 
@@ -508,9 +508,13 @@ export default {
         width: 100%;
         margin-left: 0 !important;
     }
+
+    ::v-deep(.el-dialog) {
+        width: 50%;
+    }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
     ::v-deep(.el-form-item) {
         display: flex;
         flex-direction: column;

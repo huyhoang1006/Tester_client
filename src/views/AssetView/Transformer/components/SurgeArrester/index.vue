@@ -1,7 +1,7 @@
 <template>
-    <div style="margin-top: 20px;">
+    <div style="margin-top: 20px">
         <div style="margin-bottom: 20px;" v-for="(item, index) in surgeArrester.prim" :key="'prim-' + index">
-            <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 10px;">
                 <el-checkbox @change="(val) => onCheckboxClick(val, 'prim', index)" :key="index" v-model="surgeArrester.prim[index].sign" :label="'Surge arrester - ' + item.ratings.pos" size="small" />
                 <el-divider></el-divider>
             </div>
@@ -11,7 +11,7 @@
             </div>
         </div>
         <div style="margin-bottom: 20px;" v-for="(item, index) in surgeArrester.sec" :key="'sec-' + index">
-            <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 10px;">
                 <el-checkbox @click="onCheckboxClick(surgeArrester.sec[index].sign, 'sec', index)" :key="index" v-model="surgeArrester.sec[index].sign" :label="'Surge arrester - ' + item.ratings.pos" size="small" />
                 <el-divider></el-divider>
             </div>
@@ -21,7 +21,7 @@
             </div>
         </div>
         <div style="margin-bottom: 20px;" v-for="(item, index) in surgeArrester.tert" :key="'tert-' + index">
-            <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 10px;">
                 <el-checkbox @click="onCheckboxClick(surgeArrester.tert[index].sign, 'tert', index)" :key="index" v-model="surgeArrester.tert[index].sign" :label="'Surge arrester - ' + item.ratings.pos" size="small" />
                 <el-divider></el-divider>
             </div>

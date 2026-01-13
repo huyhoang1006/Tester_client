@@ -1,29 +1,29 @@
 <template>
     <div id="properties">
-        <el-row style="margin-top: 50px;" :gutter="20" class="content">
+        <el-row style="margin-top: 20px;" :gutter="20" class="content">
             <el-col :xs="24" :md="12" class="col-content">
-                <div style="min-height: 200px;">
+                <div>
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <span class="bolder">Phase</span>
                         <el-divider></el-divider>
-                        <el-radio-group style="margin-top: 20px;" v-model="configsData.phases.value">
-                            <el-radio style="margin-right: 100px;" :label="1"></el-radio>
+                        <el-radio-group style="margin-top: 10px;" v-model="configsData.phases.value">
+                            <el-radio :label="1"></el-radio>
                             <el-radio :label="3"></el-radio>
                         </el-radio-group>
                     </el-form>
-                    <el-form style="margin-top: 50px;" :inline-message="true" :label-width="labelWidth" size="mini"
+                    <el-form style="margin-top: 20px;" :inline-message="true" :label-width="labelWidth" size="mini"
                         label-position="left">
                         <span class="bolder">Cores</span>
                         <el-divider></el-divider>
-                        <el-radio-group style="margin-top: 20px;" @change="onChangePhase()"
+                        <el-radio-group style="margin-top: 10px;" @change="onChangePhase()"
                             v-model="configsData.cores.value">
-                            <el-radio style="margin-right: 100px;" label="Single"></el-radio>
+                            <el-radio label="Single"></el-radio>
                             <el-radio label="Multiple"></el-radio>
                         </el-radio-group>
                     </el-form>
                 </div>
                 <div>
-                    <el-form style="margin-top: 50px;" :inline-message="true" :label-width="labelWidth" size="mini"
+                    <el-form style="margin-top: 20px;" :inline-message="true" :label-width="labelWidth" size="mini"
                         label-position="left">
                         <span class="bolder">Ratings</span>
                         <el-divider></el-divider>
@@ -56,11 +56,11 @@
                 </div>
             </el-col>
             <el-col :xs="24" :md="12" class="col-content">
-                <div style="min-height: 200px;">
+                <div>
                     <el-form :label-width="labelWidth" size="mini">
                         <span class="bolder">Layer construction</span>
                         <el-divider></el-divider>
-                        <el-row style="margin-top: 20px; width: 100%;">
+                        <el-row style="margin-top: 10px">
                             <el-col :span="12">
                                 <el-checkbox class="checkbox-full" v-model="layersData.conductor" label="Conductor"
                                     @change="onLayerCheckboxChange" />
@@ -88,7 +88,7 @@
                         </el-row>
                     </el-form>
                 </div>
-                <el-form style="margin-top: 50px;" :inline-message="true" :label-width="labelWidth" size="mini"
+                <el-form style="margin-top: 20px;" :inline-message="true" :label-width="labelWidth" size="mini"
                     label-position="left">
                     <span class="bolder">Others</span>
                     <el-divider></el-divider>
@@ -126,7 +126,7 @@
         </el-row>
         <el-row :gutter="20" class="content">
             <el-col :xs="24" :md="12" :lg="8" class="col-content">
-                <el-form class="height_form" v-if="layersData.conductor" style="margin-top: 50px;"
+                <el-form class="height_form" v-if="layersData.conductor" style="margin-top: 20px;"
                     :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Conductor</span>
                     <el-divider></el-divider>
@@ -207,7 +207,7 @@
                         </el-input>
                     </el-form-item>
                 </el-form>
-                <el-form class="height_form" v-if="layersData.insulation" style="margin-top: 50px;"
+                <el-form class="height_form" v-if="layersData.insulation" style="margin-top: 20px;"
                     :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Insulation</span>
                     <el-divider></el-divider>
@@ -248,7 +248,7 @@
                         </el-input>
                     </el-form-item>
                 </el-form>
-                <el-form class="height_form" v-if="layersData.sheath_reinforcing" style="margin-top: 50px;"
+                <el-form class="height_form" v-if="layersData.sheath_reinforcing" style="margin-top: 20px;"
                     :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Sheath reinforcing tape</span>
                     <el-divider></el-divider>
@@ -292,7 +292,7 @@
                         </el-input>
                     </el-form-item>
                 </el-form>
-                <el-form class="height_form" v-if="layersData.armour" style="margin-top: 50px;" :inline-message="true"
+                <el-form class="height_form" v-if="layersData.armour" style="margin-top: 20px;" :inline-message="true"
                     :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Armour</span>
                     <el-divider></el-divider>
@@ -348,7 +348,7 @@
                 </el-form>
             </el-col>
             <el-col :xs="24" :md="12" :lg="8" class="col-content">
-                <el-form class="height_form" v-if="layersData.conductor_shield" style="margin-top: 50px;"
+                <el-form class="height_form" v-if="layersData.conductor_shield" style="margin-top: 20px;"
                     :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Conductor shield</span>
                     <el-divider></el-divider>
@@ -363,7 +363,7 @@
                         </el-input>
                     </el-form-item>
                 </el-form>
-                <el-form class="height_form" v-if="layersData.insulation_screen" style="margin-top: 50px;"
+                <el-form class="height_form" v-if="layersData.insulation_screen" style="margin-top: 20px;"
                     :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Insulation screen</span>
                     <el-divider></el-divider>
@@ -398,7 +398,7 @@
                         </el-input>
                     </el-form-item>
                 </el-form>
-                <el-form class="height_form" v-if="layersData.concentric_neutral" style="margin-top: 50px;"
+                <el-form class="height_form" v-if="layersData.concentric_neutral" style="margin-top: 20px;"
                     :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Concentric neutral</span>
                     <el-divider></el-divider>
@@ -459,7 +459,7 @@
                         </el-input>
                     </el-form-item>
                 </el-form>
-                <el-form class="height_form" v-if="layersData.oversheath" style="margin-top: 50px;"
+                <el-form class="height_form" v-if="layersData.oversheath" style="margin-top: 20px;"
                     :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Oversheath/ Jacket/ Serving</span>
                     <el-divider></el-divider>
@@ -493,7 +493,7 @@
                 </el-form>
             </el-col>
             <el-col :xs="24" :md="12" :lg="8" class="col-content">
-                <el-form class="height_form" v-if="layersData.sheath" style="margin-top: 50px;" :inline-message="true"
+                <el-form class="height_form" v-if="layersData.sheath" style="margin-top: 20px;" :inline-message="true"
                     :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Sheath</span>
                     <el-divider></el-divider>
@@ -541,7 +541,7 @@
                         </el-input>
                     </el-form-item>
                 </el-form>
-                <el-form class="height_form" v-if="layersData.armour_bedding" style="margin-top: 50px;"
+                <el-form class="height_form" v-if="layersData.armour_bedding" style="margin-top: 20px;"
                     :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Armour bedding</span>
                     <el-divider></el-divider>
@@ -605,7 +605,7 @@ export default {
     data() {
         return {
             openRatings: "true",
-            labelWidth: `200px`,
+            labelWidth: `120px`,
             autoLayerTicked: false
         }
     },
@@ -709,16 +709,24 @@ export default {
 }
 </script>
 <style scoped>
-.height_form {
-    min-height: 200px;
-}
-
 div.el-input-group__append {
     text-align: center;
     width: 30px;
 }
 
 .bolder {
+    font-size: 12px;
+}
+
+::v-deep(.el-radio__label) {
+    font-size: 12px;
+}
+
+::v-deep(.el-checkbox) {
+    margin-bottom: 5px;
+}
+
+::v-deep(.el-checkbox__label) {
     font-size: 12px;
 }
 
@@ -731,5 +739,11 @@ div.el-input-group__append {
     white-space: normal;
     line-height: 18px;
     padding-left: 6px;
+}
+
+@media (max-width: 991px) {
+    ::v-deep(.col-content) {
+        margin-bottom: 10px;
+    }
 }
 </style>
