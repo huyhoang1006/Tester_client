@@ -93,7 +93,7 @@ export default {
     },
     data() {
         return {
-            labelWidth: `200px`,
+            labelWidth: `120px`,
             countryData: [],
             manufacturerCurrent: '',
             sign: '',
@@ -143,5 +143,26 @@ th,
 td {
     padding: 0px 10px;
     height: 30px;
+}
+
+@media (max-width: 991px) {
+    ::v-deep(.col-content) {
+        margin-bottom: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    ::v-deep(.el-form-item__label) {
+        float: none;
+        display: block;
+        width: 100% !important;
+        text-align: left;
+        line-height: 1.2;
+    }
+
+    ::v-deep(.el-form-item__content) {
+        margin-left: 0 !important;
+        width: 100%;
+    }
 }
 </style>

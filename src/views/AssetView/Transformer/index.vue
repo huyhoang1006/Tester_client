@@ -4,16 +4,16 @@
             <el-col :xs="24" :md="12">
                 <el-row :gutter="8">
                     <el-col :xs="12" :sm="6" :md="6">
-                        <el-button size="mini" type="primary" style="width: 100%" @click="switchData('Transformer')">Transformer</el-button>
+                        <el-button class="trs-btn" size="mini" type="primary" style="width: 100%" @click="switchData('Transformer')">Transformer</el-button>
                     </el-col>
                     <el-col :xs="12" :sm="6" :md="6">
-                        <el-button size="mini" type="primary" style="width: 100%" @click="switchData('Bushings')">Bushings</el-button>
+                        <el-button class="trs-btn" size="mini" type="primary" style="width: 100%" @click="switchData('Bushings')">Bushings</el-button>
                     </el-col>
                     <el-col :xs="12" :sm="6" :md="6">
-                        <el-button size="mini" type="primary" style="width: 100%" @click="switchData('Tap changer')">Tap changer</el-button>
+                        <el-button class="trs-btn" size="mini" type="primary" style="width: 100%" @click="switchData('Tap changer')">Tap changer</el-button>
                     </el-col>
                     <el-col :xs="12" :sm="6" :md="6">
-                        <el-button size="mini" type="primary" style="width: 100%" @click="switchData('Surge Arrester')">Surge Arrester</el-button>
+                        <el-button class="trs-btn" size="mini" type="primary" style="width: 100%" @click="switchData('Surge Arrester')">Surge Arrester</el-button>
                     </el-col>
                 </el-row>
             </el-col>
@@ -159,12 +159,12 @@ td {
     font-size: 12px !important;
 }
 
-::v-deep .el-input__inner,
-::v-deep .el-select .el-input__inner {
+::v-deep(.el-input__inner),
+::v-deep(.el-select .el-input__inner) {
   font-size: 12px !important;
 }
 
-.top-switch {
+::v-deep(.top-switch) {
     ::v-deep(.el-button) {
         white-space: nowrap;
         line-height: 1.4;
@@ -173,6 +173,16 @@ td {
         text-overflow: ellipsis;
         font-size: 12px;
     }
+}
+
+::v-deep(.top-switch .trs-btn) {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 @media (max-width: 768px) {
