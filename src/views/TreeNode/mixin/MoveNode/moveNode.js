@@ -1,3 +1,5 @@
+import Vue from "vue"
+
 export default {
     methods: {
         async handleMoveFromContext(node) {
