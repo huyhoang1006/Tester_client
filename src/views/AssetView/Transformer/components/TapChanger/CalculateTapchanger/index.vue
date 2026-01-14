@@ -1,5 +1,5 @@
 <template>
-    <el-dialog title="Calculate Tap changer" :modal="true" :visible="openDialog" width="500px" @close="handleCancel">
+    <el-dialog title="Calculate Tap changer" :modal="true" :visible="openDialog" @close="handleCancel">
         <div>Base on ...</div><br>
 
         <el-tabs v-if="tapVoltable.length > 1" type="card" v-model="activeName">
@@ -14,7 +14,7 @@
                     <tbody>
                         <tr>
                             <td>
-                                {{tapVoltable[0].tap}}
+                                {{ tapVoltable[0].tap }}
                             </td>
                             <td>
                                 <el-input size="mini" type="text" v-model="voltage_1">
@@ -24,7 +24,7 @@
                         </tr>
                         <tr>
                             <td>
-                                {{tapVoltable[1].tap}}
+                                {{ tapVoltable[1].tap }}
                             </td>
                             <td>
                                 <el-input size="mini" type="text" v-model="voltage_2">
@@ -35,9 +35,9 @@
                     </tbody>
                 </table>
             </el-tab-pane>
-            
+
             <el-tab-pane label="First/Middle/Last" name="fml" v-if="(numberOfTaps % 2) != 0">
-                 <table class="w-100 mgt-5 table-strip-input-data">
+                <table class="w-100 mgt-5 table-strip-input-data">
                     <thead>
                         <tr>
                             <th>Tap</th>
@@ -47,7 +47,7 @@
                     <tbody>
                         <tr>
                             <td>
-                                {{tapVoltable[0].tap}}
+                                {{ tapVoltable[0].tap }}
                             </td>
                             <td>
                                 <el-input size="mini" type="text" v-model="voltage_first">
@@ -57,7 +57,7 @@
                         </tr>
                         <tr>
                             <td>
-                                {{tapVoltable[Math.round((tapVoltable.length - 1) / 2)].tap}}
+                                {{ tapVoltable[Math.round((tapVoltable.length - 1) / 2)].tap }}
                             </td>
                             <td>
                                 <el-input size="mini" type="text" v-model="voltage_middle">
@@ -67,7 +67,7 @@
                         </tr>
                         <tr>
                             <td>
-                                {{tapVoltable[tapVoltable.length - 1].tap}}
+                                {{ tapVoltable[tapVoltable.length - 1].tap }}
                             </td>
                             <td>
                                 <el-input size="mini" type="text" v-model="voltage_last">
@@ -80,15 +80,14 @@
             </el-tab-pane>
         </el-tabs>
 
-        <span slot="footer" class="dialog-footer">
-            <el-button type="danger" @click="handleCancel" size="small">Cancel</el-button>
-            <el-button type="primary" @click="handleCalculate" size="small">Calculate</el-button>
+        <span slot="footer" class="dialog-footer custom-footer">
+            <el-button class="footer-btn" type="danger" @click="handleCancel" size="small">Cancel</el-button>
+            <el-button class="footer-btn" type="primary" @click="handleCalculate" size="small">Calculate</el-button>
         </span>
     </el-dialog>
 </template>
 
 <script>
-
 export default {
     name: 'CalculateTapchanger',
     data() {
@@ -109,35 +108,35 @@ export default {
         tapScheme: String
     },
     computed: {
-        
+
     },
     methods: {
         async handleCancel() {
             this.$emit('cancel-dialog')
         },
 
-        async handleCalculate() {       
+        async handleCalculate() {
             if (this.activeName == 'fas') {
                 this.result.push(parseInt(this.voltage_1))
                 this.result.push(parseInt(this.voltage_2))
-                for (let i = 2; i < this.numberOfTaps; i++){
-                    this.result.push(i*this.voltage_2 - (i-1)*this.voltage_1)
+                for (let i = 2; i < this.numberOfTaps; i++) {
+                    this.result.push(i * this.voltage_2 - (i - 1) * this.voltage_1)
                 }
-            }else {
+            } else {
                 let a = parseInt((Math.abs(this.voltage_middle - this.voltage_first)) / (parseInt((this.numberOfTaps - 1) / 2)))
                 this.result.push(parseInt(this.voltage_first))
 
-                for (let i = 1; i < this.numberOfTaps; i++){
+                for (let i = 1; i < this.numberOfTaps; i++) {
                     if (this.tapScheme == '1...33' || this.tapScheme == "1...N") {
-                        this.result.push(this.voltage_first - i*a)
-                    }else {
-                        this.result.push(this.voltage_first + i*a)
+                        this.result.push(this.voltage_first - i * a)
+                    } else {
+                        this.result.push(this.voltage_first + i * a)
                     }
                 }
             }
-                
+
             let hasNegative = this.result.some(v => v < 1);
-            if (hasNegative == true){
+            if (hasNegative == true) {
                 this.$message.error('Oops, Voltage dropprd below 1V during automatic calculation');
             } else {
                 this.$emit('calculate-result', this.result)
@@ -148,3 +147,52 @@ export default {
     }
 }
 </script>
+
+<style lang="scss" scoped>
+::v-deep(.custom-footer) {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+::v-deep(.custom-footer .footer-btn) {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+::v-deep(.el-dialog) {
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    width: 35%;
+}
+
+::v-deep(.el.dialog__body) {
+    overflow-y: auto;
+    flex: 1;
+}
+
+@media (max-width: 991px) {
+    ::v-deep(.el-dialog) {
+        width: 50%;
+    }
+}
+
+@media (max-width: 767px) {
+    ::v-deep(.custom-footer) {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    ::v-deep(.custom-footer .footer-btn) {
+        width: 100%;
+        margin: 0;
+    }
+}
+</style>
