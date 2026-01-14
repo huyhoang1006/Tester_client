@@ -1,7 +1,7 @@
 <template>
     <div id="properties">
         <el-row :gutter="20" class="content">
-            <el-col :span="12" class="col-content">
+            <el-col :xs="24" :md="12" class="col-content">
                 <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Terminal</span>
                     <el-divider></el-divider>
@@ -21,25 +21,25 @@
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Type">
-                        <el-select
-                        style="width: 100%"
-                        v-model="terminalsData.type.value"
-                        placeholder="Select">
-                            <el-option label="High dielectric constant tape" value="High dielectric constant tape"> </el-option>
-                            <el-option label="Geometric taped stress cone" value="Geometric taped stress cone"> </el-option>
+                        <el-select style="width: 100%" v-model="terminalsData.type.value" placeholder="Select">
+                            <el-option label="High dielectric constant tape" value="High dielectric constant tape">
+                            </el-option>
+                            <el-option label="Geometric taped stress cone" value="Geometric taped stress cone">
+                            </el-option>
                             <el-option label="Cold-shrink" value="Cold-shrink"> </el-option>
                             <el-option label="Porcelain" value="Porcelain"> </el-option>
-                            <el-option label="Heat-shrink: Stress-relief filler" value="Heat-shrink: Stress-relief filler"> </el-option>
-                            <el-option label="Heat-shrink: Stress-relief tube" value="Heat-shrink: Stress-relief tube"> </el-option>
-                            <el-option label="Heat-shrink: Integrated stress relief" value="Heat-shrink: Integrated stress relief"> </el-option>
+                            <el-option label="Heat-shrink: Stress-relief filler"
+                                value="Heat-shrink: Stress-relief filler"> </el-option>
+                            <el-option label="Heat-shrink: Stress-relief tube" value="Heat-shrink: Stress-relief tube">
+                            </el-option>
+                            <el-option label="Heat-shrink: Integrated stress relief"
+                                value="Heat-shrink: Integrated stress relief">
+                            </el-option>
                             <el-option label="Force fit slip-on molded" value="Force fit slip-on molded"> </el-option>
                         </el-select>
                     </el-form-item>
                     <el-form-item label="Class">
-                        <el-select
-                        style="width: 100%"
-                        v-model="terminalsData.class.value"
-                        placeholder="Select">
+                        <el-select style="width: 100%" v-model="terminalsData.class.value" placeholder="Select">
                             <el-option label="Class 1A" value="Class 1A"> </el-option>
                             <el-option label="Class 1B" value="Class 1B"> </el-option>
                             <el-option label="Class 1C" value="Class 1C"> </el-option>
@@ -48,20 +48,16 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item label="Connector type">
-                        <el-select
-                        style="width: 100%"
-                        v-model="terminalsData.connector_type.value"
-                        placeholder="Select">
+                        <el-select style="width: 100%" v-model="terminalsData.connector_type.value"
+                            placeholder="Select">
                             <el-option label="Compression" value="Compression"> </el-option>
                             <el-option label="Soldered and welded" value="Soldered and welded"> </el-option>
                             <el-option label="Bolted and Set Screw" value="Bolted and Set Screw"> </el-option>
                         </el-select>
                     </el-form-item>
                     <el-form-item label="Service condition">
-                        <el-select
-                        style="width: 100%"
-                        v-model="terminalsData.service_condition.value"
-                        placeholder="Select">
+                        <el-select style="width: 100%" v-model="terminalsData.service_condition.value"
+                            placeholder="Select">
                             <el-option label="Indoor" value="Indoor"> </el-option>
                             <el-option label="Outdoor" value="Outdoor"> </el-option>
                             <el-option label="Highly contaminated area" value="Highly contaminated area"> </el-option>
@@ -70,7 +66,7 @@
                     </el-form-item>
                 </el-form>
             </el-col>
-            <el-col :span="12" class="col-content">
+            <el-col :xs="24" :md="12" class="col-content">
                 <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Joint</span>
                     <el-divider></el-divider>
@@ -94,14 +90,14 @@
                     </el-form-item>
                     <el-form-item label="Service condition">
                         <el-input v-model="jointsData.service_condition.value">
-                            
+
                         </el-input>
                     </el-form-item>
                 </el-form>
             </el-col>
         </el-row>
-        <el-row style="margin-top: 50px;" :gutter="20" class="content">
-            <el-col :span="12" class="col-content">
+        <el-row :gutter="20" class="content">
+            <el-col :xs="24" :md="12" class="col-content">
                 <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Sheath voltage limiter</span>
                     <el-divider></el-divider>
@@ -122,7 +118,7 @@
                     </el-form-item>
                     <el-form-item label="High current impulse withstand">
                         <el-input v-model="sheathLimitsData.high_current_impulse_withstand.value">
-                             <template slot="append">kA</template>
+                            <template slot="append">kA</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Long duration current impulse withstand">
@@ -142,30 +138,30 @@
 </template>
 <script>
 export default {
-    name : "assessories",
-    props : {
-        terminal : {
-            type : Object,
-            require : true,
+    name: "assessories",
+    props: {
+        terminal: {
+            type: Object,
+            require: true,
         },
-        joint : {
-            type : Object,
-            require : true,
+        joint: {
+            type: Object,
+            require: true,
         },
-        sheathLimit : {
-            type : Object,
-            require : true,
+        sheathLimit: {
+            type: Object,
+            require: true,
         }
     },
     data() {
         return {
-            openRatings : "true",
-            labelWidth : `300px`,
+            openRatings: "true",
+            labelWidth: `130px`,
         }
     },
-    watch : {
+    watch: {
     },
-    methods : {
+    methods: {
     },
     computed: {
         terminalsData() {
@@ -183,5 +179,19 @@ export default {
 <style scoped>
 .bolder {
     font-size: 12px;
+}
+
+::v-deep(.content:last-of-type > .col-content:first-child) {
+    margin-top: 20px;
+}
+
+@media (max-width: 991px) {
+    ::v-deep(.col-content) {
+        margin-bottom: 10px;
+    }
+
+    ::v-deep(.content:last-of-type > .col-content:first-child) {
+        margin-top: 10px;
+    }
 }
 </style>

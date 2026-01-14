@@ -1,8 +1,14 @@
 {
   "testId": "a6a3b5d1-dd96-428a-a824-1c7ed5c2fea0",
-  "testCode": "InsulationResMotor",
-  "testName": "Insulation resistance of motor",
+  "testCode": "InsulationResistance",
+  "testName": "Insulation resistance",
   "columns": [
+    {
+      "mrid": "c2b9f0a1-1a9d-4a22-8e44-000000000004",
+      "code": "measurement",
+      "name": "Measurement",
+      "type": "string"
+    },
     {
       "mrid": "8a1f2b3c-4d5e-4a6b-9c01-0f1e2d3c4b5a",
       "code": "test_voltage",

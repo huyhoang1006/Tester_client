@@ -10,20 +10,20 @@
       "type": "string"
     },
     {
-      "mrid": "77777777-aaaa-bbbb-cccc-000000000001",
+      "mrid": "d935a88e-ae9e-47a8-8c90-a8de26d4a5ed",
       "code": "interrupt_no",
       "name": "Interrupter No.",
       "type": "string"
     },
     {
-      "mrid": "77777777-aaaa-bbbb-cccc-000000000002",
+      "mrid": "899bc9df-acf5-4bde-b8f7-f690263aabee",
       "code": "i_test",
       "name": "I test",
       "type": "analog",
       "unit": "A"
     },
     {
-      "mrid": "77777777-aaaa-bbbb-cccc-000000000003",
+      "mrid": "d24f5034-3d7d-4bb2-9788-86405874a2e4",
       "code": "contact_resistance",
       "name": "Contact resistance",
       "type": "analog",

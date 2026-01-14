@@ -76,7 +76,7 @@ export default {
     },
     data() {
         return {
-            labelWidth: `${150}px`,
+            labelWidth: `${120}px`,
             countryData : country.default,
             manufacturerList : ['ABB', 'ABB Sécheron', 'ACEC', 'Mitsubishi Electric', 'Aditya Vidyut Appliances Ltd', 'AEG', 'Alstohm Savoisienne', 'Alstom',
         'ANSALDO', 'APEX', 'Areva', 'Areva Unido', 'Artrans - Los Conce', 'ASA Trafobau GmbH', 'ASEA', 'BBC', 'Bharat Bijilee Ltd.', 'Bharat Heavy Electricals, Ltd.',
@@ -116,13 +116,40 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.property {
+    width: 100%;
+    display: flex;
+    gap: 20px;
+}
+
 .col-content {
     width: 50%;
     box-sizing: border-box;
 }
-.property {
-    width: 100%;
-    display: flex;
-    gap: 20px
+
+@media (max-width: 991px) {
+    .property {
+        flex-direction: column;
+    }
+
+    .col-content {
+        width: 100%;
+    }
+}
+
+@media (max-width: 767px) {
+    ::v-deep(.el-form-item) {
+        display: block;
+    }
+
+    ::v-deep(.el-form-item__label) {
+        width: 100%;
+        text-align: left;
+        margin-bottom: 4px;
+    }
+
+    ::v-deep(.el-form-item__content) {
+        margin-left: 0 !important;
+    }
 }
 </style>

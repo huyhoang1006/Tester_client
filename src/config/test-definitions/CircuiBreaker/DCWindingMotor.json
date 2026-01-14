@@ -4,7 +4,7 @@
   "testName": "DC winding resistance of motor",
   "columns": [
     {
-      "mrid": "66666666-aaaa-bbbb-cccc-000000000003",
+      "mrid": "7213c077-fd8a-4f12-888c-1263570aa8d6",
       "code": "r_meas",
       "name": "R meas",
       "type": "analog",

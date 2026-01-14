@@ -1,6 +1,39 @@
 {
   "columns": [
     {
+      "mrid": "a2b3c4d5-e6f7-4890-a1b2-c3d4e5f67890",
+      "code": "phase",
+      "name": "Phase",
+      "type": "string"
+    },
+    {
+      "mrid": "509a7f7d-357b-4e6e-9e99-547f4eabfcb8",
+      "code": "closing_time",
+      "name": "Closing time",
+      "type": "analog",
+      "unit": "m|s"
+    },
+    {
+      "mrid": "ff66aaaa-7373-4b84-ab17-7afa4cf94fbc",
+      "code": "closing_sync",
+      "name": "Closing sync",
+      "type": "analog",
+      "unit": "m|s"
+    },
+    {
+      "mrid": "7213c077-fd8a-4f12-888c-1263570aa8d6",
+      "code": "r_meas",
+      "name": "R meas",
+      "type": "analog",
+      "unit": "Ω"
+    },
+    {
+      "mrid": "c2d3e4f5-a6b7-48c9-9d0e-1f2a3b4c5d6e",
+      "code": "close_coil_no",
+      "name": "Close Coil No",
+      "type": "string"
+    },
+    {
       "mrid": "8a1f2b3c-4d5e-4a6b-9c01-0f1e2d3c4b5a",
       "code": "test_voltage",
       "name": "Test voltage",
@@ -8,36 +41,11 @@
       "unit": "k|V"
     },
     {
-      "mrid": "b3c4d5e6-f7a8-4901-b2c3-d4e5f6g78901",
-      "code": "unit_no",
-      "name": "Unit number",
-      "type": "analog"
-    },
-    {
-      "mrid": "f02b9353-bb57-40a6-a08b-0340346e2057",
-      "code": "name",
-      "name": "Name",
-      "type": "string"
-    },
-    {
-      "mrid": "d47ac10b-58cc-4372-a567-0e02b2c3d479",
-      "code": "closing_time",
-      "name": "Closing time",
+      "mrid": "6c9d0e1f-2a3b-4c13-9009-000000000017",
+      "code": "r60s",
+      "name": "R60s",
       "type": "analog",
-      "unit": "m|s"
-    },
-    {
-      "mrid": "f69ce32d-70ee-4594-c789-2024d4e5f69b",
-      "code": "closing_sync",
-      "name": "Closing sync",
-      "type": "analog",
-      "unit": "m|s"
-    },
-    {
-      "mrid": "c2d3e4f5-a6b7-48c9-9d0e-1f2a3b4c5d6e",
-      "code": "close_coil_no",
-      "name": "Close Coil No",
-      "type": "string"
+      "unit": "M|Ω"
     },
     {
       "mrid": "b1c2d3e4-f5a6-47b8-8c9d-0e1f2a3b4c5d",
@@ -60,29 +68,15 @@
       "unit": "m|s"
     },
     {
-      "mrid": "66666666-aaaa-bbbb-cccc-000000000003",
-      "code": "r_meas",
-      "name": "R meas",
-      "type": "analog",
-      "unit": "Ω"
-    },
-    {
-      "mrid": "6c9d0e1f-2a3b-4c13-9009-000000000017",
-      "code": "r60s",
-      "name": "R60s",
-      "type": "analog",
-      "unit": "M|Ω"
-    },
-    {
-      "mrid": "a2b3c4d5-e6f7-4890-a1b2-c3d4e5f67890",
-      "code": "phase",
-      "name": "Phase",
-      "type": "string"
-    },
-    {
       "mrid": "c2b9f0a1-1a9d-4a22-8e44-000000000004",
       "code": "measurement",
       "name": "Measurement",
+      "type": "string"
+    },
+    {
+      "mrid": "f02b9353-bb57-40a6-a08b-0340346e2057",
+      "code": "name",
+      "name": "Name",
       "type": "string"
     },
     {
@@ -90,6 +84,26 @@
       "code": "item",
       "name": "Item",
       "type": "string"
+    },
+    {
+      "mrid": "899bc9df-acf5-4bde-b8f7-f690263aabee",
+      "code": "i_test",
+      "name": "I test",
+      "type": "analog",
+      "unit": "A"
+    },
+    {
+      "mrid": "d24f5034-3d7d-4bb2-9788-86405874a2e4",
+      "code": "contact_resistance",
+      "name": "Contact resistance",
+      "type": "analog",
+      "unit": "µ|Ω"
+    },
+    {
+      "mrid": "b3c4d5e6-f7a8-4901-b2c3-d4e5f6g78901",
+      "code": "unit_no",
+      "name": "Unit number",
+      "type": "analog"
     },
     {
       "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",
