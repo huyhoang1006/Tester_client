@@ -1,6 +1,6 @@
 <template>
-    <div class="mgt-20 property">
-        <div style="font-size: 12px;" class="col-content">
+    <el-row :gutter="20" class="mgt-20 property">
+        <el-col :xs="24" :md="12" class="col-content">
             <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                 <span class="bolder">Ratings</span>
                 <el-divider></el-divider>
@@ -30,8 +30,8 @@
                     </el-input>
                 </el-form-item>
             </el-form>
-        </div>
-        <div class="col-content">
+        </el-col>
+        <el-col :xs="24" :md="12" class="col-content">
             <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                 <span class="bolder">Nominal values</span>
                 <el-divider></el-divider>
@@ -57,12 +57,13 @@
                 </el-form-item>
                 <el-form-item label="Insul. type">
                     <el-select v-model="bushingData.insulation_type" style="width: 100%;">
-                        <el-option v-for="(item, index) in insulationKindList" :key="index" :label="item.label" :value="item.value"></el-option>
+                        <el-option v-for="(item, index) in insulationKindList" :key="index" :label="item.label"
+                            :value="item.value"></el-option>
                     </el-select>
                 </el-form-item>
             </el-form>
-        </div>
-    </div>
+        </el-col>
+    </el-row>
 </template>
 
 <script>
@@ -97,9 +98,9 @@ export default {
     data() {
         return {
             labelWidth: `${150}px`,
-            attachmentData : [],
-            unitMultiplier : UnitMultiplier,
-            unitSymbol : UnitSymbol,
+            attachmentData: [],
+            unitMultiplier: UnitMultiplier,
+            unitSymbol: UnitSymbol,
             insulationKindList: [
                 {
                     label: 'Oil-impregnated paper',
@@ -140,26 +141,28 @@ export default {
             immediate: true
         }
     },
-    methods: { 
+    methods: {
     }
 }
 </script>
 
 <style lang="scss" scoped>
-.col-content {
-    width: 50%;
-    box-sizing: border-box;
+::v-deep(.bolder) {
+    font-size: 12px;
 }
+
 ::v-deep .el-input__inner,
 ::v-deep .el-select .el-input__inner {
     font-size: 12px !important;
 }
+
 ::v-deep(.el-form-item__label) {
     font-size: 12px !important;
 }
-.property {
-    width: 100%;
-    display: flex;
-    gap: 20px
+
+@media (max-width: 991px) {
+    ::v-deep(.col-content) {
+        margin-bottom: 10px;
+    }
 }
 </style>
