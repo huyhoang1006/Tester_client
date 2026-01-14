@@ -73,5 +73,23 @@ export default {
             this.nodeToMove = null
             this.validParentTypesForMove = []
         },
+        getValidParentTypes(nodeMode) {
+            switch (nodeMode) {
+                case 'organisation':
+                    return ['organisation'] // Org chỉ nằm trong Org
+                case 'substation':
+                    return ['organisation'] // Substation nằm trong Org
+                case 'voltageLevel':
+                    return ['substation'] // Voltage nằm trong Substation
+                case 'bay':
+                    return ['voltageLevel', 'substation'] // Bay nằm trong Voltage hoặc Substation
+                case 'asset':
+                    return ['bay', 'voltageLevel', 'substation', 'organisation'] // Asset nằm được nhiều chỗ
+                case 'job':
+                    return ['asset'] // Job nằm trong Asset
+                default:
+                    return []
+            }
+        },
     }
 }
