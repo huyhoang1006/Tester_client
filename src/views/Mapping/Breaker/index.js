@@ -614,61 +614,63 @@ export function mapDtoToEntity(dto) {
 export function mapEntityToDto(entity) {
     console.log(entity);
     const dto = new CircuitBreakerDto()
-    dto.properties.mrid = entity.asset.mrid || ''
-    dto.properties.kind = entity.asset.kind || ''
-    dto.properties.type = entity.asset.type || ''
-    dto.properties.apparatus_id = entity.asset.name || ''
-    dto.properties.country_of_origin = entity.asset.country_of_origin || ''
-    dto.properties.serial_no = entity.asset.serial_number || ''
-    dto.productAssetModelId = entity.productAssetModel.mrid || ''
-    dto.properties.manufacturer = entity.productAssetModel.manufacturer || ''
-    dto.properties.manufacturer_type = entity.oldBreakerInfo.manufacturer_type || ''
-    dto.lifecycleDateId = entity.lifecycleDate.mrid || ''
-    dto.properties.manufacturer_year = entity.lifecycleDate.manufactured_date || ''
-    dto.properties.comment = entity.asset.description || ''
-    dto.locationId = entity.asset.location || ''
-    dto.circuitBreaker.numberOfPhases = entity.oldBreakerInfo.phase_number || ''
-    dto.circuitBreaker.interruptersPerPhase = entity.oldBreakerInfo.number_of_interrupters_per_phase || ''
-    dto.circuitBreaker.poleOperation = entity.oldBreakerInfo.pole_operation || ''
-    dto.assetPsrId = entity.assetPsr.mrid || ''
-    dto.assetInfoId = entity.oldBreakerInfo.mrid || ''
-    //attachment
-    dto.attachmentId = entity.attachment.mrid || '';
-    dto.attachment = entity.attachment;
+    if (!entity) return dto;
 
-    if (entity.oldBreakerInfo.pir == 1) {
+    dto.properties.mrid = entity.asset?.mrid || ''
+    dto.properties.kind = entity.asset?.kind || ''
+    dto.properties.type = entity.asset?.type || ''
+    dto.properties.apparatus_id = entity.asset?.name || ''
+    dto.properties.country_of_origin = entity.asset?.country_of_origin || ''
+    dto.properties.serial_no = entity.asset?.serial_number || ''
+    dto.productAssetModelId = entity.productAssetModel?.mrid || ''
+    dto.properties.manufacturer = entity.productAssetModel?.manufacturer || ''
+    dto.properties.manufacturer_type = entity.oldBreakerInfo?.manufacturer_type || ''
+    dto.lifecycleDateId = entity.lifecycleDate?.mrid || ''
+    dto.properties.manufacturer_year = entity.lifecycleDate?.manufactured_date || ''
+    dto.properties.comment = entity.asset?.description || ''
+    dto.locationId = entity.asset?.location || ''
+    dto.circuitBreaker.numberOfPhases = entity.oldBreakerInfo?.phase_number || ''
+    dto.circuitBreaker.interruptersPerPhase = entity.oldBreakerInfo?.number_of_interrupters_per_phase || ''
+    dto.circuitBreaker.poleOperation = entity.oldBreakerInfo?.pole_operation || ''
+    dto.assetPsrId = entity.assetPsr?.mrid || ''
+    dto.assetInfoId = entity.oldBreakerInfo?.mrid || ''
+    //attachment
+    dto.attachmentId = entity.attachment?.mrid || '';
+    dto.attachment = entity.attachment || null;
+
+    if (entity.oldBreakerInfo?.pir == 1) {
         dto.circuitBreaker.hasPIR = true;
     } else {
         dto.circuitBreaker.hasPIR = false;
     }
 
-    dto.circuitBreaker.pirValue.mrid = entity.oldBreakerInfo.pir_value || ''
-    for (const data of entity.resistance) {
+    dto.circuitBreaker.pirValue.mrid = entity.oldBreakerInfo?.pir_value || ''
+    for (const data of (entity.resistance || [])) {
         if (data.mrid == dto.circuitBreaker.pirValue.mrid) {
             dto.circuitBreaker.pirValue.value = data.value || ''
             break
         }
     }
 
-    if (entity.oldBreakerInfo.grading_capacitors == 1) {
+    if (entity.oldBreakerInfo?.grading_capacitors == 1) {
         dto.circuitBreaker.hasGradingCapacitors = true;
     } else {
         dto.circuitBreaker.hasGradingCapacitors = false;
     }
-    dto.circuitBreaker.capacitorValue.mrid = entity.oldBreakerInfo.capacitor_value || ''
-    for (const data of entity.capacitance) {
+    dto.circuitBreaker.capacitorValue.mrid = entity.oldBreakerInfo?.capacitor_value || ''
+    for (const data of (entity.capacitance || [])) {
         if (data.mrid == dto.circuitBreaker.capacitorValue.mrid) {
             dto.circuitBreaker.capacitorValue.value = data.value || ''
             break
         }
     }
-    dto.circuitBreaker.interruptingMedium = entity.oldBreakerInfo.interrupting_medium || ''
-    dto.circuitBreaker.tankType = entity.oldBreakerInfo.tank_type || ''
+    dto.circuitBreaker.interruptingMedium = entity.oldBreakerInfo?.interrupting_medium || ''
+    dto.circuitBreaker.tankType = entity.oldBreakerInfo?.tank_type || ''
 
-    dto.breakerRatingInfoId = entity.breakerRatingInfo.mrid || ''
-    dto.ratings.rated_frequency.mrid = entity.oldBreakerInfo.rated_frequency || ''
-    dto.ratings.rated_frequency_custom.mrid = entity.oldBreakerInfo.rated_frequency || ''
-    for (const data of entity.frequency) {
+    dto.breakerRatingInfoId = entity.breakerRatingInfo?.mrid || ''
+    dto.ratings.rated_frequency.mrid = entity.oldBreakerInfo?.rated_frequency || ''
+    dto.ratings.rated_frequency_custom.mrid = entity.oldBreakerInfo?.rated_frequency || ''
+    for (const data of (entity.frequency || [])) {
         if (data.mrid == dto.ratings.rated_frequency.mrid) {
             if (['50', '60', '16.7'].includes(data.value)) {
                 dto.ratings.rated_frequency.value = data.value || ''
@@ -678,190 +680,190 @@ export function mapEntityToDto(entity) {
             }
         }
     }
-    dto.ratings.rated_voltage_ll.mrid = entity.oldBreakerInfo.rated_voltage || ''
-    for (const data of entity.voltage) {
+    dto.ratings.rated_voltage_ll.mrid = entity.oldBreakerInfo?.rated_voltage || ''
+    for (const data of (entity.voltage || [])) {
         if (data.mrid == dto.ratings.rated_voltage_ll.mrid) {
             dto.ratings.rated_voltage_ll.value = data.value
             break
         }
     }
-    dto.ratings.rated_current.mrid = entity.oldBreakerInfo.rated_current
-    for (const data of entity.currentFlow) {
+    dto.ratings.rated_current.mrid = entity.oldBreakerInfo?.rated_current
+    for (const data of (entity.currentFlow || [])) {
         if (data.mrid == dto.ratings.rated_current.mrid) {
             dto.ratings.rated_current.value = data.value
             break
         }
     }
-    dto.ratings.rated_short_circuit_breaking_current.mrid = entity.breakerRatingInfo.rated_short_circuit_breaking_current
-    for (const data of entity.currentFlow) {
+    dto.ratings.rated_short_circuit_breaking_current.mrid = entity.breakerRatingInfo?.rated_short_circuit_breaking_current
+    for (const data of (entity.currentFlow || [])) {
         if (data.mrid == dto.ratings.rated_short_circuit_breaking_current.mrid) {
             dto.ratings.rated_short_circuit_breaking_current.value = data.value
             break
         }
     }
-    dto.ratings.short_circuit_nominal_duration.mrid = entity.breakerRatingInfo.short_circuit_nominal_duration
-    for (const data of entity.second) {
+    dto.ratings.short_circuit_nominal_duration.mrid = entity.breakerRatingInfo?.short_circuit_nominal_duration
+    for (const data of (entity.second || [])) {
         if (data.mrid == dto.ratings.short_circuit_nominal_duration.mrid) {
             dto.ratings.short_circuit_nominal_duration.value = data.value
             break
         }
     }
-    dto.ratings.rated_insulation_level.mrid = entity.breakerRatingInfo.rated_insulation_level
-    for (const data of entity.voltage) {
+    dto.ratings.rated_insulation_level.mrid = entity.breakerRatingInfo?.rated_insulation_level
+    for (const data of (entity.voltage || [])) {
         if (data.mrid == dto.ratings.rated_insulation_level.mrid) {
             dto.ratings.rated_insulation_level.value = data.value
             break
         }
     }
-    dto.ratings.rated_interrupting_time.mrid = entity.oldBreakerInfo.rated_interrupting_time
-    for (const data of entity.second) {
+    dto.ratings.rated_interrupting_time.mrid = entity.oldBreakerInfo?.rated_interrupting_time
+    for (const data of (entity.second || [])) {
         if (data.mrid == dto.ratings.rated_interrupting_time.mrid) {
             dto.ratings.rated_interrupting_time.value = data.value
             break
         }
     }
-    dto.ratings.interrupting_duty_cycle = entity.breakerRatingInfo.interrupting_duty_cycle
-    dto.ratings.rated_power_at_closing.mrid = entity.breakerRatingInfo.rated_power_closing
-    for (const data of entity.activePower) {
+    dto.ratings.interrupting_duty_cycle = entity.breakerRatingInfo?.interrupting_duty_cycle
+    dto.ratings.rated_power_at_closing.mrid = entity.breakerRatingInfo?.rated_power_closing
+    for (const data of (entity.activePower || [])) {
         if (data.mrid == dto.ratings.rated_power_at_closing.mrid) {
             dto.ratings.rated_power_at_closing.value = data.value
             break
         }
     }
-    dto.ratings.rated_power_at_opening.mrid = entity.breakerRatingInfo.rated_power_opening
-    for (const data of entity.activePower) {
+    dto.ratings.rated_power_at_opening.mrid = entity.breakerRatingInfo?.rated_power_opening
+    for (const data of (entity.activePower || [])) {
         if (data.mrid == dto.ratings.rated_power_at_opening.mrid) {
             dto.ratings.rated_power_at_opening.value = data.value
             break
         }
     }
 
-    dto.ratings.rated_power_at_motor_charge.mrid = entity.breakerRatingInfo.rated_power_motor_charge
-    for (const data of entity.activePower) {
+    dto.ratings.rated_power_at_motor_charge.mrid = entity.breakerRatingInfo?.rated_power_motor_charge
+    for (const data of (entity.activePower || [])) {
         if (data.mrid == dto.ratings.rated_power_at_motor_charge.mrid) {
             dto.ratings.rated_power_at_motor_charge.value = data.value
             break
         }
     }
-    dto.breakerContactSystemInfoId = entity.breakerContactSystemInfo.mrid
-    dto.contactSystem.nominal_total_travel.mrid = entity.breakerContactSystemInfo.nominal_total_travel
-    for (const data of entity.length) {
+    dto.breakerContactSystemInfoId = entity.breakerContactSystemInfo?.mrid
+    dto.contactSystem.nominal_total_travel.mrid = entity.breakerContactSystemInfo?.nominal_total_travel
+    for (const data of (entity.length || [])) {
         if (data.mrid == dto.contactSystem.nominal_total_travel.mrid) {
             dto.contactSystem.nominal_total_travel.value = data.value
             break
         }
     }
 
-    dto.contactSystem.damping_time.mrid = entity.breakerContactSystemInfo.damping_time
-    for (const data of entity.second) {
+    dto.contactSystem.damping_time.mrid = entity.breakerContactSystemInfo?.damping_time
+    for (const data of (entity.second || [])) {
         if (data.mrid == dto.contactSystem.damping_time.mrid) {
             dto.contactSystem.damping_time.value = data.value
             break
         }
     }
 
-    dto.contactSystem.nozzle_length.mrid = entity.breakerContactSystemInfo.nozzle_length
-    for (const data of entity.length) {
+    dto.contactSystem.nozzle_length.mrid = entity.breakerContactSystemInfo?.nozzle_length
+    for (const data of (entity.length || [])) {
         if (data.mrid == dto.contactSystem.nozzle_length.mrid) {
             dto.contactSystem.nozzle_length.value = data.value
             break
         }
     }
 
-    dto.breakerOtherInfoId = entity.breakerOtherInfo.mrid
-    dto.others.total_weight_with_gas.mrid = entity.breakerOtherInfo.total_weight_with_gas
-    for (const data of entity.mass) {
+    dto.breakerOtherInfoId = entity.breakerOtherInfo?.mrid
+    dto.others.total_weight_with_gas.mrid = entity.breakerOtherInfo?.total_weight_with_gas
+    for (const data of (entity.mass || [])) {
         if (data.mrid == dto.others.total_weight_with_gas.mrid) {
             dto.others.total_weight_with_gas.value = data.value
             break
         }
     }
-    dto.others.weight_of_gas.mrid = entity.breakerOtherInfo.weight_of_gas
-    for (const data of entity.mass) {
+    dto.others.weight_of_gas.mrid = entity.breakerOtherInfo?.weight_of_gas
+    for (const data of (entity.mass || [])) {
         if (data.mrid == dto.others.weight_of_gas.mrid) {
             dto.others.weight_of_gas.value = data.value
             break
         }
     }
-    dto.others.volume_of_gas.mrid = entity.breakerOtherInfo.volume_of_gas
-    for (const data of entity.volume) {
+    dto.others.volume_of_gas.mrid = entity.breakerOtherInfo?.volume_of_gas
+    for (const data of (entity.volume || [])) {
         if (data.mrid == dto.others.volume_of_gas.mrid) {
             dto.others.volume_of_gas.value = data.value
             break
         }
     }
-    dto.others.rated_gas_pressure.mrid = entity.breakerOtherInfo.rated_gas_pressure
-    for (const data of entity.pressure) {
+    dto.others.rated_gas_pressure.mrid = entity.breakerOtherInfo?.rated_gas_pressure
+    for (const data of (entity.pressure || [])) {
         if (data.mrid == dto.others.rated_gas_pressure.mrid) {
             dto.others.rated_gas_pressure.value = data.value
             break
         }
     }
-    dto.others.rated_gas_temperature.mrid = entity.breakerOtherInfo.rated_gas_temperature
-    for (const data of entity.temperature) {
+    dto.others.rated_gas_temperature.mrid = entity.breakerOtherInfo?.rated_gas_temperature
+    for (const data of (entity.temperature || [])) {
         if (data.mrid == dto.others.rated_gas_temperature.mrid) {
             dto.others.rated_gas_temperature.value = data.value
             break
         }
     }
 
-    dto.operatingMechanismId = entity.oldOperatingMechanism.mrid
-    dto.operating.type = entity.oldOperatingMechanism.type
-    dto.operating.serial_no = entity.oldOperatingMechanism.serial_number
-    dto.operatingMechanismInfoId = entity.oldOperatingMechanismInfo.mrid
-    dto.operating.manufacturer_type = entity.oldOperatingMechanismInfo.manufacturer_type
-    dto.operatingMechanismLifecycleDateId = entity.operatingLifecycleDate.mrid
-    dto.operating.manufacturer_year = entity.operatingLifecycleDate.manufactured_date
-    dto.operatingMechanismProductAssetModelId = entity.operatingProductAssetModel.mrid
-    dto.operating.manufacturer = entity.operatingProductAssetModel.manufacturer
-    dto.operating.number_of_trip_coil = entity.oldOperatingMechanism.number_of_trip_coil
-    dto.operating.number_of_close_coil = entity.oldOperatingMechanism.number_of_close_coil
+    dto.operatingMechanismId = entity.oldOperatingMechanism?.mrid
+    dto.operating.type = entity.oldOperatingMechanism?.type
+    dto.operating.serial_no = entity.oldOperatingMechanism?.serial_number
+    dto.operatingMechanismInfoId = entity.oldOperatingMechanismInfo?.mrid
+    dto.operating.manufacturer_type = entity.oldOperatingMechanismInfo?.manufacturer_type
+    dto.operatingMechanismLifecycleDateId = entity.operatingLifecycleDate?.mrid
+    dto.operating.manufacturer_year = entity.operatingLifecycleDate?.manufactured_date
+    dto.operatingMechanismProductAssetModelId = entity.operatingProductAssetModel?.mrid
+    dto.operating.manufacturer = entity.operatingProductAssetModel?.manufacturer
+    dto.operating.number_of_trip_coil = entity.oldOperatingMechanism?.number_of_trip_coil
+    dto.operating.number_of_close_coil = entity.oldOperatingMechanism?.number_of_close_coil
 
-    dto.operating.auxiliary_circuits.rated_voltage.mrid = entity.oldOperatingMechanismInfo.rated_auxiliary_circuit_voltage
-    for (const data of entity.voltage) {
+    dto.operating.auxiliary_circuits.rated_voltage.mrid = entity.oldOperatingMechanismInfo?.rated_auxiliary_circuit_voltage
+    for (const data of (entity.voltage || [])) {
         if (data.mrid == dto.operating.auxiliary_circuits.rated_voltage.mrid) {
             dto.operating.auxiliary_circuits.rated_voltage.value = data.value
             break
         }
     }
-    dto.operating.auxiliary_circuits.rated_current.mrid = entity.oldOperatingMechanismInfo.rated_auxiliary_circuit_current
-    for (const data of entity.currentFlow) {
+    dto.operating.auxiliary_circuits.rated_current.mrid = entity.oldOperatingMechanismInfo?.rated_auxiliary_circuit_current
+    for (const data of (entity.currentFlow || [])) {
         if (data.mrid == dto.operating.auxiliary_circuits.rated_current.mrid) {
             dto.operating.auxiliary_circuits.rated_current.value = data.value
             break
         }
     }
-    dto.operating.auxiliary_circuits.frequency.mrid = entity.oldOperatingMechanismInfo.rated_auxiliary_circuit_frequency
-    for (const data of entity.frequency) {
+    dto.operating.auxiliary_circuits.frequency.mrid = entity.oldOperatingMechanismInfo?.rated_auxiliary_circuit_frequency
+    for (const data of (entity.frequency || [])) {
         if (data.mrid == dto.operating.auxiliary_circuits.frequency.mrid) {
             dto.operating.auxiliary_circuits.frequency.value = data.value
             break
         }
     }
-    dto.operating.auxiliary_circuits.power = entity.oldOperatingMechanismInfo.auxiliary_circuit_power_type
-    dto.operating.motor.rated_voltage.mrid = entity.oldOperatingMechanismInfo.rated_motor_voltage
-    for (const data of entity.voltage) {
+    dto.operating.auxiliary_circuits.power = entity.oldOperatingMechanismInfo?.auxiliary_circuit_power_type
+    dto.operating.motor.rated_voltage.mrid = entity.oldOperatingMechanismInfo?.rated_motor_voltage
+    for (const data of (entity.voltage || [])) {
         if (data.mrid == dto.operating.motor.rated_voltage.mrid) {
             dto.operating.motor.rated_voltage.value = data.value
             break
         }
     }
-    dto.operating.motor.rated_current.mrid = entity.oldOperatingMechanismInfo.rated_motor_current
-    for (const data of entity.currentFlow) {
+    dto.operating.motor.rated_current.mrid = entity.oldOperatingMechanismInfo?.rated_motor_current
+    for (const data of (entity.currentFlow || [])) {
         if (data.mrid == dto.operating.motor.rated_current.mrid) {
             dto.operating.motor.rated_current.value = data.value
             break
         }
     }
-    dto.operating.motor.frequency.mrid = entity.oldOperatingMechanismInfo.rated_motor_frequency
-    for (const data of entity.frequency) {
+    dto.operating.motor.frequency.mrid = entity.oldOperatingMechanismInfo?.rated_motor_frequency
+    for (const data of (entity.frequency || [])) {
         if (data.mrid == dto.operating.motor.frequency.mrid) {
             dto.operating.motor.frequency.value = data.value
             break
         }
     }
-    dto.operating.motor.power = entity.oldOperatingMechanismInfo.motor_power_type
-    for (const data of entity.operatingMechanismComponent) {
+    dto.operating.motor.power = entity.oldOperatingMechanismInfo?.motor_power_type
+    for (const data of (entity.operatingMechanismComponent || [])) {
         const dataComponent = {
             mrid: '',
             component: "",
@@ -885,14 +887,14 @@ export function mapEntityToDto(entity) {
         dataComponent.mrid = data.mrid
         dataComponent.component = data.component
         dataComponent.rated_voltage.mrid = data.rated_voltage
-        for (const data2 of entity.voltage) {
+        for (const data2 of (entity.voltage || [])) {
             if (data2.mrid == dataComponent.rated_voltage.mrid) {
                 dataComponent.rated_voltage.value = data2.value
                 break
             }
         }
         dataComponent.rated_current.mrid = data.rated_current
-        for (const data2 of entity.currentFlow) {
+        for (const data2 of (entity.currentFlow || [])) {
             if (data2.mrid == dataComponent.rated_current.mrid) {
                 dataComponent.rated_current.value = data2.value
                 break
@@ -900,7 +902,7 @@ export function mapEntityToDto(entity) {
         }
         dataComponent.power = data.power_type
         dataComponent.frequency.mrid = data.rated_frequency
-        for (const data2 of entity.frequency) {
+        for (const data2 of (entity.frequency || [])) {
             if (data2.mrid == dataComponent.frequency.mrid) {
                 dataComponent.frequency.value = data2.value
                 break
@@ -913,23 +915,23 @@ export function mapEntityToDto(entity) {
         }
     }
 
-    dto.operating.rated_operating_pressure.mrid = entity.oldOperatingMechanismInfo.rated_operating_pressure
-    for (const data of entity.pressure) {
+    dto.operating.rated_operating_pressure.mrid = entity.oldOperatingMechanismInfo?.rated_operating_pressure
+    for (const data of (entity.pressure || [])) {
         if (data.mrid == dto.operating.rated_operating_pressure.mrid) {
             dto.operating.rated_operating_pressure.value = data.value
             break
         }
     }
-    dto.operating.rated_operating_pressure_temperature.mrid = entity.oldOperatingMechanismInfo.rated_operating_pressure_temperature
-    for (const data of entity.temperature) {
+    dto.operating.rated_operating_pressure_temperature.mrid = entity.oldOperatingMechanismInfo?.rated_operating_pressure_temperature
+    for (const data of (entity.temperature || [])) {
         if (data.mrid == dto.operating.rated_operating_pressure_temperature.mrid) {
             dto.operating.rated_operating_pressure_temperature.value = data.value
             break
         }
     }
 
-    dto.assessmentLimitBreakerInfoId = entity.assessmentLimitBreakerInfo.mrid
-    dto.assessmentLimits.limits = entity.assessmentLimitBreakerInfo.limit_type
+    dto.assessmentLimitBreakerInfoId = entity.assessmentLimitBreakerInfo?.mrid
+    dto.assessmentLimits.limits = entity.assessmentLimitBreakerInfo?.limit_type
     for (const data of entity.contactResistanceBreakerInfo) {
         dto.assessmentLimits.contact_resistance.mrid = data.mrid
         dto.assessmentLimits.contact_resistance.name = data.parameter_name
