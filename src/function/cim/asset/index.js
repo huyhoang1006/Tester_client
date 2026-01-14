@@ -4,19 +4,30 @@ import * as IdentifiedObjectFunc from '../identifiedObject/index.js'
 // Lấy thông tin asset theo mrid
 export const getAssetById = async (mrid) => {
     try {
+        // [DEBUG] Log ID being requested
+        console.log(`[DEBUG] getAssetById called for MRID: ${mrid}`);
+        
         const identifiedResult = await IdentifiedObjectFunc.getIdentifiedObjectById(mrid)
         if (!identifiedResult.success) {
+            console.warn(`[DEBUG] IdentifiedObject NOT found for MRID: ${mrid}`, identifiedResult);
             return { success: false, data: null, message: 'Identified object not found' }
         }
         return new Promise((resolve, reject) => {
             db.get("SELECT * FROM asset WHERE mrid=?", [mrid], (err, row) => {
-                if (err) return reject({ success: false, err: err, message: 'Get asset by id failed' })
-                if (!row) return resolve({ success: false, data: null, message: 'Asset not found' })
+                if (err) {
+                    console.error(`[DEBUG] SQLite Error in getAssetById for MRID: ${mrid}`, err);
+                    return reject({ success: false, err: err, message: 'Get asset by id failed' })
+                }
+                if (!row) {
+                    console.warn(`[DEBUG] Asset Table row NOT found for MRID: ${mrid} (but IdentifiedObject existed)`);
+                    return resolve({ success: false, data: null, message: 'Asset not found' })
+                }
                 const data = { ...identifiedResult.data, ...row }
                 return resolve({ success: true, data: data, message: 'Get asset by id completed' })
             })
         })
     } catch (err) {
+        console.error(`[DEBUG] Unexpected Exception in getAssetById for MRID: ${mrid}`, err);
         return { success: false, err: err, message: 'Get asset by id failed' }
     }
 }
@@ -330,8 +341,10 @@ export const insertAssetTransaction = (asset, dbsql) => {
                 ],
                 function (err) {
                     if (err) {
+                        console.error(`[DEBUG] insertAssetTransaction FAILED for MRID: ${asset.mrid}`, err);
                         return resolve({ success: false, err: err, message: 'Insert asset transaction failed' })
                     }
+                    console.log(`[DEBUG] insertAssetTransaction SUCCESS for MRID: ${asset.mrid}`);
                     return resolve({ success: true, data: asset, message: 'Insert asset transaction completed' })
                 }
             )
