@@ -417,7 +417,7 @@ export default {
 }
 
 ::v-deep(.el-dialog) {
-    max-height: 90vh;
+    max-height: 85vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;

@@ -1,6 +1,6 @@
 <template>
-    <div id="ratings" class="mgy-5">
-        <el-row style="margin-top: 20px; margin-bottom: 10px;">
+    <div id="ratings">
+        <el-row class="mgt-10">
             <el-col :span="24">
                 <div style="font-size: 12px;" class="header-toggle pointer" @click="openRatings = !openRatings">
                     <i v-if="openRatings" class="fa-solid fa-caret-up"></i>
@@ -10,87 +10,54 @@
             </el-col>
         </el-row>
         <div class="content-toggle" v-if="openRatings">
-            <el-row style="width: 100%;" class="content">
-                <el-col style="width: calc((100%/2) - 20px);" class="col-content">
+            <el-row :gutter="20" class="content">
+                <el-col :xs="24" :md="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Standard">
-                            <el-col :span="24" class="pdr-0">
-                                <el-select style="width: 100%;" v-model="ratingsData.standard">
-                                    <el-option label="<Select standard>" value="selectStandard"></el-option>
-                                    <el-option label="IEC 60044" value="IEC60044"></el-option>
-                                    <el-option label="IEC 61869" value="IEC61869"></el-option>
-                                    <el-option label="ANSI C93.1" value="ANSIC931"></el-option>
-                                </el-select>
-                            </el-col>
+                            <el-select style="width: 100%;" v-model="ratingsData.standard">
+                                <el-option label="<Select standard>" value="selectStandard"></el-option>
+                                <el-option label="IEC 60044" value="IEC60044"></el-option>
+                                <el-option label="IEC 61869" value="IEC61869"></el-option>
+                                <el-option label="ANSI C93.1" value="ANSIC931"></el-option>
+                            </el-select>
                         </el-form-item>
-                    </el-form>
-                    <el-form v-if="ratingsData.rated_frequency.value != 'Custom'" :inline-message="true"
-                        :label-width="labelWidth" size="mini" label-position="left">
-                        <el-form-item label="Rated frequency">
-                            <el-col :span="24" class="pdr-0">
-                                <el-select style="width: 100%;" v-model="ratingsData.rated_frequency.value">
+                        <el-form-item label="Rated frequency" class="inline-content">
+                            <div class="form-inline">
+                                <el-select class="rf-control" v-model="ratingsData.rated_frequency.value">
                                     <el-option label="Custom" value="Custom"></el-option>
                                     <el-option label="60Hz" value="60"></el-option>
                                     <el-option label="50Hz" value="50"></el-option>
                                     <el-option label="16.7Hz" value="16.7"></el-option>
                                 </el-select>
-                            </el-col>
-                        </el-form-item>
-                    </el-form>
-                    <el-form v-else :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
-                        <el-form-item label="Rated frequency">
-                            <el-col :span="11" class="pdl-0">
-                                <el-select v-model="ratingsData.rated_frequency.value">
-                                    <el-option label="Custom" value="Custom"></el-option>
-                                    <el-option label="60Hz" value="60"></el-option>
-                                    <el-option label="50Hz" value="50"></el-option>
-                                    <el-option label="16.7Hz" value="16.7"></el-option>
-                                </el-select>
-                            </el-col>
-                            <el-col :span="2" class="pdl-0">
-                                <br>
-                            </el-col>
-                            <el-col :span="11" class="pdr-0" v-if="ratingsData.rated_frequency.value === 'Custom'">
-                                <el-input v-model="ratingsData.rated_frequency_custom">
-                                    <template slot="append">Hz</template>
+                                <el-input :disabled="ratingsData.rated_frequency.value !== 'Custom'"
+                                    v-model="ratingsData.rated_frequency_custom" class="rf-control">
+                                    <template #append>Hz</template>
                                 </el-input>
-                            </el-col>
+                            </div>
                         </el-form-item>
-                    </el-form>
-                    <el-form v-if="propertiesData.asset_type == 'CVTCCTV'" :inline-message="true"
-                        :label-width="labelWidth" size="mini" label-position="left">
-                        <el-form-item label="C1">
-                            <el-col :span="11" class="pdl-0">
+                        <template v-if="propertiesData.asset_type === 'CVTCCTV'">
+                            <el-form-item label="C1">
                                 <el-input v-model="ratingsData.c1.value">
-                                    <template slot="append">pF</template>
+                                    <template #append>pF</template>
                                 </el-input>
-                            </el-col>
-                        </el-form-item>
-                        <el-form-item label="C2">
-                            <el-col :span="11" class="pdl-0">
+                            </el-form-item>
+                            <el-form-item label="C2">
                                 <el-input v-model="ratingsData.c2.value">
-                                    <template slot="append">pF</template>
+                                    <template #append>pF</template>
                                 </el-input>
-                            </el-col>
-                        </el-form-item>
-                    </el-form>
-                    <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
+                            </el-form-item>
+                        </template>
                         <el-form-item label="Upr">
-                            <el-col :span="11" class="pdl-0">
-                                <el-select v-model="ratingsData.upr">
+                            <div class="form-inline">
+                                <el-select class="form-control" v-model="ratingsData.upr">
                                     <el-option label="1 / 1" value="1"></el-option>
                                     <el-option label="1 / 3" value="3"></el-option>
                                     <el-option label="1 / √3" value="3sqrt"></el-option>
                                 </el-select>
-                            </el-col>
-                            <el-col :span="2" class="pdl-0">
-                                <br>
-                            </el-col>
-                            <el-col :span="11" class="pdr-0">
-                                <el-input v-model="ratingsData.rated_voltage.value">
-                                    <template slot="append">kV</template>
+                                <el-input class="form-control" v-model="ratingsData.rated_voltage.value">
+                                    <template #append>kV</template>
                                 </el-input>
-                            </el-col>
+                            </div>
                         </el-form-item>
                     </el-form>
                 </el-col>
@@ -98,23 +65,24 @@
         </div>
     </div>
 </template>
+
 <script>
 export default {
     name: "ratings",
     props: {
         ratings: {
             type: Object,
-            require: true,
+            required: true,
         },
         properties: {
             type: Object,
-            require: true,
+            required: true,
         }
     },
     data() {
         return {
             openRatings: true,
-            labelWidth: `200px`,
+            labelWidth: `120px`,
         }
     },
     computed: {
@@ -127,3 +95,24 @@ export default {
     }
 }
 </script>
+
+<style lang="scss" scoped>
+.col-content {
+    font-size: 12px;
+}
+
+::v-deep(.el-form-item__label) {
+    font-size: 12px;
+}
+
+::v-deep(.form-inline) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+}
+
+::v-deep(.form-control) {
+    flex: 1;
+}
+</style>

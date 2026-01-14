@@ -1,7 +1,7 @@
 <template>
     <div id="properties">
         <el-row :gutter="20" class="content">
-            <el-col :span="12" class="col-content">
+            <el-col :xs="24" :md="12" class="col-content">
                 <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                     <span style="font-size: 12px !important" class="bolder">Properties</span>
                     <el-divider></el-divider>
@@ -55,7 +55,7 @@
                     </el-form-item>
                 </el-form>
             </el-col>
-            <el-col :span="12" class="col-content">
+            <el-col :xs="24" :md="12" class="col-content">
                 <el-form :label-width="labelWidth" size="mini" label-position="left">
                     <span style="font-size: 12px !important" class="bolder">Comment</span>
                     <el-divider></el-divider>
@@ -97,7 +97,7 @@ export default {
     },
     data() {
         return {
-            labelWidth: `200px`,
+            labelWidth: `120px`,
             countryData: [],
             manufacturerCurrent: '',
             sign: '',
@@ -240,5 +240,31 @@ th,
 td {
     padding: 0px 10px;
     height: 30px;
+}
+
+@media (max-width: 991px) {
+    ::v-deep(.col-content) {
+        margin-bottom: 10px;
+    }
+
+    ::v-deep(.col-content:last-child) {
+        margin-bottom: 0px;
+    }
+}
+
+@media (max-width: 767px) {
+    ::v-deep(.el-form-item) {
+        flex-direction: column;
+    }
+
+    ::v-deep(.el-form-item__label) {
+        float: none;
+        width: 100% !important;
+        text-align: left;
+    }
+
+    ::v-deep(.el-form-item__content) {
+        margin-left: 0 !important;
+    }
 }
 </style>
