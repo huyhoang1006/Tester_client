@@ -18,12 +18,12 @@ export const getAuxiliaryContactsBreakerInfoById = async (mrid) => {
 // Lấy danh sách theo assessment_limit_breaker_info_id
 export const getAuxiliaryContactsBreakerInfoByAssessmentLimitId = async (assessmentLimitId) => {
     return new Promise((resolve, reject) => {
-        db.get(
+        db.all(
             `SELECT * FROM auxiliary_contacts_breaker_info WHERE assessment_limit_breaker_info_id = ?`,
             [assessmentLimitId],
-            (err, row) => {
+            (err, rows) => {
                 if (err) return reject({ success: false, err, message: 'Get auxiliaryContactsBreakerInfo by assessment_limit_breaker_info_id failed' })
-                return resolve({ success: true, data: row, message: 'Get auxiliaryContactsBreakerInfo by assessment_limit_breaker_info_id completed' })
+                return resolve({ success: true, data: rows, message: 'Get auxiliaryContactsBreakerInfo by assessment_limit_breaker_info_id completed' })
             }
         )
     })

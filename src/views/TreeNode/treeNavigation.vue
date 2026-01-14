@@ -2,25 +2,26 @@
     <div class="explorer">
         <!-- Thanh công cụ -->
         <div v-show="clientSlide" class="toolbar">
-            <TopBarClient
-                :pathMapClient.sync="pathMapClient"
-                :organisationClientList="organisationClientList"
-                @clear-selection="clearSelection"
-            />
+            <TopBarClient :pathMapClient.sync="pathMapClient" :organisationClientList="organisationClientList"
+                @clear-selection="clearSelection" />
         </div>
         <div v-show="!clientSlide" class="toolbar">
             <div style="display: flex; align-items: center">
                 <div @click="resetAllServer" class="path-hover">Organisation</div>
-                <i v-if="pathMapServer && pathMapServer.length > 0" style="margin-left: 10px" class="fa-solid fa-angle-right"></i>
+                <i v-if="pathMapServer && pathMapServer.length > 0" style="margin-left: 10px"
+                    class="fa-solid fa-angle-right"></i>
             </div>
-            <div style="display: flex; align-items: center" v-for="(item, index) in pathMapServer" :key="`server-${item.id}-${index}`">
+            <div style="display: flex; align-items: center" v-for="(item, index) in pathMapServer"
+                :key="`server-${item.id}-${index}`">
                 <div @click="resetPathServer(index)" class="path-hover">{{ item.parent }}</div>
-                <i v-if="index < pathMapServer.length - 1" style="margin-left: 10px" class="fa-solid fa-angle-right"></i>
+                <i v-if="index < pathMapServer.length - 1" style="margin-left: 10px"
+                    class="fa-solid fa-angle-right"></i>
             </div>
         </div>
         <div id="toolbar-setting-id" class="toolbar-setting">
             <div>
-                <el-dropdown ref="addDropdown" @command="handleAddCommand" @visible-change="handleDropdownVisibleChange" trigger="click">
+                <el-dropdown ref="addDropdown" @command="handleAddCommand" @visible-change="handleDropdownVisibleChange"
+                    trigger="click">
                     <span class="icon-wrapper">
                         <i title="Add" style="font-size: 12px" class="fa-solid fa-square-plus"></i>
                     </span>
@@ -37,14 +38,11 @@
                         <el-dropdown-item v-if="isCommandAllowed('bay')" command="bay">
                             <icon size="12px" folderType="bay" badgeColor="146EBE"></icon> add Bay
                         </el-dropdown-item>
-                        <el-dropdown-item
-                            v-if="isCommandAllowed('asset')"
-                            command="asset"
-                            class="asset-submenu-parent"
-                            @mouseenter.native="showAssetSub = true"
-                            @mouseleave.native="showAssetSub = false">
+                        <el-dropdown-item v-if="isCommandAllowed('asset')" command="asset" class="asset-submenu-parent"
+                            @mouseenter.native="showAssetSub = true" @mouseleave.native="showAssetSub = false">
                             <icon size="12px" folderType="asset" badgeColor="146EBE"></icon> add Asset
-                            <div class="asset-submenu" v-if="showAssetSub" @click.stop @mouseenter.stop @mouseleave.stop>
+                            <div class="asset-submenu" v-if="showAssetSub" @click.stop @mouseenter.stop
+                                @mouseleave.stop>
                                 <div class="submenu-item" @click="handleAssetCommand('Transformer')">
                                     <i class="fa-solid fa-bolt"></i>
                                     <span>Add Transformer</span>
@@ -101,30 +99,39 @@
                 <i @click="handleOpenNode" title="Open" style="font-size: 12px" class="fa-regular fa-folder-open"></i>
             </div>
             <div>
-                <i @click="duplicateSelectedNodes" title="Duplicate" style="font-size: 12px" class="fa-solid fa-clone"></i>
+                <i @click="duplicateSelectedNodes" title="Duplicate" style="font-size: 12px"
+                    class="fa-solid fa-clone"></i>
             </div>
             <div>
                 <el-dropdown @command="handleImportCommand" trigger="click">
                     <i title="Import" style="font-size: 12px" class="fa-solid fa-file-import"></i>
                     <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item class="import-json-parent" @mouseenter.native="showSubImport = 'json'" @mouseleave.native="showSubImport = null">
-                            <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon> import from JSON
-                            <div class="import-json-submenu" v-if="showSubImport === 'json'" @click.stop @mouseenter.stop @mouseleave.stop>
+                        <el-dropdown-item class="import-json-parent" @mouseenter.native="showSubImport = 'json'"
+                            @mouseleave.native="showSubImport = null">
+                            <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon>
+                            import from JSON
+                            <div class="import-json-submenu" v-if="showSubImport === 'json'" @click.stop
+                                @mouseenter.stop @mouseleave.stop>
                                 <div class="submenu-item" @click="handleImportCommand('importJSON')">import JSON</div>
-                                <div class="submenu-item" @click="handleImportCommand('importJSONCIM')">import JSON by CIM</div>
+                                <div class="submenu-item" @click="handleImportCommand('importJSONCIM')">import JSON by
+                                    CIM</div>
                             </div>
                         </el-dropdown-item>
                         <el-dropdown-item command="importXML">
-                            <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon> import from XML
+                            <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon>
+                            import from XML
                         </el-dropdown-item>
                         <el-dropdown-item command="importExcel">
-                            <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon> import from Excel
+                            <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon>
+                            import from Excel
                         </el-dropdown-item>
                         <el-dropdown-item command="importWord">
-                            <icon size="12px" fileTypeDetail="word" folderType="fileType" badgeColor="146EBE"></icon> import from Word
+                            <icon size="12px" fileTypeDetail="word" folderType="fileType" badgeColor="146EBE"></icon>
+                            import from Word
                         </el-dropdown-item>
                         <el-dropdown-item command="importPDF">
-                            <icon size="12px" fileTypeDetail="pdf" folderType="fileType" badgeColor="146EBE"></icon> import from PDF
+                            <icon size="12px" fileTypeDetail="pdf" folderType="fileType" badgeColor="146EBE"></icon>
+                            import from PDF
                         </el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
@@ -133,24 +140,32 @@
                 <el-dropdown @command="handleCommand" trigger="click">
                     <i title="Export" style="font-size: 12px" class="fa-solid fa-file-export"></i>
                     <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item class="export-json-parent" @mouseenter.native="showSub = 'json'" @mouseleave.native="showSub = null">
-                            <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon> export to JSON
-                            <div class="export-json-submenu" v-if="showSub === 'json'" @click.stop @mouseenter.stop @mouseleave.stop>
+                        <el-dropdown-item class="export-json-parent" @mouseenter.native="showSub = 'json'"
+                            @mouseleave.native="showSub = null">
+                            <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon>
+                            export to JSON
+                            <div class="export-json-submenu" v-if="showSub === 'json'" @click.stop @mouseenter.stop
+                                @mouseleave.stop>
                                 <div class="submenu-item" @click="handleCommand('exportJSON')">export JSON</div>
-                                <div class="submenu-item" @click="handleCommand('exportJSONCIM')">export JSON by CIM</div>
+                                <div class="submenu-item" @click="handleCommand('exportJSONCIM')">export JSON by CIM
+                                </div>
                             </div>
                         </el-dropdown-item>
                         <el-dropdown-item command="exportXML">
-                            <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon> export to XML
+                            <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon>
+                            export to XML
                         </el-dropdown-item>
                         <el-dropdown-item command="exportExcel">
-                            <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon> export to Excel
+                            <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon>
+                            export to Excel
                         </el-dropdown-item>
                         <el-dropdown-item command="exportWord">
-                            <icon size="12px" fileTypeDetail="word" folderType="fileType" badgeColor="146EBE"></icon> export to Word
+                            <icon size="12px" fileTypeDetail="word" folderType="fileType" badgeColor="146EBE"></icon>
+                            export to Word
                         </el-dropdown-item>
                         <el-dropdown-item command="exportPDF">
-                            <icon size="12px" fileTypeDetail="pdf" folderType="fileType" badgeColor="146EBE"></icon> export to PDF
+                            <icon size="12px" fileTypeDetail="pdf" folderType="fileType" badgeColor="146EBE"></icon>
+                            export to PDF
                         </el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
@@ -159,7 +174,8 @@
                 <i title="Upload" style="font-size: 12px" class="fa-solid fa-upload"></i>
             </div>
             <div v-if="!clientSlide">
-                <i @click="handleDownloadNode" title="Download" style="font-size: 12px" class="fa-solid fa-download"></i>
+                <i @click="handleDownloadNode" title="Download" style="font-size: 12px"
+                    class="fa-solid fa-download"></i>
             </div>
             <div>
                 <i @click="handleDeleteNode" title="Delete" style="font-size: 12px" class="fa-solid fa-trash"></i>
@@ -168,7 +184,8 @@
                 <i title="Fmeca" style="font-size: 12px" class="fa-solid fa-table"></i>
             </div>
             <div>
-                <i @click="handleMoveNode" title="Move" style="font-size: 12px" class="fa-solid fa-arrows-up-down-left-right"></i>
+                <i @click="handleMoveNode" title="Move" style="font-size: 12px"
+                    class="fa-solid fa-arrows-up-down-left-right"></i>
             </div>
         </div>
         <!-- Thanh điều hướng có thể kéo rộng/kéo hẹp -->
@@ -176,56 +193,35 @@
             <div ref="sidebarClient" v-show="clientSlide" class="sidebar">
                 <div class="title-temp">
                     <div ref="tabContainer" class="tab-container">
-                        <div @contextmenu.prevent="showContext" ref="locationRoot" @click="showLocationRoot" class="location">Location</div>
+                        <div @contextmenu.prevent="showContext" ref="locationRoot" @click="showLocationRoot"
+                            class="location">Location</div>
                         <div ref="ownerRoot" class="tab">Owner</div>
                     </div>
                     <contextMenu @show-addSubs="showAddSubs" ref="contextSubstation"></contextMenu>
                 </div>
                 <div class="child-nav">
                     <ul>
-                        <TreeNode
-                            v-for="item in organisationClientList"
-                            :key="item.id"
-                            :node="item"
-                            @double-click-node="doubleClickNode"
-                            :selectedNodes.sync="selectedNodes"
-                            @fetch-children="fetchChildren"
-                            @show-properties="showPropertiesDataClient"
-                            @update-selection="updateSelection"
-                            @clear-selection="clearSelection"
+                        <TreeNode v-for="item in organisationClientList" :key="item.id" :node="item"
+                            @double-click-node="doubleClickNode" :selectedNodes.sync="selectedNodes"
+                            @fetch-children="fetchChildren" @show-properties="showPropertiesDataClient"
+                            @update-selection="updateSelection" @clear-selection="clearSelection"
                             @open-context-menu="openContextMenuClient">
                         </TreeNode>
                     </ul>
-                    <contextMenu
-                        @delete-data="deleteDataClient"
-                        @show-addSubsInTree="showAddSubsInTree"
-                        @show-addOrganisation="showAddOrganisation"
-                        @show-addVoltageLevel="showAddVoltageLevel"
-                        @show-addTransformer="showAddTransformer"
-                        @show-addJob="showAddJob"
-                        @show-addBushing="showAddBushing"
-                        @show-addSurgeArrester="showAddSurgeArrester"
-                        @show-addCircuit="showAddCircuitBreaker"
-                        @show-addVt="showAddVt"
-                        @show-addCt="showAddCt"
-                        @show-addPowerCable="showAddPowerCable"
-                        @show-addDisconnector="showAddDisconnector"
-                        @show-addCapacitor="showAddCapacitor"
-                        @show-addReactor="showAddReactor"
-                        @show-addRotatingMachine="showAddRotatingMachine"
-                        @show-addBay="showAddBay"
-                        @export-json="handleExportJSONFromContext"
-                        @export-json-cim="handleExportJSONCIMFromContext"
-                        @export-xml="handleExportXMLFromContext"
-                        @export-excel="handleExportExcelFromContext"
-                        @export-word="handleExportWordFromContext"
-                        @export-pdf="handleExportPDFFromContext"
-                        @duplicate-node="handleDuplicateFromContext"
-                        @move-node="handleMoveFromContext"
-                        @import-json="handleImportJSONFromContext"
-                        @import-json-cim="handleImportJSONCIMFromContext"
-                        @show-data="showDataClient"
-                        ref="contextMenuClient">
+                    <contextMenu @delete-data="deleteDataClient" @show-addSubsInTree="showAddSubsInTree"
+                        @show-addOrganisation="showAddOrganisation" @show-addVoltageLevel="showAddVoltageLevel"
+                        @show-addTransformer="showAddTransformer" @show-addJob="showAddJob"
+                        @show-addBushing="showAddBushing" @show-addSurgeArrester="showAddSurgeArrester"
+                        @show-addCircuit="showAddCircuitBreaker" @show-addVt="showAddVt" @show-addCt="showAddCt"
+                        @show-addPowerCable="showAddPowerCable" @show-addDisconnector="showAddDisconnector"
+                        @show-addCapacitor="showAddCapacitor" @show-addReactor="showAddReactor"
+                        @show-addRotatingMachine="showAddRotatingMachine" @show-addBay="showAddBay"
+                        @export-json="handleExportJSONFromContext" @export-json-cim="handleExportJSONCIMFromContext"
+                        @export-xml="handleExportXMLFromContext" @export-excel="handleExportExcelFromContext"
+                        @export-word="handleExportWordFromContext" @export-pdf="handleExportPDFFromContext"
+                        @duplicate-node="handleDuplicateFromContext" @move-node="handleMoveFromContext"
+                        @import-json="handleImportJSONFromContext" @import-json-cim="handleImportJSONCIMFromContext"
+                        @show-data="showDataClient" ref="contextMenuClient">
                     </contextMenu>
                 </div>
             </div>
@@ -237,32 +233,19 @@
                 </div>
                 <div class="child-nav">
                     <ul>
-                        <TreeNode
-                            v-for="item in ownerServerList"
-                            :key="item.id"
-                            :node="item"
-                            :selectedNodes.sync="selectedNodes"
-                            @fetch-children="fetchChildrenServer"
-                            @show-properties="showPropertiesData"
-                            @update-selection="updateSelection"
-                            @clear-selection="clearSelection"
-                            @open-context-menu="openContextMenu"
+                        <TreeNode v-for="item in ownerServerList" :key="item.id" :node="item"
+                            :selectedNodes.sync="selectedNodes" @fetch-children="fetchChildrenServer"
+                            @show-properties="showPropertiesData" @update-selection="updateSelection"
+                            @clear-selection="clearSelection" @open-context-menu="openContextMenu"
                             @double-click-node="doubleClickNodeServer">
                         </TreeNode>
                     </ul>
-                    <contextMenu
-                        @show-data="showData"
-                        @export-json="handleExportJSONFromContext"
-                        @export-json-cim="handleExportJSONCIMFromContext"
-                        @export-xml="handleExportXMLFromContext"
-                        @export-excel="handleExportExcelFromContext"
-                        @export-word="handleExportWordFromContext"
-                        @export-pdf="handleExportPDFFromContext"
-                        @duplicate-node="handleDuplicateFromContext"
-                        @move-node="handleMoveFromContext"
-                        @import-json="handleImportJSONFromContext"
-                        @import-json-cim="handleImportJSONCIMFromContext"
-                        ref="contextMenu"></contextMenu>
+                    <contextMenu @show-data="showData" @export-json="handleExportJSONFromContext"
+                        @export-json-cim="handleExportJSONCIMFromContext" @export-xml="handleExportXMLFromContext"
+                        @export-excel="handleExportExcelFromContext" @export-word="handleExportWordFromContext"
+                        @export-pdf="handleExportPDFFromContext" @duplicate-node="handleDuplicateFromContext"
+                        @move-node="handleMoveFromContext" @import-json="handleImportJSONFromContext"
+                        @import-json-cim="handleImportJSONCIMFromContext" ref="contextMenu"></contextMenu>
                 </div>
             </div>
             <div @mousedown="startResizeClient" v-if="clientSlide" ref="resizerClient" class="resizer"></div>
@@ -272,7 +255,8 @@
                     <div ref="content" class="content">
                         <div class="title-content"></div>
                         <div class="content-content">
-                            <Tabs :side="'server'" ref="serverTabs" v-model="activeTab" :tabs="tabs" @close-tab="removeTab" />
+                            <Tabs :side="'server'" ref="serverTabs" v-model="activeTab" :tabs="tabs"
+                                @close-tab="removeTab" />
                         </div>
                     </div>
                     <div @mousedown="startResizeContentServer" ref="resizerContentServer" class="resizer"></div>
@@ -293,35 +277,43 @@
                             <div class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Name</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.name }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.name }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Region</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.region }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.region }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Plant</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.plant }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.plant }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Address</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.address }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.address }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">City</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.city }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.city }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">State/Province</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.state_province }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.state_province }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Postal code</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.postal_code }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.postal_code }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Country</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.country }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.country }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Geo coordinates</div>
@@ -329,11 +321,13 @@
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Phone number</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.phone_no }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.phone_no }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Email</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ properties.email }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        properties.email }}</div>
                                 </div>
                             </div>
                             <div v-if="assetPropertySign" class="content-properties-header">
@@ -343,35 +337,43 @@
                             <div v-if="assetPropertySign" class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Asset</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.asset }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetProperties.asset }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Asset type</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.asset_type }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetProperties.asset_type }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Serial number</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.serial_no }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetProperties.serial_no }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Manufacturer</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.manufacturer }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetProperties.manufacturer }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Manufacturer type</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.manufacturer_type }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetProperties.manufacturer_type }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Manufacturing year</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.manufacturing_year }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetProperties.manufacturing_year }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Country</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.country }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetProperties.country }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Apparatus id</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetProperties.apparatus_id }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetProperties.apparatus_id }}</div>
                                 </div>
                             </div>
                             <div v-if="jobPropertySign" class="content-properties-header">
@@ -381,35 +383,43 @@
                             <div v-if="jobPropertySign" class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Name</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.name }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobProperties.name }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Work order</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.work_order }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobProperties.work_order }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Creation date</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.creation_date }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobProperties.creation_date }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Execution date</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.execution_date }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobProperties.execution_date }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Tested by</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.tested_by }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobProperties.tested_by }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Approved by</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.approved_by }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobProperties.approved_by }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Ambient condition</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.ambient_condition }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobProperties.ambient_condition }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Standard</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobProperties.standard }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobProperties.standard }}</div>
                                 </div>
                             </div>
                             <div class="content-properties-header">
@@ -443,7 +453,8 @@
                     <div ref="contentClient" class="content">
                         <div class="title-content"></div>
                         <div class="content-content">
-                            <Tabs :side="'client'" ref="clientTabs" v-model="activeTabClient" :tabs="tabsClient" @close-tab="removeTabClient" />
+                            <Tabs :side="'client'" ref="clientTabs" v-model="activeTabClient" :tabs="tabsClient"
+                                @close-tab="removeTabClient" />
                         </div>
                     </div>
                     <div @mousedown="startResizeContentClient" ref="resizerContentClient" class="resizer"></div>
@@ -464,23 +475,28 @@
                             <div class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Name</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.name || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.name || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Region</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.region || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.region || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Plant</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.plant || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.plant || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Address</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.address || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.address || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">City</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.city || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.city || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">State/Province</div>
@@ -490,11 +506,13 @@
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Postal code</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.postal_code || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.postal_code || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Country</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.country || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.country || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Geo coordinates</div>
@@ -504,11 +522,13 @@
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Phone number</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.phone_no || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.phone_no || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Email</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ propertiesClient.email || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        propertiesClient.email || '&nbsp;' }}</div>
                                 </div>
                             </div>
                             <div v-if="assetPropertySignClient" class="content-properties-header">
@@ -518,7 +538,8 @@
                             <div v-if="assetPropertySignClient" class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Asset</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ assetPropertiesClient.asset || '&nbsp;' }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        assetPropertiesClient.asset || '&nbsp;' }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Asset type</div>
@@ -570,35 +591,43 @@
                             <div v-if="jobPropertySignClient" class="content-properties-table">
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Name</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.name }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobPropertiesClient.name }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Work order</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.work_order }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobPropertiesClient.work_order }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Creation date</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.creation_date }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobPropertiesClient.creation_date }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Execution date</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.execution_date }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobPropertiesClient.execution_date }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Tested by</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.tested_by }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobPropertiesClient.tested_by }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Approved by</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.approved_by }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobPropertiesClient.approved_by }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Ambient condition</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.ambient_condition }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobPropertiesClient.ambient_condition }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Standard</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{ jobPropertiesClient.standard }}</div>
+                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
+                                        jobPropertiesClient.standard }}</div>
                                 </div>
                             </div>
                             <div class="content-properties-header">
@@ -624,272 +653,208 @@
                     <div v-if="!propertiesSignClient" @click="showPropertiesClient" class="trapezoid"></div>
                 </div>
                 <div ref="logBarClient" v-if="logSignClient" class="log-bar">
-                    <LogBar @reloadLog="reloadLogClient" :logData="logDataClient" @hideLogBar="hideLogBarClient"> </LogBar>
+                    <LogBar @reloadLog="reloadLogClient" :logData="logDataClient" @hideLogBar="hideLogBarClient">
+                    </LogBar>
                 </div>
             </div>
         </div>
-        <el-dialog title="Add Substation" :visible.sync="signSubs" width="1000px" @close="handleSubsCancel">
-            <Substation
-                :parentOrganization="parentOrganization"
-                :personList="personList"
-                :locationList="locationList"
-                :organisationId="organisationId"
-                ref="substation"></Substation>
-            <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleSubsCancel">Cancel</el-button>
-                <el-button size="small" type="primary" @click="handleSubsConfirm">Save</el-button>
+
+        <el-dialog custom-class="app-dialog" title="Add Substation" :visible.sync="signSubs" @close="handleSubsCancel">
+            <Substation :parentOrganization="parentOrganization" :personList="personList" :locationList="locationList"
+                :organisationId="organisationId" ref="substation"></Substation>
+            <span slot="footer" class="dialog-footer custom-footer">
+                <el-button class="footer-btn" size="small" type="danger" @click="handleSubsCancel">Cancel</el-button>
+                <el-button class="footer-btn" size="small" type="primary" @click="handleSubsConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Organisation" :visible.sync="signOrg" width="1000px" @close="handleOrgCancel">
+        <el-dialog custom-class="app-dialog" title="Add Organisation" :visible.sync="signOrg" @close="handleOrgCancel">
             <Organisation :parent="parentOrganization" ref="organisation"></Organisation>
-            <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleOrgCancel">Cancel</el-button>
-                <el-button size="small" type="primary" @click="handleOrgConfirm">Save</el-button>
+            <span slot="footer" class="dialog-footer custom-footer">
+                <el-button class="footer-btn" size="small" type="danger" @click="handleOrgCancel">Cancel</el-button>
+                <el-button class="footer-btn" size="small" type="primary" @click="handleOrgConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Voltage Level" :visible.sync="signVoltageLevel" width="1000px" @close="handleVoltageLevelCancel">
+        <el-dialog custom-class="app-dialog" title="Add Voltage Level" :visible.sync="signVoltageLevel"
+            @close="handleVoltageLevelCancel">
             <VoltageLevel :locationId="locationId" :parent="parentOrganization" ref="voltageLevel"></VoltageLevel>
-            <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleVoltageLevelCancel">Cancel</el-button>
-                <el-button size="small" type="primary" @click="handleVoltageLevelConfirm">Save</el-button>
+            <span slot="footer" class="dialog-footer custom-footer">
+                <el-button class="footer-btn" size="small" type="danger"
+                    @click="handleVoltageLevelCancel">Cancel</el-button>
+                <el-button class="footer-btn" size="small" type="primary"
+                    @click="handleVoltageLevelConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Bay Level" :visible.sync="signBay" width="1000px" @close="handleBayCancel">
+        <el-dialog custom-class="app-dialog" title="Add Bay Level" :visible.sync="signBay" @close="handleBayCancel">
             <Bay :locationId="locationId" :parent="parentOrganization" ref="bay"></Bay>
-            <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleBayCancel">Cancel</el-button>
-                <el-button size="small" type="primary" @click="handleBayConfirm">Save</el-button>
+            <span slot="footer" class="dialog-footer custom-footer">
+                <el-button class="footer-btn" size="small" type="danger" @click="handleBayCancel">Cancel</el-button>
+                <el-button class="footer-btn" size="small" type="primary" @click="handleBayConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Transformer"
-            :visible.sync="signTransformer"
-            width="1000px"
-            @close="handleTransformerCancel"
-            :modal="!isDuplicating"
-            :show-close="!isDuplicating"
-            :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
+        <el-dialog title="Add Transformer" :visible.sync="signTransformer" @close="handleTransformerCancel"
+            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
+            :custom-class="dialogClass">
             <Transformer :locationId="locationId" :parent="parentOrganization" ref="transformer"></Transformer>
-            <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleTransformerCancel">Cancel</el-button>
-                <el-button size="small" type="primary" @click="handleTransformerConfirm">Save</el-button>
+            <span slot="footer" class="dialog-footer custom-footer">
+                <el-button class="footer-btn" size="small" type="danger"
+                    @click="handleTransformerCancel">Cancel</el-button>
+                <el-button class="footer-btn" size="small" type="primary"
+                    @click="handleTransformerConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Bushing"
-            :visible.sync="signBushing"
-            width="1000px"
-            @close="handleBushingCancel"
-            :modal="!isDuplicating"
-            :show-close="!isDuplicating"
-            :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
+        <el-dialog title="Add Bushing" :visible.sync="signBushing" @close="handleBushingCancel"
+            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
+            :custom-class="dialogClass">
             <Bushing :locationId="locationId" :parent="parentOrganization" ref="bushing"></Bushing>
-            <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleBushingCancel">Cancel</el-button>
-                <el-button size="small" type="primary" @click="handleBushingConfirm">Save</el-button>
+            <span slot="footer" class="dialog-footer custom-footer">
+                <el-button class="footer-btn" size="small" type="danger" @click="handleBushingCancel">Cancel</el-button>
+                <el-button class="footer-btn" size="small" type="primary" @click="handleBushingConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Surge Arrester"
-            :visible.sync="signSurge"
-            width="1000px"
-            @close="handleSurgeCancel"
-            :modal="!isDuplicating"
-            :show-close="!isDuplicating"
-            :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
+        <el-dialog title="Add Surge Arrester" :visible.sync="signSurge" @close="handleSurgeCancel"
+            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
+            :custom-class="dialogClass">
             <SurgeArrester :locationId="locationId" :parent="parentOrganization" ref="surgeArrester"></SurgeArrester>
-            <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleSurgeCancel">Cancel</el-button>
-                <el-button size="small" type="primary" @click="handleSurgeConfirm">Save</el-button>
+            <span slot="footer" class="dialog-footer custom-footer">
+                <el-button class="footer-btn" size="small" type="danger" @click="handleSurgeCancel">Cancel</el-button>
+                <el-button class="footer-btn" size="small" type="primary" @click="handleSurgeConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Circuit Breaker"
-            :visible.sync="signCircuit"
-            width="1000px"
-            @close="handleCircuitCancel"
-            :modal="!isDuplicating"
-            :show-close="!isDuplicating"
-            :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
+        <el-dialog title="Add Circuit Breaker" :visible.sync="signCircuit" @close="handleCircuitCancel"
+            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
+            :custom-class="dialogClass">
             <CircuitBreaker :locationId="locationId" :parent="parentOrganization" ref="circuitBreaker"></CircuitBreaker>
-            <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleCircuitCancel">Cancel</el-button>
-                <el-button size="small" type="primary" @click="handleCircuitConfirm">Save</el-button>
+            <span slot="footer" class="dialog-footer custom-footer">
+                <el-button class="footer-btn" size="small" type="danger" @click="handleCircuitCancel">Cancel</el-button>
+                <el-button class="footer-btn" size="small" type="primary" @click="handleCircuitConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Current Transformer"
-            :visible.sync="signCt"
-            width="1000px"
-            @close="handleCtCancel"
-            :modal="!isDuplicating"
-            :show-close="!isDuplicating"
-            :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
-            <CurrentTransformer :locationId="locationId" :parent="parentOrganization" ref="currentTransformer"> </CurrentTransformer>
-            <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleCtCancel">Cancel</el-button>
-                <el-button size="small" type="primary" @click="handleCtConfirm">Save</el-button>
+        <el-dialog title="Add Current Transformer" :visible.sync="signCt" @close="handleCtCancel"
+            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
+            :custom-class="dialogClass">
+            <CurrentTransformer :locationId="locationId" :parent="parentOrganization" ref="currentTransformer">
+            </CurrentTransformer>
+            <span slot="footer" class="dialog-footer custom-footer">
+                <el-button class="footer-btn" size="small" type="danger" @click="handleCtCancel">Cancel</el-button>
+                <el-button class="footer-btn" size="small" type="primary" @click="handleCtConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Voltage Transformer"
-            :visible.sync="signVt"
-            width="1000px"
-            @close="handleVtCancel"
-            :modal="!isDuplicating"
-            :show-close="!isDuplicating"
-            :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
-            <VoltageTransformer :locationId="locationId" :parent="parentOrganization" ref="voltageTransformer"> </VoltageTransformer>
-            <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleVtCancel">Cancel</el-button>
-                <el-button size="small" type="primary" @click="handleVtConfirm">Save</el-button>
+        <el-dialog title="Add Voltage Transformer" :visible.sync="signVt" @close="handleVtCancel"
+            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
+            :custom-class="dialogClass">
+            <VoltageTransformer :locationId="locationId" :parent="parentOrganization" ref="voltageTransformer">
+            </VoltageTransformer>
+            <span slot="footer" class="dialog-footer custom-footer">
+                <el-button class="footer-btn" size="small" type="danger" @click="handleVtCancel">Cancel</el-button>
+                <el-button class="footer-btn" size="small" type="primary" @click="handleVtConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Power Cable"
-            :visible.sync="signPower"
-            width="1000px"
-            @close="handlePowerCancel"
-            :modal="!isDuplicating"
-            :show-close="!isDuplicating"
-            :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
+        <el-dialog title="Add Power Cable" :visible.sync="signPower" @close="handlePowerCancel"
+            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
+            :custom-class="dialogClass">
             <PowerCable :locationId="locationId" :parent="parentOrganization" ref="powerCable"></PowerCable>
-            <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handlePowerCancel">Cancel</el-button>
-                <el-button size="small" type="primary" @click="handlePowerConfirm">Save</el-button>
+            <span slot="footer" class="dialog-footer custom-footer">
+                <el-button class="footer-btn" size="small" type="danger" @click="handlePowerCancel">Cancel</el-button>
+                <el-button class="footer-btn" size="small" type="primary" @click="handlePowerConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Disconnector"
-            :visible.sync="signDisconnector"
-            width="1000px"
-            @close="handleDisconnectorCancel"
-            :modal="!isDuplicating"
-            :show-close="!isDuplicating"
-            :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
+        <el-dialog title="Add Disconnector" :visible.sync="signDisconnector" @close="handleDisconnectorCancel"
+            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
+            :custom-class="dialogClass">
             <Disconnector :locationId="locationId" :parent="parentOrganization" ref="disconnector"></Disconnector>
-            <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleDisconnectorCancel">Cancel</el-button>
-                <el-button size="small" type="primary" @click="handleDisconnectorConfirm">Save</el-button>
+            <span slot="footer" class="dialog-footer custom-footer">
+                <el-button class="footer-btn" size="small" type="danger" @click="handleDisconnectorCancel">Cancel</el-button>
+                <el-button class="footer-btn" size="small" type="primary" @click="handleDisconnectorConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Rotating Machine"
-            :visible.sync="signRotating"
-            width="1000px"
-            @close="handleRotatingCancel"
-            :modal="!isDuplicating"
-            :show-close="!isDuplicating"
-            :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
-            <RotatingMachine :locationId="locationId" :parent="parentOrganization" ref="rotatingMachine"> </RotatingMachine>
-            <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleRotatingCancel">Cancel</el-button>
-                <el-button size="small" type="primary" @click="handleRotatingConfirm">Save</el-button>
+        <el-dialog title="Add Rotating Machine" :visible.sync="signRotating" @close="handleRotatingCancel"
+            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
+            :custom-class="dialogClass">
+            <RotatingMachine :locationId="locationId" :parent="parentOrganization" ref="rotatingMachine">
+            </RotatingMachine>
+            <span slot="footer" class="dialog-footer custom-footer">
+                <el-button class="footer-btn" size="small" type="danger"
+                    @click="handleRotatingCancel">Cancel</el-button>
+                <el-button class="footer-btn" size="small" type="primary"
+                    @click="handleRotatingConfirm">Save</el-button>
             </span>
         </el-dialog>
-        <el-dialog
-            title="Add Capacitor"
-            :visible.sync="signCapacitor"
-            width="1000px"
-            @close="handleCapacitorCancel"
-            :modal="!isDuplicating"
-            :show-close="!isDuplicating"
-            :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
+
+        <el-dialog title="Add Capacitor" :visible.sync="signCapacitor" @close="handleCapacitorCancel"
+            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
+            :custom-class="dialogClass">
             <Capacitor :locationId="locationId" :parent="parentOrganization" ref="capacitor"> </Capacitor>
-            <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleCapacitorCancel">Cancel</el-button>
-                <el-button size="small" type="primary" @click="handleCapacitorConfirm">Save</el-button>
+            <span slot="footer" class="dialog-footer custom-footer">
+                <el-button class="footer-btn" size="small" type="danger"
+                    @click="handleCapacitorCancel">Cancel</el-button>
+                <el-button class="footer-btn" size="small" type="primary"
+                    @click="handleCapacitorConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog
-            title="Add Reactor"
-            :visible.sync="signReactor"
-            width="1000px"
-            @close="handleReactorCancel"
-            :modal="!isDuplicating"
-            :show-close="!isDuplicating"
-            :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="isDuplicating ? 'ghost-dialog' : ''">
+        <el-dialog title="Add Reactor" :visible.sync="signReactor" @close="handleReactorCancel" :modal="!isDuplicating"
+            :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass">
             <Reactor :locationId="locationId" :parent="parentOrganization" ref="reactor"> </Reactor>
-            <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleReactorCancel">Cancel</el-button>
-                <el-button size="small" type="primary" @click="handleReactorConfirm">Save</el-button>
+            <span slot="footer" class="dialog-footer custom-footer">
+                <el-button class="footer-btn" size="small" type="danger" @click="handleReactorCancel">Cancel</el-button>
+                <el-button class="footer-btn" size="small" type="primary" @click="handleReactorConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Job" :visible.sync="signJob" width="1000px" @close="handleJobCancel">
-            <component
-                ref="jobData"
-                :is="checkJobType"
-                :locationData="locationData"
-                :assetData="assetData"
-                :productAssetModelData="productAssetModelData"
-                :parent="parentOrganization"
+        <el-dialog custom-class="app-dialog" title="Add Job" :visible.sync="signJob" @close="handleJobCancel">
+            <component ref="jobData" :is="checkJobType" :locationData="locationData" :assetData="assetData"
+                :productAssetModelData="productAssetModelData" :parent="parentOrganization"
                 :testTypeListData="testTypeListData">
             </component>
-            <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleJobCancel">Cancel</el-button>
-                <el-button size="small" type="primary" @click="handleJobConfirm">Save</el-button>
+            <span slot="footer" class="dialog-footer custom-footer">
+                <el-button class="footer-btn" size="small" type="danger" @click="handleJobCancel">Cancel</el-button>
+                <el-button class="footer-btn" size="small" type="primary" @click="handleJobConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog title="Export" width="1000px" :visible.sync="openExportDialog">
+        <el-dialog custom-class="app-dialog" title="Export" :visible.sync="openExportDialog">
             <Export :exportType="exportType"></Export>
-            <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleCancelExport">Cancel</el-button>
-                <el-button size="small" type="primary" @click="handleExportConfirm">Save</el-button>
+            <span slot="footer" class="dialog-footer custom-class">
+                <el-button class="footer-btn" size="small" type="danger" @click="handleCancelExport">Cancel</el-button>
+                <el-button class="footer-btn" size="small" type="primary" @click="handleExportConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog title="Import" width="1000px" :visible.sync="openImportDialog">
-            <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="handleCancelImport">Cancel</el-button>
-                <el-button size="small" type="primary" @click="handleImportConfirm">Save</el-button>
+        <el-dialog custom-class="app-dialog" title="Import" :visible.sync="openImportDialog">
+            <span slot="footer" class="dialog-footer custom-footer">
+                <el-button class="footer-btn" size="small" type="danger" @click="handleCancelImport">Cancel</el-button>
+                <el-button class="footer-btn" size="small" type="primary" @click="handleImportConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog title="Fmeca" width="1000px" :visible.sync="signFmeca" @close="handleFmecaCancel">
+        <el-dialog custom-class="app-dialog" title="Fmeca" :visible.sync="signFmeca" @close="handleFmecaCancel">
             <Fmeca></Fmeca>
-            <span slot="footer" class="dialog-footer">
+            <span slot="footer" class="dialog-footer custom-footer">
                 <el-button size="small" type="danger" @click="handleFmecaCancel">Cancel</el-button>
                 <el-button size="small" type="primary" @click="handleFmecaConfirm">Save</el-button>
             </span>
         </el-dialog>
-        <el-dialog title="Move Node" :visible.sync="moveDialogVisible" width="450px" @close="handleMoveCancel" custom-class="move-dialog">
+
+        <el-dialog title="Move Node" :visible.sync="moveDialogVisible" width="450px" @close="handleMoveCancel"
+            custom-class="move-dialog app-dialog">
             <div style="height: 300px; overflow-y: auto">
                 <div class="child-nav" style="height: 100%; cursor: pointer">
                     <ul style="list-style: none; padding-left: 0">
-                        <TreeNode
-                            v-for="item in moveTreeData"
-                            :key="item.mrid"
-                            :node="item"
-                            :selectedNodes="selectedTargetNodes"
-                            @fetch-children="fetchChildrenForMove"
-                            @update-selection="handleMoveNodeSelection"
-                            @open-context-menu="() => {}"
+                        <TreeNode v-for="item in moveTreeData" :key="item.mrid" :node="item"
+                            :selectedNodes="selectedTargetNodes" @fetch-children="fetchChildrenForMove"
+                            @update-selection="handleMoveNodeSelection" @open-context-menu="() => { }"
                             style="width: 100%">
                         </TreeNode>
                     </ul>
@@ -897,9 +862,7 @@
             </div>
             <!-- Dòng kẻ ngăn cách TreeNode và dòng chữ bên dưới -->
             <div style="border-top: 1px solid #e0e0e0; margin: 6px 0 4px 0"></div>
-            <div
-                v-if="moveDisplayText"
-                style="
+            <div v-if="moveDisplayText" style="
                     margin-top: 8px;
                     font-size: 13px;
                     color: #606266;
@@ -917,9 +880,7 @@
 
                 <!-- Cột 2: icon + node A (giữa trái) -->
                 <div style="flex: 1; display: flex; align-items: center; gap: 4px; justify-content: center">
-                    <icon
-                        v-if="moveDisplayData.sourceIcon"
-                        :size="'16px'"
+                    <icon v-if="moveDisplayData.sourceIcon" :size="'16px'"
                         :folderType="moveDisplayData.sourceIcon.folderType"
                         :assetDetail="moveDisplayData.sourceIcon.assetDetail"
                         :badgeColor="moveDisplayData.sourceIcon.badgeColor"></icon>
@@ -929,15 +890,14 @@
                 </div>
 
                 <!-- Cột 3: to (ở gần giữa, sát 2 node hơn) -->
-                <span style="flex: 0; padding: 0 8px; text-align: center; white-space: nowrap; font-weight: bold; color: black">
+                <span
+                    style="flex: 0; padding: 0 8px; text-align: center; white-space: nowrap; font-weight: bold; color: black">
                     {{ moveDisplayText.middle }}
                 </span>
 
                 <!-- Cột 4: icon + node B (phải) -->
                 <div style="flex: 1; display: flex; align-items: center; gap: 4px; justify-content: center">
-                    <icon
-                        v-if="moveDisplayData.targetIcon"
-                        :size="'16px'"
+                    <icon v-if="moveDisplayData.targetIcon" :size="'16px'"
                         :folderType="moveDisplayData.targetIcon.folderType"
                         :assetDetail="moveDisplayData.targetIcon.assetDetail"
                         :badgeColor="moveDisplayData.targetIcon.badgeColor"></icon>
@@ -946,31 +906,30 @@
                     </span>
                 </div>
             </div>
-            <span slot="footer" class="dialog-footer">
-                <el-button size="small" @click="moveDialogVisible = false" style="background-color: #d63743; color: #fff">Cancel</el-button>
-                <el-button size="small" type="primary" @click="confirmMoveNode" :disabled="!selectedTargetNode">Move</el-button>
+            <span slot="footer" class="dialog-footer custom-footer">
+                <el-button class="footer-btn" size="small" @click="moveDialogVisible = false"
+                    style="background-color: #d63743; color: #fff">Cancel</el-button>
+                <el-button class="footer-btn" size="small" type="primary" @click="confirmMoveNode"
+                    :disabled="!selectedTargetNode">Move</el-button>
             </span>
         </el-dialog>
         <!-- Dialog chọn cha khi download -->
-        <el-dialog title="Select Parent Node for Downloaded Asset" :visible.sync="downloadDialogVisible" width="450px" @close="downloadDialogVisible = false">
+        <el-dialog custom-class="app-dialog" title="Select Parent Node for Downloaded Asset"
+            :visible.sync="downloadDialogVisible" @close="downloadDialogVisible = false">
             <div style="height: 300px; overflow-y: auto">
                 <div class="child-nav">
                     <ul style="list-style: none; padding-left: 0">
-                        <TreeNode
-                            v-for="item in moveTreeData"
-                            :key="item.mrid"
-                            :node="item"
-                            :selectedNodes="selectedDownloadTargetNodes"
-                            @fetch-children="fetchChildren"
-                            @update-selection="handleDownloadTargetSelection"
-                            @open-context-menu="() => {}">
+                        <TreeNode v-for="item in moveTreeData" :key="item.mrid" :node="item"
+                            :selectedNodes="selectedDownloadTargetNodes" @fetch-children="fetchChildren"
+                            @update-selection="handleDownloadTargetSelection" @open-context-menu="() => { }">
                         </TreeNode>
                     </ul>
                 </div>
             </div>
-            <span slot="footer" class="dialog-footer">
-                <el-button size="small" @click="downloadDialogVisible = false">Cancel</el-button>
-                <el-button size="small" type="primary" @click="confirmDownloadSelection" :disabled="!selectedDownloadTargetNode">Confirm Download</el-button>
+            <span slot="footer" class="dialog-footer custom-footer">
+                <el-button class="footer-btn" size="small" @click="downloadDialogVisible = false">Cancel</el-button>
+                <el-button class="footer-btn" size="small" type="primary" @click="confirmDownloadSelection"
+                    :disabled="!selectedDownloadTargetNode">Confirm Download</el-button>
             </span>
         </el-dialog>
     </div>
@@ -987,6 +946,27 @@ import contextMenu from '@/views/Common/ContextMenu.vue'
 
 //client
 import TopBarClient from './Client/Topbar/index.vue'
+import deleteData from './Client/ClientSide/mixin/Delete/deleteDataClient'
+import showAddBay from './Client/ClientSide/mixin/Bay/showAddBay'
+import showAddBushing from './Client/ClientSide/mixin/Bushing/showAddBushing'
+import showAddCapacitor from './Client/ClientSide/mixin/Capacitor/showAddCapacitor'
+import showAddCircuitBreaker from './Client/ClientSide/mixin/CircuitBreaker/showAddCircuitBreaker'
+import showAddConnector from './Client/ClientSide/mixin/Disconnector/showAddDisconnector'
+import showAddCt from './Client/ClientSide/mixin/Ct/showAddCt'
+import showAddJob from './Client/ClientSide/mixin/Job/showAddJob'
+import showAddOrganisation from './Client/ClientSide/mixin/Organisation/showAddOrganisation'
+import showAddPowerCable from './Client/ClientSide/mixin/PowerCable/showAddPowerCable'
+import showAddReactor from './Client/ClientSide/mixin/Reactor/showAddReactor'
+import showAddRotatingMachine from './Client/ClientSide/mixin/RotatingMachine/showAddRotatingMachine'
+import showAddSubInTree from './Client/ClientSide/mixin/Subs/showAddSubInTree'
+import showAddSubs from './Client/ClientSide/mixin/Subs/showAddSubs'
+import showAddSurgeArrester from './Client/ClientSide/mixin/SurgeArrester/showAddSurgeArrester'
+import showAddTransformer from './Client/ClientSide/mixin/Transformer/showAddTransformer'
+import showAddVt from './Client/ClientSide/mixin/Vt/showAddVt'
+import showAddVoltageLevel from './Client/ClientSide/mixin/VoltageLevel/showAddVoltageLevel'
+import showLocationRoot from './Client/ClientSide/mixin/showLocationRoot'
+import handleDeleteNode from './Client/ClientSide/mixin/Delete/deleteNode'
+import showDataClient from './Client/ClientSide/mixin/showDataClient'
 
 // Import Mappers
 import mapClientProperties from '@/utils/MapperClient/mapClientProperties'
@@ -1041,8 +1021,8 @@ import * as ReactorMapping from '@/views/Mapping/Reactor/index'
 import * as BushingMapping from '@/views/Mapping/Bushing/index'
 import * as rotatingMachineMapping from "@/views/Mapping/RotatingMachine/index"
 import * as VoltageLevelMapping from '@/views/Mapping/VoltageLevel/index'
-import {exportNodeToJSON as exportNodeToJSONUtil} from '@/function/entity/export/index'
-import {importNodeFromJSON as importNodeFromJSONUtil} from '@/function/entity/import/index'
+import { exportNodeToJSON as exportNodeToJSONUtil } from '@/function/entity/export/index'
+import { importNodeFromJSON as importNodeFromJSONUtil } from '@/function/entity/import/index'
 
 import TransformerMixin from '@/views/AssetView/Transformer/mixin/index.js'
 import SurgeArresterMixin from '@/views/AssetView/SurgeArrester/mixin/index.js'
@@ -1058,6 +1038,10 @@ import ReactorMixin from '@/views/AssetView/Reactor/mixin/index.js'
 import BayMixin from '@/views/Bay/mixin/index.js'
 import treeNodeFind from './mixin/treeNodeFindMixin'
 import { importTransformer } from '@/function/entity/import/Transformer'
+import moveNode from './mixin/MoveNode/moveNode'
+import confirmMove from './mixin/MoveNode/confirmMove'
+import duplicateAsset from './mixin/Duplicate/duplicateAsset'
+import duplicateNode from './mixin/Duplicate/duplicateNode'
 export default {
     name: 'TreeNavigation',
     components: {
@@ -1344,25 +1328,25 @@ export default {
             const getIconConfig = (node) => {
                 const mode = node.mode
                 if (mode === 'substation') {
-                    return {folderType: 'location', assetDetail: 'Unknown', badgeColor: '146EBE'}
+                    return { folderType: 'location', assetDetail: 'Unknown', badgeColor: '146EBE' }
                 }
                 if (mode === 'voltageLevel') {
-                    return {folderType: 'voltageLevel', assetDetail: 'Unknown', badgeColor: '146EBE'}
+                    return { folderType: 'voltageLevel', assetDetail: 'Unknown', badgeColor: '146EBE' }
                 }
                 if (mode === 'bay') {
-                    return {folderType: 'bay', assetDetail: 'Unknown', badgeColor: '146EBE'}
+                    return { folderType: 'bay', assetDetail: 'Unknown', badgeColor: '146EBE' }
                 }
                 if (mode === 'asset') {
-                    return {folderType: 'asset', assetDetail: node.asset || 'Unknown', badgeColor: '146EBE'}
+                    return { folderType: 'asset', assetDetail: node.asset || 'Unknown', badgeColor: '146EBE' }
                 }
                 if (mode === 'job') {
-                    return {folderType: 'job', assetDetail: 'Unknown', badgeColor: 'FF0000'}
+                    return { folderType: 'job', assetDetail: 'Unknown', badgeColor: 'FF0000' }
                 }
                 if (mode === 'test') {
-                    return {folderType: 'test', assetDetail: 'Unknown', badgeColor: '008001'}
+                    return { folderType: 'test', assetDetail: 'Unknown', badgeColor: '008001' }
                 }
                 // default: owner/building
-                return {folderType: 'building', assetDetail: 'Unknown', badgeColor: '008001'}
+                return { folderType: 'building', assetDetail: 'Unknown', badgeColor: '008001' }
             }
 
             const sourceIcon = getIconConfig(nodeToMove)
@@ -1372,9 +1356,20 @@ export default {
                 sourceIcon,
                 targetIcon
             }
+        },
+        dialogClass() {
+            return this.isDuplicating
+                ? 'app-dialog ghost-dialog'
+                : 'app-dialog'
         }
     },
-    mixins: [mixin, treeNodeFind],
+    mixins: [mixin, treeNodeFind, deleteData, showAddBay, showAddBushing,
+        showAddCapacitor, showAddCircuitBreaker, showAddConnector, showAddCt,
+        showAddJob, showAddOrganisation, showAddPowerCable, showAddReactor,
+        showAddRotatingMachine, showAddSubInTree, showAddSubs, showAddSurgeArrester,
+        showAddTransformer, showAddVt, showAddVoltageLevel, showLocationRoot, moveNode,
+        confirmMove, handleDeleteNode, duplicateNode, duplicateAsset, showDataClient,
+        ],
     async beforeMount() {
         try {
             const data = await window.electronAPI.getAllConfigurationEvents()
@@ -1588,11 +1583,7 @@ export default {
             // Gọi hàm duplicate
             await this.duplicateSelectedNodes()
         },
-        async handleMoveFromContext(node) {
-            // Set selectedNodes để handleMoveNode có thể sử dụng
-            this.selectedNodes = [node]
-            await this.handleMoveNode()
-        },
+
         // Import handlers từ context menu
         async handleImportJSONFromContext(node) {
             if (!node) {
@@ -2428,7 +2419,7 @@ export default {
         async checkChildren(node) {
             // Kiểm tra nếu đã load children trong tree
             if (node.children && node.children.length > 0) {
-                return {hasChildren: true} // Có children trong tree → không xóa
+                return { hasChildren: true } // Có children trong tree → không xóa
             }
 
             // Nếu chưa load, fetch từ DB để kiểm tra (KHÔNG load vào tree)
@@ -2507,10 +2498,10 @@ export default {
                     }
                 }
 
-                return {hasChildren}
+                return { hasChildren }
             } catch (error) {
                 console.error('Error checking children:', error)
-                return {hasChildren: true} // An toàn: giả sử có children nếu lỗi
+                return { hasChildren: true } // An toàn: giả sử có children nếu lỗi
             }
         },
 
@@ -2583,7 +2574,7 @@ export default {
                             if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
                                 newRowsVoltageLevel.forEach((row) => {
                                     row.id = row.mrid || row.id || ''
-                                    row.name =  row.name || ''
+                                    row.name = row.name || ''
                                     row.aliasName = row.shortName || row.name || ''
                                     row.parentId = node.mrid
                                     row.mode = 'voltageLevel'
@@ -2762,167 +2753,6 @@ export default {
             }
         },
 
-        async showPropertiesDataClient(node) {
-            this.assetPropertySignClient = false
-            this.jobPropertySignClient = false
-            if (node.asset != undefined) {
-                this.assetPropertySignClient = true
-                // Fetch dữ liệu asset từ API để lấy đầy đủ thông tin
-                let assetData = null
-                try {
-                    if (node.asset === 'Transformer') {
-                        const entityRes = await window.electronAPI.getTransformerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            assetData = TransformerMapping.transformerEntityToDto(entityRes.data)
-                        }
-                    } else if (node.asset === 'Bushing') {
-                        const entityRes = await window.electronAPI.getBushingEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            assetData = BushingMapping.mapEntityToDto(entityRes.data)
-                        }
-                    } else if (node.asset === 'Circuit breaker') {
-                        const entityRes = await window.electronAPI.getBreakerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            assetData = BreakerMapping.mapEntityToDto(entityRes.data)
-                        }
-                    } else if (node.asset === 'Surge arrester') {
-                        const entityRes = await window.electronAPI.getSurgeArresterEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            assetData = SurgeArresterMapping.mapEntityToDto(entityRes.data)
-                        }
-                    } else if (node.asset === 'Power cable') {
-                        const entityRes = await window.electronAPI.getPowerCableEntityByMrid(node.mrid, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            assetData = PowerCableMapping.mapEntityToDto(entityRes.data)
-                        }
-                    } else if (node.asset === 'Disconnector') {
-                        const entityRes = await window.electronAPI.getDisconnectorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            assetData = DisconnectorMapping.disconnectorEntityToDto(entityRes.data)
-                        }
-                    } else if (node.asset === 'Capacitor') {
-                        const entityRes = await window.electronAPI.getCapacitorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            assetData = CapacitorMapping.mapEntityToDto(entityRes.data)
-                        }
-                    } else if (node.asset === 'Voltage transformer') {
-                        const entityRes = await window.electronAPI.getVoltageTransformerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            assetData = VoltageTransformerMapping.mapEntityToDto(entityRes.data)
-                        }
-                    } else if (node.asset === 'Current transformer') {
-                        const entityRes = await window.electronAPI.getCurrentTransformerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            assetData = CurrentTransformerMapping.mapEntityToDto(entityRes.data)
-                        }
-                    } else if (node.asset === 'Reactor') {
-                        const entityRes = await window.electronAPI.getReactorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            assetData = ReactorMapping.mapEntityToDto(entityRes.data)
-                        }
-                    } else if (node.asset === 'Rotating machine') {
-                        const entityRes = await window.electronAPI.getRotatingMachineEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            assetData = rotatingMachineMapping.mapEntityToDto(entityRes.data)
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error fetching asset data:', error)
-                }
-
-                // Map từ DTO nếu có, nếu không thì map từ node
-                if (assetData && assetData.properties) {
-                    await this.mappingAssetPropertiesClient(assetData.properties)
-                    // Set asset name từ node.asset
-                    this.assetPropertiesClient.asset = node.asset || ''
-                } else {
-                    await this.mappingAssetPropertiesClient(node)
-                }
-
-                // Tìm parent thực sự từ cây dữ liệu thay vì dùng node.parent
-                const parentNode = node.parentId ? this.findNodeById(node.parentId, this.organisationClientList) : null
-                if (parentNode) {
-                    await this.mappingPropertiesClient(parentNode)
-                }
-                await this.loadPathMapClient(node)
-                // Với asset: ưu tiên serial_number/serial_no, nếu không có thì dùng name
-                const assetName = node.serial_number || node.serial_no || node.name || 'Unknown'
-                this.pathMapClient.push({
-                    id: node.id || node.mrid,
-                    mrid: node.mrid,
-                    parent: assetName
-                })
-            } else if (node.type == 'test') {
-                this.assetPropertySignClient = true
-                this.jobPropertySignClient = true
-                const jobNode = node.parentId ? this.findNodeById(node.parentId, this.organisationClientList) : null
-                const assetNode = jobNode ? (jobNode.parentId ? this.findNodeById(jobNode.parentId, this.organisationClientList) : null) : null
-                const locationNode = assetNode ? (assetNode.parentId ? this.findNodeById(assetNode.parentId, this.organisationClientList) : null) : null
-                if (locationNode) {
-                    await this.mappingPropertiesClient(locationNode)
-                }
-                if (assetNode) {
-                    await this.mappingAssetPropertiesClient(assetNode)
-                }
-                if (jobNode) {
-                    await this.mappingJobPropertiesClient(jobNode)
-                }
-                await this.loadPathMapClient(node)
-                const testName = node.name || node.serial_number || node.serial_no || 'Unknown'
-                this.pathMapClient.push({
-                    id: node.id || node.mrid,
-                    mrid: node.mrid,
-                    parent: testName
-                })
-            } else if (node.type == 'job') {
-                this.assetPropertySignClient = true
-                this.jobPropertySignClient = true
-                // Tìm parent thực sự từ cây dữ liệu
-                // Job -> Asset (parent)
-                // Job -> Location (parent.parent)
-                const assetNode = node.parentId ? this.findNodeById(node.parentId, this.organisationClientList) : null
-                const locationNode = assetNode ? (assetNode.parentId ? this.findNodeById(assetNode.parentId, this.organisationClientList) : null) : null
-                if (locationNode) {
-                    await this.mappingPropertiesClient(locationNode)
-                }
-                if (assetNode) {
-                    await this.mappingAssetPropertiesClient(assetNode)
-                }
-                await this.mappingJobPropertiesClient(node)
-                await this.loadPathMapClient(node)
-                const jobName = node.name || node.serial_number || node.serial_no || 'Unknown'
-                this.pathMapClient.push({
-                    id: node.id || node.mrid,
-                    mrid: node.mrid,
-                    parent: jobName
-                })
-            } else {
-                let detailData = node
-
-                // Nếu là Substation, gọi API lấy full thông tin
-                if (node.mode === 'substation') {
-                    try {
-                        const res = await window.electronAPI.getSubstationEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (res.success && res.data) {
-                            // Map từ Entity sang DTO để có các trường street, city, email...
-                            detailData = SubstationMapping.mapEntityToDto(res.data)
-                        }
-                    } catch (error) {
-                        console.error('Error fetching substation detail:', error)
-                    }
-                }
-
-                await this.mappingPropertiesClient(detailData)
-                await this.loadPathMapClient(node)
-                const nodeName = node.name || node.serial_number || node.serial_no || 'Unknown'
-                this.pathMapClient.push({
-                    id: node.id || node.mrid,
-                    mrid: node.mrid,
-                    parent: nodeName
-                })
-            }
-        },
-
         async loadPathMap(node) {
             this.pathMapServer = []
             if (node != undefined) {
@@ -3034,7 +2864,7 @@ export default {
                     this.ownerServerList = [res].map((item) => {
                         return {
                             id: item.id || item.mrid || '',
-                            name: item.name ||'',
+                            name: item.name || '',
                             aliasName: item.shortName || item.name || item.aliasName || '',
                             parentName: '',
                             parentArr: [],
@@ -3111,7 +2941,7 @@ export default {
                 left = clickX - menuWidth
                 if (left < 0) left = 0
             }
-            this.$refs.contextMenuClient.openContextMenu(event, node, {top, left})
+            this.$refs.contextMenuClient.openContextMenu(event, node, { top, left })
         },
 
         async showContext(event) {
@@ -3186,7 +3016,7 @@ export default {
             try {
                 const subs = this.$refs.substation
                 if (subs) {
-                    const {success, data} = await subs.saveSubstation()
+                    const { success, data } = await subs.saveSubstation()
                     if (success) {
                         this.$message.success('Substation saved successfully')
                         this.signSubs = false
@@ -3221,7 +3051,7 @@ export default {
             try {
                 const org = this.$refs.organisation
                 if (org) {
-                    const {success, data} = await org.saveOrganisation()
+                    const { success, data } = await org.saveOrganisation()
                     if (success) {
                         this.$message.success('Organisation saved successfully')
                         this.signOrg = false
@@ -3256,7 +3086,7 @@ export default {
             try {
                 const voltageLevel = this.$refs.voltageLevel
                 if (voltageLevel) {
-                    const {success, data} = await voltageLevel.saveVoltageLevel()
+                    const { success, data } = await voltageLevel.saveVoltageLevel()
                     if (success) {
                         this.$message.success('Voltage Level saved successfully')
                         this.signVoltageLevel = false
@@ -3291,7 +3121,7 @@ export default {
             try {
                 const bay = this.$refs.bay
                 if (bay) {
-                    const {success, data} = await bay.saveBay()
+                    const { success, data } = await bay.saveBay()
                     if (success) {
                         this.$message.success('Bay saved successfully')
                         this.signBay = false
@@ -3328,7 +3158,7 @@ export default {
             try {
                 const transformer = this.$refs.transformer
                 if (transformer) {
-                    const {success, data} = await transformer.saveAsset()
+                    const { success, data } = await transformer.saveAsset()
                     if (success) {
                         this.$message.success('Transformer saved successfully')
                         this.signTransformer = false
@@ -3367,7 +3197,7 @@ export default {
             try {
                 const bushing = this.$refs.bushing
                 if (bushing) {
-                    const {success, data} = await bushing.saveAsset()
+                    const { success, data } = await bushing.saveAsset()
                     if (success) {
                         this.$message.success('Bushing saved successfully')
                         this.signBushing = false
@@ -3406,7 +3236,7 @@ export default {
             try {
                 const surgeArrester = this.$refs.surgeArrester
                 if (surgeArrester) {
-                    const {success, data} = await surgeArrester.saveAsset()
+                    const { success, data } = await surgeArrester.saveAsset()
                     if (success) {
                         this.$message.success('Surge Arrester saved successfully')
                         this.signSurge = false
@@ -3445,7 +3275,7 @@ export default {
             try {
                 const breaker = this.$refs.circuitBreaker
                 if (breaker) {
-                    const {success, data} = await breaker.saveAsset()
+                    const { success, data } = await breaker.saveAsset()
                     if (success) {
                         this.$message.success('Circuit breaker saved successfully')
                         this.signCircuit = false
@@ -3484,7 +3314,7 @@ export default {
             try {
                 const currentTransformer = this.$refs.currentTransformer
                 if (currentTransformer) {
-                    const {success, data} = await currentTransformer.saveAsset()
+                    const { success, data } = await currentTransformer.saveAsset()
                     if (success) {
                         this.$message.success('Current transformer saved successfully')
                         this.signCt = false
@@ -3523,7 +3353,7 @@ export default {
             try {
                 const voltageTransformer = this.$refs.voltageTransformer
                 if (voltageTransformer) {
-                    const {success, data} = await voltageTransformer.saveAsset()
+                    const { success, data } = await voltageTransformer.saveAsset()
                     if (success) {
                         this.$message.success('Voltage transformer saved successfully')
                         this.signVt = false
@@ -3562,7 +3392,7 @@ export default {
             try {
                 const powerCable = this.$refs.powerCable
                 if (powerCable) {
-                    const {success, data} = await powerCable.saveAsset()
+                    const { success, data } = await powerCable.saveAsset()
                     if (success) {
                         this.$message.success('Power cable saved successfully')
                         this.signPower = false
@@ -3601,7 +3431,7 @@ export default {
             try {
                 const disconnector = this.$refs.disconnector
                 if (disconnector) {
-                    const {success, data} = await disconnector.saveAsset()
+                    const { success, data } = await disconnector.saveAsset()
                     if (success) {
                         this.$message.success('Disconnector saved successfully')
                         this.signDisconnector = false
@@ -3640,7 +3470,7 @@ export default {
             try {
                 const rotatingMachine = this.$refs.rotatingMachine
                 if (rotatingMachine) {
-                    const {success, data} = await rotatingMachine.saveAsset()
+                    const { success, data } = await rotatingMachine.saveAsset()
                     if (success) {
                         this.$message.success('Rotating machine saved successfully')
                         this.signRotating = false
@@ -3679,7 +3509,7 @@ export default {
             try {
                 const capacitor = this.$refs.capacitor
                 if (capacitor) {
-                    const {success, data} = await capacitor.saveAsset()
+                    const { success, data } = await capacitor.saveAsset()
                     if (success) {
                         this.$message.success('Capacitor saved successfully')
                         this.signCapacitor = false
@@ -3718,7 +3548,7 @@ export default {
             try {
                 const reactor = this.$refs.reactor
                 if (reactor) {
-                    const {success, data} = await reactor.saveAsset()
+                    const { success, data } = await reactor.saveAsset()
                     if (success) {
                         this.$message.success('Reactor saved successfully')
                         this.signReactor = false
@@ -3763,7 +3593,7 @@ export default {
             try {
                 const job = this.$refs.jobData
                 if (job) {
-                    const {success, data} = await job.saveJob()
+                    const { success, data } = await job.saveJob()
                     if (success) {
                         this.$message.success('Job saved successfully')
                         this.signJob = false
@@ -3815,956 +3645,32 @@ export default {
         },
 
         async showData(node) {
-    try {
-        const newNode = { ...node };
-        const nodeKey = newNode.mrid || newNode.id;
-        
-        // Tìm index của tab
-        const index = this.tabs.findIndex(t => (t.mrid || t.id) === nodeKey);
-
-        if (index !== -1) {
-            // Nếu tab đã mở:
-            this.activeTab = this.tabs[index]; // Cập nhật biến bind v-model
-            this.$refs.serverTabs.selectTab(this.activeTab, index);
-        } else {
-            // Nếu tab chưa mở:
-            this.tabs.push(newNode);
-            this.activeTab = newNode; // Cập nhật biến bind v-model
-            const newIndex = this.tabs.length - 1;
-
-            this.$nextTick(() => {
-                if (this.$refs.serverTabs) {
-                    this.$refs.serverTabs.selectTab(newNode, newIndex);
-                    this.$refs.serverTabs.loadDataServer(newNode, newIndex);
-                }
-            });
-        }
-    } catch (error) {
-        console.error(error);
-    }
-},
-
-        async showDataClient(node) {
             try {
-                // Tạo bản sao của node để đảm bảo reactivity
-                const newNode = {...node}
-                const index = this.tabsClient.findIndex((item) => item.mrid === newNode.mrid)
+                const newNode = { ...node };
+                const nodeKey = newNode.mrid || newNode.id;
+
+                // Tìm index của tab
+                const index = this.tabs.findIndex(t => (t.mrid || t.id) === nodeKey);
+
                 if (index !== -1) {
-                    // Nếu tab đã tồn tại, active nó
-                    this.activeTabClient = newNode
-                    this.$refs.clientTabs.selectTab(this.activeTabClient, index)
+                    // Nếu tab đã mở:
+                    this.activeTab = this.tabs[index]; // Cập nhật biến bind v-model
+                    this.$refs.serverTabs.selectTab(this.activeTab, index);
                 } else {
-                    const newTabs = [...this.tabsClient] // Tạo mảng mới
-                    if (this.activeTabClient?.mrid) {
-                        const index = newTabs.findIndex((item) => item.mrid === this.activeTabClient.mrid)
-                        newTabs.splice(index + 1, 0, newNode)
-                    } else {
-                        newTabs.push(newNode)
-                    }
-                    // Gán lại để trigger reactivity
-                    this.tabsClient = newTabs
-                    this.activeTabClient = newNode
-                    this.$refs.clientTabs.selectTab(this.activeTabClient, newTabs.length - 1)
-                    this.$refs.clientTabs.loadData(newNode, newTabs.length - 1)
+                    // Nếu tab chưa mở:
+                    this.tabs.push(newNode);
+                    this.activeTab = newNode; // Cập nhật biến bind v-model
+                    const newIndex = this.tabs.length - 1;
+
+                    this.$nextTick(() => {
+                        if (this.$refs.serverTabs) {
+                            this.$refs.serverTabs.selectTab(newNode, newIndex);
+                            this.$refs.serverTabs.loadDataServer(newNode, newIndex);
+                        }
+                    });
                 }
             } catch (error) {
-                this.$message.error('Some error occur when loading data')
-                console.error(error)
-            }
-        },
-
-        async deleteDataClient(node) {
-            const checkDelete = await this.checkChildren(node)
-            if (checkDelete.hasChildren) {
-                this.$message.error('Node has children, cannot delete')
-                return
-            }
-            try {
-                if (node.mode == 'substation') {
-                    const entity = await window.electronAPI.getSubstationEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                    if (!entity.success) {
-                        this.$message.error('Entity not found')
-                        return
-                    }
-                    const deleteSign = await window.electronAPI.deleteSubstationEntityByMrid(entity.data)
-                    if (!deleteSign.success) {
-                        this.$message.error('Delete data failed')
-                        return
-                    }
-
-                    // ✅ Xóa node khỏi cây organisationClientList
-                    const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
-                    if (parentNode && Array.isArray(parentNode.children)) {
-                        const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
-                        if (index !== -1) {
-                            parentNode.children.splice(index, 1) // Xóa khỏi mảng children
-                            this.$message.success('Delete data successfully')
-                        } else {
-                            this.$message.warning('Node not found in tree structure')
-                        }
-                    } else {
-                        this.$message.warning('Parent node not found in tree')
-                    }
-                } else if (node.mode == 'organisation') {
-                    const entity = await window.electronAPI.getOrganisationEntityByMrid(node.mrid)
-                    if (!entity.success) {
-                        this.$message.error('Entity not found')
-                        return
-                    }
-                    const deleteSign = await window.electronAPI.deleteParentOrganizationEntity(entity.data)
-                    if (!deleteSign.success) {
-                        this.$message.error('Delete data failed')
-                        return
-                    }
-
-                    // ✅ Xóa node khỏi cây organisationClientList
-                    const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
-                    if (parentNode && Array.isArray(parentNode.children)) {
-                        const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
-                        if (index !== -1) {
-                            parentNode.children.splice(index, 1) // Xóa khỏi mảng children
-                            this.$message.success('Delete data successfully')
-                        } else {
-                            this.$message.warning('Node not found in tree structure')
-                        }
-                    } else {
-                        this.$message.warning('Parent node not found in tree')
-                    }
-                } else if (node.mode == 'voltageLevel') {
-                    const entity = await window.electronAPI.getVoltageLevelEntityByMrid(node.mrid)
-                    if (!entity.success) {
-                        this.$message.error('Entity not found')
-                        return
-                    }
-                    const deleteSign = await window.electronAPI.deleteVoltageLevelEntityByMrid(entity.data)
-                    if (!deleteSign.success) {
-                        this.$message.error('Delete data failed')
-                        return
-                    }
-
-                    // ✅ Xóa node khỏi cây organisationClientList
-                    const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
-                    if (parentNode && Array.isArray(parentNode.children)) {
-                        const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
-                        if (index !== -1) {
-                            parentNode.children.splice(index, 1) // Xóa khỏi mảng children
-                            this.$message.success('Delete data successfully')
-                        } else {
-                            this.$message.warning('Node not found in tree structure')
-                        }
-                    } else {
-                        this.$message.warning('Parent node not found in tree')
-                    }
-                } else if (node.mode == 'bay') {
-                    const entity = await window.electronAPI.getBayEntityByMrid(node.mrid)
-                    if (!entity.success) {
-                        this.$message.error('Entity not found')
-                        return
-                    }
-                    const deleteSign = await window.electronAPI.deleteBayEntityByMrid(entity.data)
-                    if (!deleteSign.success) {
-                        this.$message.error('Delete data failed')
-                        return
-                    }
-
-                    // ✅ Xóa node khỏi cây organisationClientList
-                    const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
-                    if (parentNode && Array.isArray(parentNode.children)) {
-                        const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
-                        if (index !== -1) {
-                            parentNode.children.splice(index, 1) // Xóa khỏi mảng children
-                            this.$message.success('Delete data successfully')
-                        } else {
-                            this.$message.warning('Node not found in tree structure')
-                        }
-                    } else {
-                        this.$message.warning('Parent node not found in tree')
-                    }
-                } else if (node.mode == 'asset') {
-                    if (node.asset === 'Surge arrester') {
-                        const entity = await window.electronAPI.getSurgeArresterEntityByMrid(node.mrid)
-                        if (!entity.success) {
-                            this.$message.error('Entity not found')
-                            return
-                        }
-                        const deleteSign = await window.electronAPI.deleteSurgeArresterEntity(entity.data)
-                        if (!deleteSign.success) {
-                            this.$message.error('Delete data failed')
-                            return
-                        }
-                        // ✅ Xóa node khỏi cây organisationClientList
-                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
-                        if (parentNode && Array.isArray(parentNode.children)) {
-                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
-                            if (index !== -1) {
-                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
-                                this.$message.success('Delete data successfully')
-                            } else {
-                                this.$message.warning('Node not found in tree structure')
-                            }
-                        } else {
-                            this.$message.warning('Parent node not found in tree')
-                        }
-                    } else if (node.asset === 'Power cable') {
-                        const entity = await window.electronAPI.getPowerCableEntityByMrid(node.mrid, node.parentId)
-                        if (!entity.success) {
-                            this.$message.error('Entity not found')
-                            return
-                        }
-                        const deleteSign = await window.electronAPI.deletePowerCableEntity(entity.data)
-                        if (!deleteSign.success) {
-                            this.$message.error('Delete data failed: ' + (deleteSign.message || 'Unknown error'))
-                            return
-                        }
-                        // ✅ Xóa node khỏi cây organisationClientList
-                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
-                        if (parentNode && Array.isArray(parentNode.children)) {
-                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
-                            if (index !== -1) {
-                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
-                                this.$message.success('Delete data successfully')
-                            } else {
-                                this.$message.warning('Node not found in tree structure')
-                            }
-                        } else {
-                            this.$message.warning('Parent node not found in tree')
-                        }
-                    } else if (node.asset === 'Disconnector') {
-                        const entity = await window.electronAPI.getDisconnectorEntityByMrid(node.mrid, node.parentId)
-                        if (!entity.success) {
-                            this.$message.error('Entity not found')
-                            return
-                        }
-                        const deleteSign = await window.electronAPI.deleteDisconnectorEntity(entity.data)
-                        if (!deleteSign.success) {
-                            this.$message.error('Delete data failed: ' + (deleteSign.message || 'Unknown error'))
-                            return
-                        }
-                        // ✅ Xóa node khỏi cây organisationClientList
-                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
-                        if (parentNode && Array.isArray(parentNode.children)) {
-                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
-                            if (index !== -1) {
-                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
-                                this.$message.success('Delete data successfully')
-                            } else {
-                                this.$message.warning('Node not found in tree structure')
-                            }
-                        } else {
-                            this.$message.warning('Parent node not found in tree')
-                        }
-                    } else if (node.asset === 'Rotating machine') {
-                        const entity = await window.electronAPI.getRotatingMachineEntityByMrid(node.mrid, node.parentId)
-                        if (!entity.success) {
-                            this.$message.error('Entity not found')
-                            return
-                        }
-                        const deleteSign = await window.electronAPI.deleteRotatingMachineEntity(entity.data)
-                        if (!deleteSign.success) {
-                            this.$message.error('Delete data failed: ' + (deleteSign.message || 'Unknown error'))
-                            return
-                        }
-                        // ✅ Xóa node khỏi cây organisationClientList
-                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
-                        if (parentNode && Array.isArray(parentNode.children)) {
-                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
-                            if (index !== -1) {
-                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
-                                this.$message.success('Delete data successfully')
-                            } else {
-                                this.$message.warning('Node not found in tree structure')
-                            }
-                        } else {
-                            this.$message.warning('Parent node not found in tree')
-                        }
-                    } else if (node.asset === 'Capacitor') {
-                        const entity = await window.electronAPI.getCapacitorEntityByMrid(node.mrid, node.parentId)
-                        if (!entity.success) {
-                            this.$message.error('Entity not found')
-                            return
-                        }
-                        const deleteSign = await window.electronAPI.deleteCapacitorEntity(entity.data)
-                        if (!deleteSign.success) {
-                            this.$message.error('Delete data failed: ' + (deleteSign.message || 'Unknown error'))
-                            return
-                        }
-                        // ✅ Xóa node khỏi cây organisationClientList
-                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
-                        if (parentNode && Array.isArray(parentNode.children)) {
-                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
-                            if (index !== -1) {
-                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
-                                this.$message.success('Delete data successfully')
-                            } else {
-                                this.$message.warning('Node not found in tree structure')
-                            }
-                        } else {
-                            this.$message.warning('Parent node not found in tree')
-                        }
-                    } else if (node.asset === 'Reactor') {
-                        const entity = await window.electronAPI.getReactorEntityByMrid(node.mrid, node.parentId)
-                        if (!entity.success) {
-                            this.$message.error('Entity not found')
-                            return
-                        }
-                        const deleteSign = await window.electronAPI.deleteReactorEntity(entity.data)
-                        if (!deleteSign.success) {
-                            this.$message.error('Delete data failed: ' + (deleteSign.message || 'Unknown error'))
-                            return
-                        }
-                        // ✅ Xóa node khỏi cây organisationClientList
-                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
-                        if (parentNode && Array.isArray(parentNode.children)) {
-                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
-                            if (index !== -1) {
-                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
-                                this.$message.success('Delete data successfully')
-                            } else {
-                                this.$message.warning('Node not found in tree structure')
-                            }
-                        } else {
-                            this.$message.warning('Parent node not found in tree')
-                        }
-                    } else if (node.asset === 'Voltage transformer') {
-                        const entity = await window.electronAPI.getVoltageTransformerEntityByMrid(node.mrid, node.parentId)
-                        if (!entity.success) {
-                            this.$message.error('Entity not found')
-                            return
-                        }
-                        const deleteSign = await window.electronAPI.deleteVoltageTransformerEntity(entity.data)
-                        if (!deleteSign.success) {
-                            this.$message.error('Delete data failed: ' + (deleteSign.message || 'Unknown error'))
-                            return
-                        }
-                        // ✅ Xóa node khỏi cây organisationClientList
-                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
-                        if (parentNode && Array.isArray(parentNode.children)) {
-                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
-                            if (index !== -1) {
-                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
-                                this.$message.success('Delete data successfully')
-                            } else {
-                                this.$message.warning('Node not found in tree structure')
-                            }
-                        } else {
-                            this.$message.warning('Parent node not found in tree')
-                        }
-                    } else if (node.asset === 'Current transformer') {
-                        const entity = await window.electronAPI.getCurrentTransformerEntityByMrid(node.mrid, node.parentId)
-                        if (!entity.success) {
-                            this.$message.error('Entity not found')
-                            return
-                        }
-                        const deleteSign = await window.electronAPI.deleteCurrentTransformerEntity(entity.data)
-                        if (!deleteSign.success) {
-                            this.$message.error('Delete data failed: ' + (deleteSign.message || 'Unknown error'))
-                            return
-                        }
-                        // ✅ Xóa node khỏi cây organisationClientList
-                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
-                        if (parentNode && Array.isArray(parentNode.children)) {
-                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
-                            if (index !== -1) {
-                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
-                                this.$message.success('Delete data successfully')
-                            } else {
-                                this.$message.warning('Node not found in tree structure')
-                            }
-                        } else {
-                            this.$message.warning('Parent node not found in tree')
-                        }
-                    } else if (node.asset === 'Bushing') {
-                        const entity = await window.electronAPI.getBushingEntityByMrid(node.mrid, node.parentId)
-                        if (!entity.success) {
-                            this.$message.error('Entity not found')
-                            return
-                        }
-                        const deleteSign = await window.electronAPI.deleteBushingEntity(entity.data)
-                        if (!deleteSign.success) {
-                            this.$message.error('Delete data failed: ' + (deleteSign.message || 'Unknown error'))
-                            return
-                        }
-                        // ✅ Xóa node khỏi cây organisationClientList
-                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
-                        if (parentNode && Array.isArray(parentNode.children)) {
-                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
-                            if (index !== -1) {
-                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
-                                this.$message.success('Delete data successfully')
-                            } else {
-                                this.$message.warning('Node not found in tree structure')
-                            }
-                        } else {
-                            this.$message.warning('Parent node not found in tree')
-                        }
-                    } else if (node.asset === 'Circuit breaker') {
-                        const entity = await window.electronAPI.getBreakerEntityByMrid(node.mrid, node.parentId)
-                        if (!entity.success) {
-                            this.$message.error('Entity not found')
-                            return
-                        }
-                        const deleteSign = await window.electronAPI.deleteBreakerEntity(entity.data)
-                        if (!deleteSign.success) {
-                            this.$message.error('Delete data failed: ' + (deleteSign.message || 'Unknown error'))
-                            return
-                        }
-                        // ✅ Xóa node khỏi cây organisationClientList
-                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
-                        if (parentNode && Array.isArray(parentNode.children)) {
-                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
-                            if (index !== -1) {
-                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
-                                this.$message.success('Delete data successfully')
-                            } else {
-                                this.$message.warning('Node not found in tree structure')
-                            }
-                        } else {
-                            this.$message.warning('Parent node not found in tree')
-                        }
-                    } else if (node.asset === 'Transformer') {
-                        const entity = await window.electronAPI.getTransformerEntityByMrid(node.mrid, node.parentId)
-                        if (!entity.success) {
-                            this.$message.error('Entity not found')
-                            return
-                        }
-                        const deleteSign = await window.electronAPI.deleteTransformerEntity(entity.data)
-                        if (!deleteSign.success) {
-                            this.$message.error('Delete data failed: ' + (deleteSign.message || 'Unknown error'))
-                            return
-                        }
-                        // ✅ Xóa node khỏi cây organisationClientList
-                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
-                        if (parentNode && Array.isArray(parentNode.children)) {
-                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
-                            if (index !== -1) {
-                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
-                                this.$message.success('Delete data successfully')
-                            } else {
-                                this.$message.warning('Node not found in tree structure')
-                            }
-                        } else {
-                            this.$message.warning('Parent node not found in tree')
-                        }
-                    }
-                }
-            } catch (error) {
-                this.$message.error('Some error occur when deleting data')
-                console.error(error)
-            }
-        },
-
-        async showAddSubs(organisationId) {
-            try {
-                const [dataLocation, dataPerson, parentOrganization] = await Promise.all([
-                    window.electronAPI.getLocationByOrganisationId(organisationId),
-                    window.electronAPI.getPersonByOrganisationId(organisationId),
-                    window.electronAPI.getParentOrganizationByMrid(organisationId)
-                ])
-                if (dataLocation.success) {
-                    this.locationList = dataLocation.data
-                } else {
-                    this.locationList = []
-                }
-
-                if (dataPerson.success) {
-                    this.personList = dataPerson.data
-                } else {
-                    this.personList = []
-                }
-
-                if (parentOrganization.success) {
-                    this.parentOrganization = parentOrganization.data
-                } else {
-                    this.parentOrganization = null
-                }
-
-                this.organisationId = organisationId
-                this.signSubs = true
-                this.$nextTick(() => {
-                    const substation = this.$refs.substation
-                    if (substation) {
-                        substation.resetForm()
-                    }
-                })
-            } catch (error) {
-                this.parentOrganization = null
-                this.$message.error('Some error occur')
-                console.error(error)
-            }
-        },
-
-        async showAddSubsInTree(node) {
-            try {
-                this.parentOrganization = node
-                const [dataLocation, dataPerson] = await Promise.all([
-                    window.electronAPI.getLocationByOrganisationId(node.mrid),
-                    window.electronAPI.getPersonByOrganisationId(node.mrid)
-                ])
-                if (dataLocation.success) {
-                    this.locationList = dataLocation.data
-                } else {
-                    this.locationList = []
-                }
-
-                if (dataPerson.success) {
-                    this.personList = dataPerson.data
-                } else {
-                    this.personList = []
-                }
-                this.organisationId = node.mrid
-                this.signSubs = true
-                this.$nextTick(() => {
-                    const substation = this.$refs.substation
-                    if (substation) {
-                        substation.resetForm()
-                    }
-                })
-            } catch (error) {
-                this.parentOrganization = null
-                this.$message.error('Some error occur')
-                console.error(error)
-            }
-        },
-
-        async showAddOrganisation(node) {
-            try {
-                this.parentOrganization = node
-                this.signOrg = true
-                this.$nextTick(() => {
-                    const organisation = this.$refs.organisation
-                    if (organisation) {
-                        organisation.resetForm()
-                    }
-                })
-            } catch (error) {
-                this.parentOrganization = null
-                this.$message.error('Some error occur')
-                console.error(error)
-            }
-        },
-
-        async showAddVoltageLevel(node) {
-            try {
-                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
-                if (dataLocation.success) {
-                    this.locationId = dataLocation.data.mrid
-                } else {
-                    this.locationId = null
-                }
-                this.parentOrganization = node
-                this.signVoltageLevel = true
-                this.$nextTick(() => {
-                    const voltageLevel = this.$refs.voltageLevel
-                    if (voltageLevel) {
-                        voltageLevel.resetForm()
-                    }
-                })
-            } catch (error) {
-                this.parentOrganization = null
-                this.$message.error('Some error occur')
-                console.error(error)
-            }
-        },
-
-        async showAddBay(node) {
-            try {
-                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
-                if (dataLocation.success) {
-                    this.locationId = dataLocation.data.mrid
-                } else {
-                    this.locationId = null
-                }
-                this.parentOrganization = node
-                this.signBay = true
-                this.$nextTick(() => {
-                    const bay = this.$refs.bay
-                    if (bay) {
-                        bay.resetForm()
-                    }
-                })
-            } catch (error) {
-                this.parentOrganization = null
-                this.$message.error('Some error occur')
-                console.error(error)
-            }
-        },
-
-        async showAddTransformer(node) {
-            try {
-                this.locationId = null
-                let psrId = null
-                if (node.parentArr && node.parentArr.length >= 2) {
-                    psrId = node.parentArr[1].mrid
-                } else {
-                    psrId = node.mrid
-                }
-                const dataLoction = await window.electronAPI.getLocationByPowerSystemResourceMrid(psrId)
-                if (dataLoction.success) {
-                    this.locationId = dataLoction.data.mrid
-                } else {
-                    this.locationId = null
-                }
-                this.parentOrganization = node
-                this.signTransformer = true
-                this.$nextTick(() => {
-                    const transformer = this.$refs.transformer
-                    if (transformer) {
-                        transformer.resetForm()
-                    }
-                })
-            } catch (error) {
-                this.parentOrganization = null
-                this.$message.error('Some error occur')
-                console.error(error)
-            }
-        },
-
-        async showAddBushing(node) {
-            try {
-                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
-                if (dataLocation.success) {
-                    this.locationId = dataLocation.data.mrid
-                } else {
-                    this.locationId = null
-                }
-                this.parentOrganization = node
-                this.signBushing = true
-                this.$nextTick(() => {
-                    const bushing = this.$refs.bushing
-                    if (bushing) {
-                        bushing.resetForm()
-                    }
-                })
-            } catch (error) {
-                this.parentOrganization = null
-                this.$message.error('Some error occur')
-                console.error(error)
-            }
-        },
-
-        async showAddSurgeArrester(node) {
-            try {
-                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
-                if (dataLocation.success) {
-                    this.locationId = dataLocation.data.mrid
-                } else {
-                    this.locationId = null
-                }
-                this.parentOrganization = node
-                this.signSurge = true
-                this.$nextTick(() => {
-                    const surgeArrester = this.$refs.surgeArrester
-                    if (surgeArrester) {
-                        surgeArrester.resetForm()
-                    }
-                })
-            } catch (error) {
-                this.parentOrganization = null
-                this.$message.error('Some error occur')
-                console.error(error)
-            }
-        },
-
-        async showAddCapacitor(node) {
-            try {
-                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
-                if (dataLocation.success) {
-                    this.locationId = dataLocation.data.mrid
-                } else {
-                    this.locationId = null
-                }
-                this.parentOrganization = node
-                this.signCapacitor = true
-                this.$nextTick(() => {
-                    const capacitor = this.$refs.capacitor
-                    if (capacitor) {
-                        capacitor.resetForm()
-                    }
-                })
-            } catch (error) {
-                this.parentOrganization = null
-                this.$message.error('Some error occur')
-                console.error(error)
-            }
-        },
-
-        async showAddReactor(node) {
-            try {
-                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
-                if (dataLocation.success) {
-                    this.locationId = dataLocation.data.mrid
-                } else {
-                    this.locationId = null
-                }
-                this.parentOrganization = node
-                this.signReactor = true
-                this.$nextTick(() => {
-                    const reactor = this.$refs.reactor
-                    if (reactor) {
-                        reactor.resetForm()
-                    }
-                })
-            } catch (error) {
-                this.parentOrganization = null
-                this.$message.error('Some error occur')
-                console.error(error)
-            }
-        },
-
-        async showAddCt(node) {
-            try {
-                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
-                if (dataLocation.success) {
-                    this.locationId = dataLocation.data.mrid
-                } else {
-                    this.locationId = null
-                }
-                this.parentOrganization = node
-                this.signCt = true
-                this.$nextTick(() => {
-                    const currentTransformer = this.$refs.currentTransformer
-                    if (currentTransformer) {
-                        currentTransformer.resetForm()
-                    }
-                })
-            } catch (error) {
-                this.parentOrganization = null
-                this.$message.error('Some error occur')
-                console.error(error)
-            }
-        },
-
-        async showAddVt(node) {
-            try {
-                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
-                if (dataLocation.success) {
-                    this.locationId = dataLocation.data.mrid
-                } else {
-                    this.locationId = null
-                }
-                this.parentOrganization = node
-                this.signVt = true
-                this.$nextTick(() => {
-                    const voltageTransformer = this.$refs.voltageTransformer
-                    if (voltageTransformer) {
-                        voltageTransformer.resetForm()
-                    }
-                })
-            } catch (error) {
-                this.parentOrganization = null
-                this.$message.error('Some error occur')
-                console.error(error)
-            }
-        },
-
-        async showAddPowerCable(node) {
-            try {
-                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
-                if (dataLocation.success) {
-                    this.locationId = dataLocation.data.mrid
-                } else {
-                    this.locationId = null
-                }
-                this.parentOrganization = node
-                this.signPower = true
-                this.$nextTick(() => {
-                    const powerCable = this.$refs.powerCable
-                    if (powerCable) {
-                        powerCable.resetForm()
-                    }
-                })
-            } catch (error) {
-                this.parentOrganization = null
-                this.$message.error('Some error occur')
-                console.error(error)
-            }
-        },
-
-        async showAddRotatingMachine(node) {
-            try {
-                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
-                if (dataLocation.success) {
-                    this.locationId = dataLocation.data.mrid
-                } else {
-                    this.locationId = null
-                }
-                this.parentOrganization = node
-                this.signRotating = true
-                this.$nextTick(() => {
-                    const rotatingMachine = this.$refs.rotatingMachine
-                    if (rotatingMachine) {
-                        rotatingMachine.resetForm()
-                    }
-                })
-            } catch (error) {
-                this.parentOrganization = null
-                this.$message.error('Some error occur')
-                console.error(error)
-            }
-        },
-
-        async showAddDisconnector(node) {
-            try {
-                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
-                if (dataLocation.success) {
-                    this.locationId = dataLocation.data.mrid
-                } else {
-                    this.locationId = null
-                }
-                this.parentOrganization = node
-                this.signDisconnector = true
-                this.$nextTick(() => {
-                    const disconnector = this.$refs.disconnector
-                    if (disconnector) {
-                        disconnector.resetForm()
-                    }
-                })
-            } catch (error) {
-                this.parentOrganization = null
-                this.$message.error('Some error occur')
-                console.error(error)
-            }
-        },
-
-        async showAddCircuitBreaker(node) {
-            try {
-                const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
-                if (dataLocation.success) {
-                    this.locationId = dataLocation.data.mrid
-                } else {
-                    this.locationId = null
-                }
-                this.parentOrganization = node
-                this.signCircuit = true
-                this.$nextTick(() => {
-                    const circuitBreaker = this.$refs.circuitBreaker
-                    if (circuitBreaker) {
-                        circuitBreaker.resetForm()
-                    }
-                })
-            } catch (error) {
-                this.parentOrganization = null
-                this.$message.error('Some error occur')
-                console.error(error)
-            }
-        },
-
-        async showAddJob(node) {
-            try {
-                const dataAsset = await window.electronAPI.getAssetByMrid(node.mrid)
-                if (dataAsset.success) {
-                    this.assetData = dataAsset.data
-                    const [dataLocation, dataProductAssetModel] = await Promise.all([
-                        window.electronAPI.getLocationDetailByMrid(dataAsset.data.location),
-                        window.electronAPI.getProductAssetModelByMrid(dataAsset.data.product_asset_model)
-                    ])
-                    if (dataLocation.success) {
-                        this.locationData = dataLocation.data
-                    } else {
-                        this.locationData = {}
-                    }
-
-                    if (dataProductAssetModel.success) {
-                        this.productAssetModelData = dataProductAssetModel.data
-                    } else {
-                        this.productAssetModelData = {}
-                    }
-                } else {
-                    this.$message.error('Asset not found')
-                }
-
-                this.parentOrganization = node
-
-                if (node.asset == 'Surge arrester') {
-                    const dataTestType = await window.electronAPI.getAllTestTypeSurgeArrester()
-                    const dataSurgeArrester = await window.electronAPI.getSurgeArresterByMrid(node.mrid)
-                    if (dataSurgeArrester.success) {
-                        this.assetData = dataSurgeArrester.data
-                    } else {
-                        this.assetData = {}
-                    }
-                    if (dataTestType.success) {
-                        this.testTypeListData = dataTestType.data
-                    } else {
-                        this.testTypeListData = []
-                    }
-                    this.checkJobType = 'JobSurgeArrester'
-                    this.signJob = true
-                } else if (node.asset == 'Power cable') {
-                    // const dataTestType = await window.electronAPI.getAllTestTypePowerCable()
-                    // if (dataTestType.success) {
-                    //     this.testTypeListData = dataTestType.data
-                    // } else {
-                    //     this.testTypeListData = []
-                    // }
-                    this.checkJobType = 'JobPowerCable'
-                    this.signJob = true
-                } else if (node.asset == 'Disconnector') {
-                    // const dataTestType = await window.electronAPI.getAllTestTypeDisconnector()
-                    // if (dataTestType.success) {
-                    //     this.testTypeListData = dataTestType.data
-                    // } else {
-                    //     this.testTypeListData = []
-                    // }
-                    this.checkJobType = 'JobDisconnector'
-                    this.signJob = true
-                } else if (node.asset == 'Current transformer') {
-                    // const dataTestType = await window.electronAPI.getAllTestTypeCT()
-                    // if (dataTestType.success) {
-                    //     this.testTypeListData = dataTestType.data
-                    // } else {
-                    //     this.testTypeListData = []
-                    // }
-                    this.checkJobType = 'JobCurrentTransformer'
-                    this.signJob = true
-                } else if (node.asset == 'Voltage transformer') {
-                    // const dataTestType = await window.electronAPI.getAllTestTypeVT()
-                    // if (dataTestType.success) {
-                    //     this.testTypeListData = dataTestType.data
-                    // } else {
-                    //     this.testTypeListData = []
-                    // }
-                    this.checkJobType = 'JobVoltageTransformer'
-                    this.signJob = true
-                } else if (node.asset == 'Circuit breaker') {
-                    // const dataTestType = await window.electronAPI.getAllTestTypeCircuitBreaker()
-                    const dataBreakerEntity = await window.electronAPI.getBreakerEntityByMrid(node.mrid)
-                    const dto = BreakerMapping.mapEntityToDto(dataBreakerEntity.data)
-                    if (dataBreakerEntity.success) {
-                        this.assetData = dto
-                    } else {
-                        this.assetData = {}
-                    }
-                    // if (dataTestType.success) {
-                    //     this.testTypeListData = dataTestType.data
-                    // } else {
-                    //     this.testTypeListData = []
-                    // }
-                    this.checkJobType = 'JobCircuitBreaker'
-                    this.signJob = true
-                } else if (node.asset == 'Transformer') {
-                    // const dataTestType = await window.electronAPI.getAllTestTypeTransformers()
-                    const dataTransformerEntity = await window.electronAPI.getTransformerEntityByMrid(node.mrid)
-                    const dto = TransformerMapping.transformerEntityToDto(dataTransformerEntity.data)
-                    if (dataTransformerEntity.success) {
-                        this.assetData = dto
-                    } else {
-                        this.assetData = {}
-                    }
-                    // if (dataTestType.success) {
-                    //     this.testTypeListData = dataTestType.data
-                    // } else {
-                    //     this.testTypeListData = []
-                    // }
-                    this.checkJobType = 'JobTransformer'
-                    this.signJob = true
-                } else {
-                    this.$message.error('This asset type not support for job')
-                }
-            } catch (error) {
-                this.parentOrganization = null
-                this.$message.error('Some error occur')
-                console.error(error)
+                console.error(error);
             }
         },
 
@@ -4793,48 +3699,8 @@ export default {
             }
         },
 
-        async handleDeleteNode() {
-            if (!this.selectedNodes || this.selectedNodes.length === 0) {
-                this.$message.warning('Please select a node first')
-                return
-            }
-
-            const node = this.selectedNodes[this.selectedNodes.length - 1]
-
-            // Lấy tên node - kiểm tra nhiều field khả năng
-            let nodeName = node.serial_no || node.serial_number
-            if (!nodeName || nodeName.toString().trim() === '') {
-                nodeName = node.name
-            }
-            nodeName = nodeName || 'Unknown'
-            // Confirm before delete
-            this.$confirm(`Delete "${nodeName}"?`, 'Warning', {
-                confirmButtonText: 'Delete',
-                cancelButtonText: 'Cancel',
-                cancelButtonClass: 'el-button--danger',
-                type: 'warning'
-            })
-                .then(async () => {
-                    try {
-                        if (this.clientSlide) {
-                            // Delete from client side
-                            await this.deleteDataClient(node)
-                        } else {
-                            // Delete from server side - cần implement tương tự
-                            this.$message.info('Delete from server side not yet implemented')
-                        }
-                        // Clear selection sau khi xóa
-                        this.selectedNodes = []
-                    } catch (error) {
-                        this.$message.error('Error deleting node: ' + error.message)
-                        console.error(error)
-                    }
-                })
-                .catch(() => {})
-        },
-
         async resetAllServer() {
-            ;(this.selectedNodes = []), (this.assetPropertySign = false)
+            ; (this.selectedNodes = []), (this.assetPropertySign = false)
             this.jobPropertySign = false
             this.pathMapServer = []
             this.properties = {
@@ -5122,739 +3988,12 @@ export default {
             if (dto.reactorOther) clearRecursive(dto.reactorOther)
         },
 
-        async processDuplicateAsset(node, apiGetEntity, mappingFunction, mixinObject, dataPropName) {
-            try {
-                // Helper nội bộ: lấy label hiển thị trên Tree cho một node
-                const getDisplayLabel = (n) => {
-                    if (!n) return ''
-                    if (n.mode === 'asset') {
-                        return (n.serial_number || n.serial_no || n.name || '').toString()
-                    }
-                    return (n.name || '').toString()
-                }
-
-                const getBaseLabel = (label) => {
-                    if (!label) return ''
-                    const str = label.toString().trim()
-                    const m = str.match(/^(.*?)(?:\s*-\s*Copy(?:\s*\(\d+\))?)$/)
-                    if (m && m[1] !== undefined) {
-                        return m[1].trim()
-                    }
-                    return str
-                }
-
-                // Helper: sinh tên duplicate tiếp theo trong cùng parent
-                const getNextDuplicateLabel = (currentNode, parent) => {
-                    const currentLabel = getDisplayLabel(currentNode).trim()
-                    const base = getBaseLabel(currentLabel) || 'Unknown'
-                    const siblings = parent && Array.isArray(parent.children) ? parent.children : []
-
-                    if (base !== currentLabel) {
-                        const prefix = `${currentLabel} - Copy`
-                        let maxIndex = 0
-                        let hasPlainCopy = false
-
-                        siblings.forEach((child) => {
-                            const label = getDisplayLabel(child).trim()
-                            if (!label) return
-
-                            if (label === prefix) {
-                                hasPlainCopy = true
-                                if (maxIndex < 1) maxIndex = 1
-                            } else if (label.startsWith(prefix + ' (') && label.endsWith(')')) {
-                                const inside = label.substring(prefix.length + 2, label.length - 1)
-                                const num = parseInt(inside, 10)
-                                if (!isNaN(num) && num > maxIndex) {
-                                    maxIndex = num
-                                }
-                            }
-                        })
-
-                        if (!hasPlainCopy && maxIndex === 0) {
-                            return prefix // "X - Copy"
-                        }
-                        return `${prefix} (${maxIndex + 1})` // "X - Copy (2)", "X - Copy (3)", ...
-                    }
-
-                    const prefix = `${base} - Copy`
-
-                    let maxIndex = 0
-                    let hasPlainCopy = false
-
-                    siblings.forEach((child) => {
-                        const label = getDisplayLabel(child).trim()
-                        if (!label) return
-
-                        if (label === prefix) {
-                            hasPlainCopy = true
-                            if (maxIndex < 1) maxIndex = 1
-                        } else if (label.startsWith(prefix + ' (') && label.endsWith(')')) {
-                            const inside = label.substring(prefix.length + 2, label.length - 1)
-                            const num = parseInt(inside, 10)
-                            if (!isNaN(num) && num > maxIndex) {
-                                maxIndex = num
-                            }
-                        }
-                    })
-
-                    if (!hasPlainCopy && maxIndex === 0) {
-                        return prefix // "X - Copy"
-                    }
-                    return `${prefix} (${maxIndex + 1})` // "X - Copy (2)", "X - Copy (3)", ...
-                }
-
-                // 1. Tìm Node cha
-                let parentNode = this.findNodeById(node.parentId, this.organisationClientList)
-
-                if (!parentNode) {
-                    const isRoot = node.parentId === this.$constant.ROOT || !node.parentId
-                    if (isRoot)
-                        parentNode = {
-                            mrid: this.$constant.ROOT,
-                            name: 'Root',
-                            mode: 'root'
-                        }
-                    else {
-                        this.$message.error(`Cannot find parent node.`)
-                        return {
-                            success: false
-                        }
-                    }
-                }
-
-                // 2. Lấy dữ liệu gốc từ API
-                const entityRes = await apiGetEntity(node.mrid, this.$store.state.user.user_id, node.parentId)
-                if (!entityRes.success || !entityRes.data) {
-                    this.$message.error('Failed to fetch original data.')
-                    return {
-                        success: false
-                    }
-                }
-
-                // 3. Map sang DTO & Clean dữ liệu (Xóa ID cũ)
-                const dto = mappingFunction(entityRes.data)
-                this.cleanDtoForDuplicate(dto)
-
-                // --- Generate UUID mới cho các nested objects ---
-                if (Array.isArray(dto.voltage)) {
-                    dto.voltage.forEach((item) => {
-                        if (item && !item.mrid) item.mrid = this.generateUuid()
-                    })
-                }
-                if (Array.isArray(dto.frequency)) {
-                    dto.frequency.forEach((item) => {
-                        if (item && !item.mrid) item.mrid = this.generateUuid()
-                    })
-                }
-                if (Array.isArray(dto.seconds)) {
-                    dto.seconds.forEach((item) => {
-                        if (item && !item.mrid) item.mrid = this.generateUuid()
-                    })
-                }
-                if (Array.isArray(dto.currentFlow)) {
-                    dto.currentFlow.forEach((item) => {
-                        if (item && !item.mrid) item.mrid = this.generateUuid()
-                    })
-                }
-                // Bushing specific: capacitance, percent
-                if (Array.isArray(dto.capacitance)) {
-                    dto.capacitance.forEach((item) => {
-                        if (item && !item.mrid) item.mrid = this.generateUuid()
-                    })
-                }
-                if (Array.isArray(dto.percent)) {
-                    dto.percent.forEach((item) => {
-                        if (item && !item.mrid) item.mrid = this.generateUuid()
-                    })
-                }
-                // Power Cable specific
-                if (Array.isArray(dto.temperature)) {
-                    dto.temperature.forEach((item) => {
-                        if (item && !item.mrid) item.mrid = this.generateUuid()
-                    })
-                }
-                if (Array.isArray(dto.area)) {
-                    dto.area.forEach((item) => {
-                        if (item && !item.mrid) item.mrid = this.generateUuid()
-                    })
-                }
-                if (Array.isArray(dto.length)) {
-                    dto.length.forEach((item) => {
-                        if (item && !item.mrid) item.mrid = this.generateUuid()
-                    })
-                }
-                // Reactor specific
-                if (Array.isArray(dto.inductance)) {
-                    dto.inductance.forEach((item) => {
-                        if (item && !item.mrid) item.mrid = this.generateUuid()
-                    })
-                }
-                if (Array.isArray(dto.reactivePower)) {
-                    dto.reactivePower.forEach((item) => {
-                        if (item && !item.mrid) item.mrid = this.generateUuid()
-                    })
-                }
-                if (Array.isArray(dto.mass)) {
-                    dto.mass.forEach((item) => {
-                        if (item && !item.mrid) item.mrid = this.generateUuid()
-                    })
-                }
-
-                // Generate mrid cho objects chính
-                if (dto.properties && !dto.properties.mrid) {
-                    dto.properties.mrid = this.generateUuid()
-                }
-                if (!dto.lifecycleDateId) {
-                    dto.lifecycleDateId = this.generateUuid()
-                }
-                if (!dto.productAssetModelId) {
-                    dto.productAssetModelId = this.generateUuid()
-                }
-                if (!dto.assetPsrId) {
-                    dto.assetPsrId = this.generateUuid()
-                }
-                if (!dto.assetInfoId) {
-                    dto.assetInfoId = this.generateUuid()
-                }
-                if (!dto.psrId && parentNode && parentNode.mrid) {
-                    dto.psrId = parentNode.mrid
-                }
-
-                // Setup attachment
-                if (!dto.attachment) {
-                    dto.attachment = {}
-                }
-                if (!dto.attachment.path || dto.attachment.path === '') {
-                    dto.attachment.path = '[]'
-                } else if (typeof dto.attachment.path !== 'string') {
-                    try {
-                        dto.attachment.path = JSON.stringify(dto.attachment.path)
-                    } catch (e) {
-                        dto.attachment.path = '[]'
-                    }
-                } else {
-                    try {
-                        JSON.parse(dto.attachment.path)
-                    } catch (e) {
-                        dto.attachment.path = '[]'
-                    }
-                }
-                if (!dto.attachmentId) {
-                    dto.attachmentId = this.generateUuid()
-                }
-                dto.attachment.id = dto.attachmentId
-                dto.attachment.id_foreign = dto.properties?.mrid || null
-                dto.attachment.type = dto.attachment.type || 'asset'
-                dto.attachment.name = dto.attachment.name || null
-
-                // Generate mrid cho ratings
-                if (dto.ratings) {
-                    const ratingFields = [
-                        'rated_voltage',
-                        'rated_frequency',
-                        'rated_current',
-                        'short_time_withstand_current',
-                        'rated_duration_of_short_circuit',
-                        'power_freq_withstand_voltage_earth_poles',
-                        'power_freq_withstand_voltage_isolating_distance'
-                    ]
-                    ratingFields.forEach((field) => {
-                        if (dto.ratings[field] && !dto.ratings[field].mrid) {
-                            dto.ratings[field].mrid = this.generateUuid()
-                        }
-                    })
-                }
-
-                // Reactor specific nested objects
-                if (dto.reactorRating) {
-                    const reactorRatingFields = ['rated_voltage', 'rated_frequency', 'rated_current', 'rated_power', 'inductance']
-                    reactorRatingFields.forEach((field) => {
-                        if (dto.reactorRating[field] && !dto.reactorRating[field].mrid) {
-                            dto.reactorRating[field].mrid = this.generateUuid()
-                        }
-                    })
-                }
-                if (dto.reactorOther) {
-                    if (dto.reactorOther.weight && !dto.reactorOther.weight.mrid) {
-                        dto.reactorOther.weight.mrid = this.generateUuid()
-                    }
-                }
-
-                // Helper recursive generation
-                const generateMridForNestedObject = (obj) => {
-                    if (!obj || typeof obj !== 'object') return
-                    if (Array.isArray(obj)) {
-                        obj.forEach((item) => generateMridForNestedObject(item))
-                    } else {
-                        if (obj.mrid === null || obj.mrid === '') {
-                            obj.mrid = this.generateUuid()
-                        }
-                        Object.values(obj).forEach((val) => {
-                            if (val && typeof val === 'object' && val !== null) {
-                                generateMridForNestedObject(val)
-                            }
-                        })
-                    }
-                }
-
-                if (dto.ratings) generateMridForNestedObject(dto.ratings)
-
-                if (dto.ratingsData) generateMridForNestedObject(dto.ratingsData)
-                if (dto.othersData) generateMridForNestedObject(dto.othersData)
-                if (dto.datasData) generateMridForNestedObject(dto.datasData)
-                if (dto.configsData) generateMridForNestedObject(dto.configsData)
-
-                if (dto.ctConfiguration) generateMridForNestedObject(dto.ctConfiguration)
-
-                if (dto.vt_Configuration) generateMridForNestedObject(dto.vt_Configuration)
-
-                if (dto.capacitance) generateMridForNestedObject(dto.capacitance)
-                if (dto.dissipationFactor) generateMridForNestedObject(dto.dissipationFactor)
-
-                if (dto.reactorRating) generateMridForNestedObject(dto.reactorRating)
-                if (dto.reactorOther) generateMridForNestedObject(dto.reactorOther)
-                if (dto.bushing) generateMridForNestedObject(dto.bushing)
-                // Xóa children để tránh duplicate con đệ quy (nếu không cần thiết)
-                if (dto.children) dto.children = []
-                if (dto.voltageLevels) dto.voltageLevels = []
-                if (dto.bays) dto.bays = []
-                if (dto.assets) dto.assets = []
-
-                // Đổi tên hiển thị theo quy tắc:
-                //   "X" -> "X - Copy" -> "X - Copy (2)" -> "X - Copy (3)" ...
-                const isAssetNode = node.mode === 'asset'
-                const nextLabel = getNextDuplicateLabel(node, parentNode)
-
-                if (isAssetNode) {
-                    // Asset: dùng serial_no làm label chính trên cây
-                    if (!dto.properties) dto.properties = {}
-                    dto.properties.serial_no = nextLabel
-                } else {
-                    // Location / Job / Test: dùng name
-                    dto.name = nextLabel
-                }
-
-                // Location logic
-                let targetLocationId = dto.locationId
-                if (!targetLocationId && ['substation', 'organisation', 'root'].includes(parentNode.mode)) {
-                    try {
-                        const locRes = await window.electronAPI.getLocationByPowerSystemResourceMrid(parentNode.mrid)
-                        if (locRes.success) targetLocationId = locRes.data.mrid
-                    } catch (e) {
-                        console.warn('Failed to fetch location from parent node:', e)
-                    }
-                }
-                if (!dto.locationId && targetLocationId) {
-                    dto.locationId = targetLocationId
-                }
-
-                // --- BẮT ĐẦU PHẦN SỬA LỖI QUAN TRỌNG ---
-
-                // Lấy dữ liệu mặc định từ Mixin (để đảm bảo biến Old là RỖNG/MỚI)
-                let defaultMixinData = {}
-                if (typeof mixinObject.data === 'function') {
-                    defaultMixinData = mixinObject.data()
-                }
-
-                // Tạo context từ mixin
-                const context = {
-                    // Dữ liệu mới (đã clone và đổi ID)
-                    [dataPropName]: dto,
-
-                    // FIX: Dùng dữ liệu mặc định cho biến Old.
-                    // KHÔNG copy từ dto sang Old, vì backend sẽ tưởng là update và insert vào bảng lịch sử gây lỗi.
-                    [dataPropName + 'Old']: defaultMixinData[dataPropName + 'Old'],
-
-                    parentData: parentNode,
-                    locationId: targetLocationId,
-                    attachmentData: [],
-                    ...mixinObject.methods,
-                    $message: this.$message,
-                    $store: this.$store,
-                    $constant: this.$constant,
-                    $config: this.$config,
-                    $common: this.$common,
-                    $helper: this.$helper,
-                    $uuid: this.$uuid
-                }
-
-                // Bind methods để 'this' trong mixin trỏ đúng vào context
-                const vuePrototypeProps = ['$message', '$store', '$constant', '$config', '$common', '$helper', '$uuid', '$nextTick', '$set', '$delete']
-                Object.keys(context).forEach((key) => {
-                    if (typeof context[key] === 'function' && !vuePrototypeProps.includes(key) && !key.startsWith('$')) {
-                        context[key] = context[key].bind(context)
-                    }
-                })
-
-                // Copy các data khác từ mixin (nếu có)
-                Object.keys(defaultMixinData).forEach((k) => {
-                    if (k !== dataPropName && k !== dataPropName + 'Old') {
-                        context[k] = defaultMixinData[k]
-                    }
-                })
-
-                // --- KẾT THÚC PHẦN SỬA LỖI ---
-
-                // Gọi hàm save tương ứng
-                let saveResult
-                if (typeof context.saveAsset === 'function') {
-                    saveResult = await context.saveAsset()
-                } else if (typeof context.saveSubstation === 'function') {
-                    saveResult = await context.saveSubstation()
-                } else if (typeof context.saveOrganisation === 'function') {
-                    saveResult = await context.saveOrganisation()
-                } else if (typeof context.saveBay === 'function') {
-                    saveResult = await context.saveBay()
-                } else if (typeof context.saveVoltageLevel === 'function') {
-                    saveResult = await context.saveVoltageLevel()
-                } else {
-                    return {
-                        success: false,
-                        message: 'Save method not found in mixin'
-                    }
-                }
-
-                // Xử lý kết quả trả về
-                if (saveResult && saveResult.success) {
-                    let newNodeData = {
-                        mrid: '',
-                        name: dto.name || (dto.properties ? dto.properties.apparatus_id : `${node.name} - Copy`),
-                        serial_number: dto.properties ? dto.properties.serial_no : '',
-                        parentId: parentNode.mrid,
-                        parentName: parentNode.name,
-                        parentArr: [
-                            ...(parentNode.parentArr || []),
-                            {
-                                mrid: parentNode.mrid,
-                                parent: parentNode.name
-                            }
-                        ],
-                        mode: node.mode,
-                        asset: node.asset,
-                        job: node.job,
-                        children: [],
-                        expanded: false,
-                        isLeaf: true
-                    }
-
-                    const resData = saveResult.data
-                    if (resData) {
-                        const keys = [
-                            'substation',
-                            'organisation',
-                            'voltageLevel',
-                            'bay',
-                            'asset',
-                            'surgeArrester',
-                            'transformer',
-                            'circuitBreaker',
-                            'breaker',
-                            'disconnector',
-                            'powerCable',
-                            'voltageTransformer',
-                            'currentTransformer',
-                            'rotatingMachine',
-                            'capacitor',
-                            'reactor',
-                            'bushing'
-                        ]
-                        let mainObj = null
-                        for (const k of keys) {
-                            if (resData[k]) {
-                                mainObj = resData[k]
-                                break
-                            }
-                        }
-
-                        if (mainObj) {
-                            newNodeData.mrid = mainObj.mrid
-                            newNodeData.id = mainObj.mrid
-                            if (mainObj.name && mainObj.name !== mainObj.mrid) newNodeData.name = mainObj.name
-                        } else if (resData.mrid) {
-                            newNodeData.mrid = resData.mrid
-                            newNodeData.id = resData.mrid
-                            if (resData.name) newNodeData.name = resData.name
-                        }
-                    }
-                    return {
-                        success: true,
-                        data: newNodeData
-                    }
-                } else {
-                    return {
-                        success: false,
-                        message: saveResult ? saveResult.error : 'Save failed'
-                    }
-                }
-            } catch (error) {
-                console.error('Duplicate Error:', error)
-                return {
-                    success: false,
-                    message: error.message
-                }
-            }
-        },
-        async duplicateSelectedNodes() {
-            if (!this.selectedNodes || this.selectedNodes.length === 0) {
-                this.$message.warning('Please select a node to duplicate')
-                return
-            }
-
-            const node = this.selectedNodes[this.selectedNodes.length - 1]
-            let nodeName = node.serial_no || node.serial_number
-
-            // Logic cũ: ưu tiên serial_no nếu name rỗng
-            if (!nodeName || nodeName.trim() === '') {
-                nodeName = node.name
-            }
-
-            // Nếu vẫn chưa có tên, gọi API lấy chi tiết
-            if ((!nodeName || nodeName.toString().trim() === '') && node.mode === 'asset' && node.mrid) {
-                try {
-                    let entityRes = null
-                    const getNameFromEntity = (assetData) => {
-                        if (!assetData) return 'Unknown'
-                        // Ưu tiên Serial Number
-                        if (assetData.serial_number && assetData.serial_number.toString().trim() !== '') {
-                            return assetData.serial_number
-                        }
-                        // Sau đó đến Name
-                        if (assetData.name && assetData.name.toString().trim() !== '') {
-                            return assetData.name
-                        }
-                        // Cuối cùng là Apparatus ID (nếu có)
-                        return assetData.apparatus_id || 'Unknown'
-                    }
-                    // --- SURGE ARRESTER ---
-                    if (node.asset === 'Surge arrester') {
-                        entityRes = await window.electronAPI.getSurgeArresterEntityByMrid(node.mrid)
-                        if (entityRes.success && entityRes.data) {
-                            nodeName = getNameFromEntity(entityRes.data.surgeArrester)
-                        }
-                    } else if (node.asset === 'Transformer') {
-                        entityRes = await window.electronAPI.getTransformerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            nodeName = getNameFromEntity(entityRes.data.asset)
-                        }
-                    } else if (node.asset === 'Circuit breaker') {
-                        entityRes = await window.electronAPI.getBreakerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            nodeName = getNameFromEntity(entityRes.data.asset)
-                        }
-                    } else if (node.asset === 'Disconnector') {
-                        entityRes = await window.electronAPI.getDisconnectorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            nodeName = getNameFromEntity(entityRes.data.asset)
-                        }
-                    } else if (node.asset === 'Power cable') {
-                        entityRes = await window.electronAPI.getPowerCableEntityByMrid(node.mrid, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            nodeName = getNameFromEntity(entityRes.data.asset)
-                        }
-                    } else if (node.asset === 'Rotating machine') {
-                        entityRes = await window.electronAPI.getRotatingMachineEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            nodeName = getNameFromEntity(entityRes.data.asset)
-                        }
-                    } else if (node.asset === 'Voltage transformer') {
-                        entityRes = await window.electronAPI.getVoltageTransformerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            nodeName = getNameFromEntity(entityRes.data.asset)
-                        }
-                    } else if (node.asset === 'Current transformer') {
-                        entityRes = await window.electronAPI.getCurrentTransformerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            nodeName = getNameFromEntity(entityRes.data.asset)
-                        }
-                    } else if (node.asset === 'Capacitor') {
-                        entityRes = await window.electronAPI.getCapacitorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            nodeName = getNameFromEntity(entityRes.data.asset)
-                        }
-                    } else if (node.asset === 'Reactor') {
-                        entityRes = await window.electronAPI.getReactorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            nodeName = getNameFromEntity(entityRes.data.asset)
-                        }
-                    } else if (node.asset === 'Bushing') {
-                        entityRes = await window.electronAPI.getBushingEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            nodeName = getNameFromEntity(entityRes.data.asset) // Bushing thường dùng name hoặc serial
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error fetching entity for name:', error)
-                }
-            }
-
-            nodeName = nodeName || 'Unknown'
-
-            this.$confirm(`Duplicate "${nodeName}"?`, 'Confirmation', {
-                confirmButtonText: 'Confirm',
-                cancelButtonText: 'Cancel',
-                cancelButtonClass: 'el-button--danger',
-                type: 'info'
-            })
-                .then(async () => {
-                    let result = {success: false}
-
-                    if (node.asset === 'Transformer') {
-                        result = await this.processDuplicateAsset(
-                            node,
-                            window.electronAPI.getTransformerEntityByMrid,
-                            TransformerMapping.transformerEntityToDto,
-                            TransformerMixin, // Mixin Object
-                            'transformerDto' // Tên biến data trong Mixin
-                        )
-                    } else if (node.asset === 'Surge arrester') {
-                        result = await this.processDuplicateAsset(
-                            node,
-                            window.electronAPI.getSurgeArresterEntityByMrid,
-                            SurgeArresterMapping.mapEntityToDto,
-                            SurgeArresterMixin,
-                            'surge_arrester_data' // Tên biến data trong Mixin Surge
-                        )
-                    } else if (node.asset === 'Circuit breaker') {
-                        result = await this.processDuplicateAsset(
-                            node,
-                            window.electronAPI.getBreakerEntityByMrid,
-                            BreakerMapping.mapEntityToDto,
-                            CircuitBreakerMixin,
-                            'circuitBreakerDto'
-                        )
-                    } else if (node.asset === 'Disconnector') {
-                        result = await this.processDuplicateAsset(
-                            node,
-                            window.electronAPI.getDisconnectorEntityByMrid,
-                            DisconnectorMapping.disconnectorEntityToDto,
-                            DisconnectorMixin,
-                            'disconnector'
-                        )
-                    } else if (node.asset === 'Power cable') {
-                        result = await this.processDuplicateAsset(
-                            node,
-                            window.electronAPI.getPowerCableEntityByMrid,
-                            PowerCableMapping.mapEntityToDto,
-                            PowerCableMixin,
-                            'powerCable'
-                        )
-                    } else if (node.asset === 'Voltage transformer') {
-                        result = await this.processDuplicateAsset(
-                            node,
-                            window.electronAPI.getVoltageTransformerEntityByMrid,
-                            VoltageTransformerMapping.mapEntityToDto,
-                            VoltageTransformerMixin,
-                            'voltageTransformer'
-                        )
-                    } else if (node.asset === 'Current transformer') {
-                        result = await this.processDuplicateAsset(
-                            node,
-                            window.electronAPI.getCurrentTransformerEntityByMrid,
-                            CurrentTransformerMapping.mapEntityToDto,
-                            CurrentTransformerMixin,
-                            'currentTransformer'
-                        )
-                    } else if (node.asset === 'Rotating machine') {
-                        result = await this.processDuplicateAsset(
-                            node,
-                            window.electronAPI.getRotatingMachineEntityByMrid,
-                            rotatingMachineMapping.mapEntityToDto,
-                            RotatingMachineMixin,
-                            'rotatingMachine'
-                        )
-                    } else if (node.asset === 'Capacitor') {
-                        result = await this.processDuplicateAsset(
-                            node,
-                            window.electronAPI.getCapacitorEntityByMrid,
-                            CapacitorMapping.mapEntityToDto,
-                            CapacitorMixin,
-                            'capacitor'
-                        )
-                    } else if (node.asset === 'Reactor') {
-                        result = await this.processDuplicateAsset(
-                            node,
-                            window.electronAPI.getReactorEntityByMrid,
-                            ReactorMapping.mapEntityToDto,
-                            ReactorMixin,
-                            'reactor'
-                        )
-                    } else if (node.asset === 'Bushing') {
-                        result = await this.processDuplicateAsset(
-                            node,
-                            window.electronAPI.getBushingEntityByMrid,
-                            BushingMapping.mapEntityToDto,
-                            BushingMixin,
-                            'bushing_data'
-                        )
-                    }
-                    // --- LOCATIONS ---
-                    else if (node.mode === 'bay') {
-                        result = await this.processDuplicateAsset(
-                            node,
-                            window.electronAPI.getBayEntityByMrid,
-                            (entity) => {
-                                return {mrid: entity.mrid, name: entity.name, ...entity}
-                            },
-                            BayMixin,
-                            'properties'
-                        )
-                    }
-                    // ... Các location khác tương tự (Substation, Organisation) ...
-
-                    if (result.success && result.data) {
-                        this.$message.success('Duplicate successful!')
-                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
-                        if (parentNode) {
-                            if (!Array.isArray(parentNode.children)) this.$set(parentNode, 'children', [])
-                            const index = parentNode.children.findIndex((c) => c.mrid === node.mrid)
-                            if (index !== -1) parentNode.children.splice(index + 1, 0, result.data)
-                            else parentNode.children.push(result.data)
-                            this.$set(parentNode, 'expanded', true)
-                            this.clearSelection()
-                            this.updateSelection(result.data)
-                        }
-                    } else {
-                        this.$message.error(result.message || 'Failed to duplicate.')
-                    }
-                })
-                .catch((e) => {
-                    if (e !== 'cancel') console.error(e)
-                })
-        },
-
-        
-
-        
-
-        async doubleClickNode(node) {
-            await this.showDataClient(node)
-            await this.showPropertiesDataClient(node)
-        },
-
         async doubleClickNodeServer(node) {
             await this.showData(node)
             await this.showPropertiesData(node)
         },
 
-        getValidParentTypes(nodeMode) {
-            switch (nodeMode) {
-                case 'organisation':
-                    return ['organisation'] // Org chỉ nằm trong Org
-                case 'substation':
-                    return ['organisation'] // Substation nằm trong Org
-                case 'voltageLevel':
-                    return ['substation'] // Voltage nằm trong Substation
-                case 'bay':
-                    return ['voltageLevel', 'substation'] // Bay nằm trong Voltage hoặc Substation
-                case 'asset':
-                    return ['bay', 'voltageLevel', 'substation', 'organisation'] // Asset nằm được nhiều chỗ
-                case 'job':
-                    return ['asset'] // Job nằm trong Asset
-                default:
-                    return []
-            }
-        },
-
+        
         // Helper: Kiểm tra xem node hoặc children của nó có chứa valid target không
         hasValidTargetInTree(node, nodeToMove, validParentTypes) {
             // Bỏ qua node đang được move
@@ -5920,75 +4059,6 @@ export default {
             return tree
         },
 
-        // 3. Xử lý khi nhấn nút Move trên toolbar
-        async handleMoveNode() {
-            if (!this.selectedNodes || this.selectedNodes.length === 0) {
-                this.$message.warning('Please select a node to move')
-                return
-            }
-
-            const nodeToMove = this.selectedNodes[this.selectedNodes.length - 1]
-
-            const validTypes = this.getValidParentTypes(nodeToMove.mode)
-
-            // Lưu nodeToMove và validTypes để dùng trong fetchChildrenForMove
-            this.nodeToMove = nodeToMove
-            this.validParentTypesForMove = validTypes
-
-            // Lấy nguồn dữ liệu (Server hoặc Client side)
-            const sourceData = this.clientSlide ? this.organisationClientList : this.ownerServerList
-
-            // Build cây dữ liệu đã lọc
-            this.moveTreeData = this.buildMoveTreeData(sourceData, nodeToMove, validTypes)
-
-            // Reset trạng thái chọn trong Dialog
-            this.selectedTargetNode = null
-            this.selectedTargetNodes = []
-
-            this.moveDialogVisible = true
-        },
-
-        // 3. Xử lý khi click chọn 1 node trong Dialog (Thay thế handleTargetNodeClick cũ)
-        handleMoveNodeSelection(node) {
-            // Nếu là mảng (do TreeNode emit), lấy phần tử cuối hoặc phần tử duy nhất
-            const targetNode = Array.isArray(node) ? node[node.length - 1] : node
-
-            if (!targetNode) {
-                this.selectedTargetNodes = []
-                this.selectedTargetNode = null
-                return
-            }
-
-            // Nếu node chưa có isValidTarget (có thể là node mới được fetch), tính toán lại
-            if (targetNode.isValidTarget === undefined && this.validParentTypesForMove.length > 0) {
-                const isValidTarget = this.validParentTypesForMove.includes(targetNode.mode)
-                Vue.set(targetNode, 'disabled', !isValidTarget)
-                Vue.set(targetNode, 'isValidTarget', isValidTarget)
-            }
-
-            // Chặn nếu node không hợp lệ
-            if (targetNode.disabled || !targetNode.isValidTarget) {
-                // this.$message.warning(`Cannot move here. Invalid parent type.`);
-                // Reset selection để không highlight node sai
-                this.selectedTargetNodes = []
-                this.selectedTargetNode = null
-                return
-            }
-
-            // Nếu hợp lệ
-            this.selectedTargetNodes = [targetNode]
-            this.selectedTargetNode = targetNode
-        },
-
-        // 4. Reset khi đóng dialog
-        handleMoveCancel() {
-            this.moveDialogVisible = false
-            this.selectedTargetNodes = []
-            this.selectedTargetNode = null
-            this.nodeToMove = null
-            this.validParentTypesForMove = []
-        },
-
         // 5. Fetch children cho move dialog (lọc và set disabled, isValidTarget cho các node mới)
         async fetchChildrenForMove(node) {
             // Gọi fetchChildren bình thường
@@ -6004,201 +4074,6 @@ export default {
             }
         },
 
-        // 4. Xử lý khi click chọn node đích trong Dialog
-        handleTargetNodeClick(data, node, component) {
-            if (data.disabled) {
-                this.$message.warning('Cannot move to this node type')
-                this.selectedTargetNode = null
-                return
-            }
-            this.selectedTargetNode = data
-        },
-
-        // 5. Xác nhận di chuyển
-        async confirmMoveNode() {
-            if (!this.selectedTargetNode) {
-                this.$message.warning('Please select a target node')
-                return
-            }
-
-            // Sử dụng nodeToMove đã được lưu trong handleMoveNode thay vì selectedNodes
-            // vì selectedNodes có thể bị clear khi user tương tác với dialog
-            if (!this.nodeToMove) {
-                this.$message.warning('No node selected to move')
-                return
-            }
-
-            const nodeToMove = this.nodeToMove
-            const newParent = this.selectedTargetNode
-
-            if (!nodeToMove) {
-                this.$message.error('Cannot find node to move')
-                return
-            }
-
-            if (!newParent) {
-                this.$message.error('Cannot find target parent')
-                return
-            }
-
-            // Kiểm tra trùng cha
-            if (nodeToMove.parentId === newParent.mrid) {
-                this.$message.warning('Node is already in this location')
-                return
-            }
-            let sourceName = nodeToMove.name
-            // Nếu name rỗng hoặc null, thử lấy serial_number hoặc serial_no
-            if (!sourceName || sourceName.toString().trim() === '') {
-                sourceName = nodeToMove.serial_number || nodeToMove.serial_no
-            }
-            // Nếu vẫn không có, hiển thị giá trị mặc định
-            sourceName = sourceName || 'Unknown Item'
-
-            let targetName = newParent.name || 'Unknown Location'
-            this.$confirm(`Move "${sourceName}" to "${targetName}"?`, 'Confirm Move', {
-                confirmButtonText: 'Confirm',
-                cancelButtonText: 'Cancel',
-                cancelButtonClass: 'el-button--danger',
-                type: 'warning'
-            })
-                .then(async () => {
-                    try {
-                        let success = false
-                        let updateResult = null
-
-                        // --- XỬ LÝ ASSET (Power Cable, Transformer, ...) ---
-                        if (nodeToMove.mode === 'asset') {
-                            // 1. Lấy thông tin location của Substation đích (newParent)
-                            const targetLocRes = await window.electronAPI.getLocationByPowerSystemResourceMrid(newParent.mrid)
-                            let newLocationMrid = null
-                            if (targetLocRes.success && targetLocRes.data) {
-                                newLocationMrid = targetLocRes.data.mrid
-                            }
-
-                            // 2. Lấy dữ liệu chi tiết của Asset hiện tại để chuẩn bị update
-                            const assetEntity = await window.electronAPI.getAssetByMrid(nodeToMove.mrid)
-                            if (assetEntity.success && assetEntity.data) {
-                                const assetData = assetEntity.data
-
-                                // 3. CẬP NHẬT TRƯỜNG LOCATION CHO ASSET
-                                if (newLocationMrid) {
-                                    assetData.location = newLocationMrid // Gán ID location của Substation mới vào đây
-
-                                    // Gọi API update bản ghi Asset (Sử dụng hàm updateAsset chung hoặc theo loại)
-                                    // Lưu ý: Đảm bảo preload đã expose hàm updateAssetByMrid
-                                    const updateAssetRes = await window.electronAPI.updateAssetByMrid(assetData.mrid, assetData)
-                                    if (!updateAssetRes.success) {
-                                        console.error('Lỗi khi cập nhật trường location của Asset:', updateAssetRes.message)
-                                    }
-                                }
-                            }
-
-                            // 4. CẬP NHẬT LIÊN KẾT CÂY (AssetPsr) - Giữ nguyên hoặc tối ưu logic cũ của bạn
-                            let currentAssetPsr = null
-                            if (nodeToMove.parentId) {
-                                const searchRes = await window.electronAPI.getAssetPsrByAssetIdAndPsrId(nodeToMove.mrid, nodeToMove.parentId)
-                                if (searchRes.success && searchRes.data) {
-                                    currentAssetPsr = searchRes.data
-                                }
-                            }
-
-                            if (currentAssetPsr) {
-                                currentAssetPsr.psr_id = newParent.mrid // Chuyển sang cha mới (Substation 2)
-                                updateResult = await window.electronAPI.updateAssetPsr(currentAssetPsr.mrid, currentAssetPsr)
-                                success = updateResult.success
-                            } else {
-                                // Nếu trước đó không có cha (mồ côi), tạo mới liên kết
-                                const newAssetPsr = {
-                                    mrid: this.generateUuid(),
-                                    asset_id: nodeToMove.mrid,
-                                    psr_id: newParent.mrid
-                                }
-                                updateResult = await window.electronAPI.insertAssetPsr(newAssetPsr)
-                                success = updateResult.success
-                            }
-                        }
-                        // --- XỬ LÝ CÁC LOẠI KHÁC (Giữ nguyên logic cũ của bạn) ---
-                        else if (nodeToMove.mode === 'organisation') {
-                            // ... (Code cũ của bạn đúng rồi)
-                            const orgEntity = await window.electronAPI.getOrganisationEntityByMrid(nodeToMove.mrid)
-                            if (orgEntity.success) {
-                                orgEntity.data.organisation.parent_organization = newParent.mrid
-                                updateResult = await window.electronAPI.updateParentOrganizationByMrid(nodeToMove.mrid, orgEntity.data.organisation)
-                                success = updateResult.success
-                            }
-                        } else if (nodeToMove.mode === 'substation') {
-                            // ... (Code cũ của bạn)
-                            // Lưu ý: Substation thường update Location refId
-                            const subData = await window.electronAPI.getSubstationByMrid(nodeToMove.mrid)
-                            if (subData.success && subData.data.location) {
-                                const locData = await window.electronAPI.getLocationByMrid(subData.data.location)
-                                if (locData.success) {
-                                    locData.data.refId = newParent.mrid
-                                    updateResult = await window.electronAPI.updateLocationByMrid(subData.data.location, locData.data)
-                                    success = updateResult.success
-                                }
-                            }
-                        }
-                        // ... (Voltage, Bay logic giữ nguyên) ...
-                        else if (nodeToMove.mode === 'voltageLevel') {
-                            const vl = await window.electronAPI.getVoltageLevelByMrid(nodeToMove.mrid)
-                            if (vl.success) {
-                                vl.data.substation = newParent.mrid
-                                updateResult = await window.electronAPI.updateVoltageLevelByMrid(nodeToMove.mrid, vl.data)
-                                success = updateResult.success
-                            }
-                        } else if (nodeToMove.mode === 'bay') {
-                            const bay = await window.electronAPI.getBayByMrid(nodeToMove.mrid)
-                            if (bay.success) {
-                                if (newParent.mode === 'voltageLevel') {
-                                    bay.data.voltage_level = newParent.mrid
-                                    bay.data.substation = null
-                                } else {
-                                    bay.data.substation = newParent.mrid
-                                    bay.data.voltage_level = null
-                                }
-                                updateResult = await window.electronAPI.updateBayByMrid(nodeToMove.mrid, bay.data)
-                                success = updateResult.success
-                            }
-                        }
-
-                        // --- CẬP NHẬT UI SAU KHI THÀNH CÔNG ---
-                        if (success) {
-                            // 1. Xóa khỏi cha cũ
-                            const sourceList = this.clientSlide ? this.organisationClientList : this.ownerServerList
-                            const oldParentNode = this.findNodeById(nodeToMove.parentId, sourceList)
-
-                            if (oldParentNode && oldParentNode.children) {
-                                const idx = oldParentNode.children.findIndex((c) => c.mrid === nodeToMove.mrid)
-                                if (idx !== -1) oldParentNode.children.splice(idx, 1)
-                            }
-
-                            // 2. Thêm vào cha mới
-                            const newParentInTree = this.findNodeById(newParent.mrid, sourceList)
-                            if (newParentInTree) {
-                                // Force reload children từ server để đảm bảo dữ liệu đúng
-                                this.$set(newParentInTree, '_childrenFetched', false)
-                                await this.fetchChildren(newParentInTree)
-                                this.$set(newParentInTree, 'expanded', true)
-                            }
-
-                            this.$message.success('Moved successfully')
-                            this.moveDialogVisible = false
-                            this.selectedNodes = []
-                        } else {
-                            this.$message.error('Move failed: ' + (updateResult?.message || 'Unknown error'))
-                        }
-                    } catch (error) {
-                        console.error(error)
-                        this.$message.error('Error: ' + error.message)
-                    }
-                })
-                .catch((err) => {
-                    if (err !== 'cancel') {
-                        console.error('Move confirmation error:', err)
-                    }
-                })
-        },
         // 1. Khi nhấn nút Download trên toolbar
         async handleDownloadNode() {
             if (!this.selectedNodes || this.selectedNodes.length === 0) {
@@ -6237,7 +4112,7 @@ export default {
                 } else {
                     // Trường hợp 2: Chưa có cha -> Hiện cây Client để chọn cha
                     this.nodeToDownloadData = dto
-                    this.moveTreeData = this.buildMoveTreeData(this.organisationClientList, {mrid: 'none'}, this.getValidParentTypes('asset'))
+                    this.moveTreeData = this.buildMoveTreeData(this.organisationClientList, { mrid: 'none' }, this.getValidParentTypes('asset'))
                     this.downloadDialogVisible = true
                 }
             } catch (error) {
@@ -6863,7 +4738,7 @@ export default {
 }
 
 /* Ẩn backdrop/modal mask - Ẩn TẤT CẢ backdrop khi có dialog với class ghost-dialog */
-body > .v-modal {
+body>.v-modal {
     transition: none !important;
 }
 
@@ -6907,9 +4782,67 @@ body.duplicating-mode .v-modal {
 }
 
 /* Ẩn tất cả backdrop ngay khi duplicate */
-body.duplicating-mode > .v-modal {
+body.duplicating-mode>.v-modal {
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;
+}
+</style>
+
+<style>
+.app-dialog {
+    box-sizing: border-box;
+}
+
+.app-dialog.el-dialog {
+    width: 65%;
+    margin-top: 8vh !important;
+    border-radius: 6px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.app-dialog .el-dialog__body {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.app-dialog .el-dialog__footer {
+    padding: 10px 20px;
+    border-top: 1px solid #ebeef5;
+}
+
+.custom-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.custom-footer .footer-btn {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 767px) {
+    .custom-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .custom-footer .footer-btn {
+        width: 100%;
+        margin: 0;
+    }
+
+    .custom-footer .el-button+.el-button {
+        margin-left: 0;
+    }
 }
 </style>

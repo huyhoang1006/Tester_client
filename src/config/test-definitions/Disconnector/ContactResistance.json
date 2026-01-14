@@ -10,14 +10,14 @@
       "type": "string"
     },
     {
-      "mrid": "2e5f6a7b-8c9d-4e0f-9005-000000000013",
+      "mrid": "899bc9df-acf5-4bde-b8f7-f690263aabee",
       "code": "i_test",
       "name": "I test",
       "type": "analog",
       "unit": "A"
     },
     {
-      "mrid": "8e1f2a3b-4c5d-4e15-9011-000000000019",
+      "mrid": "d24f5034-3d7d-4bb2-9788-86405874a2e4",
       "code": "contact_resistance",
       "name": "Contact resistance",
       "type": "analog",

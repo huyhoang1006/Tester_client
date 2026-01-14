@@ -10,21 +10,21 @@
       "type": "string"
     },
     {
-      "mrid": "d47ac10b-58cc-4372-a567-0e02b2c3d479",
+      "mrid": "509a7f7d-357b-4e6e-9e99-547f4eabfcb8",
       "code": "closing_time",
       "name": "Closing time",
       "type": "analog",
       "unit": "m|s"
     },
     {
-      "mrid": "f69ce32d-70ee-4594-c789-2024d4e5f69b",
+      "mrid": "ff66aaaa-7373-4b84-ab17-7afa4cf94fbc",
       "code": "closing_sync",
       "name": "Closing sync",
       "type": "analog",
       "unit": "m|s"
     },
     {
-      "mrid": "b81eg54f-9200-4716-e901-4246f6a7b81d",
+      "mrid": "00266a9f-a98a-4b17-ab85-07496828df96",
       "code": "close_open_time",
       "name": "Close-Open time",
       "type": "analog",
