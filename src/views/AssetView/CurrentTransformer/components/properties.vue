@@ -1,7 +1,7 @@
 <template>
     <div id="properties">
         <el-row :gutter="20" class="content">
-            <el-col :span="12" class="col-content">
+            <el-col :xs="24" :md="12" class="col-content">
                 <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                     <span style="font-size: 12px;" class="bolder">Properties</span>
                     <el-divider></el-divider>
@@ -28,7 +28,7 @@
                         <el-select @change="createNew(propertiesData.manufacturer)" style="width: 100%;" filterable v-model="propertiesData.manufacturer">
                             <el-option v-for="item in manufacturerList" :label="item" :key="item" :value=item> </el-option>
                             <el-option v-for="item in manufacturerListAll" :key="item" :value=item> {{ item }} <i @click="deleteManu(item)" style="float: right; cursor: pointer;" class="fa-solid fa-trash"></i> <i @click="editManu(item)" style="float: right; margin-right: 10px; cursor: pointer;" class="fa-solid fa-pen-to-square"></i> </el-option>
-                            <el-option style="border-radius: 12px; background-color:#012596; margin: 10px; color: white;" value="Create new"><i class="fa-solid fa-square-plus" style="margin-right: 10px;"></i>&lt; Create new ></el-option>
+                            <el-option style="border-radius: 12px; background-color:#012596; margin: 10px; color: white;" value="Create new"><i class="fa-solid fa-square-plus" style="margin-right: 10px;"></i> Create new</el-option>
                         </el-select>
                     </el-form-item>
                     <el-form-item label="Manufacturer type">
@@ -50,7 +50,7 @@
                     </el-form-item>
                 </el-form>
             </el-col>
-            <el-col :span="12" class="col-content">
+            <el-col :xs="24" :md="12" class="col-content">
                 <el-form :label-width="labelWidth" size="mini" label-position="left">
                     <span style="font-size: 12px;" class="bolder">Comment</span>
                     <el-divider></el-divider>
@@ -90,7 +90,7 @@ export default {
     },
     data() {
         return {
-            labelWidth : `200px`,
+            labelWidth : `120px`,
             countryData : [],
             manufacturerCurrent : '',
             sign : '',
@@ -233,5 +233,31 @@ th,
 td {
     padding: 0px 10px;
     height: 30px;
+}
+
+@media (max-width: 991px) {
+    ::v-deep(.col-content) {
+        margin-bottom: 10px;
+    }
+}
+
+@media (max-width: 767px) {
+    ::v-deep(.el-form-item) {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    ::v-deep(.el-form-item__label) {
+        width: auto !important;
+        margin-left: 0 !important;
+        padding-bottom: 0;
+        text-align: left;
+    }
+
+    ::v-deep(.el-form-item__content) {
+        width: 100%;
+        margin-left: 0 !important;
+    }
 }
 </style>
