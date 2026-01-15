@@ -1,6 +1,6 @@
 <template>
     <div id="asset">
-        <div style="min-height: 500px; display: flex; flex-direction: column;">
+        <div style="display: flex; flex-direction: column;">
             <div style="flex: 1; display: flex; flex-direction: column;">
                 <currentTransProperty @setUpdate="setUpdate" :updateNew='updateNew' :update="update"
                     @editManu="editManu" :title="title" :properties.sync="currentTransformer.properties"
