@@ -1,0 +1,65 @@
+{
+  "testId": "cf3a06a1-11ee-43f1-b2ce-cfd61f26a6f9",
+  "testCode": "DcWindingRes",
+  "testName": "DC Winding resistance",
+  "columns": [
+    {
+      "mrid": "f02b9353-bb57-40a6-a08b-0340346e2057",
+      "code": "name",
+      "name": "Name",
+      "type": "string"
+    },
+    {
+      "mrid": "7213c077-fd8a-4f12-888c-1263570aa8d6",
+      "code": "r_meas",
+      "name": "R meas",
+      "type": "analog",
+      "unit": "Ω"
+    },
+    {
+      "mrid": "23cd8c00-4073-4fa0-bac0-cbbe1d27b1c3",
+      "code": "r_ref",
+      "name": "R ref",
+      "type": "analog",
+      "unit": "Ω"
+    },
+    {
+      "mrid": "93b591f4-4c4c-4034-9d61-a544bdf49019",
+      "code": "r_corr",
+      "name": "R corr",
+      "type": "analog",
+      "unit": "Ω"
+    },
+    {
+      "mrid": "494cc6d4-e98f-4895-84cc-03322b5bc610",
+      "code": "r_dev",
+      "name": "R dev",
+      "type": "analog",
+      "unit": "%"
+    },
+    {
+      "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",
+      "code": "assessment",
+      "name": "Assessment",
+      "type": "discrete",
+      "valueAliasSetId": "40c60468-232a-4643-851f-50616900f601",
+      "options": [
+        { "value": 0, "alias": "Fail", "mrid": "d8858564-e438-4034-9273-030919163001" },
+        { "value": 1, "alias": "Pass", "mrid": "d8858564-e438-4034-9273-030919163002" }
+      ]
+    },
+    {
+      "mrid": "7e52c7e5-1c3b-4fd1-9a91-3e94db29a002",
+      "code": "condition_indicator",
+      "name": "Condition indicator",
+      "type": "discrete",
+      "valueAliasSetId": "8e323053-481b-4348-89c0-67258380d701",
+      "options": [
+        { "value": 0, "alias": "Bad", "mrid": "e9969675-f549-4145-a384-141020274001" },
+        { "value": 1, "alias": "Poor", "mrid": "e9969675-f549-4145-a384-141020274002" },
+        { "value": 2, "alias": "Fair", "mrid": "e9969675-f549-4145-a384-141020274003" },
+        { "value": 3, "alias": "Good", "mrid": "e9969675-f549-4145-a384-141020274004" }
+      ]
+    }
+  ]
+}

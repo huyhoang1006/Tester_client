@@ -6,6 +6,12 @@
     "kind": "test"
   },
   {
+    "mrid": "a28ecf87-7906-41c2-899b-ca8550571ae7",
+    "code": "GeneralInspection",
+    "name": "General inspection",
+    "kind": "test"
+  },
+  {
     "mrid": "811cb1cd-57d1-4572-ba18-fdb0eff907a3",
     "code": "RatioPrimSec",
     "name": "Ratio Prim/Sec",

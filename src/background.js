@@ -199,27 +199,6 @@ app.on('ready', async () => {
 
     await updateModule.active()
 
-    const nameProcedure = 'procedure.json'
-    const userDataPath = app.getPath('userData')
-    const procedurePath = path.join(userDataPath, nameProcedure)
-    if (!fs.existsSync(procedurePath)) {
-        try {
-            await updateModule.updateProcedure()
-            const defaultData = {
-                createdAt: new Date().toISOString(),
-                version: 1
-            }
-            fs.writeFileSync(
-                procedurePath,
-                JSON.stringify(defaultData, null, 2),
-                'utf-8'
-            )
-        } catch (err) {
-            app.quit()
-            console.error('Error creating procedure file:', err)
-        }
-    }
-
     ipcMain.handle('login', async function (event, user) {
         const _user = await userFunc.getUser(user)
         if (_user === undefined) return false
