@@ -986,6 +986,9 @@ import transformerConfirm from './Client/ClientSide/mixin/Transformer/transforme
 import vtConfirm from './Client/ClientSide/mixin/Vt/vtConfirm'
 import voltageLevelConfirm from './Client/ClientSide/mixin/VoltageLevel/voltageLevelConfirm'
 
+//resize
+import resizeClient from './Client/ClientSide/mixin/Resize/resizeClient'
+import logClient from './Client/ClientSide/mixin/Resize/logClient'
 
 // Import Mappers
 import mapClientProperties from '@/utils/MapperClient/mapClientProperties'
@@ -1393,7 +1396,8 @@ export default {
         circuitBreakerConfirm, disconnectorConfirm, ctConfirm, jobConfirm,
         organisationConfirm, powerCableConfirm, reactorConfirm, rotatingMachineConfirm,
         substationConfirm, surgeArresterConfirm, transformerConfirm, vtConfirm,
-        voltageLevelConfirm, TransformerMixin, SurgeArresterMixin, 
+        voltageLevelConfirm, TransformerMixin, SurgeArresterMixin, resizeClient,
+        logClient, 
         ],
     async beforeMount() {
         try {
@@ -1727,22 +1731,6 @@ export default {
         handleExportPDFFromContext(node) {
             this.openExportDialog = true
         },
-
-        async reloadLogClient(doneCallback) {
-            try {
-                const data = await window.electronAPI.getAllConfigurationEvents()
-                if (data && data.success) {
-                    this.logDataClient = data.data
-                    await new Promise((resolve) => setTimeout(resolve, 500))
-                    this.$message.success('Log data reloaded successfully.')
-                }
-            } catch (error) {
-                console.error('Error fetching server log data:', error)
-                this.$message.error('Failed to fetch log data.')
-            } finally {
-                if (typeof doneCallback === 'function') doneCallback()
-            }
-        },
         removeTab(index) {
             if (this.activeTab.id == this.tabs[index].id) {
                 this.activeTab = {}
@@ -1759,48 +1747,6 @@ export default {
             this.logSign = false
             const element = this.$refs.contentData
             element.style.height = '100%'
-        },
-
-        hideLogBarClient(sign) {
-            this.logSignClient = false
-            const element = this.$refs.contentDataClient
-            element.style.height = '100%'
-        },
-        startResizeClient() {
-            document.addEventListener('mousemove', this.resizeClient)
-            document.addEventListener('mouseup', this.stopResizeClient)
-        },
-        resizeClient(event) {
-            if (!this.$refs.sidebarClient) return
-            let newWidth = (event.clientX / window.innerWidth) * 100
-            let finalWidth = Math.max(10, Math.min(40, newWidth))
-            // Cập nhật width của sidebar và context-data
-            this.$refs.sidebarClient.style.width = finalWidth + 'vw'
-            this.$refs.contextDataClient.style.width = 100 - finalWidth + 'vw'
-        },
-        stopResizeClient() {
-            document.removeEventListener('mousemove', this.resizeClient)
-            document.removeEventListener('mouseup', this.stopResizeClient)
-        },
-        startResizeContentClient() {
-            document.addEventListener('mousemove', this.resizeContentClient)
-            document.addEventListener('mouseup', this.stopResizeContentClient)
-        },
-        resizeContentClient(event) {
-            if (!this.$refs.propertiesClient || !this.$refs.contentDataClient) return
-            const parentWidth = this.$refs.contextDataClient.clientWidth
-            let newWidth = parentWidth - event.clientX + this.$refs.contextDataClient.getBoundingClientRect().left
-            const minWidth = parentWidth * 0.1
-            const maxWidth = parentWidth * 0.4
-            newWidth = Math.max(minWidth, Math.min(newWidth, maxWidth))
-            newWidth = (newWidth / parentWidth) * 100
-            // Cập nhật width của sidebar và context-data
-            this.$refs.propertiesClient.style.width = `${newWidth}%`
-            this.$refs.contentClient.style.width = `${100 - newWidth}%`
-        },
-        stopResizeContentClient() {
-            document.removeEventListener('mousemove', this.resizeContentClient)
-            document.removeEventListener('mouseup', this.stopResizeContentClient)
         },
         startResizeServer() {
             document.addEventListener('mousemove', this.resizeServer)
@@ -1844,16 +1790,6 @@ export default {
             element.style.height = '80%'
             this.$nextTick(() => {
                 const elementLog = this.$refs.logBar
-                elementLog.style.height = '20%'
-            })
-        },
-
-        showLogBarClient(sign) {
-            this.logSignClient = true
-            const element = this.$refs.contentDataClient
-            element.style.height = '80%'
-            this.$nextTick(() => {
-                const elementLog = this.$refs.logBarClient
                 elementLog.style.height = '20%'
             })
         },

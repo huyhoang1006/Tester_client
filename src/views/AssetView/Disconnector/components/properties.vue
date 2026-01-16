@@ -1,17 +1,23 @@
 <template>
     <div id="properties">
         <el-row :gutter="20" class="content">
-            <el-col :xs="24" :md="12" class="col-content">
+            <el-col :span="12" class="col-content">
                 <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Properties</span>
                     <el-divider></el-divider>
                     <el-form-item label="Asset">
-                        <el-select style="width: 100%" v-model="propertiesData.kind" placeholder="Select asset">
+                        <el-select
+                            style="width: 100%"
+                            v-model="propertiesData.kind"
+                            placeholder="Select asset">
                             <el-option label="Disconnector" value="Disconnector"> </el-option>
-                        </el-select>
+                        </el-select> 
                     </el-form-item>
                     <el-form-item label="Asset type">
-                        <el-select style="width: 100%" v-model="propertiesData.type" placeholder="Select asset type">
+                        <el-select
+                            style="width: 100%"
+                            v-model="propertiesData.type"
+                            placeholder="Select asset type">
                             <el-option label="Center-break disconnector" value="centerBreak"> </el-option>
                             <el-option label="Double-break disconnector" value="doubleBreak"> </el-option>
                             <el-option label="Horizontal knee disconnector" value="horizontalKnee"> </el-option>
@@ -24,8 +30,7 @@
                     </el-form-item>
                     <el-form-item label="Manufacturer">
                         <el-select style="width: 100%;" filterable v-model="propertiesData.manufacturer">
-                            <el-option v-for="item in manufacturerList" :label="item" :key="item" :value=item>
-                            </el-option>
+                            <el-option v-for="item in manufacturerList" :label="item" :key="item" :value=item> </el-option>
                         </el-select>
                     </el-form-item>
                     <el-form-item label="Manufacturer type">
@@ -47,13 +52,12 @@
                     </el-form-item>
                 </el-form>
             </el-col>
-            <el-col :xs="24" :md="12" class="col-content">
+            <el-col :span="12" class="col-content">
                 <el-form :label-width="labelWidth" size="mini" label-position="left">
                     <span class="bolder">Comment</span>
                     <el-divider></el-divider>
                     <el-input type="textarea" :rows="5" v-model="propertiesData.comment"></el-input>
-                    <Attachment :attachment_="this.attachmentData" title="disconnector" height="120px"
-                        @data-attachment="getDataAttachment"></Attachment>
+                    <Attachment :attachment_="this.attachmentData" title="disconnector" height="120px" @data-attachment = "getDataAttachment"></Attachment>
                 </el-form>
             </el-col>
         </el-row>
@@ -61,38 +65,38 @@
 </template>
 
 <script>
-import { country } from '@/views/ConstantAsset/index'
+import {country} from '@/views/ConstantAsset/index'
 import Attachment from '@/views/Common/Attachment.vue'
 
 export default {
     name: 'voltageTransProperty',
-    components: {
+    components : {
         Attachment
     },
-    props: {
+    props : {
         properties: {
-            type: Object,
-            require: true,
+            type : Object,
+            require : true,
         },
-        manufact: {
-            require: true,
+        manufact : {
+            require : true,
         },
-        title: {
-            require: true
+        title : {
+            require : true
         },
-        updateNew: {
-            require: true
+        updateNew : {
+            require : true
         },
-        update: {
-            require: true
+        update : {
+            require : true
         }
     },
     data() {
         return {
-            labelWidth: `120px`,
-            countryData: country.default,
-            manufacturerList: ['ABB', 'ALSTOM', 'General Electric', 'Mitsubishi Electric', 'Schneider Electric', 'Siemens', 'Toshiba', 'Westinghouse'],
-            attachmentData: []
+            labelWidth : `200px`,
+            countryData : country.default,
+            manufacturerList : ['ABB', 'ALSTOM', 'General Electric', 'Mitsubishi Electric', 'Schneider Electric', 'Siemens', 'Toshiba', 'Westinghouse'],
+            attachmentData : []
         }
     },
     methods: {
@@ -101,7 +105,7 @@ export default {
             this.$emit('update-attachment', this.attachmentData)
         },
     },
-    computed: {
+    computed : {
         propertiesData() {
             return this.properties
         }
@@ -135,31 +139,5 @@ td {
 
 .bolder {
     font-size: 12px;
-}
-
-@media (max-width: 991px) {
-    ::v-deep(.col-content) {
-        margin-bottom: 10px;
-    }
-}
-
-@media (max-width: 767px) {
-    ::v-deep(.el-form-item) {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    ::v-deep(.el-form-item__label) {
-        width: auto !important;
-        margin-left: 0 !important;
-        padding-bottom: 0;
-        text-align: left;
-    }
-
-    ::v-deep(.el-form-item__content) {
-        width: 100%;
-        margin-left: 0 !important;
-    }
 }
 </style>
