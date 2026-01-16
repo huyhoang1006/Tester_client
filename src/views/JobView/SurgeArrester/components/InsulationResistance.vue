@@ -37,47 +37,45 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testData.table">
-                    <tr :key="index">
-                        <td>
-                           {{ index + 1 }}
-                        </td>
-                        <td>
-                            <div style="display: flex;width: 100%;">   
-                                <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
-                                <div :class="{colorTableRed : index%3==0, colorTableYellow : index%3==1, colorTableBlue : index%3==2}"></div>
-                            </div>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.v_test.value"></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.r60s.value"></el-input>
-                        </td>
-                        <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
-                                <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
-                                <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
-                            </el-select>
-                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
-                        </td>
-                        <td>
-                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
-                            </el-input>
-                        </td>
-                        <td>
-                            <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
-                                <i class="fa-solid fa-plus"></i>
-                            </el-button>
-                        </td>
-                        <td>
-                            <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
-                                <i class="fas fa-trash"></i>
-                            </el-button>
-                        </td>
-                    </tr>
-                </template>
+                <tr v-for="(item, index) in testData.table" :key="index">
+                    <td>
+                        {{ index + 1 }}
+                    </td>
+                    <td>
+                        <div style="display: flex;width: 100%;">   
+                            <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
+                            <div :class="{colorTableRed : index%3==0, colorTableYellow : index%3==1, colorTableBlue : index%3==2}"></div>
+                        </div>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.test_voltage.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.r60s.value"></el-input>
+                    </td>
+                    <td>
+                        <el-select class="assessment" size="mini" v-model="item.assessment.value">
+                            <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
+                        </el-select>
+                        <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                    </td>
+                    <td>
+                        <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
+                        </el-input>
+                    </td>
+                    <td>
+                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
+                            <i class="fa-solid fa-plus"></i>
+                        </el-button>
+                    </td>
+                    <td>
+                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
+                            <i class="fas fa-trash"></i>
+                        </el-button>
+                    </td>
+                </tr>
             </tbody>
         </table>
 
@@ -92,6 +90,8 @@
 </template>
 
 <script>
+import surgeArresterTestMap from '@/config/test-definitions/SurgeArrester'
+import * as common from '../../Common/index'
 export default {
     name :"InsulationResistance",
     data() {
@@ -117,44 +117,17 @@ export default {
         assetData() {
             return this.asset
         },
+        rowData() {
+            return common.buildEmptyTestRow(surgeArresterTestMap['InsulationResistance'].columns)
+        }
     },
     watch: {
     },
     methods: {
         add() {
-            this.testData.table.push({
-                mrid : '',
-                measurement : {
-                    mrid : '',
-                    value : '',
-                    unit : '',
-                    type: 'string'
-                },
-                v_test : {
-                    mrid : '',
-                    value : '',
-                    unit : 'V',
-                    type: 'analog'
-                },
-                r60s : {
-                    mrid : '',
-                    value : '',
-                    unit : 'M|Ω',
-                    type: 'analog'
-                },
-                assessment : {
-                    mrid : '',
-                    value : '',
-                    unit : '',
-                    type: 'discrete'
-                },
-                condition_indicator : {
-                    mrid : '',
-                    value : '',
-                    unit : '',
-                    type: 'discrete'
-                }
-            })
+            this.testData.table.push(
+                JSON.parse(JSON.stringify(this.rowData))
+            )
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
@@ -171,39 +144,7 @@ export default {
             this.testData.table.splice(index, 1)
         },
         addTest(index) {
-            const data = {
-                mrid : '',
-                measurement : {
-                    mrid : '',
-                    value : '',
-                    unit : '',
-                    type: 'discrete'
-                },
-                v_test : {
-                    mrid : '',
-                    value : '',
-                    unit : 'V',
-                    type: 'analog'
-                },
-                r60s : {
-                    mrid : '',
-                    value : '',
-                    unit : 'M|Ω',
-                    type: 'analog'
-                },
-                assessment : {
-                    mrid : '',
-                    value : '',
-                    unit : '',
-                    type: 'discrete'
-                },
-                condition_indicator : {
-                    mrid : '',
-                    value : '',
-                    unit : '',
-                    type: 'discrete'
-                }
-            }
+            const data = JSON.parse(JSON.stringify(this.rowData))
             this.testData.table.splice(index+1, 0, data)
         },
         calculator() {
@@ -211,12 +152,13 @@ export default {
         },
 
         clear() {
-            this.testData.table.forEach((element) => {
-                element.measurement.value = '',
-                element.v_test.value = '',
-                element.r60s.value = '',
-                element.assessment.value = '',
-                element.condition_indicator.value = ''
+            this.testData.table.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (key === "mrid") return;
+                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                    row[key].value = ""
+                    }
+                })
             })
         },
         nameColor(data) {

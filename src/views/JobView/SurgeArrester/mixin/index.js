@@ -3,7 +3,6 @@ import uuid from "@/utils/uuid";
 import * as surgeArresterJobMapping from "@/views/Mapping/SurgerArresterJob/index"
 import SurgeArresterJobDto from "@/views/Dto/Job/SurgeArrester/index";
 import mixins from '../components/SelectTest/mixin'
-import MeasurementProcedure from "@/views/Cim/MeasurementProcedure";
 
 export default {
     mixins: [mixins],
@@ -23,7 +22,10 @@ export default {
                     const resultDto = await this.checkJob(dto);
                     const entity = surgeArresterJobMapping.jobDtoToEntity(resultDto);
                     const old_entity = surgeArresterJobMapping.jobDtoToEntity(this.surgeArresterJobDtoOld);
-                    const rs = await window.electronAPI.insertSurgeArresterJob(old_entity, entity)
+                    // const rs = await window.electronAPI.insertSurgeArresterJob(old_entity, entity)
+                    const rs = {
+                        success: false
+                    }
                     if (rs.success) {
                         return {
                             success: true,
@@ -33,7 +35,6 @@ export default {
                     } else {
                         return {
                             success: false,
-                            data: rs.data,
                             message: 'Failed to save job'
                         }
                     }
@@ -79,9 +80,7 @@ export default {
             this.checkAssetId(data);
             this.checkAttachment(data);
             this.checkTestingEquipment(data);
-            this.checkTestTypeList(data);
             await this.checkDataMeasurement(data);
-            this.checkProcedureAsset(data);
             return data;
         },
 
@@ -148,224 +147,8 @@ export default {
             );
         },
 
-        checkTestTypeList(data) {
-            const ids = data.testTypeList.map(item => item.mrid)
-            for(const item of this.testTypeListData) {
-                if(!ids.includes(item.mrid)) {
-                    data.testTypeList.push(item);
-                }
-            }
-        },
-
-        checkProcedureAsset(data) {
-            const testTypeListIds = data.testTypeList.map(item => item.mrid);
-            const procedureAssetIds = data.procedureAsset.map(item => item.procedure_id);
-
-            // 1. Những ID cần thêm
-            const missingInProcedureAsset = testTypeListIds.filter(id => !procedureAssetIds.includes(id));
-
-            // 2. Những ID cần xóa
-            const missingInTestTypeList = procedureAssetIds.filter(id => !testTypeListIds.includes(id));
-
-            // 3. THÊM các item còn thiếu
-            const newItems = missingInProcedureAsset.map(id => ({
-                procedure_id: id,
-                asset_id: this.assetData.mrid
-            }));
-
-            // 4. LOẠI BỎ các item dư
-            const filtered = data.procedureAsset.filter(
-                item => !missingInTestTypeList.includes(item.procedure_id)
-            );
-
-            // 5. Gộp lại (cũ hợp lệ + mới)
-            data.procedureAsset = [...filtered, ...newItems];
-        },
-
         async checkDataMeasurement(data) {
-            const testTypeListIds = [...new Set(data.testList.map(item => item.testTypeId))];
-            for(const item of testTypeListIds) {
-                const row_data = data.testList.find(t => t.testTypeId === item).data.row_data;
-                var newPoolId = uuid.newUuid()
-                const measurementProcedureList = []
-                const measurement = []
-                const [dataStringMeasurementSet, dataAnalogSet, dataDiscreteSet] = await Promise.all([
-                    window.electronAPI.getAllStringMeasurementByProcedure(item),
-                    window.electronAPI.getAllAnalogByProcedure(item),
-                    window.electronAPI.getAllDiscreteByProcedure(item)
-                ]);
-
-                if (dataStringMeasurementSet.success) {
-                    if (dataStringMeasurementSet.data.length > 0) {
-                        for (const stringMeasurement of dataStringMeasurementSet.data) {
-                            const measurementProcedure = new MeasurementProcedure();
-                            measurementProcedure.procedure_id = item
-                            measurementProcedure.measurement_id = stringMeasurement.mrid
-                            measurementProcedureList.push(measurementProcedure)
-                            const measure = {
-                                mrid: stringMeasurement.mrid,
-                                name: stringMeasurement.name,
-                                type: 'string',
-                                code: stringMeasurement.alias_name
-                            }
-                            measurement.push(measure)
-                        }
-                    }
-                }
-
-                if (dataAnalogSet.success) {
-                    if (dataAnalogSet.data.length > 0) {
-                        for (const analogMeasurement of dataAnalogSet.data) {
-                            const measurementProcedure = new MeasurementProcedure();
-                            measurementProcedure.procedure_id = item
-                            measurementProcedure.measurement_id = analogMeasurement.mrid
-                            measurementProcedureList.push(measurementProcedure)
-                            const measure = {
-                                mrid: analogMeasurement.mrid,
-                                name: analogMeasurement.name,
-                                type: 'analog',
-                                code: analogMeasurement.alias_name
-                            }
-                            measurement.push(measure)
-                        }
-                    }
-                }
-
-                if (dataDiscreteSet.success) {
-                    if (dataDiscreteSet.data.length > 0) {
-                        for (const discreteMeasurement of dataDiscreteSet.data) {
-                            const measurementProcedure = new MeasurementProcedure();
-                            measurementProcedure.procedure_id = item
-                            measurementProcedure.measurement_id = discreteMeasurement.mrid
-                            measurementProcedureList.push(measurementProcedure)
-                            const measure = {
-                                mrid: discreteMeasurement.mrid,
-                                name: discreteMeasurement.name,
-                                type: 'discrete',
-                                code: discreteMeasurement.alias_name
-                            }
-                            newPoolId = discreteMeasurement.value_alias_set
-                            measurement.push(measure)
-                        }
-                    }
-                }
-
-                var valueToAliastSet = []
-                const dataValueToAlias = await window.electronAPI.getValueToAliasBySetId(newPoolId)
-                if(dataValueToAlias.success && dataValueToAlias.data.length) {
-                    valueToAliastSet = dataValueToAlias.data
-                }
-
-                for(const row of row_data) {
-                    let existed = measurement.find(m => m.code === row.code);
-                    if (!existed) {
-                        const newMeasurementId = uuid.newUuid();
-
-                        row.mrid = newMeasurementId
-
-                        const mp = new MeasurementProcedure();
-                        if(row.type == 'discrete') {
-                            row.pool.mrid = newPoolId
-                            for(const discreteData of row.pool.valueToAlias) {
-                                let matched = false;
-                                for(const valueToAliasSetItem of valueToAliastSet) {
-                                    if(discreteData.alias_name === valueToAliasSetItem.alias_name) {
-                                        discreteData.mrid = valueToAliasSetItem.mrid
-                                        matched = true;
-                                        break;
-                                    }
-                                }
-
-                                if(!matched) {
-                                    discreteData.mrid = uuid.newUuid();
-                                }
-                            }
-                        }
-                        mp.procedure_id = item;
-                        mp.measurement_id = newMeasurementId;
-                        measurementProcedureList.push(mp);
-                    } else {
-                        if(row.type == 'discrete') {
-                            row.mrid = existed.mrid;
-                            row.pool.mrid = newPoolId
-                            for(const discreteData of row.pool.valueToAlias) {
-                                let matched = false;
-                                for(const valueToAliasSetItem of valueToAliastSet) {
-                                    if(discreteData.alias_name === valueToAliasSetItem.alias_name) {
-                                        discreteData.mrid = valueToAliasSetItem.mrid
-                                        matched = true;
-                                        break;
-                                    }
-                                }
-                                if(!matched) {
-                                    discreteData.mrid = uuid.newUuid();
-                                }
-                            }
-                        } else {
-                            row.mrid = existed.mrid;
-                        }
-                    }
-                }
-
-                for(const testList of data.testList) {
-                    if(testList.testTypeId === item) {
-                        if (testList.mrid === '' || testList.mrid === null || testList.mrid === this.$constant.ROOT) {
-                            testList.mrid = uuid.newUuid();
-                        }
-                        if (testList.testCondition.mrid === '' || testList.testCondition.mrid === null) {
-                            testList.testCondition.mrid = uuid.newUuid();
-                        }
-
-                        if (testList.testCondition.condition) {
-                            if (testList.testCondition.condition.top_oil_temperature.mrid === null || testList.testCondition.condition.top_oil_temperature.mrid === '') {
-                                testList.testCondition.condition.top_oil_temperature.mrid = uuid.newUuid();
-                            }
-                            if (testList.testCondition.condition.bottom_oil_temperature.mrid === null || testList.testCondition.condition.bottom_oil_temperature.mrid === '') {
-                                testList.testCondition.condition.bottom_oil_temperature.mrid = uuid.newUuid();
-                            }
-                            if (testList.testCondition.condition.winding_temperature.mrid === null || testList.testCondition.condition.winding_temperature.mrid === '') {
-                                testList.testCondition.condition.winding_temperature.mrid = uuid.newUuid();
-                            }
-                            if (testList.testCondition.condition.reference_temperature.mrid === null || testList.testCondition.condition.reference_temperature.mrid === '') {
-                                testList.testCondition.condition.reference_temperature.mrid = uuid.newUuid();
-                            }
-                            if (testList.testCondition.condition.ambient_temperature.mrid === null || testList.testCondition.condition.ambient_temperature.mrid === '') {
-                                testList.testCondition.condition.ambient_temperature.mrid = uuid.newUuid();
-                            }
-                            if (testList.testCondition.condition.humidity.mrid === null || testList.testCondition.condition.humidity.mrid === '') {
-                                testList.testCondition.condition.humidity.mrid = uuid.newUuid();
-                            }
-                        }
-
-                        if (testList.testCondition.attachment.id === null || testList.testCondition.attachment.id === '') {
-                            if (testList.testCondition.attachmentData.length > 0) {
-                                testList.testCondition.attachment.id = uuid.newUuid()
-                                testList.testCondition.attachment.name = null
-                                testList.testCondition.attachment.path = JSON.stringify(testList.testCondition.attachmentData)
-                                testList.testCondition.attachment.type = 'test'
-                                testList.testCondition.attachment.id_foreign = testList.mrid
-                            }
-                        }
-                        testList.data.row_data = row_data;
-                        testList.data.measurementProcedure = measurementProcedureList
-                        if (testList.data.table && testList.data.table.length > 0) {
-                            for (const data of testList.data.table) {
-                                if (data.mrid === '' || data.mrid === null || data.mrid === this.$constant.ROOT) {
-                                    data.mrid = uuid.newUuid();
-                                }
-
-                                for (const [key, value] of Object.entries(data)) {
-                                    if (value && typeof value === 'object') {
-                                        if (value.mrid === '' || value.mrid === null) {
-                                            value.mrid = uuid.newUuid();
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            console.log('checkDataMeasurement data', data)
         },
     }
 }

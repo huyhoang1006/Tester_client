@@ -1,444 +1,92 @@
 /* eslint-disable */
 import surgeArresterTestMap from '@/config/test-definitions/SurgeArrester'
+import * as common from '../../../../Common/index.js'
 export default {
     methods: {
         async initTest(testTypeCode, assetData) {
             let data = null
             switch (testTypeCode) {
                 case 'InsulationResistance':
-                    data = this.initInsulationResistance()
+                    data = this.initInsulationResistance(testTypeCode)
                     break
                 case 'GeneralInspection':
-                    data = await this.initGeneralInspection()
+                    data = await this.initGeneralInspection(testTypeCode)
                     break
                 case 'LeakageCurrent':
-                    data = await this.initLeakageCurrent(assetData)
+                    data = await this.initLeakageCurrent(assetData, testTypeCode)
                     break
                 case 'PowerFrequency':
-                    data = await this.initPowerFrequency(assetData)
+                    data = await this.initPowerFrequency(assetData, testTypeCode)
                     break
             }
             return data
         },
-        async initInsulationResistance() {
+        async initInsulationResistance(testTypeCode) {
+            const rowDataExample = common.buildEmptyTestRow(surgeArresterTestMap[testTypeCode].columns)
+            const row1 = JSON.parse(JSON.stringify(rowDataExample))
+            row1.measurement.value = 'Phase A - B'
+            const row2 = JSON.parse(JSON.stringify(rowDataExample))
+            row2.measurement.value = 'Phase B - C'
+            const row3 = JSON.parse(JSON.stringify(rowDataExample))
+            row3.measurement.value = 'Phase C - A'
+            const row4 = JSON.parse(JSON.stringify(rowDataExample))
+            row4.measurement.value = 'Phase - GND'
             let table = [
-                {
-                    mrid: '',
-                    measurement: {
-                        mrid: '',
-                        value: 'Phase A - GND',
-                        unit: '',
-                        type: 'string'
-                    },
-                    v_test: {
-                        mrid: '',
-                        value: '',
-                        unit: 'V',
-                        type: 'analog'
-                    },
-                    r60s: {
-                        mrid: '',
-                        value: '',
-                        unit: 'M|Ω',
-                        type: 'analog'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                },
-                {
-                    mrid: '',
-                    measurement: {
-                        mrid: '',
-                        value: 'Phase B - GND',
-                        unit: '',
-                        type: 'string'
-                    },
-                    v_test: {
-                        mrid: '',
-                        value: '',
-                        unit: 'V',
-                        type: 'analog'
-                    },
-                    r60s: {
-                        mrid: '',
-                        value: '',
-                        unit: 'M|Ω',
-                        type: 'analog'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                },
-                {
-                    mrid: '',
-                    measurement: {
-                        mrid: '',
-                        value: 'Phase C - GND',
-                        unit: '',
-                        type: 'string'
-                    },
-                    v_test: {
-                        mrid: '',
-                        value: '',
-                        unit: 'V',
-                        type: 'analog'
-                    },
-                    r60s: {
-                        mrid: '',
-                        value: '',
-                        unit: 'M|Ω',
-                        type: 'analog'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                },
-                {
-                    mrid: '',
-                    measurement: {
-                        mrid: '',
-                        value: "Base - GND",
-                        unit: '',
-                        type: 'string'
-                    },
-                    v_test: {
-                        mrid: '',
-                        value: '',
-                        unit: 'V',
-                        type: 'analog'
-                    },
-                    r60s: {
-                        mrid: '',
-                        value: '',
-                        unit: 'M|Ω',
-                        type: 'analog'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                }
+                row1,
+                row2,
+                row3,
+                row4
             ]
+            console.log('table', table)
             return {
                 table,
             }
         },
-        async initLeakageCurrent(assetData) {
+        async initLeakageCurrent(assetData, testTypeCode) {
             let units = assetData.unit_count || 0
             let phase = ["A", "B", "C"]
             let table = []
-            const row_data = [
-                {
-                    mrid: '',
-                    name: 'Phase',
-                    code: 'phase',
-                    type: 'string',
-                },
-                {
-                    mrid: '',
-                    name: 'Unit number',
-                    code: 'unit_no',
-                    type: 'analog',
-                }
-                ,
-                {
-                    mrid: '',
-                    name: 'V test',
-                    code: 'v_test',
-                    type: 'analog',
-                },
-                {
-                    mrid: '',
-                    name: 'I measurement',
-                    code: 'i_meas',
-                    type: 'analog',
-                },
-                {
-                    mrid: '',
-                    name: 'Assessment',
-                    code: 'assessment',
-                    type: 'discrete',
-                    pool: {
-                        mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
-                    }
-                },
-                {
-                    mrid: '',
-                    name: 'Condition indicator',
-                    code: 'condition_indicator',
-                    type: 'discrete',
-                    pool: {
-                        mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
-                    }
-                }
-            ]
+            const rowDataExample = common.buildEmptyTestRow(surgeArresterTestMap[testTypeCode].columns)
             for (let i in phase) {
                 for (let j = 1; j <= units; j++) {
-                    let data = {
-                        mrid: '',
-                        phase: {
-                            mrid: '',
-                            value: phase[i],
-                            unit: '',
-                            type: 'string'
-                        },
-                        unit_no: {
-                            mrid: '',
-                            value: j,
-                            unit: '',
-                            type: 'analog'
-                        },
-                        v_test: {
-                            mrid: '',
-                            value: '',
-                            unit: 'V',
-                            type: 'analog'
-                        },
-                        i_meas: {
-                            mrid: '',
-                            value: '',
-                            unit: 'm|A',
-                            type: 'analog'
-                        },
-                        assessment: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'discrete'
-                        },
-                        condition_indicator: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'discrete'
-                        }
-                    }
+                    let data = JSON.parse(JSON.stringify(rowDataExample))
+                    data.phase.value = phase[i]
+                    data.unit_no.value = j
                     table.push(data)
                 }
             }
-            let measurementProcedure = []
             return {
-                table,
-                row_data,
-                measurementProcedure
+                table
             }
         },
-        async initPowerFrequency(assetData) {
+        async initPowerFrequency(assetData, testTypeCode) {
             let units = assetData.unit_count || 0
             let phase = ["A", "B", "C"]
             let table = []
-            const row_data = [
-                {
-                    mrid: '',
-                    name: 'Phase',
-                    code: 'phase',
-                    type: 'string',
-                },
-                {
-                    mrid: '',
-                    name: 'Unit number',
-                    code: 'unit_no',
-                    type: 'analog',
-                }
-                ,
-                {
-                    mrid: '',
-                    name: 'Reference current',
-                    code: 'ref_current',
-                    type: 'analog',
-                },
-                {
-                    mrid: '',
-                    name: 'V measurement',
-                    code: 'v_meas',
-                    type: 'analog',
-                },
-                {
-                    mrid: '',
-                    name: 'Assessment',
-                    code: 'assessment',
-                    type: 'discrete',
-                    pool: {
-                        mrid: '',
-                        valueToAlias: [
-                            { mrid: '', value: 0, alias_name: 'Fail' },
-                            { mrid: '', value: 1, alias_name: 'Pass' }
-                        ]
-                    }
-                },
-                {
-                    mrid: '',
-                    name: 'Condition indicator',
-                    code: 'condition_indicator',
-                    type: 'discrete',
-                    pool: {
-                        mrid: '',
-                        valueToAlias: [
-                            { mrid: '', value: 0, alias_name: 'Bad' },
-                            { mrid: '', value: 1, alias_name: 'Poor' },
-                            { mrid: '', value: 2, alias_name: 'Fair' },
-                            { mrid: '', value: 3, alias_name: 'Good' }
-                        ]
-                    }
-                }
-            ]
+            const rowDataExample = common.buildEmptyTestRow(surgeArresterTestMap[testTypeCode].columns)
             for (let i in phase) {
                 for (let j = 1; j <= units; j++) {
-                    let data = {
-                        mrid: '',
-                        phase: {
-                            mrid: '',
-                            value: phase[i],
-                            unit: '',
-                            type: 'string'
-                        },
-                        unit_no: {
-                            mrid: '',
-                            value: j,
-                            unit: '',
-                            type: 'analog'
-                        },
-                        ref_current: {
-                            mrid: '',
-                            value: '',
-                            unit: 'm|A',
-                            type: 'analog'
-                        },
-                        v_meas: {
-                            mrid: '',
-                            value: '',
-                            unit: 'k|V',
-                            type: 'analog'
-                        },
-                        assessment: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'discrete'
-                        },
-                        condition_indicator: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'discrete'
-                        }
-                    }
+                    let data = JSON.parse(JSON.stringify(rowDataExample))
+                    data.phase.value = phase[i]
+                    data.unit_no.value = j
                     table.push(data)
                 }
             }
-            let measurementProcedure = []
             return {
-                table,
-                row_data,
-                measurementProcedure
+                table
             }
         },
-        async initGeneralInspection() {
+        async initGeneralInspection(testTypeCode) {
             let table = []
+            const rowDataExample = common.buildEmptyTestRow(surgeArresterTestMap[testTypeCode].columns)
             const data = ['Nameplate', 'Installation check', 'Grounding check', 'Discharge counter check']
-            let row_data = [
-                {
-                    mrid: '',
-                    name: 'Items',
-                    code: 'items',
-                    type: 'string',
-                },
-                {
-                    mrid: '',
-                    name: 'Assessment',
-                    code: 'assessment',
-                    type: 'discrete',
-                    pool: {
-                        mrid: '',
-                        valueToAlias: [
-                            { mrid: '', value: 0, alias_name: 'Fail' },
-                            { mrid: '', value: 1, alias_name: 'Pass' }
-                        ]
-                    }
-                },
-                {
-                    mrid: '',
-                    name: 'Condition indicator',
-                    code: 'condition_indicator',
-                    type: 'discrete',
-                    pool: {
-                        mrid: '',
-                        valueToAlias: [
-                            { mrid: '', value: 0, alias_name: 'Bad' },
-                            { mrid: '', value: 1, alias_name: 'Poor' },
-                            { mrid: '', value: 2, alias_name: 'Fair' },
-                            { mrid: '', value: 3, alias_name: 'Good' }
-                        ]
-                    }
-                }
-            ]
             data.forEach(element => {
-                table.push({
-                    mrid: '',
-                    items: {
-                        mrid: '',
-                        value: element,
-                        unit: '',
-                        type: 'string'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                })
+                const rowData = JSON.parse(JSON.stringify(rowDataExample))
+                rowData.item.value = element
+                table.push(rowData)
             })
-            let measurementProcedure = []
             return {
-                table,
-                row_data,
-                measurementProcedure
+                table
             }
         }
     }
