@@ -112,7 +112,8 @@ import * as transformerMapper from '@/views/Mapping/Transformer'
 import * as reactorMapper from '@/views/Mapping/Reactor'
 
 import * as demoAPI from '@/api/demo/index.js'
-import * as PowerCableServerMapper from '@/views/Mapping/PowerCableTest/index.js'
+import * as PowerCableServerMapper from '@/views/Mapping/ServerToDTO/PowerCable/index.js'
+import * as OrganisationServerMapper from '@/views/Mapping/ServerToDTO/Organisation/index.js'
 
 import VoltageLevel from '@/views/VoltageLevel/index.vue'
 import Bay from '@/views/Bay/index.vue'
@@ -652,24 +653,19 @@ async loadDataServer(tab, index) {
         } 
         
         else if (tab.mode === 'organisation') {
-            const serverData = tab;
-
-            const OrganisationDto = require('@/views/Dto/Organisation').default;
-            const dto = new OrganisationDto();
-
-            dto.organisationId = String(serverData.id || ''); 
-            dto.name = serverData.name || '';
-            dto.tax_code = serverData.taxCode || '';         
-            dto.comment = serverData.description || '';      
-            dto.parentId = String(serverData.parentOrganisation || '');
+            const response = await demoAPI.getAssetById(tab.mrid || tab.id, 'Organisation');
             
-            if (serverData.address) dto.street = serverData.address;
+            if (response) {
+                const dto = OrganisationServerMapper.mapServerToDto(response);
+                
+                console.log("Mapped Organisation DTO:", dto);
 
-            this.$nextTick(() => {
-                if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
-                    this.$refs.componentLoadData[index].loadData(dto);
-                }
-            });
+                this.$nextTick(() => {
+                    if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                        this.$refs.componentLoadData[index].loadData(dto);
+                    }
+                });
+            }
         } 
         else if (tab.mode == 'asset' && tab.asset === 'Power cable') {
             const response = await demoAPI.getAssetById(tab.mrid, 'PowerCable');

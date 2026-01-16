@@ -2523,7 +2523,7 @@ export default {
                                 row.parentArr = [...node.parentArr]
                                 row.parentArr.push({
                                     id: node.id,
-                                    parent: node.name
+                                    parent: node.aliasName || node.name
                                 })
                             })
                             newRows.push(...newRowsOwner)
@@ -2541,7 +2541,7 @@ export default {
                                 row.parentArr = [...node.parentArr]
                                 row.parentArr.push({
                                     id: node.id,
-                                    parent: node.name
+                                    parent: node.aliasName || node.name
                                 })
                             })
                             newRows.push(...newRowsSubstation)
@@ -2561,7 +2561,7 @@ export default {
                                     row.parentArr = [...node.parentArr]
                                     row.parentArr.push({
                                         id: node.id,
-                                        parent: node.name
+                                        parent: node.aliasName || node.name
                                     })
                                 })
                                 newRows.push(...newRowsBay)
@@ -2582,7 +2582,7 @@ export default {
                                     row.parentArr = [...node.parentArr]
                                     row.parentArr.push({
                                         id: node.id,
-                                        parent: node.name
+                                        parent: node.aliasName || node.name
                                     })
                                 })
                                 newRows.push(...newRowsVoltageLevel)
@@ -2604,7 +2604,7 @@ export default {
                                     row.parentArr = [...node.parentArr]
                                     row.parentArr.push({
                                         id: node.id,
-                                        parent: node.name
+                                        parent: node.aliasName || node.name
                                     })
                                 })
                                 newRows.push(...newRowsVoltageLevel)
@@ -2626,7 +2626,7 @@ export default {
                                     row.parentArr = [...node.parentArr]
                                     row.parentArr.push({
                                         id: node.id,
-                                        parent: node.name
+                                        parent: node.aliasName || node.name
                                     })
                                 })
                                 newRows.push(...newRowsBay)
@@ -2649,7 +2649,7 @@ export default {
                                     row.parentArr = [...node.parentArr]
                                     row.parentArr.push({
                                         id: node.id,
-                                        parent: node.name
+                                        parent: node.aliasName || node.name
                                     })
                                 })
                                 newRows.push(...newRowsVoltageLevel)
@@ -2710,6 +2710,7 @@ export default {
         },
 
         async showPropertiesData(node) {
+            console.log('Selected node for properties:', node)
             this.assetPropertySign = false
             this.jobPropertySign = false
             if (node.asset != undefined) {
@@ -2721,6 +2722,7 @@ export default {
                     id: node.id,
                     parent: node.serial_no
                 })
+                
             } else if (node.type == 'test') {
                 this.assetPropertySign = true
                 this.jobPropertySign = true
@@ -2730,7 +2732,7 @@ export default {
                 await this.loadPathMap(node)
                 this.pathMapServer.push({
                     id: node.id,
-                    parent: node.name
+                    parent: node.aliasName || node.name
                 })
             } else if (node.type == 'job') {
                 this.assetPropertySign = true
@@ -2741,14 +2743,14 @@ export default {
                 await this.loadPathMap(node)
                 this.pathMapServer.push({
                     id: node.id,
-                    parent: node.name
+                    parent: node.aliasName || node.name
                 })
             } else {
                 await this.mappingProperties(node)
                 await this.loadPathMap(node)
                 this.pathMapServer.push({
                     id: node.id,
-                    parent: node.name
+                    parent: node.aliasName || node.name
                 })
             }
         },
@@ -4089,7 +4091,7 @@ export default {
                 if (!serverResponse) return
 
                 // 2. Map sang DTO bằng hàm của bạn
-                const PowerCableServerMapper = require('@/views/Mapping/PowerCableTest/index.js')
+                const PowerCableServerMapper = require('@/views/Mapping/ServerToDTO/PowerCable/index.js')
                 const dto = PowerCableServerMapper.mapServerToDto(serverResponse)
 
                 // 3. QUAN TRỌNG: Gán các ID quan hệ để Map về Entity local không bị lỗi
