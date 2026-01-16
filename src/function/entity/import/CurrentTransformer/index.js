@@ -13,17 +13,94 @@ export const importCurrentTransformer = async (dto, parentNode, { electronAPI, m
 
         // Map DTO to Entity
         const entity = mappings.CurrentTransformerMapping.mapDtoToEntity(dto)
+        let oldEntity = null
+        let shouldRegenerate = false
 
-        // Luôn tạo mrid mới khi import
-        regenerateAllMrids(entity)
+        // --- Logic Check: Update vs New vs Clone ---
+        
+        // 1. Explicit Clone
+        if (dto.clone === true) {
+            shouldRegenerate = true
+        }
+        // 2. Check by MRID
+        else if (entity.asset?.mrid) {
+            const originalLocationId = entity.asset.location || dto.locationId
 
-        // Set location
-        if (parentNode?.mrid) {
-            entity.asset.location = parentNode.mrid
+            // Case: Moving to a different parent -> Treat as New (Copy)
+            if (originalLocationId && originalLocationId !== parentNode?.mrid) {
+                shouldRegenerate = true
+            } 
+            else {
+                // Case: Same parent -> Check DB for update
+                try {
+                    const existing = await electronAPI.getCurrentTransformerEntityByMrid(
+                        entity.asset.mrid,
+                        parentNode?.mrid
+                    )
+
+                    if (
+                        existing?.success &&
+                        existing?.data?.asset?.location === parentNode?.mrid
+                    ) {
+                        oldEntity = existing.data
+                    } else {
+                        shouldRegenerate = true // Not found or location mismatch
+                    }
+                } catch (e) {
+                    console.warn('Check existing CurrentTransformer failed, treating as new:', e)
+                    shouldRegenerate = true
+                }
+            }
+        } 
+        // 3. No MRID -> New
+        else {
+            shouldRegenerate = true
+        }
+
+        // Apply ID Regeneration if needed
+        if (shouldRegenerate) {
+            regenerateAllMrids(entity)
+        }
+
+        // --- FIX: Location vs AssetPsr ---
+        // Asset.location references the 'Location' table (Coordinates/Address), NOT the parent container (Substation/Bay).
+        // The hierarchical parent is handled strictly by the AssetPsr table.
+        // Setting asset.location to parentNode.mrid causes SQLITE_CONSTRAINT foreign key error if parent is not a Location.
+        entity.asset.location = null
+
+        // Ensure AssetPsr logic (This is what links to the Parent Node)
+        if (!entity.assetPsr) {
+            entity.assetPsr = {
+                mrid: uuid.newUuid(),
+                asset_id: entity.asset.mrid,
+                psr_id: parentNode?.mrid || null
+            }
+        } else {
+            // Update links
+            entity.assetPsr.asset_id = entity.asset.mrid
+            entity.assetPsr.psr_id = parentNode?.mrid || null
+            
+            // If regenerating, give AssetPsr a new ID too (handled in regenerateAllMrids, but safe to double check)
+            if (shouldRegenerate && !entity.assetPsr.mrid) {
+                 entity.assetPsr.mrid = uuid.newUuid()
+            }
+        }
+
+        // Normalize Attachment
+        if (!entity.asset.attachment) {
+            entity.asset.attachment = {
+                id: null,
+                path: '[]',
+                name: null,
+                type: 'asset',
+                id_foreign: null
+            }
+        } else if (!entity.asset.attachment.path) {
+            entity.asset.attachment.path = '[]'
         }
 
         // Insert vào database
-        const result = await electronAPI.insertCurrentTransformerEntity({}, entity)
+        const result = await electronAPI.insertCurrentTransformerEntity(oldEntity || {}, entity)
         
         return { ...result, entity }
 
@@ -74,6 +151,13 @@ const regenerateAllMrids = (entity) => {
         entity.assetPsr.mrid = newAssetPsrMrid
         entity.assetPsr.asset_id = newAssetMrid
         entity.assetPsr.psr_id = null
+    } else {
+        // Create if missing during regeneration
+         entity.assetPsr = {
+            mrid: newAssetPsrMrid,
+            asset_id: newAssetMrid,
+            psr_id: null
+        }
     }
 
     // Attachment
