@@ -1,5 +1,5 @@
 <template>
-    <div class="mgt-10">
+    <div class="mgy-5">
         <el-row>
             <el-col :span="24">
                 <div class="header-toggle pointer font_size_12" @click="openConfig = !openConfig">
