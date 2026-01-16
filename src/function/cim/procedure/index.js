@@ -48,6 +48,7 @@ export const getProcedureByAssetId = async (mrid) => {
 
 export const getProcedureByGenericAssetModel = async (generic_asset_model) => {
     try {
+        // Warning: generic_asset_model column might not exist in current schema
         return new Promise((resolve, reject) => {
             db.all(
                 `SELECT p.*, d.*, io.*
@@ -55,10 +56,11 @@ export const getProcedureByGenericAssetModel = async (generic_asset_model) => {
                  JOIN document d ON p.mrid = d.mrid
                  JOIN identified_object io ON p.mrid = io.mrid
                  JOIN procedure_asset pa ON p.mrid = pa.procedure_id
-                 WHERE p.generic_asset_model = ?`,
-                [generic_asset_model],
+                 -- WHERE p.generic_asset_model = ? -- Column does not exist
+                 `,
+                [], // [generic_asset_model]
                 (err, rows) => {
-                    if (err) return reject({ success: false, err, message: 'Get procedure by generic asset model failed' })
+                    if (err) return reject({ success: false, err, message: 'Get procedure by generic asset model failed (schema mismatch)' })
                     return resolve({ success: true, data: rows, message: 'Get procedure by generic asset model completed' })
                 }
             )
@@ -79,20 +81,19 @@ export const insertProcedureTransaction = async (procedure, dbsql) => {
             }
             dbsql.run(
                 `INSERT INTO procedure(
-                    mrid, instruction, kind, sequence_number, generic_asset_model
-                ) VALUES (?, ?, ?, ?, ?)
+                    mrid, instruction, kind, sequence_number
+                ) VALUES (?, ?, ?, ?)
                 ON CONFLICT(mrid) DO UPDATE SET
                     instruction = excluded.instruction,
                     kind = excluded.kind,
-                    sequence_number = excluded.sequence_number,
-                    generic_asset_model = excluded.generic_asset_model
+                    sequence_number = excluded.sequence_number
                 `,
                 [
                     procedure.mrid,
                     procedure.instruction,
                     procedure.kind,
-                    procedure.sequence_number,
-                    procedure.generic_asset_model
+                    procedure.sequence_number
+                    // procedure.generic_asset_model -- Column does not exist
                 ],
                 function (err) {
                     if (err) return reject({ success: false, err, message: 'Insert procedure failed' })
@@ -118,14 +119,13 @@ export const updateProcedureByIdTransaction = async (mrid, procedure, dbsql) => 
                 `UPDATE procedure SET
                     instruction = ?,
                     kind = ?,
-                    sequence_number = ?,
-                    generic_asset_model = ?
+                    sequence_number = ?
                 WHERE mrid = ?`,
                 [
                     procedure.instruction,
                     procedure.kind,
                     procedure.sequence_number,
-                    procedure.generic_asset_model,
+                    // procedure.generic_asset_model, -- Column does not exist
                     mrid
                 ],
                 function (err) {
