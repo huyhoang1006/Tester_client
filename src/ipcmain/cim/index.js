@@ -25,6 +25,7 @@ import * as ipcDiscrete from './discrete/index.js'
 import * as ipcValueToAlias from './valueToAlias/index.js'
 import * as ipcValueAliasSet from './valueAliasSet/index.js'
 import * as ipcBushing from './bushing/index.js'
+import * as ipcProcedure from './procedure/index.js'
 
 
 export const active = () => {
@@ -55,4 +56,5 @@ export const active = () => {
     ipcValueToAlias.active()
     ipcValueAliasSet.active()
     ipcBushing.active()
+    ipcProcedure.active()
 }

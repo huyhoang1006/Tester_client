@@ -5,7 +5,6 @@ import * as voltageLevelPreload from './voltageLevel/index.js'
 import * as bayPreload from './bay/index.js'
 import * as surgeArresterEntityPreload from './surgeArrester/index.js'
 import * as transformerEntityPreload from './transformer/index.js'
-import * as testTypePreload from './testType/index.js'
 import * as jobEntityPreload from './job/index.js'
 import * as powerCableEntityPreload from './powerCable/index.js'
 import * as voltageTransformerEntityPreload from './VoltageTransformer/index.js'
@@ -23,7 +22,7 @@ import * as assetPsrPreload from './assetPsr/index.js'
 export {
     attachmentPreload, substationPreload, parentOrganizationPreload,
     voltageLevelPreload, bayPreload, surgeArresterEntityPreload, transformerEntityPreload,
-    testTypePreload, jobEntityPreload, powerCableEntityPreload, voltageTransformerEntityPreload,
+    jobEntityPreload, powerCableEntityPreload, voltageTransformerEntityPreload,
     bushingEntityPreload, disconnectorEntityPreload, rotatingMachineEntityPreload, currentTransformerEntityPreload,
     capacitorEntityPreload, breakerEntityPreload, reactorEntityPreload, exportPreload, assetPsrPreload
 

@@ -34,6 +34,7 @@ import * as capacitanceInfoFunc from './capacitanceInfo/index.js'
 import * as dissipationFactorInfoFunc from './dissipationFactorInfo/index.js'
 import * as reactivePowerFunc from './reactivePower/index.js'
 import * as reactorInfoFunc from './reactorInfo/index.js'
+import * as procedureFunc from './procedure/index.js'
 
 
 export {
@@ -43,5 +44,6 @@ export {
     activityRecordFunc, configurationEventFunc, positionPointFunc, voltageFunc, baseVoltageFunc,
     bayFunc, voltageLevelFunc, PowerSystemResourceFunc, surgeArresterFunc, ProductAssetModelFunc,
     oldWorkFunc, assetFunc, analogFunc, stringMeasurementFunc, discreteFunc, valueToAliasFunc, valueAliasSetFunc,
-    bushingFunc, capacitorInfoFunc, capacitanceInfoFunc, dissipationFactorInfoFunc, reactivePowerFunc, reactorInfoFunc
+    bushingFunc, capacitorInfoFunc, capacitanceInfoFunc, dissipationFactorInfoFunc, reactivePowerFunc, reactorInfoFunc,
+    procedureFunc
 }

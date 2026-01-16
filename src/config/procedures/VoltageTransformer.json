@@ -1,4 +1,6 @@
-[
+{
+  "name": "Voltage transformer",
+  "procedure": [
   {
     "mrid": "950afb42-7080-4172-a689-c3023d61a583",
     "code": "InsulationResistance",
@@ -30,3 +32,4 @@
     "kind": "test"
   }
 ]
+}
