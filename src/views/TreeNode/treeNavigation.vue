@@ -3934,9 +3934,9 @@ body.duplicating-mode>.v-modal {
 
 .app-dialog.el-dialog {
     width: 65%;
-    margin-top: 8vh !important;
+    margin-top: 5vh !important;
     border-radius: 6px;
-    max-height: 85vh;
+    height: 90vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -3944,7 +3944,14 @@ body.duplicating-mode>.v-modal {
 
 .app-dialog .el-dialog__body {
     overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     flex: 1;
+}
+
+.app-dialog .el-dialog__body::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
 }
 
 .app-dialog .el-dialog__footer {
@@ -3954,7 +3961,7 @@ body.duplicating-mode>.v-modal {
 
 .custom-footer {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 12px;
 }
 
@@ -3966,21 +3973,12 @@ body.duplicating-mode>.v-modal {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 100px;
 }
 
 @media (max-width: 767px) {
     .custom-footer {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .custom-footer .footer-btn {
-        width: 100%;
-        margin: 0;
-    }
-
-    .custom-footer .el-button+.el-button {
-        margin-left: 0;
+        justify-content: center;
     }
 }
 </style>
