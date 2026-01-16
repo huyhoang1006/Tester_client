@@ -1,6 +1,6 @@
 <template>
     <div id="asset">
-        <div style="display: flex; flex-direction: column;">
+        <div style="min-height: 500px; display: flex; flex-direction: column;">
             <div style="flex: 1; display: flex; flex-direction: column;">
                 <disconnectTransProperty :properties.sync="disconnector.properties"></disconnectTransProperty>
                 <ratings :ratings.sync="disconnector.ratings"></ratings>

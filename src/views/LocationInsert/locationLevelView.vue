@@ -174,7 +174,7 @@
             </el-col>
         </el-row>
         <el-dialog :visible.sync="signAddGeo" :title="titleGeo" align-center :before-close="handleCloseGeo"
-            :modal="true" append-to-body>
+            :modal="true">
             <el-form :label-width="labelWidth" size="mini" label-position="left">
                 <el-form-item label="Geographic coordinate x">
                     <el-input type="number" v-model="geoChosen.x"></el-input>
