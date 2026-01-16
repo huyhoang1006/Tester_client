@@ -40,7 +40,7 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.items.value"></el-input>
+                        <el-input size="mini" type="text" v-model="item.item.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -79,6 +79,8 @@
 </template>
 
 <script>
+import surgeArresterTestMap from '@/config/test-definitions/SurgeArrester'
+import * as common from '../../Common/index'
 export default {
     name :"GeneralInspection",
     data() {
@@ -104,32 +106,15 @@ export default {
         assetData() {
             return this.asset
         },
+        rowData() {
+            return common.buildEmptyTestRow(surgeArresterTestMap['GeneralInspection'].columns)
+        }
     },
     watch: {
     },
     methods: {
         add() {
-            this.testData.table.push({
-                mrid : '',
-                items : {
-                    mrid : '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                assessment : {
-                    mrid : '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                },
-                condition_indicator : {
-                    mrid : '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                }
-            })
+            this.testData.table.push(JSON.parse(JSON.stringify(this.rowData)))
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
@@ -146,27 +131,7 @@ export default {
             this.testData.table.splice(index, 1)
         },
         addTest(index) {
-            const data = {
-                mrid : '',
-                items : {
-                    mrid : '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                assessment : {
-                    mrid : '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                },
-                condition_indicator : {
-                    mrid : '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                }
-            }
+            const data = JSON.parse(JSON.stringify(this.rowData))
             this.testData.table.splice(index+1, 0, data)
         },
         calculator() {
@@ -174,10 +139,13 @@ export default {
         },
 
         clear() {
-            this.testData.table.forEach((element) => {
-                element.items.value = '',
-                element.assessment.value = '',
-                element.condition_indicator.value = ''
+            this.testData.table.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (key === "mrid") return;
+                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                    row[key].value = ""
+                    }
+                })
             })
         },
         nameColor(data) {

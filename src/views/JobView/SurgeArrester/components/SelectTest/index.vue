@@ -63,7 +63,6 @@ import Attachment from '@/views/Flatten/Attachment'
 import { UnitMultiplier } from '@/views/Enum/UnitMultiplier'
 import { UnitSymbol } from '@/views/Enum/UnitSymbol'
 import mixin from './mixin'
-import { mapState } from 'vuex'
 import uuid from "@/utils/uuid";
 
 export default {
@@ -95,7 +94,6 @@ export default {
     },
     mounted() {},
     computed: {
-        ...mapState(['selectedLocation', 'selectedAsset']),
         testListData: function () {
             return this.data
         },
@@ -116,13 +114,13 @@ export default {
         },
         async addTest(testType) {
             const count = await this.countTest(testType.mrid)
-            const initData = await this.initTest(testType.code, this.assetData)
+            const initData = await this.initTest(testType.alias_name, this.assetData)
             const name = count == 0 ? testType.name : `${testType.name} (${count})`
             const mrid = uuid.newUuid()
             this.testListData.push({
                 mrid: mrid,
                 testTypeId: testType.mrid,
-                testTypeCode: testType.code,
+                testTypeCode: testType.alias_name,
                 testTypeName: testType.name,
                 name,
                 data: initData,
@@ -176,6 +174,7 @@ export default {
                 total_worst_score: null,
                 created_on: new Date().getTime()
             })
+            console.log('this.testListData', this.testListData)
         },
         deleteTest(index) {
             /* eslint-disable */

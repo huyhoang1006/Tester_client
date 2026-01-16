@@ -83,12 +83,18 @@ export const getTestDefinitionInfo = async (testDefinitions) => {
                 analogTest.mrid = column.mrid
                 analogTest.name = column.name
                 analogTest.alias_name = column.code
+                const { unit_symbol, unit_multiplier } = parseUnit(column.unit)
+                analogTest.unit_symbol = unit_symbol
+                analogTest.unit_multiplier = unit_multiplier
                 analogTests.push(analogTest)
             } else if(column.type === 'string'){
                 const stringMeasurementTest = new StringMeasurement()
                 stringMeasurementTest.mrid = column.mrid
                 stringMeasurementTest.name = column.name
                 stringMeasurementTest.alias_name = column.code
+                const { unit_symbol, unit_multiplier } = parseUnit(column.unit)
+                stringMeasurementTest.unit_symbol = unit_symbol
+                stringMeasurementTest.unit_multiplier = unit_multiplier
                 stringMeasurementTests.push(stringMeasurementTest)
             } else if(column.type === 'discrete'){
                 const discreteTest = new Discrete()
@@ -158,3 +164,26 @@ function uniqueMeasurementProcedure(arr) {
 
   return Array.from(map.values())
 }
+
+function parseUnit(unitStr = "") {
+  if (!unitStr) {
+    return { unit_symbol: "", unit_multiplier: "" }
+  }
+
+  // Ví dụ: "M|Ω" → ["M", "Ω"]
+  const parts = unitStr.split("|")
+
+  if (parts.length === 2) {
+    return {
+      unit_multiplier: parts[0],
+      unit_symbol: parts[1]
+    }
+  }
+
+  // Nếu không có |, coi như chỉ là symbol
+  return {
+    unit_multiplier: "",
+    unit_symbol: unitStr
+  }
+}
+

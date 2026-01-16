@@ -55,10 +55,8 @@ export const getProcedureByGenericAssetModel = async (generic_asset_model) => {
                  FROM procedure p
                  JOIN document d ON p.mrid = d.mrid
                  JOIN identified_object io ON p.mrid = io.mrid
-                 JOIN procedure_asset pa ON p.mrid = pa.procedure_id
-                 -- WHERE p.generic_asset_model = ? -- Column does not exist
-                 `,
-                [], // [generic_asset_model]
+                 WHERE p.generic_asset_model = ?`,
+                [generic_asset_model],
                 (err, rows) => {
                     if (err) return reject({ success: false, err, message: 'Get procedure by generic asset model failed (schema mismatch)' })
                     return resolve({ success: true, data: rows, message: 'Get procedure by generic asset model completed' })
