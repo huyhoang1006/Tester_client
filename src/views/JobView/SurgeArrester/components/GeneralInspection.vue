@@ -35,39 +35,36 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testData.table">
-                    <tr :key="index">
-                        <td style="font-weight: bold;">
-                            <!-- No. -->
-                           {{ index + 1 }}
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.items.value"></el-input>
-                        </td>
-                        <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
-                                <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
-                                <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
-                            </el-select>
-                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
-                        </td>
-                        <td>
-                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
-                            </el-input>
-                        </td>
-                        <td>
-                            <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
-                                <i class="fa-solid fa-plus"></i>
-                            </el-button>
-                        </td>
-                        <td>
-                            <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
-                                <i class="fas fa-trash"></i>
-                            </el-button>
-                        </td>
-                    </tr>
-                </template>
+                <tr v-for="(item, index) in testData.table" :key="index">
+                    <td style="font-weight: bold;">
+                        {{ index + 1 }}
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.items.value"></el-input>
+                    </td>
+                    <td>
+                        <el-select class="assessment" size="mini" v-model="item.assessment.value">
+                            <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
+                        </el-select>
+                        <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                    </td>
+                    <td>
+                        <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
+                        </el-input>
+                    </td>
+                    <td>
+                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
+                            <i class="fa-solid fa-plus"></i>
+                        </el-button>
+                    </td>
+                    <td>
+                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
+                            <i class="fas fa-trash"></i>
+                        </el-button>
+                    </td>
+                </tr>
             </tbody>
         </table>
 

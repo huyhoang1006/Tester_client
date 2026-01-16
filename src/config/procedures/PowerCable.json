@@ -1,56 +1,60 @@
-[
-  {
-    "mrid": "d29b00a7-969f-40be-96e0-6ead1c9449d8",
-    "code": "InsulationResistance",
-    "name": "Insulation Resistance",
-    "kind": "test"
-  },
-  {
-    "mrid": "ec110e11-f8b0-4d04-9844-d846cb07dc53",
-    "code": "DcVoltageOverSheath",
-    "name": "DC voltage test of oversheath",
-    "kind": "test"
-  },
-  {
-    "mrid": "a34e72a5-e5dd-4cc8-81c5-593f0312a2d8",
-    "code": "AcVoltageInsulation",
-    "name": "AC voltage test of the insulation",
-    "kind": "test"
-  },
-  {
-    "mrid": "2d432623-ceb2-4f14-8de3-697ea9a6cae8",
-    "code": "DcVoltageInsulation",
-    "name": "DC voltage test of the insulation",
-    "kind": "test"
-  },
-  {
-    "mrid": "8d30f5a3-f8f5-4a5b-b646-fb3ca8d86aab",
-    "code": "VlfTest",
-    "name": "VLF test",
-    "kind": "test"
-  },
-  {
-    "mrid": "c769beda-9f72-4f92-981c-7229ee296821",
-    "code": "TandeltaVlfSource",
-    "name": "Tan delta measurement with VLF source",
-    "kind": "test"
-  },
-  {
-    "mrid": "229e6ce9-7198-4665-bd6a-76555867be76",
-    "code": "TandeltaPowerAcSource",
-    "name": "Tan delta measurement with power frequency AC source",
-    "kind": "test"
-  },
-  {
-    "mrid": "5aac2624-4d13-40a3-9d3d-f16551d04b08",
-    "code": "ParticalDischarge",
-    "name": "Partial discharge measurement",
-    "kind": "test"
-  },
-  {
-    "mrid": "787a79bd-6fc5-4ab9-aca8-13c7e0ebf9a5",
-    "code": "GeneralInspection",
-    "name": "General inspection",
-    "kind": "test"
-  }
-]
+{ 
+  "name": "Power cable",
+  "procedure": 
+  [
+    {
+      "mrid": "d29b00a7-969f-40be-96e0-6ead1c9449d8",
+      "code": "InsulationResistance",
+      "name": "Insulation Resistance",
+      "kind": "test"
+    },
+    {
+      "mrid": "ec110e11-f8b0-4d04-9844-d846cb07dc53",
+      "code": "DcVoltageOverSheath",
+      "name": "DC voltage test of oversheath",
+      "kind": "test"
+    },
+    {
+      "mrid": "a34e72a5-e5dd-4cc8-81c5-593f0312a2d8",
+      "code": "AcVoltageInsulation",
+      "name": "AC voltage test of the insulation",
+      "kind": "test"
+    },
+    {
+      "mrid": "2d432623-ceb2-4f14-8de3-697ea9a6cae8",
+      "code": "DcVoltageInsulation",
+      "name": "DC voltage test of the insulation",
+      "kind": "test"
+    },
+    {
+      "mrid": "8d30f5a3-f8f5-4a5b-b646-fb3ca8d86aab",
+      "code": "VlfTest",
+      "name": "VLF test",
+      "kind": "test"
+    },
+    {
+      "mrid": "c769beda-9f72-4f92-981c-7229ee296821",
+      "code": "TandeltaVlfSource",
+      "name": "Tan delta measurement with VLF source",
+      "kind": "test"
+    },
+    {
+      "mrid": "229e6ce9-7198-4665-bd6a-76555867be76",
+      "code": "TandeltaPowerAcSource",
+      "name": "Tan delta measurement with power frequency AC source",
+      "kind": "test"
+    },
+    {
+      "mrid": "5aac2624-4d13-40a3-9d3d-f16551d04b08",
+      "code": "ParticalDischarge",
+      "name": "Partial discharge measurement",
+      "kind": "test"
+    },
+    {
+      "mrid": "787a79bd-6fc5-4ab9-aca8-13c7e0ebf9a5",
+      "code": "GeneralInspection",
+      "name": "General inspection",
+      "kind": "test"
+    }
+  ]
+}

@@ -1,10 +1,6 @@
-import { mapState } from 'vuex'
+/* eslint-disable */
+import surgeArresterTestMap from '@/config/test-definitions/SurgeArrester'
 export default {
-    data() {
-        return {}
-    },
-    computed: mapState(['selectedAsset', 'selectedJob']),
-    async beforeMount() { },
     methods: {
         async initTest(testTypeCode, assetData) {
             let data = null
@@ -25,53 +21,6 @@ export default {
             return data
         },
         async initInsulationResistance() {
-            const row_data = [
-                {
-                    mrid: '',
-                    name: 'Measurement',
-                    code: 'measurement',
-                    unit: '',
-                    type: 'string',
-
-                },
-                {
-                    mrid: '',
-                    name: 'V test',
-                    code: 'v_test',
-                    unit: 'V',
-                    type: 'analog',
-                }
-                ,
-                {
-                    mrid: '',
-                    name: 'R60s',
-                    code: 'r60s',
-                    unit: 'M|Ω',
-                    type: 'analog',
-                },
-                {
-                    mrid: '',
-                    name: 'Assessment',
-                    code: 'assessment',
-                    type: 'discrete',
-                    pool: {
-                        mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
-                    }
-
-                },
-                {
-                    mrid: '',
-                    name: 'Condition indicator',
-                    code: 'condition_indicator',
-                    type: 'discrete',
-                    pool: {
-                        mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
-                    }
-                }
-            ]
             let table = [
                 {
                     mrid: '',
@@ -206,11 +155,8 @@ export default {
                     }
                 }
             ]
-            let measurementProcedure = []
             return {
                 table,
-                row_data,
-                measurementProcedure
             }
         },
         async initLeakageCurrent(assetData) {

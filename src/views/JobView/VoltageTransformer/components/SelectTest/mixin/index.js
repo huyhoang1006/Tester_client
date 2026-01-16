@@ -308,8 +308,7 @@ export default {
                     code: 'upr',
                     unit: 'A',
                     type: 'analog',
-                }
-                ,
+                },
                 {
                     mrid: '',
                     name: 'UsR',
@@ -444,7 +443,6 @@ export default {
                 measurementProcedure
             }
         },
-
         async initDcWindingRes(asset) {
             // Try to get config from various possible locations
             let config = null
@@ -492,7 +490,7 @@ export default {
                 {
                     mrid: '',
                     name: 'R meas',
-                    code: 'rmeas',
+                    code: 'r_meas',
                     unit: 'Ω',
                     type: 'analog',
                 }
@@ -500,21 +498,21 @@ export default {
                 {
                     mrid: '',
                     name: 'R ref',
-                    code: 'rref',
+                    code: 'r_ref',
                     unit: 'Ω',
                     type: 'analog',
                 },
                 {
                     mrid: '',
                     name: 'R corr',
-                    code: 'rcorr',
+                    code: 'r_corr',
                     unit: 'Ω',
                     type: 'analog',
                 },
                 {
                     mrid: '',
                     name: 'R dev',
-                    code: 'rdev',
+                    code: 'r_dev',
                     unit: '%',
                     type: 'analog',
                 },

@@ -13,7 +13,6 @@ import * as voltageLevelEntityFunc from './voltage/index'
 import * as bayEntityFunc from './bay/index'
 import * as surgeArresterEntityFunc from './surgeArrester/index'
 import * as transformerEntityFunc from './Transformer/index'
-import * as TestTypeFunc from './testType/index'
 import * as jobEntityFunc from './job/index'
 import * as powerCableEntityFunc from './powerCable/index'
 import * as voltageTransformerEntityFunc from './VoltageTransformer/index'
@@ -30,7 +29,7 @@ export {
     attachmentFunc, fileFunc, organisationLocationFunc, personSubstationFunc,
     userFunc, userIdentifiedObjectFunc, substationEntityFunc, organisationPersonFunc,
     organisationPsrFunc, geoMapFunc, parentOrganizationEntityFunc, voltageLevelEntityFunc,
-    bayEntityFunc, surgeArresterEntityFunc, transformerEntityFunc, TestTypeFunc, jobEntityFunc, powerCableEntityFunc,
+    bayEntityFunc, surgeArresterEntityFunc, transformerEntityFunc, jobEntityFunc, powerCableEntityFunc,
     capacitorEntityFunc, breakerEntityFunc,
     voltageTransformerEntityFunc, bushingEntityFunc, disconnectorEntityFunc, rotatingMachineEntityFunc, currentTransformerEntityFunc, reactorEntityFunc, assetPsrFunc
 }
