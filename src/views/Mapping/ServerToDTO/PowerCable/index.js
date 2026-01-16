@@ -1,6 +1,5 @@
 import PowerCableDTO from "@/views/Dto/PowerCable";
 
-// Helper để chuyển đổi đơn vị từ Server sang định dạng UI (ví dụ: k và V thành k|V)
 const mapServerUnit = (serverObj) => {
     if (!serverObj) return { mrid: '', value: '', unit: '' };
     const multiplier = (serverObj.multiplier === 'none' || !serverObj.multiplier) ? '' : serverObj.multiplier;
