@@ -1,9 +1,12 @@
-[
-     { "mrid": "636c2aa0-b919-4e0a-baca-7103c569a62f", "code": "InsulationResistance", "name": "Insulation resistance", "kind": "test" },
-     { "mrid": "2456d847-c65f-4b0b-bb34-3f90b8f971ef", "code": "ContactResistance", "name": "Contact resistance", "kind": "test" },
-     { "mrid": "a6a3b5d1-dd96-428a-a824-1c7ed5c2fea0", "code": "InsulationResMotor", "name": "Insulation resistance of motor", "kind": "test" },
-     { "mrid": "ede47d51-0630-4f85-82af-3733474a9681", "code": "DcWindingMotor", "name": "DC winding resistance of motor", "kind": "test" },
-     { "mrid": "94914852-02f6-4bf2-8e19-cf9d66ba4a1e", "code": "OperatingTest", "name": "Operating test", "kind": "test" },
-     { "mrid": "9b6edb37-df64-4e28-971b-819965d15d46", "code": "ControlCheck", "name": "Control cabinet check", "kind": "test" },
-     { "mrid": "8093b329-1054-496c-9a69-baf71d5c1d24", "code": "GeneralInspection", "name": "General inspection", "kind": "test" }
-]
+{
+     "name" : "Disconnector",
+     "procedure" : [
+          { "mrid": "636c2aa0-b919-4e0a-baca-7103c569a62f", "code": "InsulationResistance", "name": "Insulation resistance", "kind": "test" },
+          { "mrid": "2456d847-c65f-4b0b-bb34-3f90b8f971ef", "code": "ContactResistance", "name": "Contact resistance", "kind": "test" },
+          { "mrid": "a6a3b5d1-dd96-428a-a824-1c7ed5c2fea0", "code": "InsulationResMotor", "name": "Insulation resistance of motor", "kind": "test" },
+          { "mrid": "ede47d51-0630-4f85-82af-3733474a9681", "code": "DcWindingMotor", "name": "DC winding resistance of motor", "kind": "test" },
+          { "mrid": "94914852-02f6-4bf2-8e19-cf9d66ba4a1e", "code": "OperatingTest", "name": "Operating test", "kind": "test" },
+          { "mrid": "9b6edb37-df64-4e28-971b-819965d15d46", "code": "ControlCheck", "name": "Control cabinet check", "kind": "test" },
+          { "mrid": "8093b329-1054-496c-9a69-baf71d5c1d24", "code": "GeneralInspection", "name": "General inspection", "kind": "test" }
+     ]
+}

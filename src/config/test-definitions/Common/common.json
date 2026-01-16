@@ -28,6 +28,86 @@
       "unit": "Ω"
     },
     {
+      "mrid": "23cd8c00-4073-4fa0-bac0-cbbe1d27b1c3",
+      "code": "r_ref",
+      "name": "R ref",
+      "type": "analog",
+      "unit": "Ω"
+    },
+    {
+      "mrid": "93b591f4-4c4c-4034-9d61-a544bdf49019",
+      "code": "r_corr",
+      "name": "R corr",
+      "type": "analog",
+      "unit": "Ω"
+    },
+    {
+      "mrid": "494cc6d4-e98f-4895-84cc-03322b5bc610",
+      "code": "r_dev",
+      "name": "R dev",
+      "type": "analog",
+      "unit": "%"
+    },
+    {
+      "mrid": "01c47c67-4295-4bf6-a0c5-9c14ec8d905e",
+      "code": "test_mode",
+      "name": "Test mode",
+      "type": "string"
+    },
+    {
+      "mrid": "c74b6a9a-5e33-4040-be57-a2e7c82e5e19",
+      "code": "df_ref",
+      "name": "DF ref",
+      "type": "analog",
+      "unit": "%"
+    },
+    {
+      "mrid": "610bb02e-0e71-452e-80b3-34753b9cf484",
+      "code": "c_ref",
+      "name": "C ref",
+      "type": "analog",
+      "unit": "pF"
+    },
+    {
+      "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+      "code": "df_meas",
+      "name": "DF meas",
+      "type": "analog",
+      "unit": "%"
+    },
+    {
+      "mrid": "1d340ee5-9c57-422a-a049-ea57d2beedb7",
+      "code": "c_meas",
+      "name": "C meas",
+      "type": "analog",
+      "unit": "pF"
+    },
+    {
+      "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+      "code": "c_cal",
+      "name": "△C cal",
+      "type": "analog",
+      "unit": "%"
+    },
+    {
+      "mrid": "126fc51c-a0b5-470b-9017-47e56131cc56",
+      "code": "ratio_meas",
+      "name": "Ratio meas",
+      "type": "string"
+    },
+    {
+      "mrid": "1d510b78-7413-4777-a344-4b65d4e3e920",
+      "code": "ratio_dev",
+      "name": "Ratio dev",
+      "type": "string"
+    },
+    {
+      "mrid": "e6527699-a044-4633-8572-ac1f84fe78f6",
+      "code": "polarity",
+      "name": "Polarity",
+      "type": "string"
+    },
+    {
       "mrid": "c2d3e4f5-a6b7-48c9-9d0e-1f2a3b4c5d6e",
       "code": "close_coil_no",
       "name": "Close Coil No",

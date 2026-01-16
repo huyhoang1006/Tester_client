@@ -259,5 +259,22 @@ export default {
                     if (e !== 'cancel') console.error(e)
                 })
         },
+
+        //useless function
+        cloneNodeRecursive(node) {
+            const copy = JSON.parse(JSON.stringify(node))
+            const walk = (n) => {
+                n.mrid = this.generateUuid()
+                if (n.id !== undefined) n.id = n.mrid
+                if (n.parentArr && Array.isArray(n.parentArr)) {
+                    // keep parentArr of copy pointing to same ancestors (not changing)
+                }
+                if (n.children && n.children.length) {
+                    n.children = n.children.map((child) => walk(child))
+                }
+                return n
+            }
+            return walk(copy)
+        },
     }
 }

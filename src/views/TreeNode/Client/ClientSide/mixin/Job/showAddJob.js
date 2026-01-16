@@ -50,7 +50,7 @@ export default {
                 this.parentOrganization = node
 
                 if (node.asset == 'Surge arrester') {
-                    const dataTestType = await window.electronAPI.getAllTestTypeSurgeArrester()
+                    const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Surge arrester")
                     const dataSurgeArrester = await window.electronAPI.getSurgeArresterByMrid(node.mrid)
                     if (dataSurgeArrester.success) {
                         this.assetData = dataSurgeArrester.data
