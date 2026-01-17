@@ -30,6 +30,35 @@ import {insertSCTTransformerEndInfoTransaction, getSCTTransformerEndInfoByShortC
 import {insertShortCircuitRatingTransaction, deleteShortCircuitRatingByIdTransaction, getShortCircuitRatingByPowerTransformerInfoId} from '@/function/cim/shortCircuitRating'
 
 import TransformerEntity from '@/views/Flatten/Transformer/index';
+import uuid from '@/utils/uuid'
+
+// Helper to check if a value is used in a column of a table
+const isUsedInTable = async (table, column, id, db) => {
+    return new Promise((resolve, reject) => {
+        db.get(`SELECT 1 FROM ${table} WHERE ${column} = ?`, [id], (err, row) => {
+            if (err) reject(err);
+            else resolve(!!row);
+        });
+    });
+}
+
+const tryDelete = async (deleteFunc, id, dbsql, name) => {
+    try {
+        await deleteFunc(id, dbsql);
+    } catch (error) {
+        // Handle wrapped error from delete*ByIdTransaction functions
+        // structure: { success: false, err: ErrorObject, message: '...' }
+        const sqlError = error.err || error;
+        
+        // If FK constraint, log warning and skip
+        if (sqlError && sqlError.code === 'SQLITE_CONSTRAINT') {
+             console.warn(`Skipping delete ${name} (${id}): Used by other entities.`);
+        } else {
+             throw error;
+        }
+    }
+}
+
 
 export const insertTransformerEntity = async (old_entity,entity) => {
     console.log(entity.attachment)
@@ -76,6 +105,10 @@ export const insertTransformerEntity = async (old_entity,entity) => {
             await insertOldPowerTransformerInfoTransaction(entity.oldPowerTransformerInfo, db);
             await insertLifecycleDateTransaction(entity.lifecycleDate, db);
             await insertProductAssetModelTransaction(entity.productAssetModel, db);
+            
+            // FIX: Ensure asset.location is not set to Parent ID (Substation/Bay) unless it's a valid Location ID.
+            entity.asset.location = null; 
+
             await insertAssetTransaction(entity.asset, db);
             await insertAssetPsrTransaction(entity.assetPsr, db);
             await insertZeroSequenceImpedanceTransaction(entity.zeroSequenceImpedance, db);
@@ -396,75 +429,73 @@ export const deleteTransformerEntity = async (data) => {
                 if(data.asset.mrid) {
                     await deleteAssetByIdTransaction(data.asset.mrid, db);
                 }
+                
+                // SAFE DELETE: Only delete Info, Model, Lifecycle if NOT used by other assets
                 if(data.oldPowerTransformerInfo && data.oldPowerTransformerInfo.mrid) {
-                    await deleteOldPowerTransformerInfoTransaction(data.oldPowerTransformerInfo.mrid, db);
-                }
-                if(data.lifecycleDate && data.lifecycleDate.mrid) {
-                    await deleteLifecycleDateByIdTransaction(data.lifecycleDate.mrid, db);
-                }
-                if(data.productAssetModel && data.productAssetModel.mrid) {
-                    await deleteProductAssetModelByIdTransaction(data.productAssetModel.mrid, db);
-                }
-                for(const basePower of data.basePower) {
-                    if(basePower.mrid) {
-                        await deleteBasePowerByIdTransaction(basePower.mrid, db);
+                    const isUsed = await isUsedInTable('Asset', 'asset_info', data.oldPowerTransformerInfo.mrid, db);
+                    if (!isUsed) {
+                        await deleteOldPowerTransformerInfoTransaction(data.oldPowerTransformerInfo.mrid, db);
+                    } else {
+                        console.warn(`Skipping deleteOldPowerTransformerInfo: Used by other assets (${data.oldPowerTransformerInfo.mrid})`);
                     }
+                }
+
+                if(data.lifecycleDate && data.lifecycleDate.mrid) {
+                    const isUsed = await isUsedInTable('Asset', 'lifecycle_date', data.lifecycleDate.mrid, db);
+                    if (!isUsed) {
+                        await deleteLifecycleDateByIdTransaction(data.lifecycleDate.mrid, db);
+                    } else {
+                        console.warn(`Skipping deleteLifecycleDate: Used by other assets (${data.lifecycleDate.mrid})`);
+                    }
+                }
+
+                if(data.productAssetModel && data.productAssetModel.mrid) {
+                     const isUsed = await isUsedInTable('Asset', 'product_asset_model', data.productAssetModel.mrid, db);
+                    if (!isUsed) {
+                        await deleteProductAssetModelByIdTransaction(data.productAssetModel.mrid, db);
+                    } else {
+                        console.warn(`Skipping deleteProductAssetModel: Used by other assets (${data.productAssetModel.mrid})`);
+                    }
+                }
+                
+                // SAFE DELETE FOR BASE UNITS (Try-Catch approach with wrapped error handling)
+                for(const basePower of data.basePower) {
+                    if(basePower.mrid) await tryDelete(deleteBasePowerByIdTransaction, basePower.mrid, db, 'basePower');
                 }
                 for(const baseVoltage of data.baseVoltage) {
-                    if(baseVoltage.mrid) {
-                        await deleteBaseVoltageByIdTransaction(baseVoltage.mrid, db);
-                    }
+                    if(baseVoltage.mrid) await tryDelete(deleteBaseVoltageByIdTransaction, baseVoltage.mrid, db, 'baseVoltage');
                 }
                 for (const voltage of data.voltage) {
-                    if (voltage.mrid) {
-                        await deleteVoltageByIdTransaction(voltage.mrid, db);
-                    }
+                    if (voltage.mrid) await tryDelete(deleteVoltageByIdTransaction, voltage.mrid, db, 'voltage');
                 }
                 for (const seconds of data.seconds) {
-                    if (seconds.mrid) {
-                        await deleteSecondsByIdTransaction(seconds.mrid, db);
-                    }
+                    if (seconds.mrid) await tryDelete(deleteSecondsByIdTransaction, seconds.mrid, db, 'seconds');
                 }
                 for (const currentFlow of data.currentFlow) {
-                    if (currentFlow.mrid) {
-                        await deleteCurrentFlowByIdTransaction(currentFlow.mrid, db);
-                    }
+                    if (currentFlow.mrid) await tryDelete(deleteCurrentFlowByIdTransaction, currentFlow.mrid, db, 'currentFlow');
                 }
                 for (const percent of data.percent) {
-                    if (percent.mrid) {
-                        await deletePercentByIdTransaction(percent.mrid, db);
-                    }
+                    if (percent.mrid) await tryDelete(deletePercentByIdTransaction, percent.mrid, db, 'percent');
                 }
                 for (const activePower of data.activePower) {
-                    if (activePower.mrid) {
-                        await deleteActivePowerByIdTransaction(activePower.mrid, db);
-                    }
+                    if (activePower.mrid) await tryDelete(deleteActivePowerByIdTransaction, activePower.mrid, db, 'activePower');
                 }
                 for (const apparentPower of data.apparentPower) {
-                    if (apparentPower.mrid) {
-                        await deleteApparentPowerByIdTransaction(apparentPower.mrid, db);
-                    }
+                    if (apparentPower.mrid) await tryDelete(deleteApparentPowerByIdTransaction, apparentPower.mrid, db, 'apparentPower');
                 }
                 for (const frequency of data.frequency) {
-                    if (frequency.mrid) {
-                        await deleteFrequencyByIdTransaction(frequency.mrid, db);
-                    }
+                    if (frequency.mrid) await tryDelete(deleteFrequencyByIdTransaction, frequency.mrid, db, 'frequency');
                 }
                 for (const temperature of data.temperature) {
-                    if (temperature.mrid) {
-                        await deleteTemperatureByIdTransaction(temperature.mrid, db);
-                    }
+                    if (temperature.mrid) await tryDelete(deleteTemperatureByIdTransaction, temperature.mrid, db, 'temperature');
                 }
                 for (const mass of data.mass) {
-                    if (mass.mrid) {
-                        await deleteMassByIdTransaction(mass.mrid, db);
-                    }
+                    if (mass.mrid) await tryDelete(deleteMassByIdTransaction, mass.mrid, db, 'mass');
                 }
                 for (const volume of data.volume) {
-                    if (volume.mrid) {
-                        await deleteVolumeByIdTransaction(volume.mrid, db);
-                    }
+                    if (volume.mrid) await tryDelete(deleteVolumeByIdTransaction, volume.mrid, db, 'volume');
                 }
+                
                 await runAsync('COMMIT');
                 if(data.attachment && data.attachment.id) {
                     deleteDirectory(null, data.asset.mrid);
