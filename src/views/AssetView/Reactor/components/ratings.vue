@@ -36,7 +36,7 @@ export default {
     name: 'RatingsReactor',
     data() {
         return {
-            labelWidth: '200px',
+            labelWidth: '120px',
         }
     },
     props: {

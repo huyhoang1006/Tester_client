@@ -1,8 +1,9 @@
 <template>
     <div id="asset">
-        <div style="min-height: 500px; display: flex; flex-direction: column;">
+        <div style="display: flex; flex-direction: column;">
             <div style="flex: 1; display: flex; flex-direction: column;">
-                <properties :data="rotatingMachine.properties" @update-attachment="updateAttachment" :attachment.sync="this.attachmentData"></properties>
+                <properties :data="rotatingMachine.properties" @update-attachment="updateAttachment"
+                    :attachment.sync="this.attachmentData"></properties>
                 <configs :configs="rotatingMachine.configsData"></configs>
                 <ratings :ratings="rotatingMachine.ratingsData"></ratings>
             </div>
@@ -13,8 +14,8 @@
 <script>
 /* eslint-disable */
 import properties from '../RotatingMachine/components/properties.vue'
-import configs  from '../RotatingMachine/components/configs.vue'
-import ratings  from '../RotatingMachine/components/ratings.vue'
+import configs from '../RotatingMachine/components/configs.vue'
+import ratings from '../RotatingMachine/components/ratings.vue'
 import mixin from './mixin'
 
 export default {
@@ -27,7 +28,7 @@ export default {
     },
     data() {
         return {
-            title : 'RotatingMachine',
+            title: 'RotatingMachine',
         }
     },
     computed: {
@@ -35,10 +36,10 @@ export default {
             return this.parent
         }
     },
-    mixins : [mixin],
-    
+    mixins: [mixin],
+
     props: {
-        parent : {
+        parent: {
             type: Object,
             default: () => ({})
         },
@@ -92,6 +93,6 @@ td {
 
 ::v-deep .el-input__inner,
 ::v-deep .el-select .el-input__inner {
-  font-size: 12px !important;
+    font-size: 12px !important;
 }
 </style>

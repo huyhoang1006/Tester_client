@@ -22,18 +22,27 @@
                 <el-col :span="24">
                     <div class="table-wrapper">
                         <table class="table-strip-input-data fixed-table">
+                            <colgroup>
+                                <col style="width: 50px" />
+                                <col style="width: 150px" />
+                                <col style="width: 165px" />
+                                <col style="width: 165px" />
+                                <col style="width: 165px" />
+                                <col style="width: 165px" />
+                                <col style="width: 165px" />
+                                <col style="width: 165px" />
+                                <col style="width: 165px" />
+                            </colgroup>
                             <thead>
-                                <th style="width: 50px;">Position</th>
-                                <th style="width: 120px;">Serial no.</th>
-                                <th style="width: 120px;">Rated voltage U<sub>r</sub></th>
-                                <th style="width: 120px;">Maximun system voltage<sub>s</sub></th>
-                                <th style="width: 120px;">Continous operating voltage U<sub>c</sub></th>
-                                <th style="width: 120px;">Short time withstand current</th>
-                                <th style="width: 120px;">Rated duration of short circuit</th>
-                                <th style="width: 120px;">Power frequency withstand voltage (to earth and between
-                                    poles)</th>
-                                <th style="width: 165px;">Power frequency withstand voltage (across the isolating
-                                    distance)</th>
+                                <th>Position</th>
+                                <th>Serial no.</th>
+                                <th>Rated voltage U<sub>r</sub></th>
+                                <th>Maximun system voltage<sub>s</sub></th>
+                                <th>Continous operating voltage U<sub>c</sub></th>
+                                <th>Short time withstand current</th>
+                                <th>Rated duration of short circuit</th>
+                                <th>Power frequency withstand voltage (to earth and between poles)</th>
+                                <th>Power frequency withstand voltage (across the isolating distance)</th>
                             </thead>
                             <tbody>
                                 <tr v-for="(item, index) in ratingsData.tableRating" :key="index">
@@ -191,6 +200,9 @@ export default {
 }
 
 .fixed-table {
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
     width: max-content;
     table-layout: fixed;
     border-collapse: collapse;

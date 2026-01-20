@@ -1,11 +1,11 @@
 <template>
     <div>
         <PropertiesReactor :data="reactor.properties" @update-attachment="updateAttachment" :attachment.sync="this.attachmentData"></PropertiesReactor>
-        <el-row style="margin-top: 20px;" :gutter="20" class="content">
-            <el-col :span="12" class="col-content">    
+        <el-row :gutter="20" class="content">
+            <el-col :xs="24" :md="12" class="col-content mgt-20">    
                 <RatingsReactor :data="reactor.reactorRating"></RatingsReactor>
             </el-col>
-            <el-col :span="12" class="col-content">    
+            <el-col :xs="24" :md="12" class="col-content mgt-20">    
                 <OthersReactor :data="reactor.reactorOther"></OthersReactor>
             </el-col>
         </el-row>
