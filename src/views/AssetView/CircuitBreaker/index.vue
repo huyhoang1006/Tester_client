@@ -1,15 +1,31 @@
 <template>
     <div id="asset">
-        <div style="min-height: 500px; display: flex; flex-direction: column;">
-            <div style="width: calc(100% - 20px)">
-                <el-button @click="switchData('circuitBreaker')" size="mini" style="width: calc(50% / 4);" type="primary">Circuit Breaker</el-button>
-                <el-button @click="switchData('operatingMechanism')" size="mini" style="width: calc(50% / 4 - 10px);" type="primary">Operating</el-button>
-                <el-button @click="switchData('assessmentLimit')" size="mini" style="width: calc(50% / 4 - 10px);" type="primary">Assessment</el-button>
-            </div>
-            <div style="flex: 1; display: flex; flex-direction: column; margin-top: 20px">
+        <div style="display: flex; flex-direction: column;">
+            <el-row justify="center" class="top-switch">
+                <el-col :xs="24" :md="18" :lg="12">
+                    <el-row :gutter="8">
+                        <el-col :xs="12" :sm="6" :md="6">
+                            <el-button class="trs-btn" @click="switchData('circuitBreaker')" size="mini"
+                                style="width: 100%;" type="primary">Circuit Breaker</el-button>
+                        </el-col>
+                        <el-col :xs="12" :sm="6" :md="6">
+                            <el-button class="trs-btn" @click="switchData('operatingMechanism')" size="mini"
+                                style="width: 100%;" type="primary">Operating</el-button>
+                        </el-col>
+                        <el-col :xs="12" :sm="6" :md="6">
+                            <el-button class="trs-btn" @click="switchData('assessmentLimit')" size="mini"
+                                style="width: 100%;" type="primary">Assessment</el-button>
+                        </el-col>
+                    </el-row>
+                </el-col>
+            </el-row>
+            <div style="flex: 1; display: flex; flex-direction: column;">
                 <div v-if="this.switch == 'circuitBreaker'">
-                    <circuitBreakProperty :title="title" :properties.sync="circuitBreakerDto.properties" @update-attachment="updateAttachment" :attachment.sync="this.attachmentData"></circuitBreakProperty>
-                    <circuitBreakerData :properties="circuitBreakerDto.properties" :circuitBreaker="circuitBreakerDto.circuitBreaker"></circuitBreakerData>
+                    <circuitBreakProperty :title="title" :properties.sync="circuitBreakerDto.properties"
+                        @update-attachment="updateAttachment" :attachment.sync="this.attachmentData">
+                    </circuitBreakProperty>
+                    <circuitBreakerData :properties="circuitBreakerDto.properties"
+                        :circuitBreaker="circuitBreakerDto.circuitBreaker"></circuitBreakerData>
                     <circuitBreakRating :ratings.sync="circuitBreakerDto.ratings"></circuitBreakRating>
                     <contactSystem :contactSys.sync="circuitBreakerDto.contactSystem"></contactSystem>
                     <others :others="circuitBreakerDto.others"></others>
@@ -48,7 +64,7 @@ export default {
         assessmentLimit,
     },
     props: {
-        parent : {
+        parent: {
             type: Object,
             default: () => ({})
         },
@@ -64,8 +80,8 @@ export default {
     },
     data() {
         return {
-            title : 'Circuit breaker',
-            switch : 'circuitBreaker',
+            title: 'Circuit breaker',
+            switch: 'circuitBreaker',
         }
     },
     computed: {
@@ -73,9 +89,9 @@ export default {
             return this.parent
         }
     },
-    mixins : [mixin],    
+    mixins: [mixin],
     methods: {
-        switchData(data){
+        switchData(data) {
             this.switch = data;
         },
         updateAttachment(attachment) {
@@ -117,6 +133,35 @@ td {
 
 ::v-deep .el-input__inner,
 ::v-deep .el-select .el-input__inner {
-  font-size: 12px !important;
+    font-size: 12px !important;
+}
+
+::v-deep(.top-switch) {
+    ::v-deep(.el-button) {
+        white-space: nowrap;
+        line-height: 1.4;
+        padding: 4px;
+        text-align: center;
+        text-overflow: ellipsis;
+        font-size: 12px;
+    }
+}
+
+::v-deep(.top-switch .trs-btn) {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 768px) {
+    .top-switch {
+        ::v-deep(.el-col) {
+            margin-bottom: 8px;
+        }
+    }
 }
 </style>
