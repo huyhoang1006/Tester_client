@@ -707,9 +707,8 @@
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Bushing" :visible.sync="signBushing" @close="handleBushingCancel"
-            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="dialogClass">
+        <el-dialog title="Add Bushing" :visible.sync="signBushing" @close="handleBushingCancel" :modal="!isDuplicating"
+            :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass">
             <Bushing :locationId="locationId" :parent="parentOrganization" ref="bushing"></Bushing>
             <span slot="footer" class="dialog-footer custom-footer">
                 <el-button class="footer-btn" size="small" type="danger" @click="handleBushingCancel">Cancel</el-button>
@@ -759,9 +758,8 @@
             </span>
         </el-dialog>
 
-        <el-dialog title="Add Power Cable" :visible.sync="signPower" @close="handlePowerCancel"
-            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="dialogClass">
+        <el-dialog title="Add Power Cable" :visible.sync="signPower" @close="handlePowerCancel" :modal="!isDuplicating"
+            :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass">
             <PowerCable :locationId="locationId" :parent="parentOrganization" ref="powerCable"></PowerCable>
             <span slot="footer" class="dialog-footer custom-footer">
                 <el-button class="footer-btn" size="small" type="danger" @click="handlePowerCancel">Cancel</el-button>
@@ -774,8 +772,10 @@
             :custom-class="dialogClass">
             <Disconnector :locationId="locationId" :parent="parentOrganization" ref="disconnector"></Disconnector>
             <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleDisconnectorCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleDisconnectorConfirm">Save</el-button>
+                <el-button class="footer-btn" size="small" type="danger"
+                    @click="handleDisconnectorCancel">Cancel</el-button>
+                <el-button class="footer-btn" size="small" type="primary"
+                    @click="handleDisconnectorConfirm">Save</el-button>
             </span>
         </el-dialog>
 
@@ -824,15 +824,15 @@
             </span>
         </el-dialog>
 
-        <el-dialog custom-class="app-dialog" title="Export" :visible.sync="openExportDialog">
+        <el-dialog custom-class="app-dialog custom-dialog" title="Export" :visible.sync="openExportDialog">
             <Export :exportType="exportType"></Export>
-            <span slot="footer" class="dialog-footer custom-class">
+            <span slot="footer" class="dialog-footer custom-footer">
                 <el-button class="footer-btn" size="small" type="danger" @click="handleCancelExport">Cancel</el-button>
                 <el-button class="footer-btn" size="small" type="primary" @click="handleExportConfirm">Save</el-button>
             </span>
         </el-dialog>
 
-        <el-dialog custom-class="app-dialog" title="Import" :visible.sync="openImportDialog">
+        <el-dialog custom-class="app-dialog custom-dialog" title="Import" :visible.sync="openImportDialog">
             <span slot="footer" class="dialog-footer custom-footer">
                 <el-button class="footer-btn" size="small" type="danger" @click="handleCancelImport">Cancel</el-button>
                 <el-button class="footer-btn" size="small" type="primary" @click="handleImportConfirm">Save</el-button>
@@ -847,8 +847,8 @@
             </span>
         </el-dialog>
 
-        <el-dialog title="Move Node" :visible.sync="moveDialogVisible" width="450px" @close="handleMoveCancel"
-            custom-class="move-dialog app-dialog">
+        <el-dialog title="Move Node" :visible.sync="moveDialogVisible" @close="handleMoveCancel"
+            custom-class="move-dialog app-dialog custom-dialog">
             <div style="height: 300px; overflow-y: auto">
                 <div class="child-nav" style="height: 100%; cursor: pointer">
                     <ul style="list-style: none; padding-left: 0">
@@ -1422,7 +1422,7 @@ export default {
         importJSONFromContext, handleAddCommand, handleOpenNode, fetchAssetByPsr,
         fetchJobsByAssetId, exportTreeToJSON, hideProperties, removeTab,
         pathMap, fmeca, showProperties, showDataServer
-        ],
+    ],
     async beforeMount() {
         try {
             const data = await window.electronAPI.getAllConfigurationEvents()
@@ -1553,7 +1553,7 @@ export default {
             }
         },
 
-       mappingProperties(data) {
+        mappingProperties(data) {
             this.properties = mapProperties(data);
         },
 
@@ -1570,11 +1570,11 @@ export default {
         },
 
         async mappingAssetPropertiesClient(data) {
-            this.assetPropertiesClient= mapClientAssetProperties(data)
+            this.assetPropertiesClient = mapClientAssetProperties(data)
         },
 
         async mappingJobPropertiesClient(data) {
-            this.jobPropertiesClient.name = mapClientJobProperties(data)                
+            this.jobPropertiesClient.name = mapClientJobProperties(data)
         },
 
         async updateSelection(node) {
@@ -2351,6 +2351,15 @@ body.duplicating-mode>.v-modal {
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 100px;
+}
+
+.custom-dialog {
+    max-height: 90vh;
+    height: auto !important;
+}
+
+.move-dialog {
+    width: 35% !important;
 }
 
 @media (max-width: 767px) {

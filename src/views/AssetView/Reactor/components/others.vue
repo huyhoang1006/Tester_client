@@ -21,7 +21,7 @@ export default {
     name: 'OthersReactor',
     data() {
         return {
-            labelWidth: '200px',
+            labelWidth: '120px',
         }
     },
     props: {

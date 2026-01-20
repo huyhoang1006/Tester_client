@@ -1,8 +1,8 @@
 <template>
-    <div class="mgy-5">
+    <div class="mgt-10">
         <el-row>
             <el-col :span="24">
-                <div class="header-toggle pointer font_size_12" @click="openConfig = !openConfig">
+                <div class="header-toggle pointer" style="font-size: 12px;" @click="openConfig = !openConfig">
                     <i v-if="openConfig" class="fa-solid fa-caret-up"></i>
                     <i v-else class="fa-solid fa-caret-down"></i>
                     CT Configuration
@@ -10,29 +10,25 @@
             </el-col>
         </el-row>
         <div class="content-toggle " v-if="openConfig">
-            <br />
-            <el-row style="width: 100%;" class="content">
-                <el-col :span="8" class="col-content">
+            <el-row class="content">
+                <el-col :xs="12" :sm="12" :md="8" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Cores">
-                            <el-col :span="24" class="pdr-0">
-                                <el-select @change="changeCoreData(configsData.cores)" style="width: 25%;"
-                                    v-model="configsData.cores">
-                                    <el-option v-for="item in 9" :key="item" :label="item" :value="item"> </el-option>
-                                </el-select>
-                            </el-col>
+                            <el-select style="width: 100%" @change="changeCoreData(configsData.cores)"
+                                v-model="configsData.cores">
+                                <el-option v-for="item in 9" :key="item" :label="item" :value="item"> </el-option>
+                            </el-select>
                         </el-form-item>
                     </el-form>
                 </el-col>
             </el-row>
-            <br />
             <el-row>
                 <div id="cores">
                     <el-tabs v-if="!isNaN(parseInt(configsData.cores))" type="card" class="w-100 h-100">
                         <el-tab-pane v-for="(item, index) in this.configsData.dataCT" :key="index"
                             :label="(index + 1).toString()">
-                            <el-row style="margin-top: 20px; background-color: #F5F5F5; width: 50%;">
-                                <el-col :span="8" class="col-content margin-data">
+                            <el-row style="background-color: #F5F5F5;">
+                                <el-col :span="12" class="col-content margin-data">
                                     <el-form :inline-message="true" :label-width="labelWidth" size="mini"
                                         label-position="left">
                                         <el-form-item label="Taps">
@@ -48,10 +44,7 @@
                                         </el-form-item>
                                     </el-form>
                                 </el-col>
-                                <el-col :span="2" class="margin-data">
-                                    <br />
-                                </el-col>
-                                <el-col :span="8" class="col-content margin-data">
+                                <el-col :span="12" class="col-content margin-data">
                                     <el-form :inline-message="true" :label-width="labelWidth" size="mini"
                                         label-position="left">
                                         <el-form-item label="Common tap">
@@ -65,12 +58,11 @@
                                     </el-form>
                                 </el-col>
                             </el-row>
-                            <el-row style="margin-top: 30px; width: fit-content;">
+                            <el-row style="margin-top: 10px; width: 100%;">
                                 <el-col :span="24">
                                     <div class="bolder">Full tap</div>
                                     <el-divider></el-divider>
-                                    <br />
-                                    <div class="fulltap-data">
+                                    <div style="width: fit-content" class="fulltap-data">
                                         <table style=" width: 100%; background-color: white;">
                                             <thead>
                                                 <th class="last-left"></th>
@@ -514,11 +506,10 @@
                             </el-row>
 
                             <el-row v-if="item.taps > 2 && item.commonTap != ''"
-                                style="margin-top: 50px; width: fit-content;">
+                                style="margin-top: 10px; width: 100%;">
                                 <el-col style="width: 100%;">
                                     <div class="bolder">Main tap</div>
                                     <el-divider></el-divider>
-                                    <br />
                                     <div style="width: fit-content;" class="fulltap-data">
                                         <div v-for="element in (parseInt(item.taps) - 2)" :key='element'>
                                             <table style=" background-color: white;">
@@ -645,11 +636,10 @@
                                 </el-col>
                             </el-row>
                             <el-row v-if="item.taps > 2 && item.commonTap != ''"
-                                style="margin-top: 50px; width: fit-content;">
+                                style="margin-top: 10px; width: 100%;">
                                 <el-col :span="24">
                                     <div class="bolder">Inter taps</div>
                                     <el-divider></el-divider>
-                                    <br />
                                     <div style="width: fit-content;" class="fulltap-data">
                                         <div v-for="(e, i) in item.interTap.data" :key="i">
                                             <table style=" width: 100%; background-color: white;">
@@ -816,7 +806,7 @@ export default {
             },
             ratedBurden: ['Choose burden', 'Custom', '2.5 VA', '5.0 VA', '10 VA', '15 VA', '30 VA'],
             openConfig: "true",
-            labelWidth: `100px`,
+            labelWidth: `120px`,
             openMain: [],
             mainTapNumber: '2'
 
@@ -874,7 +864,7 @@ export default {
                                 kssc: '',
                                 ktd: '',
                                 duty: '',
-                                vb: {mrid: '', value: '', unit: UnitSymbol.V},
+                                vb: { mrid: '', value: '', unit: UnitSymbol.V },
                                 alf: '',
                                 ts: '',
                                 ek: '',
@@ -898,7 +888,7 @@ export default {
                                 operatingBurden: { mrid: '', value: '', unit: UnitSymbol.VA },
                                 operatingBurdenCos: '',
                                 core_index: i + 1,
-                                ratio_error: {mrid: '', value: '', unit: UnitSymbol.percent}
+                                ratio_error: { mrid: '', value: '', unit: UnitSymbol.percent }
 
                             }
                         },
@@ -916,12 +906,12 @@ export default {
                                     },
                                     classRating: {
 
-                                        mrid : '',
-                                        rated_burden: {mrid: '', value: '', unit:UnitSymbol.VA},
+                                        mrid: '',
+                                        rated_burden: { mrid: '', value: '', unit: UnitSymbol.VA },
                                         extended_burden: false,
-                                        burden: {mrid: '', value: '', unit:UnitSymbol.VA},
+                                        burden: { mrid: '', value: '', unit: UnitSymbol.VA },
                                         burdenCos: '',
-                                        operatingBurden: {mrid: '', value: '', unit:UnitSymbol.VA},
+                                        operatingBurden: { mrid: '', value: '', unit: UnitSymbol.VA },
                                         operatingBurdenCos: '',
                                         core_index: i + 1
 
@@ -943,18 +933,18 @@ export default {
                                     },
                                     classRating: {
 
-                                        mrid : '',
-                                        rated_burden: {mrid: '', value: '', unit:UnitSymbol.VA},
+                                        mrid: '',
+                                        rated_burden: { mrid: '', value: '', unit: UnitSymbol.VA },
                                         extended_burden: false,
-                                        burden: {mrid: '', value: '', unit:UnitSymbol.VA},
+                                        burden: { mrid: '', value: '', unit: UnitSymbol.VA },
                                         burdenCos: '',
-                                        operatingBurden: {mrid: '', value: '', unit:UnitSymbol.VA},
+                                        operatingBurden: { mrid: '', value: '', unit: UnitSymbol.VA },
                                         operatingBurdenCos: '',
                                         core_index: i + 1
 
                                     }
                                 }
-                              
+
                             ]
                         }
                     };
@@ -990,7 +980,7 @@ export default {
                                     kssc: '',
                                     ktd: '',
                                     duty: '',
-                                    vb: {mrid: '', value: '', unit: UnitSymbol.V},
+                                    vb: { mrid: '', value: '', unit: UnitSymbol.V },
                                     alf: '',
                                     ts: '',
                                     ek: '',
@@ -1014,7 +1004,7 @@ export default {
                                     operatingBurden: { mrid: '', value: '', unit: UnitSymbol.VA },
                                     operatingBurdenCos: '',
                                     core_index: i + 1,
-                                    ratio_error: {mrid: '', value: '', unit: UnitSymbol.percent}
+                                    ratio_error: { mrid: '', value: '', unit: UnitSymbol.percent }
                                 }
                             },
                             mainTap: {
@@ -1032,15 +1022,15 @@ export default {
                                         },
                                         classRating: {
 
-                                            mrid : '',
-                                            rated_burden: {mrid: '', value: '', unit:UnitSymbol.VA},
+                                            mrid: '',
+                                            rated_burden: { mrid: '', value: '', unit: UnitSymbol.VA },
                                             extended_burden: false,
-                                            burden: {mrid: '', value: '', unit:UnitSymbol.VA},
+                                            burden: { mrid: '', value: '', unit: UnitSymbol.VA },
                                             burdenCos: '',
-                                            operatingBurden: {mrid: '', value: '', unit:UnitSymbol.VA},
+                                            operatingBurden: { mrid: '', value: '', unit: UnitSymbol.VA },
                                             operatingBurdenCos: '',
                                             core_index: i + 1
-                                            
+
                                         }
                                     }
                                 ]
@@ -1059,15 +1049,15 @@ export default {
                                         },
                                         classRating: {
 
-                                            mrid : '',
-                                            rated_burden: {mrid: '', value: '', unit:UnitSymbol.VA},
+                                            mrid: '',
+                                            rated_burden: { mrid: '', value: '', unit: UnitSymbol.VA },
                                             extended_burden: false,
-                                            burden: {mrid: '', value: '', unit:UnitSymbol.VA},
+                                            burden: { mrid: '', value: '', unit: UnitSymbol.VA },
                                             burdenCos: '',
-                                            operatingBurden: {mrid: '', value: '', unit:UnitSymbol.VA},
+                                            operatingBurden: { mrid: '', value: '', unit: UnitSymbol.VA },
                                             operatingBurdenCos: '',
                                             core_index: i + 1,
-                                            ratio_error: {mrid: '', value: '', unit: UnitSymbol.percent}
+                                            ratio_error: { mrid: '', value: '', unit: UnitSymbol.percent }
 
                                         }
                                     }
@@ -1182,20 +1172,20 @@ export default {
                         table: {
                             mrid: '',
                             isShow: false,
-                                name: '',
-                                ipn: { mrid: '', value: '', unit: "A" },
+                            name: '',
+                            ipn: { mrid: '', value: '', unit: "A" },
                             isn: { mrid: '', value: '', unit: "A" },
                             inUse: false,
                             type: 'maintap'
                         },
                         classRating: {
 
-                            mrid : '',
-                                rated_burden: {mrid: '', value: '', unit:UnitSymbol.VA},
+                            mrid: '',
+                            rated_burden: { mrid: '', value: '', unit: UnitSymbol.VA },
                             extended_burden: false,
-                                burden: {mrid: '', value: '', unit:UnitSymbol.VA},
+                            burden: { mrid: '', value: '', unit: UnitSymbol.VA },
                             burdenCos: '',
-                                operatingBurden: {mrid: '', value: '', unit:UnitSymbol.VA},
+                            operatingBurden: { mrid: '', value: '', unit: UnitSymbol.VA },
                             operatingBurdenCos: '',
                             core_index: i + 1
 
@@ -1219,20 +1209,20 @@ export default {
                         table: {
                             mrid: '',
                             isShow: false,
-                                name: '',
-                                ipn: { mrid: '', value: '', unit: "A" },
+                            name: '',
+                            ipn: { mrid: '', value: '', unit: "A" },
                             isn: { mrid: '', value: '', unit: "A" },
                             inUse: false,
                             type: 'intertap'
                         },
                         classRating: {
 
-                            mrid : '',
-                                rated_burden: {mrid: '', value: '', unit:UnitSymbol.VA},
+                            mrid: '',
+                            rated_burden: { mrid: '', value: '', unit: UnitSymbol.VA },
                             extended_burden: false,
-                                burden: {mrid: '', value: '', unit:UnitSymbol.VA},
+                            burden: { mrid: '', value: '', unit: UnitSymbol.VA },
                             burdenCos: '',
-                                operatingBurden: {mrid: '', value: '', unit:UnitSymbol.VA},
+                            operatingBurden: { mrid: '', value: '', unit: UnitSymbol.VA },
                             operatingBurdenCos: '',
                             core_index: i + 1
 
@@ -1350,9 +1340,5 @@ th {
 
 .displayItem {
     display: none;
-}
-
-.font_size_12 {
-    font-size: 12px;
 }
 </style>

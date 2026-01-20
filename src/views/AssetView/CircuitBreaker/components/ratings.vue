@@ -2,7 +2,7 @@
     <div id="ratings" class="mgy-5">
         <el-row>
             <el-col :span="24">
-                <div class="header-toggle pointer" @click="openRatings = !openRatings">
+                <div style="font-size: 12px;" class="header-toggle pointer" @click="openRatings = !openRatings">
                     <i v-if="openRatings" class="fa-solid fa-caret-up"></i>
                     <i v-else class="fa-solid fa-caret-down"></i>
                     Ratings
@@ -11,7 +11,7 @@
         </el-row>
         <div class="content-toggle" v-if="openRatings">
             <el-row :gutter="20" class="content">
-                <el-col :span="12" class="col-content">
+                <el-col :xs="24" :sm="18" :md="14" :lg="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item v-if="ratingsData.rated_frequency.value !== 'Custom'" label="Rated frequency">
                             <el-row class="pdl-0">
@@ -45,7 +45,7 @@
                 </el-col>
             </el-row>
             <el-row :gutter="20" class="content">
-                <el-col :span="12" class="col-content">
+                <el-col :xs="24" :sm="18" :md="14" :lg="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Rated voltage L-L">
                             <el-input v-model="ratingsData.rated_voltage_ll.value">
@@ -114,7 +114,7 @@ export default {
     data() {
         return {
             openRatings : "true",
-            labelWidth : `250px`
+            labelWidth : `200px`
         }
     },
     computed: {
@@ -124,3 +124,7 @@ export default {
     }
 }
 </script>
+
+<style lang="scss" scoped>
+
+</style>

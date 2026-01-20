@@ -1,8 +1,8 @@
 <template>
-    <div id="ratings" class="mgy-5">
+    <div id="ratings" class="mgt-5">
         <el-row>
             <el-col :span="24">
-                <div class="header-toggle pointer" @click="openContact = !openContact">
+                <div style="font-size: 12px;" class="header-toggle pointer" @click="openContact = !openContact">
                     <i v-if="openContact" class="fa-solid fa-caret-up"></i>
                     <i v-else class="fa-solid fa-caret-down"></i>
                     Contact system
@@ -11,7 +11,7 @@
         </el-row>
         <div class="content-toggle" v-if="openContact">
             <el-row :gutter="20" class="content">
-                <el-col :span="12" class="col-content">
+                <el-col :xs="24" :sm="18" :md="14" :lg="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Nominal total travel">
                             <el-input v-model="contactSysData.nominal_total_travel.value">
@@ -47,7 +47,7 @@ export default {
     data() {
         return {
             openContact : "true",
-            labelWidth : `250px`
+            labelWidth : `200px`
         }
     },
     computed: {
