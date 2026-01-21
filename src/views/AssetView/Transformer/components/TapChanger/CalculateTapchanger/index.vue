@@ -1,5 +1,5 @@
 <template>
-    <el-dialog title="Calculate Tap changer" :modal="true" :visible="openDialog" @close="handleCancel">
+    <el-dialog title="Calculate Tap changer" :modal="true" :visible="openDialog" @close="handleCancel" append-to-body>
         <div>Base on ...</div><br>
 
         <el-tabs v-if="tapVoltable.length > 1" type="card" v-model="activeName">
