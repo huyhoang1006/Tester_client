@@ -74,6 +74,7 @@ export const jobDtoToEntity = (dto) => {
         workTask.kind = 'test';
         workTask.comment = item.testCondition.comment || null;
         workTask.work = entity.oldWork.mrid || null;
+        workTask.title = item.testTypeName || null;
         entity.workTasks.push(workTask);
 
         //attachment
@@ -226,7 +227,7 @@ export const JobEntityToDto = (entity) => {
             mrid: item.mrid || '',
             name: item.name || '',
             testTypeCode: item.type || '',
-            testTypeName: '',
+            testTypeName: item.title || '',
             testTypeId: '',
             average_score: null,
             average_score_c: null,
