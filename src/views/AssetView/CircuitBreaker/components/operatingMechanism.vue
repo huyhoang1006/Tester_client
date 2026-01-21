@@ -54,7 +54,7 @@
             <transition>
                 <el-row v-if="operating.asset_type !== '<Select asset type>'" :gutter="20" class="content">
                     <el-col :span="24">
-                        <div class="table-wrapper">
+                        <div class="table-scroll">
                             <table class="table-strip-input-data fixed-table">
                                 <colgroup>
                                     <col style="width: 120px;" />
@@ -393,9 +393,26 @@ table {
     border: 1px solid #fff;
 }
 
-.table-wrapper {
+.table-scroll {
     width: 100%;
     overflow: auto;
+}
+
+.table-scroll::-webkit-scrollbar {
+    height: 5px;
+}
+
+.table-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.table-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(120, 120, 120, 0.6);
+    border-radius: 6px;
+}
+
+.table-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(120, 120, 120, 0.85);
 }
 
 @media (max-width: 991px) {
