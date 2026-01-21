@@ -20,12 +20,10 @@ export default {
                 } else {
                     const dto = JSON.parse(JSON.stringify(this.surgeArresterJobDto));
                     const resultDto = await this.checkJob(dto);
+                    console.log(resultDto)
                     const entity = surgeArresterJobMapping.jobDtoToEntity(resultDto);
                     const old_entity = surgeArresterJobMapping.jobDtoToEntity(this.surgeArresterJobDtoOld);
-                    // const rs = await window.electronAPI.insertSurgeArresterJob(old_entity, entity)
-                    const rs = {
-                        success: false
-                    }
+                    const rs = await window.electronAPI.insertSurgeArresterJob(old_entity, entity)
                     if (rs.success) {
                         return {
                             success: true,
@@ -65,12 +63,6 @@ export default {
         },
 
         async loadData(data) {
-            for (const test of data.testList) {
-                if (test.data.row_data.length == 0) {
-                    const initTest = await this.initTest(test.testTypeCode, this.assetData);
-                    test.data.row_data = initTest.row_data;
-                }
-            }
             this.surgeArresterJobDto = data
             this.surgeArresterJobDtoOld = JSON.parse(JSON.stringify(data));
         },
@@ -148,7 +140,43 @@ export default {
         },
 
         async checkDataMeasurement(data) {
-            console.log('checkDataMeasurement data', data)
+            for (const test of data.testList) {
+                if (test.testCondition.mrid || test.testCondition.mrid === null || test.testCondition.mrid === '') {
+                    test.testCondition.mrid = uuid.newUuid();
+                }
+                Object.keys(test.testCondition.condition).forEach(key => {
+                    if(test.testCondition.condition[key] && test.testCondition.condition[key].mrid === '' || test.testCondition.condition[key].mrid === null) {
+                        test.testCondition.condition[key].mrid = uuid.newUuid();
+                    }
+                })
+                if (test.testCondition.attachment.id === null || test.testCondition.attachment.id === '') {
+                    if (test.testCondition.attachmentData.length > 0) {
+                        test.testCondition.attachment.id = uuid.newUuid()
+                        test.testCondition.attachment.name = null
+                        test.testCondition.attachment.path = JSON.stringify(test.testCondition.attachmentData)
+                        test.testCondition.attachment.type = 'test'
+                        test.testCondition.attachment.id_foreign = test.mrid
+                    }
+                }
+                for (const row of test.data.table) {
+                    if (row.mrid === '' || row.mrid === null) {
+                        row.mrid = uuid.newUuid();
+                        Object.keys(row).forEach(key => {
+                            if(row[key] && row[key].mrid === '' || row[key].mrid === null) {
+                                row[key].mrid = uuid.newUuid();
+                            }
+                        })
+                    }
+                    
+                }
+
+                if(data.procedureAsset.map(x => x.procedure_id).indexOf(test.testTypeId) === -1) {
+                    data.procedureAsset.push({
+                        procedure_id: test.testTypeId,
+                        asset_id: this.assetData.mrid
+                    });
+                }
+            }
         },
     }
 }

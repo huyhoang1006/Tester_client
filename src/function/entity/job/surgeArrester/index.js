@@ -1,23 +1,13 @@
 import db from '../../../datacontext/index.js'
 import * as attachmentContext from '../../../attachmentcontext/index'
 import path from 'path'
-import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, deleteDirectory } from '@/function/entity/attachment'
+import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType } from '@/function/entity/attachment'
 import {insertOldWorkTransaction, getOldWorkById} from "@/function/cim/oldWork/index"
-import { insertTestingEquipmentTransaction, getTestingEquipmentById, getTestingEquipmentByWorkId, deleteTestingEquipmentByIdTransaction } from '../../testingEquipment/index.js'
+import { insertTestingEquipmentTransaction, getTestingEquipmentByWorkId, deleteTestingEquipmentByIdTransaction } from '../../testingEquipment/index.js'
 import SurgeArresterJobEntity from '@/views/Flatten/Job/SurgeArrester/index.js'
 import { insertWorkTaskTransaction, getWorkTaskByWork, deleteWorkTaskByIdTransaction } from '@/function/cim/workTask/index.js'
-import { insertOldTransformerObservationTransaction, getOldTransformerObservationById, deleteOldTransformerObservationByIdTransaction, getOldTransformerObservationByWorkTaskId } from '@/function/cim/oldTransformerObservation/index.js'
-import {insertPercentTransaction, deletePercentByIdTransaction, getPercentById} from '@/function/cim/percent/index.js'
-import {insertTemperatureTransaction, deleteTemperatureByIdTransaction, getTemperatureById} from '@/function/cim/temperature/index.js'
 import { insertSurgeArresterTestingEquipmentTestTypeTransaction, getSurgeArresterTestingEquipmentTestingEqId, deleteSurgeArresterTestingEquipmentTestTypeByIdTransaction } from '../../surgeArresterTestingEquipmentTestType/index.js'
 import { insertTestDataSetTransaction, getTestDataSetByWorkTaskId, deleteTestDataSetByIdTransaction } from '@/function/cim/testDataSet'
-import { insertAnalogTransaction, getAllAnalogByProcedureIds  } from '@/function/cim/analog'
-import { insertStringMeasurementTransaction, getAllStringMeasurementByProcedureIds } from '@/function/cim/stringMeasurement/index.js'
-import {insertDiscreteTransaction , getAllDiscreteByProcedureIds } from  '@/function/cim/discrete'
-import { insertValueAliasSetTransaction, getValueAliasSetByIds} from '@/function/cim/valueAliasSet/index.js'
-import { insertValueToAliasTransaction, getValueToAliasByValueAliasSetId } from '@/function/cim/valueToAlias'
-import { getProcedureByAssetId, insertProcedureTransaction } from '@/function/cim/procedure'
-import { insertMeasurementProcedureTransaction } from '@/function/cim/measurementProcedure/index.js'
 import { insertAnalogValueTransaction, getAnalogValueByTestDataSetMrids, deleteAnalogValueByIdTransaction } from '@/function/cim/analogValue/index.js'
 import { insertStringMeasurementValueTransaction, getStringMeasurementValueByTestDataSetMrids, deleteStringMeasurementValueByIdTransaction } from '@/function/cim/stringMeasurementValue/index.js'
 import { insertDiscreteValueTransaction, getDiscreteValueByTestDataSetMrids, deleteDiscreteValueByIdTransaction } from '@/function/cim/discreteValue/index.js'
@@ -78,44 +68,8 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
                 await uploadAttachmentTransaction(entity.attachment, db);
             }
 
-            //procedure
-            for(const procedure of entity.procedure) {
-                await insertProcedureTransaction(procedure, db);
-            }
-
             for(const procedureAsset of entity.procedureAsset) {
                 await insertProcedureAssetTransaction(procedureAsset, db);
-            }
-
-            //measurement
-            //insert analog
-            for(const analog of entity.analog) {
-                await insertAnalogTransaction(analog, db);
-            }
-
-            //insert string measurement
-            for(const stringMeasurement of entity.stringMeasurement) {
-                await insertStringMeasurementTransaction(stringMeasurement, db);
-            }
-
-            //insert valueAliasSet
-            for(const valueAliasSet of entity.valueAliasSet) {
-                await insertValueAliasSetTransaction(valueAliasSet, db);
-            }
-
-            //insert valueToAlias
-            for(const valueToAlias of entity.valueToAlias) {
-                await insertValueToAliasTransaction(valueToAlias, db);
-            }
-
-            //insert discrete
-            for(const discrete of entity.discrete) {
-                await insertDiscreteTransaction(discrete, db);
-            }
-
-            //insert measurement procedure
-            for(const measurementProcedure of entity.measurementProcedure) {
-                await insertMeasurementProcedureTransaction(measurementProcedure, db);
             }
 
             //testing equipment
@@ -164,53 +118,6 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
                 await insertWorkTaskTransaction(workTask, db);
             }
 
-            //percentage
-            const newIdsPercentage = entity.percent.map(v => v.mrid).filter(id => id); // bỏ null/empty
-            const oldIdsPercentage = old_entity.percent.map(v => v.mrid).filter(id => id);
-
-            const toAddPercentage = entity.percent.filter(v => v.mrid && !oldIdsPercentage.includes(v.mrid));
-            const toDeletePercentage = old_entity.percent.filter(v => v.mrid && !newIdsPercentage.includes(v.mrid));
-            const toUpdatePercentage = entity.percent.filter(v => v.mrid && oldIdsPercentage.includes(v.mrid));
-
-            for (const percentage of toAddPercentage) {
-                await insertPercentTransaction(percentage, db);
-            }
-
-            for (const percentage of toUpdatePercentage) {
-                await insertPercentTransaction(percentage, db);
-            }
-
-            //temperature
-            const newIdsTemperature = entity.temperature.map(v => v.mrid).filter(id => id); // bỏ null/empty
-            const oldIdsTemperature = old_entity.temperature.map(v => v.mrid).filter(id => id);
-
-            const toAddTemperature = entity.temperature.filter(v => v.mrid && !oldIdsTemperature.includes(v.mrid));
-            const toDeleteTemperature = old_entity.temperature.filter(v => v.mrid && !newIdsTemperature.includes(v.mrid));
-            const toUpdateTemperature = entity.temperature.filter(v => v.mrid && oldIdsTemperature.includes(v.mrid));
-            for (const temperature of toAddTemperature) {
-                await insertTemperatureTransaction(temperature, db);
-            }
-
-            for (const temperature of toUpdateTemperature) {
-                await insertTemperatureTransaction(temperature, db);
-            }
-
-            //transformer observation
-            const newIdsTransformerObservation = entity.transformerObservation.map(v => v.mrid).filter(id => id); // bỏ null/empty
-            const oldIdsTransformerObservation = old_entity.transformerObservation.map(v => v.mrid).filter(id => id);
-
-            const toAddTransformerObservation = entity.transformerObservation.filter(v => v.mrid && !oldIdsTransformerObservation.includes(v.mrid));
-            const toUpdateTransformerObservation = entity.transformerObservation.filter(v => v.mrid && oldIdsTransformerObservation.includes(v.mrid));
-            const toDeleteTransformerObservation = old_entity.transformerObservation.filter(v => v.mrid && !newIdsTransformerObservation.includes(v.mrid));
-
-            for (const observation of toAddTransformerObservation) {
-                await insertOldTransformerObservationTransaction(observation, db);
-            }
-
-            for (const observation of toUpdateTransformerObservation) {
-                await insertOldTransformerObservationTransaction(observation, db);
-            }
-
             //attachemt
             if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
                 const pathData = JSON.parse(entity.attachment.path);
@@ -255,6 +162,7 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
                 await insertTestDataSetTransaction(testData, db);
             }
 
+            console.log('testing equipment');
             //analog value
             const newIdsAnalogValue = entity.analogValues.map(v => v.mrid).filter(id => id); // bỏ null/empty
             const oldIdsAnalogValue = old_entity.analogValues.map(v => v.mrid).filter(id => id);
@@ -329,20 +237,8 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
                 await deleteTestingEquipmentByIdTransaction(equipment.mrid, db);
             }
 
-            for (const observation of toDeleteTransformerObservation) {
-                await deleteOldTransformerObservationByIdTransaction(observation.mrid, db);
-            }
-
             for (const workTask of toDeleteWorkTask) {
                 await deleteWorkTaskByIdTransaction(workTask.mrid, db);
-            }
-
-            for (const percentage of toDeletePercentage) {
-                await deletePercentByIdTransaction(percentage.mrid, db);
-            }
-
-            for (const temperature of toDeleteTemperature) {
-                await deleteTemperatureByIdTransaction(temperature.mrid, db);
             }
 
             await runAsync('COMMIT');
@@ -404,10 +300,6 @@ export const getSurgeArresterJobEntity = async (id, assetId) => {
 
                 for (let i = 0; i < entity.workTasks.length; i++) {
                     const workTask = entity.workTasks[i];
-                    const dataTransformerObservation = await getOldTransformerObservationByWorkTaskId(workTask.mrid);
-                    if(dataTransformerObservation.success) {
-                        entity.transformerObservation.push(dataTransformerObservation.data);
-                    }
 
                     const dataAttachmentTest = await getAttachmentByForeignIdAndType(workTask.mrid, 'test');
                     if(dataAttachmentTest.success) {
@@ -418,50 +310,6 @@ export const getSurgeArresterJobEntity = async (id, assetId) => {
                     if(dataTestDataSet.success) {
                         entity.testDataSet = entity.testDataSet.concat(dataTestDataSet.data)
                     }
-                }
-
-                for(const observation of entity.transformerObservation) {
-                    if(observation.humidity) {
-                        const dataPercent = await getPercentById(observation.humidity);
-                        if(dataPercent.success) {
-                            entity.percent.push(dataPercent.data);
-                        }
-                    }
-
-                    if(observation.ambient_temp) {
-                        const dataTemp = await getTemperatureById(observation.ambient_temp);
-                        if(dataTemp.success) {
-                            entity.temperature.push(dataTemp.data);
-                        }
-                    }
-
-                    if(observation.reference_temp) {
-                        const dataTemp = await getTemperatureById(observation.reference_temp);
-                        if(dataTemp.success) {
-                            entity.temperature.push(dataTemp.data);
-                        }
-                    }
-
-                    if(observation.winding_temp) {
-                        const dataTemp = await getTemperatureById(observation.winding_temp);
-                        if(dataTemp.success) {
-                            entity.temperature.push(dataTemp.data);
-                        }
-                    }
-
-                    if(observation.top_oil_temp) {
-                        const dataTemp = await getTemperatureById(observation.top_oil_temp);
-                        if(dataTemp.success) {
-                            entity.temperature.push(dataTemp.data);
-                        }
-                    }
-                    if(observation.bottom_oil_temp) {
-                        const dataTemp = await getTemperatureById(observation.bottom_oil_temp);
-                        if(dataTemp.success) {
-                            entity.temperature.push(dataTemp.data);
-                        }
-                    }
-
                 }
 
                 const mrids = entity.testDataSet.map(x => x.mrid);
@@ -478,42 +326,6 @@ export const getSurgeArresterJobEntity = async (id, assetId) => {
                 const discreteValue = await getDiscreteValueByTestDataSetMrids(mrids);
                 if(discreteValue.success) {
                     entity.discreteValues = discreteValue.data;
-                }
-
-                const procedure = await getProcedureByAssetId(assetId);
-                if(procedure.success) {
-                    entity.procedure = procedure.data;
-                } else {
-                    entity.procedure = [];
-                }
-
-                const procedureIds = entity.procedure.map(x => x.mrid);
-                const analogSet = await getAllAnalogByProcedureIds(procedureIds);
-                if(analogSet.success) {
-                    entity.analog = analogSet.data;
-                }
-
-                const stringMeasurementSet = await getAllStringMeasurementByProcedureIds(procedureIds);
-                if(stringMeasurementSet.success) {
-                    entity.stringMeasurement = stringMeasurementSet.data;
-                }
-
-                const discreteSet = await getAllDiscreteByProcedureIds(procedureIds);
-                if(discreteSet.success) {
-                    entity.discrete = discreteSet.data;
-                }
-
-                const valueAliasSetIds = [...new Set(entity.discrete.map(x => x.value_alias_set))];
-                const valueAliasSet = await getValueAliasSetByIds(valueAliasSetIds);
-                if(valueAliasSet.success) {
-                    entity.valueAliasSet = valueAliasSet.data;
-                }
-
-                for(const vas of entity.valueAliasSet) {
-                    const vToAlias = await getValueToAliasByValueAliasSetId(vas.mrid);
-                    if(vToAlias.success) {
-                        entity.valueToAlias = entity.valueToAlias.concat(vToAlias.data);
-                    }
                 }
 
                 return {

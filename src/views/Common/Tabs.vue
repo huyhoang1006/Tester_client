@@ -520,7 +520,7 @@ export default {
                         this.productAssetModelData = {}
                     }
                     if (tab.job === 'Surge arrester') {
-                        const dataTestType = await window.electronAPI.getAllTestTypeSurgeArrester();
+                        const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Surge arrester")
                         if (dataTestType.success) {
                             this.testTypeListData = dataTestType.data
                         } else {
@@ -546,13 +546,14 @@ export default {
                                     }
                                 }
                             }
+                            console.log("surgeArresterJobDto : ", surgeArresterJobDto)
                             this.$refs.componentLoadData[index].loadData(surgeArresterJobDto)
                         } else {
                             this.$message.error("Failed to load surge arrester job data");
                         }
                     }
                     else if( tab.job === 'Power cable') {
-                        const dataTestType = await window.electronAPI.getAllTestTypePowerCable();
+                        const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Power cable")
                         if (dataTestType.success) {
                             this.testTypeListData = dataTestType.data
                         } else {
@@ -584,7 +585,7 @@ export default {
                         }
                     }
                     else if( tab.job === 'Transformer') {
-                        const dataTestType = await window.electronAPI.getAllTestTypeTransformers();
+                        const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Transformer")
                         if (dataTestType.success) {
                             this.testTypeListData = dataTestType.data
                         } else {
@@ -623,7 +624,7 @@ export default {
             }
         },
        // Trong src/views/Common/Tabs.vue
-async loadDataServer(tab, index) {
+        async loadDataServer(tab, index) {
     try { if (tab.mode === 'substation') {
             const serverData = tab; 
 
@@ -689,8 +690,8 @@ async loadDataServer(tab, index) {
     } catch (error) {
         console.error("Error loading data from server:", error);
     }
-},
-async selectTab(tab, index) {
+        },
+        async selectTab(tab, index) {
             this.activeTab = tab;
             this.indexTab = index;
             this.$emit('input', tab); // Gửi ngược lại cho TreeNavigation qua v-model
