@@ -20,7 +20,7 @@
             </el-row>
             <el-row style="width: 100%" class="content">
                 <el-col :span="24">
-                    <div class="table-wrapper">
+                    <div class="table-scroll">
                         <table class="table-strip-input-data fixed-table">
                             <colgroup>
                                 <col style="width: 50px" />
@@ -215,12 +215,29 @@ export default {
     border: 1px solid #fff;
 }
 
-.table-wrapper {
+.table-scroll {
     width: 100%;
     overflow: auto;
 }
 
-::v-deep .el-form-item__label {
+.table-scroll::-webkit-scrollbar {
+    height: 5px;
+}
+
+.table-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.table-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(120, 120, 120, 0.6);
+    border-radius: 6px;
+}
+
+.table-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(120, 120, 120, 0.85);
+}
+
+::v-deep(.el-form-item__label) {
     font-size: 12px;
 }
 </style>

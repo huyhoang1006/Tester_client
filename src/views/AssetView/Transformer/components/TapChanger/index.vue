@@ -2,258 +2,241 @@
     <div id="tap-changers" class="mgt-20">
         <el-row :gutter="20" class="content">
             <el-col :span="24">
-                <el-radio-group v-model="tapChangersData.mode" @change="onChangeTapChanger">
-                    <el-radio label="oltc">OLTC</el-radio>
-                    <el-radio label="detc">DETC</el-radio>
+                <el-radio-group v-model="tapChangersData.mode" @change="onChangeTapChanger" class="radio-two-col">
+                    <el-radio style="display: flex; width: 100%" label="oltc">OLTC</el-radio>
+                    <el-radio style="display: flex; width: 100%" label="detc">DETC</el-radio>
                 </el-radio-group>
             </el-col>
         </el-row>
         <el-row :gutter="20" class="content mgt-10">
             <!-- oltc -->
-            <el-col :xs="24" :md="12" class="col-content">
-                <el-row v-if="tapChangersData.mode === 'oltc'">
-                    <el-col :span="24">
-                        <el-row :gutter="20" class="content">
-                            <el-col :span="24" class="col-content">
-                                <el-form :inline-message="true" :label-width="labelWidth" size="mini"
-                                    label-position="left">
-                                    <el-form-item label="Serial no.">
-                                        <el-input v-model="tapChangersData.serial_no"></el-input>
-                                    </el-form-item>
-                                    <el-form-item label="Manufacturer">
-                                        <el-input v-model="tapChangersData.manufacturer"></el-input>
-                                    </el-form-item>
-                                    <el-form-item label="Manufacturer type">
-                                        <el-input v-model="tapChangersData.manufacturer_type"></el-input>
-                                    </el-form-item>
-                                </el-form>
-                            </el-col>
-                        </el-row>
-                        <el-row :gutter="20" class="content mgt-10">
-                            <el-col :span="24" class="col-content">
-                                <span class="bolder">Tap changers configuration</span>
-                                <el-divider></el-divider>
-                                <el-form :inline-message="true" :label-width="labelWidth" size="mini"
-                                    label-position="left">
-                                    <el-form-item label="Winding">
-                                        <el-select :disabled="!tapChangersData.mode" v-model="tapChangersData.winding"
-                                            @change="onChangeWinding" class="w-100">
-                                            <el-option label="Prim" value="Prim"> </el-option>
-                                            <el-option label="Sec" value="Sec"> </el-option>
-                                            <el-option label="Tert" value="Tert"
-                                                v-if="properties.asset_type === $constant.THREE_WINDING"> </el-option>
-                                        </el-select>
-                                    </el-form-item>
-                                    <el-form-item label="Tap scheme">
-                                        <el-select :disabled="!tapChangersData.winding"
-                                            v-model="tapChangersData.tap_scheme" @change="onChangeTapScheme"
-                                            class="w-100">
-                                            <el-option label="1...33" value="1...33"> </el-option>
-                                            <el-option label="33...1" value="33...1"> </el-option>
-                                            <el-option label="Free" value="Free"> </el-option>
-                                        </el-select>
-                                    </el-form-item>
-                                    <el-form-item label="No. of taps">
-                                        <el-input type="number" v-model.number="tapChangersData.no_of_taps"
-                                            :disabled="!tapChangersData.tap_scheme"
-                                            @keyup.enter.native="onEnterNoTapReset()">
-                                        </el-input>
-                                    </el-form-item>
-                                </el-form>
-                            </el-col>
-                        </el-row>
-                        <el-row :gutter="20" class="content mgt-10">
-                            <el-col :span="24" class="col-content">
-                                <span class="bolder">Voltage table</span>
-                                <el-divider></el-divider>
+            <el-col :xs="24" :md="12" class="col-content" :class="{ 'col-hidden': tapChangersData.mode !== 'oltc' }">
+                <el-row :gutter="20" class="content">
+                    <el-col :span="24" class="col-content">
+                        <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
+                            <el-form-item label="Serial no.">
+                                <el-input v-model="tapChangersData.serial_no"></el-input>
+                            </el-form-item>
+                            <el-form-item label="Manufacturer">
+                                <el-input v-model="tapChangersData.manufacturer"></el-input>
+                            </el-form-item>
+                            <el-form-item label="Manufacturer type">
+                                <el-input v-model="tapChangersData.manufacturer_type"></el-input>
+                            </el-form-item>
+                        </el-form>
+                    </el-col>
+                </el-row>
+                <el-row :gutter="20" class="content mgt-10">
+                    <el-col :span="24" class="col-content">
+                        <span class="bolder">Tap changers configuration</span>
+                        <el-divider></el-divider>
+                        <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
+                            <el-form-item label="Winding">
+                                <el-select :disabled="!tapChangersData.mode" v-model="tapChangersData.winding"
+                                    @change="onChangeWinding" class="w-100">
+                                    <el-option label="Prim" value="Prim"> </el-option>
+                                    <el-option label="Sec" value="Sec"> </el-option>
+                                    <el-option label="Tert" value="Tert"
+                                        v-if="properties.asset_type === $constant.THREE_WINDING"> </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="Tap scheme">
+                                <el-select :disabled="!tapChangersData.winding" v-model="tapChangersData.tap_scheme"
+                                    @change="onChangeTapScheme" class="w-100">
+                                    <el-option label="1...33" value="1...33"> </el-option>
+                                    <el-option label="33...1" value="33...1"> </el-option>
+                                    <el-option label="Free" value="Free"> </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="No. of taps">
+                                <el-input type="number" v-model.number="tapChangersData.no_of_taps"
+                                    :disabled="!tapChangersData.tap_scheme" @keyup.enter.native="onEnterNoTapReset()">
+                                </el-input>
+                            </el-form-item>
+                        </el-form>
+                    </el-col>
+                </el-row>
+                <el-row :gutter="20" class="content mgt-10">
+                    <el-col :span="24" class="col-content">
+                        <span class="bolder">Voltage table</span>
+                        <el-divider></el-divider>
+                        <el-row :gutter="8">
+                            <el-col :span="24">
                                 <el-row :gutter="8">
-                                    <el-col :span="24">
-                                        <el-row :gutter="8">
-                                            <el-col :span="12">
-                                                <el-button :disabled="!tapChangersData.tap_scheme" size="mini"
-                                                    type="primary" class="btn-fluid" @click="openDialog = true">
-                                                    <i class="fas fa-calculator"></i>
-                                                    Calculate
-                                                </el-button>
-                                            </el-col>
-                                            <el-col :span="12">
-                                                <el-button size="mini" type="primary" class="btn-fluid"
-                                                    :disabled="!tapChangersData.tap_scheme"
-                                                    @click="removeAllVoltageTable">
-                                                    <i class="fas fa-xmark"></i>
-                                                    Remove all
-                                                </el-button>
-                                            </el-col>
-                                        </el-row>
+                                    <el-col :span="12">
+                                        <el-button :disabled="!tapChangersData.tap_scheme" size="mini" type="primary"
+                                            class="btn-fluid" @click="openDialog = true">
+                                            <i class="fas fa-calculator"></i>
+                                            Calculate
+                                        </el-button>
+                                    </el-col>
+                                    <el-col :span="12">
+                                        <el-button size="mini" type="primary" class="btn-fluid"
+                                            :disabled="!tapChangersData.tap_scheme" @click="removeAllVoltageTable">
+                                            <i class="fas fa-xmark"></i>
+                                            Remove all
+                                        </el-button>
                                     </el-col>
                                 </el-row>
-                                <div class="table-scroll mgt-5">
-                                    <table class="table-strip-input-data responsive-table">
-                                        <colgroup>
-                                            <col class="col-tap" />
-                                            <col class="col-voltage" />
-                                            <col class="col-action" />
-                                            <col class="col-action" />
-                                        </colgroup>
-                                        <thead>
-                                            <tr>
-                                                <th>Tap</th>
-                                                <th>Voltage</th>
-                                                <th class="action-col"></th>
-                                                <th class="action-col"></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr v-for="(item, index) in tapChangersData.voltage_table" :key="index">
-                                                <td>
-                                                    <el-input size="mini" type="text" v-model="item.tap"></el-input>
-                                                </td>
-                                                <td>
-                                                    <el-input size="mini" type="number" v-model="item.voltage">
-                                                        <template slot="append">V</template>
-                                                    </el-input>
-                                                </td>
-                                                <td>
-                                                    <el-button size="mini" type="primary" class="w-100"
-                                                        @click="addVoltage(index)">
-                                                        <i class="fa-solid fa-plus"></i>
-                                                    </el-button>
-                                                </td>
-                                                <td>
-                                                    <el-button size="mini" type="danger" class="w-100"
-                                                        @click="deleteVoltageTable(index)">
-                                                        <i class="fas fa-trash"></i></el-button>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
                             </el-col>
                         </el-row>
+                        <div class="table-scroll mgt-5">
+                            <table class="table-strip-input-data responsive-table">
+                                <colgroup>
+                                    <col class="col-tap" />
+                                    <col class="col-voltage" />
+                                    <col class="col-action" />
+                                    <col class="col-action" />
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th>Tap</th>
+                                        <th>Voltage</th>
+                                        <th class="action-col"></th>
+                                        <th class="action-col"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(item, index) in tapChangersData.voltage_table" :key="index">
+                                        <td>
+                                            <el-input size="mini" type="text" v-model="item.tap"></el-input>
+                                        </td>
+                                        <td>
+                                            <el-input size="mini" type="number" v-model="item.voltage">
+                                                <template slot="append">V</template>
+                                            </el-input>
+                                        </td>
+                                        <td>
+                                            <el-button size="mini" type="primary" class="w-100"
+                                                @click="addVoltage(index)">
+                                                <i class="fa-solid fa-plus"></i>
+                                            </el-button>
+                                        </td>
+                                        <td>
+                                            <el-button size="mini" type="danger" class="w-100"
+                                                @click="deleteVoltageTable(index)">
+                                                <i class="fas fa-trash"></i></el-button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </el-col>
                 </el-row>
             </el-col>
             <!-- detc -->
-            <el-col :xs="24" :md="12" class="col-content">
-                <el-row v-if="tapChangersData.mode === 'detc'">
-                    <el-col :span="24">
-                        <el-row :gutter="20" class="content">
-                            <el-col :span="24" class="col-content">
-                                <el-form :inline-message="true" :label-width="labelWidth" size="mini"
-                                    label-position="left">
-                                    <el-form-item label="Serial no.">
-                                        <el-input v-model="tapChangersData.serial_no"></el-input>
-                                    </el-form-item>
-                                    <el-form-item label="Manufacturer">
-                                        <el-input v-model="tapChangersData.manufacturer"></el-input>
-                                    </el-form-item>
-                                    <el-form-item label="Manufacturer type">
-                                        <el-input v-model="tapChangersData.manufacturer_type"></el-input>
-                                    </el-form-item>
-                                </el-form>
-                            </el-col>
-                        </el-row>
-                        <el-row :gutter="20" class="content mgt-10">
-                            <el-col :span="24" class="col-content">
-                                <span class="bolder">Tap changers configuration</span>
-                                <el-divider></el-divider>
-                                <el-form :inline-message="true" :label-width="labelWidth" size="mini"
-                                    label-position="left">
-                                    <el-form-item label="Winding">
-                                        <el-select :disabled="!tapChangersData.mode" v-model="tapChangersData.winding"
-                                            @change="onChangeWinding" class="w-100">
-                                            <el-option label="Prim" value="Prim"> </el-option>
-                                            <el-option label="Sec" value="Sec"> </el-option>
-                                            <el-option label="Tert" value="Tert"
-                                                v-if="properties.asset_type === $constant.THREE_WINDING"> </el-option>
-                                        </el-select>
-                                    </el-form-item>
-                                    <el-form-item label="Tap scheme">
-                                        <el-select :disabled="!tapChangersData.winding"
-                                            v-model="tapChangersData.tap_scheme" @change="onChangeTapScheme"
-                                            class="w-100">
-                                            <el-option label="1...N" value="1...N"> </el-option>
-                                            <el-option label="N...1" value="N...1"> </el-option>
-                                            <el-option label="Free" value="Free"> </el-option>
-                                        </el-select>
-                                    </el-form-item>
-                                    <el-form-item label="No. of taps">
-                                        <el-input type="number" v-model.number="tapChangersData.no_of_taps"
-                                            :disabled="!tapChangersData.tap_scheme"
-                                            @keyup.enter.native="onEnterNoTapReset()">
-                                        </el-input>
-                                    </el-form-item>
-                                </el-form>
-                            </el-col>
-                        </el-row>
-                        <el-row :gutter="20" class="content mgt-10">
-                            <el-col :span="24" class="col-content">
-                                <span class="bolder">Voltage table</span>
-                                <el-divider></el-divider>
+            <el-col :xs="24" :md="12" class="col-content" :class="{ 'col-hidden': tapChangersData.mode !== 'detc' }">
+                <el-row :gutter="20" class="content">
+                    <el-col :span="24" class="col-content">
+                        <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
+                            <el-form-item label="Serial no.">
+                                <el-input v-model="tapChangersData.serial_no"></el-input>
+                            </el-form-item>
+                            <el-form-item label="Manufacturer">
+                                <el-input v-model="tapChangersData.manufacturer"></el-input>
+                            </el-form-item>
+                            <el-form-item label="Manufacturer type">
+                                <el-input v-model="tapChangersData.manufacturer_type"></el-input>
+                            </el-form-item>
+                        </el-form>
+                    </el-col>
+                </el-row>
+                <el-row :gutter="20" class="content mgt-10">
+                    <el-col :span="24" class="col-content">
+                        <span class="bolder">Tap changers configuration</span>
+                        <el-divider></el-divider>
+                        <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
+                            <el-form-item label="Winding">
+                                <el-select :disabled="!tapChangersData.mode" v-model="tapChangersData.winding"
+                                    @change="onChangeWinding" class="w-100">
+                                    <el-option label="Prim" value="Prim"> </el-option>
+                                    <el-option label="Sec" value="Sec"> </el-option>
+                                    <el-option label="Tert" value="Tert"
+                                        v-if="properties.asset_type === $constant.THREE_WINDING">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="Tap scheme">
+                                <el-select :disabled="!tapChangersData.winding" v-model="tapChangersData.tap_scheme"
+                                    @change="onChangeTapScheme" class="w-100">
+                                    <el-option label="1...N" value="1...N"> </el-option>
+                                    <el-option label="N...1" value="N...1"> </el-option>
+                                    <el-option label="Free" value="Free"> </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="No. of taps">
+                                <el-input type="number" v-model.number="tapChangersData.no_of_taps"
+                                    :disabled="!tapChangersData.tap_scheme" @keyup.enter.native="onEnterNoTapReset()">
+                                </el-input>
+                            </el-form-item>
+                        </el-form>
+                    </el-col>
+                </el-row>
+                <el-row :gutter="20" class="content mgt-10">
+                    <el-col :span="24" class="col-content">
+                        <span class="bolder">Voltage table</span>
+                        <el-divider></el-divider>
+                        <el-row :gutter="8">
+                            <el-col :span="24">
                                 <el-row :gutter="8">
-                                    <el-col :span="24">
-                                        <el-row :gutter="8">
-                                            <el-col :span="12">
-                                                <el-button :disabled="!tapChangersData.tap_scheme" size="mini"
-                                                    type="primary" class="btn-fluid" @click="openDialog = true">
-                                                    <i class="fas fa-calculator"></i>
-                                                    Calculate
-                                                </el-button>
-                                            </el-col>
-                                            <el-col :span="12">
-                                                <el-button size="mini" type="primary" class="btn-fluid"
-                                                    :disabled="!tapChangersData.tap_scheme"
-                                                    @click="removeAllVoltageTable">
-                                                    <i class="fas fa-xmark"></i>
-                                                    Remove all
-                                                </el-button>
-                                            </el-col>
-                                        </el-row>
+                                    <el-col :span="12">
+                                        <el-button :disabled="!tapChangersData.tap_scheme" size="mini" type="primary"
+                                            class="btn-fluid" @click="openDialog = true">
+                                            <i class="fas fa-calculator"></i>
+                                            Calculate
+                                        </el-button>
+                                    </el-col>
+                                    <el-col :span="12">
+                                        <el-button size="mini" type="primary" class="btn-fluid"
+                                            :disabled="!tapChangersData.tap_scheme" @click="removeAllVoltageTable">
+                                            <i class="fas fa-xmark"></i>
+                                            Remove all
+                                        </el-button>
                                     </el-col>
                                 </el-row>
-                                <div class="table-scroll mgt-5">
-                                    <table class="table-strip-input-data responsive-table">
-                                        <colgroup>
-                                            <col class="col-tap" />
-                                            <col class="col-voltage" />
-                                            <col class="col-action" />
-                                            <col class="col-action" />
-                                        </colgroup>
-                                        <thead>
-                                            <tr>
-                                                <th>Tap</th>
-                                                <th>Voltage</th>
-                                                <th class="action-col"></th>
-                                                <th class="action-col"></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr v-for="(item, index) in tapChangersData.voltage_table" :key="index">
-                                                <td>
-                                                    <el-input size="mini" type="text" v-model="item.tap"></el-input>
-                                                </td>
-                                                <td>
-                                                    <el-input size="mini" type="text" v-model="item.voltage">
-                                                        <template slot="append">V</template>
-                                                    </el-input>
-                                                </td>
-                                                <td>
-                                                    <el-button size="mini" type="primary" class="w-100"
-                                                        @click="addVoltage(index)">
-                                                        <i class="fa-solid fa-plus"></i>
-                                                    </el-button>
-                                                </td>
-                                                <td>
-                                                    <el-button size="mini" type="danger" class="w-100"
-                                                        @click="deleteVoltageTable(index)">
-                                                        <i class="fas fa-trash"></i></el-button>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
                             </el-col>
                         </el-row>
+                        <div class="table-scroll mgt-5">
+                            <table class="table-strip-input-data responsive-table">
+                                <colgroup>
+                                    <col class="col-tap" />
+                                    <col class="col-voltage" />
+                                    <col class="col-action" />
+                                    <col class="col-action" />
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th>Tap</th>
+                                        <th>Voltage</th>
+                                        <th class="action-col"></th>
+                                        <th class="action-col"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(item, index) in tapChangersData.voltage_table" :key="index">
+                                        <td>
+                                            <el-input size="mini" type="text" v-model="item.tap"></el-input>
+                                        </td>
+                                        <td>
+                                            <el-input size="mini" type="text" v-model="item.voltage">
+                                                <template slot="append">V</template>
+                                            </el-input>
+                                        </td>
+                                        <td>
+                                            <el-button size="mini" type="primary" class="w-100"
+                                                @click="addVoltage(index)">
+                                                <i class="fa-solid fa-plus"></i>
+                                            </el-button>
+                                        </td>
+                                        <td>
+                                            <el-button size="mini" type="danger" class="w-100"
+                                                @click="deleteVoltageTable(index)">
+                                                <i class="fas fa-trash"></i></el-button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </el-col>
                 </el-row>
             </el-col>
@@ -482,6 +465,16 @@ export default {
     font-size: 12px !important;
 }
 
+::v-deep(.radio-two-col) {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+::v-deep(.radio-two-col .el-radio) {
+    flex: 1;
+}
+
 ::v-deep(.btn-fluid) {
     width: 100%;
     min-width: 0 !important;
@@ -493,6 +486,23 @@ export default {
 ::v-deep(.table-scroll) {
     width: 100%;
     overflow-x: auto;
+}
+
+::v-deep(.table-scroll::-webkit-scrollbar) {
+    height: 5px;
+}
+
+::v-deep(.table-scroll::-webkit-scrollbar-track) {
+    background: transparent;
+}
+
+::v-deep(.table-scroll::-webkit-scrollbar-thumb) {
+    background-color: rgba(120, 120, 120, 0.6);
+    border-radius: 6px;
+}
+
+::v-deep(.table-scroll::-webkit-scrollbar-thumb:hover) {
+    background-color: rgba(120, 120, 120, 0.85);
 }
 
 ::v-deep(.responsive-table) {
@@ -519,6 +529,17 @@ export default {
 
 ::v-deep(.table-strip-input-data) {
     font-size: 12px !important;
+}
+
+::v-deep(.col-hidden) {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+@media (max-width: 991px) {
+    ::v-deep(.col-hidden) {
+        display: none;
+    }
 }
 
 @media (max-width: 767px) {
