@@ -4,9 +4,6 @@ import * as IdentifiedObjectFunc from '../identifiedObject/index.js'
 // Lấy thông tin asset theo mrid
 export const getAssetById = async (mrid) => {
     try {
-        // [DEBUG] Log ID being requested
-        console.log(`[DEBUG] getAssetById called for MRID: ${mrid}`);
-        
         const identifiedResult = await IdentifiedObjectFunc.getIdentifiedObjectById(mrid)
         if (!identifiedResult.success) {
             console.warn(`[DEBUG] IdentifiedObject NOT found for MRID: ${mrid}`, identifiedResult);

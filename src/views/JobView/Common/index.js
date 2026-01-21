@@ -15,6 +15,22 @@ export const buildEmptyTestRow = (columns) => {
   return row
 }
 
+export const buildEmptyTestCondition = (columns) => {
+    const row = {
+    }
+    columns.forEach(col => {
+        row[col.code] = {
+            mrid: '',                // mrid của measurement
+            value: "",                     // giá trị test (user nhập sau)
+            unit: col.unit || "",
+            type: col.type,
+            measurement_id : col.mrid, // id của measurement
+        }
+    })
+
+  return row
+}
+
 export const conditionIndicatorToValue = (indicator) => {
     switch (indicator) {
         case 'Good': return 3;

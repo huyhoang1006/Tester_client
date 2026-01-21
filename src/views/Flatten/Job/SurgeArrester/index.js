@@ -10,19 +10,8 @@ class SurgeArresterJobEntity {
         this.analogValues = [];
         this.stringMeasurementValues = [];
         this.discreteValues = [];
-        this.analog = [];
-        this.stringMeasurement = [];
-        this.discrete = [];
         this.attachmentTest = []
-        this.transformerObservation = []
-        this.temperature = []
-        this.percent = []
-        this.transformerObservationProcedureDataSet = []
         this.surgeArresterTestingEquipmentTestType = []
-        this.measurementProcedure = []
-        this.valueAliasSet = []
-        this.valueToAlias = []
-        this.procedure = []
         this.procedureAsset = []
         this.procedureDataSetMeasurementValue = []
     }

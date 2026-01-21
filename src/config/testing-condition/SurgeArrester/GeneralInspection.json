@@ -1,0 +1,55 @@
+{
+  "testId": "cd37afa1-0357-4fe3-b52e-cd960c39a1cf",
+  "testCode": "GeneralInspection",
+  "testName": "General inspection",
+  "columns": [
+    {
+      "mrid": "8d2fdece-b599-4270-a3bf-d0ce2c516d02",
+      "code": "top_oil_temp",
+      "name": "Top oil temperature",
+      "type": "analog",
+      "unit": "°C"
+    },
+    {
+      "mrid": "125850fc-5c9c-4a42-b7fd-afbca2ff2e98",
+      "code": "bottom_oil_temp",
+      "name": "Bottom oil temperature",
+      "type": "analog",
+      "unit": "°C"
+    },
+    {
+      "mrid": "98c7ab64-dd7c-4af4-9010-08d482054574",
+      "code": "winding_temp",
+      "name": "Winding temperature",
+      "type": "analog",
+      "unit": "°C"
+    },
+    {
+      "mrid": "3a04abe6-08d7-4a28-a595-b2bd920604c2",
+      "code": "reference_temp",
+      "name": "Reference temperature",
+      "type": "analog",
+      "unit": "°C"
+    },
+    {
+      "mrid": "9602495b-98a4-42cd-8b2b-decba1c76578",
+      "code": "ambient_temp",
+      "name": "Ambient temperature",
+      "type": "analog",
+      "unit": "°C"
+    },
+    {
+      "mrid": "28b61109-05a9-41f5-9da2-429d52aa4890",
+      "code": "humidity",
+      "name": "Humidity",
+      "type": "analog",
+      "unit": "%"
+    },
+    {
+      "mrid": "7133ae02-84c1-44e4-bc66-30826abbcf80",
+      "code": "weather",
+      "name": "Weather",
+      "type": "string"
+    }
+  ]
+}
