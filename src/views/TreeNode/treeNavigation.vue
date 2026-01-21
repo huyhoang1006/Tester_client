@@ -6,17 +6,11 @@
                 @clear-selection="clearSelection" />
         </div>
         <div v-show="!clientSlide" class="toolbar">
-            <div style="display: flex; align-items: center">
-                <div @click="resetAllServer" class="path-hover">Organisation</div>
-                <i v-if="pathMapServer && pathMapServer.length > 0" style="margin-left: 10px"
-                    class="fa-solid fa-angle-right"></i>
-            </div>
-            <div style="display: flex; align-items: center" v-for="(item, index) in pathMapServer"
-                :key="`server-${item.id}-${index}`">
-                <div @click="resetPathServer(index)" class="path-hover">{{ item.parent }}</div>
-                <i v-if="index < pathMapServer.length - 1" style="margin-left: 10px"
-                    class="fa-solid fa-angle-right"></i>
-            </div>
+            <TopBarServer 
+                :pathMapServer="pathMapServer" 
+                @reset-all="resetAllServer" 
+                @path-click="resetPathServer" 
+            />
         </div>
         <div id="toolbar-setting-id" class="toolbar-setting">
             <div>
@@ -946,60 +940,6 @@ import contextMenu from '@/views/Common/ContextMenu.vue'
 
 //client
 import TopBarClient from './Client/Topbar/index.vue'
-import deleteData from './Client/ClientSide/mixin/Delete/deleteDataClient'
-import showAddBay from './Client/ClientSide/mixin/Bay/showAddBay'
-import showAddBushing from './Client/ClientSide/mixin/Bushing/showAddBushing'
-import showAddCapacitor from './Client/ClientSide/mixin/Capacitor/showAddCapacitor'
-import showAddCircuitBreaker from './Client/ClientSide/mixin/CircuitBreaker/showAddCircuitBreaker'
-import showAddConnector from './Client/ClientSide/mixin/Disconnector/showAddDisconnector'
-import showAddCt from './Client/ClientSide/mixin/Ct/showAddCt'
-import showAddJob from './Client/ClientSide/mixin/Job/showAddJob'
-import showAddOrganisation from './Client/ClientSide/mixin/Organisation/showAddOrganisation'
-import showAddPowerCable from './Client/ClientSide/mixin/PowerCable/showAddPowerCable'
-import showAddReactor from './Client/ClientSide/mixin/Reactor/showAddReactor'
-import showAddRotatingMachine from './Client/ClientSide/mixin/RotatingMachine/showAddRotatingMachine'
-import showAddSubInTree from './Client/ClientSide/mixin/Subs/showAddSubInTree'
-import showAddSubs from './Client/ClientSide/mixin/Subs/showAddSubs'
-import showAddSurgeArrester from './Client/ClientSide/mixin/SurgeArrester/showAddSurgeArrester'
-import showAddTransformer from './Client/ClientSide/mixin/Transformer/showAddTransformer'
-import showAddVt from './Client/ClientSide/mixin/Vt/showAddVt'
-import showAddVoltageLevel from './Client/ClientSide/mixin/VoltageLevel/showAddVoltageLevel'
-import showLocationRoot from './Client/ClientSide/mixin/showLocationRoot'
-import handleDeleteNode from './Client/ClientSide/mixin/Delete/deleteNode'
-import showDataClient from './Client/ClientSide/mixin/showDataClient'
-import fetchChildrenClient from './Client/mixin/fetchChildrenClient'
-import handleAddCommand from './mixin/handleCommand'
-
-//confirm
-import bayConfirm from './Client/ClientSide/mixin/Bay/bayConfirm'
-import bushingConfirm from './Client/ClientSide/mixin/Bushing/bushingConfirm'
-import capacitorConfirm from './Client/ClientSide/mixin/Capacitor/capacitorConfirm'
-import circuitBreakerConfirm from './Client/ClientSide/mixin/CircuitBreaker/circuitConfirm'
-import disconnectorConfirm from './Client/ClientSide/mixin/Disconnector/disconnectorConfirm'
-import ctConfirm from './Client/ClientSide/mixin/Ct/ctConfirm'
-import jobConfirm from './Client/ClientSide/mixin/Job/jobConfirm'
-import organisationConfirm from './Client/ClientSide/mixin/Organisation/OrgConfirm'
-import powerCableConfirm from './Client/ClientSide/mixin/PowerCable/powerCableConfirm'
-import reactorConfirm from './Client/ClientSide/mixin/Reactor/reactorConfirm'
-import rotatingMachineConfirm from './Client/ClientSide/mixin/RotatingMachine/rotatingConfirm'
-import substationConfirm from './Client/ClientSide/mixin/Subs/subsConfirm'
-import surgeArresterConfirm from './Client/ClientSide/mixin/SurgeArrester/surgeConfirm'
-import transformerConfirm from './Client/ClientSide/mixin/Transformer/transformerConfirm'
-import vtConfirm from './Client/ClientSide/mixin/Vt/vtConfirm'
-import voltageLevelConfirm from './Client/ClientSide/mixin/VoltageLevel/voltageLevelConfirm'
-import confirmDownloadNode from './Server/mixin/Download/confirmDownloadNode'
-
-//resize
-import resizeClient from './Client/ClientSide/mixin/Resize/resizeClient'
-import logClient from './Client/ClientSide/mixin/Resize/logClient'
-import resizeServer from './Server/mixin/Resize/resizeServer'
-
-
-//Server
-import downloadNode from './Server/mixin/Download/downloadNode'
-import logServer from './Server/mixin/Resize/logServer'
-import getOwner from './Server/mixin/getOwner'
-import fetchChildrenServer from './Server/mixin/fetchChildrenServer'
 
 // Import Mappers
 import mapClientProperties from '@/utils/MapperClient/mapClientProperties'
@@ -1057,40 +997,18 @@ import * as BushingMapping from '@/views/Mapping/Bushing/index'
 import * as rotatingMachineMapping from "@/views/Mapping/RotatingMachine/index"
 import * as VoltageLevelMapping from '@/views/Mapping/VoltageLevel/index'
 import { exportNodeToJSON as exportNodeToJSONUtil } from '@/function/entity/export/index'
-import TransformerMixin from '@/views/AssetView/Transformer/mixin/index.js'
-import SurgeArresterMixin from '@/views/AssetView/SurgeArrester/mixin/index.js'
-import treeNodeFind from './mixin/treeNodeFindMixin'
-import moveNode from './mixin/MoveNode/moveNode'
-import confirmMove from './mixin/MoveNode/confirmMove'
-import duplicateAsset from './mixin/Duplicate/duplicateAsset'
-import duplicateNode from './mixin/Duplicate/duplicateNode'
-import cleanDtoForDuplicate from './mixin/Duplicate/cleanDtoForDuplicate'
-import buildMoveTreeData from './mixin/MoveNode/buildMoveTreeData'
-import fetchChildrenForMoveMixin from './mixin/MoveNode/fetchChildrenForMove'
-import generateUuid from './mixin/generateUuid'
-import openContextMenu from './mixin/Open/openContextMenu'
-import _import from './mixin/Import/import'
-import importJSONFromContext from './mixin/Import/importJSONFromContext'
-import handleOpenNode from './mixin/Open/handleOpenNode'
-import fetchJobsByAssetId from './mixin/Fetch/fetchJobsByAssetId'
-import fetchAssetByPsr from './mixin/Fetch/fetchAssetByPsr'
-import exportTreeToJSON from './mixin/Export/exportToJSON'
-import hideProperties from './mixin/hideProperties'
-import removeTab from './mixin/removeTab'
-import pathMap from './mixin/pathMap'
-import fmeca from './mixin/fmeca'
-import showProperties from './mixin/showProperties'
-import showDataServer from './Server/mixin/showDataServer'
+import mixinTreeNavigation from '@/views/Common/mixinTreeNavigation/mixin'
+import TopBarServer from './Server/TopBarServer/index.vue'
 export default {
     name: 'TreeNavigation',
     components: {
         mapJobProperties,
         mapAssetProperties,
-        mapProperties,
-        TopBarClient,
-        mapClientProperties,
+        mapProperties,mapClientProperties,
         mapClientJobProperties,
         mapClientAssetProperties,
+        TopBarServer,
+        TopBarClient,
         LogBar,
         TreeNode,
         pageAlign,
@@ -1405,24 +1323,9 @@ export default {
                 : 'app-dialog'
         }
     },
-    mixins: [mixin, treeNodeFind, deleteData, showAddBay, showAddBushing,
-        showAddCapacitor, showAddCircuitBreaker, showAddConnector, showAddCt,
-        showAddJob, showAddOrganisation, showAddPowerCable, showAddReactor,
-        showAddRotatingMachine, showAddSubInTree, showAddSubs, showAddSurgeArrester,
-        showAddTransformer, showAddVt, showAddVoltageLevel, showLocationRoot, moveNode,
-        confirmMove, handleDeleteNode, duplicateNode, duplicateAsset, showDataClient,
-        cleanDtoForDuplicate, bayConfirm, bushingConfirm, capacitorConfirm,
-        circuitBreakerConfirm, disconnectorConfirm, ctConfirm, jobConfirm,
-        organisationConfirm, powerCableConfirm, reactorConfirm, rotatingMachineConfirm,
-        substationConfirm, surgeArresterConfirm, transformerConfirm, vtConfirm,
-        voltageLevelConfirm, TransformerMixin, SurgeArresterMixin, resizeClient,
-        logClient, logServer, resizeServer, confirmDownloadNode, downloadNode,
-        buildMoveTreeData, fetchChildrenForMoveMixin, generateUuid, getOwner,
-        fetchChildrenServer, fetchChildrenClient, openContextMenu, _import,
-        importJSONFromContext, handleAddCommand, handleOpenNode, fetchAssetByPsr,
-        fetchJobsByAssetId, exportTreeToJSON, hideProperties, removeTab,
-        pathMap, fmeca, showProperties, showDataServer
-    ],
+    mixins: [mixin, mixinTreeNavigation,
+            ],
+    
     async beforeMount() {
         try {
             const data = await window.electronAPI.getAllConfigurationEvents()
@@ -1436,120 +1339,11 @@ export default {
     },
     methods: {
 
-        async handleExportJSONFromContext(node) {
-            await this.exportSingleNodeToJSON(node, 'dto')
-        },
-        async handleExportJSONCIMFromContext(node) {
-            await this.exportSingleNodeToJSON(node, 'cim')
-        },
-
-        async handleImportJSONCIMFromContext(node) {
-            this.$message.info('Import JSON by CIM ')
-        },
-        async exportSingleNodeToJSON(node, type) {
-            if (!node) {
-                this.$message.warning('No node selected to export')
-                return
-            }
-
-            const dependencies = {
-                electronAPI: window.electronAPI,
-                mappings: {
-                    SubstationMapping,
-                    OrganisationMapping,
-                    SurgeArresterMapping,
-                    PowerCableMapping,
-                    DisconnectorMapping,
-                    rotatingMachineMapping,
-                    CapacitorMapping,
-                    VoltageTransformerMapping,
-                    CurrentTransformerMapping,
-                    TransformerMapping,
-                    BreakerMapping,
-                    ReactorMapping,
-                    BushingMapping,
-                    VoltageLevelMapping
-                },
-                userId: this.$store.state.user.user_id,
-                messageHandler: this.$message
-            }
-
-            // Truyền trực tiếp node, không dùng selectedNodes
-            await exportNodeToJSONUtil(node, type, dependencies)
-        },
-        handleExportXMLFromContext(node) {
-            this.openExportDialog = true
-        },
-        handleExportExcelFromContext(node) {
-            this.openExportDialog = true
-        },
-        handleExportWordFromContext(node) {
-            this.openExportDialog = true
-        },
-        handleExportPDFFromContext(node) {
-            this.openExportDialog = true
-        },
-
         serverSwap(serverSign) {
             if (serverSign == true) {
                 this.clientSlide = false
             } else {
                 this.clientSlide = true
-            }
-        },
-
-        async showOwnerServerRoot() {
-            const ownerRootServer = this.$refs.ownerRootServer
-            if (ownerRootServer) {
-                ownerRootServer.style.borderBottom = '2px #aba7a7 solid' // Thêm viền màu đen dày 2px
-                ownerRootServer.style.color = 'rgba(0, 0, 0, 1)' // Chữ rõ nét
-            }
-            this.$nextTick(async () => {
-                await this.getOwnerLocation()
-            })
-        },
-
-        async showPropertiesData(node) {
-            this.assetPropertySign = false
-            this.jobPropertySign = false
-            if (node.asset != undefined) {
-                this.assetPropertySign = true
-                await this.mappingAssetProperties(node)
-                await this.mappingProperties(node.parent)
-                await this.loadPathMap(node)
-                this.pathMapServer.push({
-                    id: node.id,
-                    parent: node.serial_no
-                })
-            } else if (node.type == 'test') {
-                this.assetPropertySign = true
-                this.jobPropertySign = true
-                await this.mappingProperties(node.parent.parent.parent)
-                await this.mappingAssetProperties(node.parent.parent)
-                await this.mappingJobProperties(node.parent)
-                await this.loadPathMap(node)
-                this.pathMapServer.push({
-                    id: node.id,
-                    parent: node.name
-                })
-            } else if (node.type == 'job') {
-                this.assetPropertySign = true
-                this.jobPropertySign = true
-                await this.mappingProperties(node.parent.parent)
-                await this.mappingAssetProperties(node.parent)
-                await this.mappingJobProperties(node)
-                await this.loadPathMap(node)
-                this.pathMapServer.push({
-                    id: node.id,
-                    parent: node.name
-                })
-            } else {
-                await this.mappingProperties(node)
-                await this.loadPathMap(node)
-                this.pathMapServer.push({
-                    id: node.id,
-                    parent: node.name
-                })
             }
         },
 
@@ -1602,101 +1396,6 @@ export default {
 
         async clearSelection() {
             this.selectedNodes = []
-        },
-
-        async resetAllServer() {
-            ; (this.selectedNodes = []), (this.assetPropertySign = false)
-            this.jobPropertySign = false
-            this.pathMapServer = []
-            this.properties = {
-                region: '',
-                name: '',
-                plant: '',
-                address: '',
-                city: '',
-                state_province: '',
-                postal_code: '',
-                country: '',
-                phone_no: '',
-                email: ''
-            }
-            this.assetProperties = {
-                asset: '',
-                asset_type: '',
-                serial_no: '',
-                manufacturer: '',
-                manufacturer_type: '',
-                manufacturing_year: '',
-                apparatus_id: '',
-                country: ''
-            }
-            this.jobProperties = {
-                name: '',
-                work_order: '',
-                creation_date: '',
-                execution_date: '',
-                tested_by: '',
-                approved_by: '',
-                ambient_condition: '',
-                standard: ''
-            }
-            this.pageLocationSync = {
-                first: 1,
-                second: 2,
-                third: 3,
-                dot: '...',
-                end: 10
-            }
-            this.displayPageLocationSync = {
-                second: true,
-                third: true,
-                dot: true,
-                end: true
-            }
-            this.pageLocationSyncInstance = {
-                first: '',
-                second: '',
-                third: '',
-                dot: '',
-                end: ''
-            }
-            this.currentLocationSync = {
-                nextP: '',
-                previousP: '',
-                current: 1
-            }
-            this.optionLocationSync = {
-                mode: ''
-            }
-            this.ownerServerList = []
-            this.count = ''
-        },
-
-        async resetPathServer(index) {
-            if (index == 0) {
-                let currentNode = this.ownerServerList.find((node) => node.id === this.pathMapServer[0].id)
-                if (!currentNode) {
-                    return // Không tìm thấy node đầu tiên
-                }
-                await this.clearSelection()
-                await this.showPropertiesData(currentNode)
-                Vue.set(currentNode, 'expanded', !currentNode.expanded)
-            } else {
-                let currentNode = this.ownerServerList.find((node) => node.id === this.pathMapServer[0].id)
-                if (!currentNode) {
-                    return // Không tìm thấy node đầu tiên
-                }
-                for (let i = 1; i <= index; i++) {
-                    if (!currentNode.children) return // Nếu không có children thì dừng lại
-                    currentNode = currentNode.children.find((child) => child.id === this.pathMapServer[i].id)
-                    if (!currentNode) {
-                        return // Không tìm thấy thì dừng lại
-                    }
-                }
-                await this.clearSelection()
-                await this.showPropertiesData(currentNode)
-                Vue.set(currentNode, 'expanded', !currentNode.expanded)
-            }
         },
 
         async doubleClickNodeServer(node) {
