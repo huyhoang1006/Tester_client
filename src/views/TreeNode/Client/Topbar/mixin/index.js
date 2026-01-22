@@ -2,7 +2,7 @@ import Vue from 'vue'
 import mapClientAssetProperties from '@/utils/MapperClient/mapClientAssetProperties'
 import mapClientJobProperties from '@/utils/MapperClient/mapClientJobProperties'
 import mapClientProperties from '@/utils/MapperClient/mapClientProperties'
-import treeNodeFind from '@/views/TreeNode/mixin/treeNodeFindMixin'
+import treeNodeFind from '@/views/TreeNode/Common/treeNodeFindMixin'
 
 export default {
     data() {

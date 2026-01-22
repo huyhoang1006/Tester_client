@@ -22,7 +22,7 @@ import showLocationRoot from '@/views/TreeNode/Client/ClientSide/mixin/showLocat
 import handleDeleteNode from '@/views/TreeNode/Client/ClientSide/mixin/Delete/deleteNode'
 import showDataClient from '@/views/TreeNode/Client/ClientSide/mixin/showDataClient'
 import fetchChildrenClient from '@/views/TreeNode/Client/mixin/fetchChildrenClient'
-import handleAddCommand from '@/views/TreeNode/mixin/handleCommand'
+import handleAddCommand from '@/views/TreeNode/Common/handleCommand'
 import bayConfirm from '@/views/TreeNode/Client/ClientSide/mixin/Bay/bayConfirm'
 import bushingConfirm from '@/views/TreeNode/Client/ClientSide/mixin/Bushing/bushingConfirm'
 import capacitorConfirm from '@/views/TreeNode/Client/ClientSide/mixin/Capacitor/capacitorConfirm'
@@ -57,37 +57,37 @@ import showOwnerServerRoot from '@/views/TreeNode/Server/mixin/showOwnerServerRo
 
 
 
-import treeNodeFind from '@/views/TreeNode/mixin/treeNodeFindMixin'
-import moveNode from '@/views/TreeNode/mixin/MoveNode/moveNode'
-import confirmMove from '@/views/TreeNode/mixin/MoveNode/confirmMove'
-import duplicateAsset from '@/views/TreeNode/mixin/Duplicate/duplicateAsset'
-import duplicateNode from '@/views/TreeNode/mixin/Duplicate/duplicateNode'
-import cleanDtoForDuplicate from '@/views/TreeNode/mixin/Duplicate/cleanDtoForDuplicate'
-import buildMoveTreeData from '@/views/TreeNode/mixin/MoveNode/buildMoveTreeData'
-import fetchChildrenForMoveMixin from '@/views/TreeNode/mixin/MoveNode/fetchChildrenForMove'
-import generateUuid from '@/views/TreeNode/mixin/generateUuid.js'
-import openContextMenu from '@/views/TreeNode/mixin/Open/openContextMenu.js'
-import _import from '@/views/TreeNode/mixin/Import/import.js'
-import importJSONFromContext from '@/views/TreeNode/mixin/Import/importJSONFromContext.js'
-import handleOpenNode from '@/views/TreeNode/mixin/Open/handleOpenNode'
-import fetchJobsByAssetId from '@/views/TreeNode/mixin/Fetch/fetchJobsByAssetId'
-import fetchAssetByPsr from '@/views/TreeNode/mixin/Fetch/fetchAssetByPsr'
-import exportTreeToJSON from '@/views/TreeNode/mixin/Export/exportToJSON'
-import hideProperties from '@/views/TreeNode/mixin/hideProperties'
-import removeTab from '@/views/TreeNode/mixin/removeTab'
-import pathMap from '@/views/TreeNode/mixin/pathMap'
-import fmeca from '@/views/TreeNode/mixin/fmeca'
-import showProperties from '@/views/TreeNode/mixin/showProperties'
+import treeNodeFind from '@/views/TreeNode/Common/treeNodeFindMixin'
+import moveNode from '@/views/TreeNode/Common/MoveNode/moveNode'
+import confirmMove from '@/views/TreeNode/Common/MoveNode/confirmMove'
+import duplicateAsset from '@/views/TreeNode/Common/Duplicate/duplicateAsset'
+import duplicateNode from '@/views/TreeNode/Common/Duplicate/duplicateNode'
+import cleanDtoForDuplicate from '@/views/TreeNode/Common/Duplicate/cleanDtoForDuplicate'
+import buildMoveTreeData from '@/views/TreeNode/Common/MoveNode/buildMoveTreeData'
+import fetchChildrenForMoveMixin from '@/views/TreeNode/Common/MoveNode/fetchChildrenForMove'
+import generateUuid from '@/views/TreeNode/Common/generateUuid.js'
+
+import _import from '@/views/TreeNode/Common/Import/import.js'
+import importJSONFromContext from '@/views/TreeNode/Common/Import/importJSONFromContext.js'
+import handleOpenNode from '@/views/TreeNode/Common/Open/handleOpenNode'
+import fetchJobsByAssetId from '@/views/TreeNode/Common/Fetch/fetchJobsByAssetId'
+import fetchAssetByPsr from '@/views/TreeNode/Common/Fetch/fetchAssetByPsr'
+import exportTreeToJSON from '@/views/TreeNode/Common/Export/exportToJSON'
+import hideProperties from '@/views/TreeNode/Common/hideProperties'
+import removeTab from '@/views/TreeNode/Common/removeTab'
+import pathMap from '@/views/TreeNode/Common/pathMap'
+import fmeca from '@/views/TreeNode/Common/fmeca'
+import showProperties from '@/views/TreeNode/Common/showProperties'
 import showDataServer from '@/views/TreeNode/Server/mixin/showDataServer'
-import checkChildren from '@/views/TreeNode/mixin/checkChildren'
-import showPropertiesData from '@/views/TreeNode/mixin/showPropertiesData'
-import exportExcel from '@/views/TreeNode/mixin/Export/exportExcel'
-import exportJSONCIM from '@/views/TreeNode/mixin/Export/exportJSONCIM'
-import exportPDF from '@/views/TreeNode/mixin/Export/exportPDF'
-import exportSingleNodeToJSON from '@/views/TreeNode/mixin/Export/exportSingleNodeToJSON'
-import exportWord from '@/views/TreeNode/mixin/Export/exportWord'
-import exportXML from '@/views/TreeNode/mixin/Export/exportXML'
-import importCIM from '@/views/TreeNode/mixin/Import/importCIM'
+import checkChildren from '@/views/TreeNode/Common/checkChildren'
+import showPropertiesData from '@/views/TreeNode/Common/showPropertiesData'
+import exportExcel from '@/views/TreeNode/Common/Export/exportExcel'
+import exportJSONCIM from '@/views/TreeNode/Common/Export/exportJSONCIM'
+import exportPDF from '@/views/TreeNode/Common/Export/exportPDF'
+import exportSingleNodeToJSON from '@/views/TreeNode/Common/Export/exportSingleNodeToJSON'
+import exportWord from '@/views/TreeNode/Common/Export/exportWord'
+import exportXML from '@/views/TreeNode/Common/Export/exportXML'
+import importCIM from '@/views/TreeNode/Common/Import/importCIM'
 
 
 
@@ -106,7 +106,7 @@ export default {
         voltageLevelConfirm, resizeClient,
         logClient, logServer, resizeServer, confirmDownloadNode, downloadNode,
         buildMoveTreeData, fetchChildrenForMoveMixin, generateUuid, getOwner,
-        fetchChildrenServer, fetchChildrenClient, openContextMenu, _import,
+        fetchChildrenServer, fetchChildrenClient, _import,
         importJSONFromContext, handleAddCommand, handleOpenNode, fetchAssetByPsr,
         fetchJobsByAssetId, exportTreeToJSON, hideProperties, removeTab,
         pathMap, fmeca, showProperties, showDataServer, checkChildren, showPropertiesData,

@@ -5,13 +5,25 @@ export default {
             document.addEventListener('mouseup', this.stopResizeClient)
         },
         resizeClient(event) {
-            if (!this.$refs.sidebarClient) return
-            let newWidth = (event.clientX / window.innerWidth) * 100
-            let finalWidth = Math.max(10, Math.min(40, newWidth))
-            // Cập nhật width của sidebar và context-data
-            this.$refs.sidebarClient.style.width = finalWidth + 'vw'
-            this.$refs.contextDataClient.style.width = 100 - finalWidth + 'vw'
-        },
+        const sidebarElement = this.$refs.clientPanel 
+                             ? this.$refs.clientPanel.$refs.sidebarClient 
+                             : null;
+
+        // Nếu không tìm thấy thì dừng lại để tránh lỗi
+        if (!sidebarElement) return;
+
+        // BƯỚC 2: Tính toán (Giữ nguyên logic cũ của bạn)
+        let newWidth = (event.clientX / window.innerWidth) * 100;
+        let finalWidth = Math.max(10, Math.min(40, newWidth));
+
+        // BƯỚC 3: Gán Width (Sửa lại đối tượng gán)
+        sidebarElement.style.width = finalWidth + 'vw';
+        
+        // Phần content bên phải (nằm ở Cha) thì giữ nguyên
+        if (this.$refs.contextDataClient) {
+            this.$refs.contextDataClient.style.width = 100 - finalWidth + 'vw';
+        }
+    },
         stopResizeClient() {
             document.removeEventListener('mousemove', this.resizeClient)
             document.removeEventListener('mouseup', this.stopResizeClient)
