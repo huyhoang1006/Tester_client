@@ -10,7 +10,7 @@
                             <tr v-if="assetData.kind !=='Circuit breaker'">
                                 <td class="condition-head">Top oil temperature</td>
                                 <td>
-                                    <el-input size="mini" v-model="conditions.top_oil_temperature.value">
+                                    <el-input size="mini" v-model="conditions.top_oil_temp.value">
                                             <template slot="append">°C</template>
                                     </el-input>
                                 </td>
@@ -18,7 +18,7 @@
                             <tr v-if="assetData.kind !=='Circuit breaker'">
                                 <td class="condition-head">Bottom oil temperature</td>
                                 <td>
-                                    <el-input size="mini" v-model="conditions.bottom_oil_temperature.value">
+                                    <el-input size="mini" v-model="conditions.bottom_oil_temp.value">
                                             <template slot="append">°C</template>
                                     </el-input>
                                 </td>
@@ -26,7 +26,7 @@
                             <tr>
                                 <td class="condition-head">Winding temperature</td>
                                 <td>
-                                    <el-input size="mini" v-model="conditions.winding_temperature.value">
+                                    <el-input size="mini" v-model="conditions.winding_temp.value">
                                             <template slot="append">°C</template>
                                     </el-input>
                                 </td>
@@ -34,7 +34,7 @@
                             <tr>
                                 <td class="condition-head">Reference temperature</td>
                                 <td>
-                                    <el-input size="mini" v-model="conditions.reference_temperature.value">
+                                    <el-input size="mini" v-model="conditions.reference_temp.value">
                                             <template slot="append">°C</template>
                                     </el-input>
                                 </td>
@@ -42,7 +42,7 @@
                             <tr>
                                 <td class="condition-head">Ambient temperature</td>
                                 <td>
-                                    <el-input size="mini" v-model="conditions.ambient_temperature.value">
+                                    <el-input size="mini" v-model="conditions.ambient_temp.value">
                                             <template slot="append">°C</template>
                                     </el-input>
                                 </td>
@@ -58,7 +58,7 @@
                             <tr>
                                 <td class="condition-head">Weather</td>
                                 <td>
-                                    <el-input size="mini" v-model="conditions.weather">
+                                    <el-input size="mini" v-model="conditions.weather.value">
                                     </el-input>
                                 </td>
                             </tr>
@@ -93,38 +93,7 @@ export default {
         data : {
             type : Object,
             require : true,
-            default() {
-                return {
-                    condition : { 
-                        top_oil_temperature : {
-                            value: "",
-                            unit: UnitSymbol.degC
-                        },
-                        bottom_oil_temperature : {
-                            value: "",
-                            unit: UnitSymbol.degC
-                        },
-                        winding_temperature : {
-                            value: "",
-                            unit: UnitSymbol.degC
-                        },
-                        reference_temperature : {
-                            value: "",
-                            unit: UnitSymbol.degC
-                        },
-                        ambient_temperature : {
-                            value: "",
-                            unit: UnitSymbol.degC
-                        },
-                        humidity : {
-                            value: "",
-                            unit: UnitSymbol.percent
-                        },
-                        weather : ""
-                    },
-                    comment : "",
-                }
-            }
+            default:() => ({})
         },
         attachment : [],
         assetData: {

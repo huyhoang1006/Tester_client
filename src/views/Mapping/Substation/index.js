@@ -120,7 +120,6 @@ export function mapDtoToEntity(dto) {
 }
 
 export function mapEntityToDto(entity) {
-    console.log('entity', entity)
     const dto = new SubstationDto()
 
     // substation

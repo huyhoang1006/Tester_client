@@ -14,14 +14,14 @@
       "code": "test_voltage",
       "name": "Test voltage",
       "type": "analog",
-      "unit": "V"
+      "unit": "k|V"
     },
     {
       "mrid": "6c9d0e1f-2a3b-4c13-9009-000000000017",
       "code": "r60s",
       "name": "R60s",
       "type": "analog",
-      "unit": "M|Ω"
+      "unit": "m|Ω"
     },
     {
       "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",

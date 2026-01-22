@@ -17,33 +17,68 @@ export const importTransformer = async (dto, parentNode, { electronAPI, mappings
         const entity = mappings.TransformerMapping.transformerDtoToEntity(dto)
         let oldEntity = null
 
-        const regenerateAllIds = (obj) => {
-            if (!obj || typeof obj !== 'object') return
+        // Improved ID Regeneration with Reference Update
+        const regenerateIdsAndRelink = (obj) => {
+            const idMap = new Map();
 
-            Object.keys(obj).forEach(key => {
-                const value = obj[key]
+            // Pass 1: Collect old IDs and generate new ones
+            const collectAndGenerate = (current) => {
+                if (!current || typeof current !== 'object') return;
 
-                if (key === 'mrid' || key === 'id') {
-                    obj[key] = uuid.newUuid()
-                } 
-                else if (Array.isArray(value)) {
-                    value.forEach(v => regenerateAllIds(v))
-                } 
-                else if (typeof value === 'object' && value !== null) {
-                    regenerateAllIds(value)
+                if (current.mrid) {
+                    const oldId = current.mrid;
+                    const newId = uuid.newUuid();
+                    idMap.set(oldId, newId);
+                    current.mrid = newId;
                 }
-            })
-        }
+                if (current.id) { 
+                    const oldId = current.id;
+                    const newId = uuid.newUuid();
+                    idMap.set(oldId, newId);
+                    current.id = newId;
+                }
+
+                Object.values(current).forEach(value => {
+                     if (Array.isArray(value)) {
+                        value.forEach(v => collectAndGenerate(v));
+                    } else if (typeof value === 'object' && value !== null) {
+                        collectAndGenerate(value);
+                    }
+                });
+            };
+
+            collectAndGenerate(obj);
+
+            // Pass 2: Update references
+            const updateReferences = (current) => {
+                if (!current || typeof current !== 'object') return;
+
+                Object.keys(current).forEach(key => {
+                    if (key === 'mrid' || key === 'id') return; // Skip already updated IDs
+
+                    const value = current[key];
+                    if (typeof value === 'string' && idMap.has(value)) {
+                        current[key] = idMap.get(value);
+                    } else if (Array.isArray(value)) {
+                         value.forEach(v => updateReferences(v));
+                    } else if (typeof value === 'object' && value !== null) {
+                        updateReferences(value);
+                    }
+                });
+            };
+
+            updateReferences(obj);
+        };
 
         if (dto.clone === true) {
-            regenerateAllIds(entity)
+            regenerateIdsAndRelink(entity)
         }
 
         else if (entity?.asset?.mrid) {
             const originalLocationId = entity.asset.location || dto.locationId
 
             if (originalLocationId && originalLocationId !== parentNode?.mrid) {
-                regenerateAllIds(entity)
+                regenerateIdsAndRelink(entity)
             } 
             else {
                 try {
@@ -58,20 +93,33 @@ export const importTransformer = async (dto, parentNode, { electronAPI, mappings
                     ) {
                         oldEntity = existing.data
                     } else {
-                        regenerateAllIds(entity)
+                        regenerateIdsAndRelink(entity)
                     }
                 } catch {
-                    regenerateAllIds(entity)
+                    regenerateIdsAndRelink(entity)
                 }
             }
         }
 
+        // Link to Parent
         if (parentNode?.mrid) {
             entity.asset.location = parentNode.mrid
+        } else {
+            entity.asset.location = null
         }
 
         if (!entity.asset.mrid) {
             entity.asset.mrid = uuid.newUuid()
+        }
+
+        if (parentNode?.mrid) {
+            entity.assetPsr = {
+                mrid: uuid.newUuid(),
+                asset_id: entity.asset.mrid,
+                psr_id: parentNode.mrid
+            }
+        } else {
+            entity.assetPsr = null
         }
 
         const buildSafeEntity = () => {
@@ -142,5 +190,26 @@ export const importTransformer = async (dto, parentNode, { electronAPI, mappings
     } catch (error) {
         console.error('Error importing transformer:', error)
         return { success: false, message: error.message }
+    }
+}
+
+export const deleteTransformer = async (mrid, psrId, { electronAPI }) => {
+    try {
+        if (!mrid) {
+            return { success: false, message: 'MRID is required for deletion' }
+        }
+
+        const entityRes = await electronAPI.getTransformerFullEntityByMrid(mrid, psrId)
+        if (!entityRes.success || !entityRes.data) {
+            console.warn(`Transformer with mrid ${mrid} not found for deletion, assuming it's already deleted.`)
+            return { success: true, message: 'Transformer not found, assumed already deleted.' }
+        }
+
+        const result = await electronAPI.deleteTransformerEntity(entityRes.data)
+        return result
+
+    } catch (error) {
+        console.error('Error deleting transformer:', error)
+        return { success: false, message: error?.message || 'Delete Transformer failed' }
     }
 }

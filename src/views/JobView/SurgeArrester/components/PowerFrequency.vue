@@ -37,55 +37,53 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testData.table">
-                    <tr :key="index">
-                        <td>
-                            <div style="display: flex;width: 100%; justify-content: flex-end;">   
-                                <el-input v-if="index%(assetData.unit_count)==1" style="width: 50px;" size="mini" type="text" v-model="item.phase.value"></el-input>
-                                <div 
-                                    :class="{
-                                        colorTableRed : index%3==0, 
-                                        colorTableYellow : index%3==1, 
-                                        colorTableBlue : index%3==2
-                                    }"
-                                    style="min-height: 30px;"
-                                >
-                                </div>
+                <tr v-for="(item, index) in testData.table" :key="index">
+                    <td>
+                        <div style="display: flex;width: 100%; justify-content: flex-end;">   
+                            <el-input v-if="index%(assetData.unit_count)==1" style="width: 50px;" size="mini" type="text" v-model="item.phase.value"></el-input>
+                            <div 
+                                :class="{
+                                    colorTableRed : index%3==0, 
+                                    colorTableYellow : index%3==1, 
+                                    colorTableBlue : index%3==2
+                                }"
+                                style="min-height: 30px;"
+                            >
                             </div>
-                        </td>
-                        <td :class="unitShow">
-                            <el-input size="mini" type="text" v-model="item.unit_no.value"></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.ref_current.value"></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.v_meas.value"></el-input>
-                        </td>
-                        <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
-                                <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
-                                <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
-                            </el-select>
-                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
-                        </td>
-                        <td>
-                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
-                            </el-input>
-                        </td>
-                        <td :rowspan="assetData.unit_count" v-if="index%(assetData.unit_count)==0">
-                            <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
-                                <i class="fa-solid fa-plus"></i>
-                            </el-button>
-                        </td>
-                        <td :rowspan="assetData.unit_count" v-if="index%(assetData.unit_count)==0">
-                            <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
-                                <i class="fas fa-trash"></i>
-                            </el-button>
-                        </td>
-                    </tr>
-                </template>
+                        </div>
+                    </td>
+                    <td :class="unitShow">
+                        <el-input size="mini" type="text" v-model="item.unit_no.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.ref_current.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.v_meas.value"></el-input>
+                    </td>
+                    <td>
+                        <el-select class="assessment" size="mini" v-model="item.assessment.value">
+                            <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
+                        </el-select>
+                        <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                    </td>
+                    <td>
+                        <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
+                        </el-input>
+                    </td>
+                    <td :rowspan="assetData.unit_count" v-if="index%(assetData.unit_count)==0">
+                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
+                            <i class="fa-solid fa-plus"></i>
+                        </el-button>
+                    </td>
+                    <td :rowspan="assetData.unit_count" v-if="index%(assetData.unit_count)==0">
+                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
+                            <i class="fas fa-trash"></i>
+                        </el-button>
+                    </td>
+                </tr>
             </tbody>
         </table>
 
@@ -100,6 +98,8 @@
 </template>
 
 <script>
+import surgeArresterTestMap from '@/config/test-definitions/SurgeArrester'
+import * as common from '../../Common/index'
 export default {
     name :"PowerFrequency",
     data() {
@@ -132,51 +132,16 @@ export default {
         assetData() {
             return this.asset
         },
+        rowData() {
+            return common.buildEmptyTestRow(surgeArresterTestMap['PowerFrequency'].columns)
+        }
     },
     watch: {
     },
     methods: {
         add() {
             for(let i=1 ; i<= this.assetData.unit_count; i++) {
-                this.testData.table.push({
-                    mrid : '',
-                    phase : {
-                        mrid : '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    unit_no : {
-                        mrid : '',
-                        value: i,
-                        unit: '',
-                        type: 'analog'
-                    },
-                    ref_current : {
-                        mrid : '',
-                        value: '',
-                        unit: 'm|A',
-                        type: 'analog'
-                    },
-                    v_meas : {
-                        mrid : '',
-                        value: '',
-                        unit: 'k|V',
-                        type: 'analog'
-                    },
-                    assessment : {
-                        mrid : '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator : {
-                        mrid : '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                })
+                this.testData.table.push(JSON.parse(JSON.stringify(this.rowData)))
             }
         },
         removeAll() {
@@ -196,45 +161,7 @@ export default {
         addTest(index) {
             let units = this.assetData.unit_count
             for(let i=0 ; i< units; i++) {
-                const data = {
-                    mrid : '',
-                    phase : {
-                        mrid : '',
-                        value: '',
-                        unit: '',
-                        type: 'string'
-                    },
-                    unit_no : {
-                        mrid : '',
-                        value: i+1,
-                        unit: '',
-                        type: 'analog'
-                    },
-                    ref_current : {
-                        mrid : '',
-                        value: '',
-                        unit: 'm|A',
-                        type: 'analog'
-                    },
-                    v_meas : {
-                        mrid : '',
-                        value: '',
-                        unit: 'k|V',
-                        type: 'analog'
-                    },
-                    assessment : {
-                        mrid : '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator : {
-                        mrid : '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                }
+                const data = JSON.parse(JSON.stringify(this.rowData))
                 this.testData.table.splice(index+i+units, 0, data)
             }
         },
@@ -243,14 +170,15 @@ export default {
         },
 
         clear() {
-            this.testData.table.forEach((element) => {
-                element.phase.value = "",
-                element.unit_no.value = '',
-                element.ref_current.value = '',
-                element.v_meas.value = "",
-                element.assessment.value = '',
-                element.condition_indicator.value = ''
+            this.testData.table.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (key === "mrid") return;
+                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                    row[key].value = ""
+                    }
+                })
             })
+
         },
         nameColor(data) {
             if(data === this.$constant.GOOD) {

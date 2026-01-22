@@ -1,14 +1,14 @@
 <template>
-    <div id="assessmentLimits" class="mgy-5">
-        <el-row style="margin-top: 2%;">
-            <el-col :span="8">
-                <el-radio-group v-model="assessLimitsData.limits">
-                    <el-radio label="Absolute" value="Absolute"></el-radio>
+    <div id="assessmentLimits" class="mgt-20">
+        <el-row class="mgy-20">
+            <el-col>
+                <el-radio-group class="inline-radios" v-model="assessLimitsData.limits">
+                    <el-radio style="margin-right: 8px;" label="Absolute" value="Absolute"></el-radio>
                     <el-radio label="Relative" value="Relative"></el-radio>
                 </el-radio-group>
             </el-col>
         </el-row>
-        <el-row style="margin-top: 2%;">
+        <el-row class="mgy-5">
             <el-col :span="24">
                 <div class="header-toggle pointer font_size_12" @click="openContacRes = !openContacRes">
                     <i v-if="openContacRes" class="fa-solid fa-caret-up"></i>
@@ -1039,5 +1039,29 @@ table, th {
     border: 1px solid !important;
     border-color: #808080 !important;
     font-size: 12px !important;
+}
+
+::v-deep(.inline-radios .el-radio-group) {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    min-height: 28px;
+}
+
+::v-deep(.inline-radios .el-radio__label) {
+    font-size: 12px;
+}
+
+::v-deep(.inline-radios .el-radio__content) {
+    display: flex;
+    align-items: center;
+    line-height: normal;
+}
+
+::v-deep(.inline-radios .el-radio) {
+    flex: 1;
+    margin-right: 0;
+    display: inline-flex;
+    align-items: center;
 }
 </style>

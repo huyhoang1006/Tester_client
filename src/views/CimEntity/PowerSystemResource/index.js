@@ -4,8 +4,8 @@ import Location from "../Location";
 class PowerSystemResource extends IdentifiedObject {
     constructor() {
         super()
-                this.psrTypeId = null;
-                this.location = new Location();
+        this.psrTypeId = null;
+        this.location = new Location();
     }
 }
 export default PowerSystemResource

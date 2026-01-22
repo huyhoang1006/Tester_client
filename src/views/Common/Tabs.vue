@@ -21,7 +21,6 @@
                         <span v-else-if="tab.mode == 'bay'" class="tab-label">{{ tab.name }}</span>
                         <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.serial_number }}</span>
                         <span v-else-if="tab.mode == 'job'" class="tab-label">{{ tab.name }}</span>
-                        <span v-else-if="tab.mode == 'test'" class="tab-label">{{ tab.name }}</span>
                     </div>
                     <span class="close-icon mgr-10 mgl-10"
                         :class="{ visible: hoveredTab === tab.mrid || activeTab.mrid === tab.mrid }"
@@ -66,7 +65,6 @@
                         <span v-else-if="tab.mode == 'bay'" class="tab-label">{{ tab.name }}</span>
                         <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.serial_number }}</span>
                         <span v-else-if="tab.mode == 'job'" class="tab-label">{{ tab.name }}</span>
-                        <span v-else-if="tab.mode == 'test'" class="tab-label">{{ tab.name }}</span>
                     </div>
                     <span class="close-icon mgr-10 mgl-10"
                         :class="{ visible: hoveredTab === tab.mrid || activeTab.mrid === tab.mrid }"
@@ -245,7 +243,6 @@ export default {
                         dto.subsId = tab.mrid || ''
                         dto.organisationId = tab.parentId || ''
                         data.dto = dto
-                        console.log('Substation entity not found, created new DTO from tab data:', dto)
                     }
                     this.$refs.componentLoadData[index].loadData(data)
                 } else if (tab.mode === 'organisation') {
@@ -265,7 +262,6 @@ export default {
                         orgDto.organisationId = tab.mrid || ''
                         orgDto.parentId = tab.parentId || ''
                         this.$refs.componentLoadData[index].loadData(orgDto)
-                        console.log('Organisation entity not found, created new DTO from tab data:', orgDto)
                     }
                 } else if (tab.mode === 'voltageLevel') {
                     const data = await window.electronAPI.getVoltageLevelEntityByMrid(tab.mrid)
@@ -284,7 +280,6 @@ export default {
                         volDto.voltageLevelId = tab.mrid || ''
                         volDto.substationId = tab.parentId || ''
                         this.$refs.componentLoadData[index].loadData(volDto)
-                        console.log('VoltageLevel entity not found, created new DTO from tab data:', volDto)
                     }
                 } else if (tab.mode === 'bay') {
                     const data = await window.electronAPI.getBayEntityByMrid(tab.mrid)
@@ -303,7 +298,6 @@ export default {
                             voltageLevel: tab.parentId || ''
                         }
                         this.$refs.componentLoadData[index].loadData(bayData)
-                        console.log('Bay entity not found, created new data from tab data:', bayData)
                     }
                 } else if (tab.mode === 'asset') {
                     if (tab.asset === 'Surge arrester') {
@@ -327,7 +321,6 @@ export default {
                             dto.properties.serial_no = tab.serial_number || ''
                             dto.assetId = tab.mrid || ''
                             this.$refs.componentLoadData[index].loadData(dto)
-                            console.log('Surge arrester entity not found, created new DTO from tab data:', dto)
                         }
                     } else if (tab.asset === 'Bushing') {
                         this.parentOrganization = {
@@ -350,7 +343,6 @@ export default {
                             mrid: tab.parentId
                         }
                         const data = await window.electronAPI.getCurrentTransformerEntityByMrid(tab.mrid, tab.parentId)
-                        console.log("data : ", data)
                         if (data.success) {
                             const currentTransformerDto = currentTransformerMapper.mapEntityToDto(data.data)
                             // Đảm bảo serial_number được set từ tab nếu entity không có
@@ -358,7 +350,6 @@ export default {
                                 if (!currentTransformerDto.properties) currentTransformerDto.properties = {}
                                 currentTransformerDto.properties.serial_no = tab.serial_number || ''
                             }
-                            console.log("currentTransformerDto : ", currentTransformerDto)
                             this.$refs.componentLoadData[index].loadData(currentTransformerDto)
                         } else {
                             this.$message.error("Failed to load Current transformer data");
@@ -376,7 +367,6 @@ export default {
                                 if (!vtDto.properties) vtDto.properties = {}
                                 vtDto.properties.serial_no = tab.serial_number || ''
                             }
-                            console.log("entityToDto : ", vtDto)
                             this.$refs.componentLoadData[index].loadData(vtDto)
                         } else {
                             this.$message.error("Failed to load Voltage transformer data");
@@ -521,7 +511,7 @@ export default {
                         this.productAssetModelData = {}
                     }
                     if (tab.job === 'Surge arrester') {
-                        const dataTestType = await window.electronAPI.getAllTestTypeSurgeArrester();
+                        const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Surge arrester")
                         if (dataTestType.success) {
                             this.testTypeListData = dataTestType.data
                         } else {
@@ -553,7 +543,7 @@ export default {
                         }
                     }
                     else if( tab.job === 'Power cable') {
-                        const dataTestType = await window.electronAPI.getAllTestTypePowerCable();
+                        const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Power cable")
                         if (dataTestType.success) {
                             this.testTypeListData = dataTestType.data
                         } else {
@@ -585,7 +575,7 @@ export default {
                         }
                     }
                     else if( tab.job === 'Transformer') {
-                        const dataTestType = await window.electronAPI.getAllTestTypeTransformers();
+                        const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Transformer")
                         if (dataTestType.success) {
                             this.testTypeListData = dataTestType.data
                         } else {
@@ -624,69 +614,71 @@ export default {
             }
         },
        // Trong src/views/Common/Tabs.vue
-async loadDataServer(tab, index) {
-    try { if (tab.mode === 'substation') {
-            const serverData = tab; 
+        async loadDataServer(tab, index) {
+            try { if (tab.mode === 'substation') {
+                    const serverData = tab; 
 
-            
-            const SubstationDto = require('@/views/Dto/Substation').default;
-            const dto = new SubstationDto();
+                    
+                    const SubstationDto = require('@/views/Dto/Substation').default;
+                    const dto = new SubstationDto();
 
-            
-            dto.subsId = String(serverData.id || serverData.mrid || ''); 
-            dto.name = serverData.name || '';
-            dto.generation = serverData.generation || '';
-            dto.industry = serverData.industry || '';
-            dto.comment = serverData.description || ''; 
-            
-            dto.organisationId = String(serverData.parentId || '');
+                    
+                    dto.subsId = String(serverData.id || serverData.mrid || ''); 
+                    dto.name = serverData.name || '';
+                    dto.generation = serverData.generation || '';
+                    dto.industry = serverData.industry || '';
+                    dto.comment = serverData.description || ''; 
+                    
+                    dto.organisationId = String(serverData.parentId || '');
 
-            this.$nextTick(() => {
-                if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
-                    this.$refs.componentLoadData[index].loadData({
-                        dto: dto,
-                        locationList: [], 
-                        personList: []
+                    this.$nextTick(() => {
+                        if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                            this.$refs.componentLoadData[index].loadData({
+                                dto: dto,
+                                locationList: [], 
+                                personList: []
+                            });
+                        }
                     });
-                }
-            });
-        } 
-        
-        else if (tab.mode === 'organisation') {
-            const response = await demoAPI.getAssetById(tab.mrid || tab.id, 'Organisation');
-            
-            if (response) {
-                const dto = OrganisationServerMapper.mapServerToDto(response);
+                } 
                 
-                console.log("Mapped Organisation DTO:", dto);
+                else if (tab.mode === 'organisation') {
+                    const serverData = tab;
 
-                this.$nextTick(() => {
-                    if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
-                        this.$refs.componentLoadData[index].loadData(dto);
+                    const OrganisationDto = require('@/views/Dto/Organisation').default;
+                    const dto = new OrganisationDto();
+
+                    dto.organisationId = String(serverData.id || ''); 
+                    dto.name = serverData.name || '';
+                    dto.tax_code = serverData.taxCode || '';         
+                    dto.comment = serverData.description || '';      
+                    dto.parentId = String(serverData.parentOrganisation || '');
+                    
+                    if (serverData.address) dto.street = serverData.address;
+
+                    this.$nextTick(() => {
+                        if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                            this.$refs.componentLoadData[index].loadData(dto);
+                        }
+                    });
+                } 
+                else if (tab.mode == 'asset' && tab.asset === 'Power cable') {
+                    const response = await demoAPI.getAssetById(tab.mrid, 'PowerCable');
+                    if (response) {
+                        const dto = PowerCableServerMapper.mapServerToDto(response);
+
+                        this.$nextTick(() => {
+                            if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                                this.$refs.componentLoadData[index].loadData(dto);
+                            }
+                        });
                     }
-                });
+                }
+            } catch (error) {
+                console.error("Error loading data from server:", error);
             }
-        } 
-        else if (tab.mode == 'asset' && tab.asset === 'Power cable') {
-            const response = await demoAPI.getAssetById(tab.mrid, 'PowerCable');
-            console.log("Server Response Raw:", response); 
-
-            if (response) {
-                const dto = PowerCableServerMapper.mapServerToDto(response);
-                console.log("Mapped DTO:", dto); 
-
-                this.$nextTick(() => {
-                    if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
-                        this.$refs.componentLoadData[index].loadData(dto);
-                    }
-                });
-            }
-        }
-    } catch (error) {
-        console.error("Error loading data from server:", error);
-    }
-},
-async selectTab(tab, index) {
+        },
+        async selectTab(tab, index) {
             this.activeTab = tab;
             this.indexTab = index;
             this.$emit('input', tab); // Gửi ngược lại cho TreeNavigation qua v-model

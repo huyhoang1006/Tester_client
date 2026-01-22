@@ -1,8 +1,8 @@
 <template>
     <div id="overview" style="width: 100%;">
         <!-- Properties -->
-        <el-row :gutter="20" style="width: 100%;">
-            <el-col style="width: 50%;">
+        <el-row :gutter="20" class="content">
+            <el-col :xs="24" :md="12" class="col-content">
                 <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                     <span style="font-size: 12px;" class="bolder">Properties</span>
                     <el-divider></el-divider>
@@ -13,23 +13,13 @@
                         <el-input v-model="propertiesData.type"></el-input>
                     </el-form-item>
                     <el-form-item label="Creation date">
-                        <el-date-picker
-                            v-model="propertiesData.creation_date"
-                            style="width: 100%"
-                            format="MM/dd/yyyy"
-                            value-format="MM/dd/yyyy"
-                            type="date"
-                            placeholder="Pick a day">
+                        <el-date-picker v-model="propertiesData.creation_date" style="width: 100%" format="MM/dd/yyyy"
+                            value-format="MM/dd/yyyy" type="date" placeholder="Pick a day">
                         </el-date-picker>
                     </el-form-item>
                     <el-form-item label="Execution date">
-                        <el-date-picker
-                            v-model="propertiesData.execution_date"
-                            style="width: 100%"
-                            format="MM/dd/yyyy"
-                            value-format="MM/dd/yyyy"
-                            type="date"
-                            placeholder="Pick a day">
+                        <el-date-picker v-model="propertiesData.execution_date" style="width: 100%" format="MM/dd/yyyy"
+                            value-format="MM/dd/yyyy" type="date" placeholder="Pick a day">
                         </el-date-picker>
                     </el-form-item>
                     <el-form-item label="Tested by">
@@ -39,13 +29,8 @@
                         <el-input v-model="propertiesData.approved_by"></el-input>
                     </el-form-item>
                     <el-form-item label="Approval date">
-                        <el-date-picker
-                            v-model="propertiesData.approval_date"
-                            style="width: 100%"
-                            format="MM/dd/yyyy"
-                            value-format="MM/dd/yyyy"
-                            type="date"
-                            placeholder="Pick a day">
+                        <el-date-picker v-model="propertiesData.approval_date" style="width: 100%" format="MM/dd/yyyy"
+                            value-format="MM/dd/yyyy" type="date" placeholder="Pick a day">
                         </el-date-picker>
                     </el-form-item>
                     <el-form-item label="Ambient condition">
@@ -59,12 +44,13 @@
                     </el-form-item>
                 </el-form>
             </el-col>
-            <el-col style="width: 50%;">
+            <el-col :xs="24" :md="12" class="col-content">
                 <el-form :label-width="labelWidth" size="mini" label-position="left">
                     <span style="font-size: 12px;" class="bolder">Summary</span>
                     <el-divider></el-divider>
                     <el-input v-model="propertiesData.summary" type="textarea" :rows="5"></el-input>
-                    <Attachment :attachment_="this.attachmentData" title="Overview" height="120px" @data-attachment="getDataAttachment"></Attachment>
+                    <Attachment :attachment_="this.attachmentData" title="Overview" height="120px"
+                        @data-attachment="getDataAttachment"></Attachment>
                 </el-form>
             </el-col>
         </el-row>
@@ -77,7 +63,7 @@
                 </el-col>
             </el-row>
 
-             <div class="content-toggle">
+            <div class="content-toggle">
                 <el-row style="width: inherit;">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item class="asset-item" label="Name">
@@ -138,7 +124,7 @@ export default {
     },
     data() {
         return {
-            labelWidth: `${200}px`,
+            labelWidth: `${120}px`,
             attachmentData: []
         }
     },
@@ -220,12 +206,15 @@ export default {
 }
 </script>
 <style scoped>
-
-::v-deep .el-form-item__label {
+::v-deep(.el-form-item__label) {
     font-size: 12px;
 }
 
-.asset-item >>> .el-form-item__label {
+::v-deep(.header-toggle) {
+    font-size: 12px;
+}
+
+.asset-item>>>.el-form-item__label {
     font-size: 12px;
     border-right: 1px solid #dcdfe6;
     border-bottom: 1px solid #dcdfe6;
@@ -236,7 +225,7 @@ export default {
     height: 30px;
 }
 
-.asset-item >>> .el-form-item__content {
+.asset-item>>>.el-form-item__content {
     font-size: 12px;
     font-weight: bold;
     border-right: 1px solid #dcdfe6;
@@ -248,8 +237,33 @@ export default {
 }
 
 .asset-name {
-  font-weight: bold;
-  font-size: 12px;
+    font-weight: bold;
+    font-size: 12px;
 }
 
+@media (max-width: 991px) {
+    ::v-deep(.col-content) {
+        margin-bottom: 10px;
+    }
+
+    ::v-deep(.col-content:last-child) {
+        margin-bottom: 0px;
+    }
+}
+
+@media (max-width: 767px) {
+    ::v-deep(.col-content .el-form-item) {
+        flex-direction: column;
+    }
+
+    ::v-deep(.col-content .el-form-item__label) {
+        float: none;
+        width: 100% !important;
+        text-align: left;
+    }
+
+    ::v-deep(.col-content .el-form-item__content) {
+        margin-left: 0 !important;
+    }
+}
 </style>

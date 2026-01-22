@@ -17,6 +17,35 @@ import { insertReactivePowerTransaction, getReactivePowerByIds, deleteReactivePo
 import { insertCapacitanceTransaction, getCapacitanceById, deleteCapacitanceByIdTransaction } from '@/function/cim/capacitance';
 import { insertPercentTransaction, getPercentById, deletePercentByIdTransaction } from '@/function/cim/percent';
 import { insertMassTransaction, getMassById, deleteMassByIdTransaction } from '@/function/cim/mass';
+
+// Helper to safely delete with FK check
+const tryDelete = async (deleteFunc, id, dbsql, name) => {
+    try {
+        await deleteFunc(id, dbsql);
+    } catch (error) {
+        // Handle wrapped error from delete*ByIdTransaction functions
+        // structure: { success: false, err: ErrorObject, message: '...' }
+        const sqlError = error.err || error;
+        
+        // If FK constraint, log warning and skip
+        if (sqlError && sqlError.code === 'SQLITE_CONSTRAINT') {
+             console.warn(`Skipping delete ${name} (${id}): Used by other entities.`);
+        } else {
+             throw error;
+        }
+    }
+}
+
+// Helper to check usage directly (for raw runAsync deletions)
+const isUsedInTable = async (table, column, id, db) => {
+    return new Promise((resolve, reject) => {
+        db.get(`SELECT 1 FROM ${table} WHERE ${column} = ?`, [id], (err, row) => {
+            if (err) reject(err);
+            else resolve(!!row);
+        });
+    });
+}
+
 export const insertCapacitorEntity = async (old_entity, entity) => {
     try {
         if (entity.asset.mrid === null || entity.asset.mrid === '') {
@@ -432,77 +461,80 @@ export const deleteCapacitorEntity = async (entity) => {
 
         // 6. Xóa capacitor_info (có FK đến asset_info)
         if (entity.capacitor && entity.capacitor.mrid) {
-            await runAsync("DELETE FROM capacitor_info WHERE mrid=?", [entity.capacitor.mrid]);
-        }
-
-        // 7. Xóa asset_info (có FK đến identified_object)
-        if (entity.capacitor && entity.capacitor.mrid) {
-            await runAsync("DELETE FROM asset_info WHERE mrid=?", [entity.capacitor.mrid]);
-        }
-
-        // 8. Xóa identified_object của capacitor_info
-        if (entity.capacitor && entity.capacitor.mrid) {
-            await runAsync("DELETE FROM identified_object WHERE mrid=?", [entity.capacitor.mrid]);
+            // Check usage by other assets
+            const isUsed = await isUsedInTable('Asset', 'asset_info', entity.capacitor.mrid, db);
+            if (!isUsed) {
+                await runAsync("DELETE FROM capacitor_info WHERE mrid=?", [entity.capacitor.mrid]);
+                await runAsync("DELETE FROM asset_info WHERE mrid=?", [entity.capacitor.mrid]);
+                await runAsync("DELETE FROM identified_object WHERE mrid=?", [entity.capacitor.mrid]);
+            } else {
+                console.warn(`Skipping delete Capacitor Info: Used by other assets (${entity.capacitor.mrid})`);
+            }
         }
 
         // 9. Xóa product_asset_model
         if (entity.productAssetModel && entity.productAssetModel.mrid) {
-            await runAsync("DELETE FROM product_asset_model WHERE mrid=?", [entity.productAssetModel.mrid]);
-            await runAsync("DELETE FROM identified_object WHERE mrid=?", [entity.productAssetModel.mrid]);
+            const isUsed = await isUsedInTable('Asset', 'product_asset_model', entity.productAssetModel.mrid, db);
+            if (!isUsed) {
+                await runAsync("DELETE FROM product_asset_model WHERE mrid=?", [entity.productAssetModel.mrid]);
+                await runAsync("DELETE FROM identified_object WHERE mrid=?", [entity.productAssetModel.mrid]);
+            } else {
+                console.warn(`Skipping delete ProductAssetModel: Used by other assets (${entity.productAssetModel.mrid})`);
+            }
         }
 
         // 10. Xóa lifecycle_date
         if (entity.lifecycleDate && entity.lifecycleDate.mrid) {
-            await runAsync("DELETE FROM lifecycle_date WHERE mrid=?", [entity.lifecycleDate.mrid]);
+            const isUsed = await isUsedInTable('Asset', 'lifecycle_date', entity.lifecycleDate.mrid, db);
+            if (!isUsed) {
+                await runAsync("DELETE FROM lifecycle_date WHERE mrid=?", [entity.lifecycleDate.mrid]);
+            } else {
+                 console.warn(`Skipping delete LifecycleDate: Used by other assets (${entity.lifecycleDate.mrid})`);
+            }
         }
 
-        // 11. Xóa percent (dissipation factor values)
+        // 11-17. Safe delete for auxiliary units
+        // NOTE: runAsync throws raw error, so tryDelete logic needs to handle that or we wrap manually.
+        // Since we are inside deleteCapacitorEntity which uses runAsync directly, we can just wrap each block or use a helper that catches.
+        
+        const safeDeleteRaw = async (table, id) => {
+            try {
+                await runAsync(`DELETE FROM ${table} WHERE mrid=?`, [id]);
+            } catch (error) {
+                 if (error && error.code === 'SQLITE_CONSTRAINT') {
+                    console.warn(`Skipping delete ${table} (${id}): Used by other entities.`);
+                } else {
+                    throw error;
+                }
+            }
+        };
+
         for (const p of entity.percent || []) {
-            if (p.mrid) {
-                await runAsync("DELETE FROM percent WHERE mrid=?", [p.mrid]);
-            }
+            if (p.mrid) await safeDeleteRaw('percent', p.mrid);
         }
 
-        // 12. Xóa mass
         for (const m of entity.mass || []) {
-            if (m.mrid) {
-                await runAsync("DELETE FROM mass WHERE mrid=?", [m.mrid]);
-            }
+            if (m.mrid) await safeDeleteRaw('mass', m.mrid);
         }
 
-        // 13. Xóa capacitance
         for (const c of entity.capacitance || []) {
-            if (c.mrid) {
-                await runAsync("DELETE FROM capacitance WHERE mrid=?", [c.mrid]);
-            }
+            if (c.mrid) await safeDeleteRaw('capacitance', c.mrid);
         }
 
-        // 14. Xóa reactive_power
         for (const rp of entity.reactivePower || []) {
-            if (rp.mrid) {
-                await runAsync("DELETE FROM reactive_power WHERE mrid=?", [rp.mrid]);
-            }
+            if (rp.mrid) await safeDeleteRaw('reactive_power', rp.mrid);
         }
 
-        // 15. Xóa voltage
         for (const v of entity.voltage || []) {
-            if (v.mrid) {
-                await runAsync("DELETE FROM voltage WHERE mrid=?", [v.mrid]);
-            }
+            if (v.mrid) await safeDeleteRaw('voltage', v.mrid);
         }
 
-        // 16. Xóa frequency
         for (const f of entity.frequency || []) {
-            if (f.mrid) {
-                await runAsync("DELETE FROM frequency WHERE mrid=?", [f.mrid]);
-            }
+            if (f.mrid) await safeDeleteRaw('frequency', f.mrid);
         }
 
-        // 17. Xóa current_flow
         for (const cf of entity.currentFlow || []) {
-            if (cf.mrid) {
-                await runAsync("DELETE FROM current_flow WHERE mrid=?", [cf.mrid]);
-            }
+            if (cf.mrid) await safeDeleteRaw('current_flow', cf.mrid);
         }
 
         await runAsync('COMMIT');
@@ -522,4 +554,4 @@ const runAsync = (sql, params = []) => {
             else resolve();
         });
     });
-}; 
+};

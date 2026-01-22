@@ -1,12 +1,12 @@
 <template>
-    <div id="ratings" class="mgy-5">
+    <div id="ratings" class="mgt-20">
         <div class="content-toggle">
             <el-row :gutter="20" class="content">
-                <el-col :span="12" class="col-content">
+                <el-col :xs="24" :md="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <span style="font-size: 12px;" class="bolder">Properties</span>
                         <el-divider></el-divider>
-                        <el-form-item label="type">
+                        <el-form-item label="Type">
                             <el-select v-model="operatingData.type">
                                 <el-option label="<Select asset type>" value="<Select asset type>"> </el-option>
                                 <el-option label="Spring" value="Spring"> </el-option>
@@ -30,18 +30,20 @@
                             <el-input v-model="operatingData.manufacturer_type"></el-input>
                         </el-form-item>
                         <el-form-item label="Number of trip coils">
-                            <el-select @change="changeTripCoil(operatingData.number_of_trip_coil)" v-model="operatingData.number_of_trip_coil">
+                            <el-select @change="changeTripCoil(operatingData.number_of_trip_coil)"
+                                v-model="operatingData.number_of_trip_coil">
                                 <el-option v-for="item in 3" :key="item" :label="item" :value="item"> </el-option>
                             </el-select>
                         </el-form-item>
                         <el-form-item label="Number of close coils">
-                            <el-select @change="changeCloseCoil(operatingData.number_of_close_coil)" v-model="operatingData.number_of_close_coil">
+                            <el-select @change="changeCloseCoil(operatingData.number_of_close_coil)"
+                                v-model="operatingData.number_of_close_coil">
                                 <el-option v-for="item in 3" :key="item + 3" :label="item" :value="item"> </el-option>
                             </el-select>
                         </el-form-item>
                     </el-form>
                 </el-col>
-                <el-col :span="12">
+                <el-col :xs="24" :md="12">
                     <el-form :label-width="labelWidth" size="mini" label-position="left">
                         <span style="font-size: 12px;" class="bolder">Comment</span>
                         <el-divider></el-divider>
@@ -50,152 +52,166 @@
                 </el-col>
             </el-row>
             <transition>
-            <el-row v-if="operating.asset_type !== '<Select asset type>'" :gutter="20" class="content">
-                <el-col :span="18">
-                        <table class="table-strip-input-data" style="width: 100%; margin-top: 5%; border: 1px solid;">
-                            <thead>
-                                <tr>
-                                    <th>Component</th>
-                                    <th>Rated voltage</th>
-                                    <th>Rated current</th>
-                                    <th>DC</th>
-                                    <th>AC</th>
-                                    <th>Frequency</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="(item, index) in operatingData.trip_coil_component" :key="index">
-                                    <td>{{ item.component }}</td>
-                                    <td>
-                                        <el-input size="mini" v-model="item.rated_voltage.value">
-                                            <template slot="append">V</template>
-                                        </el-input>
-                                    </td>
-                                    <td>
-                                        <el-input size="mini" v-model="item.rated_current.value">
-                                            <template slot="append">A</template>
-                                        </el-input>
-                                    </td>
-                                    <td>
-                                        <el-radio-group v-model="item.power">
-                                            <el-radio label="DC">&nbsp;</el-radio>
-                                        </el-radio-group>
-                                    </td>
-                                    <td>
-                                        <el-radio-group v-model="item.power">
-                                            <el-radio label="AC">&#160;</el-radio>
-                                        </el-radio-group>
-                                    </td>
-                                    <td>
-                                        <el-input size="mini" v-model="item.frequency.value">
-                                            <template slot="append">Hz</template>
-                                        </el-input>
-                                    </td>
-                                </tr>
-                                <tr v-for="(item, index) in operatingData.close_coil_component" :key=" index + 'A'">
-                                    <td>{{ item.component }}</td>
-                                    <td>
-                                        <el-input size="mini" v-model="item.rated_voltage.value">
-                                            <template slot="append">V</template>
-                                        </el-input>
-                                    </td>
-                                    <td>
-                                        <el-input size="mini" v-model="item.rated_current.value">
-                                            <template slot="append">A</template>
-                                        </el-input>
-                                    </td>
-                                    <td>
-                                        <el-radio-group v-model="item.power">
-                                            <el-radio label="DC">&nbsp;</el-radio>
-                                        </el-radio-group>
-                                    </td>
-                                    <td>
-                                        <el-radio-group v-model="item.power">
-                                            <el-radio label="AC">&#160;</el-radio>
-                                        </el-radio-group>
-                                    </td>
-                                    <td>
-                                        <el-input size="mini" v-model="item.frequency.value">
-                                            <template slot="append">Hz</template>
-                                        </el-input>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>{{ operatingData.auxiliary_circuits.component }}</td>
-                                    <td>
-                                        <el-input size="mini" v-model="operatingData.auxiliary_circuits.rated_voltage.value">
-                                            <template slot="append">V</template>
-                                        </el-input>
-                                    </td>
-                                    <td>
-                                        <el-input size="mini" v-model="operatingData.auxiliary_circuits.rated_current.value">
-                                            <template slot="append">A</template>
-                                        </el-input>
-                                    </td>
-                                    <td>
-                                        <el-radio-group v-model="operatingData.auxiliary_circuits.power">
-                                            <el-radio label="DC">&nbsp;</el-radio>
-                                        </el-radio-group>
-                                    </td>
-                                    <td>
-                                        <el-radio-group v-model="operatingData.auxiliary_circuits.power">
-                                            <el-radio label="AC">&#160;</el-radio>
-                                        </el-radio-group>
-                                    </td>
-                                    <td>
-                                        <el-input size="mini" v-model="operatingData.auxiliary_circuits.frequency.value">
-                                            <template slot="append">Hz</template>
-                                        </el-input>
-                                    </td>
-                                </tr>
-                                <transition>
-                                <tr v-if="operatingData.type !== 'magnetic'">
-                                    <td>{{ operatingData.motor.component }}</td>
-                                    <td>
-                                        <el-input size="mini" v-model="operatingData.motor.rated_voltage.value">
-                                            <template slot="append">V</template>
-                                        </el-input>
-                                    </td>
-                                    <td>
-                                        <el-input size="mini" v-model="operatingData.motor.rated_current.value">
-                                            <template slot="append">A</template>
-                                        </el-input>
-                                    </td>
-                                    <td>
-                                        <el-radio-group v-model="operatingData.motor.power">
-                                            <el-radio label="DC">&nbsp;</el-radio>
-                                        </el-radio-group>
-                                    </td>
-                                    <td>
-                                        <el-radio-group v-model="operatingData.motor.power">
-                                            <el-radio label="AC">&#160;</el-radio>
-                                        </el-radio-group>
-                                    </td>
-                                    <td>
-                                        <el-input size="mini" v-model="operatingData.motor.frequency.value">
-                                            <template slot="append">Hz</template>
-                                        </el-input>
-                                    </td>
-                                </tr>
-                                </transition>
-                            </tbody>
-                        </table>
-                </el-col>
-            </el-row>
+                <el-row v-if="operating.asset_type !== '<Select asset type>'" :gutter="20" class="content">
+                    <el-col :span="24">
+                        <div class="table-scroll">
+                            <table class="table-strip-input-data fixed-table">
+                                <colgroup>
+                                    <col style="width: 120px;" />
+                                    <col style="width: 165px;" />
+                                    <col style="width: 165px;" />
+                                    <col style="width: 30px;" />
+                                    <col style="width: 30px;" />
+                                    <col style="width: 165px;" />
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th>Component</th>
+                                        <th>Rated voltage</th>
+                                        <th>Rated current</th>
+                                        <th>DC</th>
+                                        <th>AC</th>
+                                        <th>Frequency</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(item, index) in operatingData.trip_coil_component" :key="index">
+                                        <td>{{ item.component }}</td>
+                                        <td>
+                                            <el-input size="mini" v-model="item.rated_voltage.value">
+                                                <template slot="append">V</template>
+                                            </el-input>
+                                        </td>
+                                        <td>
+                                            <el-input size="mini" v-model="item.rated_current.value">
+                                                <template slot="append">A</template>
+                                            </el-input>
+                                        </td>
+                                        <td>
+                                            <el-radio-group v-model="item.power">
+                                                <el-radio label="DC">&nbsp;</el-radio>
+                                            </el-radio-group>
+                                        </td>
+                                        <td>
+                                            <el-radio-group v-model="item.power">
+                                                <el-radio label="AC">&#160;</el-radio>
+                                            </el-radio-group>
+                                        </td>
+                                        <td>
+                                            <el-input size="mini" v-model="item.frequency.value">
+                                                <template slot="append">Hz</template>
+                                            </el-input>
+                                        </td>
+                                    </tr>
+                                    <tr v-for="(item, index) in operatingData.close_coil_component" :key="index + 'A'">
+                                        <td>{{ item.component }}</td>
+                                        <td>
+                                            <el-input size="mini" v-model="item.rated_voltage.value">
+                                                <template slot="append">V</template>
+                                            </el-input>
+                                        </td>
+                                        <td>
+                                            <el-input size="mini" v-model="item.rated_current.value">
+                                                <template slot="append">A</template>
+                                            </el-input>
+                                        </td>
+                                        <td>
+                                            <el-radio-group v-model="item.power">
+                                                <el-radio label="DC">&nbsp;</el-radio>
+                                            </el-radio-group>
+                                        </td>
+                                        <td>
+                                            <el-radio-group v-model="item.power">
+                                                <el-radio label="AC">&#160;</el-radio>
+                                            </el-radio-group>
+                                        </td>
+                                        <td>
+                                            <el-input size="mini" v-model="item.frequency.value">
+                                                <template slot="append">Hz</template>
+                                            </el-input>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>{{ operatingData.auxiliary_circuits.component }}</td>
+                                        <td>
+                                            <el-input size="mini"
+                                                v-model="operatingData.auxiliary_circuits.rated_voltage.value">
+                                                <template slot="append">V</template>
+                                            </el-input>
+                                        </td>
+                                        <td>
+                                            <el-input size="mini"
+                                                v-model="operatingData.auxiliary_circuits.rated_current.value">
+                                                <template slot="append">A</template>
+                                            </el-input>
+                                        </td>
+                                        <td>
+                                            <el-radio-group v-model="operatingData.auxiliary_circuits.power">
+                                                <el-radio label="DC">&nbsp;</el-radio>
+                                            </el-radio-group>
+                                        </td>
+                                        <td>
+                                            <el-radio-group v-model="operatingData.auxiliary_circuits.power">
+                                                <el-radio label="AC">&#160;</el-radio>
+                                            </el-radio-group>
+                                        </td>
+                                        <td>
+                                            <el-input size="mini"
+                                                v-model="operatingData.auxiliary_circuits.frequency.value">
+                                                <template slot="append">Hz</template>
+                                            </el-input>
+                                        </td>
+                                    </tr>
+                                    <transition>
+                                        <tr v-if="operatingData.type !== 'magnetic'">
+                                            <td>{{ operatingData.motor.component }}</td>
+                                            <td>
+                                                <el-input size="mini" v-model="operatingData.motor.rated_voltage.value">
+                                                    <template slot="append">V</template>
+                                                </el-input>
+                                            </td>
+                                            <td>
+                                                <el-input size="mini" v-model="operatingData.motor.rated_current.value">
+                                                    <template slot="append">A</template>
+                                                </el-input>
+                                            </td>
+                                            <td>
+                                                <el-radio-group v-model="operatingData.motor.power">
+                                                    <el-radio label="DC">&nbsp;</el-radio>
+                                                </el-radio-group>
+                                            </td>
+                                            <td>
+                                                <el-radio-group v-model="operatingData.motor.power">
+                                                    <el-radio label="AC">&#160;</el-radio>
+                                                </el-radio-group>
+                                            </td>
+                                            <td>
+                                                <el-input size="mini" v-model="operatingData.motor.frequency.value">
+                                                    <template slot="append">Hz</template>
+                                                </el-input>
+                                            </td>
+                                        </tr>
+                                    </transition>
+                                </tbody>
+                            </table>
+                        </div>
+                    </el-col>
+                </el-row>
             </transition>
-            <el-row v-if="!['<Select asset type>', 'Spring','Motor','magnetic'].includes(operatingData.type)" style="margin-top: 1%;" class="content">
-                <el-col :span="18">
+            <el-row v-if="!['<Select asset type>', 'Spring', 'Motor', 'magnetic'].includes(operatingData.type)"
+                class="content" style="margin-top: 5px;">
+                <el-col :xs="24" :md="18">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Rated operating pressure">
-                            <el-col :span="10">
+                            <el-col style="width: 45%;">
                                 <el-input v-model="operatingData.rated_operating_pressure.value">
                                     <template slot="append">Pa</template>
                                 </el-input>
                             </el-col>
-                            <el-col :span="2">
+                            <el-col style="width: 10%; font-size: 12px; text-align: center;">
                                 <div>@</div>
                             </el-col>
-                            <el-col :span="10">
+                            <el-col style="width: 45%;">
                                 <el-input v-model="operatingData.rated_operating_pressure_temperature.value">
                                     <template slot="append">°C</template>
                                 </el-input>
@@ -204,7 +220,7 @@
                     </el-form>
                 </el-col>
             </el-row>
-            <el-row style="margin-top: 1%;" class="content">
+            <el-row style="margin-top: 20px;" class="content">
                 <span style="font-size: 12px;" class="bolder">Conversion tables</span>
                 <el-divider></el-divider>
             </el-row>
@@ -214,16 +230,16 @@
 
 <script>
 export default {
-    name : "operatingMechanism",
-    props : {
-        operating : {
-            type : Object,
-            require : true,
+    name: "operatingMechanism",
+    props: {
+        operating: {
+            type: Object,
+            require: true,
         },
     },
     data() {
         return {
-            labelWidth : `300px`,
+            labelWidth: `150px`,
         }
     },
     computed: {
@@ -233,11 +249,11 @@ export default {
     },
     methods: {
         changeTripCoil(data) {
-            if(this.operatingData.trip_coil_component.length == 0) {
-                for(let i=0; i< data; i++) {
+            if (this.operatingData.trip_coil_component.length == 0) {
+                for (let i = 0; i < data; i++) {
                     this.operatingData.trip_coil_component.push({
                         mrid: '',
-                        component : "Trip coil " + `${i + 1}`,
+                        component: "Trip coil " + `${i + 1}`,
                         rated_current: {
                             mrid: '',
                             value: '',
@@ -248,7 +264,7 @@ export default {
                             value: '',
                             unit: 'V'
                         },
-                        power : "",
+                        power: "",
                         frequency: {
                             mrid: '',
                             value: '',
@@ -257,54 +273,54 @@ export default {
                     })
                 }
             } else {
-                if(this.operatingData.trip_coil_component.length < data) {
-                    for(let i=this.operatingData.trip_coil_component.length; i< data; i++) {
+                if (this.operatingData.trip_coil_component.length < data) {
+                    for (let i = this.operatingData.trip_coil_component.length; i < data; i++) {
                         this.operatingData.trip_coil_component.push({
                             mrid: '',
-                            component : "Trip coil " + `${i + 1}`,
-                            rated_voltage : {
+                            component: "Trip coil " + `${i + 1}`,
+                            rated_voltage: {
                                 mrid: '',
                                 value: '',
                                 unit: 'V'
                             },
-                            rated_current : {
+                            rated_current: {
                                 mrid: '',
                                 value: '',
                                 unit: 'A'
                             },
-                            power : "",
-                            frequency : {
+                            power: "",
+                            frequency: {
                                 mrid: '',
                                 value: '',
                                 unit: 'Hz'
                             }
                         })
                     }
-                } else if(this.operatingData.trip_coil_component.length > data) {
-                    for(let i=this.operatingData.trip_coil_component.length; i> data; i--) {
+                } else if (this.operatingData.trip_coil_component.length > data) {
+                    for (let i = this.operatingData.trip_coil_component.length; i > data; i--) {
                         this.operatingData.trip_coil_component.pop()
                     }
                 }
             }
         },
         changeCloseCoil(data) {
-            if(this.operatingData.close_coil_component.length == 0) {
-                for(let i=0; i< data; i++) {
+            if (this.operatingData.close_coil_component.length == 0) {
+                for (let i = 0; i < data; i++) {
                     this.operatingData.close_coil_component.push({
                         mrid: '',
-                        component : "Close coil " + `${i + 1}`,
-                        rated_voltage : {
+                        component: "Close coil " + `${i + 1}`,
+                        rated_voltage: {
                             mrid: '',
                             value: '',
                             unit: 'V'
                         },
-                        rated_current : {
+                        rated_current: {
                             mrid: '',
                             value: '',
                             unit: 'A'
                         },
-                        power : "",
-                        frequency : {
+                        power: "",
+                        frequency: {
                             mrid: '',
                             value: '',
                             unit: 'Hz'
@@ -312,31 +328,31 @@ export default {
                     })
                 }
             } else {
-                if(this.operatingData.close_coil_component.length < data) {
-                    for(let i=this.operatingData.close_coil_component.length; i< data; i++) {
+                if (this.operatingData.close_coil_component.length < data) {
+                    for (let i = this.operatingData.close_coil_component.length; i < data; i++) {
                         this.operatingData.close_coil_component.push({
                             mrid: '',
-                            component : "Close coil " + `${i + 1}`,
-                            rated_voltage : {
+                            component: "Close coil " + `${i + 1}`,
+                            rated_voltage: {
                                 mrid: '',
                                 value: '',
                                 unit: 'V'
                             },
-                            rated_current : {
+                            rated_current: {
                                 mrid: '',
                                 value: '',
                                 unit: 'A'
                             },
-                            power : "",
-                            frequency : {
+                            power: "",
+                            frequency: {
                                 mrid: '',
                                 value: '',
                                 unit: 'Hz'
                             }
                         })
                     }
-                } else if(this.operatingData.close_coil_component.length > data) {
-                    for(let i=this.operatingData.close_coil_component.length; i> data; i--) {
+                } else if (this.operatingData.close_coil_component.length > data) {
+                    for (let i = this.operatingData.close_coil_component.length; i > data; i--) {
                         this.operatingData.close_coil_component.pop()
                     }
                 }
@@ -345,17 +361,63 @@ export default {
     },
 }
 </script>
-<style scoped>
+
+<style lang="scss" scoped>
 .el-select {
     width: 100% !important;
 }
-table, th, td {
+
+table,
+th,
+td {
     border: 1px solid !important;
     white-space: nowrap;
     border-color: #808080 !important;
     font-size: 12px !important;
 }
+
 table {
     border-collapse: collapse;
+}
+
+.fixed-table {
+    width: max-content;
+    table-layout: fixed;
+    border-collapse: collapse;
+    border: 1px solid #fff;
+    font-size: 12px;
+}
+
+.fixed-table th,
+.fixed-table td {
+    border: 1px solid #fff;
+}
+
+.table-scroll {
+    width: 100%;
+    overflow: auto;
+}
+
+.table-scroll::-webkit-scrollbar {
+    height: 5px;
+}
+
+.table-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.table-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(120, 120, 120, 0.6);
+    border-radius: 6px;
+}
+
+.table-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(120, 120, 120, 0.85);
+}
+
+@media (max-width: 991px) {
+    ::v-deep(.col-content) {
+        margin-bottom: 10px;
+    }
 }
 </style>
