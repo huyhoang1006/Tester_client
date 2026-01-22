@@ -84,7 +84,7 @@ export default {
                 case 'bay':
                     return ['voltageLevel', 'substation'] // Bay nằm trong Voltage hoặc Substation
                 case 'asset':
-                    return ['bay', 'voltageLevel', 'substation', 'organisation'] // Asset nằm được nhiều chỗ
+                    return ['bay', 'substation'] // Asset nằm được nhiều chỗ
                 case 'job':
                     return ['asset'] // Job nằm trong Asset
                 default:
