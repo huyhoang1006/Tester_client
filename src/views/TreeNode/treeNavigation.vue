@@ -165,7 +165,7 @@
                 </el-dropdown>
             </div>
             <div v-if="clientSlide">
-                <i title="Upload" style="font-size: 12px" class="fa-solid fa-upload"></i>
+                <i @click="handleUploadNode" title="Upload" style="font-size: 12px; cursor: pointer;" class="fa-solid fa-upload"></i>
             </div>
             <div v-if="!clientSlide">
                 <i @click="handleDownloadNode" title="Download" style="font-size: 12px"
@@ -999,6 +999,7 @@ import * as VoltageLevelMapping from '@/views/Mapping/VoltageLevel/index'
 import { exportNodeToJSON as exportNodeToJSONUtil } from '@/function/entity/export/index'
 import mixinTreeNavigation from '@/views/Common/mixinTreeNavigation/mixin'
 import TopBarServer from './Server/TopBarServer/index.vue'
+import uploadNodeMixin from './mixin/Upload/index.js'; 
 export default {
     name: 'TreeNavigation',
     components: {
@@ -1323,7 +1324,7 @@ export default {
                 : 'app-dialog'
         }
     },
-    mixins: [mixin, mixinTreeNavigation,
+    mixins: [mixin, mixinTreeNavigation,uploadNodeMixin
             ],
     
     async beforeMount() {
