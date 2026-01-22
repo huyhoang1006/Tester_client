@@ -173,8 +173,8 @@
                 </div>
             </el-col>
         </el-row>
-        <el-dialog :visible.sync="signAddGeo" :title="titleGeo" align-center :before-close="handleCloseGeo"
-            :modal="true">
+        <el-dialog custom-class="app-dialog" :visible.sync="signAddGeo" :title="titleGeo" align-center :before-close="handleCloseGeo"
+            :modal="true" append-to-body>
             <el-form :label-width="labelWidth" size="mini" label-position="left">
                 <el-form-item label="Geographic coordinate x">
                     <el-input type="number" v-model="geoChosen.x"></el-input>
@@ -453,7 +453,7 @@ export default {
 
 ::v-deep(.custom-footer) {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 12px;
 }
 
@@ -465,19 +465,38 @@ export default {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 100px;
 }
 
-::v-deep(.el-dialog) {
-    max-height: 85vh;
+::v-deep(.app-dialog) {
+    box-sizing: border-box;
+}
+
+::v-deep(.app-dialog.el-dialog) {
+    width: 35%;
+    margin-top: 5vh !important;
+    border-radius: 6px;
+    max-height: 90vh;
+    height: auto !important;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    width: 35%;
 }
 
-::v-deep(.el.dialog__body) {
+::v-deep(.app-dialog .el-dialog__body) {
     overflow-y: auto;
-    flex: 1;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+::v-deep(.app-dialog .el-dialog__body::-webkit-scrollbar) {
+    width: 0px;
+    height: 0px;
+}
+
+::v-deep(.app-dialog .el-dialog__footer) {
+    padding: 10px 20px;
+    border-top: 1px solid #ebeef5;
 }
 
 ::v-deep(.el-dialog .el-form-item__label) {
@@ -509,7 +528,7 @@ export default {
         margin-left: 0 !important;
     }
 
-    ::v-deep(.el-dialog) {
+    ::v-deep(.app-dialog.el-dialog) {
         width: 50%;
     }
 }
@@ -538,13 +557,7 @@ export default {
     }
 
     ::v-deep(.custom-footer) {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    ::v-deep(.custom-footer .footer-btn) {
-        width: 100%;
-        margin: 0;
+        justify-content: center;
     }
 }
 </style>

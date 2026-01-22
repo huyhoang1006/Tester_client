@@ -1,7 +1,7 @@
 <template>
     <div style="min-height: 500px; display: flex; flex-direction: column;">
         <el-row justify="center" class="top-switch">
-            <el-col :xs="24" :md="12">
+            <el-col :xs="24" :md="18" :lg="12">
                 <el-row :gutter="8">
                     <el-col :xs="12" :sm="6" :md="6">
                         <el-button class="trs-btn" size="mini" type="primary" style="width: 100%" @click="switchData('Transformer')">Transformer</el-button>

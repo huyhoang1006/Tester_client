@@ -1,3 +1,4 @@
+/* eslint-disable */
 export default {
     mounted() {
         window.addEventListener("keydown", this.handleKeyDown);
@@ -7,12 +8,12 @@ export default {
     },
     methods: {
         handleKeyDown(event) {
-        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
-            event.preventDefault()
-            this.saveCtrS()
-        }
+            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
+                event.preventDefault()
+                this.saveCtrSInTree();
+            }
         },
-        saveCtrS() {
+        saveCtrSInTree() {
             if(this.clientSlide) {
                 if(this.$refs.clientTabs) {
                     this.$refs.clientTabs.saveCtrlS()

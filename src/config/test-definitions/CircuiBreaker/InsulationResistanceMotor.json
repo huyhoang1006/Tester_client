@@ -15,7 +15,7 @@
       "code": "r60s",
       "name": "R60s",
       "type": "analog",
-      "unit": "M|Ω"
+      "unit": "m|Ω"
     },
     {
       "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",

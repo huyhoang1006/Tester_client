@@ -1,8 +1,8 @@
 <template>
-    <div id="ratings" class="mgy-5">
+    <div id="ratings" class="mgt-5">
         <el-row>
             <el-col :span="24">
-                <div class="header-toggle pointer" @click="openOthers = !openOthers">
+                <div style="font-size: 12px;" class="header-toggle pointer" @click="openOthers = !openOthers">
                     <i v-if="openOthers" class="fa-solid fa-caret-up"></i>
                     <i v-else class="fa-solid fa-caret-down"></i>
                     Others
@@ -11,20 +11,20 @@
         </el-row>
         <div class="content-toggle" v-if="openOthers">
             <el-row :gutter="20" class="content">
-                <el-col :span="12" class="col-content">
+                <el-col :xs="24" :sm="18" :md="14" :lg="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Total Weight with gas">
-                            <el-input v-model="othersData.total_weight_with_gas.value">
+                            <el-input style="width: 100%" v-model="othersData.total_weight_with_gas.value">
                                 <template slot="append">kg</template>
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Weight of gas">
-                            <el-input v-model="othersData.weight_of_gas.value">
+                            <el-input style="width: 100%" v-model="othersData.weight_of_gas.value">
                                 <template slot="append">kg</template>
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Volume of gas">
-                            <el-input v-model="othersData.volume_of_gas.value">
+                            <el-input style="width: 100%" v-model="othersData.volume_of_gas.value">
                                 <template slot="append">l</template>
                             </el-input>
                         </el-form-item>
@@ -35,7 +35,7 @@
                                         <template slot="append">Pa</template>
                                     </el-input>
                                 </div>
-                                <div style="width: 10%;">
+                                <div style="width: 10%; font-size: 12px; text-align: center;">
                                     <div>@</div>
                                 </div>
                                 <div style="width: 45%;">
@@ -64,7 +64,7 @@ export default {
     data() {
         return {
             openOthers : "true",
-            labelWidth : `250px`
+            labelWidth : `200px`
         }
     },
     computed: {
