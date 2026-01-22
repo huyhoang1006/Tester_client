@@ -161,7 +161,7 @@
                 </el-dropdown>
             </div>
             <div v-if="clientSlide">
-                <i title="Upload" style="font-size: 12px" class="fa-solid fa-upload"></i>
+                <i @click="handleUploadNode" title="Upload" style="font-size: 12px; cursor: pointer;" class="fa-solid fa-upload"></i>
             </div>
             <div v-if="!clientSlide">
                 <i @click="handleDownloadNode" title="Download" style="font-size: 12px"
@@ -952,6 +952,7 @@ import Export from '@/views/Export/index.vue'
 
 import mixinTreeNavigation from '@/views/TreeNode/Common/mixinTreeNavigation/mixin'
 import TopBarServer from './Server/TopBarServer/index.vue'
+import uploadNodeMixin from './mixin/Upload/index.js'; 
 import ClientTreePanel from './Client/ClientTree/index.vue'
 import ServerTreePanel from './Server/ServerTree/index.vue'
 export default {
@@ -1280,9 +1281,7 @@ export default {
                 : 'app-dialog'
         }
     },
-    mixins: [mixin, mixinTreeNavigation,
-    ],
-
+    mixins: [mixin, mixinTreeNavigation, uploadNodeMixin],
     async beforeMount() {
         try {
             const data = await window.electronAPI.getAllConfigurationEvents()
@@ -1295,7 +1294,6 @@ export default {
         }
     },
     methods: {
-
         serverSwap(serverSign) {
             if (serverSign == true) {
                 this.clientSlide = false
@@ -1359,6 +1357,7 @@ export default {
             await this.showData(node)
             await this.showPropertiesData(node)
         },
+
     }
 }
 </script>

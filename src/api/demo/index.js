@@ -61,3 +61,12 @@ export const getAssetByOwner = (ownerId, mode) => {
         return Promise.reject(new Error("Invalid user data format"));
     }
 }
+
+export const createPowerCableCim = (data, ownerId, ownerType) => {
+    return client.post(`http://103.163.118.212:30830/api/cim/power-cable/create`, data, {
+        params: {
+            ownerId: ownerId,
+            ownerType: ownerType
+        }
+    });
+}

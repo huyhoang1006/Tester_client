@@ -110,7 +110,8 @@ import * as transformerMapper from '@/views/Mapping/Transformer'
 import * as reactorMapper from '@/views/Mapping/Reactor'
 
 import * as demoAPI from '@/api/demo/index.js'
-import * as PowerCableServerMapper from '@/views/Mapping/PowerCableTest/index.js'
+import * as PowerCableServerMapper from '@/views/Mapping/ServerToDTO/PowerCable/index.js'
+import * as OrganisationServerMapper from '@/views/Mapping/ServerToDTO/Organisation/index.js'
 
 import VoltageLevel from '@/views/VoltageLevel/index.vue'
 import Bay from '@/views/Bay/index.vue'
@@ -663,7 +664,6 @@ export default {
                 } 
                 else if (tab.mode == 'asset' && tab.asset === 'Power cable') {
                     const response = await demoAPI.getAssetById(tab.mrid, 'PowerCable');
-
                     if (response) {
                         const dto = PowerCableServerMapper.mapServerToDto(response);
 

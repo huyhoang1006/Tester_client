@@ -27,7 +27,7 @@ export default {
                 if (!serverResponse) return
 
                 // 2. Map sang DTO bằng hàm của bạn
-                const PowerCableServerMapper = require('@/views/Mapping/PowerCableTest/index.js')
+                const PowerCableServerMapper = require('@/views/Mapping/ServerToDTO/PowerCable/index.js')
                 const dto = PowerCableServerMapper.mapServerToDto(serverResponse)
 
                 // 3. QUAN TRỌNG: Gán các ID quan hệ để Map về Entity local không bị lỗi
