@@ -6,11 +6,7 @@
                 @clear-selection="clearSelection" />
         </div>
         <div v-show="!clientSlide" class="toolbar">
-            <TopBarServer 
-                :pathMapServer="pathMapServer" 
-                @reset-all="resetAllServer" 
-                @path-click="resetPathServer" 
-            />
+            <TopBarServer :pathMapServer="pathMapServer" @reset-all="resetAllServer" @path-click="resetPathServer" />
         </div>
         <div id="toolbar-setting-id" class="toolbar-setting">
             <div>
@@ -184,64 +180,36 @@
         </div>
         <!-- Thanh điều hướng có thể kéo rộng/kéo hẹp -->
         <div class="resizable-sidebar">
-            <div ref="sidebarClient" v-show="clientSlide" class="sidebar">
-                <div class="title-temp">
-                    <div ref="tabContainer" class="tab-container">
-                        <div @contextmenu.prevent="showContext" ref="locationRoot" @click="showLocationRoot"
-                            class="location">Location</div>
-                        <div ref="ownerRoot" class="tab">Owner</div>
-                    </div>
-                    <contextMenu @show-addSubs="showAddSubs" ref="contextSubstation"></contextMenu>
-                </div>
-                <div class="child-nav">
-                    <ul>
-                        <TreeNode v-for="item in organisationClientList" :key="item.id" :node="item"
-                            @double-click-node="doubleClickNode" :selectedNodes.sync="selectedNodes"
-                            @fetch-children="fetchChildren" @show-properties="showPropertiesDataClient"
-                            @update-selection="updateSelection" @clear-selection="clearSelection"
-                            @open-context-menu="openContextMenuClient">
-                        </TreeNode>
-                    </ul>
-                    <contextMenu @delete-data="deleteDataClient" @show-addSubsInTree="showAddSubsInTree"
-                        @show-addOrganisation="showAddOrganisation" @show-addVoltageLevel="showAddVoltageLevel"
-                        @show-addTransformer="showAddTransformer" @show-addJob="showAddJob"
-                        @show-addBushing="showAddBushing" @show-addSurgeArrester="showAddSurgeArrester"
-                        @show-addCircuit="showAddCircuitBreaker" @show-addVt="showAddVt" @show-addCt="showAddCt"
-                        @show-addPowerCable="showAddPowerCable" @show-addDisconnector="showAddDisconnector"
-                        @show-addCapacitor="showAddCapacitor" @show-addReactor="showAddReactor"
-                        @show-addRotatingMachine="showAddRotatingMachine" @show-addBay="showAddBay"
-                        @export-json="handleExportJSONFromContext" @export-json-cim="handleExportJSONCIMFromContext"
-                        @export-xml="handleExportXMLFromContext" @export-excel="handleExportExcelFromContext"
-                        @export-word="handleExportWordFromContext" @export-pdf="handleExportPDFFromContext"
-                        @duplicate-node="handleDuplicateFromContext" @move-node="handleMoveFromContext"
-                        @import-json="handleImportJSONFromContext" @import-json-cim="handleImportJSONCIMFromContext"
-                        @show-data="showDataClient" ref="contextMenuClient">
-                    </contextMenu>
-                </div>
-            </div>
-            <div ref="sidebarServer" v-show="!clientSlide" class="sidebar">
-                <div class="title-temp">
-                    <div ref="tabContainer" class="tab-container">
-                        <div ref="ownerRootServer" @click="showOwnerServerRoot" class="tab">Owner</div>
-                    </div>
-                </div>
-                <div class="child-nav">
-                    <ul>
-                        <TreeNode v-for="item in ownerServerList" :key="item.id" :node="item"
-                            :selectedNodes.sync="selectedNodes" @fetch-children="fetchChildrenServer"
-                            @show-properties="showPropertiesData" @update-selection="updateSelection"
-                            @clear-selection="clearSelection" @open-context-menu="openContextMenu"
-                            @double-click-node="doubleClickNodeServer">
-                        </TreeNode>
-                    </ul>
-                    <contextMenu @show-data="showData" @export-json="handleExportJSONFromContext"
-                        @export-json-cim="handleExportJSONCIMFromContext" @export-xml="handleExportXMLFromContext"
-                        @export-excel="handleExportExcelFromContext" @export-word="handleExportWordFromContext"
-                        @export-pdf="handleExportPDFFromContext" @duplicate-node="handleDuplicateFromContext"
-                        @move-node="handleMoveFromContext" @import-json="handleImportJSONFromContext"
-                        @import-json-cim="handleImportJSONCIMFromContext" ref="contextMenu"></contextMenu>
-                </div>
-            </div>
+            <ClientTreePanel ref="clientPanel" v-show="clientSlide" :organisationClientList="organisationClientList"
+                :selectedNodes.sync="selectedNodes" @showLocationRoot="showLocationRoot" @show-addSubs="showAddSubs"
+                @double-click-node="doubleClickNode" @fetch-children="fetchChildren"
+                @show-properties="showPropertiesDataClient" @update-selection="updateSelection"
+                @clear-selection="clearSelection" @delete-data="deleteDataClient"
+                @show-addSubsInTree="showAddSubsInTree" @show-addOrganisation="showAddOrganisation"
+                @show-addVoltageLevel="showAddVoltageLevel" @show-addTransformer="showAddTransformer"
+                @show-addJob="showAddJob" @show-addBushing="showAddBushing"
+                @show-addSurgeArrester="showAddSurgeArrester" @show-addCircuit="showAddCircuitBreaker"
+                @show-addVt="showAddVt" @show-addCt="showAddCt" @show-addPowerCable="showAddPowerCable"
+                @show-addDisconnector="showAddDisconnector" @show-addCapacitor="showAddCapacitor"
+                @show-addReactor="showAddReactor" @show-addRotatingMachine="showAddRotatingMachine"
+                @show-addBay="showAddBay" @export-json="handleExportJSONFromContext"
+                @export-json-cim="handleExportJSONCIMFromContext" @export-xml="handleExportXMLFromContext"
+                @export-excel="handleExportExcelFromContext" @export-word="handleExportWordFromContext"
+                @export-pdf="handleExportPDFFromContext" @duplicate-node="handleDuplicateFromContext"
+                @move-node="handleMoveFromContext" @import-json="handleImportJSONFromContext"
+                @import-json-cim="handleImportJSONCIMFromContext" @show-data="showDataClient" />
+
+            <ServerTreePanel ref="serverPanel" v-show="!clientSlide" :ownerServerList="ownerServerList"
+                :selectedNodes.sync="selectedNodes" @showOwnerServerRoot="showOwnerServerRoot"
+                @fetch-children-server="fetchChildrenServer" @double-click-node-server="doubleClickNodeServer"
+                @show-properties="showPropertiesData" @update-selection="updateSelection"
+                @clear-selection="clearSelection" @show-data="showData" @export-json="handleExportJSONFromContext"
+                @export-json-cim="handleExportJSONCIMFromContext" @export-xml="handleExportXMLFromContext"
+                @export-excel="handleExportExcelFromContext" @export-word="handleExportWordFromContext"
+                @export-pdf="handleExportPDFFromContext" @duplicate-node="handleDuplicateFromContext"
+                @move-node="handleMoveFromContext" @import-json="handleImportJSONFromContext"
+                @import-json-cim="handleImportJSONCIMFromContext" />
+
             <div @mousedown="startResizeClient" v-if="clientSlide" ref="resizerClient" class="resizer"></div>
             <div @mousedown="startResizeServer" v-if="!clientSlide" ref="resizerServer" class="resizer"></div>
             <div ref="contextDataServer" v-show="!clientSlide" class="context-data">
@@ -975,36 +943,25 @@ import JobVoltageTransformer from '@/views/JobView/VoltageTransformer/index.vue'
 import JobCircuitBreaker from '@/views/JobView/CircuitBreaker/index.vue'
 import JobTransformer from '@/views/JobView/Transformer/index.vue'
 
-import mixin from './mixin'
+import mixin from './Common'
 import Attachment from '../Common/Attachment.vue'
 import Icon from '@/views/Common/Icon.vue'
 import Fmeca from '@/views/Fmeca'
 import Export from '@/views/Export/index.vue'
 
-// Import Mappings (Quan trọng cho Duplicate)
-import * as BreakerMapping from '@/views/Mapping/Breaker/index'
-import * as TransformerMapping from '@/views/Mapping/Transformer/index'
-import * as SubstationMapping from '@/views/Mapping/Substation/index'
-import * as OrganisationMapping from '@/views/Mapping/Organisation/index'
-import * as SurgeArresterMapping from '@/views/Mapping/SurgeArrester/index'
-import * as PowerCableMapping from '@/views/Mapping/PowerCable/index'
-import * as DisconnectorMapping from '@/views/Mapping/Disconnector/index'
-import * as CapacitorMapping from '@/views/Mapping/Capacitor/index'
-import * as VoltageTransformerMapping from '@/views/Mapping/VoltageTransformer/index'
-import * as CurrentTransformerMapping from '@/views/Mapping/CurrentTransformer/index'
-import * as ReactorMapping from '@/views/Mapping/Reactor/index'
-import * as BushingMapping from '@/views/Mapping/Bushing/index'
-import * as rotatingMachineMapping from "@/views/Mapping/RotatingMachine/index"
-import * as VoltageLevelMapping from '@/views/Mapping/VoltageLevel/index'
-import { exportNodeToJSON as exportNodeToJSONUtil } from '@/function/entity/export/index'
-import mixinTreeNavigation from '@/views/Common/mixinTreeNavigation/mixin'
+
+import mixinTreeNavigation from '@/views/TreeNode/Common/mixinTreeNavigation/mixin'
 import TopBarServer from './Server/TopBarServer/index.vue'
+import ClientTreePanel from './Client/ClientTree/index.vue'
+import ServerTreePanel from './Server/ServerTree/index.vue'
 export default {
     name: 'TreeNavigation',
     components: {
+        ServerTreePanel,
+        ClientTreePanel,
         mapJobProperties,
         mapAssetProperties,
-        mapProperties,mapClientProperties,
+        mapProperties, mapClientProperties,
         mapClientJobProperties,
         mapClientAssetProperties,
         TopBarServer,
@@ -1324,8 +1281,8 @@ export default {
         }
     },
     mixins: [mixin, mixinTreeNavigation,
-            ],
-    
+    ],
+
     async beforeMount() {
         try {
             const data = await window.electronAPI.getAllConfigurationEvents()
@@ -1427,56 +1384,6 @@ export default {
     height: calc(100% - 60px);
 }
 
-.sidebar {
-    width: 20%;
-    background-color: white;
-    color: #555;
-    flex-shrink: 0;
-    height: 100%;
-    box-sizing: border-box;
-}
-
-.sidebar ul {
-    list-style: none;
-    padding-left: 20px;
-}
-
-.sidebar li {
-    margin: 5px 0;
-    cursor: pointer;
-}
-
-.sidebar .folder,
-.sidebar .file {
-    display: block;
-    padding: 5px;
-    white-space: nowrap;
-    /* Ngăn văn bản xuống dòng */
-    overflow: hidden;
-    /* Ẩn phần văn bản vượt quá kích thước */
-    text-overflow: ellipsis;
-    /* Hiển thị dấu ... khi văn bản quá dài */
-    font-size: 12px;
-    /* Cỡ chữ cho thư mục và tệp */
-}
-
-.sidebar .folder:hover,
-.sidebar .file:hover {
-    background-color: #555;
-    color: white;
-}
-
-.sidebar .folder i,
-.sidebar .file i {
-    margin-right: 8px;
-    /* Khoảng cách giữa icon và văn bản */
-    width: 16px;
-    /* Kích thước icon */
-    text-align: center;
-    font-size: 12px;
-    /* Cỡ chữ cho icon */
-}
-
 .resizer {
     width: 5px;
     background-color: white;
@@ -1524,16 +1431,6 @@ export default {
 
 .folder-item:hover {
     background-color: #f0f0f0;
-}
-
-.child-nav {
-    overflow-y: hidden;
-    height: calc(100% - 80px);
-    box-sizing: border-box;
-}
-
-.child-nav:hover {
-    overflow-y: auto;
 }
 
 .title-node {
@@ -1708,36 +1605,9 @@ export default {
     visibility: visible;
 }
 
-.tab-container {
-    height: 100%;
-    width: 100%;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    overflow: hidden;
-}
 
-.location {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    padding: 0 5px;
-    cursor: pointer;
-    border-bottom: 2px #e6e4e4 solid;
-    box-sizing: border-box;
-}
 
-.tab {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    padding-left: 5px;
-    width: 100%;
-    box-sizing: border-box;
-    border-bottom: 2px #e6e4e4 solid;
-}
+
 
 .trapezoid {
     position: absolute;
