@@ -5,12 +5,25 @@ export default {
             document.addEventListener('mouseup', this.stopResizeServer)
         },
         resizeServer(event) {
-            if (!this.$refs.sidebarServer) return
+            // Tìm sidebar trong component con Server
+            let sidebarElement = null;
+            if (this.$refs.serverPanel && this.$refs.serverPanel.$refs.sidebarServer) {
+                sidebarElement = this.$refs.serverPanel.$refs.sidebarServer;
+            }
+
+            if (!sidebarElement) return;
+
+            // Logic tính toán
             let newWidth = (event.clientX / window.innerWidth) * 100
             let finalWidth = Math.max(10, Math.min(40, newWidth))
-            // Cập nhật width của sidebar và context-data
-            this.$refs.sidebarServer.style.width = finalWidth + 'vw'
-            this.$refs.contextDataServer.style.width = 100 - finalWidth + 'vw'
+
+            // Gán style
+            sidebarElement.style.width = finalWidth + 'vw'
+
+            // Gán style cho content bên phải (nếu có)
+            if (this.$refs.contextDataServer) {
+                this.$refs.contextDataServer.style.width = 100 - finalWidth + 'vw'
+            }
         },
         stopResizeServer() {
             document.removeEventListener('mousemove', this.resizeServer)
