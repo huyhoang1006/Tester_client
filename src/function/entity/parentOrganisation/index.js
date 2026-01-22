@@ -206,39 +206,55 @@ export const deleteOrganisationEntityById = async (data) => {
     };
 
     try {
-        // Bắt đầu transaction
+        console.log('STEP 1: BEGIN TRANSACTION');
         await runSQL('BEGIN TRANSACTION');
 
-        if (data.organisation.mrid)
+        if (data.organisation.mrid) {
+            console.log('STEP 2: deleteParentOrganization', data.organisation.mrid);
             await deleteParentOrganizationByIdTransaction(data.organisation.mrid, db);
+        }
 
-        if (data.streetAddress && data.streetAddress.mrid)
+        if (data.streetAddress && data.streetAddress.mrid) {
+            console.log('STEP 3: deleteStreetAddress', data.streetAddress.mrid);
             await deleteStreetAddressByIdTransaction(data.streetAddress.mrid, db);
+        }
 
-        if (data.attachment && data.attachment.id)
+        if (data.attachment && data.attachment.id) {
+            console.log('STEP 4: deleteAttachment', data.attachment.id);
             await deleteAttachmentByIdTransaction(data.attachment.id, db);
+        }
 
-        if (data.electronicAddress && data.electronicAddress.mrid)
+        if (data.electronicAddress && data.electronicAddress.mrid) {
+            console.log('STEP 5: deleteElectronicAddress', data.electronicAddress.mrid);
             await deleteElectronicAddressByIdTransaction(data.electronicAddress.mrid, db);
+        }
 
-        if (data.telephoneNumber && data.telephoneNumber.mrid)
+        if (data.telephoneNumber && data.telephoneNumber.mrid) {
+            console.log('STEP 6: deleteTelephoneNumber', data.telephoneNumber.mrid);
             await deleteTelephoneNumberByIdTransaction(data.telephoneNumber.mrid, db);
+        }
 
-        if (data.streetDetail && data.streetDetail.mrid)
+        if (data.streetDetail && data.streetDetail.mrid) {
+            console.log('STEP 7: deleteStreetDetail', data.streetDetail.mrid);
             await deleteStreetDetailByIdTransaction(data.streetDetail.mrid, db);
+        }
 
-        if (data.townDetail && data.townDetail.mrid)
+        if (data.townDetail && data.townDetail.mrid) {
+            console.log('STEP 8: deleteTownDetail', data.townDetail.mrid);
             await deleteTownDetailByIdTransaction(data.townDetail.mrid, db);
+        }
 
-        // Commit nếu thành công
+        console.log('STEP 9: COMMIT');
         await runSQL('COMMIT');
 
+        console.log('STEP 10: deleteDirectory');
         deleteDirectory(null, data.organisation.mrid);
 
+        console.log('DONE');
         return { success: true, data, message: 'Organisation deleted successfully' };
 
     } catch (error) {
-        console.error('Error deleting organisation:', error);
+        console.error('❌ ERROR at step:', error);
         try {
             await runSQL('ROLLBACK');
         } catch (rollbackErr) {
@@ -246,4 +262,5 @@ export const deleteOrganisationEntityById = async (data) => {
         }
         return { success: false, error, message: 'Failed to delete organisation' };
     }
+
 };

@@ -162,7 +162,6 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
                 await insertTestDataSetTransaction(testData, db);
             }
 
-            console.log('testing equipment');
             //analog value
             const newIdsAnalogValue = entity.analogValues.map(v => v.mrid).filter(id => id); // bỏ null/empty
             const oldIdsAnalogValue = old_entity.analogValues.map(v => v.mrid).filter(id => id);
@@ -212,11 +211,11 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
                 await insertProcedureDataSetMeasurementValueTransaction(procedureDataSetMeasurementValue, db);
             }
 
+
             //delete section
             for(const analogValue of toDeleteAnalogValue) {
                 await deleteAnalogValueByIdTransaction(analogValue.mrid, db);
             }
-
             for(const stringMeasurementValue of toDeleteStringMeasurementValue) {
                 await deleteStringMeasurementValueByIdTransaction(stringMeasurementValue.mrid, db);
             }
@@ -250,6 +249,7 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
 
         }
     } catch (error) {
+        await runAsync('ROLLBACK');
         console.error('Error retrieving surge arrester entity:', error);
         restoreFiles(null, null, entity.oldWork.mrid);
         deleteBackupFiles(null, entity.oldWork.mrid);
@@ -257,7 +257,6 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
             restoreFiles(null, null, attachment.id_foreign);
             deleteBackupFiles(null, attachment.id_foreign);
         }
-        await runAsync('ROLLBACK');
         return { success: false, error, message: 'Error retrieving surge arrester entity' };
     }
 }

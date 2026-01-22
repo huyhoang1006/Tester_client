@@ -96,6 +96,7 @@ export const jobDtoToEntity = (dto) => {
                         analogValue.value = value.value || null;
                         analogValue.alias_name = key || null;
                         analogValue.analog = value['measurement_id'] ? value['measurement_id'] : null;
+                        analogValue.procedure_dataset_id = data.mrid
                         entity.analogValues.push(analogValue);
                         const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue();
                         procedureDataSetMeasurementValue.procedure_dataset_id = data.mrid || null;
@@ -106,6 +107,7 @@ export const jobDtoToEntity = (dto) => {
                         stringValue.mrid = value.mrid || null;
                         stringValue.value = value.value || null;
                         stringValue.alias_name = key || null;
+                        stringValue.procedure_dataset_id = data.mrid
                         stringValue.string_measurement = value['measurement_id'] ? value['measurement_id'] : null;
                         entity.stringMeasurementValues.push(stringValue);
                         const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue();
@@ -117,6 +119,7 @@ export const jobDtoToEntity = (dto) => {
                         discreteValue.mrid = value.mrid || null;
                         discreteValue.value = value.value || null;
                         discreteValue.alias_name = key || null;
+                        discreteValue.procedure_dataset_id = data.mrid
                         discreteValue.discrete = value['measurement_id'] ? value['measurement_id'] : null;
                         entity.discreteValues.push(discreteValue);
                         const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue();
@@ -142,6 +145,7 @@ export const jobDtoToEntity = (dto) => {
                     analogValue.value = value.value || null;
                     analogValue.alias_name = key || null;
                     analogValue.analog = value['measurement_id'] ? value['measurement_id'] : null;
+                    analogValue.procedure_dataset_id = testDataCondition.mrid
                     entity.analogValues.push(analogValue);
                     const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue();
                     procedureDataSetMeasurementValue.procedure_dataset_id = testDataCondition.mrid || null;
@@ -152,6 +156,7 @@ export const jobDtoToEntity = (dto) => {
                     stringValue.mrid = value.mrid || null;
                     stringValue.value = value.value || null;
                     stringValue.alias_name = key || null;
+                    stringValue.procedure_dataset_id = testDataCondition.mrid
                     stringValue.string_measurement = value['measurement_id'] ? value['measurement_id'] : null;
                     entity.stringMeasurementValues.push(stringValue);
                     const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue();
@@ -163,6 +168,7 @@ export const jobDtoToEntity = (dto) => {
                     discreteValue.mrid = value.mrid || null;
                     discreteValue.value = value.value || null;
                     discreteValue.alias_name = key || null;
+                    discreteValue.procedure_dataset_id = testDataCondition.mrid
                     discreteValue.discrete = value['measurement_id'] ? value['measurement_id'] : null;
                     entity.discreteValues.push(discreteValue);
                     const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue();
@@ -269,7 +275,7 @@ export const JobEntityToDto = (entity) => {
         for(const test of testData) {
             const rowData = {};
             rowData.mrid = test.mrid || '';
-            const stringMeasutementValueData = entity.stringMeasurementValues.filter(x => x.procedure_dataset_id === test.mrid);
+            const stringMeasutementValueData = entity.stringMeasurementValues.filter(x => x.procedure_dataset_id == test.mrid);
             for (const smv of stringMeasutementValueData) {
                 const key = smv.alias_name; // vd: "assessment"
 
