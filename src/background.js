@@ -197,6 +197,10 @@ app.on('ready', async () => {
         }
     }
 
+    process.on("unhandledRejection", (reason, p) => {
+        console.error("🔥 UNHANDLED PROMISE:", reason);
+    });
+
     await updateModule.active()
 
     ipcMain.handle('login', async function (event, user) {

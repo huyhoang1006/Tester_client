@@ -20,7 +20,6 @@ export default {
                 } else {
                     const dto = JSON.parse(JSON.stringify(this.surgeArresterJobDto));
                     const resultDto = await this.checkJob(dto);
-                    console.log(resultDto)
                     const entity = surgeArresterJobMapping.jobDtoToEntity(resultDto);
                     const old_entity = surgeArresterJobMapping.jobDtoToEntity(this.surgeArresterJobDtoOld);
                     const rs = await window.electronAPI.insertSurgeArresterJob(old_entity, entity)
@@ -141,7 +140,7 @@ export default {
 
         async checkDataMeasurement(data) {
             for (const test of data.testList) {
-                if (test.testCondition.mrid || test.testCondition.mrid === null || test.testCondition.mrid === '') {
+                if (test.testCondition.mrid === null || test.testCondition.mrid === '') {
                     test.testCondition.mrid = uuid.newUuid();
                 }
                 Object.keys(test.testCondition.condition).forEach(key => {
