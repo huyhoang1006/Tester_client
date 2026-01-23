@@ -120,7 +120,7 @@ export function mapDtoToEntity(dto) {
     }
 
     //attachment
-    entity.attachment.mrid = dto.attachmentId || null;
+    entity.attachment.id = dto.attachmentId || null;
     entity.attachment = dto.attachment || null;
 
     return entity;
@@ -158,7 +158,7 @@ export function mapEntityToDto(entity) {
     dto.assetInfoId = entity.assetPsr.asset_id || '';
 
     //attachment
-    dto.attachmentId = entity.attachment.mrid || '';
+    dto.attachmentId = entity.attachment.id || '';
     dto.attachment = entity.attachment;
 
     //ratings

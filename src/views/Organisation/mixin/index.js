@@ -51,7 +51,6 @@ export default {
                     const dto = JSON.parse(JSON.stringify(this.properties))
                     const dtoData = this.checkOrganisation(dto)
                     const data = orgMapper.OrgDtoToOrgEntity(dtoData)
-                    console.log("Organisation data to save:", data)
                     const result = await window.electronAPI.insertParentOrganizationEntity(data)
                     if (result.success) {
                         return {
@@ -176,6 +175,8 @@ export default {
                     dto.attachment.type = 'organisation'
                     dto.attachment.id_foreign = this.properties.organisationId
                 }
+            } else {
+                dto.attachment.path = JSON.stringify(this.attachmentData)
             }
         },
 

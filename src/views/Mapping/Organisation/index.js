@@ -106,7 +106,7 @@ export const OrgEntityToOrgDto = (orgEntity) => {
     orgDto.phoneNumber = orgEntity.telephoneNumber.itu_phone || '';
 
     // Attachment
-    orgDto.attachmentId = orgEntity.attachment.mrid || '';
+    orgDto.attachmentId = orgEntity.attachment.id || '';
     orgDto.attachment = orgEntity.attachment;
 
     // Configuration Events

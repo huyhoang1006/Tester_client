@@ -59,7 +59,7 @@ export function mapDtoToEntity(dto) {
     entity.assetPsr.psr_id = dto.psrId || null;
 
     /** ---------- attachment ---------- */
-    entity.attachment.mrid = dto.attachmentId || null;
+    entity.attachment.id = dto.attachmentId || null;
     entity.attachment = dto.attachment || null;
 
     entity.oldBreakerInfo.phase_number = dto.circuitBreaker.numberOfPhases || null
@@ -612,7 +612,6 @@ export function mapDtoToEntity(dto) {
 }
 
 export function mapEntityToDto(entity) {
-    console.log(entity);
     const dto = new CircuitBreakerDto()
     if (!entity) return dto;
 
@@ -635,7 +634,7 @@ export function mapEntityToDto(entity) {
     dto.assetPsrId = entity.assetPsr?.mrid || ''
     dto.assetInfoId = entity.oldBreakerInfo?.mrid || ''
     //attachment
-    dto.attachmentId = entity.attachment?.mrid || '';
+    dto.attachmentId = entity.attachment?.id || '';
     dto.attachment = entity.attachment || null;
 
     if (entity.oldBreakerInfo?.pir == 1) {

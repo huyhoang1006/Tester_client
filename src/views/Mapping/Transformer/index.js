@@ -49,7 +49,7 @@ export const transformerDtoToEntity = (dto) => {
     entity.assetPsr.psr_id = dto.psrId || null;
 
     /** ---------- attachment ---------- */
-    entity.attachment.mrid = dto.attachmentId || null;
+    entity.attachment.id = dto.attachmentId || null;
     entity.attachment = dto.attachment || null;
 
     entity.asset.country_of_origin = dto.properties.country_of_origin || null;
@@ -560,7 +560,7 @@ export const transformerEntityToDto = (entity) => {
     dto.properties.comment = entity.asset.description || ''
     dto.locationId = entity.asset.location || ''
     dto.assetPsrId = entity.assetPsr.mrid || ''
-    dto.attachmentId = entity.attachment.mrid || '';
+    dto.attachmentId = entity.attachment.id || '';
     dto.attachment = entity.attachment;
 
     dto.oldPowerTransformerInfoId = entity.oldPowerTransformerInfo.mrid || ''

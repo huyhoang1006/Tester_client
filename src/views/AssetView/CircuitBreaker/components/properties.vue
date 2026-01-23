@@ -71,6 +71,10 @@ export default {
             type: Object,
             require: true,
         },
+        attachment: {
+            type: Array,
+            default: () => []
+        },
         title: {
             require: true
         },
@@ -88,6 +92,13 @@ export default {
             this.attachmentData = rowData
             this.$emit('update-attachment', this.attachmentData)
         },
+    },
+    watch: {
+        attachment: {
+            handler(val) {
+                this.attachmentData = val
+            },
+        }
     },
     computed: {
         propertiesData() {

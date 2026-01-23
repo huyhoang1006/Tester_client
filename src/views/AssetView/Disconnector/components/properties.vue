@@ -78,18 +78,13 @@ export default {
             type : Object,
             require : true,
         },
-        manufact : {
-            require : true,
-        },
         title : {
             require : true
         },
-        updateNew : {
-            require : true
+        attachment: {
+            type: Array,
+            default: () => []
         },
-        update : {
-            require : true
-        }
     },
     data() {
         return {
@@ -97,6 +92,13 @@ export default {
             countryData : country.default,
             manufacturerList : ['ABB', 'ALSTOM', 'General Electric', 'Mitsubishi Electric', 'Schneider Electric', 'Siemens', 'Toshiba', 'Westinghouse'],
             attachmentData : []
+        }
+    },
+    watch: {
+        attachment: {
+            handler(val) {
+                this.attachmentData = val
+            },
         }
     },
     methods: {

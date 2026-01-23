@@ -133,7 +133,7 @@ export function mapDtoToEntity(dto) {
     entity.capacitance.push(capC2);
 
     //attachment
-    entity.attachment.mrid = dto.attachmentId || null;
+    entity.attachment.id = dto.attachmentId || null;
     entity.attachment = dto.attachment || null;
 
     return entity;
@@ -168,7 +168,7 @@ export function mapEntityToDto(entity) {
     dto.psrId = entity.assetPsr.psr_id || '';
 
     //attachment
-    dto.attachmentId = entity.attachment.mrid || '';
+    dto.attachmentId = entity.attachment.id || '';
     dto.attachment = entity.attachment;
 
     //rated frequency

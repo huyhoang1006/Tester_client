@@ -342,8 +342,20 @@ export const getSurgeArresterJobEntity = async (id, assetId) => {
     }
 }
 
-export const deleteSurgeArresterJobEntity = async (id) => {
-
+export const deleteSurgeArresterJobEntity = async (entity) => {
+    try {
+        await runAsync('BEGIN TRANSACTION');
+        if (entity.attachment && entity.attachment.id) {
+            const pathData = JSON.parse(entity.attachment.path || '[]')
+            if (Array.isArray(pathData) && pathData.length > 0) {
+                syncFilesWithDeletion(pathData, null, entity.oldWork.mrid);
+            }
+        }
+    } catch (error) {
+        await runAsync('ROLLBACK');
+        console.error('Delete Power Cable Job Error:', error);
+        return { success: false, error, message: 'Error deleting Power Cable Job entity' };
+    }
 }
 
 const runAsync = (sql, params = []) => {

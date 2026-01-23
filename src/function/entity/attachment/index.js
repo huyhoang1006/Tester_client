@@ -69,6 +69,7 @@ export const uploadAttachment = async (attachment) => {
 
 
 export const uploadAttachmentTransaction = async (attachment, dbsql) => {
+    console.log(attachment)
     return new Promise((resolve, reject) => {
         const id = attachment.id || newUuid();
         dbsql.run(
@@ -218,7 +219,7 @@ export const syncFilesWithDeletion = (srcList, destDir, fatherMrid) => {
         copiedFiles: [],
         deletedFiles: [],
         skippedFiles: [],
-        data : [],
+        data: [],
         error: null
     };
 
@@ -228,31 +229,35 @@ export const syncFilesWithDeletion = (srcList, destDir, fatherMrid) => {
     try {
         if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
 
-        if(srcList === null || srcList.length === '') {
-            srcList = [];
-        }
+        // ✅ Chuẩn hóa srcList
+        if (!Array.isArray(srcList)) srcList = [];
+
         const srcFileNames = srcList.map(item => path.basename(item.path));
         const existingItems = fs.readdirSync(destDir);
 
+        // ✅ Nếu srcList rỗng → xóa hết file
         for (const item of existingItems) {
             const fullPath = path.join(destDir, item);
             if (fs.statSync(fullPath).isDirectory()) continue;
+
             if (!srcFileNames.includes(item)) {
                 fs.unlinkSync(fullPath);
                 result.deletedFiles.push(item);
             }
         }
 
+        // copy file mới (nếu có)
         for (const item of srcList) {
             const fileName = path.basename(item.path);
             const destPath = path.join(destDir, fileName);
+
             if (!fs.existsSync(item.path)) {
                 result.skippedFiles.push(fileName);
                 continue;
             }
+
             fs.copyFileSync(item.path, destPath);
             result.copiedFiles.push(fileName);
-
             result.data.push({ path: destPath });
         }
 
@@ -260,10 +265,11 @@ export const syncFilesWithDeletion = (srcList, destDir, fatherMrid) => {
         return result;
 
     } catch (err) {
-        result.error = err.message;
+        result.error = err;
         return result;
     }
 };
+
 
 export const deleteBackupFiles = (backupDir, fatherMrid) => {
     backupDir = backupDir || path.join(attachmentContext.getAttachmentDir(), fatherMrid || '', '__backup__');

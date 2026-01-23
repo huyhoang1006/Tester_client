@@ -69,6 +69,7 @@ export default {
             }
         },
         loadData(data) {
+            console.log(data)
             this.oldCircuitBreakerDto = JSON.parse(JSON.stringify(data));
             this.circuitBreakerDto = data;
             if (data.attachment && data.attachment.path) {
@@ -140,6 +141,8 @@ export default {
                     data.attachment.type = 'asset'
                     data.attachment.id_foreign = data.properties.mrid
                 }
+            } else {
+                data.attachment.path = JSON.stringify(this.attachmentData)
             }
         },
         checkLocationId(data) {
