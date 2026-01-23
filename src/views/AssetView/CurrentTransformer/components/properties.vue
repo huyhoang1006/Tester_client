@@ -93,7 +93,11 @@ export default {
         },
         update: {
             require: true
-        }
+        },
+        attachment: {
+            type: Array,
+            default: () => []
+        },
     },
     data() {
         return {
@@ -173,37 +177,10 @@ export default {
         },
     },
     watch: {
-        'propertiesData.manufacturer': {
-            handler(newVal, oldVal) {
-                if (newVal == 'Create new') {
-                    this.manufacturerCurrent = oldVal
-                } else {
-                    this.manufacturerCurrent = newVal
-                }
-                this.manufacturerPast = newVal
+        attachment: {
+            handler(val) {
+                this.attachmentData = val
             },
-        },
-        manufact: {
-            handler(newVal, oldVal) {
-                if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
-                    this.manufacturerListAll = newVal
-                }
-            },
-            immediate: true,
-            deep: true
-        },
-        update: {
-            handler(newVal) {
-                if (newVal == true) {
-                    this.$emit('setUpdate', false)
-                    if (this.itemUpdate == this.propertiesData.manufacturer) {
-                        this.propertiesData.manufacturer = this.updateNew
-                        this.sign = ''
-                    }
-                }
-            },
-            immediate: true,
-            deep: true
         }
     },
     mounted() {

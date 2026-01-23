@@ -49,6 +49,7 @@ export default {
         async saveCtrS() {
             const result = await this.saveJob()
             if (result.success) {
+                console.log(result.data)
                 const dto = surgeArresterJobMapping.JobEntityToDto(result.data);
                 this.loadData(dto);
                 this.$message.success(result.message);

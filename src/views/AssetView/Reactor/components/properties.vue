@@ -44,7 +44,8 @@
                     <span class="bolder">Comment</span>
                     <el-divider></el-divider>
                     <el-input type="textarea" :rows="5" v-model="propertiesData.comment"></el-input>
-                    <Attachment height="120px"></Attachment>
+                    <Attachment height="120px" :attachment_="this.attachmentData" title="reactor"
+                    @data-attachment="getDataAttachment"></Attachment>
                 </el-form>
             </el-col>
         </el-row>
@@ -64,16 +65,7 @@ export default {
             type: Object,
             default: () => ({})
         },
-        manufact: {
-            require: true,
-        },
         title: {
-            require: true
-        },
-        updateNew: {
-            require: true
-        },
-        update: {
             require: true
         },
         data: {
@@ -83,16 +75,29 @@ export default {
                 return {}
             }
         },
+        attachment: {
+            type: Array,
+            default: () => []
+        },
     },
     data() {
         return {
             labelWidth: `120px`,
             countryData: country.default,
+            attachmentData: [],
             manufacturerList: ['ABB', 'ALSTOM', 'General Electric', 'Mitsubishi Electric', 'Schneider Electric', 'Siemens', 'Toshiba', 'Westinghouse'],
+        }
+    },
+    watch: {
+        attachment: {
+            handler(val) {
+                this.attachmentData = val
+            },
         }
     },
     methods: {
         getDataAttachment(rowData) {
+            this.attachmentData = rowData
             this.$parent.attachmentData = rowData
         },
     },

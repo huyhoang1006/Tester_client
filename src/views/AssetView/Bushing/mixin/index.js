@@ -132,7 +132,6 @@ export default {
                     data.attachment.id_foreign = data.properties.mrid
                 }
             } else {
-                console.log(this.attachmentData)
                 data.attachment.path = JSON.stringify(this.attachmentData)
             }
         },
