@@ -1930,6 +1930,12 @@ body.duplicating-mode>.v-modal {
     width: 35% !important;
 }
 
+@media (max-width: 991px) {
+    .move-dialog {
+        width: 50% !important;
+    }
+}
+
 @media (max-width: 767px) {
     .custom-footer {
         justify-content: center;
