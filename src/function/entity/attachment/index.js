@@ -69,7 +69,6 @@ export const uploadAttachment = async (attachment) => {
 
 
 export const uploadAttachmentTransaction = async (attachment, dbsql) => {
-    console.log(attachment)
     return new Promise((resolve, reject) => {
         const id = attachment.id || newUuid();
         dbsql.run(
@@ -184,7 +183,6 @@ export const syncFilesWithFullRollback = (srcList, dest, fatherMrid) => {
 export const backupAllFilesInDir = (srcDir, backupDir, fatherMrid) => {
     srcDir = path.join(srcDir || attachmentContext.getAttachmentDir(), fatherMrid || '');
     backupDir = backupDir || path.join(srcDir, '__backup__');
-    console.log('Backup directory:', backupDir);
     try {
         if (!fs.existsSync(backupDir)) {
             fs.mkdirSync(backupDir, { recursive: true });
@@ -281,7 +279,6 @@ export const deleteBackupFiles = (backupDir, fatherMrid) => {
 };
 
 export const deleteDirectory = (directory, fatherMrid) => {
-    console.log('Deleting directory:', directory);
     directory = directory || path.join(attachmentContext.getAttachmentDir(), fatherMrid);
     if (fs.existsSync(directory)) {
         fs.rmSync(directory, { recursive: true, force: true });

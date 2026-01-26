@@ -525,7 +525,7 @@ export default {
                         }
                         this.checkJobType = 'JobSurgeArrester'
                         this.signJob = true;
-                        const data = await window.electronAPI.getSurgeArresterJobByMrid(tab.mrid, tab.parentId)
+                        const data = await window.electronAPI.getSurgeArresterJobByMrid(tab.mrid)
                         if (data.success) {
                             const surgeArresterJobDto = SurgeArresterJobMapper.JobEntityToDto(data.data)
                             for (const test of surgeArresterJobDto.testList) {

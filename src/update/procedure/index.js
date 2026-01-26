@@ -15,7 +15,7 @@ import ValueToAlias from '@/views/Cim/ValueToAlias'
 import ValueAliasSet from '@/views/Cim/ValueAliasSet'
 import Procedure from '@/views/Cim/Procedure'
 import MeasurementProcedure from '@/views/Cim/MeasurementProcedure'
-
+import * as surgeArresterProcedureFunc from './surgeArrester/index'
 
 export const updateProcedure = async (dbsql) => {
     console.log(procedureDataMap['Capacitor'])
@@ -24,57 +24,8 @@ export const updateProcedure = async (dbsql) => {
 export const createProcedure = async (dbsql) => {
     try {
         await runAsync('BEGIN TRANSACTION', dbsql);
-        const surgeArresterProcedureInfo = procedureDataMap['SurgeArrester'];
-        const surgeArresterTestDefinitionInfo = testDataMap['SurgeArrester'];
-        const surgeArresterTestingConditionInfo = testConditionMap['SurgeArrester'];
-        const surgerArresterProcedure = await getProcedureInfo(surgeArresterProcedureInfo)
-        const surgeArresterTestDefinitions = await getTestDefinitionInfo(surgeArresterTestDefinitionInfo)
-        const surgeArresterTestingConditions = await getTestConditionInfo(surgeArresterTestingConditionInfo)
-        for (const procedure of surgerArresterProcedure) {
-            // Insert Procedure
-            await procedureFunc.insertProcedureTransaction(procedure, dbsql)
-
-            // Insert Testing Definitions
-            for(const analog of surgeArresterTestDefinitions.analog){
-                await analogFunc.insertAnalogTransaction(analog, dbsql)
-            }
-            for(const stringMeasurement of surgeArresterTestDefinitions.stringMeasurement){
-                await stringMeasurementFunc.insertStringMeasurementTransaction(stringMeasurement, dbsql)
-            }
-            for(const discrete of surgeArresterTestDefinitions.valueAliasSet) {
-                await valueAliasSet.insertValueAliasSetTransaction(discrete, dbsql)
-            }
-            for(const discrete of surgeArresterTestDefinitions.discrete){
-                await discreteFunc.insertDiscreteTransaction(discrete, dbsql)
-            }
-            for(const valueToAlias of surgeArresterTestDefinitions.valueToAlias){
-                await valueToAliasFunc.insertValueToAliasTransaction(valueToAlias, dbsql)
-            }
-            for(const measurementProcedure of surgeArresterTestDefinitions.measurementProcedure){
-                await measurementProcedureFunc.insertMeasurementProcedureTransaction(measurementProcedure, dbsql)
-            }
-
-            // Insert Testing Conditions
-            for(const analog of surgeArresterTestingConditions.analog){
-                await analogFunc.insertAnalogTransaction(analog, dbsql)
-            }
-            for(const stringMeasurement of surgeArresterTestingConditions.stringMeasurement){
-                await stringMeasurementFunc.insertStringMeasurementTransaction(stringMeasurement, dbsql)
-            }
-            for(const discrete of surgeArresterTestingConditions.valueAliasSet) {
-                await valueAliasSet.insertValueAliasSetTransaction(discrete, dbsql)
-            }
-            for(const discrete of surgeArresterTestingConditions.discrete){
-                await discreteFunc.insertDiscreteTransaction(discrete, dbsql)
-            }
-            for(const valueToAlias of surgeArresterTestingConditions.valueToAlias){
-                await valueToAliasFunc.insertValueToAliasTransaction(valueToAlias, dbsql)
-            }
-            for(const measurementProcedure of surgeArresterTestingConditions.measurementProcedure){
-                await measurementProcedureFunc.insertMeasurementProcedureTransaction(measurementProcedure, dbsql)
-            }
-
-        }
+        await surgeArresterProcedureFunc.createProcedureSurgeArrester(dbsql, procedureDataMap, testDataMap, testConditionMap,
+             getProcedureInfo, getTestDefinitionInfo, getTestConditionInfo)
         await runAsync('COMMIT', dbsql);
     } catch (err) {
         console.error('Error creating procedure:', err)
@@ -84,13 +35,13 @@ export const createProcedure = async (dbsql) => {
 
 export const getProcedureInfo = async (assetProcedure) => {
     const procedures = []
-    for(const surgeProcedure of assetProcedure.procedure){
+    for(const procedureData of assetProcedure.procedure){
         const procedure = new Procedure()
-        procedure.name = surgeProcedure.name
+        procedure.name = procedureData.name
         procedure.generic_asset_model = assetProcedure.name
-        procedure.alias_name = surgeProcedure.code
-        procedure.mrid = surgeProcedure.mrid
-        procedure.kind = surgeProcedure.kind
+        procedure.alias_name = procedureData.code
+        procedure.mrid = procedureData.mrid
+        procedure.kind = procedureData.kind
         procedures.push(procedure)
     }
     return procedures

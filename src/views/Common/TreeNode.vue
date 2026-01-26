@@ -1,7 +1,7 @@
 <template>
     <li>
         <div style="display: flex; align-items: center; gap: 10px;">
-            <div @click="fetchNodeData">
+            <div @click="fetchNodeData" v-if="node.mode != 'job'">
                 <i v-if="!node.expanded" class="fa-solid fa-angle-right" style="font-size: 12px; color: #CCCCCC;"></i>
                 <i v-else class="fa-solid fa-angle-down" style="font-size: 12px; color: #CCCCCC;"></i>
             </div>
@@ -22,12 +22,8 @@
                     <icon size="16px" folderType="asset" :assetDetail="node.asset" badgeColor="146EBE"></icon>
                     <span class="node-name">{{ node.serial_number }} </span>
                 </div>
-                <div v-else-if="node.mode == 'job'" class="icon-wrapper">
+                <div style="margin-left: 20px;" v-else-if="node.mode == 'job'" class="icon-wrapper">
                     <icon size="16px" folderType="job" badgeColor="FF0000"></icon>
-                    <span class="node-name">{{ node.name }}</span>
-                </div>
-                <div v-else-if="node.mode == 'test'" class="icon-wrapper">
-                    <icon size="16px" folderType="test" badgeColor="008001"></icon>
                     <span class="node-name">{{ node.name }}</span>
                 </div>
                 <div v-else class="icon-wrapper">

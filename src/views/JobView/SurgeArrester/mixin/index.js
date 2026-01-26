@@ -51,6 +51,7 @@ export default {
             if (result.success) {
                 console.log(result.data)
                 const dto = surgeArresterJobMapping.JobEntityToDto(result.data);
+                console.log(dto)
                 this.loadData(dto);
                 this.$message.success(result.message);
             } else {
@@ -98,6 +99,8 @@ export default {
                     data.attachment.type = 'job'
                     data.attachment.id_foreign = data.properties.mrid
                 }
+            } else {
+                data.attachment.path = JSON.stringify(data.attachmentData)
             }
         },
 
@@ -157,6 +160,8 @@ export default {
                         test.testCondition.attachment.type = 'test'
                         test.testCondition.attachment.id_foreign = test.mrid
                     }
+                } else {
+                    test.testCondition.attachment.path = JSON.stringify(test.testCondition.attachmentData)
                 }
                 for (const row of test.data.table) {
                     if (row.mrid === '' || row.mrid === null) {
@@ -167,7 +172,6 @@ export default {
                             }
                         })
                     }
-                    
                 }
 
                 if(data.procedureAsset.map(x => x.procedure_id).indexOf(test.testTypeId) === -1) {
