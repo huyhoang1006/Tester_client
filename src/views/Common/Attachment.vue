@@ -86,6 +86,8 @@ export default {
                     } catch (error) {
                         this.$message.error("Some error occurred when deleting attachment")
                     }
+                }).catch(() => {
+                    this.$message.error("Cancel delete attachment")
                 })
             }
         },

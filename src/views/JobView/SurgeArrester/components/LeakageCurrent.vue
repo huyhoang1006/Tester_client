@@ -55,10 +55,10 @@
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
-                            <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
-                            <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
+                            <el-option value="Pass" label="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Fail" label="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                         </el-select>
-                        <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-if="item.assessment.value === 'Pass' " class="fa-solid fa-square-check pass icon-status"></span>
                         <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                     <td>

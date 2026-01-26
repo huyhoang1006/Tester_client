@@ -12,6 +12,7 @@ import DiscreteValue from "@/views/Cim/DiscreteValue";
 import ProcedureAsset from "@/views/Cim/ProcedureAsset";
 import ProcedureDataSetMeasurementValue from "@/views/Cim/ProcedureDataSetMeasurementValue";
 import surgeArresterConditionMap from '@/config/testing-condition/SurgeArrester'
+import surgeArresterTestMap from "@/config/testing-condition/SurgeArrester";
 import * as commonFunc from '@/views/JobView/Common/index.js'
 
 export const jobDtoToEntity = (dto) => {
@@ -117,7 +118,12 @@ export const jobDtoToEntity = (dto) => {
                     } else if (value.type === 'discrete') {
                         const discreteValue = new DiscreteValue();
                         discreteValue.mrid = value.mrid || null;
-                        discreteValue.value = value.value || null;
+                        if(key == 'assessment') {
+                            discreteValue.value = commonFunc.assessmentToValue(value.value) ?? null;
+                        } else if(key == 'condition_indicator') {
+                            discreteValue.value = commonFunc.conditionIndicatorToValue(value.value) ?? null;
+                        }
+                        discreteValue.vta_alias_name = value.value
                         discreteValue.alias_name = key || null;
                         discreteValue.procedure_dataset_id = data.mrid
                         discreteValue.discrete = value['measurement_id'] ? value['measurement_id'] : null;
@@ -167,6 +173,7 @@ export const jobDtoToEntity = (dto) => {
                     const discreteValue = new DiscreteValue();
                     discreteValue.mrid = value.mrid || null;
                     discreteValue.value = value.value || null;
+                    discreteValue.vta_alias_name = value.value || null
                     discreteValue.alias_name = key || null;
                     discreteValue.procedure_dataset_id = testDataCondition.mrid
                     discreteValue.discrete = value['measurement_id'] ? value['measurement_id'] : null;
@@ -257,7 +264,7 @@ export const JobEntityToDto = (entity) => {
             }
         }
         testTemplate.testCondition.comment = item.comment || '';
-        testTemplate.testTypeId = item.procedureIds
+        testTemplate.testTypeId = surgeArresterTestMap[item.type].testId || ''
 
         for(const attachment of entity.attachmentTest) {
             if(attachment.id_foreign === item.mrid) {
@@ -304,14 +311,23 @@ export const JobEntityToDto = (entity) => {
             const discreteValueData = entity.discreteValues.filter(x => x.procedure_dataset_id === test.mrid);
             for (const dv of discreteValueData) {
                 const key = dv.alias_name; // vd: "assessment"
-
-                rowData[key] = {
-                    mrid: dv.mrid,
-                    type: "discrete",
-                    unit: "",
-                    value: dv.value || "",
-                    measurement_id: dv.discrete || ''
-                };
+                if(key == 'assessment') {
+                    rowData[key] = {
+                        mrid: dv.mrid,
+                        type: "discrete",
+                        unit: "",
+                        value: dv.vta_alias_name || "",
+                        measurement_id: dv.discrete || ''
+                    };
+                } else if(key == 'condition_indicator') {
+                    rowData[key] = {
+                        mrid: dv.mrid,
+                        type: "discrete",
+                        unit: "",
+                        value: dv.vta_alias_name || "",
+                        measurement_id: dv.discrete || ''
+                    };
+                }
             }
 
             testTemplate.data.table.push(rowData);

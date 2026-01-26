@@ -79,19 +79,20 @@ export const insertProcedureTransaction = async (procedure, dbsql) => {
             }
             dbsql.run(
                 `INSERT INTO procedure(
-                    mrid, instruction, kind, sequence_number
-                ) VALUES (?, ?, ?, ?)
+                    mrid, instruction, kind, sequence_number, generic_asset_model
+                ) VALUES (?, ?, ?, ?, ?)
                 ON CONFLICT(mrid) DO UPDATE SET
                     instruction = excluded.instruction,
                     kind = excluded.kind,
-                    sequence_number = excluded.sequence_number
+                    sequence_number = excluded.sequence_number,
+                    generic_asset_model = excluded.generic_asset_model
                 `,
                 [
                     procedure.mrid,
                     procedure.instruction,
                     procedure.kind,
-                    procedure.sequence_number
-                    // procedure.generic_asset_model -- Column does not exist
+                    procedure.sequence_number,
+                    procedure.generic_asset_model
                 ],
                 function (err) {
                     if (err) return reject({ success: false, err, message: 'Insert procedure failed' })

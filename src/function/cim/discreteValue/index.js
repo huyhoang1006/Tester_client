@@ -41,18 +41,36 @@ export const getDiscreteValueByTestDataSetMrids = async (mrids) => {
             SELECT 
                 dv.*, 
                 mv.*, 
-                io.*, 
+                io.*,                 -- identified_object của measurement_value
                 iop.*, 
-                pdmv.procedure_dataset_id
+                pdmv.procedure_dataset_id,
+
+                io_vta.alias_name AS vta_alias_name   -- alias_name của value_to_alias
+
             FROM procedure_dataset_measurement_value pdmv
+
             JOIN measurement_value mv 
                 ON mv.mrid = pdmv.measurement_value_id
+
             JOIN discrete_value dv 
                 ON dv.mrid = mv.mrid
+
+            LEFT JOIN discrete d
+                ON d.mrid = dv.discrete
+
+            LEFT JOIN value_to_alias vta
+                ON vta.value_alias_set = d.value_alias_set
+               AND vta.value = dv.value
+
+            LEFT JOIN identified_object io_vta
+                ON io_vta.mrid = vta.mrid
+
             LEFT JOIN iopoint iop
                 ON iop.mrid = mv.mrid
+
             LEFT JOIN identified_object io
                 ON io.mrid = mv.mrid
+
             WHERE pdmv.procedure_dataset_id IN (${placeholders})
         `;
 
@@ -73,6 +91,7 @@ export const getDiscreteValueByTestDataSetMrids = async (mrids) => {
         });
     });
 };
+
 
 
 // Thêm mới discreteValue

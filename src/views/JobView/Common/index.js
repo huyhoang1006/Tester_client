@@ -31,20 +31,22 @@ export const buildEmptyTestCondition = (columns) => {
   return row
 }
 
-export const conditionIndicatorToValue = (indicator) => {
-    switch (indicator) {
-        case 'Good': return 3;
-        case 'Fair': return 2;
-        case 'Poor': return 1;
-        case 'Bad': return 0;
-        default: return null;
+export const assessmentToValue = (assessment) => {
+    if(assessment == 'Pass') {
+        return 1
+    } else if(assessment == 'Fail') {
+        return 0
     }
 }
 
-export const assessmentToValue = (assessment) => {
-    switch (assessment) {
-        case 'Pass': return 1;
-        case 'Fail': return 0;
-        default: return null;
+export const conditionIndicatorToValue = (conditionIndicator) => {
+    if(conditionIndicator == 'Good') {
+        return 3
+    } else if(conditionIndicator == 'Fair') {
+        return 2
+    } else if(conditionIndicator == 'Poor') {
+        return 1
+    } else if(conditionIndicator == 'Bad') {
+        return 0
     }
-}
+} 

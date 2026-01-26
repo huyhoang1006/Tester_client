@@ -1,8 +1,8 @@
 import db from '../../../datacontext/index.js'
 import * as attachmentContext from '../../../attachmentcontext/index'
 import path from 'path'
-import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType } from '@/function/entity/attachment'
-import {insertOldWorkTransaction, getOldWorkById} from "@/function/cim/oldWork/index"
+import { uploadAttachmentTransaction, dedeleteAttachmentByIdTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType } from '@/function/entity/attachment'
+import {insertOldWorkTransaction, getOldWorkById, deleteOldWorkByIdTransaction} from "@/function/cim/oldWork/index"
 import { insertTestingEquipmentTransaction, getTestingEquipmentByWorkId, deleteTestingEquipmentByIdTransaction } from '../../testingEquipment/index.js'
 import SurgeArresterJobEntity from '@/views/Flatten/Job/SurgeArrester/index.js'
 import { insertWorkTaskTransaction, getWorkTaskByWork, deleteWorkTaskByIdTransaction } from '@/function/cim/workTask/index.js'
@@ -38,7 +38,7 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
             }
 
             for(const attachment of entity.attachmentTest) {
-                if(entity.attachmentTest.id && Array.isArray(JSON.parse(attachment.path))) {
+                if(attachment.id && Array.isArray(JSON.parse(attachment.path))) {
                     backupAllFilesInDir(null, null, attachment.id_foreign);
                     const syncResult = syncFilesWithDeletion(JSON.parse(attachment.path), null, attachment.id_foreign);
                     if (!syncResult.success) {
@@ -261,7 +261,7 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
     }
 }
 
-export const getSurgeArresterJobEntity = async (id, assetId) => {
+export const getSurgeArresterJobEntity = async (id) => {
     try {
         if(id == null || id === '') {
             return { success: false, error: new Error('Invalid ID') };
@@ -345,16 +345,99 @@ export const getSurgeArresterJobEntity = async (id, assetId) => {
 export const deleteSurgeArresterJobEntity = async (entity) => {
     try {
         await runAsync('BEGIN TRANSACTION');
+
+        // 1. Xóa các giá trị đo lường chi tiết (Measurement Values)
+        if (entity.analogValues && entity.analogValues.length > 0) {
+            for (const item of entity.analogValues) {
+                await deleteAnalogValueByIdTransaction(item.mrid, db);
+            }
+        }
+        if (entity.stringMeasurementValues && entity.stringMeasurementValues.length > 0) {
+            for (const item of entity.stringMeasurementValues) {
+                await deleteStringMeasurementValueByIdTransaction(item.mrid, db);
+            }
+        }
+        if (entity.discreteValues && entity.discreteValues.length > 0) {
+            for (const item of entity.discreteValues) {
+                await deleteDiscreteValueByIdTransaction(item.mrid, db);
+            }
+        }
+
+        // 2. Xóa Test Data Sets
+        if (entity.testDataSet && entity.testDataSet.length > 0) {
+            for (const item of entity.testDataSet) {
+                await deleteTestDataSetByIdTransaction(item.mrid, db);
+            }
+        }
+
+        // 3. Xóa Quan hệ thiết bị kiểm tra (Test Type relation)
+        if (entity.surgeArresterTestingEquipmentTestType && entity.surgeArresterTestingEquipmentTestType.length > 0) {
+            for (const item of entity.surgeArresterTestingEquipmentTestType) {
+                await deleteSurgeArresterTestingEquipmentTestTypeByIdTransaction(item.mrid, db);
+            }
+        }
+
+        // 4. Xóa Thiết bị kiểm tra (Testing Equipment)
+        if (entity.testingEquipment && entity.testingEquipment.length > 0) {
+            for (const item of entity.testingEquipment) {
+                await deleteTestingEquipmentByIdTransaction(item.mrid, db);
+            }
+        }
+
+        // 5. Xóa Work Tasks
+        if (entity.workTasks && entity.workTasks.length > 0) {
+            for (const item of entity.workTasks) {
+                await deleteWorkTaskByIdTransaction(item.mrid, db);
+            }
+        }
+
+        // 6. Xóa bản ghi Attachment trong Database
+        // Xóa Main Attachment
         if (entity.attachment && entity.attachment.id) {
-            const pathData = JSON.parse(entity.attachment.path || '[]')
+            await dedeleteAttachmentByIdTransaction(entity.attachment.id, db);
+        }
+        // Xóa Attachment của từng WorkTask (Test Attachments)
+        if (entity.attachmentTest && entity.attachmentTest.length > 0) {
+            for (const attachment of entity.attachmentTest) {
+                if (attachment.id) {
+                    await dedeleteAttachmentByIdTransaction(attachment.id, db);
+                }
+            }
+        }
+
+        // 7. Xóa Job chính (OldWork)
+        if (entity.oldWork && entity.oldWork.mrid) {
+            await deleteOldWorkByIdTransaction(entity.oldWork.mrid, db);
+        }
+
+        await runAsync('COMMIT');
+
+        // 8. Xóa file vật lý sau khi Commit DB thành công (Tránh mất file nếu DB rollback)
+        // Xóa file Main Attachment
+        if (entity.attachment && entity.attachment.path) {
+            const pathData = JSON.parse(entity.attachment.path || '[]');
             if (Array.isArray(pathData) && pathData.length > 0) {
                 syncFilesWithDeletion(pathData, null, entity.oldWork.mrid);
             }
         }
+        // Xóa file Test Attachments
+        if (entity.attachmentTest && entity.attachmentTest.length > 0) {
+            for (const attachment of entity.attachmentTest) {
+                if (attachment.path) {
+                    const pathData = JSON.parse(attachment.path || '[]');
+                    if (Array.isArray(pathData) && pathData.length > 0) {
+                        syncFilesWithDeletion(pathData, null, attachment.id_foreign);
+                    }
+                }
+            }
+        }
+
+        return { success: true, message: 'Surge Arrester Job entity deleted successfully' };
+
     } catch (error) {
         await runAsync('ROLLBACK');
-        console.error('Delete Power Cable Job Error:', error);
-        return { success: false, error, message: 'Error deleting Power Cable Job entity' };
+        console.error('Delete Surge Arrester Job Error:', error);
+        return { success: false, error, message: 'Error deleting Surge Arrester Job entity' };
     }
 }
 
