@@ -184,7 +184,7 @@
                 :selectedNodes.sync="selectedNodes" @showLocationRoot="showLocationRoot" @show-addSubs="showAddSubs"
                 @double-click-node="doubleClickNode" @fetch-children="fetchChildren"
                 @show-properties="showPropertiesDataClient" @update-selection="updateSelection"
-                @clear-selection="clearSelection" @delete-data="deleteDataClient"
+                @clear-selection="clearSelection" @delete-data="handleDeleteFromContextMenu"
                 @show-addSubsInTree="showAddSubsInTree" @show-addOrganisation="showAddOrganisation"
                 @show-addVoltageLevel="showAddVoltageLevel" @show-addTransformer="showAddTransformer"
                 @show-addJob="showAddJob" @show-addBushing="showAddBushing"
@@ -410,215 +410,14 @@
                     <LogBar :logData="logDataServer" @hideLogBar="hideLogBar"></LogBar>
                 </div>
             </div>
-            <div ref="contextDataClient" v-show="clientSlide" class="context-data">
-                <div ref="contentDataClient" class="content-data">
-                    <div ref="contentClient" class="content">
-                        <div class="title-content"></div>
-                        <div class="content-content">
-                            <Tabs :side="'client'" ref="clientTabs" v-model="activeTabClient" :tabs="tabsClient"
-                                @close-tab="removeTabClient" />
-                        </div>
-                    </div>
-                    <div @mousedown="startResizeContentClient" ref="resizerContentClient" class="resizer"></div>
-                    <div v-if="propertiesSignClient" ref="propertiesClient" class="properties">
-                        <div class="title-properties">
-                            <div class="title-wrapper">
-                                <div class="title-name">Object Properties</div>
-                                <div style="margin-right: 5px">
-                                    <i @click="hidePropertiesClient" class="fa-solid fa-square-caret-right"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="content-properties">
-                            <div class="content-properties-header">
-                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px"></i>
-                                Owner & Position
-                            </div>
-                            <div class="content-properties-table">
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Name</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.name || '&nbsp;' }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Region</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.region || '&nbsp;' }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Plant</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.plant || '&nbsp;' }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Address</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.address || '&nbsp;' }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">City</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.city || '&nbsp;' }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">State/Province</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">
-                                        {{ propertiesClient.state_province || '&nbsp;' }}
-                                    </div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Postal code</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.postal_code || '&nbsp;' }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Country</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.country || '&nbsp;' }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Geo coordinates</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">
-                                        {{ propertiesClient.geo_coordinates || '&nbsp;' }}
-                                    </div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Phone number</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.phone_no || '&nbsp;' }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Email</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.email || '&nbsp;' }}</div>
-                                </div>
-                            </div>
-                            <div v-if="assetPropertySignClient" class="content-properties-header">
-                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px"></i>
-                                Asset Properties
-                            </div>
-                            <div v-if="assetPropertySignClient" class="content-properties-table">
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Asset</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetPropertiesClient.asset || '&nbsp;' }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Asset type</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">
-                                        {{ assetPropertiesClient.asset_type || '&nbsp;' }}
-                                    </div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Serial number</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">
-                                        {{ assetPropertiesClient.serial_no || '&nbsp;' }}
-                                    </div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Manufacturer</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">
-                                        {{ assetPropertiesClient.manufacturer || '&nbsp;' }}
-                                    </div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Manufacturer type</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">
-                                        {{ assetPropertiesClient.manufacturer_type || '&nbsp;' }}
-                                    </div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Manufacturing year</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">
-                                        {{ assetPropertiesClient.manufacturing_year || '&nbsp;' }}
-                                    </div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Country</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">
-                                        {{ assetPropertiesClient.country || '&nbsp;' }}
-                                    </div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Apparatus id</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">
-                                        {{ assetPropertiesClient.apparatus_id || '&nbsp;' }}
-                                    </div>
-                                </div>
-                            </div>
-                            <div v-if="jobPropertySignClient" class="content-properties-header">
-                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px"></i>
-                                Job Properties
-                            </div>
-                            <div v-if="jobPropertySignClient" class="content-properties-table">
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Name</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobPropertiesClient.name }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Work order</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobPropertiesClient.work_order }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Creation date</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobPropertiesClient.creation_date }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Execution date</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobPropertiesClient.execution_date }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Tested by</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobPropertiesClient.tested_by }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Approved by</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobPropertiesClient.approved_by }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Ambient condition</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobPropertiesClient.ambient_condition }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Standard</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobPropertiesClient.standard }}</div>
-                                </div>
-                            </div>
-                            <div class="content-properties-header">
-                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px"></i>
-                                Configuration Version
-                            </div>
-                            <div class="content-properties-table">
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Last Modified</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word"></div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Author</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word"></div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Last Saved By</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div v-if="!propertiesSignClient" @click="showPropertiesClient" class="trapezoid"></div>
-                </div>
-                <div ref="logBarClient" v-if="logSignClient" class="log-bar">
-                    <LogBar @reloadLog="reloadLogClient" :logData="logDataClient" @hideLogBar="hideLogBarClient">
-                    </LogBar>
-                </div>
-            </div>
+            <ContextDataClient v-show="clientSlide" ref="contextDataClient" :activeTabClient="activeTabClient"
+                :tabsClient="tabsClient" :propertiesSignClient.sync="propertiesSignClient"
+                :propertiesClient="propertiesClient" :assetPropertySignClient="assetPropertySignClient"
+                :assetPropertiesClient="assetPropertiesClient" :jobPropertySignClient="jobPropertySignClient"
+                :jobPropertiesClient="jobPropertiesClient" :logSignClient.sync="logSignClient"
+                :logDataClient="logDataClient" @update:activeTabClient="activeTabClient = $event"
+                @tab-changed="handleTabSelect" @remove-tab-client="removeTabClient"
+                @reload-log-client="reloadLogClient" />
         </div>
 
         <el-dialog custom-class="app-dialog" title="Add Substation" :visible.sync="signSubs" @close="handleSubsCancel">
@@ -908,6 +707,7 @@ import contextMenu from '@/views/Common/ContextMenu.vue'
 
 //client
 import TopBarClient from './Client/Topbar/index.vue'
+import ContextDataClient from './Client/ClientContext/ContextData.vue'
 
 // Import Mappers
 import mapClientProperties from '@/utils/MapperClient/mapClientProperties'
@@ -958,6 +758,7 @@ import ServerTreePanel from './Server/ServerTree/index.vue'
 export default {
     name: 'TreeNavigation',
     components: {
+        ContextDataClient,
         ServerTreePanel,
         ClientTreePanel,
         mapJobProperties,

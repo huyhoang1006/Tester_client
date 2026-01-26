@@ -20,8 +20,9 @@ export default {
         sidebarElement.style.width = finalWidth + 'vw';
         
         // Phần content bên phải (nằm ở Cha) thì giữ nguyên
-        if (this.$refs.contextDataClient) {
-            this.$refs.contextDataClient.style.width = 100 - finalWidth + 'vw';
+        const contextDataClient = this.getContextDataClientRef ? this.getContextDataClientRef() : this.$refs.contextDataClient;
+        if (contextDataClient) {
+            contextDataClient.style.width = 100 - finalWidth + 'vw';
         }
     },
         stopResizeClient() {
@@ -33,16 +34,21 @@ export default {
             document.addEventListener('mouseup', this.stopResizeContentClient)
         },
         resizeContentClient(event) {
-            if (!this.$refs.propertiesClient || !this.$refs.contentDataClient) return
-            const parentWidth = this.$refs.contextDataClient.clientWidth
-            let newWidth = parentWidth - event.clientX + this.$refs.contextDataClient.getBoundingClientRect().left
+            const propertiesClient = this.getPropertiesClientRef ? this.getPropertiesClientRef() : this.$refs.propertiesClient;
+            const contentDataClient = this.getContentDataClientRef ? this.getContentDataClientRef() : this.$refs.contentDataClient;
+            const contextDataClient = this.getContextDataClientRef ? this.getContextDataClientRef() : this.$refs.contextDataClient;
+            const contentClient = this.getContentClientRef ? this.getContentClientRef() : this.$refs.contentClient;
+            
+            if (!propertiesClient || !contentDataClient) return
+            const parentWidth = contextDataClient.clientWidth
+            let newWidth = parentWidth - event.clientX + contextDataClient.getBoundingClientRect().left
             const minWidth = parentWidth * 0.1
             const maxWidth = parentWidth * 0.4
             newWidth = Math.max(minWidth, Math.min(newWidth, maxWidth))
             newWidth = (newWidth / parentWidth) * 100
             // Cập nhật width của sidebar và context-data
-            this.$refs.propertiesClient.style.width = `${newWidth}%`
-            this.$refs.contentClient.style.width = `${100 - newWidth}%`
+            propertiesClient.style.width = `${newWidth}%`
+            contentClient.style.width = `${100 - newWidth}%`
         },
         stopResizeContentClient() {
             document.removeEventListener('mousemove', this.resizeContentClient)

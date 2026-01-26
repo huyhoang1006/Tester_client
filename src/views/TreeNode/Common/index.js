@@ -15,8 +15,9 @@ export default {
         },
         saveCtrSInTree() {
             if(this.clientSlide) {
-                if(this.$refs.clientTabs) {
-                    this.$refs.clientTabs.saveCtrlS()
+                const clientTabs = this.getClientTabsRef ? this.getClientTabsRef() : this.$refs.clientTabs
+                if(clientTabs) {
+                    clientTabs.saveCtrlS()
                 }
             } else {
                 if(this.$refs.serverTabs) {
