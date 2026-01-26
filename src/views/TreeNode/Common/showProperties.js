@@ -8,8 +8,10 @@ export default {
 
         async showPropertiesClient() {
             this.propertiesSignClient = true
-            const content = this.$refs.contentClient
-            content.style.width = `calc(75% - 5px)`
+            const content = this.getContentClientRef ? this.getContentClientRef() : this.$refs.contentClient;
+            if (content) {
+                content.style.width = `calc(75% - 5px)`
+            }
         },
     }
 }
