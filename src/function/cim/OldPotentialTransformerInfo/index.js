@@ -117,7 +117,6 @@ export const deleteOldPotentialTransformerInfoTransaction = async (mrid, dbsql) 
                         message: 'Delete oldPotentialTransformerInfo failed'
                     });
                 }
-                console.log('✅ Deleted oldPotentialTransformerInfo:', mrid);
 
                 try {
                     // 2️⃣ Sau khi xóa thành công, mới xóa potential_transformer_info

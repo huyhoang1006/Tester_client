@@ -26,7 +26,10 @@ export default {
                 if (index !== -1) {
                     // Nếu tab đã tồn tại, active nó
                     this.activeTabClient = newNode
-                    this.$refs.clientTabs.selectTab(this.activeTabClient, index)
+                    const clientTabs = this.getClientTabsRef ? this.getClientTabsRef() : this.$refs.clientTabs
+                    if (clientTabs) {
+                        clientTabs.selectTab(this.activeTabClient, index)
+                    }
                 } else {
                     const newTabs = [...this.tabsClient] // Tạo mảng mới
                     if (this.activeTabClient?.mrid) {
@@ -38,8 +41,11 @@ export default {
                     // Gán lại để trigger reactivity
                     this.tabsClient = newTabs
                     this.activeTabClient = newNode
-                    this.$refs.clientTabs.selectTab(this.activeTabClient, newTabs.length - 1)
-                    this.$refs.clientTabs.loadData(newNode, newTabs.length - 1)
+                    const clientTabs = this.getClientTabsRef ? this.getClientTabsRef() : this.$refs.clientTabs
+                    if (clientTabs) {
+                        clientTabs.selectTab(this.activeTabClient, newTabs.length - 1)
+                        clientTabs.loadData(newNode, newTabs.length - 1)
+                    }
                 }
             } catch (error) {
                 this.$message.error('Some error occur when loading data')
@@ -55,56 +61,67 @@ export default {
                 let assetData = null
                 try {
                     if (node.asset === 'Transformer') {
+                        // @ts-ignore
                         const entityRes = await window.electronAPI.getTransformerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
                         if (entityRes.success && entityRes.data) {
                             assetData = TransformerMapping.transformerEntityToDto(entityRes.data)
                         }
                     } else if (node.asset === 'Bushing') {
+                        // @ts-ignore
                         const entityRes = await window.electronAPI.getBushingEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
                         if (entityRes.success && entityRes.data) {
                             assetData = BushingMapping.mapEntityToDto(entityRes.data)
                         }
                     } else if (node.asset === 'Circuit breaker') {
+                        // @ts-ignore
                         const entityRes = await window.electronAPI.getBreakerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
                         if (entityRes.success && entityRes.data) {
                             assetData = BreakerMapping.mapEntityToDto(entityRes.data)
                         }
                     } else if (node.asset === 'Surge arrester') {
+                        // @ts-ignore
                         const entityRes = await window.electronAPI.getSurgeArresterEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
                         if (entityRes.success && entityRes.data) {
                             assetData = SurgeArresterMapping.mapEntityToDto(entityRes.data)
                         }
                     } else if (node.asset === 'Power cable') {
+                        // @ts-ignore
                         const entityRes = await window.electronAPI.getPowerCableEntityByMrid(node.mrid, node.parentId)
                         if (entityRes.success && entityRes.data) {
                             assetData = PowerCableMapping.mapEntityToDto(entityRes.data)
                         }
                     } else if (node.asset === 'Disconnector') {
+                        // @ts-ignore
                         const entityRes = await window.electronAPI.getDisconnectorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
                         if (entityRes.success && entityRes.data) {
                             assetData = DisconnectorMapping.disconnectorEntityToDto(entityRes.data)
                         }
                     } else if (node.asset === 'Capacitor') {
+                        // @ts-ignore
                         const entityRes = await window.electronAPI.getCapacitorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
                         if (entityRes.success && entityRes.data) {
                             assetData = CapacitorMapping.mapEntityToDto(entityRes.data)
                         }
                     } else if (node.asset === 'Voltage transformer') {
+                        // @ts-ignore
                         const entityRes = await window.electronAPI.getVoltageTransformerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
                         if (entityRes.success && entityRes.data) {
                             assetData = VoltageTransformerMapping.mapEntityToDto(entityRes.data)
                         }
                     } else if (node.asset === 'Current transformer') {
+                        // @ts-ignore
                         const entityRes = await window.electronAPI.getCurrentTransformerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
                         if (entityRes.success && entityRes.data) {
                             assetData = CurrentTransformerMapping.mapEntityToDto(entityRes.data)
                         }
                     } else if (node.asset === 'Reactor') {
+                        // @ts-ignore
                         const entityRes = await window.electronAPI.getReactorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
                         if (entityRes.success && entityRes.data) {
                             assetData = ReactorMapping.mapEntityToDto(entityRes.data)
                         }
                     } else if (node.asset === 'Rotating machine') {
+                        // @ts-ignore
                         const entityRes = await window.electronAPI.getRotatingMachineEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
                         if (entityRes.success && entityRes.data) {
                             assetData = rotatingMachineMapping.mapEntityToDto(entityRes.data)
@@ -186,6 +203,7 @@ export default {
                 // Nếu là Substation, gọi API lấy full thông tin
                 if (node.mode === 'substation') {
                     try {
+                        // @ts-ignore
                         const res = await window.electronAPI.getSubstationEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
                         if (res.success && res.data) {
                             // Map từ Entity sang DTO để có các trường street, city, email...

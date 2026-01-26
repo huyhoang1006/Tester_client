@@ -1,7 +1,6 @@
 export default {
     methods: {
         async handleDeleteNode() {
-            console.log('--- Đang chạy từ Mixin ---');
             if (!this.selectedNodes || this.selectedNodes.length === 0) {
                 this.$message.warning('Please select a node first')
                 return
