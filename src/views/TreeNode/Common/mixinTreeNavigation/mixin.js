@@ -1,6 +1,7 @@
 
 
 import deleteData from '@/views/TreeNode/Client/ClientSide/mixin/Delete/deleteDataClient'
+import handleDeleteFromContextMenu from '@/views/TreeNode/Client/ClientSide/mixin/Delete/handleDeleteFromContextMenu'
 import showAddBay from '@/views/TreeNode/Client/ClientSide/mixin/Bay/showAddBay'
 import showAddBushing from '@/views/TreeNode/Client/ClientSide/mixin/Bushing/showAddBushing'
 import showAddCapacitor from '@/views/TreeNode/Client/ClientSide/mixin/Capacitor/showAddCapacitor'
@@ -45,6 +46,12 @@ import confirmDownloadNode from '@/views/TreeNode/Server/mixin/Download/confirmD
 import resizeClient from '@/views/TreeNode/Client/ClientSide/mixin/Resize/resizeClient'
 import logClient from '@/views/TreeNode/Client/ClientSide/mixin/Resize/logClient'
 import resizeServer from '@/views/TreeNode/Server/mixin/Resize/resizeServer'
+
+//ContextData
+import contextDataHelpers from '@/views/TreeNode/Client/ClientSide/mixin/ContextData/contextDataHelpers'
+
+//TabSync
+import tabPropertiesSync from '@/views/TreeNode/Client/ClientSide/mixin/TabSync/tabPropertiesSync'
 
 
 //Server
@@ -93,7 +100,7 @@ import importCIM from '@/views/TreeNode/Common/Import/importCIM'
 
 
 export default {
-    mixins: [treeNodeFind, deleteData, showAddBay, showAddBushing,
+    mixins: [treeNodeFind, deleteData, handleDeleteFromContextMenu, showAddBay, showAddBushing,
         showAddCapacitor, showAddCircuitBreaker, showAddConnector, showAddCt,
         showAddJob, showAddOrganisation, showAddPowerCable, showAddReactor,
         showAddRotatingMachine, showAddSubInTree, showAddSubs, showAddSurgeArrester,
@@ -103,7 +110,7 @@ export default {
         circuitBreakerConfirm, disconnectorConfirm, ctConfirm, jobConfirm,
         organisationConfirm, powerCableConfirm, reactorConfirm, rotatingMachineConfirm,
         substationConfirm, surgeArresterConfirm, transformerConfirm, vtConfirm,
-        voltageLevelConfirm, resizeClient,
+        voltageLevelConfirm, resizeClient, contextDataHelpers, tabPropertiesSync,
         logClient, logServer, resizeServer, confirmDownloadNode, downloadNode,
         buildMoveTreeData, fetchChildrenForMoveMixin, generateUuid, getOwner,
         fetchChildrenServer, fetchChildrenClient, _import,

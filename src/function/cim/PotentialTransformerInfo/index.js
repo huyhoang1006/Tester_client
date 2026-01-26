@@ -122,8 +122,6 @@ export const deletePotentialTransformerInfoTransaction = async (mrid, dbsql) => 
                     });
                 }
 
-                console.log('✅ Deleted potentialTransformerInfo:', mrid);
-
                 try {
                     // 2️⃣ Sau khi xóa thành công, mới gọi xóa asset_info
                     const assetInfoResult = await AssetInfoFunc.deleteAssetInfoByIdTransaction(mrid, dbsql);
@@ -134,8 +132,6 @@ export const deletePotentialTransformerInfoTransaction = async (mrid, dbsql) => 
                             err: assetInfoResult.err
                         });
                     }
-
-                    console.log('✅ Deleted assetInfo:', mrid);
 
                     return resolve({
                         success: true,
