@@ -3,18 +3,25 @@ export default {
     methods: {
         async handleSurgeConfirm() {
             try {
-                const surgeArrester = this.$refs.surgeArrester
+                const dialogRef = this.$refs.surgeArresterDialog
+                const surgeArrester = dialogRef ? dialogRef.getSurgeArresterRef() : null
                 if (surgeArrester) {
                     const { success, data } = await surgeArrester.saveAsset()
                     if (success) {
                         this.$message.success('Surge Arrester saved successfully')
                         this.signSurge = false
+                        
+                        // Reset form after successful save
+                        this.resetFormAfterSave(surgeArrester)
+                        
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
+                            // Handle different data structures - check for asset property or direct access
+                            const assetData = data.asset || data.surgeArrester || data
                             const newRow = {
-                                mrid: data.surgeArrester.mrid,
-                                name: data.surgeArrester.name,
-                                serial_number: data.surgeArrester.serial_number,
+                                mrid: assetData.mrid,
+                                name: assetData.name || assetData.serial_number || 'Unnamed Surge Arrester',
+                                serial_number: assetData.serial_number,
                                 parentId: this.parentOrganization.mrid,
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],

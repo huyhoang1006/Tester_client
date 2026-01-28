@@ -3,18 +3,25 @@ export default {
     methods: {
         async handleVtConfirm() {
             try {
-                const voltageTransformer = this.$refs.voltageTransformer
-                if (voltageTransformer) {
-                    const { success, data } = await voltageTransformer.saveAsset()
+                const dialogRef = this.$refs.voltageTransformerDialog
+                const vt = dialogRef ? dialogRef.getVoltageTransformerRef() : null
+                if (vt) {
+                    const { success, data } = await vt.saveAsset()
                     if (success) {
-                        this.$message.success('Voltage transformer saved successfully')
+                        this.$message.success('Voltage Transformer saved successfully')
                         this.signVt = false
+                        
+                        // Reset form after successful save
+                        this.resetFormAfterSave(vt)
+                        
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
+                            // Handle different data structures - check for asset property or direct access
+                            const assetData = data.asset || data
                             const newRow = {
-                                mrid: data.asset.mrid,
-                                name: data.asset.name,
-                                serial_number: data.asset.serial_number,
+                                mrid: assetData.mrid,
+                                name: assetData.name || assetData.serial_number || 'Unnamed Voltage Transformer',
+                                serial_number: assetData.serial_number,
                                 parentId: this.parentOrganization.mrid,
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
@@ -31,7 +38,7 @@ export default {
                             }
                         }
                     } else {
-                        this.$message.error('Failed to save Voltage transformer')
+                        this.$message.error('Failed to save Voltage Transformer')
                     }
                 }
             } catch (error) {

@@ -3,31 +3,43 @@ export default {
     methods: {
         async handleOrgConfirm() {
             try {
-                const org = this.$refs.organisation
+                const dialogRef = this.$refs.organisationDialog
+                const org = dialogRef ? dialogRef.getOrganisationRef() : null
                 if (org) {
                     const { success, data } = await org.saveOrganisation()
                     if (success) {
                         this.$message.success('Organisation saved successfully')
                         this.signOrg = false
+                        
+                        // Reset form after successful save
+                        this.resetFormAfterSave(org)
+                        
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
                             const newRow = {
                                 mrid: data.organisation.mrid,
-                                name: data.organisation.name,
-                                parentId: this.parentOrganization.mrid,
-                                parentName: this.parentOrganization.name,
-                                parentArr: this.parentOrganization.parentArr || [],
+                                name: data.organisation.name || 'Unnamed Organisation',
+                                parentId: this.parentOrganization ? this.parentOrganization.mrid : null,
+                                parentName: this.parentOrganization ? this.parentOrganization.name : null,
+                                parentArr: this.parentOrganization ? (this.parentOrganization.parentArr || []) : [],
                                 mode: 'organisation'
                             }
                             newRows.push(newRow)
-                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
-                            if (node) {
-                                const children = Array.isArray(node.children) ? node.children : []
-                                Vue.set(node, 'children', [...children, ...newRows])
+                            if (this.parentOrganization) {
+                                const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
+                                if (node) {
+                                    const children = Array.isArray(node.children) ? node.children : []
+                                    Vue.set(node, 'children', [...children, ...newRows])
+                                } else {
+                                    this.$message.error('Parent node not found in tree')
+                                }
                             } else {
-                                this.$message.error('Parent node not found in tree')
+                                // Root level organisation
+                                this.organisationClientList.push(newRow)
                             }
                         }
+                    } else {
+                        this.$message.error('Failed to save organisation')
                     }
                 }
             } catch (error) {

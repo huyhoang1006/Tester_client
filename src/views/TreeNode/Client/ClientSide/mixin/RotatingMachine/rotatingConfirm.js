@@ -1,23 +1,27 @@
 import Vue from "vue"
 export default {
     methods: {
-        handleRotatingCancel() {
-            this.signRotating = false
-        },
         async handleRotatingConfirm() {
             try {
-                const rotatingMachine = this.$refs.rotatingMachine
+                const dialogRef = this.$refs.rotatingMachineDialog
+                const rotatingMachine = dialogRef ? dialogRef.getRotatingMachineRef() : null
                 if (rotatingMachine) {
                     const { success, data } = await rotatingMachine.saveAsset()
                     if (success) {
-                        this.$message.success('Rotating machine saved successfully')
+                        this.$message.success('Rotating Machine saved successfully')
                         this.signRotating = false
+                        
+                        // Reset form after successful save
+                        this.resetFormAfterSave(rotatingMachine)
+                        
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
+                            // Handle different data structures - check for asset property or direct access
+                            const assetData = data.asset || data
                             const newRow = {
-                                mrid: data.asset.mrid,
-                                name: data.asset.name,
-                                serial_number: data.asset.serial_number,
+                                mrid: assetData.mrid,
+                                name: assetData.name || assetData.serial_number || 'Unnamed Rotating Machine',
+                                serial_number: assetData.serial_number,
                                 parentId: this.parentOrganization.mrid,
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
@@ -34,13 +38,16 @@ export default {
                             }
                         }
                     } else {
-                        this.$message.error('Failed to save Rotating machine')
+                        this.$message.error('Failed to save Rotating Machine')
                     }
                 }
             } catch (error) {
                 this.$message.error('Some error occur')
                 console.error(error)
             }
+        },
+        handleRotatingCancel() {
+            this.signRotating = false
         },
     }
 }
