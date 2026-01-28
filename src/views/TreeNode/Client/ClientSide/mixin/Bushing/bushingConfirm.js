@@ -3,18 +3,25 @@ export default {
     methods: {
         async handleBushingConfirm() {
             try {
-                const bushing = this.$refs.bushing
+                const dialogRef = this.$refs.bushingDialog
+                const bushing = dialogRef ? dialogRef.getBushingRef() : null
                 if (bushing) {
                     const { success, data } = await bushing.saveAsset()
                     if (success) {
                         this.$message.success('Bushing saved successfully')
                         this.signBushing = false
+                        
+                        // Reset form after successful save
+                        this.resetFormAfterSave(bushing)
+                        
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
+                            // data contains the full entity, bushing info is in data.bushing
+                            const bushingData = data.bushing
                             const newRow = {
-                                mrid: data.bushing.mrid,
-                                name: data.bushing.name,
-                                serial_number: data.bushing.serial_number,
+                                mrid: bushingData.mrid,
+                                name: bushingData.name || bushingData.serial_number || 'Unnamed Bushing',
+                                serial_number: bushingData.serial_number,
                                 parentId: this.parentOrganization.mrid,
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],

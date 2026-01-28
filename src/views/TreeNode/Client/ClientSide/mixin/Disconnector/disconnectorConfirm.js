@@ -1,24 +1,27 @@
 import Vue from "vue"
 export default {
     methods: {
-        handleDisconnectorCancel() {
-            this.signDisconnector = false
-        },
-
         async handleDisconnectorConfirm() {
             try {
-                const disconnector = this.$refs.disconnector
+                const dialogRef = this.$refs.disconnectorDialog
+                const disconnector = dialogRef ? dialogRef.getDisconnectorRef() : null
                 if (disconnector) {
                     const { success, data } = await disconnector.saveAsset()
                     if (success) {
                         this.$message.success('Disconnector saved successfully')
                         this.signDisconnector = false
+                        
+                        // Reset form after successful save
+                        this.resetFormAfterSave(disconnector)
+                        
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
+                            // Handle different data structures - check for asset property or direct access
+                            const assetData = data.asset || data
                             const newRow = {
-                                mrid: data.asset.mrid,
-                                name: data.asset.name,
-                                serial_number: data.asset.serial_number,
+                                mrid: assetData.mrid,
+                                name: assetData.name || assetData.serial_number || 'Unnamed Disconnector',
+                                serial_number: assetData.serial_number,
                                 parentId: this.parentOrganization.mrid,
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
@@ -35,7 +38,7 @@ export default {
                             }
                         }
                     } else {
-                        this.$message.error('Failed to save Voltage transformer')
+                        this.$message.error('Failed to save Disconnector')
                     }
                 }
             } catch (error) {
@@ -43,6 +46,8 @@ export default {
                 console.error(error)
             }
         },
-
+        handleDisconnectorCancel() {
+            this.signDisconnector = false
+        },
     }
 }

@@ -161,7 +161,8 @@
                 </el-dropdown>
             </div>
             <div v-if="clientSlide">
-                <i @click="handleUploadNode" title="Upload" style="font-size: 12px; cursor: pointer;" class="fa-solid fa-upload"></i>
+                <i @click="handleUploadNode" title="Upload" style="font-size: 12px; cursor: pointer;"
+                    class="fa-solid fa-upload"></i>
             </div>
             <div v-if="!clientSlide">
                 <i @click="handleDownloadNode" title="Download" style="font-size: 12px"
@@ -420,279 +421,107 @@
                 @reload-log-client="reloadLogClient" />
         </div>
 
-        <el-dialog custom-class="app-dialog" title="Add Substation" :visible.sync="signSubs" @close="handleSubsCancel">
-            <Substation :parentOrganization="parentOrganization" :personList="personList" :locationList="locationList"
-                :organisationId="organisationId" ref="substation"></Substation>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleSubsCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleSubsConfirm">Save</el-button>
-            </span>
-        </el-dialog>
+        <!-- Dialog Components -->
+        <SubstationDialog ref="substationDialog" :visible="signSubs" @update:visible="signSubs = $event"
+            :parentOrganization="parentOrganization" :personList="personList" :locationList="locationList"
+            :organisationId="organisationId" @close="handleSubsCancel" @cancel="handleSubsCancel"
+            @confirm="handleSubsConfirm" />
 
-        <el-dialog custom-class="app-dialog" title="Add Organisation" :visible.sync="signOrg" @close="handleOrgCancel">
-            <Organisation :parent="parentOrganization" ref="organisation"></Organisation>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleOrgCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleOrgConfirm">Save</el-button>
-            </span>
-        </el-dialog>
+        <OrganisationDialog ref="organisationDialog" :visible="signOrg" @update:visible="signOrg = $event"
+            :parentOrganization="parentOrganization" @close="handleOrgCancel" @cancel="handleOrgCancel"
+            @confirm="handleOrgConfirm" />
 
-        <el-dialog custom-class="app-dialog" title="Add Voltage Level" :visible.sync="signVoltageLevel"
-            @close="handleVoltageLevelCancel">
-            <VoltageLevel :locationId="locationId" :parent="parentOrganization" ref="voltageLevel"></VoltageLevel>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger"
-                    @click="handleVoltageLevelCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary"
-                    @click="handleVoltageLevelConfirm">Save</el-button>
-            </span>
-        </el-dialog>
+        <VoltageLevelDialog ref="voltageLevelDialog" :visible="signVoltageLevel"
+            @update:visible="signVoltageLevel = $event" :locationId="locationId"
+            :parentOrganization="parentOrganization" @close="handleVoltageLevelCancel"
+            @cancel="handleVoltageLevelCancel" @confirm="handleVoltageLevelConfirm" />
 
-        <el-dialog custom-class="app-dialog" title="Add Bay Level" :visible.sync="signBay" @close="handleBayCancel">
-            <Bay :locationId="locationId" :parent="parentOrganization" ref="bay"></Bay>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleBayCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleBayConfirm">Save</el-button>
-            </span>
-        </el-dialog>
+        <BayDialog ref="bayDialog" :visible="signBay" @update:visible="signBay = $event" :locationId="locationId"
+            :parentOrganization="parentOrganization" @close="handleBayCancel" @cancel="handleBayCancel"
+            @confirm="handleBayConfirm" />
 
-        <el-dialog title="Add Transformer" :visible.sync="signTransformer" @close="handleTransformerCancel"
+        <TransformerDialog ref="transformerDialog" :visible="signTransformer" @update:visible="signTransformer = $event"
+            :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
+            :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
+            @close="handleTransformerCancel" @cancel="handleTransformerCancel" @confirm="handleTransformerConfirm" />
+
+        <BushingDialog ref="bushingDialog" :visible="signBushing" @update:visible="signBushing = $event"
+            :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
+            :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
+            @close="handleBushingCancel" @cancel="handleBushingCancel" @confirm="handleBushingConfirm" />
+
+        <SurgeArresterDialog ref="surgeArresterDialog" :visible="signSurge" @update:visible="signSurge = $event"
+            :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
+            :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
+            @close="handleSurgeCancel" @cancel="handleSurgeCancel" @confirm="handleSurgeConfirm" />
+
+        <CircuitBreakerDialog ref="circuitBreakerDialog" :visible="signCircuit" @update:visible="signCircuit = $event"
+            :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
+            :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
+            @close="handleCircuitCancel" @cancel="handleCircuitCancel" @confirm="handleCircuitConfirm" />
+
+        <CurrentTransformerDialog ref="currentTransformerDialog" :visible="signCt" @update:visible="signCt = $event"
+            :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
+            :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
+            @close="handleCtCancel" @cancel="handleCtCancel" @confirm="handleCtConfirm" />
+
+        <VoltageTransformerDialog ref="voltageTransformerDialog" :visible="signVt" @update:visible="signVt = $event"
+            :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
+            :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
+            @close="handleVtCancel" @cancel="handleVtCancel" @confirm="handleVtConfirm" />
+
+        <PowerCableDialog ref="powerCableDialog" :visible="signPower" @update:visible="signPower = $event"
+            :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
+            :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
+            @close="handlePowerCancel" @cancel="handlePowerCancel" @confirm="handlePowerConfirm" />
+
+        <DisconnectorDialog ref="disconnectorDialog" :visible="signDisconnector"
+            @update:visible="signDisconnector = $event" :locationId="locationId"
+            :parentOrganization="parentOrganization" :modal="!isDuplicating" :show-close="!isDuplicating"
+            :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
+            @close="handleDisconnectorCancel" @cancel="handleDisconnectorCancel" @confirm="handleDisconnectorConfirm" />
+
+        <RotatingMachineDialog ref="rotatingMachineDialog" :visible="signRotating"
+            @update:visible="signRotating = $event" :locationId="locationId" :parentOrganization="parentOrganization"
             :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="dialogClass">
-            <Transformer :locationId="locationId" :parent="parentOrganization" ref="transformer"></Transformer>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger"
-                    @click="handleTransformerCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary"
-                    @click="handleTransformerConfirm">Save</el-button>
-            </span>
-        </el-dialog>
+            :custom-class="dialogClass" @close="handleRotatingCancel" @cancel="handleRotatingCancel"
+            @confirm="handleRotatingConfirm" />
 
-        <el-dialog title="Add Bushing" :visible.sync="signBushing" @close="handleBushingCancel" :modal="!isDuplicating"
-            :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass">
-            <Bushing :locationId="locationId" :parent="parentOrganization" ref="bushing"></Bushing>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleBushingCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleBushingConfirm">Save</el-button>
-            </span>
-        </el-dialog>
+        <CapacitorDialog ref="capacitorDialog" :visible="signCapacitor" @update:visible="signCapacitor = $event"
+            :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
+            :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
+            @close="handleCapacitorCancel" @cancel="handleCapacitorCancel" @confirm="handleCapacitorConfirm" />
 
-        <el-dialog title="Add Surge Arrester" :visible.sync="signSurge" @close="handleSurgeCancel"
-            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="dialogClass">
-            <SurgeArrester :locationId="locationId" :parent="parentOrganization" ref="surgeArrester"></SurgeArrester>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleSurgeCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleSurgeConfirm">Save</el-button>
-            </span>
-        </el-dialog>
+        <ReactorDialog ref="reactorDialog" :visible="signReactor" @update:visible="signReactor = $event"
+            :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
+            :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
+            @close="handleReactorCancel" @cancel="handleReactorCancel" @confirm="handleReactorConfirm" />
 
-        <el-dialog title="Add Circuit Breaker" :visible.sync="signCircuit" @close="handleCircuitCancel"
-            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="dialogClass">
-            <CircuitBreaker :locationId="locationId" :parent="parentOrganization" ref="circuitBreaker"></CircuitBreaker>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleCircuitCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleCircuitConfirm">Save</el-button>
-            </span>
-        </el-dialog>
+        <JobDialog ref="jobDialog" :visible="signJob" @update:visible="signJob = $event" :checkJobType="checkJobType"
+            :locationData="locationData" :assetData="assetData" :productAssetModelData="productAssetModelData"
+            :parentOrganization="parentOrganization" :testTypeListData="testTypeListData" @close="handleJobCancel"
+            @cancel="handleJobCancel" @confirm="handleJobConfirm" />
 
-        <el-dialog title="Add Current Transformer" :visible.sync="signCt" @close="handleCtCancel"
-            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="dialogClass">
-            <CurrentTransformer :locationId="locationId" :parent="parentOrganization" ref="currentTransformer">
-            </CurrentTransformer>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleCtCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleCtConfirm">Save</el-button>
-            </span>
-        </el-dialog>
+        <ExportDialog :visible="openExportDialog" @update:visible="openExportDialog = $event" :exportType="exportType"
+            @cancel="handleCancelExport" @confirm="handleExportConfirm" />
 
-        <el-dialog title="Add Voltage Transformer" :visible.sync="signVt" @close="handleVtCancel"
-            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="dialogClass">
-            <VoltageTransformer :locationId="locationId" :parent="parentOrganization" ref="voltageTransformer">
-            </VoltageTransformer>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleVtCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleVtConfirm">Save</el-button>
-            </span>
-        </el-dialog>
+        <ImportDialog :visible="openImportDialog" @update:visible="openImportDialog = $event"
+            @cancel="handleCancelImport" @confirm="handleImportConfirm" />
 
-        <el-dialog title="Add Power Cable" :visible.sync="signPower" @close="handlePowerCancel" :modal="!isDuplicating"
-            :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass">
-            <PowerCable :locationId="locationId" :parent="parentOrganization" ref="powerCable"></PowerCable>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handlePowerCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handlePowerConfirm">Save</el-button>
-            </span>
-        </el-dialog>
+        <FmecaDialog :visible="signFmeca" @update:visible="signFmeca = $event" @close="handleFmecaCancel"
+            @cancel="handleFmecaCancel" @confirm="handleFmecaConfirm" />
 
-        <el-dialog title="Add Disconnector" :visible.sync="signDisconnector" @close="handleDisconnectorCancel"
-            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="dialogClass">
-            <Disconnector :locationId="locationId" :parent="parentOrganization" ref="disconnector"></Disconnector>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger"
-                    @click="handleDisconnectorCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary"
-                    @click="handleDisconnectorConfirm">Save</el-button>
-            </span>
-        </el-dialog>
+        <MoveDialog :visible="moveDialogVisible" @update:visible="moveDialogVisible = $event"
+            :moveTreeData="moveTreeData" :selectedTargetNodes="selectedTargetNodes"
+            :selectedTargetNode="selectedTargetNode" :nodeToMove="nodeToMove" :moveDisplayText="moveDisplayText"
+            :moveDisplayData="moveDisplayData" @close="handleMoveCancel" @cancel="handleMoveCancel"
+            @confirm="confirmMoveNode" @fetch-children="fetchChildrenForMove" @update-selection="handleMoveNodeSelection" />
 
-        <el-dialog title="Add Rotating Machine" :visible.sync="signRotating" @close="handleRotatingCancel"
-            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="dialogClass">
-            <RotatingMachine :locationId="locationId" :parent="parentOrganization" ref="rotatingMachine">
-            </RotatingMachine>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger"
-                    @click="handleRotatingCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary"
-                    @click="handleRotatingConfirm">Save</el-button>
-            </span>
-        </el-dialog>
-
-        <el-dialog title="Add Capacitor" :visible.sync="signCapacitor" @close="handleCapacitorCancel"
-            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="dialogClass">
-            <Capacitor :locationId="locationId" :parent="parentOrganization" ref="capacitor"> </Capacitor>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger"
-                    @click="handleCapacitorCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary"
-                    @click="handleCapacitorConfirm">Save</el-button>
-            </span>
-        </el-dialog>
-
-        <el-dialog title="Add Reactor" :visible.sync="signReactor" @close="handleReactorCancel" :modal="!isDuplicating"
-            :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass">
-            <Reactor :locationId="locationId" :parent="parentOrganization" ref="reactor"> </Reactor>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleReactorCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleReactorConfirm">Save</el-button>
-            </span>
-        </el-dialog>
-
-        <el-dialog custom-class="app-dialog" title="Add Job" :visible.sync="signJob" @close="handleJobCancel">
-            <component ref="jobData" :is="checkJobType" :locationData="locationData" :assetData="assetData"
-                :productAssetModelData="productAssetModelData" :parent="parentOrganization"
-                :testTypeListData="testTypeListData">
-            </component>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleJobCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleJobConfirm">Save</el-button>
-            </span>
-        </el-dialog>
-
-        <el-dialog custom-class="app-dialog custom-dialog" title="Export" :visible.sync="openExportDialog">
-            <Export :exportType="exportType"></Export>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleCancelExport">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleExportConfirm">Save</el-button>
-            </span>
-        </el-dialog>
-
-        <el-dialog custom-class="app-dialog custom-dialog" title="Import" :visible.sync="openImportDialog">
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleCancelImport">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleImportConfirm">Save</el-button>
-            </span>
-        </el-dialog>
-
-        <el-dialog custom-class="app-dialog" title="Fmeca" :visible.sync="signFmeca" @close="handleFmecaCancel">
-            <Fmeca></Fmeca>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button size="small" type="danger" @click="handleFmecaCancel">Cancel</el-button>
-                <el-button size="small" type="primary" @click="handleFmecaConfirm">Save</el-button>
-            </span>
-        </el-dialog>
-
-        <el-dialog title="Move Node" :visible.sync="moveDialogVisible" @close="handleMoveCancel"
-            custom-class="move-dialog app-dialog custom-dialog">
-            <div style="height: 300px; overflow-y: auto">
-                <div class="child-nav" style="height: 100%; cursor: pointer">
-                    <ul style="list-style: none; padding-left: 0">
-                        <TreeNode v-for="item in moveTreeData" :key="item.mrid" :node="item"
-                            :selectedNodes="selectedTargetNodes" @fetch-children="fetchChildrenForMove"
-                            @update-selection="handleMoveNodeSelection" @open-context-menu="() => { }"
-                            style="width: 100%">
-                        </TreeNode>
-                    </ul>
-                </div>
-            </div>
-            <!-- Dòng kẻ ngăn cách TreeNode và dòng chữ bên dưới -->
-            <div style="border-top: 1px solid #e0e0e0; margin: 6px 0 4px 0"></div>
-            <div v-if="moveDisplayText" style="
-                    margin-top: 8px;
-                    font-size: 13px;
-                    color: #606266;
-                    display: flex;
-                    align-items: center;
-                    width: 100%;
-                    box-sizing: border-box;
-                    padding: 0 12px;
-                    font-weight: bold;
-                ">
-                <!-- Cột 1: Move from (trái) -->
-                <span style="flex: 1; text-align: center; color: black">
-                    {{ moveDisplayText.prefix }}
-                </span>
-
-                <!-- Cột 2: icon + node A (giữa trái) -->
-                <div style="flex: 1; display: flex; align-items: center; gap: 4px; justify-content: center">
-                    <icon v-if="moveDisplayData.sourceIcon" :size="'16px'"
-                        :folderType="moveDisplayData.sourceIcon.folderType"
-                        :assetDetail="moveDisplayData.sourceIcon.assetDetail"
-                        :badgeColor="moveDisplayData.sourceIcon.badgeColor"></icon>
-                    <span style="font-weight: 600" :title="moveDisplayText.sourceFull">
-                        {{ moveDisplayText.source }}
-                    </span>
-                </div>
-
-                <!-- Cột 3: to (ở gần giữa, sát 2 node hơn) -->
-                <span
-                    style="flex: 0; padding: 0 8px; text-align: center; white-space: nowrap; font-weight: bold; color: black">
-                    {{ moveDisplayText.middle }}
-                </span>
-
-                <!-- Cột 4: icon + node B (phải) -->
-                <div style="flex: 1; display: flex; align-items: center; gap: 4px; justify-content: center">
-                    <icon v-if="moveDisplayData.targetIcon" :size="'16px'"
-                        :folderType="moveDisplayData.targetIcon.folderType"
-                        :assetDetail="moveDisplayData.targetIcon.assetDetail"
-                        :badgeColor="moveDisplayData.targetIcon.badgeColor"></icon>
-                    <span style="font-weight: 600" :title="moveDisplayText.targetFull">
-                        {{ moveDisplayText.target }}
-                    </span>
-                </div>
-            </div>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" @click="moveDialogVisible = false"
-                    style="background-color: #d63743; color: #fff">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="confirmMoveNode"
-                    :disabled="!selectedTargetNode">Move</el-button>
-            </span>
-        </el-dialog>
-        <!-- Dialog chọn cha khi download -->
-        <el-dialog custom-class="app-dialog" title="Select Parent Node for Downloaded Asset"
-            :visible.sync="downloadDialogVisible" @close="downloadDialogVisible = false">
-            <div style="height: 300px; overflow-y: auto">
-                <div class="child-nav">
-                    <ul style="list-style: none; padding-left: 0">
-                        <TreeNode v-for="item in moveTreeData" :key="item.mrid" :node="item"
-                            :selectedNodes="selectedDownloadTargetNodes" @fetch-children="fetchChildren"
-                            @update-selection="handleDownloadTargetSelection" @open-context-menu="() => { }">
-                        </TreeNode>
-                    </ul>
-                </div>
-            </div>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" @click="downloadDialogVisible = false">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="confirmDownloadSelection"
-                    :disabled="!selectedDownloadTargetNode">Confirm Download</el-button>
-            </span>
-        </el-dialog>
+        <DownloadDialog :visible="downloadDialogVisible" @update:visible="downloadDialogVisible = $event"
+            :moveTreeData="moveTreeData" :moveTreeProps="moveTreeProps" :expandedMoveKeys="expandedMoveKeys"
+            :selectedDownloadTargetNode="selectedDownloadTargetNode" @close="() => downloadDialogVisible = false"
+            @cancel="() => downloadDialogVisible = false" @confirm="confirmDownloadSelection"
+            @node-click="handleDownloadTargetSelection" @node-expand="fetchChildren" />
     </div>
 </template>
 <script>
@@ -749,10 +578,35 @@ import Icon from '@/views/Common/Icon.vue'
 import Fmeca from '@/views/Fmeca'
 import Export from '@/views/Export/index.vue'
 
+// Import Dialog Components
+import {
+    SubstationDialog,
+    OrganisationDialog,
+    VoltageLevelDialog,
+    BayDialog,
+    TransformerDialog,
+    BushingDialog,
+    SurgeArresterDialog,
+    CircuitBreakerDialog,
+    CurrentTransformerDialog,
+    VoltageTransformerDialog,
+    PowerCableDialog,
+    DisconnectorDialog,
+    RotatingMachineDialog,
+    CapacitorDialog,
+    ReactorDialog,
+    JobDialog,
+    ExportDialog,
+    ImportDialog,
+    FmecaDialog,
+    MoveDialog,
+    DownloadDialog
+} from './dialogs'
+
 
 import mixinTreeNavigation from '@/views/TreeNode/Common/mixinTreeNavigation/mixin'
 import TopBarServer from './Server/TopBarServer/index.vue'
-import uploadNodeMixin from './mixin/Upload/index.js'; 
+import uploadNodeMixin from './mixin/Upload/index.js';
 import ClientTreePanel from './Client/ClientTree/index.vue'
 import ServerTreePanel from './Server/ServerTree/index.vue'
 export default {
@@ -798,7 +652,29 @@ export default {
         JobTransformer,
         Icon,
         Fmeca,
-        Export
+        Export,
+        // Dialog Components
+        SubstationDialog,
+        OrganisationDialog,
+        VoltageLevelDialog,
+        BayDialog,
+        TransformerDialog,
+        BushingDialog,
+        SurgeArresterDialog,
+        CircuitBreakerDialog,
+        CurrentTransformerDialog,
+        VoltageTransformerDialog,
+        PowerCableDialog,
+        DisconnectorDialog,
+        RotatingMachineDialog,
+        CapacitorDialog,
+        ReactorDialog,
+        JobDialog,
+        ExportDialog,
+        ImportDialog,
+        FmecaDialog,
+        MoveDialog,
+        DownloadDialog
     },
     data() {
         return {
@@ -1158,6 +1034,29 @@ export default {
             await this.showData(node)
             await this.showPropertiesData(node)
         },
+
+        // Helper method to get component ref from dialog
+        getDialogComponentRef(dialogRefName, componentRefName) {
+            const dialogRef = this.$refs[dialogRefName]
+            if (dialogRef && typeof dialogRef[`get${componentRefName}Ref`] === 'function') {
+                return dialogRef[`get${componentRefName}Ref`]()
+            }
+            return null
+        },
+
+        // Helper method to reset form after successful save
+        resetFormAfterSave(component) {
+            this.$nextTick(() => {
+                if (component && typeof component.resetForm === 'function') {
+                    component.resetForm()
+                }
+            })
+        },
+
+
+        async handleMoveCancel() {
+            this.moveDialogVisible = false
+        }
 
     }
 }
@@ -1674,54 +1573,6 @@ body.duplicating-mode>.v-modal {
 </style>
 
 <style>
-.app-dialog {
-    box-sizing: border-box;
-}
-
-.app-dialog.el-dialog {
-    width: 65%;
-    margin-top: 5vh !important;
-    border-radius: 6px;
-    height: 90vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.app-dialog .el-dialog__body {
-    overflow-y: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    flex: 1;
-}
-
-.app-dialog .el-dialog__body::-webkit-scrollbar {
-    width: 0px;
-    height: 0px;
-}
-
-.app-dialog .el-dialog__footer {
-    padding: 10px 20px;
-    border-top: 1px solid #ebeef5;
-}
-
-.custom-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-}
-
-.custom-footer .footer-btn {
-    display: flex;
-    flex: 1;
-    align-items: center;
-    justify-content: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100px;
-}
-
 .custom-dialog {
     max-height: 90vh;
     height: auto !important;
@@ -1734,12 +1585,6 @@ body.duplicating-mode>.v-modal {
 @media (max-width: 991px) {
     .move-dialog {
         width: 50% !important;
-    }
-}
-
-@media (max-width: 767px) {
-    .custom-footer {
-        justify-content: center;
     }
 }
 </style>

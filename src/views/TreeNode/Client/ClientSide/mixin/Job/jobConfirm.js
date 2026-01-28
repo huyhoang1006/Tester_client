@@ -3,16 +3,21 @@ export default {
     methods: {
         async handleJobConfirm() {
             try {
-                const job = this.$refs.jobData
-                if (job) {
-                    const { success, data } = await job.saveJob()
+                const dialogRef = this.$refs.jobDialog
+                const jobData = dialogRef ? dialogRef.getJobDataRef() : null
+                if (jobData) {
+                    const { success, data } = await jobData.saveJob()
                     if (success) {
                         this.$message.success('Job saved successfully')
                         this.signJob = false
+                        
+                        // Reset form after successful save
+                        this.resetFormAfterSave(jobData)
+                        
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
                             let jobType = ''
-                            // Xác định loại job, ví dụ dựa vào checkJobType hoặc assetData
+                            // Xác định loại job dựa vào checkJobType
                             if (this.checkJobType === 'JobSurgeArrester') {
                                 jobType = 'Surge arrester'
                             } else if (this.checkJobType === 'JobPowerCable') {
@@ -27,10 +32,15 @@ export default {
                                 jobType = 'Circuit breaker'
                             } else if (this.checkJobType === 'JobTransformer') {
                                 jobType = 'Transformer'
+                            } else {
+                                jobType = 'Job'
                             }
+                            
+                            // Handle different data structures - check for oldWork or job
+                            const jobData = data.oldWork || data.job || data
                             const newRow = {
-                                mrid: data.oldWork.mrid,
-                                name: data.oldWork.name,
+                                mrid: jobData.mrid,
+                                name: jobData.name || `Unnamed ${jobType} Job`,
                                 parentId: this.parentOrganization.mrid,
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
@@ -47,7 +57,7 @@ export default {
                             }
                         }
                     } else {
-                        this.$message.error('Failed to save Job')
+                        this.$message.error('Failed to save job')
                     }
                 }
             } catch (error) {

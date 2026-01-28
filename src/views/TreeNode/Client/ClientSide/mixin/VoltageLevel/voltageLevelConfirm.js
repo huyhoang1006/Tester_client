@@ -3,17 +3,29 @@ export default {
     methods: {
         async handleVoltageLevelConfirm() {
             try {
-                const voltageLevel = this.$refs.voltageLevel
+                const dialogRef = this.$refs.voltageLevelDialog
+                const voltageLevel = dialogRef ? dialogRef.getVoltageLevelRef() : null
                 if (voltageLevel) {
                     const { success, data } = await voltageLevel.saveVoltageLevel()
+                    console.log('VoltageLevel save response:', data) // Debug log
                     if (success) {
                         this.$message.success('Voltage Level saved successfully')
                         this.signVoltageLevel = false
+                        
+                        // Reset form after successful save
+                        this.resetFormAfterSave(voltageLevel)
+                        
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
+                            // Handle different possible data structures
+                            const mrid = data.mrid || data.voltageLevel?.mrid || data.data?.voltageLevel?.mrid
+                            const name = data.name || data.voltageLevel?.name || data.data?.voltageLevel?.name || 'Unnamed Voltage Level'
+                            
+                            console.log('Extracted mrid:', mrid, 'name:', name) // Debug log
+                            
                             const newRow = {
-                                mrid: data.voltageLevel.mrid,
-                                name: data.voltageLevel.name,
+                                mrid: mrid,
+                                name: name,
                                 parentId: this.parentOrganization.mrid,
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
@@ -28,6 +40,8 @@ export default {
                                 this.$message.error('Parent node not found in tree')
                             }
                         }
+                    } else {
+                        this.$message.error('Failed to save voltage level')
                     }
                 }
             } catch (error) {
