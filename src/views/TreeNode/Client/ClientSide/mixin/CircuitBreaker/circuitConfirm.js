@@ -3,18 +3,25 @@ export default {
     methods: {
         async handleCircuitConfirm() {
             try {
-                const breaker = this.$refs.circuitBreaker
+                const dialogRef = this.$refs.circuitBreakerDialog
+                const breaker = dialogRef ? dialogRef.getCircuitBreakerRef() : null
                 if (breaker) {
                     const { success, data } = await breaker.saveAsset()
                     if (success) {
                         this.$message.success('Circuit breaker saved successfully')
                         this.signCircuit = false
+                        
+                        // Reset form after successful save
+                        this.resetFormAfterSave(breaker)
+                        
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
+                            // Handle different data structures - check for asset property or direct access
+                            const assetData = data.asset || data
                             const newRow = {
-                                mrid: data.asset.mrid,
-                                name: data.asset.name,
-                                serial_number: data.asset.serial_number,
+                                mrid: assetData.mrid,
+                                name: assetData.name || assetData.serial_number || 'Unnamed Circuit Breaker',
+                                serial_number: assetData.serial_number,
                                 parentId: this.parentOrganization.mrid,
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
