@@ -3,18 +3,25 @@ export default {
     methods: {
         async handlePowerConfirm() {
             try {
-                const powerCable = this.$refs.powerCable
+                const dialogRef = this.$refs.powerCableDialog
+                const powerCable = dialogRef ? dialogRef.getPowerCableRef() : null
                 if (powerCable) {
                     const { success, data } = await powerCable.saveAsset()
                     if (success) {
-                        this.$message.success('Power cable saved successfully')
+                        this.$message.success('Power Cable saved successfully')
                         this.signPower = false
+                        
+                        // Reset form after successful save
+                        this.resetFormAfterSave(powerCable)
+                        
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
+                            // Handle different data structures - check for asset property or direct access
+                            const assetData = data.asset || data
                             const newRow = {
-                                mrid: data.asset.mrid,
-                                name: data.asset.name,
-                                serial_number: data.asset.serial_number,
+                                mrid: assetData.mrid,
+                                name: assetData.name || assetData.serial_number || 'Unnamed Power Cable',
+                                serial_number: assetData.serial_number,
                                 parentId: this.parentOrganization.mrid,
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
@@ -42,6 +49,5 @@ export default {
         handlePowerCancel() {
             this.signPower = false
         },
-
     }
 }

@@ -3,17 +3,22 @@ export default {
     methods: {
         async handleBayConfirm() {
             try {
-                const bay = this.$refs.bay
+                const dialogRef = this.$refs.bayDialog
+                const bay = dialogRef ? dialogRef.getBayRef() : null
                 if (bay) {
                     const { success, data } = await bay.saveBay()
                     if (success) {
                         this.$message.success('Bay saved successfully')
                         this.signBay = false
+                        
+                        // Reset form after successful save
+                        this.resetFormAfterSave(bay)
+                        
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
                             const newRow = {
                                 mrid: data.mrid,
-                                name: data.name,
+                                name: data.name || 'Unnamed Bay',
                                 parentId: this.parentOrganization.mrid,
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
