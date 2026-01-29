@@ -100,12 +100,12 @@ export default {
     },
     mounted() {
         this.formConfig.domain = this.serverAddr
-        this.updateSearchState()
-        window.addEventListener('resize', this.updateSearchState)
+        // this.updateSearchState()
+        // window.addEventListener('resize', this.updateSearchState)
     },
-    beforeDestroy() {
-        window.removeEventListener('resize', this.updateSearchState)
-    },
+    // beforeDestroy() {
+    //     window.removeEventListener('resize', this.updateSearchState)
+    // },
     computed: mapState(['user', 'serverAddr']),
     methods: {
         // updateSearchState() {
