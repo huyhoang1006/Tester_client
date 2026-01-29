@@ -1,17 +1,16 @@
 <template>
-    <div id="windows">
+    <div id="windows" :class="{ 'logged-in': user }">
         <top-bar id="top-bar"></top-bar>
         <section id="main-windows">
-            <router-view ref="mainWindows" ></router-view>
+            <router-view ref="mainWindows"></router-view>
         </section>
-        <div v-if="showOutLine" id="out-line">
+        <div v-if="user" id="out-line">
             <div @click="retweet" class="retweet">
-                <i style="font-size: 10px; color: white; margin-right: 5px;" class="fa-solid fa-retweet"></i>
-                <span v-if="this.serverSign" style="color: white;">s</span>
-                <span v-else style="color: white;">c</span>
+                <i class="fa-solid fa-retweet"></i>
+                <span>{{ serverSign ? 's' : 'c' }}</span>
             </div>
-            <div style="display: flex;  direction: rtl; width: 100%;">
-                <i @click="showLog" style="font-size: 10px; color: white; margin-right: 5px;" class="fa-solid fa-circle-chevron-up"></i>
+            <div class="outline-right">
+                <i @click="showLog" class="fa-solid fa-circle-chevron-up"></i>
             </div>
         </div>
     </div>
@@ -20,56 +19,23 @@
 <script>
 /* eslint-disable */
 import TopBar from '@/components/TopBar'
+import { mapState } from 'vuex'
 
 export default {
-    components: {
-        TopBar,
+    components: { TopBar },
+    computed: {
+        ...mapState(['user'])
     },
     data() {
         return {
-            retweetSign : false,
-            serverSign : false,
-            showOutLine : false
+            serverSign: false,
         }
-    },
-    watch: {
-        $route(to) {
-            if (to.path === '/login') {
-                this.serverSign = false
-                this.showOutLine = false
-                this.$nextTick(() => {
-                    const mainWindows = document.querySelector("#main-windows");
-                    if (mainWindows) {
-                        mainWindows.style.height = "calc(100% - 6vh)";
-                    }
-                })
-            } else {
-                this.showOutLine = true
-                this.$nextTick(() => {
-                    const mainWindows = document.querySelector("#main-windows");
-                    if (mainWindows) {
-                        mainWindows.style.height = "calc(100% - 6vh - 20px)";
-                    }
-                })
-            }
-        }
-    },
-    mounted() {
-        this.showOutLine = true
-        this.$nextTick(() => {
-            const mainWindows = document.querySelector("#main-windows");
-            if (mainWindows) {
-                mainWindows.style.height = "calc(100% - 6vh - 20px)";
-            }
-        })
     },
     methods: {
         showLog() {
-            if(this.serverSign == true) {
-                this.$refs.mainWindows.showLogBar();
-            } else {
-                this.$refs.mainWindows.showLogBarClient();
-            }
+            this.serverSign
+                ? this.$refs.mainWindows.showLogBar()
+                : this.$refs.mainWindows.showLogBarClient()
         },
         retweet() {
             this.serverSign = !this.serverSign
@@ -77,44 +43,118 @@ export default {
                 this.$refs.mainWindows.serverSwap(this.serverSign);
             })
         }
+    },
+    watch: {
+        $route() {
+            this.syncAuth();
+        }
     }
 }
 </script>
 
 <style lang="scss" scoped>
-#windows {
-    width: 100%;
-    height: 100%;
+* {
     box-sizing: border-box;
 }
 
-#main-windows {
-    width: 100%;
-    height: calc(100% - 6vh - 20px);
-    overflow: auto;
+#windows {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
 }
 
-#top-bar {
-    width: 100%;
-    height: 6vh;
+#windows:not(.logged-in) {
+    display: block;
 }
-#out-line {
+
+#windows:not(.logged-in) #top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 20px;
+    z-index: 100;
+    background-color: transparent;
+    border-bottom: none;
+}
+
+#windows:not(.logged-in) #main-windows {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+#windows.logged-in {
+    display: flex;
+    flex-direction: column;
+}
+
+#windows.logged-in #top-bar {
+    flex: 0 0 48px;
+    z-index: 10;
+    width: 100%;
+}
+
+#windows.logged-in #main-windows {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    position: relative;
+    width: 100%;
+}
+
+#windows.logged-in #out-line {
+    flex: 0 0 20px;
     background-color: #012596;
     display: flex;
     align-items: center;
-    gap : 10px;
+    width: 100%;
+    overflow: hidden;
 }
 
 .retweet {
-    display: flex;
-    direction: ltr;
-    background-color: #088F8F;
-    height: 100%;
     width: 40px;
+    height: 100%;
+    background-color: #088f8f;
     display: flex;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
+    gap: 4px;
+    color: white;
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 1;
+}
+
+.retweet i {
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+}
+
+.retweet span {
+    display: inline-block;
+    padding-bottom: 3px;
+}
+
+.outline-right {
+    margin-left: auto;
+    padding-right: 10px;
+    height: 100%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    cursor: pointer;
+}
+
+.outline-right i {
+    font-size: 12px;
+    line-height: 1;
+    display: flex;
 }
 </style>

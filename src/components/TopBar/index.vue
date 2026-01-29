@@ -1,22 +1,17 @@
 <template>
     <div>
-        <div id="top-windows">
+        <div id="top-windows" :class="{ 'logged-in': user, 'not-logged-in': !user }">
             <div class="left-bar">
-                <div @click="$router.push({name: 'home'}).catch(() => {})">
-                    <span>
-                        <a href="#">
-                            <img src="@/assets/images/atdigitaltester_logo.png" style="max-height: 2.5vh; margin-left: 10px;" />
-                        </a>
-                    </span>
+                <div class="logo-wrapper" @click="$router.push({ name: 'home' }).catch(() => { })">
+                    <img class="topbar-logo" src="@/assets/images/atdigitaltester_logo.png" draggable="false" />
                 </div>
             </div>
 
             <div class="center-bar">
-                <input v-if="user"
-                style="width: 30vw; padding: 5px; border-radius: 10px; border: 1px solid #ccc; outline: none;"
-                type="text"
-                placeholder="Search..."
-                >
+                <div v-if="user" class="search-wrapper" :class="{ collapsed: isSearchCollapsed }">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input v-if="!isSearchCollapsed" class="topbar-search" type="text" placeholder="Search...">
+                </div>
             </div>
 
             <div class="right-bar">
@@ -39,28 +34,31 @@
                         </el-dropdown-menu>
                     </el-dropdown>
                 </div>
-                <div style="height: 100%;" @click="minimizeApp">
-                    <i style="font-size: 20px; color: white;" class="far fa-minus-square"></i>
+                <div @click="minimizeApp">
+                    <i class="far fa-minus-square"></i>
                 </div>
                 <div @click="maximizeApp">
-                    <i style="font-size: 20px; color: white;" class="fa-solid fa-window-restore"></i>
+                    <i class="fa-solid fa-window-restore"></i>
                 </div>
-                <div class="close-icon" @click="closeApp">
-                    <i style="font-size: 20px; color: white;" class="fa-solid fa-xmark "></i>
+                <div @click="closeApp" class="close-icon">
+                    <i class="fa-solid fa-xmark "></i>
                 </div>
             </div>
         </div>
 
         <!-- Server address -->
-        <el-dialog title="Config server address" :visible.sync="dialogConfig" width="600px">
-            <el-form :model="formConfig" :label-width="formLabelWidth" :label-position="'left'" size="small" :rules="configRules" ref="formConfig">
+        <el-dialog custom-class="app-dialog" title="Config server address" :visible.sync="dialogConfig" :modal="true"
+            append-to-body>
+            <el-form :model="formConfig" :label-width="formLabelWidth" :label-position="'left'" size="small"
+                :rules="configRules" ref="formConfig">
                 <el-form-item label="Domain" prop="domain">
                     <el-input type="text" v-model="formConfig.domain" placeholder="https://domain.com/api/"></el-input>
                 </el-form-item>
             </el-form>
-            <span slot="footer" class="dialog-footer">
-                <el-button size="small" type="danger" @click="dialogConfig = false">Cancel</el-button>
-                <el-button size="small" type="primary" @click="setServerAddr">Save</el-button>
+            <span slot="footer" class="dialog-footer custom-footer">
+                <el-button class="footer-btn" size="small" type="danger"
+                    @click="dialogConfig = false">Cancel</el-button>
+                <el-button class="footer-btn" size="small" type="primary" @click="setServerAddr">Save</el-button>
             </span>
         </el-dialog>
     </div>
@@ -69,7 +67,7 @@
 <script>
 // eslint-disable-next-line
 /* eslint-disable */
-import {mapState} from 'vuex'
+import { mapState } from 'vuex'
 import * as userApi from '@/api/user'
 
 export default {
@@ -86,7 +84,7 @@ export default {
             formConfig: {
                 domain: ''
             },
-            formLabelWidth: '140px',
+            formLabelWidth: '120px',
             configRules: {
                 domain: [
                     {
@@ -96,14 +94,25 @@ export default {
                         trigger: 'change'
                     }
                 ]
-            }
+            },
+            isSearchCollapsed: false
         }
     },
     mounted() {
         this.formConfig.domain = this.serverAddr
+        this.updateSearchState()
+        window.addEventListener('resize', this.updateSearchState)
+    },
+    beforeDestroy() {
+        window.removeEventListener('resize', this.updateSearchState)
     },
     computed: mapState(['user', 'serverAddr']),
     methods: {
+        // updateSearchState() {
+        //     const topbar = document.getElementById('top-windows')
+        //     if (!topbar) return
+        //     this.isSearchCollapsed = topbar.offsetWidth < 900
+        // },
         closeApp() {
             window.electronAPI.closeApp()
         },
@@ -117,13 +126,13 @@ export default {
             switch (command) {
                 case 'log_out':
                     this.$helper.afterLogout()
-                    this.$router.push({path: '/login'})
+                    this.$router.push({ path: '/login' })
                     break
                 case 'update_password':
                     this.dialogChangePw = true
                     break
                 case 'manage_user':
-                    this.$router.push({path: '/manage-user'})
+                    this.$router.push({ path: '/manage-user' })
                     break
                 case 'config':
                     this.dialogConfig = true
@@ -168,68 +177,196 @@ export default {
 
 <style lang="scss" scoped>
 #top-windows {
-    z-index: 10;
-    background-color: #012596;
-    height: inherit;
+    position: relative;
+    height: 48px;
     width: 100%;
-    position: fixed;
-    top: 0;
     display: flex;
-    justify-content: space-between;
     align-items: center;
     -webkit-app-region: drag;
-    box-sizing: border-box;
-    // border-bottom: 1px solid #aeb6bf;
+    transition: background-color 0.25s ease;
 }
 
-#top-windows div {
-    -webkit-app-region: no-drag; /* Cho phép click vào các div con */
+#top-windows.not-logged-in {
+    background-color: transparent;
 }
 
-.close-svg:hover {
-    fill: white;
-    background-color: #ed553b;
-}
-
-.svg {
-    -webkit-app-region: no-drag;
-    padding: 10px 14px;
-    cursor: pointer;
-    fill: #ccc;
+#top-windows.logged-in {
+    background-color: #012596;
 }
 
 .left-bar {
     display: flex;
+    align-items: center;
+    height: 100%;
+    z-index: 2;
+    padding-left: 10px;
+}
+
+.logo-wrapper {
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.topbar-logo {
+    height: 20px;
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.75));
 }
 
 .center-bar {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 100%;
     display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    -webkit-app-region: no-drag;
+}
+
+.search-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 32px;
+    padding: 0 12px;
+    background-color: #ffffff;
+    border-radius: 4px;
+    width: 320px;
+
+    .search-icon {
+        font-size: 14px;
+        color: #666;
+    }
+
+    .topbar-search {
+        flex: 1;
+        min-width: 0;
+        height: 100%;
+        border: none;
+        outline: none;
+        background: transparent;
+        font-size: 13px;
+        color: #333;
+    }
+
+    // &.collapsed {
+    //     width: 40px;
+    //     height: 40px;
+    //     padding: 0;
+    //     justify-content: center;
+    //     background-color: transparent;
+    //     cursor: pointer;
+
+    //     .search-icon {
+    //         font-size: 18px;
+    //         color: #ffffff;
+    //     }
+
+    //     &:hover {
+    //         background-color: rgba(255, 255, 255, 0.1);
+    //         border-radius: 50%;
+    //     }
+    // }
 }
 
 .right-bar {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
     height: 100%;
+    z-index: 2;
+    -webkit-app-region: no-drag;
+    margin-left: auto;
 }
 
-.right-bar > div {
+.right-bar>div {
+    width: 48px;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100%;
-    width: 5vh;
+    font-size: 18px;
+    color: #fff;
 }
 
-.right-bar > div:hover {
-    fill: #fff;
+.right-bar>div:hover {
     background-color: #409eff;
     cursor: pointer;
 }
 
 .close-icon:hover {
-    fill: #fff;
     background-color: red !important;
     cursor: pointer;
+}
+</style>
+
+<style lang="scss" scoped>
+::v-deep(.app-dialog) {
+    box-sizing: border-box;
+}
+
+::v-deep(.app-dialog.el-dialog) {
+    width: 35%;
+    margin-top: 15vh !important;
+    border-radius: 6px;
+    max-height: 90vh;
+    height: auto !important;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+::v-deep(.app-dialog .el-dialog__body) {
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    flex: 1;
+}
+
+::v-deep(.app-dialog .el-dialog__body::-webkit-scrollbar) {
+    width: 0px;
+    height: 0px;
+}
+
+::v-deep(.app-dialog .el-dialog__footer) {
+    padding: 10px 20px;
+    border-top: 1px solid #ebeef5;
+}
+
+::v-deep(.custom-footer) {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+::v-deep(.custom-footer .footer-btn) {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+}
+
+@media (max-width: 1199px) {
+    ::v-deep(.app-dialog.el-dialog) {
+        width: 50%;
+    }
+}
+
+@media (max-width: 767px) {
+    ::v-deep(.app-dialog.el-dialog) {
+        width: 75%;
+    }
+
+    ::v-deep(.custom-footer) {
+        justify-content: center;
+    }
 }
 </style>
