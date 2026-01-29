@@ -43,11 +43,6 @@ export default {
                 this.$refs.mainWindows.serverSwap(this.serverSign);
             })
         }
-    },
-    watch: {
-        $route() {
-            this.syncAuth();
-        }
     }
 }
 </script>
