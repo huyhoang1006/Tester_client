@@ -24,12 +24,12 @@
             <div class="main-content">
                 <div class="mobile-header">
                     <div class="brand-logo">
-                        <img src="@/assets/images/atenergy_key_light.png" class="brand-logo-img" />
+                        <img src="@/assets/images/atenergy_logo_dark.png" class="brand-logo-img" />
                     </div>
                 </div>
                 <div class="login-header">
-                    <h1>Login</h1>
-                    <p>Sign in to continue</p>
+                    <h1>{{ greeting.title }}</h1>
+                    <p class="login-desc">{{ greeting.desc }}</p>
                 </div>
                 <el-form :model="model" :rules="loginRules" ref="form" @submit.native.prevent="login">
                     <div class="form-group">
@@ -162,6 +162,37 @@ export default {
                 return acc
             }, {})
         }
+    },
+    computed: {
+        greeting() {
+            const hour = new Date().getHours()
+
+            if (hour >= 5 && hour < 12) {
+                return {
+                    title: 'Good Morning!',
+                    desc: 'Ready to get started for today?'
+                }
+            }
+
+            if (hour >= 12 && hour < 17) {
+                return {
+                    title: 'Good Afternoon!',
+                    desc: 'Ready to continue where you left off?'
+                }
+            }
+
+            if (hour >= 17 && hour < 22) {
+                return {
+                    title: 'Good Evening!',
+                    desc: 'Ready to review and wrap things up?'
+                }
+            }
+
+            return {
+                title: 'Good Night!',
+                desc: 'Need to check one last thing?'
+            }
+        }
     }
 }
 </script>
@@ -174,61 +205,64 @@ export default {
 }
 
 .login-page {
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Segoe UI', sans-serif;
     height: 100%;
-    background: #D5D8DC;
+    background: url('~@/assets/images/login-background.jpg') no-repeat center center;
+    background-size: cover;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    position: relative
+}
+
+.login-page::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(1, 37, 150, 0.15) 0%, rgba(204, 5, 20, 0.1) 100%);
+    backdrop-filter: blue(3px);
+    z-index: 0;
 }
 
 .app-container {
     width: 900px;
     height: 550px;
-    background: #ffffff;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 25px 50px rgba(1, 37, 150, 0.15);
+    position: relative;
+    z-index: 10;
     display: flex;
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 24px;
+    box-shadow: 0 25px 70px rgba(1, 37, 150, 0.3),
+        0 10px 30px rgba(0, 0, 0, 0.15),
+        inset 0 1px 1px rgba(255, 255, 255, 0.3);
+    overflow: hidden;
 }
 
 .sidebar {
     width: 350px;
-    background: #012596;
+    background: linear-gradient(165deg, rgba(1, 37, 150, 0.85) 0%, rgba(1, 37, 150, 0.92) 100%);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
     padding: 48px 36px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     position: relative;
-    overflow: hidden;
-}
-
-.sidebar::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -50%;
-    width: 400px;
-    height: 400px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 50%;
-}
-
-.sidebar::after {
-    content: '';
-    position: absolute;
-    bottom: -30%;
-    left: -30%;
-    width: 300px;
-    height: 300px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 50%;
+    color: white;
+    box-shadow: 5px 0 20px rgba(0, 0, 0, 0.1);
 }
 
 .brand-section {
     position: relative;
-    z-index: 1;
+    z-index: 2;
 }
 
 .brand-logo {
@@ -242,6 +276,7 @@ export default {
     max-width: 180px;
     height: auto;
     object-fit: contain;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
 }
 
 .sidebar-title {
@@ -266,7 +301,7 @@ export default {
 }
 
 .sidebar-title .asset {
-    color: #cb0514;
+    color: #cc0514;
 }
 
 .feature-list {
@@ -275,11 +310,12 @@ export default {
 }
 
 .feature-list li {
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.95);
     font-size: 14px;
     margin-bottom: 12px;
     padding-left: 24px;
     position: relative;
+    font-weight: 500;
 }
 
 .feature-list li::before {
@@ -287,20 +323,20 @@ export default {
     position: absolute;
     left: 0;
     font-weight: bold;
-    color: #cb0514;
+    color: #cc0514;
 }
 
 .footer-text {
     text-align: center;
     z-index: 1;
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .main-content {
     flex: 1;
-    padding: 48px 52px;
-    background: #ffffff;
+    padding: 48px 50px;
+    background: transparent;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -313,50 +349,73 @@ export default {
 .login-header h1 {
     font-size: 28px;
     font-weight: 700;
-    color: #17202a;
+    color: #ffffff;
     margin-bottom: 8px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
 }
 
 .login-header p {
     font-size: 14px;
-    color: #808080;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0;
+    line-height: 1.5;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.75);
 }
 
 .form-group {
-    margin-bottom: 30px;
+    margin-bottom: 24px;
 }
 
 .form-label {
     display: block;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
-    color: #17202a;
+    color: rgba(255, 255, 255, 0.95);
     margin-bottom: 10px;
+    margin-left: 5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 ::v-deep(.el-input__inner) {
     width: 100%;
     padding: 13px 14px 13px 44px;
-    background: #eaecee;
-    border: 2px solid #d5d8dc;
-    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
     font-size: 14px;
-    color: #17202a;
-    transition: all 0.2s;
+    color: #ffffff;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15),
+        inset 0 1px 1px rgba(255, 255, 255, 0.2);
 }
 
 ::v-deep(.el-input__inner:focus) {
     outline: none;
-    border-color: #012596;
-    background: #ffffff;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(15px);
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    color: #ffffff;
 }
 
 ::v-deep(.el-input__inner::placeholder) {
-    color: #abb2b9;
+    color: rgba(255, 255, 255, 0.6);
+    transition: all 0.3s ease;
 }
 
 ::v-deep(.el-input__prefix) {
-    color: #808b96;
+    color: rgba(255, 255, 255, 0.8);
+    transition: all 0.3s ease;
+}
+
+::v-deep(.el-input__inner:focus::placeholder) {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+::v-deep(.el-input.is-focus .el-input__prefix) {
+    color: rgba(255, 255, 255, 1);
 }
 
 ::v-deep(.el-form-item) {
@@ -366,80 +425,57 @@ export default {
 .checkbox-row {
     display: flex;
     align-items: center;
-    margin: 30px 0px;
-}
-
-::v-deep(.remember-checkbox.el-checkbox) {
-    display: inline-flex;
-    align-items: center;
-}
-
-::v-deep(.remember-checkbox .el-checkbox__input) {
-    display: flex;
-    align-items: center;
+    margin: 25px 0px;
 }
 
 ::v-deep(.remember-checkbox .el-checkbox__inner) {
-    width: 18px;
-    height: 18px;
-    border-radius: 4px;
-    border: 1.5px solid #d5d8dc;
-    background-color: #ffffff;
-    box-sizing: border-box;
-}
-
-::v-deep(.remember-checkbox .el-checkbox__input:hover .el-checkbox__inner) {
-    border-color: #012596;
-}
-
-::v-deep(.remember-checkbox.is-checked .el-checkbox__inner) {
-    background-color: #012596;
-    border-color: #012596;
-}
-
-::v-deep(.remember-checkbox .el-checkbox__inner::after) {
-    left: 5px;
-    top: 1px;
-    width: 4px;
-    height: 8px;
-    border: 2px solid #ffffff;
-    border-top: 0;
-    border-left: 0;
-    transform: rotate(45deg);
+    background-color: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(5px);
+    border-color: rgba(255, 255, 255, 0.5);
 }
 
 ::v-deep(.remember-checkbox .el-checkbox__label) {
-    font-size: 13px;
+    color: rgba(255, 255, 255, 0.95);
     font-weight: 500;
-    color: #17202a;
-    padding-left: 10px;
-    line-height: 18px;
-    display: inline-flex;
-    align-items: center;
+    font-size: 13px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
+::v-deep(.remember-checkbox.is-checked .el-checkbox__inner) {
+    background-color: #1e5bb8;
+    border-color: #1e5bb8;
+}
+
+::v-deep(.remember-checkbox.is-checked .el-checkbox__label) {
+    color: #ffffff;
+}
 
 ::v-deep(.submit-btn.el-button) {
     width: 100%;
     padding: 14px;
-    background: #012596;
+    background: linear-gradient(180deg, #1e5bb8 0%, #0f3d80 100%);
     border: none;
-    border-radius: 8px;
-    font-size: 15px;
+    border-radius: 12px;
+    font-size: 16px;
     font-weight: 600;
     color: white;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
     margin-bottom: 16px;
+    box-shadow: 0 4px 15px rgba(30, 91, 184, 0.4),
+        0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 ::v-deep(.submit-btn.el-button:hover) {
-    background: #011d6e;
-    transform: translateY(-1px);
+    background: linear-gradient(180deg, #2869cc 0%, #1e5bb8 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(30, 91, 184, 0.5),
+        0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
 ::v-deep(.submit-btn.el-button:active) {
     transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(30, 91, 184, 0.4);
 }
 
 .mobile-header {
@@ -459,6 +495,7 @@ export default {
         width: 480px;
         height: auto;
         flex-direction: column;
+        background: rgba(255, 255, 255, 0.15);
     }
 
     .main-content {
@@ -470,7 +507,7 @@ export default {
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        margin-bottom: 50px;
+        margin-bottom: 36px;
     }
 
     .mobile-header .brand-logo {
@@ -481,6 +518,7 @@ export default {
         max-width: 100px;
         height: auto;
         object-fit: contain;
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 1));
     }
 
     .mobile-footer {
@@ -488,7 +526,8 @@ export default {
         margin-bottom: 16px;
         text-align: center;
         font-size: 12px;
-        color: #808080;
+        color: rgba(255, 255, 255, 0.8);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
     .mobile-footer::before {
@@ -496,13 +535,13 @@ export default {
         display: block;
         width: 100%;
         height: 1px;
-        background: #d5d8dc;
+        background: rgba(255, 255, 255, 0.3);
         margin: 16px 0px;
     }
 
     .login-header {
         text-align: center;
-        margin-bottom: 24px;
+        margin-bottom: 36px;
     }
 }
 </style>
