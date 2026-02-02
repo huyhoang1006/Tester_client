@@ -29,6 +29,40 @@ export const getAssetById = async (mrid) => {
     }
 }
 
+// Lấy Asset theo asset_info id
+export const getAssetByAssetInfoId = async (assetInfoId) => {
+    try {
+        return new Promise((resolve, reject) => {
+            // 1. Tìm mrid của Asset dựa trên asset_info
+            db.get(
+                "SELECT mrid FROM asset WHERE asset_info=?",
+                [assetInfoId],
+                async (err, row) => {
+                    if (err) {
+                        console.error(`[DEBUG] SQLite Error in getAssetByAssetInfoId for AssetInfoId: ${assetInfoId}`, err);
+                        return reject({ success: false, err: err, message: 'Find Asset by AssetInfoId failed' });
+                    }
+                    
+                    if (!row) {
+                        return resolve({ success: false, data: null, message: 'Asset not found for this AssetInfo' });
+                    }
+
+                    // 2. Gọi lại getAssetById để lấy full thông tin (Asset + IdentifiedObject)
+                    try {
+                        const result = await getAssetById(row.mrid);
+                        return resolve(result);
+                    } catch (error) {
+                        return reject(error);
+                    }
+                }
+            )
+        })
+    } catch (err) {
+        console.error(`[DEBUG] Unexpected Exception in getAssetByAssetInfoId`, err);
+        return { success: false, err: err, message: 'Get Asset by AssetInfoId failed' };
+    }
+}
+
 // Lấy danh sách asset theo locationId
 export const getAssetByLocationId = async (locationId) => {
     try {

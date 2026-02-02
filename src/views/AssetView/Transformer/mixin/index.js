@@ -86,6 +86,7 @@ export default {
                 if (this.transformerDto.properties.type && this.transformerDto.properties.kind && this.transformerDto.properties.serial_no) {
                     const data = JSON.parse(JSON.stringify(this.transformerDto));
                     const result = this.checkTransformerDto(data);
+                    console.log(result)
                     const oldResult = this.checkTransformerDto(this.oldTransformerDto);
                     const resultEntity = transformerMapping.transformerDtoToEntity(result);
                     const oldResultEntity = transformerMapping.transformerDtoToEntity(oldResult);
@@ -172,6 +173,8 @@ export default {
             this.checkShortCircuitTest(data)
             this.checkZeroImpedance(data)
             this.checkOther(data)
+            this.checkTapChangerId(data)
+            this.checkTapChangerAssetPsr(data)
             return data;
         },
 
@@ -470,6 +473,34 @@ export default {
             }
             if (data.others.total_weight.mrid === null || data.others.total_weight.mrid === '') {
                 data.others.total_weight.mrid = uuid.newUuid()
+            }
+        },
+
+        checkTapChangerId(data) {
+            if(data.tap_changers.mode != '') {
+                if(data.tap_changers.mrid === null || data.tap_changers.mrid === '') {
+                    data.tap_changers.mrid = uuid.newUuid()
+                }
+                if(data.tap_changers.assetId == null || data.tap_changers.assetId === '') {
+                    data.tap_changers.assetId = uuid.newUuid()
+                }
+                if(data.tap_changers.productAssetModelId == null || data.tap_changers.productAssetModelId === '') {
+                    data.tap_changers.productAssetModelId = uuid.newUuid()
+                }
+                if(data.tap_changers.ratioTapchangerTableId == null || data.tap_changers.ratioTapchangerTableId === '') {
+                    data.tap_changers.ratioTapchangerTableId = uuid.newUuid()
+                }
+            }
+        },
+        
+        checkTapChangerAssetPsr(data) {
+            if(data.tap_changers.mode != '') {
+                if(data.tap_changers.assetPsr.mrid === null || data.tap_changers.assetPsr.mrid === '') {
+                    data.tap_changers.assetPsr.mrid = uuid.newUuid()
+                }
+                if(data.tap_changers.assetPsr.psr_id === null || data.tap_changers.assetPsr.psr_id === '') {
+                    data.tap_changers.assetPsr.psr_id = uuid.newUuid()
+                }
             }
         },
 

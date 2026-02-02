@@ -25,9 +25,9 @@ class OthersDto {
             unit: UnitSymbol.kg
         },
         this.winding = {
-            prim: 'copper',
-            sec: 'copper',
-            tert: 'copper'
+            prim: 'Copper',
+            sec: 'Copper',
+            tert: 'Copper'
         }
     }
 }
