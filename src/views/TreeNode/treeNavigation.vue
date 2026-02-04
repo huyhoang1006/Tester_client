@@ -8,177 +8,12 @@
         <div v-show="!clientSlide" class="toolbar">
             <TopBarServer :pathMapServer="pathMapServer" @reset-all="resetAllServer" @path-click="resetPathServer" />
         </div>
-        <div id="toolbar-setting-id" class="toolbar-setting">
-            <div>
-                <el-dropdown ref="addDropdown" @command="handleAddCommand" @visible-change="handleDropdownVisibleChange"
-                    trigger="click">
-                    <span class="icon-wrapper">
-                        <i title="Add" style="font-size: 12px" class="fa-solid fa-square-plus"></i>
-                    </span>
-                    <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item v-if="isCommandAllowed('organisation')" command="organisation">
-                            <icon size="12px" folderType="building" badgeColor="146EBE"></icon> add Organisation
-                        </el-dropdown-item>
-                        <el-dropdown-item v-if="isCommandAllowed('substation')" command="substation">
-                            <icon size="12px" folderType="location" badgeColor="146EBE"></icon> add Substation
-                        </el-dropdown-item>
-                        <el-dropdown-item v-if="isCommandAllowed('voltageLevel')" command="voltageLevel">
-                            <icon size="12px" folderType="voltageLevel" badgeColor="146EBE"></icon> add Voltage Level
-                        </el-dropdown-item>
-                        <el-dropdown-item v-if="isCommandAllowed('bay')" command="bay">
-                            <icon size="12px" folderType="bay" badgeColor="146EBE"></icon> add Bay
-                        </el-dropdown-item>
-                        <el-dropdown-item v-if="isCommandAllowed('asset')" command="asset" class="asset-submenu-parent"
-                            @mouseenter.native="showAssetSub = true" @mouseleave.native="showAssetSub = false">
-                            <icon size="12px" folderType="asset" badgeColor="146EBE"></icon> add Asset
-                            <div class="asset-submenu" v-if="showAssetSub" @click.stop @mouseenter.stop
-                                @mouseleave.stop>
-                                <div class="submenu-item" @click="handleAssetCommand('Transformer')">
-                                    <i class="fa-solid fa-bolt"></i>
-                                    <span>Add Transformer</span>
-                                </div>
-                                <div class="submenu-item" @click="handleAssetCommand('Surge arrester')">
-                                    <i class="fa-solid fa-shield-halved"></i>
-                                    <span>Add Surge arrester</span>
-                                </div>
-                                <div class="submenu-item" @click="handleAssetCommand('Bushing')">
-                                    <i class="fa-solid fa-shield"></i>
-                                    <span>Add Bushing</span>
-                                </div>
-                                <div class="submenu-item" @click="handleAssetCommand('Voltage transformer')">
-                                    <i class="fa-solid fa-bolt-lightning"></i>
-                                    <span>Add VT</span>
-                                </div>
-                                <div class="submenu-item" @click="handleAssetCommand('Disconnector')">
-                                    <i class="fa-solid fa-plug-circle-xmark"></i>
-                                    <span>Add Disconnector</span>
-                                </div>
-                                <div class="submenu-item" @click="handleAssetCommand('Power cable')">
-                                    <i class="fa-solid fa-route"></i>
-                                    <span>Add Power cable</span>
-                                </div>
-                                <div class="submenu-item" @click="handleAssetCommand('Current transformer')">
-                                    <i class="fa-solid fa-ruler"></i>
-                                    <span>Add CT</span>
-                                </div>
-                                <div class="submenu-item" @click="handleAssetCommand('Circuit breaker')">
-                                    <i class="fa-solid fa-plug"></i>
-                                    <span>Add Circuit breaker</span>
-                                </div>
-                                <div class="submenu-item" @click="handleAssetCommand('Rotating machine')">
-                                    <i class="fa-solid fa-group-arrows-rotate"></i>
-                                    <span>Add Rotating machine</span>
-                                </div>
-                                <div class="submenu-item" @click="handleAssetCommand('Capacitor')">
-                                    <i class="fa-solid fa-bolt"></i>
-                                    <span>Add Capacitor</span>
-                                </div>
-                                <div class="submenu-item" @click="handleAssetCommand('Reactor')">
-                                    <i class="fa-solid fa-bolt"></i>
-                                    <span>Add Reactor</span>
-                                </div>
-                            </div>
-                        </el-dropdown-item>
-                        <el-dropdown-item v-if="isCommandAllowed('job')" command="job">
-                            <icon size="12px" folderType="job" badgeColor="146EBE"></icon> add Job
-                        </el-dropdown-item>
-                    </el-dropdown-menu>
-                </el-dropdown>
-            </div>
-            <div>
-                <i @click="handleOpenNode" title="Open" style="font-size: 12px" class="fa-regular fa-folder-open"></i>
-            </div>
-            <div>
-                <i @click="duplicateSelectedNodes" title="Duplicate" style="font-size: 12px"
-                    class="fa-solid fa-clone"></i>
-            </div>
-            <div>
-                <el-dropdown @command="handleImportCommand" trigger="click">
-                    <i title="Import" style="font-size: 12px" class="fa-solid fa-file-import"></i>
-                    <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item class="import-json-parent" @mouseenter.native="showSubImport = 'json'"
-                            @mouseleave.native="showSubImport = null">
-                            <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon>
-                            import from JSON
-                            <div class="import-json-submenu" v-if="showSubImport === 'json'" @click.stop
-                                @mouseenter.stop @mouseleave.stop>
-                                <div class="submenu-item" @click="handleImportCommand('importJSON')">import JSON</div>
-                                <div class="submenu-item" @click="handleImportCommand('importJSONCIM')">import JSON by
-                                    CIM</div>
-                            </div>
-                        </el-dropdown-item>
-                        <el-dropdown-item command="importXML">
-                            <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon>
-                            import from XML
-                        </el-dropdown-item>
-                        <el-dropdown-item command="importExcel">
-                            <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon>
-                            import from Excel
-                        </el-dropdown-item>
-                        <el-dropdown-item command="importWord">
-                            <icon size="12px" fileTypeDetail="word" folderType="fileType" badgeColor="146EBE"></icon>
-                            import from Word
-                        </el-dropdown-item>
-                        <el-dropdown-item command="importPDF">
-                            <icon size="12px" fileTypeDetail="pdf" folderType="fileType" badgeColor="146EBE"></icon>
-                            import from PDF
-                        </el-dropdown-item>
-                    </el-dropdown-menu>
-                </el-dropdown>
-            </div>
-            <div>
-                <el-dropdown @command="handleCommand" trigger="click">
-                    <i title="Export" style="font-size: 12px" class="fa-solid fa-file-export"></i>
-                    <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item class="export-json-parent" @mouseenter.native="showSub = 'json'"
-                            @mouseleave.native="showSub = null">
-                            <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon>
-                            export to JSON
-                            <div class="export-json-submenu" v-if="showSub === 'json'" @click.stop @mouseenter.stop
-                                @mouseleave.stop>
-                                <div class="submenu-item" @click="handleCommand('exportJSON')">export JSON</div>
-                                <div class="submenu-item" @click="handleCommand('exportJSONCIM')">export JSON by CIM
-                                </div>
-                            </div>
-                        </el-dropdown-item>
-                        <el-dropdown-item command="exportXML">
-                            <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon>
-                            export to XML
-                        </el-dropdown-item>
-                        <el-dropdown-item command="exportExcel">
-                            <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon>
-                            export to Excel
-                        </el-dropdown-item>
-                        <el-dropdown-item command="exportWord">
-                            <icon size="12px" fileTypeDetail="word" folderType="fileType" badgeColor="146EBE"></icon>
-                            export to Word
-                        </el-dropdown-item>
-                        <el-dropdown-item command="exportPDF">
-                            <icon size="12px" fileTypeDetail="pdf" folderType="fileType" badgeColor="146EBE"></icon>
-                            export to PDF
-                        </el-dropdown-item>
-                    </el-dropdown-menu>
-                </el-dropdown>
-            </div>
-            <div v-if="clientSlide">
-                <i @click="handleUploadNode" title="Upload" style="font-size: 12px; cursor: pointer;"
-                    class="fa-solid fa-upload"></i>
-            </div>
-            <div v-if="!clientSlide">
-                <i @click="handleDownloadNode" title="Download" style="font-size: 12px"
-                    class="fa-solid fa-download"></i>
-            </div>
-            <div>
-                <i @click="handleDeleteNode" title="Delete" style="font-size: 12px" class="fa-solid fa-trash"></i>
-            </div>
-            <div @click="handleClickFmeca">
-                <i title="Fmeca" style="font-size: 12px" class="fa-solid fa-table"></i>
-            </div>
-            <div>
-                <i @click="handleMoveNode" title="Move" style="font-size: 12px"
-                    class="fa-solid fa-arrows-up-down-left-right"></i>
-            </div>
-        </div>
+        <!-- Tree Toolbar -->
+        <TreeToolbar :clientSlide="clientSlide" @add-command="handleAddCommand"
+            @dropdown-visible-change="handleDropdownVisibleChange" @asset-command="handleAssetCommand"
+            @import-command="handleImportCommand" @export-command="handleCommand" @open-node="handleOpenNode"
+            @duplicate="duplicateSelectedNodes" @upload="handleUploadNode" @download="handleDownloadNode"
+            @delete="handleDeleteNode" @fmeca="handleClickFmeca" @move="handleMoveNode" />
         <!-- Thanh điều hướng có thể kéo rộng/kéo hẹp -->
         <div class="resizable-sidebar">
             <ClientTreePanel ref="clientPanel" v-show="clientSlide" :organisationClientList="organisationClientList"
@@ -533,6 +368,7 @@ import pageAlign from '@/views/PageAlign/pageAlign.vue'
 import spinner from '@/views/Common/Spinner.vue'
 import Tabs from '@/views/Common/Tabs.vue'
 import contextMenu from '@/views/Common/ContextMenu.vue'
+import TreeToolbar from './components/TreeToolbar.vue'
 
 //client
 import TopBarClient from './Client/Topbar/index.vue'
@@ -612,6 +448,7 @@ import ServerTreePanel from './Server/ServerTree/index.vue'
 export default {
     name: 'TreeNavigation',
     components: {
+        TreeToolbar,
         ContextDataClient,
         ServerTreePanel,
         ClientTreePanel,
@@ -682,8 +519,6 @@ export default {
             openExportDialog: false,
             openImportDialog: false,
             signFmeca: false,
-            showSub: null,
-            showSubImport: null,
             parentOrganization: null,
             logDataServer: [],
             logDataClient: [],
@@ -726,7 +561,6 @@ export default {
             pathMapClient: [],
             hideTabContentServer: [],
             hideTabContentClient: [],
-            showAssetSub: false,
             currentTabServer: '',
             isDuplicating: false,
             moveDialogVisible: false,
@@ -1051,13 +885,7 @@ export default {
                     component.resetForm()
                 }
             })
-        },
-
-
-        async handleMoveCancel() {
-            this.moveDialogVisible = false
         }
-
     }
 }
 </script>
@@ -1162,30 +990,6 @@ export default {
     padding-left: 10px;
 }
 
-.toolbar-setting {
-    background-color: white;
-    height: 30px;
-    display: flex;
-    gap: 30px;
-    border-bottom: 1px solid #cccccc;
-    /* Độ dày 2px, màu đen */
-    align-items: center;
-    font-size: 12px;
-    color: #555;
-    font-weight: 600;
-    box-sizing: border-box;
-    width: 100%;
-    padding-left: 10px;
-}
-
-.toolbar-setting div {
-    cursor: pointer;
-}
-
-.el-dropdown-menu__item {
-    font-size: 12px !important;
-    font-family: Arial, sans-serif !important;
-}
 
 .properties {
     width: 25%;
@@ -1304,26 +1108,6 @@ export default {
     visibility: visible;
 }
 
-
-
-
-
-.trapezoid {
-    position: absolute;
-    top: 50%;
-    /* Căn giữa theo chiều dọc */
-    right: 0;
-    /* Đẩy sát mép phải */
-    transform: translateY(-50%);
-    /* Căn giữa theo chiều dọc */
-    width: 1.2vh !important;
-    /* Độ rộng */
-    height: 10vh;
-    /* Độ cao */
-    background: #d9d9d9;
-    clip-path: polygon(100% 0%, 100% 100%, 0% 80%, 0% 20%);
-}
-
 .page-align {
     width: 100%;
     height: 40px;
@@ -1337,54 +1121,6 @@ export default {
     color: black;
     text-decoration: underline;
     cursor: pointer;
-}
-</style>
-
-<style scoped>
-/* Kiểu dáng dropdown */
-.dropdown {
-    width: 35%;
-    margin-right: 10px;
-}
-
-/* Ô input */
-.dropdown-input {
-    width: 100%;
-    padding-right: 80px;
-    cursor: pointer;
-    background-color: #fff;
-    padding: 0 0 0 10px;
-    height: 40px;
-}
-
-/* Style menu dropdown */
-.dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #fff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    padding: 0;
-    margin: 5px 0;
-    list-style: none;
-    display: none;
-    /* Ẩn mặc định */
-    z-index: 10;
-}
-
-/* Style cho từng mục */
-.dropdown-menu li {
-    padding: 10px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-/* Hover làm nổi bật */
-.dropdown-menu li:hover {
-    background-color: #f0f0f0;
 }
 </style>
 
@@ -1407,101 +1143,6 @@ export default {
 
 .break-word {
     word-break: break-word;
-}
-
-.export-json-parent {
-    position: relative;
-}
-
-.export-json-submenu {
-    position: absolute;
-    left: 100%;
-    top: 0;
-    background: #fff;
-    border: 1px solid #e4e7ed;
-    border-radius: 4px;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-    min-width: 170px;
-    z-index: 1000;
-    padding: 1px 0;
-}
-
-.export-json-submenu .submenu-item {
-    padding: 1px 20px;
-    font-size: 12px;
-    cursor: pointer;
-    color: #606266;
-}
-
-.export-json-submenu .submenu-item:hover {
-    background-color: #f5f7fa;
-    color: rgb(51.8, 80.6, 171);
-}
-
-.import-json-parent {
-    position: relative;
-}
-
-.import-json-submenu {
-    position: absolute;
-    left: 100%;
-    top: 0;
-    background: #fff;
-    border: 1px solid #e4e7ed;
-    border-radius: 4px;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-    min-width: 170px;
-    z-index: 1000;
-    padding: 1px 0;
-}
-
-.import-json-submenu .submenu-item {
-    padding: 1px 20px;
-    font-size: 12px;
-    cursor: pointer;
-    color: #606266;
-}
-
-.import-json-submenu .submenu-item:hover {
-    background-color: #f5f7fa;
-    color: rgb(51.8, 80.6, 171);
-}
-
-.asset-submenu-parent {
-    position: relative;
-}
-
-.asset-submenu {
-    position: absolute;
-    left: 100%;
-    top: 0;
-    background: #fff;
-    border: 1px solid #e4e7ed;
-    border-radius: 4px;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-    min-width: 200px;
-    z-index: 1000;
-    padding: 5px 0;
-}
-
-.asset-submenu .submenu-item {
-    padding: 5px 12px;
-    font-size: 12px;
-    cursor: pointer;
-    color: #606266;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.asset-submenu .submenu-item:hover {
-    background-color: #f5f7fa;
-    color: rgb(20, 110, 190);
-}
-
-.asset-submenu .submenu-item span {
-    flex: 1;
 }
 </style>
 
@@ -1560,9 +1201,7 @@ body.duplicating-mode .v-modal {
     transition: none !important;
 }
 
-.move-dialog .el-dialog__body {
-    padding-top: 0;
-}
+
 
 /* Ẩn tất cả backdrop ngay khi duplicate */
 body.duplicating-mode>.v-modal {
@@ -1572,19 +1211,3 @@ body.duplicating-mode>.v-modal {
 }
 </style>
 
-<style>
-.custom-dialog {
-    max-height: 90vh;
-    height: auto !important;
-}
-
-.move-dialog {
-    width: 35% !important;
-}
-
-@media (max-width: 991px) {
-    .move-dialog {
-        width: 50% !important;
-    }
-}
-</style>
