@@ -4,6 +4,7 @@ export const appOptionPreload = () => {
     return {
         minimizeApp : () => ipcRenderer.invoke('minimizeApp'),
         closeApp : () => ipcRenderer.invoke('closeApp'),
-        maximizeApp : () => ipcRenderer.invoke('maximizeApp')
+        maximizeApp : () => ipcRenderer.invoke('maximizeApp'),
+        openFileDialog: (type) => ipcRenderer.invoke('openFileDialog', type)
     }
 }
