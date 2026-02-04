@@ -16,7 +16,7 @@ export default {
     methods: {
         async doubleClickNode(node) {
             await this.showDataClient(node)
-            await this.showPropertiesDataClient(node)
+            // await this.showPropertiesDataClient(node)
         },
         async showDataClient(node) {
             try {

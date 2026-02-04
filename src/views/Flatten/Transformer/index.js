@@ -8,6 +8,7 @@ import AssetPsr from '../AssetPsr'
 import Other from '../Other'
 import ShortCircuitRating from '../ShortCircuitRating'
 import ZeroSequenceImpedance from '../ZeroSequenceImpedance'
+import TapChangerEntity from '../TapChanger';
 class TransformerEntity {
     constructor() {
         this.asset = new Asset
@@ -39,6 +40,9 @@ class TransformerEntity {
         this.activePower = [] // Reference to the active power ratings
         this.zeroSequenceImpedance = new ZeroSequenceImpedance()
         this.zeroSequenceImpedanceTable = [] // Reference to the zero sequence impedance table
+        this.tapChanger = new TapChangerEntity()
+        this.bushing = []
+        this.surgeArrester = []
     }
 }
 export default TransformerEntity

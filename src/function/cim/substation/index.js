@@ -72,7 +72,8 @@ export const getSubstationsInOrganisationForUser = async (organisationId, userId
             const query = `
                 SELECT 
                     s.*, 
-                    io.name AS name
+                    io.name AS name,
+                    io.alias_name AS alias_name
                 FROM substation s
                 JOIN power_system_resource psr ON s.mrid = psr.mrid
                 JOIN organisation_psr opsr ON psr.mrid = opsr.psr_id

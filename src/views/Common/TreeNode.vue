@@ -1,8 +1,7 @@
 <template>
     <li>
         <div style="display: flex; align-items: center; gap: 10px;">
-            <!-- Đã thêm class "arrow-wrapper" vào đây -->
-            <div class="arrow-wrapper" @click="fetchNodeData" v-if="node.mode != 'job'">
+            <div @click.stop="fetchNodeData" v-if="node.mode != 'job'">
                 <i v-if="!node.expanded" class="fa-solid fa-angle-right" style="font-size: 12px; color: #CCCCCC;"></i>
                 <i v-else class="fa-solid fa-angle-down" style="font-size: 12px; color: #CCCCCC;"></i>
             </div>
@@ -88,12 +87,15 @@ export default {
             this.clickTimeout = setTimeout(() => {
                 this.clearSelection();
                 this.updateSelection(this.node);
+                // Chỉ khi click vào thân node mới cập nhật Object Properties
+                this.$emit("show-properties", this.node);
             }, 250); // 250ms là khoảng thời gian nhận biết double click
             document.addEventListener("click", this.onClickOutside);
         },
 
         fetchNodeData(event) {
-            this.$emit("show-properties", this.node);
+            // Chỉ thực hiện expand/collapse và fetch children
+            // KHÔNG cập nhật selectedNode hay show-properties
             if (!this.node.expanded) {
                 this.isLoading = true
                 this.$emit("fetch-children", this.node);

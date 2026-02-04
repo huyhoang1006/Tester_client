@@ -21,6 +21,7 @@ import Volume from "@/views/Cim/Volume"
 import Mass from "@/views/Cim/Mass"
 import { UnitSymbol } from "@/views/Enum/UnitSymbol"
 import { UnitMultiplier } from "@/views/Enum/UnitMultiplier"
+import RatioTapChangerTablePoint from '@/views/Cim/RatioTapChangerTablePoint'
 
 export const transformerDtoToEntity = (dto) => {
     const entity = new TransformerEntity();
@@ -526,6 +527,7 @@ export const transformerDtoToEntity = (dto) => {
     entity.other.insulation_key = dto.others.insulation.key || null;
     entity.other.insulation_volume = dto.others.insulation.volume.mrid || null;
     entity.other.power_transformer_info_id = entity.oldPowerTransformerInfo.mrid || null;
+    entity.other.tank_type = dto.others.tank_type
     const volume = new Volume();
     mappingUnit(volume, dto.others.insulation.volume)
     entity.volume.push(volume);
@@ -540,6 +542,51 @@ export const transformerDtoToEntity = (dto) => {
     mappingUnit(weightMass, dto.others.total_weight)
     entity.mass.push(weightMass);
 
+    entity.tapChanger.asset.mrid = dto.tap_changers.mrid || null
+    entity.tapChanger.asset.serial_number = dto.tap_changers.serial_no || null
+    entity.tapChanger.oldTapChangerInfo.product_asset_model = dto.tap_changers.productAssetModelId || null
+    entity.tapChanger.productAssetModel.manufacturer = dto.tap_changers.manufacturer || null
+    entity.tapChanger.productAssetModel.mrid = dto.tap_changers.productAssetModelId || null
+    entity.tapChanger.asset.asset_info = dto.tap_changers.assetId || null
+    entity.tapChanger.oldTapChangerInfo.mrid = dto.tap_changers.assetId || null
+    entity.tapChanger.oldTapChangerInfo.manufacturer_type = dto.tap_changers.manufacturer_type || null
+    
+    for(const transformer_end_info of entity.oldTransformerEndInfo) {
+        if(transformer_end_info.end_number == 1 && dto.tap_changers.winding == 'Prim') {
+            entity.tapChanger.oldTapChangerInfo.transformer_end_info = transformer_end_info.mrid || null
+            break
+        } else if(transformer_end_info.end_number == 2 && dto.tap_changers.winding == 'Sec') {
+            entity.tapChanger.oldTapChangerInfo.transformer_end_info = transformer_end_info.mrid || null
+            break
+        } else if (transformer_end_info.end_number == 3 && dto.tap_changers.winding == 'Tert') {
+            entity.tapChanger.oldTapChangerInfo.transformer_end_info = transformer_end_info.mrid || null
+            break
+        }
+    }
+    entity.tapChanger.oldTapChangerInfo.tap_scheme = dto.tap_changers.tap_scheme || null
+    entity.tapChanger.oldTapChangerInfo.number_of_tap = dto.tap_changers.no_of_taps || null
+    entity.tapChanger.oldTapChangerInfo.power_transformer_info_id = dto.oldPowerTransformerInfoId || null;
+    entity.tapChanger.assetPsr.asset_id = dto.tap_changers.mrid || null
+    entity.tapChanger.assetPsr.psr_id = dto.tap_changers.assetPsr.psr_id || null
+    entity.tapChanger.assetPsr.mrid = dto.tap_changers.assetPsr.mrid || null
+    entity.tapChanger.ratioTapChanger.mrid = dto.tap_changers.assetPsr.psr_id || null
+    entity.tapChanger.ratioTapChanger.ratio_tap_changer_table = dto.tap_changers.ratioTapchangerTableId || null
+    if(dto.tap_changers.mode == 'oltc') {
+        entity.tapChanger.ratioTapChanger.control_enabled = true
+        entity.tapChanger.ratioTapChanger.ltc_flag = true
+    } else {
+        entity.tapChanger.ratioTapChanger.control_enabled = null
+        entity.tapChanger.ratioTapChanger.ltc_flag = null
+    }
+    entity.tapChanger.ratioTapChangerTable.mrid = dto.tap_changers.ratioTapchangerTableId || null
+    for(const point of dto.tap_changers.voltage_table) {
+        const ratioTapChangerTablePoint = new RatioTapChangerTablePoint()
+        ratioTapChangerTablePoint.mrid = point.id
+        ratioTapChangerTablePoint.step = point.tap
+        ratioTapChangerTablePoint.ratio = point.voltage
+        ratioTapChangerTablePoint.ratio_tap_changer_table = dto.tap_changers.ratioTapchangerTableId
+        entity.tapChanger.ratioTapChangerTablePoint.push(ratioTapChangerTablePoint)
+    }
     return entity
     
 }
@@ -937,6 +984,46 @@ export const transformerEntityToDto = (entity) => {
             }
         }
     }
+
+    dto.others.category = entity.other.category || ''
+    dto.others.tank_type = entity.other.tank_type || ''
+    dto.others.status = entity.asset.in_use_state || ''
+    dto.others.insulation_medium = entity.other.insulation_medium
+    dto.others.insulation.key = entity.other.insulation_key
+    dto.others.insulation.volume.mrid = entity.other.insulation_volume
+    for(const volume of entity.volume) {
+        if(volume.mrid == entity.other.insulation_medium) {
+            dto.others.insulation.volume.value = volume.value || ''
+        }
+    }
+
+    dto.others.insulation.weight.mrid = entity.other.insulation_weight
+    for(const mass of entity.mass) {
+        if(mass.mrid == entity.other.insulation_weight) {
+            dto.others.insulation.weight.value = mass.value || ''
+        }
+    }
+
+    dto.others.total_weight.mrid = entity.productAssetModel.weight_total
+    for(const mass of entity.mass) {
+        if(mass.mrid == entity.productAssetModel.weight_total) {
+            dto.others.total_weight.value = mass.value || ''
+        }
+    }
+
+    for(const oldTransformerEndInfoData of entity.oldTransformerEndInfo) {
+        if(oldTransformerEndInfoData.end_number == 1) {
+            dto.others.winding.prim = oldTransformerEndInfoData.material
+        } else if(oldTransformerEndInfoData.end_number == 2) {
+            dto.others.winding.sec = oldTransformerEndInfoData.material
+        } else if(oldTransformerEndInfoData.end_number == 3) {
+            dto.others.winding.tert = oldTransformerEndInfoData.material
+        }
+    }
+
+    dto.tap_changers.assetId = entity.tapChanger.asset.mrid || ''
+    dto.tap_changers.serial_no = entity.tapChanger.asset.serial_number || ''
+    dto.tap_changers.productAssetModelId = entity.tapChanger.oldTapChangerInfo.product_asset_model || ''
 
     return dto;
 }
