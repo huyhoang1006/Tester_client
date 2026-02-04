@@ -1,10 +1,12 @@
 <template>
     <li>
         <div style="display: flex; align-items: center; gap: 10px;">
-            <div @click="fetchNodeData" v-if="node.mode != 'job'">
+            <!-- Đã thêm class "arrow-wrapper" vào đây -->
+            <div class="arrow-wrapper" @click="fetchNodeData" v-if="node.mode != 'job'">
                 <i v-if="!node.expanded" class="fa-solid fa-angle-right" style="font-size: 12px; color: #CCCCCC;"></i>
                 <i v-else class="fa-solid fa-angle-down" style="font-size: 12px; color: #CCCCCC;"></i>
             </div>
+            
             <span @contextmenu.prevent="openContextMenu($event, node)" :class="{ selected: selectedNodes.some(n => n.mrid === node.mrid) }" class="folder" @click="toggle" @dblclick="doubleToggle">
                 <div v-if="node.mode == 'substation'" class="icon-wrapper">
                     <icon size="16px" folderType="location" badgeColor="146EBE"></icon>
@@ -127,6 +129,27 @@ export default {
 </script>
 
 <style scoped>
+/* --- Style mới cho nút mũi tên --- */
+.arrow-wrapper {
+    width: 24px;       /* Tăng vùng bấm lên 24px */
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.arrow-wrapper:hover {
+    background-color: #e6e6e6; /* Màu nền xám nhạt khi hover */
+}
+
+.arrow-wrapper:hover i {
+    color: #555 !important; /* Đổi màu icon đậm hơn khi hover */
+}
+/* -------------------------------- */
+
 .folder {
     display: block;
     padding: 5px;
@@ -134,6 +157,8 @@ export default {
     overflow: hidden; /* Ẩn phần văn bản vượt quá kích thước */
     text-overflow: ellipsis; /* Hiển thị dấu ... khi văn bản quá dài */
     font-size: 12px; /* Cỡ chữ cho thư mục và tệp */
+    cursor: pointer;
+    border-radius: 4px;
 }
 
 .folder:hover {

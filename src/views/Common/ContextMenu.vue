@@ -43,6 +43,9 @@
                 <li @click="addJob" v-if="this.selectedNode && this.selectedNode.mode == 'asset'">
                     <i class="fa-solid fa-plus"></i> Add job
                 </li>
+                <li v-if="this.selectedNode && this.selectedNode.mode == 'substation'" @click="showZeroDiagram">
+                    <i class="fa-solid fa-project-diagram"></i> Zero diagram
+                </li>
                 <li @click="show">
                     <i class="fa-solid fa-eye"></i> Show
                 </li>
@@ -286,6 +289,10 @@ export default {
             this.$emit("import-pdf", this.selectedNode)
             this.closeContextMenu()
         },
+        showZeroDiagram() {
+        this.$emit("show-zero-diagram", this.selectedNode)
+        this.closeContextMenu()
+    },
     }
 };
 </script>
