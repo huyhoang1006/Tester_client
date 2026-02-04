@@ -20,3 +20,5 @@ export { default as ImportDialog } from './ImportDialog.vue'
 export { default as FmecaDialog } from './FmecaDialog.vue'
 export { default as MoveDialog } from './MoveDialog.vue'
 export { default as DownloadDialog } from './DownloadDialog.vue'
+// Thêm dòng này vào cuối file
+export { default as ZeroDiagramDialog } from './ZeroDiagramDialog.vue'

@@ -2,7 +2,7 @@
     <div ref="sidebarServer" class="sidebar">
         <div class="title-temp">
             <div ref="tabContainer" class="tab-container">
-                <div ref="ownerRootServer" @click="$emit('showOwnerServerRoot')" class="tab">Owner</div>
+                <div ref="ownerRootServer" @click="$emit('showOwnerServerRoot')" class="tab">Organisation</div>
             </div>
         </div>
 
