@@ -8,7 +8,6 @@ class SurgeArrester extends Asset {
         this.apparatus_id = null;
         this.asset_system_code = null;
         this.phases = null;
-        this.transformer_end_info_id = null;
     }
 }
 

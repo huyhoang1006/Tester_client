@@ -22,6 +22,10 @@ import Mass from "@/views/Cim/Mass"
 import { UnitSymbol } from "@/views/Enum/UnitSymbol"
 import { UnitMultiplier } from "@/views/Enum/UnitMultiplier"
 import RatioTapChangerTablePoint from '@/views/Cim/RatioTapChangerTablePoint'
+import BushingAssetEntity from "@/views/Flatten/Bushing"
+import SurgeArresterEntity from '@/views/Flatten/SurgeArrester'
+import Capacitance from "@/views/Cim/Capacitance"
+import OldSurgeArresterInfo from "@/views/Cim/OldSurgeArresterInfo"
 
 export const transformerDtoToEntity = (dto) => {
     const entity = new TransformerEntity();
@@ -544,6 +548,7 @@ export const transformerDtoToEntity = (dto) => {
 
     entity.tapChanger.asset.mrid = dto.tap_changers.mrid || null
     entity.tapChanger.asset.serial_number = dto.tap_changers.serial_no || null
+    entity.tapChanger.asset.kind = 'Tap changer'
     entity.tapChanger.oldTapChangerInfo.product_asset_model = dto.tap_changers.productAssetModelId || null
     entity.tapChanger.productAssetModel.manufacturer = dto.tap_changers.manufacturer || null
     entity.tapChanger.productAssetModel.mrid = dto.tap_changers.productAssetModelId || null
@@ -587,6 +592,129 @@ export const transformerDtoToEntity = (dto) => {
         ratioTapChangerTablePoint.ratio_tap_changer_table = dto.tap_changers.ratioTapchangerTableId
         entity.tapChanger.ratioTapChangerTablePoint.push(ratioTapChangerTablePoint)
     }
+
+    const winding = ['prim', 'sec', 'tert']
+    for(const winding_data of winding) {
+        for(const bushing of dto.bushing_data[winding_data]) {
+            const bushingAsset = new BushingAssetEntity()
+            bushingAsset.bushing.mrid = bushing.mrid || null
+            bushingAsset.bushing.kind = 'Bushing'
+            bushingAsset.bushing.asset_info = bushing.assetInfoId || null
+            bushingAsset.bushing.type = bushing.asset_type || null
+            bushingAsset.bushing.product_asset_model = bushing.productAssetModelId || null
+            bushingAsset.oldBushingInfo.mrid = bushing.assetInfoId || null
+            bushingAsset.oldBushingInfo.manufacturer_type = bushing.manufacturer_type || null
+            bushingAsset.oldBushingInfo.product_asset_model = bushing.productAssetModelId || null
+            bushingAsset.oldBushingInfo.insulation_kind = bushing.insulation_type || null
+            bushingAsset.bushing.serial_number = bushing.serial_no || null
+            bushingAsset.productAssetModel.mrid = bushing.productAssetModelId || null
+            bushingAsset.productAssetModel.manufacturer = bushing.manufacturer || null
+            bushingAsset.bushing.lifecycle_date = bushing.lifecycleDateId || null
+            bushingAsset.lifecycleDate.mrid = bushing.lifecycleDateId || null
+            bushingAsset.lifecycleDate.manufactured_date = bushing.manufacturer_year || null
+
+            bushingAsset.oldBushingInfo.c_capacitance = bushing.cap_c1.mrid || null
+            const capC1 = new Capacitance();
+            mappingUnit(capC1, bushing.cap_c1)
+            bushingAsset.capacitance.push(capC1)
+
+            bushingAsset.oldBushingInfo.c2_capacitance = bushing.cap_c2.mrid || null
+            const capC2 = new Capacitance()
+            mappingUnit(capC2, bushing.cap_c2)
+            bushingAsset.capacitance.push(capC2)
+
+            bushingAsset.oldBushingInfo.c_power_factor = bushing.df_c1.mrid || null
+            const dfC1 = new Percent();
+            mappingUnit(dfC1, bushing.df_c1)
+            bushingAsset.percent.push(dfC1)
+
+            bushingAsset.oldBushingInfo.c2_power_factor = bushing.df_c2.mrid || null
+            const dfC2 = new Percent();
+            mappingUnit(dfC2, bushing.df_c2)
+            bushingAsset.percent.push(dfC2)
+
+            bushingAsset.oldBushingInfo.rated_impulse_withstand_voltage = bushing.insulation_level.mrid || null
+            const voltage = new Voltage()
+            mappingUnit(voltage, bushing.insulation_level)
+            bushingAsset.voltage.push(voltage)
+            
+            bushingAsset.oldBushingInfo.high_voltage_limit = bushing.max_system_voltage.mrid || null
+            const highVoLlimit = new Voltage();
+            mappingUnit(highVoLlimit, bushing.max_system_voltage)
+            bushingAsset.voltage.push(highVoLlimit)
+
+            bushingAsset.oldBushingInfo.rated_current = bushing.rate_current.mrid || null
+            const currentFlow = new CurrentFlow();
+            mappingUnit(currentFlow, bushing.rate_current)
+            bushingAsset.currentFlow.push(currentFlow)
+
+            bushingAsset.oldBushingInfo.rated_line_to_ground_voltage = bushing.voltage_l_ground.mrid || null
+            const voltageVolGround = new Voltage();
+            mappingUnit(voltageVolGround, bushing.voltage_l_ground)
+            bushingAsset.voltage.push(voltageVolGround)
+
+            bushingAsset.oldBushingInfo.phase = bushing.pos
+            for(const transformer_end_info of entity.oldTransformerEndInfo) {
+                if(transformer_end_info.end_number == 1 && winding_data == 'prim') {
+                    bushingAsset.oldBushingInfo.transformer_end_info = transformer_end_info.mrid
+                    break
+                } else if(transformer_end_info.end_number == 2 && winding_data == 'sec') {
+                    bushingAsset.oldBushingInfo.transformer_end_info = transformer_end_info.mrid
+                    break
+                } else if(transformer_end_info.end_number == 3 && winding_data == 'tert') {
+                    bushingAsset.oldBushingInfo.transformer_end_info = transformer_end_info.mrid
+                    break
+                }
+            }
+
+            entity.bushing.push(bushingAsset)
+        }
+    }
+
+    for(const winding_data of winding) {
+        for(const surge of dto.surge_arrester[winding_data]) {
+            if(surge.sign == true) {
+                const surgeArresterAsset = new SurgeArresterEntity()
+                surgeArresterAsset.surgeArrester.mrid = surge.properties.mrid || null
+                surgeArresterAsset.surgeArrester.serial_number = surge.properties.serial_no || null
+                surgeArresterAsset.surgeArrester.alias_name = surge.properties.asset_system_code || null
+                surgeArresterAsset.surgeArrester.asset_info = surge.properties.assetInfoId || null
+                surgeArresterAsset.surgeArrester.product_asset_model = surge.properties.productAssetModelId || null
+                surgeArresterAsset.surgeArrester.kind = 'Surge arrester'
+                surgeArresterAsset.productAssetModel.mrid = surge.properties.productAssetModelId || null
+                surgeArresterAsset.productAssetModel.manufacturer = surge.properties.manufacturer || null
+                surgeArresterAsset.surgeArrester.lifecycle_date = surge.properties.lifecycleDateId || null
+                surgeArresterAsset.lifecycleDate.mrid = surge.properties.lifecycleDateId || null
+                surgeArresterAsset.lifecycleDate.manufactured_date = surge.properties.manufacturer_year || null
+                surgeArresterAsset.surgeArrester.unit_count = surge.ratings.unit || null
+                for(const surgeInfo of surge.ratings.table) {
+                    const oldSurgeArresterInfo = new OldSurgeArresterInfo()
+                    oldSurgeArresterInfo.mrid = surgeInfo.mrid || null
+                    oldSurgeArresterInfo.serial_number = surgeInfo.serial_no || null
+
+                    oldSurgeArresterInfo.voltage_ll = surgeInfo.voltageLl.mrid || null
+                    const voltageLl = new Voltage();
+                    mappingUnit(voltageLl, surgeInfo.voltageLl)
+                    surgeArresterAsset.voltage.push(voltageLl)
+
+                    oldSurgeArresterInfo.voltage_ln = surgeInfo.voltageLn.mrid || null
+                    const voltageLn = new Voltage();
+                    mappingUnit(voltageLn, surgeInfo.voltageLn)
+                    surgeArresterAsset.voltage.push(voltageLn)
+
+                    oldSurgeArresterInfo.continuous_operating_voltage = surgeInfo.mcovRating.mrid || null
+                    const voltage = new Voltage();
+                    mappingUnit(voltage, surgeInfo.mcovRatingData)
+                    surgeArresterAsset.voltage.push(voltage)
+
+                    surgeArresterAsset.oldSurgeArresterInfo.push(oldSurgeArresterInfo)
+                }
+
+                entity.surgeArrester.push(surgeArresterAsset)
+            }
+        }
+    }
+
     return entity
     
 }
@@ -1024,7 +1152,193 @@ export const transformerEntityToDto = (entity) => {
     dto.tap_changers.assetId = entity.tapChanger.asset.mrid || ''
     dto.tap_changers.serial_no = entity.tapChanger.asset.serial_number || ''
     dto.tap_changers.productAssetModelId = entity.tapChanger.oldTapChangerInfo.product_asset_model || ''
+    dto.tap_changers.manufacturer = entity.tapChanger.productAssetModel.manufacturer || ''
+    dto.tap_changers.assetId = entity.tapChanger.oldTapChangerInfo.mrid || ''
+    dto.tap_changers.manufacturer_type = entity.tapChanger.oldTapChangerInfo.manufacturer_type || ''
+    for(const transformer_end_info of entity.oldTransformerEndInfo) {
+        if(transformer_end_info.mrid == entity.tapChanger.oldTapChangerInfo.transformer_end_info) {
+            if(transformer_end_info.end_number == 1) {
+                dto.tap_changers.winding = 'Prim'
+            } else if(transformer_end_info.end_number == 2) {
+                dto.tap_changers.winding = 'Sec'
+            } else if(transformer_end_info.end_number == 3) {
+                dto.tap_changers.winding = 'Tert'
+            }
+            break
+        }
+    }
+    dto.tap_changers.tap_scheme = entity.tapChanger.oldTapChangerInfo.tap_scheme || ''
+    dto.tap_changers.no_of_taps = entity.tapChanger.oldTapChangerInfo.number_of_tap || ''
+    dto.tap_changers.mrid = entity.tapChanger.assetPsr.asset_id || ''
+    dto.tap_changers.assetPsr.psr_id = entity.tapChanger.assetPsr.psr_id || ''
+    dto.tap_changers.assetPsr.mrid = entity.tapChanger.assetPsr.mrid || ''
+    dto.tap_changers.ratioTapchangerTableId = entity.tapChanger.ratioTapChanger.ratio_tap_changer_table || ''
+    if(entity.tapChanger.ratioTapChanger.control_enabled == true && entity.tapChanger.ratioTapChanger.ltc_flag == true) {
+        dto.tap_changers.mode = 'oltc'
+    } else {
+        dto.tap_changers.mode = 'detc'
+    }
+    for(const t of entity.tapChanger.ratioTapChangerTablePoint) {
+        const point = {
+            id : '',
+            tap : '',
+            voltage : ''
+        }
+        point.id = t.mrid
+        point.tap = t.step
+        point.voltage = t.ratio
+        dto.tap_changers.voltage_table.push(point)
+    }
 
+    for(const transformer_end_info of entity.oldTransformerEndInfo) {
+        for(const bushing of entity.bushing) {
+            if(bushing.oldBushingInfo.transformer_end_info == transformer_end_info.mrid) {
+                const bushingTemplate = {
+                    mrid:'',
+                    assetInfoId : '',
+                    productAssetModelId : '',
+                    lifecycleDateId : '',
+                    pos: '',
+                    asset_type: '',
+                    serial_no: '',
+                    manufacturer: '',
+                    manufacturer_type: '',
+                    manufacturer_year: '',
+                    insulation_level: {
+                        mrid : '',
+                        value: '',
+                        label: 'kV',
+                        unit: 'k|V'
+                    },
+                    voltage_l_ground: {
+                        mrid : '',
+                        value: '',
+                        label: 'kV',
+                        unit: 'k|V'
+                    },
+                    max_system_voltage: {
+                        mrid: '',
+                        value: '',
+                        label: 'kV',
+                        unit: 'k|V'
+                    },
+                    rate_current: {
+                        mrid: '',
+                        value: '',
+                        label: 'A',
+                        unit: 'A'
+                    },
+                    df_c1: {
+                        mrid: '',
+                        value: '',
+                        label: '%',
+                        unit: '%'
+                    },
+                    cap_c1: {
+                        mrid: '',
+                        value: '',
+                        label: 'pF',
+                        unit: 'p|F'
+                    },
+                    df_c2: {
+                        mrid: '',
+                        value: '',
+                        label: '%',
+                        unit: '%'
+                    },
+                    cap_c2: {
+                        mrid: '',
+                        value: '',
+                        label: 'pF',
+                        unit: 'p|F'
+                    },
+                    insulation_type: ''
+                }
+                bushingTemplate.mrid = bushing.bushing.mrid || ''
+                bushingTemplate.assetInfoId = bushing.oldBushingInfo.mrid || ''
+                bushingTemplate.productAssetModelId = bushing.productAssetModel.mrid || ''
+                bushingTemplate.lifecycleDateId = bushing.bushing.lifecycle_date || ''
+                bushingTemplate.pos = bushing.oldBushingInfo.phase || ''
+                bushingTemplate.asset_type = bushing.bushing.type || ''
+                bushingTemplate.serial_no = bushing.bushing.serial_number || ''
+                bushingTemplate.manufacturer = bushing.productAssetModel.manufacturer || ''
+                bushingTemplate.manufacturer_type = bushing.oldBushingInfo.manufacturer_type || ''
+                bushingTemplate.manufacturer_year = bushing.lifecycleDate.manufactured_date || ''
+
+                bushingTemplate.insulation_level.mrid = bushing.oldBushingInfo.rated_impulse_withstand_voltage || ''
+                for(const voltage of bushing.voltage) {
+                    if(voltage.mrid == bushingTemplate.insulation_level.mrid) {
+                        bushingTemplate.insulation_level.value = voltage.value
+                    }
+                }
+
+                bushingTemplate.voltage_l_ground.mrid = bushing.oldBushingInfo.rated_line_to_ground_voltage || ''
+                for(const voltage of bushing.voltage) {
+                    if(voltage.mrid == bushingTemplate.voltage_l_ground.mrid) {
+                        bushingTemplate.voltage_l_ground.value = voltage.value
+                    }
+                }
+
+                bushingTemplate.max_system_voltage.mrid = bushing.oldBushingInfo.high_voltage_limit || ''
+                for(const voltage of bushing.voltage) {
+                    if(voltage.mrid == bushingTemplate.max_system_voltage.mrid) {
+                        bushingTemplate.max_system_voltage.value = voltage.value
+                    }
+                }
+
+                bushingTemplate.rate_current.mrid = bushing.oldBushingInfo.rated_current || ''
+                for(const currentFlow of bushing.currentFlow) {
+                    if(currentFlow.mrid == bushingTemplate.rate_current.mrid) {
+                        bushingTemplate.rate_current.value = currentFlow.value
+                    }
+                }
+
+                bushingTemplate.df_c1.mrid = bushing.oldBushingInfo.c_power_factor || ''
+                for(const percent of bushing.percent) {
+                    if(percent.mrid == bushingTemplate.df_c1.mrid) {
+                        bushingTemplate.df_c1.value = percent.value
+                    }
+                }
+
+                bushingTemplate.df_c1.mrid = bushing.oldBushingInfo.c_power_factor || ''
+                for(const percent of bushing.percent) {
+                    if(percent.mrid == bushingTemplate.df_c1.mrid) {
+                        bushingTemplate.df_c1.value = percent.value
+                    }
+                }
+
+                bushingTemplate.df_c2.mrid = bushing.oldBushingInfo.c2_power_factor || ''
+                for(const percent of bushing.percent) {
+                    if(percent.mrid == bushingTemplate.df_c2.mrid) {
+                        bushingTemplate.df_c2.value = percent.value
+                    }
+                }
+
+                bushingTemplate.cap_c1.mrid = bushing.oldBushingInfo.c_capacitance || ''
+                for(const capacitance of bushing.capacitance) {
+                    if(capacitance.mrid == bushingTemplate.cap_c1.mrid) {
+                        bushingTemplate.cap_c1.value = capacitance.value
+                    }
+                }
+
+                bushingTemplate.cap_c2.mrid = bushing.oldBushingInfo.c2_capacitance || ''
+                for(const capacitance of bushing.capacitance) {
+                    if(capacitance.mrid == bushingTemplate.cap_c2.mrid) {
+                        bushingTemplate.cap_c2.value = capacitance.value
+                    }
+                }
+
+                bushingTemplate.insulation_type = bushing.oldBushingInfo.insulation_kind || ''
+                if(transformer_end_info.end_number == 1) {
+                    dto.bushing_data.prim.push(bushingTemplate)
+                } else if(transformer_end_info.end_number == 2) {
+                    dto.bushing_data.sec.push(bushingTemplate)
+                } else if(transformer_end_info.end_number == 3) {
+                    dto.bushing_data.tert.push(bushingTemplate)
+                }
+            }
+        }
+    }
     return dto;
 }
 

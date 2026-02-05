@@ -32,7 +32,9 @@ import {insertOldTapChangerInfoTransaction, getOldTapChangerInfoByPowerTransform
 import {insertRatioTapChangerTransaction, getRatioTapChangerByAssetId} from '@/function/cim/ratioTapChanger'
 import {getRatioTapChangerTableById, insertRatioTapChangerTableTransaction} from '@/function/cim/ratioTapChangerTable'
 import {getListByRatioTapChangerTableId, insertRatioTapChangerTablePointTransaction, deleteRatioTapChangerTablePointTransaction} from '@/function/cim/ratioTapChangerTablePoint'
+import {getOldBushingInfoByTransformerEndInfoIds} from '@/function/cim/oldBushingInfo'
 import TransformerEntity from '@/views/Flatten/Transformer/index';
+import * as bushingFunc from '../Bushing/index'
 
 // Helper to check if a value is used in a column of a table
 const isUsedInTable = async (table, column, id, db) => {
@@ -197,6 +199,10 @@ export const insertTransformerEntity = async (old_entity,entity) => {
                 }
             }
 
+            for(const bushing of entity.bushing) {
+                await bushingFunc.insertBushingEntityLiteTransaction(bushing, db)
+            }
+
             for(const tableType of [...tableTypes].reverse()) {
                 for(const t of toDeleteTable[tableType]) {
                     await deleteTable(tableType, t.mrid, db);
@@ -223,7 +229,6 @@ export const insertTransformerEntity = async (old_entity,entity) => {
 }
 
 export const getTransformerEntityById = async (id, psrId) => {
-    console.log("A")
     try {
         if(id == null || id === '') {
             return { success: false, error: new Error('Invalid ID') };
@@ -346,7 +351,7 @@ export const getTransformerEntityById = async (id, psrId) => {
                     }
                 }
 
-                const dataOldTapChangerInfo = await getOldTapChangerInfoByPowerTransformerInfoId(dataOldTransformerInfo.mrid)
+                const dataOldTapChangerInfo = await getOldTapChangerInfoByPowerTransformerInfoId(entity.oldPowerTransformerInfo.mrid)
                 if(dataOldTapChangerInfo.success) {
                     entity.tapChanger.oldTapChangerInfo = dataOldTapChangerInfo.data
                 }
@@ -379,6 +384,21 @@ export const getTransformerEntityById = async (id, psrId) => {
                 const dataRatioTapChangerTablePoint = await getListByRatioTapChangerTableId(entity.tapChanger.ratioTapChangerTable.mrid)
                 if(dataRatioTapChangerTablePoint.success) {
                     entity.tapChanger.ratioTapChangerTablePoint = dataRatioTapChangerTablePoint.data
+                }
+
+                const idsTransformerEndInfo = entity.oldTransformerEndInfo.map(x => x.mrid)
+                const dataMridOldBushingInfo = await getOldBushingInfoByTransformerEndInfoIds(idsTransformerEndInfo)
+                if(dataMridOldBushingInfo.success) {
+                    const dataMridOldBushingInfoIds = dataMridOldBushingInfo.data
+                    for(const dataMridOldBushingInfoId of dataMridOldBushingInfoIds) {
+                        const dataMridBushing = await getAssetByAssetInfoId(dataMridOldBushingInfoId.mrid)
+                        if(dataMridBushing.success) {
+                            const dataBushing = await bushingFunc.getBushingEntityLiteById(dataMridBushing.data.mrid)
+                            if(dataBushing.success) {
+                                entity.bushing.push(dataBushing.data)
+                            }
+                        }
+                    }
                 }
 
                 const dataFrequency = await getFrequencyByIds(frequencyIds);

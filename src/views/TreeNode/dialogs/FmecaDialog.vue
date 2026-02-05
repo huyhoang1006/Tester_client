@@ -61,100 +61,13 @@ export default {
 }
 </script>
 
-<style scoped>
-
-.app-dialog {
-    box-sizing: border-box;
-}
-
-.app-dialog.el-dialog {
-    width: 65%;
-    margin-top: 5vh !important;
-    border-radius: 6px;
-    height: 90vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.app-dialog .el-dialog__body {
-    overflow-y: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    flex: 1;
-}
-
-.app-dialog .el-dialog__body::-webkit-scrollbar {
-    display: none;
-    width: 0px;
-    height: 0px;
-}
-
-.app-dialog .el-dialog__footer {
-    flex-shrink: 0;
-    padding: 10px 20px;
-    border-top: 1px solid #ebeef5;
-}
-
-.custom-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-}
-
-.custom-footer .footer-btn {
-    display: flex;
-    flex: 1;
-    justify-content: center;
-    align-items: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    min-width: 80px;
-    max-width: 100px;
-    height: 32px;
-    font-size: 12px;
-    border-radius: 4px;
-    transition: all 0.3s ease;
-}
-
-.custom-footer .footer-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-@media (max-width: 767px) {
-    .app-dialog.el-dialog {
-        width: 95%;
-        margin: 2vh auto;
-    }
-    
-    .custom-footer {
-        justify-content: center;
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .custom-footer .footer-btn {
-        max-width: none;
-        width: 100%;
-    }
-}
-
-@media (max-width: 480px) {
-    .app-dialog .el-dialog__footer {
-        padding: 8px 16px;
-    }
-}
-
-</style>
 <style lang="scss" scoped>
 ::v-deep(.app-dialog) {
     box-sizing: border-box;
 }
 
 ::v-deep(.app-dialog.el-dialog) {
-    width: 50%;
+    width: 75%;
     margin-top: 5vh !important;
     border-radius: 6px;
     max-height: 90vh;

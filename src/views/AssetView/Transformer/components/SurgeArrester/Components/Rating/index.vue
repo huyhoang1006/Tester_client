@@ -36,21 +36,21 @@
                             </el-input>
                         </td>
                         <td>
-                            <el-input size="mini" v-model="item.voltageLl">
+                            <el-input size="mini" v-model="item.voltageLl.value">
                                 <template #append>
                                     <span>{{ unitMultiplier.k + unitSymbol.V }}</span>
                                 </template>
                             </el-input>
                         </td>
                         <td>
-                            <el-input size="mini" v-model="item.voltageLn">
+                            <el-input size="mini" v-model="item.voltageLn.value">
                                 <template #append>
                                     <span>{{ unitMultiplier.k + unitSymbol.V }}</span>
                                 </template>
                             </el-input>
                         </td>
                         <td>
-                            <el-input size="mini" v-model="item.mcovRating">
+                            <el-input size="mini" v-model="item.mcovRating.value">
                                 <template #append>
                                     <span>{{ unitMultiplier.k + unitSymbol.V }}</span>
                                 </template>
@@ -93,6 +93,7 @@ export default {
             if (this.ratingsData.table.length === 0) {
                 for (let i = 0; i < value; i++) {
                     this.ratingsData.table.push({
+                        mrid : '',
                         position: i + 1,
                         serial: '',
                         voltageLl: {
@@ -105,13 +106,18 @@ export default {
                             value: '',
                             unit: UnitMultiplier.k + '|' + UnitSymbol.V,
                         },
-                        mcovRating: ''
+                        mcovRating: {
+                            mrid: '',
+                            value: '',
+                            unit: UnitMultiplier.k + '|' + UnitSymbol.V,
+                        }
                     });
                 }
             } else {
                 if (this.ratingsData.table.length < value) {
                     for (let i = this.ratingsData.table.length; i < value; i++) {
                         this.ratingsData.table.push({
+                            mrid : '',
                             position: i + 1,
                             serial: '',
                             voltageLl: {
