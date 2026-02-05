@@ -1,5 +1,5 @@
 <template>
-    <div id="login" class="login-page">
+    <div id="login" class="login-page" :style="{ backgroundImage: `url(${bgImage})` }">
         <div class="app-container">
             <div class="sidebar">
                 <div class="brand-section">
@@ -68,6 +68,7 @@ export default {
     name: 'LoginView',
     data() {
         return {
+            bgImage: require('@/assets/images/login-background.jpg'),
             formLabelWidth: '140px',
             model: {
                 // Tài khoản test mặc định
@@ -207,7 +208,7 @@ export default {
 .login-page {
     font-family: 'Segoe UI', sans-serif;
     height: 100%;
-    background: url('~@/assets/images/login-background.jpg') no-repeat center center;
+    /* background: url('~@/assets/images/login-background.jpg') no-repeat center center; */
     background-size: cover;
     display: flex;
     align-items: center;

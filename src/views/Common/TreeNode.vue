@@ -1,7 +1,7 @@
 <template>
     <li>
         <div style="display: flex; align-items: center; gap: 10px;">
-            <div @click.stop="fetchNodeData" v-if="node.mode != 'job'">
+            <div class="arrow-wrapper" @click.stop="fetchNodeData" v-if="node.mode != 'job'">
                 <i v-if="!node.expanded" class="fa-solid fa-angle-right" style="font-size: 12px; color: #CCCCCC;"></i>
                 <i v-else class="fa-solid fa-angle-down" style="font-size: 12px; color: #CCCCCC;"></i>
             </div>

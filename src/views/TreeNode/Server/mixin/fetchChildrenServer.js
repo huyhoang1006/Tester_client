@@ -68,6 +68,7 @@ export default {
                         }
                         try {
                             const newRowsVoltageLevel = await demoAPI.getVoltageLevelBySubstationId(node.id)
+                            console.log('newRowsVoltageLevel', newRowsVoltageLevel)
                             if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
                                 newRowsVoltageLevel.forEach((row) => {
                                     row.id = row.mrid || row.id || ''
@@ -90,6 +91,7 @@ export default {
 
                         try {
                             const newRowsVoltageLevel = await demoAPI.getAssetByOwner(node.mrid, 'Substation')
+                            console.log('newRowsVoltageLevel', newRowsVoltageLevel)
                             if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
                                 newRowsVoltageLevel.forEach((row) => {
                                     row.id = row.mrid || row.id || ''
@@ -112,6 +114,7 @@ export default {
                     } else if (node.mode == 'voltageLevel') {
                         try {
                             const newRowsBay = await demoAPI.getBayByVoltageLevel(node.id)
+                            console.log('newRowsBay', newRowsBay)
                             if (newRowsBay && newRowsBay.length > 0) {
                                 newRowsBay.forEach((row) => {
                                     row.id = row.mrid || row.id || ''
@@ -134,6 +137,7 @@ export default {
                     } else if (node.mode == 'bay') {
                         try {
                             const newRowsVoltageLevel = await demoAPI.getAssetByOwner(node.mrid, 'Bay')
+                            console.log('newRowsVoltageLevel', newRowsVoltageLevel)
                             if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
                                 newRowsVoltageLevel.forEach((row) => {
                                     row.id = row.mrid || row.id || ''
