@@ -201,7 +201,7 @@ export const insertAsset = async (asset) => {
                         function (err) {
                             if (err) {
                                 db.run('ROLLBACK')
-                                return reject({ success: false, err : err, message: 'Insert asset failed' })
+                                return reject({ success: false, err: err, message: 'Insert asset failed' })
                             }
                             db.run('COMMIT')
                             return resolve({ success: true, data: asset, message: 'Insert asset completed' })
@@ -210,7 +210,7 @@ export const insertAsset = async (asset) => {
                 })
                 .catch(err => {
                     db.run('ROLLBACK')
-                    return reject({ success: false, err : err, message: 'Insert asset transaction failed' })
+                    return reject({ success: false, err: err, message: 'Insert asset transaction failed' })
                 })
         })
     })
@@ -304,7 +304,7 @@ export const deleteAssetById = async (mrid) => {
                 return resolve({ success: true, data: mrid, message: 'Delete asset (and cascade identified object) completed' })
             })
             .catch(err => {
-                return reject({ success: false, err : err, message: 'Delete asset transaction failed' })
+                return reject({ success: false, err: err, message: 'Delete asset transaction failed' })
             })
     })
 }
@@ -463,7 +463,7 @@ export const deleteAssetByIdTransaction = async (mrid, dbsql) => {
                 return resolve({ success: true, data: mrid, message: 'Delete asset (and cascade identified object) completed' })
             })
             .catch(err => {
-                return reject({ success: false, err : err, message: 'Delete asset transaction failed' })
+                return reject({ success: false, err: err, message: 'Delete asset transaction failed' })
             })
     })
 }

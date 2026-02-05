@@ -3,9 +3,8 @@
     <div class="title-temp">
       <div ref="tabContainer" class="tab-container">
         <div @contextmenu.prevent="showContext" ref="locationRoot" @click="triggerClickLocation" class="location">
-          Location
+          Organisation
         </div>
-        <div ref="ownerRoot" class="tab">Owner</div>
       </div>
 
       <contextMenu ref="contextSubstation" @show-addSubs="$emit('show-addSubs', $event)"></contextMenu>
@@ -22,6 +21,7 @@
       </ul>
 
       <contextMenu ref="contextMenuClient" @delete-data="$emit('delete-data', $event)"
+      @show-zero-diagram="$emit('show-zero-diagram', $event)"
         @show-addSubsInTree="$emit('show-addSubsInTree', $event)"
         @show-addOrganisation="$emit('show-addOrganisation', $event)"
         @show-addVoltageLevel="$emit('show-addVoltageLevel', $event)"
@@ -204,8 +204,10 @@ export default {
 
 .location {
   height: 100%;
+  width: 100%; /* Thêm dòng này để chiếm hết chiều rộng */
   display: flex;
   align-items: center;
+  justify-content: center; /* Thêm dòng này để căn giữa chữ */
   padding: 0 5px;
   cursor: pointer;
   border-bottom: 2px #e6e4e4 solid;

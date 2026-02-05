@@ -148,8 +148,9 @@ export default {
                             newRows.push(...assetVtReturn.data)
                         }
 
-                        if (assetDisconnectorReturn.success) {
-                            assetDisconnectorReturn.data.forEach((row) => {
+                        if (assetDisconnectorReturn.success && assetDisconnectorReturn.data) {
+                            const dataArray = Array.isArray(assetDisconnectorReturn.data) ? assetDisconnectorReturn.data : [assetDisconnectorReturn.data]
+                            dataArray.forEach((row) => {
                                 row.parentId = clickedRow.mrid
                                 row.mode = 'asset'
                                 row.asset = 'Disconnector'
@@ -161,7 +162,7 @@ export default {
                                     parent: clickedRow.name
                                 })
                             })
-                            newRows.push(...assetDisconnectorReturn.data)
+                            newRows.push(...dataArray)
                         }
 
                         if (assetPowerCableReturn.success) {
@@ -347,8 +348,9 @@ export default {
                             })
                             newRows.push(...assetVtReturn.data)
                         }
-                        if (assetDisconnectorReturn.success) {
-                            assetDisconnectorReturn.data.forEach((row) => {
+                        if (assetDisconnectorReturn.success && assetDisconnectorReturn.data) {
+                            const dataArray = Array.isArray(assetDisconnectorReturn.data) ? assetDisconnectorReturn.data : [assetDisconnectorReturn.data]
+                            dataArray.forEach((row) => {
                                 row.parentId = clickedRow.mrid
                                 row.mode = 'asset'
                                 row.asset = 'Disconnector'
@@ -360,7 +362,7 @@ export default {
                                     parent: clickedRow.name
                                 })
                             })
-                            newRows.push(...assetVtReturn.data)
+                            newRows.push(...dataArray)
                         }
                         if (assetPowerCableReturn.success) {
                             assetPowerCableReturn.data.forEach((row) => {

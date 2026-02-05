@@ -33,6 +33,7 @@
                 @export-excel="handleExportExcelFromContext" @export-word="handleExportWordFromContext"
                 @export-pdf="handleExportPDFFromContext" @duplicate-node="handleDuplicateFromContext"
                 @move-node="handleMoveFromContext" @import-json="handleImportJSONFromContext"
+                @show-zero-diagram="handleShowZeroDiagram"
                 @import-json-cim="handleImportJSONCIMFromContext" @show-data="showDataClient" />
 
             <ServerTreePanel ref="serverPanel" v-show="!clientSlide" :ownerServerList="ownerServerList"
@@ -357,6 +358,13 @@
             :selectedDownloadTargetNode="selectedDownloadTargetNode" @close="() => downloadDialogVisible = false"
             @cancel="() => downloadDialogVisible = false" @confirm="confirmDownloadSelection"
             @node-click="handleDownloadTargetSelection" @node-expand="fetchChildren" />
+
+            <ZeroDiagramDialog 
+            :visible="signZeroDiagram" 
+            @update:visible="signZeroDiagram = $event"
+            :currentNode="nodeForZeroDiagram"
+            @close="handleZeroDiagramClose"
+            />
     </div>
 </template>
 <script>
@@ -436,7 +444,8 @@ import {
     ImportDialog,
     FmecaDialog,
     MoveDialog,
-    DownloadDialog
+    DownloadDialog,
+    ZeroDiagramDialog 
 } from './dialogs'
 
 
@@ -511,7 +520,8 @@ export default {
         ImportDialog,
         FmecaDialog,
         MoveDialog,
-        DownloadDialog
+        DownloadDialog,
+        ZeroDiagramDialog 
     },
     data() {
         return {
@@ -574,6 +584,8 @@ export default {
             nodeToDownloadData: null, // Lưu dữ liệu DTO từ server về
             selectedDownloadTargetNode: null, // Node cha được chọn thủ công
             selectedDownloadTargetNodes: [], // Lưu valid parent types để dùng trong fetchChildrenForMove
+             signZeroDiagram: false, // Biến điều khiển ẩn hiện dialog
+            nodeForZeroDiagram: null, // Biến lưu node đang chọn
             moveTreeProps: {
                 children: 'children',
                 label: 'name',
@@ -885,7 +897,21 @@ export default {
                     component.resetForm()
                 }
             })
-        }
+
+        },
+
+
+        async handleMoveCancel() {
+            this.moveDialogVisible = false
+        },
+         handleShowZeroDiagram(node) {
+            this.nodeForZeroDiagram = node;
+            this.signZeroDiagram = true;
+        },
+        handleZeroDiagramClose() {
+            this.signZeroDiagram = false;
+        },
+
     }
 }
 </script>
