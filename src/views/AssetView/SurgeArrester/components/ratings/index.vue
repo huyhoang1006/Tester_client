@@ -23,7 +23,7 @@
                     <div class="table-scroll">
                         <table class="table-strip-input-data fixed-table">
                             <colgroup>
-                                <col style="width: 50px" />
+                                <col style="width: 75px" />
                                 <col style="width: 150px" />
                                 <col style="width: 165px" />
                                 <col style="width: 165px" />
