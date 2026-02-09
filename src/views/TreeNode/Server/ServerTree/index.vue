@@ -19,6 +19,7 @@
             </ul>
 
             <contextMenu ref="contextMenu" @show-data="$emit('show-data', $event)"
+                @show-zero-diagram="$emit('show-zero-diagram', $event)"
                 @export-json="$emit('export-json', $event)" @export-json-cim="$emit('export-json-cim', $event)"
                 @export-xml="$emit('export-xml', $event)" @export-excel="$emit('export-excel', $event)"
                 @export-word="$emit('export-word', $event)" @export-pdf="$emit('export-pdf', $event)"

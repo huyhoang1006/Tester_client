@@ -45,6 +45,7 @@
                 @export-excel="handleExportExcelFromContext" @export-word="handleExportWordFromContext"
                 @export-pdf="handleExportPDFFromContext" @duplicate-node="handleDuplicateFromContext"
                 @move-node="handleMoveFromContext" @import-json="handleImportJSONFromContext"
+                @show-zero-diagram="handleShowZeroDiagram"
                 @import-json-cim="handleImportJSONCIMFromContext" />
 
             <div @mousedown="startResizeClient" v-if="clientSlide" ref="resizerClient" class="resizer"></div>
@@ -360,9 +361,10 @@
             @node-click="handleDownloadTargetSelection" @node-expand="fetchChildren" />
 
             <ZeroDiagramDialog 
-            :visible="signZeroDiagram" 
+             :visible="signZeroDiagram" 
             @update:visible="signZeroDiagram = $event"
             :currentNode="nodeForZeroDiagram"
+            :isServer="!clientSlide" 
             @close="handleZeroDiagramClose"
             />
     </div>
