@@ -1,19 +1,23 @@
 <template>
-    <div style="min-height: 500px; display: flex; flex-direction: column;">
+    <div style="display: flex; flex-direction: column;">
         <el-row justify="center" class="top-switch">
             <el-col :xs="24" :md="18" :lg="12">
                 <el-row :gutter="8">
                     <el-col :xs="12" :sm="6" :md="6">
-                        <el-button class="trs-btn" size="mini" type="primary" style="width: 100%" @click="switchData('Transformer')">Transformer</el-button>
+                        <el-button class="trs-btn" size="mini" type="primary" style="width: 100%"
+                            @click="switchData('Transformer')">Transformer</el-button>
                     </el-col>
                     <el-col :xs="12" :sm="6" :md="6">
-                        <el-button class="trs-btn" size="mini" type="primary" style="width: 100%" @click="switchData('Bushings')">Bushings</el-button>
+                        <el-button class="trs-btn" size="mini" type="primary" style="width: 100%"
+                            @click="switchData('Bushings')">Bushings</el-button>
                     </el-col>
                     <el-col :xs="12" :sm="6" :md="6">
-                        <el-button class="trs-btn" size="mini" type="primary" style="width: 100%" @click="switchData('Tap changer')">Tap changer</el-button>
+                        <el-button class="trs-btn" size="mini" type="primary" style="width: 100%"
+                            @click="switchData('Tap changer')">Tap changer</el-button>
                     </el-col>
                     <el-col :xs="12" :sm="6" :md="6">
-                        <el-button class="trs-btn" size="mini" type="primary" style="width: 100%" @click="switchData('Surge Arrester')">Surge Arrester</el-button>
+                        <el-button class="trs-btn" size="mini" type="primary" style="width: 100%"
+                            @click="switchData('Surge Arrester')">Surge Arrester</el-button>
                     </el-col>
                 </el-row>
             </el-col>
@@ -22,40 +26,49 @@
         <div style="flex: 1; display: flex; flex-direction: column;">
             <div v-if="this.switch == 'Transformer'">
                 <!-- Properties -->
-                <property @update-attachment="updateAttachment" :attachment.sync="this.attachmentData" @change-type="onChangeAssetType" :data="this.transformerDto.properties" style="font-size: 12px !important;"></property>
+                <property @update-attachment="updateAttachment" :attachment.sync="this.attachmentData"
+                    @change-type="onChangeAssetType" :data="this.transformerDto.properties"
+                    style="font-size: 12px !important;"></property>
 
                 <!-- Winding configuration -->
-                <winding-configuration :properties="this.transformerDto.properties" :data="this.transformerDto.winding_configuration" style="font-size: 12px !important;"></winding-configuration>
+                <winding-configuration :properties="this.transformerDto.properties"
+                    :data="this.transformerDto.winding_configuration"
+                    style="font-size: 12px !important;"></winding-configuration>
 
                 <!-- Ratings -->
-                <rating :properties="this.transformerDto.properties" :data="this.transformerDto.ratings" style="font-size: 12px !important;"></rating>
+                <rating :properties="this.transformerDto.properties" :data="this.transformerDto.ratings"
+                    style="font-size: 12px !important;"></rating>
 
                 <!-- Impedances -->
-                <impedance @add="addShortCircuitTest" @remove="removeShortCircuitTest" @removeArr="removeShortCircuitTestArr" :tapChangers="this.transformerDto.tap_changers" :data="this.transformerDto.impedances" :properties="this.transformerDto.properties" style="font-size: 12px !important;"></impedance>
+                <impedance @add="addShortCircuitTest" @remove="removeShortCircuitTest"
+                    @removeArr="removeShortCircuitTestArr" :tapChangers="this.transformerDto.tap_changers"
+                    :data="this.transformerDto.impedances" :properties="this.transformerDto.properties"
+                    style="font-size: 12px !important;"></impedance>
 
                 <!-- Others -->
-                <other :data="this.transformerDto.others" :properties="this.transformerDto.properties" style="font-size: 12px;"></other>
+                <other :data="this.transformerDto.others" :properties="this.transformerDto.properties"
+                    style="font-size: 12px;"></other>
             </div>
-            
+
             <div v-else-if="this.switch == 'Tap changer'">
                 <!-- Tap changer -->
-                <tap-changer :properties="this.transformerDto.properties" :data="this.transformerDto.tap_changers" style="font-size: 12px !important;"></tap-changer>
+                <tap-changer :properties="this.transformerDto.properties" :data="this.transformerDto.tap_changers"
+                    style="font-size: 12px !important;"></tap-changer>
             </div>
 
             <!-- Bushings -->
             <div style="flex: 1; display: flex; flex-direction: column;" v-else-if="this.switch == 'Bushings'">
-                <bushing
-                    :asset_type="this.transformerDto.properties.type"
+                <bushing :asset_type="this.transformerDto.properties.type"
                     :asset_phase="this.transformerDto.winding_configuration.phases"
                     :asset_winding_config="this.transformerDto.winding_configuration.vector_group"
-                    :bushing_data="this.transformerDto.bushing_data"
-                    @input-bushing="onInputBushing">
+                    :bushing_data="this.transformerDto.bushing_data" @input-bushing="onInputBushing">
                 </bushing>
             </div>
 
             <!-- Surge Arrester -->
             <div v-else-if="this.switch == 'Surge Arrester'">
-                <surge-arrester :data="this.transformerDto.surge_arrester" :properties="this.transformerDto.properties" style="font-size: 12px !important;"></surge-arrester>
+                <surge-arrester :data="this.transformerDto.surge_arrester" :properties="this.transformerDto.properties"
+                    style="font-size: 12px !important;"></surge-arrester>
             </div>
 
         </div>
@@ -77,7 +90,7 @@ import manufacturerAdd from '@/views/Common/ManufacturerAdd.vue'
 
 export default {
     name: 'AssetView',
-    props : {
+    props: {
         parent: {
             type: Object,
             default: () => ({})
@@ -106,8 +119,8 @@ export default {
     mixins: [mixin],
     data() {
         return {
-            title : 'transformer',
-            switch : 'Transformer',
+            title: 'transformer',
+            switch: 'Transformer',
         }
     },
     computed: {
@@ -161,7 +174,7 @@ td {
 
 ::v-deep(.el-input__inner),
 ::v-deep(.el-select .el-input__inner) {
-  font-size: 12px !important;
+    font-size: 12px !important;
 }
 
 ::v-deep(.top-switch) {

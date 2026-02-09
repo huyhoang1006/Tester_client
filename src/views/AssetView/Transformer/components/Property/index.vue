@@ -1,5 +1,5 @@
 <template>
-    <div class="mgt-20 property">
+    <div class="mgy-20 property">
         <div class="col-content">
             <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                 <span class="bolder">Properties</span>
