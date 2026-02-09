@@ -195,8 +195,8 @@
                                         <el-input size="mini" v-model="item.rated_power.value">
                                             <el-select size="mini" class="select-in-input"
                                                 v-model="item.rated_power.unit" slot="append">
-                                                <el-option :label="unitMultiplier.m + unitSymbol.VA"
-                                                    :value="unitMultiplier.m + '|' + unitSymbol.VA"></el-option>
+                                                <el-option :label="unitMultiplier.M + unitSymbol.VA"
+                                                    :value="unitMultiplier.M + '|' + unitSymbol.VA"></el-option>
                                                 <el-option :label="unitMultiplier.k + unitSymbol.VA"
                                                     :value="unitMultiplier.k + '|' + unitSymbol.VA"></el-option>
                                             </el-select>
@@ -299,8 +299,8 @@
                                             <el-select size="mini" class="select-in-input"
                                                 v-model="ratingsData.power_ratings[index].rated_power.unit"
                                                 :disabled="true" slot="append">
-                                                <el-option :label="unitMultiplier.m + unitSymbol.VA"
-                                                    :value="unitMultiplier.m + '|' + unitSymbol.VA"></el-option>
+                                                <el-option :label="unitMultiplier.M + unitSymbol.VA"
+                                                    :value="unitMultiplier.M + '|' + unitSymbol.VA"></el-option>
                                                 <el-option :label="unitMultiplier.k + unitSymbol.VA"
                                                     :value="unitMultiplier.k + '|' + unitSymbol.VA"></el-option>
                                             </el-select>
@@ -484,7 +484,7 @@ export default {
                 rated_power: {
                     mrid: '',
                     value: '',
-                    unit: 'm|VA'
+                    unit: 'MVA'
                 },
                 cooling_class: '',
                 temp_rise_wind: {

@@ -42,7 +42,6 @@
               </div>
 
               <div class="eq-floating-actions">
-                <i class="el-icon-share" title="Share" @click.stop="handleAction('share', eq)"></i>
                 <i class="el-icon-edit" title="Edit" @click.stop="handleAction('edit', eq)"></i>
                 <i class="el-icon-delete" title="Delete" @click.stop="handleAction('delete', eq)"></i>
               </div>
@@ -80,7 +79,6 @@
                 </div>
 
                 <div class="eq-floating-actions">
-                  <i class="el-icon-share" title="Share" @click.stop="handleAction('share', eq)"></i>
                   <i class="el-icon-edit" title="Edit" @click.stop="handleAction('edit', eq)"></i>
                   <i class="el-icon-delete" title="Delete" @click.stop="handleAction('delete', eq)"></i>
                 </div>
@@ -100,11 +98,11 @@
 </template>
 
 <script>
-import { IconSubstation, IconVoltageLevel, IconBay, IconCB, IconPowerCable, IconCT, IconVT, IconDisconnector } from './icons.js';
+import { IconSubstation, IconVoltageLevel, IconBay, IconCB, IconPowerCable, IconCT, IconVT, IconDisconnector, IconBushing, IconSurgeArrester, IconRotatingMachine, IconCapacitor, IconReactor, IconBreaker  } from './icons.js';
 
 export default {
   name: 'ZeroDiagramDialog',
-  components: { IconSubstation, IconVoltageLevel, IconBay, IconCB, IconPowerCable, IconCT, IconVT, IconDisconnector },
+  components: { IconSubstation, IconVoltageLevel, IconBay, IconCB, IconPowerCable, IconCT, IconVT, IconDisconnector, IconBushing, IconSurgeArrester, IconRotatingMachine, IconCapacitor, IconReactor, IconBreaker },
   props: {
     visible: { type: Boolean, default: false },
     currentNode: { type: Object, default: () => ({}) }
@@ -119,12 +117,21 @@ export default {
     };
   },
   watch: {
-    visible(val) { if (val && this.currentNode) this.fetchSubstationData(); }
+    visible(val) { 
+      if (val && this.currentNode) {
+        this.fetchSubstationData();
+        this.$nextTick(() => {
+          document.addEventListener('click', this.handleClickOutside);
+        });
+      } else {
+        document.removeEventListener('click', this.handleClickOutside);
+      }
+    }
   },
 methods: {
     handleClose() { this.$emit('close'); },
     getIconComponent(type) {
-      const map = { 'CB': 'IconCB', 'PowerCable': 'IconPowerCable', 'CT': 'IconCT', 'VT': 'IconVT', 'Disconnector': 'IconDisconnector' };
+      const map = { 'CB': 'IconCB', 'PowerCable': 'IconPowerCable', 'CT': 'IconCT', 'VT': 'IconVT', 'Disconnector': 'IconDisconnector', 'Transformer': 'IconVT', 'SurgeArrester': 'IconSurgeArrester', 'Reactor': 'IconReactor', 'Bushing': 'IconBushing', 'RotatingMachine': 'IconRotatingMachine', 'Capacitor': 'IconCapacitor', 'Breaker': 'IconBreaker' };
       return map[type] || 'IconDisconnector';
     },
     mapAssetType(dbType) {
@@ -134,10 +141,13 @@ methods: {
         'Current transformer': 'CT', 
         'Voltage transformer': 'VT', 
         'Disconnector': 'Disconnector', 
-        'Transformer': 'VT', 
-        'Surge Arrester': 'CB',
-        'Reactor': 'VT',      
-        'Bushing': 'PowerCable' 
+        'Transformer': 'Transformer', 
+        'Surge Arrester': 'SurgeArrester',
+        'Reactor': 'Reactor',      
+        'Bushing': 'Bushing' ,
+        'Rotating machine': 'RotatingMachine',
+        'Capacitor': 'Capacitor',
+
       };
       return map[dbType] || 'PowerCable';
     },
@@ -169,7 +179,7 @@ methods: {
             const equipments = await this.fetchAssetsForBay(bay.mrid);
             processedDirectBays.push({ name: bay.name, equipments: equipments });
           }
-          this.voltageLevels.push({ name: 'Direct Bays', bays: processedDirectBays });
+          this.voltageLevels.push({ name: 'Bays', bays: processedDirectBays });
         }
       } catch (error) {
         this.$message.error("Failed to load diagram data");
@@ -177,7 +187,7 @@ methods: {
     },
     async fetchAssetsForBay(bayId) {
       try {
-        const assetTypes = ['Circuit breaker', 'Current transformer', 'Voltage transformer', 'Power cable', 'Disconnector', 'Transformer', 'Surge Arrester', 'Reactor', 'Bushing'];
+        const assetTypes = ['Circuit breaker', 'Current transformer', 'Voltage transformer', 'Power cable', 'Disconnector', 'Transformer', 'Surge Arrester', 'Reactor', 'Bushing', 'Rotating machine', 'Capacitor', 'Breaker'];
         
         const promises = [
              window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Circuit breaker'),
@@ -189,6 +199,9 @@ methods: {
              window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Surge Arrester'), 
              window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Reactor'),
              window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Bushing'),
+              window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Rotating machine'),
+              window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Capacitor'),
+              window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Breaker')
         ];
 
         const results = await Promise.all(promises);
@@ -238,7 +251,25 @@ methods: {
 
     toggleActions(key) {
       this.activeEqKey = (this.activeEqKey === key) ? null : key;
+    },
+
+    handleClickOutside(event) {
+      const equipmentItems = document.querySelectorAll('.modern-eq-item');
+      let clickedOnItem = false;
+      for (let item of equipmentItems) {
+        if (item.contains(event.target)) {
+          clickedOnItem = true;
+          break;
+        }
+      }
+      if (!clickedOnItem) {
+        this.activeEqKey = null;
+      }
     }
+  },
+
+  beforeDestroy() {
+    document.removeEventListener('click', this.handleClickOutside);
   }
 };
 </script>

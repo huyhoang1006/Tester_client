@@ -6,7 +6,7 @@
                 <i v-else class="fa-solid fa-angle-down" style="font-size: 12px; color: #CCCCCC;"></i>
             </div>
             
-            <span @contextmenu.prevent="openContextMenu($event, node)" :class="{ selected: selectedNodes.some(n => n.mrid === node.mrid) }" class="folder" @click="toggle" @dblclick="doubleToggle">
+            <span @contextmenu.prevent="openContextMenu($event, node)" :class="{ selected: isSelected(node) }" class="folder" @click="toggle" @dblclick="doubleToggle">
                 <div v-if="node.mode == 'substation'" class="icon-wrapper">
                     <icon size="16px" folderType="location" badgeColor="146EBE"></icon>
                     <span class="node-name">{{ node.name  }}</span>
@@ -118,6 +118,15 @@ export default {
         },
         openContextMenu(event, node) {
             this.$emit("open-context-menu", event, node);
+        },
+        isSelected(node) {
+            if (!this.selectedNodes || !Array.isArray(this.selectedNodes)) return false
+            return this.selectedNodes.some((n) => {
+                if (!n || !node) return false
+                if (n.mrid && node.mrid) return n.mrid === node.mrid
+                if (n.id && node.id) return n.id === node.id
+                return false
+            })
         },
         onClickOutside(e) {
             const treeNodeEl = this.$el;
