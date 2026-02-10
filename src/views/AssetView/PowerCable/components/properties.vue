@@ -57,6 +57,7 @@
 <script>
 import { country } from '@/views/ConstantAsset/index'
 import Attachment from '@/views/Common/Attachment.vue'
+import MANUFACTURER_MAP from '@/views/ConstantAsset/manufacturer.js'
 export default {
     name: 'powerCableProperty',
     components: {
@@ -79,7 +80,7 @@ export default {
         return {
             labelWidth: `120px`,
             countryData: country.default,
-            manufacturerList: ['ABB', 'ALSTOM', 'General Electric', 'Mitsubishi Electric', 'Schneider Electric', 'Siemens', 'Toshiba', 'Westinghouse'],
+            manufacturerList: MANUFACTURER_MAP['PowerCableDTO'],
             attachmentData: []
         }
     },
