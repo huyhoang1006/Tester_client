@@ -26,8 +26,13 @@
                     <el-input v-model="propertiesData.serial_no"></el-input>
                 </el-form-item>
                 <el-form-item label="Manufacturer">
-                    <el-select style="width: 100%;" filterable v-model="propertiesData.manufacturer">
-                        <el-option v-for="item in manufacturerList" :label="item" :key="item" :value=item> </el-option>
+                    <el-select style="width: 100%;" v-model="propertiesData.manufacturer" placeholder="Manufacturer" size="mini">
+                        <el-option 
+                            v-for="m in manufacturerList"
+                            :key="m"
+                            :label="m"
+                            :value="m">
+                        </el-option>
                     </el-select>
                 </el-form-item>
                 <el-form-item label="Manufacturer type">
@@ -61,10 +66,11 @@
 <script>
 import { country } from '@/views/ConstantAsset/index'
 import Attachment from '@/views/Common/Attachment.vue'
+import MANUFACTURER_MAP from '@/views/ConstantAsset/manufacturer'
 export default {
     name: 'circuitBreakProperty',
     components: {
-        Attachment
+        Attachment 
     },
     props: {
         properties: {
@@ -83,7 +89,7 @@ export default {
         return {
             labelWidth: `120px`,
             countryData: country.default,
-            manufacturerList: ['ABB', 'ALSTOM', 'General Electric', 'Mitsubishi Electric', 'Schneider Electric', 'Siemens', 'Toshiba', 'Westinghouse'],
+            manufacturerList: MANUFACTURER_MAP['CircuitBreakerDto'],
             attachmentData: []
         }
     },

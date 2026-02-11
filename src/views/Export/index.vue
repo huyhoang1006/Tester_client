@@ -1,6 +1,6 @@
 <template> 
 <div>
-  <div class="export-view" style="gap: 10px;">
+  <div class="export-view">
     <el-select v-model="exportTypeSelected" placeholder="Select" size="mini"></el-select>
     <el-button @click="addRow()" type="primary" size="mini" style="margin-left: 10px;margin-right: 10px;">Add Row</el-button>
     <el-button @click="uploadPdfFile()" v-if="this.exportType === 'pdf'" type="primary" size="mini" style="margin-left: 10px;margin-right: 10px;">PDF File</el-button>
@@ -95,6 +95,7 @@
   </div>
 </div>
 </template> 
+
 <script>
 export default {
     name: 'ExportView',
@@ -4577,6 +4578,14 @@ export default {
           console.log("FINAL PATH:", path)
           console.log("VALUE:", selectedNode.value)
         }
+
+         if (selectedNode?.value) {
+          const path = row.featureLevels.map(l => l.key).join(".")
+          console.log("FINAL PATH:", path)
+          console.log("VALUE:", selectedNode.value)
+          row.assetDtoKey = row.featureLevels[0]?.key
+
+        }
       },
 
       clearAll() {
@@ -4599,25 +4608,88 @@ export default {
         this.tableData.splice(index, 1);
       },
       async uploadExcelFile() {
-        const uplExcel= await window.electronAPI.openFileDialog('excel');
-        console.log(uplExcel);
-      },
+        try {
+          const uplExcel= await window.electronAPI.openFileDialog('excel')
+          if (uplExcel?.canceled) return
+            // Thành công
+            if (uplExcel?.success) {
+              this.$message.success('Uploaded Successfully')
+            } else {
+              // Có result nhưng không success
+              this.$message.error('Fail to Upload')
+            }
+          } catch (err) {
+            // Lỗi exception
+            this.$message.error('Fail to Upload')
+            console.error(err)
+          }
+      },      
+                      
       async uploadXmlFile() {
-        const uplXml= await window.electronAPI.openFileDialog('xml');
-        console.log(uplXml);
+        try {
+          const uplXml= await window.electronAPI.openFileDialog('xml')
+          if (uplXml?.canceled) return
+            // Thành công
+            if (uplXml?.success) {
+              this.$message.success('Uploaded Successfully')
+            } else {
+              // Có result nhưng không success
+              this.$message.error('Fail to Upload')
+            }
+          } catch (err) {
+            // Lỗi exception
+            this.$message.error('Fail to Upload')
+            console.error(err)
+          }
       },
       async uploadWordFile() {
-        const uplWord= await window.electronAPI.openFileDialog('word');
-        console.log(uplWord);
+        try {
+          const uplWord= await window.electronAPI.openFileDialog('word')
+          if (uplWord?.canceled) return
+            // Thành công
+            if (uplWord?.success) {
+              this.$message.success('Uploaded Successfully')
+            } else {
+              // Có result nhưng không success
+              this.$message.error('Fail to Upload')
+            }
+          } catch (err) {
+            // Lỗi exception
+            this.$message.error('Fail to Upload')
+            console.error(err)
+          }
       },
       async uploadPdfFile() {
-        const uplPdf= await window.electronAPI.openFileDialog('pdf');
-        console.log(uplPdf);
+        try {
+          const uplPdf= await window.electronAPI.openFileDialog('pdf')
+          if (uplPdf?.canceled) return
+            // Thành công
+            if (uplPdf?.success) {
+              this.$message.success('Uploaded Successfully')
+            } else {
+              // Có result nhưng không success
+              this.$message.error('Fail to Upload')
+            }
+          } catch (err) {
+            // Lỗi exception
+            this.$message.error('Fail to Upload')
+            console.error(err)
+          }
       }
-    }
-}
+    },
 
-      
+    computed : {
+        propertiesData() {
+            return this.properties
+        }
+    },
+  }     
 </script>
 <style scoped>
+.export-view {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
 </style>
