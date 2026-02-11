@@ -18,48 +18,55 @@ export default {
                 type: 'warning'
             })
             .then(async () => {
-                const { instance, timeoutValue } = startLoading(this, { 
-                    text: 'Deleting...', 
-                    isDanger: true, 
+                // Sử dụng Wrapper để bắt đầu loading
+                const { close, timeoutValue } = startLoading(this, { 
+                    action: 'delete',
                     type: 'default' 
                 });
 
+                // Intercept messages để hiển thị sau khi loading đóng
                 const originalMessage = this.$message;
                 let deleteSuccess = false;
                 let capturedMessages = [];
 
                 this.$message = {
-                    success: (msg) => { deleteSuccess = true; capturedMessages.push({ type: 'success', message: msg }) },
-                    error: (msg) => { capturedMessages.push({ type: 'error', message: msg }) },
-                    warning: (msg) => { capturedMessages.push({ type: 'warning', message: msg }) },
-                    info: (msg) => { capturedMessages.push({ type: 'info', message: msg }) }
+                    success: (msg) => { 
+                        deleteSuccess = true; 
+                        capturedMessages.push({ type: 'success', message: msg });
+                    },
+                    error: (msg) => { 
+                        capturedMessages.push({ type: 'error', message: msg });
+                    },
+                    warning: (msg) => { 
+                        capturedMessages.push({ type: 'warning', message: msg });
+                    },
+                    info: (msg) => { 
+                        capturedMessages.push({ type: 'info', message: msg });
+                    }
                 };
 
                 try {
+                    // Delay 0.2s để loading hiển thị trước khi bắt đầu xóa
+                    await new Promise(resolve => setTimeout(resolve, 200));
+
                     const deletePromise = this.clientSlide 
                         ? this.deleteDataClient(node)
                         : Promise.reject(new Error('Delete from server not implemented'));
 
-                    // SỬA TẠI ĐÂY: minDelay phải khớp với timeoutValue (500ms)
-                    const waitTime = timeoutValue > 0 ? timeoutValue : 500;
-                    const minDelay = new Promise(resolve => setTimeout(resolve, waitTime));
-
+                    // Xử lý timeout nếu có
                     if (timeoutValue > 0) {
                         const timeoutPromise = new Promise((_, reject) => 
                             setTimeout(() => reject(new Error('Timeout')), timeoutValue)
                         );
                         
-                        await Promise.all([
-                            Promise.race([deletePromise, timeoutPromise]),
-                            minDelay
-                        ]);
+                        await Promise.race([deletePromise, timeoutPromise]);
                     } else {
-                        await Promise.all([deletePromise, minDelay]);
+                        await deletePromise;
                     }
 
+                    // Restore original message và hiển thị messages sau khi loading đã đóng
                     this.$message = originalMessage;
-                    instance.close();
-
+                    
                     if (capturedMessages.length > 0) {
                         const last = capturedMessages[capturedMessages.length - 1];
                         this.$message[last.type](last.message);
@@ -71,12 +78,23 @@ export default {
                     }
 
                 } catch (error) {
+                    // Restore original message
                     this.$message = originalMessage;
-                    instance.close();
-                    this.$message.error(error.message === 'Timeout' ? 'Delete timed out' : 'Error: ' + error.message);
+                    
+                    // Hiển thị lỗi
+                    this.$message.error(
+                        error.message === 'Timeout' 
+                            ? 'Delete timed out' 
+                            : 'Error: ' + error.message
+                    );
+                } finally {
+                    // Đảm bảo loading luôn được đóng (reset Store)
+                    close();
                 }
             })
-            .catch(() => {});
+            .catch(() => {
+                // User cancelled confirmation dialog
+            });
         },
     }
 }
