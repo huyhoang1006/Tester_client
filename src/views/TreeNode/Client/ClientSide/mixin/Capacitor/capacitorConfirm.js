@@ -1,22 +1,59 @@
 import Vue from "vue"
+import { startLoading } from '@/utils/loading'
+
 export default {
     methods: {
         async handleCapacitorConfirm() {
+            const { instance, timeoutValue } = startLoading(this, { 
+                action: 'add',
+                type: 'default' 
+            });
+
+            const originalMessage = this.$message;
+            let capturedMessages = [];
+
+            this.$message = {
+                success: (msg) => { capturedMessages.push({ type: 'success', message: msg }) },
+                error: (msg) => { capturedMessages.push({ type: 'error', message: msg }) },
+                warning: (msg) => { capturedMessages.push({ type: 'warning', message: msg }) },
+                info: (msg) => { capturedMessages.push({ type: 'info', message: msg }) }
+            };
+
             try {
+                await new Promise(resolve => setTimeout(resolve, 200));
+
                 const dialogRef = this.$refs.capacitorDialog
                 const capacitor = dialogRef ? dialogRef.getCapacitorRef() : null
                 if (capacitor) {
-                    const { success, data } = await capacitor.saveAsset()
+                    const savePromise = capacitor.saveAsset();
+
+                    let result;
+                    if (timeoutValue > 0) {
+                        const timeoutPromise = new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error('Timeout')), timeoutValue)
+                        );
+                        result = await Promise.race([savePromise, timeoutPromise]);
+                    } else {
+                        result = await savePromise;
+                    }
+
+                    const { success, data } = result;
+
+                    this.$message = originalMessage;
+                    instance.close();
+
+                    if (capturedMessages.length > 0) {
+                        const last = capturedMessages[capturedMessages.length - 1];
+                        this.$message[last.type](last.message);
+                    }
+
                     if (success) {
-                        this.$message.success('Capacitor saved successfully')
-                        this.signCapacitor = false
-                        
-                        // Reset form after successful save
-                        this.resetFormAfterSave(capacitor)
+                        this.$message.success('Capacitor saved successfully');
+                        this.signCapacitor = false;
+                        this.resetFormAfterSave(capacitor);
                         
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
-                            // Handle different data structures - check for asset property or direct access
                             const assetData = data.asset || data
                             const newRow = {
                                 mrid: assetData.mrid,
@@ -37,13 +74,13 @@ export default {
                                 this.$message.error('Parent node not found in tree')
                             }
                         }
-                    } else {
-                        this.$message.error('Failed to save Capacitor')
                     }
                 }
             } catch (error) {
-                this.$message.error('Some error occur')
-                console.error(error)
+                this.$message = originalMessage;
+                instance.close();
+                this.$message.error(error.message === 'Timeout' ? 'Save timed out' : 'Some error occur');
+                console.error(error);
             }
         },
         handleCapacitorCancel() {

@@ -1,8 +1,20 @@
 <template>
   <div id="app">
       <router-view />
+      <GlobalLoading />
   </div>
 </template>
+
+<script>
+import GlobalLoading from '@/components/GlobalLoading.vue';
+
+export default {
+  name: 'App',
+  components: {
+    GlobalLoading
+  }
+};
+</script>
 
 <style lang="scss">
 @charset "utf-8";
