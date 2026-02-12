@@ -11,6 +11,8 @@ export default {
 
             const originalMessage = this.$message;
             let capturedMessages = [];
+            let saveSuccess = false;
+            let powerRef = null;
 
             this.$message = {
                 success: (msg) => { capturedMessages.push({ type: 'success', message: msg }) },
@@ -25,6 +27,7 @@ export default {
                 const dialogRef = this.$refs.powerCableDialog
                 const powerCable = dialogRef ? dialogRef.getPowerCableRef() : null
                 if (powerCable) {
+                    powerRef = powerCable;
                     const savePromise = powerCable.saveAsset();
 
                     let result;
@@ -39,17 +42,8 @@ export default {
 
                     const { success, data } = result;
 
-                    this.$message = originalMessage;
-
-                    if (capturedMessages.length > 0) {
-                        const last = capturedMessages[capturedMessages.length - 1];
-                        this.$message[last.type](last.message);
-                    }
-
                     if (success) {
-                        this.$message.success('Power Cable saved successfully');
-                        this.signPower = false;
-                        this.resetFormAfterSave(powerCable);
+                        saveSuccess = true;
                         
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
@@ -69,19 +63,33 @@ export default {
                             if (node) {
                                 const children = Array.isArray(node.children) ? node.children : []
                                 Vue.set(node, 'children', [...children, ...newRows])
-                            } else {
-                                this.$message.error('Parent node not found in tree')
                             }
                         }
                     }
                 }
             } catch (error) {
                 this.$message = originalMessage;
+                await close();
                 this.$message.error(error.message === 'Timeout' ? 'Save timed out' : 'Some error occur');
                 console.error(error);
+                return;
             } finally {
-                // Đảm bảo loading luôn được đóng
-                close();
+                this.$message = originalMessage;
+            }
+
+            await close();
+
+            if (capturedMessages.length > 0) {
+                const last = capturedMessages[capturedMessages.length - 1];
+                this.$message[last.type](last.message);
+            }
+
+            if (saveSuccess) {
+                this.$message.success('Power Cable saved successfully');
+                this.signPower = false;
+                if (powerRef) {
+                    this.resetFormAfterSave(powerRef);
+                }
             }
         },
         handlePowerCancel() {

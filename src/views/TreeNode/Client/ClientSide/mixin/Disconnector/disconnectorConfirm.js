@@ -11,6 +11,8 @@ export default {
 
             const originalMessage = this.$message;
             let capturedMessages = [];
+            let saveSuccess = false;
+            let disconnectorRef = null;
 
             this.$message = {
                 success: (msg) => { capturedMessages.push({ type: 'success', message: msg }) },
@@ -25,6 +27,7 @@ export default {
                 const dialogRef = this.$refs.disconnectorDialog
                 const disconnector = dialogRef ? dialogRef.getDisconnectorRef() : null
                 if (disconnector) {
+                    disconnectorRef = disconnector;
                     const savePromise = disconnector.saveAsset();
 
                     let result;
@@ -39,17 +42,8 @@ export default {
 
                     const { success, data } = result;
 
-                    this.$message = originalMessage;
-
-                    if (capturedMessages.length > 0) {
-                        const last = capturedMessages[capturedMessages.length - 1];
-                        this.$message[last.type](last.message);
-                    }
-
                     if (success) {
-                        this.$message.success('Disconnector saved successfully');
-                        this.signDisconnector = false;
-                        this.resetFormAfterSave(disconnector);
+                        saveSuccess = true;
                         
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
@@ -69,19 +63,33 @@ export default {
                             if (node) {
                                 const children = Array.isArray(node.children) ? node.children : []
                                 Vue.set(node, 'children', [...children, ...newRows])
-                            } else {
-                                this.$message.error('Parent node not found in tree')
                             }
                         }
                     }
                 }
             } catch (error) {
                 this.$message = originalMessage;
+                await close();
                 this.$message.error(error.message === 'Timeout' ? 'Save timed out' : 'Some error occur');
                 console.error(error);
+                return;
             } finally {
-                // Đảm bảo loading luôn được đóng
-                close();
+                this.$message = originalMessage;
+            }
+
+            await close();
+
+            if (capturedMessages.length > 0) {
+                const last = capturedMessages[capturedMessages.length - 1];
+                this.$message[last.type](last.message);
+            }
+
+            if (saveSuccess) {
+                this.$message.success('Disconnector saved successfully');
+                this.signDisconnector = false;
+                if (disconnectorRef) {
+                    this.resetFormAfterSave(disconnectorRef);
+                }
             }
         },
         handleDisconnectorCancel() {

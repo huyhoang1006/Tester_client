@@ -213,6 +213,20 @@ export default {
                         console.error('Error fetching substation detail:', error)
                     }
                 }
+                // Nếu là Organisation, gọi API lấy full thông tin (bao gồm address, city, state, country)
+                else if (node.mode === 'organisation') {
+                    try {
+                        // @ts-ignore
+                        const res = await window.electronAPI.getOrganisationEntityByMrid(node.mrid)
+                        if (res.success && res.data) {
+                            // Map từ Entity sang DTO để có các trường address, city, state, country...
+                            const orgMapping = await import('@/views/Mapping/Organisation/index')
+                            detailData = orgMapping.OrgEntityToOrgDto(res.data)
+                        }
+                    } catch (error) {
+                        console.error('Error fetching organisation detail:', error)
+                    }
+                }
 
                 await this.mappingPropertiesClient(detailData)
                 await this.loadPathMapClient(node)

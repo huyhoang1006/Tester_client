@@ -16,9 +16,13 @@
  * @returns {Object} { close: Function, timeoutValue: number }
  */
 export const startLoading = (vm, { action = 'default', customText = null, type = 'default' } = {}) => {
+    console.log('[startLoading] Called with:', { action, customText, type });
+    
     // Dispatch action lên Vuex Store
     if (vm && vm.$store) {
+        console.log('[startLoading] Dispatching to store...');
         vm.$store.dispatch('loading/start', { action, customText, type });
+        console.log('[startLoading] Store state after dispatch:', vm.$store.state.loading);
     } else {
         console.error('Vue instance or Store not available');
     }
@@ -35,15 +39,33 @@ export const startLoading = (vm, { action = 'default', customText = null, type =
 };
 
 /**
- * Stop loading - Dispatch action lên Vuex Store
+ * Stop loading - Dispatch action lên Vuex Store và đợi modal biến mất hoàn toàn
  * @param {Object} vm - Vue instance
+ * @returns {Promise} Promise resolve khi modal đã biến mất hoàn toàn
  */
 export const stopLoading = (vm) => {
-    if (vm && vm.$store) {
-        vm.$store.dispatch('loading/stop');
-    } else {
-        console.error('Vue instance or Store not available');
-    }
+    return new Promise((resolve) => {
+        if (vm && vm.$store) {
+            // Đăng ký listener một lần để đợi event 'loading-complete'
+            const handler = () => {
+                vm.$root.$off('loading-complete', handler);
+                resolve();
+            };
+            vm.$root.$once('loading-complete', handler);
+            
+            // Dispatch stop action
+            vm.$store.dispatch('loading/stop');
+            
+            // Fallback: Nếu không nhận được event sau 1s, vẫn resolve
+            setTimeout(() => {
+                vm.$root.$off('loading-complete', handler);
+                resolve();
+            }, 1000);
+        } else {
+            console.error('Vue instance or Store not available');
+            resolve();
+        }
+    });
 };
 
 /**
@@ -51,5 +73,5 @@ export const stopLoading = (vm) => {
  * @param {Object} vm - Vue instance
  */
 export const forceCloseLoading = (vm) => {
-    stopLoading(vm);
+    return stopLoading(vm);
 };

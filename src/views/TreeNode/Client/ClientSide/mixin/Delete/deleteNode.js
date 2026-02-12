@@ -64,32 +64,37 @@ export default {
                         await deletePromise;
                     }
 
-                    // Restore original message và hiển thị messages sau khi loading đã đóng
-                    this.$message = originalMessage;
-                    
-                    if (capturedMessages.length > 0) {
-                        const last = capturedMessages[capturedMessages.length - 1];
-                        this.$message[last.type](last.message);
-                    }
-
-                    if (deleteSuccess) {
-                        this.selectedNodes = [];
-                        this.$emit('close-properties');
-                    }
-
                 } catch (error) {
                     // Restore original message
                     this.$message = originalMessage;
                     
-                    // Hiển thị lỗi
+                    // Đóng loading và đợi modal biến mất
+                    await close();
+                    
+                    // Hiển thị lỗi sau khi modal đã biến mất
                     this.$message.error(
                         error.message === 'Timeout' 
                             ? 'Delete timed out' 
                             : 'Error: ' + error.message
                     );
+                    return; // Thoát sớm nếu có lỗi
                 } finally {
-                    // Đảm bảo loading luôn được đóng (reset Store)
-                    close();
+                    // Restore original message
+                    this.$message = originalMessage;
+                }
+
+                // Đóng loading và đợi modal biến mất hoàn toàn
+                await close();
+                
+                // Hiển thị messages SAU KHI loading đã đóng
+                if (capturedMessages.length > 0) {
+                    const last = capturedMessages[capturedMessages.length - 1];
+                    this.$message[last.type](last.message);
+                }
+
+                if (deleteSuccess) {
+                    this.selectedNodes = [];
+                    this.$emit('close-properties');
                 }
             })
             .catch(() => {
