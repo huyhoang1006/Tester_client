@@ -1,22 +1,58 @@
 import Vue from "vue"
+import { startLoading } from '@/utils/loading'
+
 export default {
     methods: {
         async handlePowerConfirm() {
+            const { close, timeoutValue } = startLoading(this, { 
+                action: 'add',
+                type: 'default' 
+            });
+
+            const originalMessage = this.$message;
+            let capturedMessages = [];
+
+            this.$message = {
+                success: (msg) => { capturedMessages.push({ type: 'success', message: msg }) },
+                error: (msg) => { capturedMessages.push({ type: 'error', message: msg }) },
+                warning: (msg) => { capturedMessages.push({ type: 'warning', message: msg }) },
+                info: (msg) => { capturedMessages.push({ type: 'info', message: msg }) }
+            };
+
             try {
+                await new Promise(resolve => setTimeout(resolve, 200));
+
                 const dialogRef = this.$refs.powerCableDialog
                 const powerCable = dialogRef ? dialogRef.getPowerCableRef() : null
                 if (powerCable) {
-                    const { success, data } = await powerCable.saveAsset()
+                    const savePromise = powerCable.saveAsset();
+
+                    let result;
+                    if (timeoutValue > 0) {
+                        const timeoutPromise = new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error('Timeout')), timeoutValue)
+                        );
+                        result = await Promise.race([savePromise, timeoutPromise]);
+                    } else {
+                        result = await savePromise;
+                    }
+
+                    const { success, data } = result;
+
+                    this.$message = originalMessage;
+
+                    if (capturedMessages.length > 0) {
+                        const last = capturedMessages[capturedMessages.length - 1];
+                        this.$message[last.type](last.message);
+                    }
+
                     if (success) {
-                        this.$message.success('Power Cable saved successfully')
-                        this.signPower = false
-                        
-                        // Reset form after successful save
-                        this.resetFormAfterSave(powerCable)
+                        this.$message.success('Power Cable saved successfully');
+                        this.signPower = false;
+                        this.resetFormAfterSave(powerCable);
                         
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
-                            // Handle different data structures - check for asset property or direct access
                             const assetData = data.asset || data
                             const newRow = {
                                 mrid: assetData.mrid,
@@ -37,13 +73,15 @@ export default {
                                 this.$message.error('Parent node not found in tree')
                             }
                         }
-                    } else {
-                        this.$message.error('Failed to save Power Cable')
                     }
                 }
             } catch (error) {
-                this.$message.error('Some error occur')
-                console.error(error)
+                this.$message = originalMessage;
+                this.$message.error(error.message === 'Timeout' ? 'Save timed out' : 'Some error occur');
+                console.error(error);
+            } finally {
+                // Đảm bảo loading luôn được đóng
+                close();
             }
         },
         handlePowerCancel() {

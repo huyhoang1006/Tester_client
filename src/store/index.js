@@ -1,9 +1,13 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import loading from './modules/loading'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
+    modules: {
+        loading
+    },
     state: {
         isAuthenticated: false,
         token: null,
@@ -15,7 +19,12 @@ export default new Vuex.Store({
         selectedJob: [],
         selectedLocationSync: [],
         selectedAssetSync: [],
-        selectedJobSync: []
+        selectedJobSync: [],
+        // Timeout configuration for loading
+        timeouts: {
+            default: 10000,  // 10 seconds for normal operations
+            heavy: 30000     // 30 seconds for heavy operations
+        }
     },
     getters: {
         getUser(state) {
@@ -129,5 +138,4 @@ export default new Vuex.Store({
             commit('SET_SERVER_ADDR', serverAddr)
         }
     },
-    modules: {}
 })

@@ -1,3 +1,4 @@
+import { startLoading } from '@/utils/loading'
 import TransformerMixin from '@/views/AssetView/Transformer/mixin/index.js'
 import SurgeArresterMixin from '@/views/AssetView/SurgeArrester/mixin/index.js'
 import BushingMixin from '@/views/AssetView/Bushing/mixin/index.js'
@@ -134,7 +135,14 @@ export default {
                 type: 'info'
             })
                 .then(async () => {
-                    let result = {success: false}
+                    const { close } = startLoading(this, {
+                        action: 'add',
+                        customText: 'Duplicating...',
+                        type: 'default'
+                    });
+
+                    try {
+                        let result = {success: false}
 
                     if (node.asset === 'Transformer') {
                         result = await this.processDuplicateAsset(
@@ -253,6 +261,12 @@ export default {
                         }
                     } else {
                         this.$message.error(result.message || 'Failed to duplicate.')
+                    }
+                    } catch (error) {
+                        console.error('Error during duplicate:', error)
+                        this.$message.error('An error occurred while duplicating')
+                    } finally {
+                        close();
                     }
                 })
                 .catch((e) => {

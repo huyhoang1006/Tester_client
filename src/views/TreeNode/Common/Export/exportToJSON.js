@@ -1,3 +1,4 @@
+import { startLoading } from '@/utils/loading'
 import * as BreakerMapping from '@/views/Mapping/Breaker/index'
 import * as TransformerMapping from '@/views/Mapping/Transformer/index'
 import * as SubstationMapping from '@/views/Mapping/Substation/index'
@@ -49,7 +50,17 @@ export default {
                     VoltageLevelMapping
                 },
                 userId: this.$store.state.user.user_id,
-                messageHandler: this.$message
+                messageHandler: this.$message,
+                loadingHandler: {
+                    start: () => {
+                        const { close } = startLoading(this, {
+                            action: 'export',
+                            customText: 'Preparing export data...',
+                            type: 'default'
+                        });
+                        return close;
+                    }
+                }
             }
 
             await exportNodeToJSONUtil(this.selectedNodes, type, dependencies)

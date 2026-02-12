@@ -1,3 +1,5 @@
+import { startLoading } from '@/utils/loading';
+
 export default {
     methods: {
         // handleTargetNodeClick(data, node, component) {
@@ -57,6 +59,13 @@ export default {
                 type: 'warning'
             })
                 .then(async () => {
+                    // Bắt đầu loading sau khi user confirm
+                    const { close } = startLoading(this, {
+                        action: 'move',
+                        customText: 'Moving...',
+                        type: 'default'
+                    });
+
                     try {
                         let success = false
                         let updateResult = null
@@ -186,6 +195,9 @@ export default {
                     } catch (error) {
                         console.error(error)
                         this.$message.error('Error: ' + error.message)
+                    } finally {
+                        // Đảm bảo loading luôn được đóng
+                        close();
                     }
                 })
                 .catch((err) => {
