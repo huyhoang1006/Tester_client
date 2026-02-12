@@ -818,6 +818,13 @@ export default {
             this.$message.error('Failed to fetch log data.')
         }
     },
+mounted() {
+    window.addEventListener("keydown", this.handleKeyDown);
+    this.$nextTick(async () => {
+        await this.showLocationRoot();   
+        await this.showOwnerServerRoot(); 
+    });
+},
     methods: {
         serverSwap(serverSign) {
             if (serverSign == true) {

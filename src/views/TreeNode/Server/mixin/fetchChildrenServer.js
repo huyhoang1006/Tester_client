@@ -20,7 +20,7 @@ export default {
                                 row.parentArr = [...node.parentArr]
                                 row.parentArr.push({
                                     id: node.id,
-                                    parent: node.name
+                                    parent: node.aliasName || node.name
                                 })
                             })
                             newRows.push(...newRowsOwner)
@@ -38,7 +38,7 @@ export default {
                                 row.parentArr = [...node.parentArr]
                                 row.parentArr.push({
                                     id: node.id,
-                                    parent: node.name
+                                    parent: node.aliasName || node.name
                                 })
                             })
                             newRows.push(...newRowsSubstation)
@@ -58,7 +58,7 @@ export default {
                                     row.parentArr = [...node.parentArr]
                                     row.parentArr.push({
                                         id: node.id,
-                                        parent: node.name
+                                        parent: node.aliasName || node.name
                                     })
                                 })
                                 newRows.push(...newRowsBay)
@@ -80,7 +80,7 @@ export default {
                                     row.parentArr = [...node.parentArr]
                                     row.parentArr.push({
                                         id: node.id,
-                                        parent: node.name
+                                        parent: node.aliasName || node.name
                                     })
                                 })
                                 newRows.push(...newRowsVoltageLevel)
@@ -103,7 +103,7 @@ export default {
                                     row.parentArr = [...node.parentArr]
                                     row.parentArr.push({
                                         id: node.id,
-                                        parent: node.name
+                                        parent: node.aliasName || node.name
                                     })
                                 })
                                 newRows.push(...newRowsVoltageLevel)
@@ -126,7 +126,7 @@ export default {
                                     row.parentArr = [...node.parentArr]
                                     row.parentArr.push({
                                         id: node.id,
-                                        parent: node.name
+                                        parent: node.aliasName || node.name
                                     })
                                 })
                                 newRows.push(...newRowsBay)
@@ -150,7 +150,7 @@ export default {
                                     row.parentArr = [...node.parentArr]
                                     row.parentArr.push({
                                         id: node.id,
-                                        parent: node.name
+                                        parent: node.aliasName || node.name
                                     })
                                 })
                                 newRows.push(...newRowsVoltageLevel)

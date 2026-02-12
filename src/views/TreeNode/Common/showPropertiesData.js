@@ -39,7 +39,7 @@ export default {
                 await this.loadPathMap(node)
                 this.pathMapServer.push({
                     id: node.id,
-                    parent: node.name
+                    parent: node.aliasName || node.name
                 })
             }
         },

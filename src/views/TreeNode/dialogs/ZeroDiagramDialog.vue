@@ -28,24 +28,33 @@
             <i class="el-icon-cpu"></i> assets
           </div>
           <div class="equipment-grid">
-              <div v-for="(eq, eIndex) in directSubstationAssets" 
-                :key="'direct-' + eIndex" 
+            <el-tooltip 
+              v-for="(eq, eIndex) in directSubstationAssets"
+              :key="'direct-' + eIndex"
+              effect="dark"
+              :content="eq.name"
+              placement="top"
+              :open-delay="200"
+              :disabled="activeEqKey === 'direct-' + eIndex"
+            >
+              <div 
                 class="modern-eq-item"
                 :class="{ 'is-active': activeEqKey === 'direct-' + eIndex }"
-                @click.stop="toggleActions('direct-' + eIndex)">
-                <div class="eq-top-label" v-if="eq.name" :title="eq.name">{{ eq.name }}</div>
-              <div class="eq-content-wrapper">
-                <div class="eq-icon-container">
-                  <component :is="getIconComponent(eq.type)" />
+                @click.stop="toggleActions('direct-' + eIndex)"
+              >
+                <div class="eq-content-wrapper">
+                  <div class="eq-icon-container">
+                    <component :is="getIconComponent(eq.type)" />
+                  </div>
+                  <span class="eq-name">{{ eq.name }}</span>
                 </div>
-                <span class="eq-name" :title="eq.name">{{ eq.name }}</span>
-              </div>
 
-              <div class="eq-floating-actions">
-                <i class="el-icon-edit" title="Edit" @click.stop="handleAction('edit', eq)"></i>
-                <i class="el-icon-delete" title="Delete" @click.stop="handleAction('delete', eq)"></i>
+                <div class="eq-floating-actions">
+                  <i class="el-icon-edit" title="Edit" @click.stop="handleAction('edit', eq)"></i>
+                  <i class="el-icon-delete" title="Delete" @click.stop="handleAction('delete', eq)"></i>
+                </div>
               </div>
-            </div>
+            </el-tooltip>
           </div>
         </section>
         <div v-for="(voltage, vIndex) in voltageLevels" :key="vIndex" class="voltage-group">
@@ -65,24 +74,32 @@
               </div>
               
               <div class="equipment-grid">
-                 <div v-for="(eq, eIndex) in bay.equipments" 
-                   :key="eIndex" 
-                   class="modern-eq-item compact"
-                   :class="{ 'is-active': activeEqKey === `v${vIndex}-b${bIndex}-e${eIndex}` }"
-                   @click.stop="toggleActions(`v${vIndex}-b${bIndex}-e${eIndex}`)">
-                  <div class="eq-top-label" v-if="eq.name" :title="eq.name">{{ eq.name }}</div>
-                <div class="eq-content-wrapper">
-                  <div class="eq-icon-container">
-                    <component :is="getIconComponent(eq.type)" />
+                <el-tooltip 
+                  v-for="(eq, eIndex) in bay.equipments" 
+                  :key="eIndex"
+                  effect="dark"
+                  :content="eq.name"
+                  placement="top"
+                  :open-delay="200"
+                  :disabled="activeEqKey === `v${vIndex}-b${bIndex}-e${eIndex}`"
+                >
+                  <div 
+                    class="modern-eq-item compact"
+                    :class="{ 'is-active': activeEqKey === `v${vIndex}-b${bIndex}-e${eIndex}` }"
+                    @click.stop="toggleActions(`v${vIndex}-b${bIndex}-e${eIndex}`)"
+                  >
+                    <div class="eq-content-wrapper">
+                      <div class="eq-icon-container">
+                        <component :is="getIconComponent(eq.type)" />
+                      </div>
+                      <span class="eq-name">{{ eq.name }}</span>
+                    </div>
+                    <div class="eq-floating-actions">
+                      <i class="el-icon-edit" title="Edit" @click.stop="handleAction('edit', eq)"></i>
+                      <i class="el-icon-delete" title="Delete" @click.stop="handleAction('delete', eq)"></i>
+                    </div>
                   </div>
-                  <span class="eq-name" :title="eq.name">{{ eq.name }}</span>
-                </div>
-
-                <div class="eq-floating-actions">
-                  <i class="el-icon-edit" title="Edit" @click.stop="handleAction('edit', eq)"></i>
-                  <i class="el-icon-delete" title="Delete" @click.stop="handleAction('delete', eq)"></i>
-                </div>
-              </div>
+                </el-tooltip>
               </div>
             </div>
           </div>
@@ -336,7 +353,7 @@ $danger: #ef4444;
 }
 
 .bay-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; align-items: start;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 16px; align-items: start;
 }
 
 .modern-bay-card {
@@ -350,7 +367,7 @@ $danger: #ef4444;
 }
 
 .equipment-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 14px;
 }
 
 .modern-eq-item {
@@ -374,14 +391,14 @@ $danger: #ef4444;
   }
 
   .eq-icon-container {
-    width: 28px;
-    height: 28px;
+    width: 40px;
+    height: 40px;
     color: $text-muted;
     margin-bottom: 6px;
   }
 
   .eq-name {
-    font-size: 0.65rem;
+    font-size: 0.85rem;
     color: $text-muted;
     font-weight: 600;
     max-width: 90px;
@@ -390,27 +407,6 @@ $danger: #ef4444;
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: center;
-  }
-
-  .eq-top-label {
-    position: absolute;
-    top: -34px;
-    left: 50%;
-    transform: translateX(-50%) translateY(6px);
-    background: $white;
-    color: $text-dark;
-    padding: 6px 10px;
-    font-size: 0.85rem;
-    border-radius: 6px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-    max-width: 360px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.18s ease;
-    z-index: 50;
   }
 
   &.is-active {
@@ -427,19 +423,11 @@ $danger: #ef4444;
       transform: translateX(-50%) translateY(-15px);
       pointer-events: auto;
     }
-    .eq-top-label {
-      opacity: 0;
-      transform: translateX(-50%) translateY(6px);
-    }
   }
 
   &:hover:not(.is-active) {
     border-color: $accent-blue;
     .eq-icon-container { color: $accent-blue; }
-    .eq-top-label {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
   }
 }
 
