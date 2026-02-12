@@ -1,6 +1,6 @@
 <template>
   <div ref="sidebarClient" class="sidebar">
-    <div class="title-temp">
+    <!-- <div class="title-temp">
       <div ref="tabContainer" class="tab-container">
         <div @contextmenu.prevent="showContext" ref="locationRoot" @click="triggerClickLocation" class="location">
           Organisation
@@ -8,9 +8,10 @@
       </div>
 
       <contextMenu ref="contextSubstation" @show-addSubs="$emit('show-addSubs', $event)"></contextMenu>
-    </div>
+    </div> -->
+<contextMenu ref="contextSubstation" @show-addSubs="$emit('show-addSubs', $event)"></contextMenu>
 
-    <div class="child-nav">
+    <div class="child-nav" >
       <ul>
         <TreeNode v-for="item in organisationClientList" :key="item.id" :node="item" :selectedNodes="selectedNodes"
           @update:selectedNodes="$emit('update:selectedNodes', $event)"
