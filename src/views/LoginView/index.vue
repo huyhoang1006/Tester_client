@@ -1,46 +1,47 @@
 <template>
-    <div id="login" class="login-page" :style="{ backgroundImage: `url(${bgImage})` }">
+    <div id="login" class="login-page"
+        :style="{ backgroundImage: `url(${require('@/assets/images/login-background.jpg')})` }">
         <div class="app-container">
             <div class="sidebar">
                 <div class="brand-section">
-                    <div class="brand-logo">
-                        <img src="@/assets/images/atenergy_logo_dark.png" class="brand-logo-img" />
+                    <div class="brand-logo no-select">
+                        <img src="@/assets/images/atenergy_logo_dark.png" class="brand-logo-img" draggable="false"/>
                     </div>
-                    <div class="sidebar-title">
+                    <div class="sidebar-title no-select">
                         <div class="title-row">
                             <h2 class="asset">Asset</h2>
                             <h2>Health</h2>
                         </div>
                         <h2>Management</h2>
                     </div>
-                    <ul class="feature-list">
+                    <ul class="feature-list no-select">
                         <li>Asset data modeling</li>
                         <li>Maintenance strategy selection</li>
                         <li>Evaluation of test results</li>
                     </ul>
                 </div>
-                <div class="footer-text">Standard by IEC 61968</div>
+                <div class="footer-text no-select">Standard by IEC 61968</div>
             </div>
             <div class="main-content">
-                <div class="mobile-header">
+                <div class="mobile-header no-select">
                     <div class="brand-logo">
-                        <img src="@/assets/images/atenergy_logo_dark.png" class="brand-logo-img" />
+                        <img src="@/assets/images/atenergy_logo_dark.png" class="brand-logo-img" draggable="false" />
                     </div>
                 </div>
-                <div class="login-header">
+                <div class="login-header no-select">
                     <h1>{{ greeting.title }}</h1>
                     <p class="login-desc">{{ greeting.desc }}</p>
                 </div>
                 <el-form :model="model" :rules="loginRules" ref="form" @submit.native.prevent="login">
                     <div class="form-group">
-                        <label class="form-label">Username</label>
+                        <label class="form-label no-select">Username</label>
                         <el-form-item prop="username">
                             <el-input v-model="model.username" placeholder="Username"
                                 prefix-icon="fas fa-user"></el-input>
                         </el-form-item>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Password</label>
+                        <label class="form-label no-select">Password</label>
                         <el-form-item prop="password">
                             <el-input prefix-icon="fas fa-lock" placeholder="Password" type="password"
                                 v-model="model.password" show-password></el-input>
@@ -53,7 +54,7 @@
                         native-type="submit">Login</el-button>
                 </el-form>
             </div>
-            <div class="mobile-footer">
+            <div class="mobile-footer no-select">
                 Standard by IEC 61968
             </div>
         </div>
@@ -68,8 +69,6 @@ export default {
     name: 'LoginView',
     data() {
         return {
-            bgImage: require('@/assets/images/login-background.jpg'),
-            formLabelWidth: '140px',
             model: {
                 // Tài khoản test mặc định
                 username: 'EVN_HCM',
@@ -198,7 +197,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 * {
     margin: 0;
     padding: 0;
@@ -208,13 +207,14 @@ export default {
 .login-page {
     font-family: 'Segoe UI', sans-serif;
     height: 100%;
-    /* background: url('~@/assets/images/login-background.jpg') no-repeat center center; */
+    background-repeat: no-repeat;
+    background-position: center center;
     background-size: cover;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    position: relative
+    position: relative;
 }
 
 .login-page::before {
@@ -225,7 +225,7 @@ export default {
     width: 100%;
     height: 100%;
     background: linear-gradient(135deg, rgba(1, 37, 150, 0.15) 0%, rgba(204, 5, 20, 0.1) 100%);
-    backdrop-filter: blue(3px);
+    /* backdrop-filter: blur(5px); */
     z-index: 0;
 }
 
@@ -236,21 +236,21 @@ export default {
     z-index: 10;
     display: flex;
     background: rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.25);
     border-radius: 24px;
-    box-shadow: 0 25px 70px rgba(1, 37, 150, 0.3),
-        0 10px 30px rgba(0, 0, 0, 0.15),
-        inset 0 1px 1px rgba(255, 255, 255, 0.3);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3),
+        0 10px 20px rgba(0, 0, 0, 0.15),
+        inset 0 1px 1px rgba(255, 255, 255, 0.4);
     overflow: hidden;
 }
 
 .sidebar {
     width: 350px;
     background: linear-gradient(165deg, rgba(1, 37, 150, 0.85) 0%, rgba(1, 37, 150, 0.92) 100%);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
     border-right: 1px solid rgba(255, 255, 255, 0.15);
     padding: 48px 36px;
     display: flex;
@@ -451,7 +451,7 @@ export default {
     color: #ffffff;
 }
 
-::v-deep(.submit-btn.el-button) {
+.submit-btn.el-button {
     width: 100%;
     padding: 14px;
     background: linear-gradient(180deg, #1e5bb8 0%, #0f3d80 100%);
@@ -461,20 +461,20 @@ export default {
     font-weight: 600;
     color: white;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.25s ease;
     margin-bottom: 16px;
     box-shadow: 0 4px 15px rgba(30, 91, 184, 0.4),
         0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-::v-deep(.submit-btn.el-button:hover) {
+.submit-btn.el-button:hover {
     background: linear-gradient(180deg, #2869cc 0%, #1e5bb8 100%);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(30, 91, 184, 0.5),
         0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
-::v-deep(.submit-btn.el-button:active) {
+.submit-btn.el-button:active {
     transform: translateY(0);
     box-shadow: 0 2px 10px rgba(30, 91, 184, 0.4);
 }
@@ -485,6 +485,15 @@ export default {
 
 .mobile-footer {
     display: none;
+}
+
+.no-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    cursor: default;
 }
 
 @media (max-width: 991px) {

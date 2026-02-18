@@ -25,6 +25,6 @@ export default {
   height: 100vh;
   overflow: hidden;
   box-sizing: border-box;
-  border: 2px #012596 solid;
+  border: none;
 }
 </style>
