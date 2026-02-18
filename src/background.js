@@ -1,42 +1,36 @@
 'use strict'
 
-import { app, protocol, BrowserWindow, ipcMain, screen } from 'electron'
-import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
-import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
+import {app, protocol, BrowserWindow, ipcMain, screen} from 'electron'
+import {createProtocol} from 'vue-cli-plugin-electron-builder/lib'
+import installExtension, {VUEJS_DEVTOOLS} from 'electron-devtools-installer'
 import sqlite3 from 'sqlite3'
-import * as updateModule from "./update/index"
+import * as updateModule from './update/index'
 import fs from 'fs'
 import path from 'path'
-import { v4 as newUuid } from 'uuid'
-import { userFunc } from '@/function'
-import { ipcUploadCustom } from '@/ipcmain'
-import { ipcCim, ipcEntity, ipcAppOption } from '@/ipcmain'
-let win;
+import {v4 as newUuid} from 'uuid'
+import {userFunc} from '@/function'
+import {ipcUploadCustom} from '@/ipcmain'
+import {ipcCim, ipcEntity, ipcAppOption} from '@/ipcmain'
+let win
 
 const nameDB = 'database.db'
 const pathDB = path.join(__dirname, `/../database/${nameDB}`)
 const pathUpload = path.join(__dirname, `/../attachment`)
-const db = new sqlite3.Database(pathDB);
-db.run("PRAGMA foreign_keys=ON");
-
-
+const db = new sqlite3.Database(pathDB)
+db.run('PRAGMA foreign_keys=ON')
 
 const isDevelopment = process.env.NODE_ENV !== 'development'
 
 // const {dialog} = require('@electron/remote')
 // Scheme must be registered before the app is ready
-protocol.registerSchemesAsPrivileged([
-    { scheme: 'app', privileges: { secure: true, standard: true } }
-])
-
+protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: {secure: true, standard: true}}])
 
 function adjustWindowSize() {
-    const primaryDisplay = screen.getPrimaryDisplay();
-    const { width, height } = primaryDisplay.workAreaSize; // Lấy kích thước mà không bao gồm taskbar
+    const primaryDisplay = screen.getPrimaryDisplay()
+    const {width, height} = primaryDisplay.workAreaSize // Lấy kích thước mà không bao gồm taskbar
 
-    win.setBounds({ x: 0, y: 0, width, height }); // Cập nhật kích thước cửa sổ
+    win.setBounds({x: 0, y: 0, width, height}) // Cập nhật kích thước cửa sổ
 }
-
 
 async function createWindow() {
     // Create the browser window.
@@ -45,7 +39,6 @@ async function createWindow() {
         frame: false,
         autoHideMenuBar: true,
         webPreferences: {
-
             // Use pluginOptions.nodeIntegration, leave this alone
             // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
             nodeIntegration: true,
@@ -56,11 +49,21 @@ async function createWindow() {
         }
     })
 
-
-
     // full screen
     adjustWindowSize()
-    win.show();
+    win.show()
+
+    const sendWindowState = () => {
+        if (win && !win.isDestroyed()) {
+            const isMax = win.isMaximized()
+            win.webContents.send('window-state-change', isMax)
+        }
+    }
+
+    win.on('maximize', sendWindowState)
+    win.on('unmaximize', sendWindowState)
+    win.on('restore', sendWindowState)
+    win.on('resized', sendWindowState)
 
     if (process.env.WEBPACK_DEV_SERVER_URL) {
         // Load the url of the dev server if in development mode
@@ -93,34 +96,29 @@ app.on('activate', async () => {
 
 const uploadAttachment = async (id_foreign, type, info) => {
     return new Promise((resolve, reject) => {
-        db.run('INSERT INTO attachment(id, id_foreign, type, name)' +
-            ' VALUES(?, ?, ?, ?)',
-            [
-                newUuid(), id_foreign, type, JSON.stringify(info)
-            ], function (err) {
+        db.run(
+            'INSERT INTO attachment(id, id_foreign, type, name)' + ' VALUES(?, ?, ?, ?)',
+            [newUuid(), id_foreign, type, JSON.stringify(info)],
+            function (err) {
                 if (err) reject(err)
                 resolve(true)
-            })
-    });
+            }
+        )
+    })
 }
 
 const updateAttachment = async (id, info) => {
     return new Promise((resolve, reject) => {
-        db.run('UPDATE attachment' +
-            ' SET name = ?' +
-            ' WHERE id_foreign = ?',
-            [
-                JSON.stringify(info), id,
-            ], function (err) {
-                if (err) reject(err)
-                resolve(true)
-            })
+        db.run('UPDATE attachment' + ' SET name = ?' + ' WHERE id_foreign = ?', [JSON.stringify(info), id], function (err) {
+            if (err) reject(err)
+            resolve(true)
+        })
     })
 }
 
 const getAllAttachment = async (id_foreign, type) => {
     return new Promise((resolve, reject) => {
-        db.all("SELECT * FROM attachment where id_foreign=? and type=?", [id_foreign, type], (err, row) => {
+        db.all('SELECT * FROM attachment where id_foreign=? and type=?', [id_foreign, type], (err, row) => {
             if (err) reject(err)
             resolve(row)
         })
@@ -129,7 +127,7 @@ const getAllAttachment = async (id_foreign, type) => {
 
 const deleteAttachment = (id_foreign) => {
     return new Promise((resolve, reject) => {
-        db.all("DELETE FROM attachment WHERE id_foreign = ?", [id_foreign], (err, row) => {
+        db.all('DELETE FROM attachment WHERE id_foreign = ?', [id_foreign], (err, row) => {
             if (err) reject(err)
             resolve(row)
         })
@@ -138,7 +136,7 @@ const deleteAttachment = (id_foreign) => {
 
 const getOnlineMonitoringData = (assetId) => {
     return new Promise((resolve, reject) => {
-        db.all("SELECT * FROM online_monitor where asset_id=?", [assetId], (err, row) => {
+        db.all('SELECT * FROM online_monitor where asset_id=?', [assetId], (err, row) => {
             if (err) reject(err)
             resolve(row)
         })
@@ -147,37 +145,74 @@ const getOnlineMonitoringData = (assetId) => {
 
 const updateOnlineMonitoringData = (online_monitoring) => {
     return new Promise((resolve, reject) => {
-        db.run('UPDATE online_monitor' +
-            ' SET ageing_insulation = ?, moisture_insulation = ?, bushings_online = ?, patital_discharge = ?, dga = ?, bushing_df_worst = ?,  bushing_df_average= ?, bushing_c_worst   = ?, bushing_c_average = ?, condition_mois    = ?, health_index      = ?, weight_bushing_df = ?, weight_bushing_c  = ?, weight_mois = ?' +
-            ' WHERE asset_id = ?',
+        db.run(
+            'UPDATE online_monitor' +
+                ' SET ageing_insulation = ?, moisture_insulation = ?, bushings_online = ?, patital_discharge = ?, dga = ?, bushing_df_worst = ?,  bushing_df_average= ?, bushing_c_worst   = ?, bushing_c_average = ?, condition_mois    = ?, health_index      = ?, weight_bushing_df = ?, weight_bushing_c  = ?, weight_mois = ?' +
+                ' WHERE asset_id = ?',
             [
-                JSON.stringify(online_monitoring.aois), JSON.stringify(online_monitoring.moip), JSON.stringify(online_monitoring.bushings), JSON.stringify(online_monitoring.pd), JSON.stringify(online_monitoring.dga), online_monitoring.bushing_df_worst, online_monitoring.bushing_df_average, online_monitoring.bushing_c_worst, online_monitoring.bushing_c_average, online_monitoring.condition_mois, online_monitoring.health_index, online_monitoring.weight_bushing_df, online_monitoring.weight_bushing_c, online_monitoring.weight_mois, online_monitoring.asset_id
-            ], function (err) {
+                JSON.stringify(online_monitoring.aois),
+                JSON.stringify(online_monitoring.moip),
+                JSON.stringify(online_monitoring.bushings),
+                JSON.stringify(online_monitoring.pd),
+                JSON.stringify(online_monitoring.dga),
+                online_monitoring.bushing_df_worst,
+                online_monitoring.bushing_df_average,
+                online_monitoring.bushing_c_worst,
+                online_monitoring.bushing_c_average,
+                online_monitoring.condition_mois,
+                online_monitoring.health_index,
+                online_monitoring.weight_bushing_df,
+                online_monitoring.weight_bushing_c,
+                online_monitoring.weight_mois,
+                online_monitoring.asset_id
+            ],
+            function (err) {
                 if (err) reject(err)
                 resolve(true)
-            })
+            }
+        )
     })
 }
 
 const insertOnlineMonitoringData = (assetId, online_monitoring) => {
     // const id = online_monitoring.id || newUuid()
     return new Promise((resolve, reject) => {
-        db.run('INSERT INTO online_monitor(id, asset_id, ageing_insulation, moisture_insulation, bushings_online, patital_discharge, dga, bushing_df_worst, bushing_df_average, bushing_c_worst, bushing_c_average, condition_mois, health_index, weight_bushing_df, weight_bushing_c, weight_mois, created_on, created_by, updated_on, updated_by )' +
-            ' VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )',
-            [online_monitoring.id, assetId,
-            JSON.stringify(online_monitoring.aois), JSON.stringify(online_monitoring.moip), JSON.stringify(online_monitoring.bushings), JSON.stringify(online_monitoring.pd), JSON.stringify(online_monitoring.dga), online_monitoring.bushing_df_worst,
-            online_monitoring.bushing_df_average, online_monitoring.bushing_c_worst, online_monitoring.bushing_c_average, online_monitoring.condition_mois, online_monitoring.health_index, online_monitoring.weight_bushing_df, online_monitoring.weight_bushing_c, online_monitoring.weight_mois,
-            online_monitoring.created_on, online_monitoring.created_by, online_monitoring.updated_on, online_monitoring.updated_by
-            ], function (err) {
+        db.run(
+            'INSERT INTO online_monitor(id, asset_id, ageing_insulation, moisture_insulation, bushings_online, patital_discharge, dga, bushing_df_worst, bushing_df_average, bushing_c_worst, bushing_c_average, condition_mois, health_index, weight_bushing_df, weight_bushing_c, weight_mois, created_on, created_by, updated_on, updated_by )' +
+                ' VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )',
+            [
+                online_monitoring.id,
+                assetId,
+                JSON.stringify(online_monitoring.aois),
+                JSON.stringify(online_monitoring.moip),
+                JSON.stringify(online_monitoring.bushings),
+                JSON.stringify(online_monitoring.pd),
+                JSON.stringify(online_monitoring.dga),
+                online_monitoring.bushing_df_worst,
+                online_monitoring.bushing_df_average,
+                online_monitoring.bushing_c_worst,
+                online_monitoring.bushing_c_average,
+                online_monitoring.condition_mois,
+                online_monitoring.health_index,
+                online_monitoring.weight_bushing_df,
+                online_monitoring.weight_bushing_c,
+                online_monitoring.weight_mois,
+                online_monitoring.created_on,
+                online_monitoring.created_by,
+                online_monitoring.updated_on,
+                online_monitoring.updated_by
+            ],
+            function (err) {
                 if (err) reject(err)
                 resolve(true)
-            })
+            }
+        )
     })
 }
 
 const deleteMonitorsByAssetId = (asset_id) => {
     return new Promise((resolve, reject) => {
-        db.get("DELETE FROM online_monitor WHERE asset_id = ?", [asset_id], (err, row) => {
+        db.get('DELETE FROM online_monitor WHERE asset_id = ?', [asset_id], (err, row) => {
             if (err) reject(err)
             resolve(row)
         })
@@ -197,9 +232,9 @@ app.on('ready', async () => {
         }
     }
 
-    process.on("unhandledRejection", (reason, p) => {
-        console.error("🔥 UNHANDLED PROMISE:", reason);
-    });
+    process.on('unhandledRejection', (reason, p) => {
+        console.error('🔥 UNHANDLED PROMISE:', reason)
+    })
 
     await updateModule.active()
 
@@ -212,11 +247,11 @@ app.on('ready', async () => {
     // upload attachment
 
     ipcMain.handle('uploadAttachment', async function (event, id_foreign, type, info) {
-        const rs = await uploadAttachment(id_foreign, type, info);
+        const rs = await uploadAttachment(id_foreign, type, info)
         if (rs === true) {
             return {
                 success: true,
-                message: "Success",
+                message: 'Success'
             }
         }
     })
@@ -225,24 +260,23 @@ app.on('ready', async () => {
         let rs
         if (rt.length === 0) {
             rs = await uploadAttachment(id, type, info)
-        }
-        else {
-            rs = await updateAttachment(id, info);
+        } else {
+            rs = await updateAttachment(id, info)
         }
         if (rs === true) {
             return {
                 success: true,
-                message: "Success",
+                message: 'Success',
                 data: rs
             }
         }
     })
     ipcMain.handle('getAllAttachment', async function (event, id_foreign, type) {
         try {
-            const rs = await getAllAttachment(id_foreign, type);
+            const rs = await getAllAttachment(id_foreign, type)
             return {
                 success: true,
-                message: "",
+                message: '',
                 data: rs
             }
         } catch (error) {
@@ -258,21 +292,21 @@ app.on('ready', async () => {
             fs.unlinkSync(path.join(pathUpload, `/${name}`))
             return {
                 success: true,
-                message: "",
+                message: ''
             }
         } catch (error) {
             return {
                 success: false,
-                message: error,
+                message: error
             }
         }
     })
     ipcMain.handle('deleteAttachment', async function (event, id_foreign) {
-        const rs = await deleteAttachment(id_foreign);
+        const rs = await deleteAttachment(id_foreign)
         if (rs === true) {
             return {
                 success: true,
-                message: "Success",
+                message: 'Success'
             }
         }
     })
@@ -291,8 +325,7 @@ app.on('ready', async () => {
 
     ipcMain.handle('getAllUser', async function (event) {
         const _users = await userFunc.getAllUser()
-        if (_users === undefined)
-            return false
+        if (_users === undefined) return false
         else return _users
     })
 
@@ -303,14 +336,14 @@ app.on('ready', async () => {
             if (rs === true) {
                 return {
                     success: true,
-                    message: "Success",
+                    message: 'Success'
                 }
             }
-        }
-        else return {
-            success: false,
-            message: "User is exist"
-        }
+        } else
+            return {
+                success: false,
+                message: 'User is exist'
+            }
     })
 
     ipcMain.handle('changePass', async function (event, user) {
@@ -318,10 +351,9 @@ app.on('ready', async () => {
         if (rs === true) {
             return {
                 success: true,
-                message: "Success"
+                message: 'Success'
             }
-        }
-        else {
+        } else {
             return {
                 success: false,
                 message: rs
@@ -334,7 +366,7 @@ app.on('ready', async () => {
             await updateOnlineMonitoringData(online_monitoring)
             return {
                 success: true,
-                message: "Success"
+                message: 'Success'
             }
         } catch (error) {
             return {
@@ -349,7 +381,7 @@ app.on('ready', async () => {
             await deleteMonitorsByAssetId(assetId)
             return {
                 success: true,
-                message: "Success"
+                message: 'Success'
             }
         } catch (error) {
             return {
@@ -364,7 +396,7 @@ app.on('ready', async () => {
             const rows = await getOnlineMonitoringData(assetId)
             return {
                 success: true,
-                message: "",
+                message: '',
                 data: rows
             }
         } catch (error) {
@@ -375,40 +407,38 @@ app.on('ready', async () => {
             }
         }
     }),
-
-    ipcMain.handle('insertOnlineMonitoringData', async function (event, assetId, online_monitoring) {
-        try {
-            await insertOnlineMonitoringData(assetId, online_monitoring)
-            return {
-                success: true,
-                message: "Success"
+        ipcMain.handle('insertOnlineMonitoringData', async function (event, assetId, online_monitoring) {
+            try {
+                await insertOnlineMonitoringData(assetId, online_monitoring)
+                return {
+                    success: true,
+                    message: 'Success'
+                }
+            } catch (error) {
+                return {
+                    success: false,
+                    message: error
+                }
             }
-        } catch (error) {
-            return {
-                success: false,
-                message: error
-            }
-        }
-    }),
+        }),
+        ipcMain.handle('closeApp', () => {
+            db.close()
+            app.quit()
+        })
 
-    ipcMain.handle("closeApp", () => {
-        db.close()
-        app.quit()
-    });
-
-    ipcMain.handle("minimizeApp", () => {
+    ipcMain.handle('minimizeApp', () => {
         win.minimize()
-    });
+    })
 
-    ipcMain.handle("maximizeApp", () => {
-        win.isMaximized() ? win.unmaximize() : win.maximize();
-    });
+    ipcMain.handle('maximizeApp', () => {
+        win.isMaximized() ? win.unmaximize() : win.maximize()
+    })
 
     await createWindow()
 
     screen.on('display-metrics-changed', () => {
-        adjustWindowSize();
-    });
+        adjustWindowSize()
+    })
 })
 
 // Exit cleanly on request from parent process in development mode.

@@ -1,6 +1,6 @@
 <template>
     <div id="ratings" class="mgy-5">
-        <el-row style="margin-top: 20px; margin-bottom: 10px;">
+        <el-row>
             <el-col :span="24">
                 <div style="font-size: 12px;" class="header-toggle pointer" @click="openRatings = !openRatings">
                     <i v-if="openRatings" class="fa-solid fa-caret-up"></i>
@@ -10,8 +10,8 @@
             </el-col>
         </el-row>
         <div class="content-toggle" v-if="openRatings">
-            <el-row style="width: 100%;" class="content">
-                <el-col :span="8" class="col-content">
+            <el-row :gutter="20" class="content">
+                <el-col :xs="24" :md="16" :lg="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Rated voltage">
                             <el-col :span="24" class="pdr-0">
@@ -51,11 +51,13 @@
                     </el-form>
                 </el-col>
             </el-row>
-            <el-row style="margin-top: 20px; margin-bottom: 20px; width: 100%;" class="content">
-                <div class="bolder">Power frequency withstand voltage</div>
+            <el-row :gutter="20" class="content mgy-10">
+                <el-col :span="24">
+                    <div class="bolder">Power frequency withstand voltage</div>
+                </el-col>
             </el-row>
-            <el-row style="width: 100%;" class="content">
-                <el-col :span="8" class="col-content">
+            <el-row :gutter="20" class="content">
+                <el-col :xs="24" :md="16" :lg="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="- to earth and between poles ">
                             <el-col :span="24" class="pdr-0">
@@ -79,20 +81,20 @@
 </template>
 <script>
 export default {
-    name : "ratings",
-    props : {
-        ratings : {
-            type : Object,
-            require : true,
+    name: "ratings",
+    props: {
+        ratings: {
+            type: Object,
+            require: true,
         }
     },
     data() {
         return {
-            openRatings : "true",
-            labelWidth : `200px`,
+            openRatings: "true",
+            labelWidth: `175px`,
         }
     },
-    watch : {
+    watch: {
     },
     computed: {
         ratingsData() {
@@ -101,8 +103,10 @@ export default {
     }
 }
 </script>
+
 <style scoped>
-.bolder {
+::v-deep(.bolder) {
     font-size: 12px;
 }
+
 </style>
