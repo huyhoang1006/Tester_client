@@ -4,11 +4,10 @@ import { startLoading } from '@/utils/loading'
 export default {
     methods: {
         async handlePowerConfirm() {
-            const { close, timeoutValue } = startLoading(this, { 
-                action: 'add',
-                type: 'default' 
-            });
+            const license = await window.electronAPI.checkLicense('Power cable');
+            if (license.success && !license.allowed) return this.$message.error(license.message);
 
+            const { close, timeoutValue } = startLoading(this, { action: 'add', type: 'default' });
             const originalMessage = this.$message;
             let capturedMessages = [];
 
@@ -29,7 +28,7 @@ export default {
 
                     let result;
                     if (timeoutValue > 0) {
-                        const timeoutPromise = new Promise((_, reject) => 
+                        const timeoutPromise = new Promise((_, reject) =>
                             setTimeout(() => reject(new Error('Timeout')), timeoutValue)
                         );
                         result = await Promise.race([savePromise, timeoutPromise]);
@@ -50,7 +49,7 @@ export default {
                         this.$message.success('Power Cable saved successfully');
                         this.signPower = false;
                         this.resetFormAfterSave(powerCable);
-                        
+
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
                             const assetData = data.asset || data

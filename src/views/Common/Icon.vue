@@ -1,7 +1,13 @@
 <template>
-    <div class="custom-folder">
-        <i class="fa-regular fa-folder-open main-icon"></i>
-        <i :class="['badge', badgeIcon]"></i>
+   <div class="custom-folder">
+        <template v-if="mainIconInfo.type === 'image'">
+            <img :src="mainIconInfo.src" :style="{ width: size, height: size }" class="main-icon" />
+        </template>
+        <template v-else>
+            <i :class="['main-icon']"></i>
+        </template>
+        <i v-if="mainIconInfo.type !== 'image'" class="fa-regular fa-folder-open main-icon"></i>
+        <i v-if="mainIconInfo.type !== 'image'" :class="['badge', badgeIcon]"></i>
     </div>
 </template>
   
@@ -30,64 +36,156 @@ export default {
         },
         assetDetail: {
             type: String,
-            default: 'Unknown',
-            validator: (value) => ['Surge arrester', 'Disconnector', 'Power cable', 'Transformer', 'Circuit breaker' ,'Bushing', 'Voltage transformer', 'Rotating machine', 'Unknown', 'Current transformer', 'Capacitor', 'Reactor'].includes(value)
+            default: 'Unknown'
+        },
+        transformerType: {
+            type: String,
+            default: null
         }
     },
     computed: {
-        badgeIcon() {
-            const icons = {
+        mainIconInfo() {
+            const faDefaults = {
                 location: 'fa-solid fa-location-dot',
-                asset: {
-                    "Unknown" : 'fa-solid fa-gear',
-                    "Transformer" : 'fa-solid fa-bolt',
-                    'Surge arrester' : 'fa-solid fa-shield-halved',
-                    'Disconnector' : 'fa-solid fa-plug-circle-xmark',
-                    'Power cable' : 'fa-solid fa-route',
-                    'Bushing' : "fa-solid fa-shield",
-                    'Voltage transformer' : 'fa-solid fa-bolt-lightning',
-                    'Rotating machine': 'fa-solid fa-group-arrows-rotate',
-                    'Current transformer' : 'fa-solid fa-bolt-lightning',
-                    'Capacitor' : 'fa-solid fa-bolt',
-                    'Circuit breaker' : 'fa-solid fa-toggle-on',
-                    'Reactor' : 'fa-solid fa-industry'
-                },
                 job: 'fa-solid fa-toolbox',
                 test: 'fa-solid fa-file-lines',
-                owner: 'fa-solid fa-location-crosshairs',
                 building: 'fa-solid fa-building',
+                owner: 'fa-solid fa-location-crosshairs',
                 voltageLevel: 'fa-solid fa-bolt-lightning',
-                bay: 'fa-solid fa-tower-observation',
-                fileType: {
-                    pdf : "fa-solid fa-file-pdf",
-                    json : "fa-solid fa-file-code",
-                    xml : "fa-solid fa-file-code",
-                    excel : "fa-solid fa-file-excel",
-                    word : "fa-solid fa-file-word"
+                bay: 'fa-solid fa-tower-observation'
+            };
+
+            const fileTypeFa = {
+                pdf: 'fa-solid fa-file-pdf',
+                json: 'fa-solid fa-file-code',
+                xml: 'fa-solid fa-file-code',
+                excel: 'fa-solid fa-file-excel',
+                word: 'fa-solid fa-file-word'
+            };
+
+            try {
+                if (this.folderType === 'location') {
+                    const src = require('@/assets/Treeview/Substation.png');
+                    return { type: 'image', src };
                 }
-            }
-            if(this.folderType == 'asset') {
-                if(this.assetDetail == 'Unknown') {
-                    return icons.asset['Unknown']
-                } else {
-                    return icons.asset[this.assetDetail]
+
+                if (this.folderType === 'voltageLevel') {
+                    const src = require('@/assets/Treeview/Voltage Level.png');
+                    return { type: 'image', src };
                 }
-            } else if(this.folderType == 'fileType') {
-                return icons.fileType[this.fileTypeDetail] || 'fa-solid fa-file'
+
+                if (this.folderType === 'bay') {
+                    const src = require('@/assets/Treeview/Bay.png');
+                    return { type: 'image', src };
+                }
+
+                if (this.folderType === 'owner') {
+                    const src = require('@/assets/Treeview/Owner.png');
+                    return { type: 'image', src };
+                }
+
+                if (this.folderType === 'asset') {
+                    const assetMap = {
+                        'Disconnector': 'Disconnector.png',
+                        'Voltage transformer': 'Current Transformer.png',
+                        'Current transformer': 'Current Transformer.png',
+                        'Capacitor': 'Capacitor.png',
+                        'Reactor': 'Reactor.png',
+                        'Earthing Switch': 'Earthing Switch.png',
+                        'Load': 'Load.png',
+                        'Motor': 'Motor.png',
+                        'Transformer': '2W Tranformer 2.png'
+                    };
+
+                    if (this.assetDetail === 'Transformer') {
+                        if (this.transformerType && this.transformerType.includes('Two-winding')) {
+                            const src = require('@/assets/Treeview/2W Tranformer 2.png');
+                            return { type: 'image', src };
+                        } else if (this.transformerType && this.transformerType.includes('Three-winding')) {
+                            const src = require('@/assets/Treeview/3W Transformer 2.png');
+                            return { type: 'image', src };
+                        } else if (this.transformerType && this.transformerType.includes('Auto w/')) {
+                            const src = require('@/assets/Treeview/Auto Transformer.png');
+                            return { type: 'image', src };
+                        } else {
+                            const src = require('@/assets/Treeview/2W Tranformer 2.png');
+                            return { type: 'image', src };
+                        }
+                    }
+
+                    const fileName = assetMap[this.assetDetail] || assetMap['Unknown'];
+                    const src = require('@/assets/Treeview/' + fileName);
+                    return { type: 'image', src };
+                }
+
+                if (this.folderType === 'fileType') {
+                    const fa = fileTypeFa[this.fileTypeDetail] || 'fa-solid fa-file';
+                    return { type: 'fa', class: fa };
+                }
+            } catch (e) {
+                // require failed -> fall back to FA
             }
-            else {
-                return icons[this.folderType] || 'fa-solid fa-location-dot'
-            }
-        },
-        badgeStyle() {
-            return {
-                'badgeColor': `#${this.badgeColor}`,
-                'fontSize': `calc(${this.size} * 0.75)`
+
+                    if (this.folderType === 'asset') {
+                        return { type: 'fa', class: 'fa-solid fa-gear' };
+                    }
+
+                    const faClass = faDefaults[this.folderType] || faDefaults.location;
+                    return { type: 'fa', class: faClass };
+            },
+            badgeIcon() {
+                const icons = {
+                    location: 'fa-solid fa-location-dot',
+                    asset: {
+                        "Unknown" : 'fa-solid fa-gear',
+                        "Transformer" : 'fa-solid fa-bolt',
+                        'Surge arrester' : 'fa-solid fa-shield-halved',
+                        'Disconnector' : 'fa-solid fa-plug-circle-xmark',
+                        'Power cable' : 'fa-solid fa-route',
+                        'Bushing' : "fa-solid fa-shield",
+                        'Voltage transformer' : 'fa-solid fa-bolt-lightning',
+                        'Rotating machine': 'fa-solid fa-group-arrows-rotate',
+                        'Current transformer' : 'fa-solid fa-bolt-lightning',
+                        'Capacitor' : 'fa-solid fa-bolt',
+                        'Circuit breaker' : 'fa-solid fa-toggle-on',
+                        'Reactor' : 'fa-solid fa-industry'
+                    },
+                    job: 'fa-solid fa-toolbox',
+                    test: 'fa-solid fa-file-lines',
+                    owner: 'fa-solid fa-location-crosshairs',
+                    building: 'fa-solid fa-building',
+                    voltageLevel: 'fa-solid fa-bolt-lightning',
+                    bay: 'fa-solid fa-tower-observation',
+                    fileType: {
+                        pdf : "fa-solid fa-file-pdf",
+                        json : "fa-solid fa-file-code",
+                        xml : "fa-solid fa-file-code",
+                        excel : "fa-solid fa-file-excel",
+                        word : "fa-solid fa-file-word"
+                    }
+                };
+                if(this.folderType == 'asset') {
+                    if(this.assetDetail == 'Unknown') {
+                        return icons.asset['Unknown']
+                    } else {
+                        return icons.asset[this.assetDetail]
+                    }
+                } else if(this.folderType == 'fileType') {
+                    return icons.fileType[this.fileTypeDetail] || 'fa-solid fa-file'
+                }
+                else {
+                    return icons[this.folderType] || 'fa-solid fa-location-dot'
+                }
+            },
+            badgeStyle() {
+                return {
+                    'badgeColor': `#${this.badgeColor}`,
+                    'fontSize': `calc(${this.size} * 0.75)`
+                }
             }
         }
     }
-}
-</script>
+    </script>
   
 <style scoped>
 .custom-folder {

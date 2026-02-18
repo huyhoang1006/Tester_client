@@ -26,6 +26,7 @@ import * as ipcValueToAlias from './valueToAlias/index.js'
 import * as ipcValueAliasSet from './valueAliasSet/index.js'
 import * as ipcBushing from './bushing/index.js'
 import * as ipcProcedure from './procedure/index.js'
+import * as ipcLicense from './license/index.js'
 
 
 export const active = () => {
@@ -57,4 +58,5 @@ export const active = () => {
     ipcValueAliasSet.active()
     ipcBushing.active()
     ipcProcedure.active()
+    ipcLicense.active()
 }

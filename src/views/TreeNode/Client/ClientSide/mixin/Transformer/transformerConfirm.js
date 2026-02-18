@@ -4,9 +4,14 @@ import { startLoading } from '@/utils/loading'
 export default {
     methods: {
         async handleTransformerConfirm() {
-            const { close, timeoutValue } = startLoading(this, { 
+            const licenseCheck = await window.electronAPI.checkLicense('Transformer');
+            if (licenseCheck.success && !licenseCheck.allowed) {
+                this.$message.error(licenseCheck.message);
+                return;
+            }
+            const { close, timeoutValue } = startLoading(this, {
                 action: 'add',
-                type: 'default' 
+                type: 'default'
             });
 
             const originalMessage = this.$message;
@@ -29,7 +34,7 @@ export default {
 
                     let result;
                     if (timeoutValue > 0) {
-                        const timeoutPromise = new Promise((_, reject) => 
+                        const timeoutPromise = new Promise((_, reject) =>
                             setTimeout(() => reject(new Error('Timeout')), timeoutValue)
                         );
                         result = await Promise.race([savePromise, timeoutPromise]);
@@ -50,7 +55,7 @@ export default {
                         this.$message.success('Transformer saved successfully');
                         this.signTransformer = false;
                         this.resetFormAfterSave(transformer);
-                        
+
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
                             const newRow = {
@@ -61,7 +66,8 @@ export default {
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
                                 mode: 'asset',
-                                asset: 'Transformer'
+                                asset: 'Transformer',
+                                type: data.asset.type
                             }
                             newRows.push(newRow)
                             const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)

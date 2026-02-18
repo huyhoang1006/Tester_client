@@ -4,9 +4,14 @@ import { startLoading } from '@/utils/loading'
 export default {
     methods: {
         async handleSubsConfirm() {
-            const { close, timeoutValue } = startLoading(this, { 
+            const licenseCheck = await window.electronAPI.checkLicense('Substation');
+            if (licenseCheck.success && !licenseCheck.allowed) {
+                this.$message.error(licenseCheck.message);
+                return;
+            }
+            const { close, timeoutValue } = startLoading(this, {
                 action: 'add',
-                type: 'default' 
+                type: 'default'
             });
 
             // Intercept messages để hiển thị sau khi loading đóng
@@ -32,7 +37,7 @@ export default {
                     // Xử lý timeout nếu có
                     let result;
                     if (timeoutValue > 0) {
-                        const timeoutPromise = new Promise((_, reject) => 
+                        const timeoutPromise = new Promise((_, reject) =>
                             setTimeout(() => reject(new Error('Timeout')), timeoutValue)
                         );
                         result = await Promise.race([savePromise, timeoutPromise]);
@@ -54,10 +59,10 @@ export default {
                     if (success) {
                         this.$message.success('Substation saved successfully');
                         this.signSubs = false;
-                        
+
                         // Reset form after successful save
                         this.resetFormAfterSave(subs);
-                        
+
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
                             const newRow = {
