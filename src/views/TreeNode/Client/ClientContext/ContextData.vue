@@ -30,11 +30,7 @@
                             <div class="content-properties-table-content fixed-box pl10 break-word">{{
                                 propertiesClient.name || '&nbsp;' }}</div>
                         </div>
-                        <div class="content-properties-table-flex">
-                            <div class="content-properties-table-header">Region</div>
-                            <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                propertiesClient.region || '&nbsp;' }}</div>
-                        </div>
+                        
                         <div class="content-properties-table-flex">
                             <div class="content-properties-table-header">Plant</div>
                             <div class="content-properties-table-content fixed-box pl10 break-word">{{

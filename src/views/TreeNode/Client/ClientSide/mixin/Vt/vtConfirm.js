@@ -14,9 +14,10 @@ export default {
                 type: 'default'
             });
 
-            // Intercept messages để hiển thị sau khi loading đóng
             const originalMessage = this.$message;
             let capturedMessages = [];
+            let saveSuccess = false;
+            let vtRef = null;
 
             this.$message = {
                 success: (msg) => { capturedMessages.push({ type: 'success', message: msg }) },
@@ -26,15 +27,14 @@ export default {
             };
 
             try {
-                // Delay 0.2s để loading hiển thị trước khi bắt đầu save
                 await new Promise(resolve => setTimeout(resolve, 200));
 
                 const dialogRef = this.$refs.voltageTransformerDialog
                 const vt = dialogRef ? dialogRef.getVoltageTransformerRef() : null
                 if (vt) {
+                    vtRef = vt;
                     const savePromise = vt.saveAsset();
 
-                    // Xử lý timeout nếu có
                     let result;
                     if (timeoutValue > 0) {
                         const timeoutPromise = new Promise((_, reject) =>
@@ -47,25 +47,10 @@ export default {
 
                     const { success, data } = result;
 
-                    // Restore message
-                    this.$message = originalMessage;
-
-                    // Hiển thị messages sau khi loading đã đóng
-                    if (capturedMessages.length > 0) {
-                        const last = capturedMessages[capturedMessages.length - 1];
-                        this.$message[last.type](last.message);
-                    }
-
                     if (success) {
-                        this.$message.success('Voltage Transformer saved successfully');
-                        this.signVt = false;
-
-                        // Reset form after successful save
-                        this.resetFormAfterSave(vt);
-
+                        saveSuccess = true;
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
-                            // Handle different data structures - check for asset property or direct access
                             const assetData = data.asset || data
                             const newRow = {
                                 mrid: assetData.mrid,
@@ -82,19 +67,33 @@ export default {
                             if (node) {
                                 const children = Array.isArray(node.children) ? node.children : []
                                 Vue.set(node, 'children', [...children, ...newRows])
-                            } else {
-                                this.$message.error('Parent node not found in tree')
                             }
                         }
                     }
                 }
             } catch (error) {
                 this.$message = originalMessage;
+                await close();
                 this.$message.error(error.message === 'Timeout' ? 'Save timed out' : 'Some error occur');
                 console.error(error);
+                return;
             } finally {
-                // Đảm bảo loading luôn được đóng
-                close();
+                this.$message = originalMessage;
+            }
+
+            await close();
+
+            if (capturedMessages.length > 0) {
+                const last = capturedMessages[capturedMessages.length - 1];
+                this.$message[last.type](last.message);
+            }
+
+            if (saveSuccess) {
+                this.$message.success('Voltage Transformer saved successfully');
+                this.signVt = false;
+                if (vtRef) {
+                    this.resetFormAfterSave(vtRef);
+                }
             }
         },
         handleVtCancel() {

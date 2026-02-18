@@ -10,12 +10,15 @@ export default {
                 return;
             }
             const { close, timeoutValue } = startLoading(this, {
+
                 action: 'add',
                 type: 'default'
             });
 
             const originalMessage = this.$message;
             let capturedMessages = [];
+            let saveSuccess = false;
+            let capacitorRef = null;
 
             this.$message = {
                 success: (msg) => { capturedMessages.push({ type: 'success', message: msg }) },
@@ -30,6 +33,7 @@ export default {
                 const dialogRef = this.$refs.capacitorDialog
                 const capacitor = dialogRef ? dialogRef.getCapacitorRef() : null
                 if (capacitor) {
+                    capacitorRef = capacitor;
                     const savePromise = capacitor.saveAsset();
 
                     let result;
@@ -43,20 +47,8 @@ export default {
                     }
 
                     const { success, data } = result;
-
-                    this.$message = originalMessage;
-                    if (typeof close === 'function') close();
-
-                    if (capturedMessages.length > 0) {
-                        const last = capturedMessages[capturedMessages.length - 1];
-                        this.$message[last.type](last.message);
-                    }
-
                     if (success) {
-                        this.$message.success('Capacitor saved successfully');
-                        this.signCapacitor = false;
-                        this.resetFormAfterSave(capacitor);
-
+                        saveSuccess = true;
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
                             const assetData = data.asset || data
@@ -75,17 +67,33 @@ export default {
                             if (node) {
                                 const children = Array.isArray(node.children) ? node.children : []
                                 Vue.set(node, 'children', [...children, ...newRows])
-                            } else {
-                                this.$message.error('Parent node not found in tree')
                             }
                         }
                     }
                 }
             } catch (error) {
                 this.$message = originalMessage;
-                if (typeof close === 'function') close();
+                await close();
                 this.$message.error(error.message === 'Timeout' ? 'Save timed out' : 'Some error occur');
                 console.error(error);
+                return;
+            } finally {
+                this.$message = originalMessage;
+            }
+
+            await close();
+
+            if (capturedMessages.length > 0) {
+                const last = capturedMessages[capturedMessages.length - 1];
+                this.$message[last.type](last.message);
+            }
+
+            if (saveSuccess) {
+                this.$message.success('Capacitor saved successfully');
+                this.signCapacitor = false;
+                if (capacitorRef) {
+                    this.resetFormAfterSave(capacitorRef);
+                }
             }
         },
         handleCapacitorCancel() {

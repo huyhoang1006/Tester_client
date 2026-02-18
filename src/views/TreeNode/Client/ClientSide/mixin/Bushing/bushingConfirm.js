@@ -16,6 +16,8 @@ export default {
 
             const originalMessage = this.$message;
             let capturedMessages = [];
+            let saveSuccess = false;
+            let bushingRef = null;
 
             this.$message = {
                 success: (msg) => { capturedMessages.push({ type: 'success', message: msg }) },
@@ -30,6 +32,7 @@ export default {
                 const dialogRef = this.$refs.bushingDialog
                 const bushing = dialogRef ? dialogRef.getBushingRef() : null
                 if (bushing) {
+                    bushingRef = bushing;
                     const savePromise = bushing.saveAsset();
 
                     let result;
@@ -44,18 +47,8 @@ export default {
 
                     const { success, data } = result;
 
-                    this.$message = originalMessage;
-
-                    if (capturedMessages.length > 0) {
-                        const last = capturedMessages[capturedMessages.length - 1];
-                        this.$message[last.type](last.message);
-                    }
-
                     if (success) {
-                        this.$message.success('Bushing saved successfully');
-                        this.signBushing = false;
-                        this.resetFormAfterSave(bushing);
-
+                        saveSuccess = true;
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
                             const bushingData = data.bushing
@@ -74,19 +67,33 @@ export default {
                             if (node) {
                                 const children = Array.isArray(node.children) ? node.children : []
                                 Vue.set(node, 'children', [...children, ...newRows])
-                            } else {
-                                this.$message.error('Parent node not found in tree')
                             }
                         }
                     }
                 }
             } catch (error) {
                 this.$message = originalMessage;
+                await close();
                 this.$message.error(error.message === 'Timeout' ? 'Save timed out' : 'Some error occur');
                 console.error(error);
+                return;
             } finally {
-                // Đảm bảo loading luôn được đóng
-                close();
+                this.$message = originalMessage;
+            }
+
+            await close();
+
+            if (capturedMessages.length > 0) {
+                const last = capturedMessages[capturedMessages.length - 1];
+                this.$message[last.type](last.message);
+            }
+
+            if (saveSuccess) {
+                this.$message.success('Bushing saved successfully');
+                this.signBushing = false;
+                if (bushingRef) {
+                    this.resetFormAfterSave(bushingRef);
+                }
             }
         },
         handleBushingCancel() {

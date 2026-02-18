@@ -69,6 +69,8 @@ export default {
                     type: 'heavy'
                 });
 
+                let importSuccess = false;
+
                 try {
                     // Prepare dependencies
                     const dependencies = {
@@ -99,6 +101,8 @@ export default {
                     // Tạo node trong tree UI sau khi import thành công
                     if (result.success && result.successCount > 0) {
                         console.log('Import result:', result)
+                        importSuccess = true;
+                        
                         // Tạo các node đã import vào tree UI
                         if (result.importedNodes && result.importedNodes.length > 0) {
                             console.log('Creating nodes in tree UI:', result.importedNodes)
@@ -120,11 +124,22 @@ export default {
                         // Reset flag để force fetch lại từ server
                         Vue.set(parentNode, '_childrenFetched', false)
                         await this.fetchChildren(parentNode)
-                        
-                        this.$message.success('Import successfully')
                     }
-                } finally {
-                    close();
+                } catch (error) {
+                    console.error('Error importing JSON:', error)
+                    // Đóng loading và đợi modal biến mất
+                    await close();
+                    // Hiển thị error sau khi modal đã ẩn
+                    this.$message.error('An error occurred while importing JSON')
+                    return;
+                }
+
+                // Đóng loading và đợi modal biến mất hoàn toàn
+                await close();
+                
+                // Hiển thị message SAU KHI modal đã biến mất
+                if (importSuccess) {
+                    this.$message.success('Import successfully')
                 }
             } catch (error) {
                 console.error('Error importing JSON:', error)
@@ -181,6 +196,8 @@ export default {
                     type: 'heavy'
                 });
 
+                let result;
+
                 try {
                     // Import transformers using the ETAP parser
                     const { importETAPTransformer: importETAPUtil } = await import('@/function/entity/import/ETAPTransformer')
@@ -197,7 +214,7 @@ export default {
                         }
                     }
 
-                    const result = await importETAPUtil(filePath, parentNode, dependencies)
+                    result = await importETAPUtil(filePath, parentNode, dependencies)
 
                     // Set importing status to false
                     this.$store.dispatch('importHistory/setImporting', false)
@@ -214,40 +231,55 @@ export default {
                         importedNodeIds: result.importedNodeIds || []
                     })
 
-                    // Show result message
-                    if (result.success) {
-                        if (result.errorCount > 0) {
-                            this.$message.warning(
-                                `Import completed with warnings: ${result.successCount} transformers imported, ${result.errorCount} errors. Check ETAP History for details.`
-                            )
-                        } else {
-                            this.$message.success(
-                                `Successfully imported ${result.successCount} transformers from ${fileName}`
-                            )
-                        }
-
-                        // Refresh parent node to show new transformers
-                        if (result.importedNodes && result.importedNodes.length > 0) {
-                            // Add nodes to tree UI
-                            for (const newNodeData of result.importedNodes) {
-                                const node = this.findNodeById(newNodeData.parentId, this.organisationClientList)
-                                if (node) {
-                                    const children = Array.isArray(node.children) ? node.children : []
-                                    Vue.set(node, 'children', [...children, newNodeData])
-                                }
+                    // Refresh parent node to show new transformers
+                    if (result.importedNodes && result.importedNodes.length > 0) {
+                        // Add nodes to tree UI
+                        for (const newNodeData of result.importedNodes) {
+                            const node = this.findNodeById(newNodeData.parentId, this.organisationClientList)
+                            if (node) {
+                                const children = Array.isArray(node.children) ? node.children : []
+                                Vue.set(node, 'children', [...children, newNodeData])
                             }
                         }
+                    }
 
-                        // Force refresh parent node
-                        Vue.set(parentNode, '_childrenFetched', false)
-                        await this.fetchChildren(parentNode)
+                    // Force refresh parent node
+                    Vue.set(parentNode, '_childrenFetched', false)
+                    await this.fetchChildren(parentNode)
+
+                } catch (error) {
+                    console.error('Error importing ETAP transformers:', error)
+                    
+                    // Set importing status to false
+                    this.$store.dispatch('importHistory/setImporting', false)
+                    this.$store.dispatch('importHistory/setProgress', 0)
+                    
+                    // Đóng loading và đợi modal biến mất
+                    await close();
+                    
+                    // Hiển thị error sau khi modal đã ẩn
+                    this.$message.error(`An error occurred while importing: ${error.message}`)
+                    return;
+                }
+
+                // Đóng loading và đợi modal biến mất hoàn toàn
+                await close();
+
+                // Show result message SAU KHI modal đã biến mất
+                if (result.success) {
+                    if (result.errorCount > 0) {
+                        this.$message.warning(
+                            `Import completed with warnings: ${result.successCount} transformers imported, ${result.errorCount} errors. Check ETAP History for details.`
+                        )
                     } else {
-                        this.$message.error(
-                            `Import failed: ${result.errors && result.errors.length > 0 ? result.errors[0].message : 'Unknown error'}`
+                        this.$message.success(
+                            `Successfully imported ${result.successCount} transformers from ${fileName}`
                         )
                     }
-                } finally {
-                    close();
+                } else {
+                    this.$message.error(
+                        `Import failed: ${result.errors && result.errors.length > 0 ? result.errors[0].message : 'Unknown error'}`
+                    )
                 }
             } catch (error) {
                 console.error('Error importing ETAP transformers:', error)

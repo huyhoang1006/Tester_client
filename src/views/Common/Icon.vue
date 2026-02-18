@@ -87,7 +87,6 @@ export default {
                 if (this.folderType === 'asset') {
                     const assetMap = {
                         'Disconnector': 'Disconnector.png',
-                        'Voltage transformer': 'Current Transformer.png',
                         'Current transformer': 'Current Transformer.png',
                         'Capacitor': 'Capacitor.png',
                         'Reactor': 'Reactor.png',
