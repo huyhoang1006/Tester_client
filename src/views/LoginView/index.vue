@@ -387,8 +387,8 @@ export default {
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 12px;
     font-size: 14px;
-    color: #ffffff;
-    transition: all 0.3s ease;
+    color: rgba(255, 255, 255, 0.8) !important;
+    transition: all 0.2s ease;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15),
         inset 0 1px 1px rgba(255, 255, 255, 0.2);
 }
@@ -398,17 +398,17 @@ export default {
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(15px);
     border: 2px solid rgba(255, 255, 255, 0.9);
-    color: #ffffff;
+    color: #ffffff !important;
 }
 
 ::v-deep(.el-input__inner::placeholder) {
     color: rgba(255, 255, 255, 0.6);
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
 }
 
 ::v-deep(.el-input__prefix) {
     color: rgba(255, 255, 255, 0.8);
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
 }
 
 ::v-deep(.el-input__inner:focus::placeholder) {
@@ -461,7 +461,7 @@ export default {
     font-weight: 600;
     color: white;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: all 0.2s ease;
     margin-bottom: 16px;
     box-shadow: 0 4px 15px rgba(30, 91, 184, 0.4),
         0 2px 8px rgba(0, 0, 0, 0.2);
