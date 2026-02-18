@@ -135,6 +135,21 @@ export default {
                 type: 'info'
             })
                 .then(async () => {
+                    let licenseName = '';
+                    if (node.mode === 'substation') {
+                        licenseName = 'Substation';
+                    } else if (node.mode === 'organisation') {
+                        licenseName = 'Organisation';
+                    } else {
+                        licenseName = node.asset;
+                    }
+
+                    if (licenseName) {
+                        const license = await window.electronAPI.checkLicense(licenseName);
+                        if (license.success && !license.allowed) {
+                            return this.$message.error(license.message);
+                        }
+                    }
                     const { close } = startLoading(this, {
                         action: 'add',
                         customText: 'Duplicating...',
@@ -142,126 +157,126 @@ export default {
                     });
 
                     try {
-                        let result = {success: false}
+                        let result = { success: false }
 
-                    if (node.asset === 'Transformer') {
-                        result = await this.processDuplicateAsset(
-                            node,
-                            window.electronAPI.getTransformerEntityByMrid,
-                            TransformerMapping.transformerEntityToDto,
-                            TransformerMixin, // Mixin Object
-                            'transformerDto' // Tên biến data trong Mixin
-                        )
-                    } else if (node.asset === 'Surge arrester') {
-                        result = await this.processDuplicateAsset(
-                            node,
-                            window.electronAPI.getSurgeArresterEntityByMrid,
-                            SurgeArresterMapping.mapEntityToDto,
-                            SurgeArresterMixin,
-                            'surge_arrester_data' // Tên biến data trong Mixin Surge
-                        )
-                    } else if (node.asset === 'Circuit breaker') {
-                        result = await this.processDuplicateAsset(
-                            node,
-                            window.electronAPI.getBreakerEntityByMrid,
-                            BreakerMapping.mapEntityToDto,
-                            CircuitBreakerMixin,
-                            'circuitBreakerDto'
-                        )
-                    } else if (node.asset === 'Disconnector') {
-                        result = await this.processDuplicateAsset(
-                            node,
-                            window.electronAPI.getDisconnectorEntityByMrid,
-                            DisconnectorMapping.disconnectorEntityToDto,
-                            DisconnectorMixin,
-                            'disconnector'
-                        )
-                    } else if (node.asset === 'Power cable') {
-                        result = await this.processDuplicateAsset(
-                            node,
-                            window.electronAPI.getPowerCableEntityByMrid,
-                            PowerCableMapping.mapEntityToDto,
-                            PowerCableMixin,
-                            'powerCable'
-                        )
-                    } else if (node.asset === 'Voltage transformer') {
-                        result = await this.processDuplicateAsset(
-                            node,
-                            window.electronAPI.getVoltageTransformerEntityByMrid,
-                            VoltageTransformerMapping.mapEntityToDto,
-                            VoltageTransformerMixin,
-                            'voltageTransformer'
-                        )
-                    } else if (node.asset === 'Current transformer') {
-                        result = await this.processDuplicateAsset(
-                            node,
-                            window.electronAPI.getCurrentTransformerEntityByMrid,
-                            CurrentTransformerMapping.mapEntityToDto,
-                            CurrentTransformerMixin,
-                            'currentTransformer'
-                        )
-                    } else if (node.asset === 'Rotating machine') {
-                        result = await this.processDuplicateAsset(
-                            node,
-                            window.electronAPI.getRotatingMachineEntityByMrid,
-                            rotatingMachineMapping.mapEntityToDto,
-                            RotatingMachineMixin,
-                            'rotatingMachine'
-                        )
-                    } else if (node.asset === 'Capacitor') {
-                        result = await this.processDuplicateAsset(
-                            node,
-                            window.electronAPI.getCapacitorEntityByMrid,
-                            CapacitorMapping.mapEntityToDto,
-                            CapacitorMixin,
-                            'capacitor'
-                        )
-                    } else if (node.asset === 'Reactor') {
-                        result = await this.processDuplicateAsset(
-                            node,
-                            window.electronAPI.getReactorEntityByMrid,
-                            ReactorMapping.mapEntityToDto,
-                            ReactorMixin,
-                            'reactor'
-                        )
-                    } else if (node.asset === 'Bushing') {
-                        result = await this.processDuplicateAsset(
-                            node,
-                            window.electronAPI.getBushingEntityByMrid,
-                            BushingMapping.mapEntityToDto,
-                            BushingMixin,
-                            'bushing_data'
-                        )
-                    }
-                    // --- LOCATIONS ---
-                    else if (node.mode === 'bay') {
-                        result = await this.processDuplicateAsset(
-                            node,
-                            window.electronAPI.getBayEntityByMrid,
-                            (entity) => {
-                                return {mrid: entity.mrid, name: entity.name, ...entity}
-                            },
-                            BayMixin,
-                            'properties'
-                        )
-                    }
-                    // ... Các location khác tương tự (Substation, Organisation) ...
-
-                    if (result.success && result.data) {
-                        this.$message.success('Duplicate successful!')
-                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
-                        if (parentNode) {
-                            if (!Array.isArray(parentNode.children)) this.$set(parentNode, 'children', [])
-                            const index = parentNode.children.findIndex((c) => c.mrid === node.mrid)
-                            if (index !== -1) parentNode.children.splice(index + 1, 0, result.data)
-                            else parentNode.children.push(result.data)
-                            this.$set(parentNode, 'expanded', true)
-                            this.clearSelection()
-                            this.updateSelection(result.data)
+                        if (node.asset === 'Transformer') {
+                            result = await this.processDuplicateAsset(
+                                node,
+                                window.electronAPI.getTransformerEntityByMrid,
+                                TransformerMapping.transformerEntityToDto,
+                                TransformerMixin, // Mixin Object
+                                'transformerDto' // Tên biến data trong Mixin
+                            )
+                        } else if (node.asset === 'Surge arrester') {
+                            result = await this.processDuplicateAsset(
+                                node,
+                                window.electronAPI.getSurgeArresterEntityByMrid,
+                                SurgeArresterMapping.mapEntityToDto,
+                                SurgeArresterMixin,
+                                'surge_arrester_data' // Tên biến data trong Mixin Surge
+                            )
+                        } else if (node.asset === 'Circuit breaker') {
+                            result = await this.processDuplicateAsset(
+                                node,
+                                window.electronAPI.getBreakerEntityByMrid,
+                                BreakerMapping.mapEntityToDto,
+                                CircuitBreakerMixin,
+                                'circuitBreakerDto'
+                            )
+                        } else if (node.asset === 'Disconnector') {
+                            result = await this.processDuplicateAsset(
+                                node,
+                                window.electronAPI.getDisconnectorEntityByMrid,
+                                DisconnectorMapping.disconnectorEntityToDto,
+                                DisconnectorMixin,
+                                'disconnector'
+                            )
+                        } else if (node.asset === 'Power cable') {
+                            result = await this.processDuplicateAsset(
+                                node,
+                                window.electronAPI.getPowerCableEntityByMrid,
+                                PowerCableMapping.mapEntityToDto,
+                                PowerCableMixin,
+                                'powerCable'
+                            )
+                        } else if (node.asset === 'Voltage transformer') {
+                            result = await this.processDuplicateAsset(
+                                node,
+                                window.electronAPI.getVoltageTransformerEntityByMrid,
+                                VoltageTransformerMapping.mapEntityToDto,
+                                VoltageTransformerMixin,
+                                'voltageTransformer'
+                            )
+                        } else if (node.asset === 'Current transformer') {
+                            result = await this.processDuplicateAsset(
+                                node,
+                                window.electronAPI.getCurrentTransformerEntityByMrid,
+                                CurrentTransformerMapping.mapEntityToDto,
+                                CurrentTransformerMixin,
+                                'currentTransformer'
+                            )
+                        } else if (node.asset === 'Rotating machine') {
+                            result = await this.processDuplicateAsset(
+                                node,
+                                window.electronAPI.getRotatingMachineEntityByMrid,
+                                rotatingMachineMapping.mapEntityToDto,
+                                RotatingMachineMixin,
+                                'rotatingMachine'
+                            )
+                        } else if (node.asset === 'Capacitor') {
+                            result = await this.processDuplicateAsset(
+                                node,
+                                window.electronAPI.getCapacitorEntityByMrid,
+                                CapacitorMapping.mapEntityToDto,
+                                CapacitorMixin,
+                                'capacitor'
+                            )
+                        } else if (node.asset === 'Reactor') {
+                            result = await this.processDuplicateAsset(
+                                node,
+                                window.electronAPI.getReactorEntityByMrid,
+                                ReactorMapping.mapEntityToDto,
+                                ReactorMixin,
+                                'reactor'
+                            )
+                        } else if (node.asset === 'Bushing') {
+                            result = await this.processDuplicateAsset(
+                                node,
+                                window.electronAPI.getBushingEntityByMrid,
+                                BushingMapping.mapEntityToDto,
+                                BushingMixin,
+                                'bushing_data'
+                            )
                         }
-                    } else {
-                        this.$message.error(result.message || 'Failed to duplicate.')
-                    }
+                        // --- LOCATIONS ---
+                        else if (node.mode === 'bay') {
+                            result = await this.processDuplicateAsset(
+                                node,
+                                window.electronAPI.getBayEntityByMrid,
+                                (entity) => {
+                                    return { mrid: entity.mrid, name: entity.name, ...entity }
+                                },
+                                BayMixin,
+                                'properties'
+                            )
+                        }
+                        // ... Các location khác tương tự (Substation, Organisation) ...
+
+                        if (result.success && result.data) {
+                            this.$message.success('Duplicate successful!')
+                            const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                            if (parentNode) {
+                                if (!Array.isArray(parentNode.children)) this.$set(parentNode, 'children', [])
+                                const index = parentNode.children.findIndex((c) => c.mrid === node.mrid)
+                                if (index !== -1) parentNode.children.splice(index + 1, 0, result.data)
+                                else parentNode.children.push(result.data)
+                                this.$set(parentNode, 'expanded', true)
+                                this.clearSelection()
+                                this.updateSelection(result.data)
+                            }
+                        } else {
+                            this.$message.error(result.message || 'Failed to duplicate.')
+                        }
                     } catch (error) {
                         console.error('Error during duplicate:', error)
                         this.$message.error('An error occurred while duplicating')

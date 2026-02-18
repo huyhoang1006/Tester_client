@@ -4,9 +4,14 @@ import { startLoading } from '@/utils/loading'
 export default {
     methods: {
         async handleBayConfirm() {
-            const { close, timeoutValue } = startLoading(this, { 
+            const licenseCheck = await window.electronAPI.checkLicense('Bay');
+            if (licenseCheck.success && !licenseCheck.allowed) {
+                this.$message.error(licenseCheck.message);
+                return;
+            }
+            const { close, timeoutValue } = startLoading(this, {
                 action: 'add',
-                type: 'default' 
+                type: 'default'
             });
 
             const originalMessage = this.$message;
@@ -32,7 +37,7 @@ export default {
 
                     let result;
                     if (timeoutValue > 0) {
-                        const timeoutPromise = new Promise((_, reject) => 
+                        const timeoutPromise = new Promise((_, reject) =>
                             setTimeout(() => reject(new Error('Timeout')), timeoutValue)
                         );
                         result = await Promise.race([savePromise, timeoutPromise]);
@@ -44,8 +49,6 @@ export default {
 
                     if (success) {
                         saveSuccess = true;
-                        
-                        // Thêm node vào tree
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
                             const newRow = {
@@ -76,7 +79,7 @@ export default {
             }
 
             await close();
-            
+
             if (capturedMessages.length > 0) {
                 const last = capturedMessages[capturedMessages.length - 1];
                 this.$message[last.type](last.message);

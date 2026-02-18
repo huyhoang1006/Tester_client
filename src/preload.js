@@ -54,6 +54,7 @@ const breakerEntityAPI = entityPreload.breakerEntityPreload.breakerEntityPreload
 const reactorEntityAPI = entityPreload.reactorEntityPreload.reactorEntityPreload()
 const assetPsrAPI = entityPreload.assetPsrPreload.assetPsrPreload()
 const procedureAPI = cimPreload.procedurePreload.procedurePreload()
+const licenseAPI = cimPreload.licensePreload.licensePreload()
 
 const ipcMain = Object.assign(userAPI, attachmentAPI, exportAPI, importAPI, uploadCustomAPI, surgeArresterAPI,
     parentOrganizationAPI, substationAPI, locationAPI, streetAddressAPI, streetDetailAPI, townDetailAPI,
@@ -62,7 +63,7 @@ const ipcMain = Object.assign(userAPI, attachmentAPI, exportAPI, importAPI, uplo
     productAssetModelAPI, surgeArresterJobAPI, powerCableJobAPI, oldWorkAPI, assetAPI, transformerEntityAPI, analogAPI,
     stringMeasurementAPI, discreteAPI, valueToAliasAPI, valueAliasSetAPI, powerCableEntityAPI, voltageTransformerEntityAPI, bushingEntityAPI,
     bushingAPI, disconnectorEntityAPI, rotatingMachineEntityAPI, currentTransformerEntityAPI, capacitorEntityAPI,
-    breakerEntityAPI, reactorEntityAPI, assetPsrAPI, appOptionAPI, procedureAPI)
+    breakerEntityAPI, reactorEntityAPI, assetPsrAPI, appOptionAPI, procedureAPI, licenseAPI)
 contextBridge.exposeInMainWorld('electronAPI',
     ipcMain
 )

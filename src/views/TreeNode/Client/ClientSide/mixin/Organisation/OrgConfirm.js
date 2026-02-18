@@ -4,6 +4,11 @@ import { startLoading } from '@/utils/loading'
 export default {
     methods: {
         async handleOrgConfirm() {
+            const licenseCheck = await window.electronAPI.checkLicense('Organisation');
+            if (licenseCheck.success && !licenseCheck.allowed) {
+                this.$message.error(licenseCheck.message);
+                return; 
+            }
             const { close, timeoutValue } = startLoading(this, {
                 action: 'add',
                 type: 'default'
