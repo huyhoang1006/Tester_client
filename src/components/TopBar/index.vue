@@ -343,7 +343,7 @@ export default {
     border: 1px solid rgba(255, 255, 255, 0.15);
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
 
     .search-icon {
         font-size: 14px;
@@ -441,28 +441,37 @@ export default {
 }
 
 ::v-deep(.app-dialog .el-dialog__headerbtn) {
-    top: 20px;
-    right: 20px;
-    transition: all 0.3s ease;
+    top: 15px;
+    right: 15px;
     padding: 8px;
-    border-radius: 50%;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.15);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
 }
 
 ::v-deep(.app-dialog .el-dialog__headerbtn .el-dialog__close) {
-    color: rgba(255, 255, 255, 0.7) !important;
-    font-size: 20px;
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-size: 18px;
     font-weight: bold;
     transition: all 0.2s ease;
 }
 
 ::v-deep(.app-dialog .el-dialog__headerbtn:hover) {
-    background: rgba(255, 255, 255, 0.15);
-    transform: rotate(90deg);
+    background: rgba(255, 255, 255, 0.25);
 }
 
 ::v-deep(.app-dialog .el-dialog__headerbtn:hover .el-dialog__close) {
     color: #ffffff !important;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+}
+
+::v-deep(.app-dialog .el-dialog__headerbtn i) {
+    line-height: 1;
+    vertical-align: middle;
 }
 
 ::v-deep(.app-dialog .el-dialog__body) {
@@ -486,14 +495,15 @@ export default {
     border: 2px solid rgba(255, 255, 255, 0.25) !important;
     border-radius: 8px;
     font-size: 14px;
-    color: #ffffff !important;
-    transition: all 0.3s ease;
+    color: rgba(255, 255, 255, 0.8) !important;
+    transition: all 0.2s ease;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15),
         inset 0 1px 1px rgba(255, 255, 255, 0.2);
 }
 
 ::v-deep(.app-dialog .el-input__inner:focus) {
     background: rgba(0, 0, 0, 0.5) !important;
+    color: #ffffff !important;
     border: 2px solid rgba(255, 255, 255, 0.85) !important;
 }
 
@@ -522,7 +532,7 @@ export default {
     font-weight: 600;
     line-height: normal !important;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: all 0.2s ease;
     white-space: nowrap;
 }
 
@@ -629,9 +639,9 @@ export default {
 }
 
 .changelog-body {
-    height: 140px;
+    height: 200px;
     overflow-y: auto;
-    padding: 15px;
+    padding: 12px 20px;
     background: rgba(0, 0, 0, 0.2) !important;
     backdrop-filter: blur(10px);
     border: 2px solid rgba(255, 255, 255, 0.3) !important;
@@ -640,7 +650,7 @@ export default {
     border-radius: 12px;
     font-size: 13.5px;
     line-height: 1.6;
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.8);
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     white-space: pre-line;
 }
@@ -727,7 +737,7 @@ export default {
     display: flex;
     align-items: center;
     gap: 12px;
-    transition: all 0.25s ease;
+    transition: all 0.2s ease;
     cursor: pointer;
 }
 
