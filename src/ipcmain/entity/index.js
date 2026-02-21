@@ -18,6 +18,7 @@ import * as ipcReactor from './reactor/index.js'
 import * as ipcExport from './export/index.js'
 import * as ipcAssetPsr from './assetPsr/index.js'
 import * as ipcImport from './import/index.js'
+import * as ipcNotification from './notification/index.js'
 
 export const active = () => {
     ipcSubstation.active()
@@ -40,4 +41,5 @@ export const active = () => {
     ipcExport.active()
     ipcAssetPsr.active()
     ipcImport.active()
+    ipcNotification.active()
 }
