@@ -86,8 +86,10 @@ export default {
                 if (this.transformerDto.properties.type && this.transformerDto.properties.kind && this.transformerDto.properties.serial_no) {
                     const data = JSON.parse(JSON.stringify(this.transformerDto));
                     const result = this.checkTransformerDto(data);
+                    console.log(result)
                     const oldResult = this.checkTransformerDto(this.oldTransformerDto);
                     const resultEntity = transformerMapping.transformerDtoToEntity(result);
+                    console.log(resultEntity)
                     const oldResultEntity = transformerMapping.transformerDtoToEntity(oldResult);
                     let rs = await window.electronAPI.insertTransformerEntity(oldResultEntity, resultEntity)
                     if (rs.success) {
@@ -172,6 +174,10 @@ export default {
             this.checkShortCircuitTest(data)
             this.checkZeroImpedance(data)
             this.checkOther(data)
+            this.checkTapChangerId(data)
+            this.checkTapChangerAssetPsr(data)
+            this.checkBushing(data)
+            this.checkSurgeArrester(data)
             return data;
         },
 
@@ -265,6 +271,8 @@ export default {
                     data.attachment.type = 'asset'
                     data.attachment.id_foreign = data.properties.mrid
                 }
+            } else {
+                data.attachment.path = JSON.stringify(this.attachmentData)
             }
         },
 
@@ -471,8 +479,79 @@ export default {
             }
         },
 
+        checkTapChangerId(data) {
+            if(data.tap_changers.mode != '') {
+                if(data.tap_changers.mrid === null || data.tap_changers.mrid === '') {
+                    data.tap_changers.mrid = uuid.newUuid()
+                }
+                if(data.tap_changers.assetId == null || data.tap_changers.assetId === '') {
+                    data.tap_changers.assetId = uuid.newUuid()
+                }
+                if(data.tap_changers.productAssetModelId == null || data.tap_changers.productAssetModelId === '') {
+                    data.tap_changers.productAssetModelId = uuid.newUuid()
+                }
+                if(data.tap_changers.ratioTapchangerTableId == null || data.tap_changers.ratioTapchangerTableId === '') {
+                    data.tap_changers.ratioTapchangerTableId = uuid.newUuid()
+                }
+            }
+        },
+        
+        checkTapChangerAssetPsr(data) {
+            if(data.tap_changers.mode != '') {
+                if(data.tap_changers.assetPsr.mrid === null || data.tap_changers.assetPsr.mrid === '') {
+                    data.tap_changers.assetPsr.mrid = uuid.newUuid()
+                }
+                if(data.tap_changers.assetPsr.psr_id === null || data.tap_changers.assetPsr.psr_id === '') {
+                    data.tap_changers.assetPsr.psr_id = uuid.newUuid()
+                }
+            }
+        },
+
+        checkBushing(data) {
+            const end = ['prim', 'sec', 'tert']
+            for(const end_info of end) {
+                for(const bushing of data.bushing_data[end_info]) {
+                    this.traverseAndFillMrid(bushing)
+                    if(bushing.assetInfoId === '' || bushing.assetInfoId === null) {
+                        bushing.assetInfoId = uuid.newUuid()
+                    }
+                    if(bushing.productAssetModelId === '' || bushing.productAssetModelId === null) {
+                        bushing.productAssetModelId = uuid.newUuid()
+                    }
+                    if(bushing.lifecycleDateId === '' || bushing.lifecycleDateId === null) {
+                        bushing.lifecycleDateId = uuid.newUuid()
+                    }
+                }
+            }
+        },
+
+        checkSurgeArrester(data) {
+            for(const surgeArrester of data.surge_arrester.prim) {
+                this.traverseAndFillMrid(surgeArrester)
+                for(const dataTable of surgeArrester.ratings.table) {
+                    this.traverseAndFillMrid(dataTable)
+                }
+            }
+            for(const surgeArrester of data.surge_arrester.sec) {
+                this.traverseAndFillMrid(surgeArrester)
+                for(const dataTable of surgeArrester.ratings.table) {
+                    this.traverseAndFillMrid(dataTable)
+                }
+            }
+            for(const surgeArrester of data.surge_arrester.tert) {
+                this.traverseAndFillMrid(surgeArrester)
+                for(const dataTable of surgeArrester.ratings.table) {
+                    this.traverseAndFillMrid(dataTable)
+                }
+            }
+        },
+
         changeDataBushing() {
             const bushingTemplate = {
+                mrid:'',
+                assetInfoId : '',
+                productAssetModelId : '',
+                lifecycleDateId : '',
                 pos: '',
                 asset_type: '',
                 serial_no: '',
@@ -480,41 +559,49 @@ export default {
                 manufacturer_type: '',
                 manufacturer_year: '',
                 insulation_level: {
+                    mrid : '',
                     value: '',
                     label: 'kV',
                     unit: 'k|V'
                 },
                 voltage_l_ground: {
+                    mrid : '',
                     value: '',
                     label: 'kV',
                     unit: 'k|V'
                 },
                 max_system_voltage: {
+                    mrid: '',
                     value: '',
                     label: 'kV',
                     unit: 'k|V'
                 },
                 rate_current: {
+                    mrid: '',
                     value: '',
                     label: 'A',
                     unit: 'A'
                 },
                 df_c1: {
+                    mrid: '',
                     value: '',
                     label: '%',
                     unit: '%'
                 },
                 cap_c1: {
+                    mrid: '',
                     value: '',
                     label: 'pF',
                     unit: 'p|F'
                 },
                 df_c2: {
+                    mrid: '',
                     value: '',
                     label: '%',
                     unit: '%'
                 },
                 cap_c2: {
+                    mrid: '',
                     value: '',
                     label: 'pF',
                     unit: 'p|F'
@@ -1575,10 +1662,14 @@ export default {
             const surgeArresterTemplate = {
                 sign: false,
                 properties: {
+                    mrid: '',
                     serial_no: '',
                     manufacturer: '',
                     manufacturer_year: '',
                     asset_system_code: '',
+                    assetInfoId: '',
+                    productAssetModelId: '',
+                    lifecycleDateId: ''
                 },
                 ratings: {
                     pos: '',
@@ -1677,5 +1768,20 @@ export default {
             })
         },
 
+        traverseAndFillMrid(obj) {
+            if (Array.isArray(obj)) {
+                obj.forEach(item => this.traverseAndFillMrid(item));
+            } else if (obj !== null && typeof obj === "object") {
+                // Nếu có thuộc tính mrid
+                if ("mrid" in obj) {
+                    if (!obj.mrid || obj.mrid === "") {
+                        obj.mrid = uuid.newUuid();
+                    }
+                }
+                // Duyệt tiếp các key con
+                Object.values(obj).forEach(val => this.traverseAndFillMrid(val));
+            }
+            return obj;
+        }
     }
 }

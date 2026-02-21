@@ -21,21 +21,11 @@
                         <el-input v-model="propertiesData.serial_no"></el-input>
                     </el-form-item>
                     <el-form-item label="Manufacturer">
-                        <el-select @change="createNew(propertiesData.manufacturer)" style="width: 100%;" filterable
-                            v-model="propertiesData.manufacturer">
-                            <el-option v-for="item in manufacturerList" :label="item" :key="item" :value=item>
-                            </el-option>
-                            <el-option v-for="item in manufacturerListAll" :key="item" :value=item> {{ item }} <i
-                                    @click="deleteManu(item)" style="float: right; cursor: pointer;"
-                                    class="fa-solid fa-trash"></i> <i @click="editManu(item)"
-                                    style="float: right; margin-right: 10px; cursor: pointer;"
-                                    class="fa-solid fa-pen-to-square"></i> </el-option>
-                            <el-option
-                                style="border-radius: 12px; background-color:#012596; margin: 10px; color: white;"
-                                value="Create new"><i class="fa-solid fa-square-plus"
-                                    style="margin-right: 10px;"></i>&lt; Create new ></el-option>
+                        <el-select style="width: 100%;" filterable v-model="propertiesData.manufacturer">
+                            <el-option v-for="item in manufacturerList" :label="item" :key="item" :value=item> </el-option>
                         </el-select>
-                    </el-form-item>
+                     </el-form-item>
+
                     <el-form-item label="Manufacturer type">
                         <el-input v-model="propertiesData.manufacturer_type"></el-input>
                     </el-form-item>
@@ -71,6 +61,8 @@
 <script>
 import { country } from '@/views/ConstantAsset/index'
 import Attachment from '@/views/Common/Attachment.vue'
+import MANUFACTURER_MAP from '@/views/ConstantAsset/manufacturer';
+
 
 export default {
     name: 'voltageTransProperty',
@@ -98,11 +90,11 @@ export default {
     data() {
         return {
             labelWidth: `120px`,
-            countryData: [],
+            countryData: country.default,
             manufacturerCurrent: '',
             sign: '',
             manufacturerPast: '',
-            manufacturerList: ['ABB', 'ALSTOM', 'General Electric', 'Mitsubishi Electric', 'Schneider Electric', 'Siemens', 'Toshiba', 'Westinghouse'],
+            manufacturerList: MANUFACTURER_MAP['VoltageTransformerDto'],
             manufacturerListAll: [],
             itemUpdate: '',
             attachmentData: []
@@ -173,37 +165,10 @@ export default {
         },
     },
     watch: {
-        'propertiesData.manufacturer': {
-            handler(newVal, oldVal) {
-                if (newVal == 'Create new') {
-                    this.manufacturerCurrent = oldVal
-                } else {
-                    this.manufacturerCurrent = newVal
-                }
-                this.manufacturerPast = newVal
+        attachment: {
+            handler(val) {
+                this.attachmentData = val
             },
-        },
-        manufact: {
-            handler(newVal, oldVal) {
-                if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
-                    this.manufacturerListAll = newVal
-                }
-            },
-            immediate: true,
-            deep: true
-        },
-        update: {
-            handler(newVal) {
-                if (newVal == true) {
-                    this.$emit('setUpdate', false)
-                    if (this.itemUpdate == this.propertiesData.manufacturer) {
-                        this.propertiesData.manufacturer = this.updateNew
-                        this.sign = ''
-                    }
-                }
-            },
-            immediate: true,
-            deep: true
         }
     },
     mounted() {

@@ -84,8 +84,8 @@ export const insertOldSurgeArresterInfo = async (info) => {
                         `INSERT INTO old_surge_arrester_info(
                             mrid, serial_number, maximum_system_voltage, short_time_with_stand_current,
                             rated_duration_of_short_circuit, pf_with_stand_voltage_earth_between_pole,
-                            pf_with_stand_voltage_isolated_distance, surge_arrester_id
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                            pf_with_stand_voltage_isolated_distance, surge_arrester_id, voltage_ll, voltage_ln, transformer_end_info
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         ON CONFLICT(mrid) DO UPDATE SET
                             serial_number = excluded.serial_number,
                             maximum_system_voltage = excluded.maximum_system_voltage,
@@ -93,7 +93,10 @@ export const insertOldSurgeArresterInfo = async (info) => {
                             rated_duration_of_short_circuit = excluded.rated_duration_of_short_circuit,
                             pf_with_stand_voltage_earth_between_pole = excluded.pf_with_stand_voltage_earth_between_pole,
                             pf_with_stand_voltage_isolated_distance = excluded.pf_with_stand_voltage_isolated_distance,
-                            surge_arrester_id = excluded.surge_arrester_id
+                            surge_arrester_id = excluded.surge_arrester_id,
+                            voltage_ll = excluded.voltage_ll,
+                            voltage_ln = excluded.voltage_ln,
+                            transformer_end_info = excluded.transformer_end_info
                         `,
                         [
                             info.mrid,
@@ -103,7 +106,10 @@ export const insertOldSurgeArresterInfo = async (info) => {
                             info.rated_duration_of_short_circuit,
                             info.pf_with_stand_voltage_earth_between_pole,
                             info.pf_with_stand_voltage_isolated_distance,
-                            info.surge_arrester_id
+                            info.surge_arrester_id,
+                            info.voltage_ll,
+                            info.voltage_ln,
+                            info.transformer_end_info
                         ],
                         function (err) {
                             if (err) {
@@ -135,8 +141,8 @@ export const insertOldSurgeArresterInfoTransaction = (info, dbsql) => {
                 `INSERT INTO old_surge_arrester_info(
                     mrid, serial_number, maximum_system_voltage, short_time_with_stand_current,
                     rated_duration_of_short_circuit, pf_with_stand_voltage_earth_between_pole,
-                    pf_with_stand_voltage_isolated_distance, surge_arrester_id
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    pf_with_stand_voltage_isolated_distance, surge_arrester_id, voltage_ll, voltage_ln, transformer_end_info
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(mrid) DO UPDATE SET
                     serial_number = excluded.serial_number,
                     maximum_system_voltage = excluded.maximum_system_voltage,
@@ -144,7 +150,10 @@ export const insertOldSurgeArresterInfoTransaction = (info, dbsql) => {
                     rated_duration_of_short_circuit = excluded.rated_duration_of_short_circuit,
                     pf_with_stand_voltage_earth_between_pole = excluded.pf_with_stand_voltage_earth_between_pole,
                     pf_with_stand_voltage_isolated_distance = excluded.pf_with_stand_voltage_isolated_distance,
-                    surge_arrester_id = excluded.surge_arrester_id
+                    surge_arrester_id = excluded.surge_arrester_id,
+                    voltage_ll = excluded.voltage_ll,
+                    voltage_ln = excluded.voltage_ln,
+                    transformer_end_info = excluded.transformer_end_info
                 `,
                 [
                     info.mrid,
@@ -154,7 +163,10 @@ export const insertOldSurgeArresterInfoTransaction = (info, dbsql) => {
                     info.rated_duration_of_short_circuit,
                     info.pf_with_stand_voltage_earth_between_pole,
                     info.pf_with_stand_voltage_isolated_distance,
-                    info.surge_arrester_id
+                    info.surge_arrester_id,
+                    info.voltage_ll,
+                    info.voltage_ln,
+                    info.transformer_end_info
                 ],
                 function (err) {
                     if (err) {
@@ -190,7 +202,10 @@ export const updateOldSurgeArresterInfo = async (mrid, info) => {
                             rated_duration_of_short_circuit = ?,
                             pf_with_stand_voltage_earth_between_pole = ?,
                             pf_with_stand_voltage_isolated_distance = ?,
-                            surge_arrester_id = ?
+                            surge_arrester_id = ?,
+                            voltage_ll = ?,
+                            voltage_ln = ?,
+                            transformer_end_info = ?
                         WHERE mrid = ?`,
                         [
                             info.serial_number,
@@ -200,6 +215,9 @@ export const updateOldSurgeArresterInfo = async (mrid, info) => {
                             info.pf_with_stand_voltage_earth_between_pole,
                             info.pf_with_stand_voltage_isolated_distance,
                             info.surge_arrester_id,
+                            info.voltage_ll,
+                            info.voltage_ln,
+                            info.transformer_end_info,
                             mrid
                         ],
                         function (err) {
@@ -236,7 +254,10 @@ export const updateOldSurgeArresterInfoTransaction = (mrid, info, dbsql) => {
                     rated_duration_of_short_circuit = ?,
                     pf_with_stand_voltage_earth_between_pole = ?,
                     pf_with_stand_voltage_isolated_distance = ?,
-                    surge_arrester_id = ?
+                    surge_arrester_id = ?,
+                    voltage_ll = ?,
+                    voltage_ln = ?,
+                    transformer_end_info = ?
                 WHERE mrid = ?`,
                 [
                     info.serial_number,
@@ -246,6 +267,9 @@ export const updateOldSurgeArresterInfoTransaction = (mrid, info, dbsql) => {
                     info.pf_with_stand_voltage_earth_between_pole,
                     info.pf_with_stand_voltage_isolated_distance,
                     info.surge_arrester_id,
+                    info.voltage_ll,
+                    info.voltage_ln,
+                    info.transformer_end_info,
                     mrid
                 ],
                 function (err) {

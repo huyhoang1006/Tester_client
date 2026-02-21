@@ -25,6 +25,7 @@ import * as valueAliasSetPreload from './valueAliasSet/index'
 import * as bushingPreload from './bushing/index'
 import * as powerCablePreload from './powerCable/index'
 import * as procedurePreload from './procedure/index'
+import * as licensePreload from './license/index'
 
 export {
     parentOrganizationPreload, substationPreload, locationPreload,
@@ -33,5 +34,5 @@ export {
     positionPointPreload, voltageLevelPreload, bayPreload, powerSystemResourcePreload,
     SurgeArresterPreload, productAssetModelPreload, oldWorkPreload, assetPreload, analogPreload,
     stringMeasurementPreload, discretePreload, valueToAliasPreload, valueAliasSetPreload, bushingPreload,
-    powerCablePreload, procedurePreload
+    powerCablePreload, procedurePreload, licensePreload
 }

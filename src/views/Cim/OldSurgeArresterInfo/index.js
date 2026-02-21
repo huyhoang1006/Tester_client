@@ -10,6 +10,9 @@ class OldSurgeArresterInfo extends SurgeArresterInfo {
         this.pf_with_stand_voltage_earth_between_pole = null;
         this.pf_with_stand_voltage_isolated_distance = null;
         this.surge_arrester_id = null;
+        this.voltage_ll = null;
+        this.voltage_ln = null;
+        this.transformer_end_info = null;
     }
 }
 

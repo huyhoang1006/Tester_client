@@ -1,3 +1,4 @@
+import AssetPsr from "@/views/Cim/AssetPsr";
 class TapChangersDto {
     constructor() {
         this.mrid = '';
@@ -8,6 +9,10 @@ class TapChangersDto {
         this.winding = '';
         this.tap_scheme = '';
         this.no_of_taps = '0';
+        this.productAssetModelId = ''
+        this.assetId = ''
+        this.assetPsr = new AssetPsr()
+        this.ratioTapchangerTableId = ''
         this.voltage_table = [];
     }
 }

@@ -1,40 +1,44 @@
 <template>
     <li>
         <div style="display: flex; align-items: center; gap: 10px;">
-            <div @click="fetchNodeData">
+            <div class="arrow-wrapper" @click.stop="fetchNodeData" v-if="node.mode != 'job'">
                 <i v-if="!node.expanded" class="fa-solid fa-angle-right" style="font-size: 12px; color: #CCCCCC;"></i>
                 <i v-else class="fa-solid fa-angle-down" style="font-size: 12px; color: #CCCCCC;"></i>
             </div>
-            <span @contextmenu.prevent="openContextMenu($event, node)" :class="{ selected: selectedNodes.some(n => n.mrid === node.mrid) }" class="folder" @click="toggle" @dblclick="doubleToggle">
-                <div v-if="node.mode == 'substation'" class="icon-wrapper">
-                    <icon size="16px" folderType="location" badgeColor="146EBE"></icon>
-                    <span class="node-name">{{ node.name  }}</span>
-                </div>
-                <div v-else-if="node.mode == 'voltageLevel'" class="icon-wrapper">
-                    <icon size="16px" folderType="voltageLevel" badgeColor="146EBE"></icon>
-                    <span class="node-name">{{ node.name }}</span>
-                </div>
-                <div v-else-if="node.mode == 'bay'" class="icon-wrapper">
-                    <icon size="16px" folderType="bay" badgeColor="146EBE"></icon>
-                    <span class="node-name">{{ node.name }}</span>
-                </div>
-                <div v-else-if="node.mode == 'asset'" class="icon-wrapper">
-                    <icon size="16px" folderType="asset" :assetDetail="node.asset" badgeColor="146EBE"></icon>
-                    <span class="node-name">{{ node.serial_number }} </span>
-                </div>
-                <div v-else-if="node.mode == 'job'" class="icon-wrapper">
-                    <icon size="16px" folderType="job" badgeColor="FF0000"></icon>
-                    <span class="node-name">{{ node.name }}</span>
-                </div>
-                <div v-else-if="node.mode == 'test'" class="icon-wrapper">
-                    <icon size="16px" folderType="test" badgeColor="008001"></icon>
-                    <span class="node-name">{{ node.name }}</span>
-                </div>
-                <div v-else class="icon-wrapper">
-                    <icon size="14px" folderType="building" badgeColor="008001"></icon>
-                    <span class="node-name">{{ node.aliasName || node.name }}</span>
-                </div>
-            </span>
+            
+            <el-tooltip 
+    effect="dark" 
+    :content="getNodeDisplayName" 
+    placement="top-start" 
+    :open-delay="600"
+>
+    <span @contextmenu.prevent="openContextMenu($event, node)" :class="{ selected: isSelected(node) }" class="folder" @click="toggle" @dblclick="doubleToggle">
+        <div v-if="node.mode == 'substation'" class="icon-wrapper">
+            <icon size="16px" folderType="location" :transformerType="node.type" badgeColor="146EBE"></icon>
+            <span class="node-name">{{ node.name  }}</span>
+        </div>
+        <div v-else-if="node.mode == 'voltageLevel'" class="icon-wrapper">
+            <icon size="16px" folderType="voltageLevel" :transformerType="node.type" badgeColor="146EBE"></icon>
+            <span class="node-name">{{ node.name }}</span>
+        </div>
+        <div v-else-if="node.mode == 'bay'" class="icon-wrapper">
+            <icon size="16px" folderType="bay" :transformerType="node.type" badgeColor="146EBE"></icon>
+            <span class="node-name">{{ node.name }}</span>
+        </div>
+        <div v-else-if="node.mode == 'asset'" class="icon-wrapper">
+            <icon size="16px" folderType="asset" :assetDetail="node.asset" :transformerType="node.type" badgeColor="146EBE"></icon>
+            <span class="node-name">{{ node.apparatus_id || node.serial_number}} </span>
+        </div>
+        <div style="margin-left: 20px;" v-else-if="node.mode == 'job'" class="icon-wrapper">
+            <icon size="16px" folderType="job" :transformerType="node.type" badgeColor="FF0000"></icon>
+            <span class="node-name">{{ node.name }}</span>
+        </div>
+        <div v-else class="icon-wrapper">
+            <icon size="16px" folderType="building" :transformerType="node.type" badgeColor="008001"></icon>
+            <span class="node-name">{{ node.aliasName || node.name }}</span>
+        </div>
+    </span>
+</el-tooltip>
         </div>
         
         <spinner style="margin-left: 20px;" v-if="isLoading"></spinner>
@@ -66,6 +70,31 @@ export default {
     props: ["node", "selectedNodes"],
     name : "TreeNode",
     computed: {
+        getNodeDisplayName() {
+            if (!this.node) return '';
+            if (this.node.mode === 'organisation') {
+                return `Organization`;
+            }
+            else if (this.node.mode === 'substation') {
+                return `Substation`;
+            } else if (this.node.mode === 'voltageLevel') {
+                return `Voltage Level`;
+            } else if (this.node.mode === 'bay') {
+                return `Bay`;
+            }
+            
+            else if (this.node.mode === 'asset') {
+                
+                const type = this.node.asset;
+                return `${type}`;
+            }
+            
+            if (this.node.mode === 'job') {
+                return `Job`;
+            }
+
+            return this.node.aliasName || this.node.name || 'Unknown';
+        }
     },
     components: {
         spinner,
@@ -90,12 +119,15 @@ export default {
             this.clickTimeout = setTimeout(() => {
                 this.clearSelection();
                 this.updateSelection(this.node);
+                // Chỉ khi click vào thân node mới cập nhật Object Properties
+                this.$emit("show-properties", this.node);
             }, 250); // 250ms là khoảng thời gian nhận biết double click
             document.addEventListener("click", this.onClickOutside);
         },
 
         fetchNodeData(event) {
-            this.$emit("show-properties", this.node);
+            // Chỉ thực hiện expand/collapse và fetch children
+            // KHÔNG cập nhật selectedNode hay show-properties
             if (!this.node.expanded) {
                 this.isLoading = true
                 this.$emit("fetch-children", this.node);
@@ -119,6 +151,15 @@ export default {
         openContextMenu(event, node) {
             this.$emit("open-context-menu", event, node);
         },
+        isSelected(node) {
+            if (!this.selectedNodes || !Array.isArray(this.selectedNodes)) return false
+            return this.selectedNodes.some((n) => {
+                if (!n || !node) return false
+                if (n.mrid && node.mrid) return n.mrid === node.mrid
+                if (n.id && node.id) return n.id === node.id
+                return false
+            })
+        },
         onClickOutside(e) {
             const treeNodeEl = this.$el;
             const toolbarSettingEl = document.getElementById("toolbar-setting-id");
@@ -131,6 +172,27 @@ export default {
 </script>
 
 <style scoped>
+/* --- Style mới cho nút mũi tên --- */
+.arrow-wrapper {
+    width: 24px;       /* Tăng vùng bấm lên 24px */
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.arrow-wrapper:hover {
+    background-color: #e6e6e6; /* Màu nền xám nhạt khi hover */
+}
+
+.arrow-wrapper:hover i {
+    color: #555 !important; /* Đổi màu icon đậm hơn khi hover */
+}
+/* -------------------------------- */
+
 .folder {
     display: block;
     padding: 5px;
@@ -138,6 +200,8 @@ export default {
     overflow: hidden; /* Ẩn phần văn bản vượt quá kích thước */
     text-overflow: ellipsis; /* Hiển thị dấu ... khi văn bản quá dài */
     font-size: 12px; /* Cỡ chữ cho thư mục và tệp */
+    cursor: pointer;
+    border-radius: 4px;
 }
 
 .folder:hover {

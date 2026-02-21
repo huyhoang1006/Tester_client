@@ -127,11 +127,11 @@ export const fetchNodeDataToDto = async (nodes, dependencies) => {
  * Export node(s) to JSON file
  * @param {Object|Array} nodes - Single node or array of nodes to export
  * @param {string} type - Export type: 'dto' or 'cim'
- * @param {Object} dependencies - Object containing electronAPI, mappings, userId, and messageHandler
+ * @param {Object} dependencies - Object containing electronAPI, mappings, userId, messageHandler, and loadingHandler
  * @returns {Promise<void>}
  */
 export const exportNodeToJSON = async (nodes, type, dependencies) => {
-    const { electronAPI, mappings, userId, messageHandler } = dependencies
+    const { electronAPI, mappings, userId, messageHandler, loadingHandler } = dependencies
 
     try {
         // Support both single node and array of nodes
@@ -144,57 +144,76 @@ export const exportNodeToJSON = async (nodes, type, dependencies) => {
             return
         }
 
-        // Prepare dependencies for fetchNodeDataToDto
-        const fetchDependencies = {
-            electronAPI,
-            mappings,
-            userId
+        // Start loading for data fetching
+        let closeLoading = null
+        if (loadingHandler && loadingHandler.start) {
+            closeLoading = loadingHandler.start()
         }
 
-        // Fetch and convert node data to DTOs
-        const dtos = await fetchNodeDataToDto(nodesArray, fetchDependencies)
-
-        if (dtos.length === 0) {
-            if (messageHandler) {
-                messageHandler.warning('No data found to export')
+        try {
+            // Prepare dependencies for fetchNodeDataToDto
+            const fetchDependencies = {
+                electronAPI,
+                mappings,
+                userId
             }
-            return
-        }
 
-        // Generate default filename from first node (user can change it in dialog)
-        // Priority: node.name > node.serial_number > node.asset > fallback
-        const firstNode = nodesArray[0]
-        let fileName
-        
-        if (firstNode?.name) {
-            // Có tên node (substation, voltageLevel, bay, organisation, job, test)
-            fileName = `${sanitizeFileName(firstNode.name)}.json`
-        } else if (firstNode?.serial_number) {
-            // Asset có serial_number
-            fileName = `${sanitizeFileName(firstNode.serial_number)}.json`
-        } else if (firstNode?.asset) {
-            // Asset có loại asset
-            fileName = `${sanitizeFileName(firstNode.asset)}.json`
-        } else {
-            // Fallback
-            fileName = type === 'cim' ? 'tree-export-cim.json' : 'tree-export-dto.json'
-        }
-        
-        const result = await electronAPI.exportJSON(dtos, {
-            defaultFileName: fileName,
-            title: 'Save JSON file',
-            buttonLabel: 'Save'
-        })
+            // Fetch and convert node data to DTOs
+            const dtos = await fetchNodeDataToDto(nodesArray, fetchDependencies)
 
-        if (result && result.success) {
-            if (messageHandler) {
-                messageHandler.success(result.message || `Exported ${dtos.length} items successfully`)
-            }
-        } else {
-            if (result && result.message !== 'Export cancelled') {
+            if (dtos.length === 0) {
                 if (messageHandler) {
-                    messageHandler.error(result.message || 'Failed to export node to JSON')
+                    messageHandler.warning('No data found to export')
                 }
+                return
+            }
+
+            // Generate default filename from first node (user can change it in dialog)
+            // Priority: node.name > node.serial_number > node.asset > fallback
+            const firstNode = nodesArray[0]
+            let fileName
+            
+            if (firstNode?.name) {
+                // Có tên node (substation, voltageLevel, bay, organisation, job, test)
+                fileName = `${sanitizeFileName(firstNode.name)}.json`
+            } else if (firstNode?.serial_number) {
+                // Asset có serial_number
+                fileName = `${sanitizeFileName(firstNode.serial_number)}.json`
+            } else if (firstNode?.asset) {
+                // Asset có loại asset
+                fileName = `${sanitizeFileName(firstNode.asset)}.json`
+            } else {
+                // Fallback
+                fileName = type === 'cim' ? 'tree-export-cim.json' : 'tree-export-dto.json'
+            }
+            
+            // Close loading before showing save dialog
+            if (closeLoading) {
+                closeLoading()
+                closeLoading = null
+            }
+            
+            const result = await electronAPI.exportJSON(dtos, {
+                defaultFileName: fileName,
+                title: 'Save JSON file',
+                buttonLabel: 'Save'
+            })
+
+            if (result && result.success) {
+                if (messageHandler) {
+                    messageHandler.success(result.message || `Exported ${dtos.length} items successfully`)
+                }
+            } else {
+                if (result && result.message !== 'Export cancelled') {
+                    if (messageHandler) {
+                        messageHandler.error(result.message || 'Failed to export node to JSON')
+                    }
+                }
+            }
+        } finally {
+            // Ensure loading is closed
+            if (closeLoading) {
+                closeLoading()
             }
         }
     } catch (error) {

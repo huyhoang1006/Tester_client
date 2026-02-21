@@ -1,20 +1,61 @@
 import Vue from "vue"
+import { startLoading } from '@/utils/loading'
+
 export default {
     methods: {
         async handleBushingConfirm() {
+            const licenseCheck = await window.electronAPI.checkLicense('Bushing');
+            if (licenseCheck.success && !licenseCheck.allowed) {
+                this.$message.error(licenseCheck.message);
+                return;
+            }
+            const { close, timeoutValue } = startLoading(this, {
+                action: 'add',
+                type: 'default'
+            });
+
+            const originalMessage = this.$message;
+            let capturedMessages = [];
+            let saveSuccess = false;
+            let bushingRef = null;
+
+            this.$message = {
+                success: (msg) => { capturedMessages.push({ type: 'success', message: msg }) },
+                error: (msg) => { capturedMessages.push({ type: 'error', message: msg }) },
+                warning: (msg) => { capturedMessages.push({ type: 'warning', message: msg }) },
+                info: (msg) => { capturedMessages.push({ type: 'info', message: msg }) }
+            };
+
             try {
-                const bushing = this.$refs.bushing
+                await new Promise(resolve => setTimeout(resolve, 200));
+
+                const dialogRef = this.$refs.bushingDialog
+                const bushing = dialogRef ? dialogRef.getBushingRef() : null
                 if (bushing) {
-                    const { success, data } = await bushing.saveAsset()
+                    bushingRef = bushing;
+                    const savePromise = bushing.saveAsset();
+
+                    let result;
+                    if (timeoutValue > 0) {
+                        const timeoutPromise = new Promise((_, reject) =>
+                            setTimeout(() => reject(new Error('Timeout')), timeoutValue)
+                        );
+                        result = await Promise.race([savePromise, timeoutPromise]);
+                    } else {
+                        result = await savePromise;
+                    }
+
+                    const { success, data } = result;
+
                     if (success) {
-                        this.$message.success('Bushing saved successfully')
-                        this.signBushing = false
+                        saveSuccess = true;
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
+                            const bushingData = data.bushing
                             const newRow = {
-                                mrid: data.bushing.mrid,
-                                name: data.bushing.name,
-                                serial_number: data.bushing.serial_number,
+                                mrid: bushingData.mrid,
+                                name: bushingData.name || bushingData.serial_number || 'Unnamed Bushing',
+                                serial_number: bushingData.serial_number,
                                 parentId: this.parentOrganization.mrid,
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
@@ -26,17 +67,33 @@ export default {
                             if (node) {
                                 const children = Array.isArray(node.children) ? node.children : []
                                 Vue.set(node, 'children', [...children, ...newRows])
-                            } else {
-                                this.$message.error('Parent node not found in tree')
                             }
                         }
-                    } else {
-                        this.$message.error('Failed to save bushing')
                     }
                 }
             } catch (error) {
-                this.$message.error('Some error occur')
-                console.error(error)
+                this.$message = originalMessage;
+                await close();
+                this.$message.error(error.message === 'Timeout' ? 'Save timed out' : 'Some error occur');
+                console.error(error);
+                return;
+            } finally {
+                this.$message = originalMessage;
+            }
+
+            await close();
+
+            if (capturedMessages.length > 0) {
+                const last = capturedMessages[capturedMessages.length - 1];
+                this.$message[last.type](last.message);
+            }
+
+            if (saveSuccess) {
+                this.$message.success('Bushing saved successfully');
+                this.signBushing = false;
+                if (bushingRef) {
+                    this.resetFormAfterSave(bushingRef);
+                }
             }
         },
         handleBushingCancel() {

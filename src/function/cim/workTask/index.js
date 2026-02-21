@@ -146,22 +146,27 @@ export const deleteWorkTaskByIdTransaction = async (mrid, dbsql) => {
     })
 }
 
-// Lấy workTask theo work
 export const getWorkTaskByWork = async (workId, dbsql) => {
-    return new Promise((resolve, reject) => {
-        dbsql.all(
-            `SELECT wt.*, bw.*, d.*, io.*
-             FROM work_task wt
-             LEFT JOIN base_work bw ON wt.mrid = bw.mrid
-             LEFT JOIN document d ON wt.mrid = d.mrid
-             LEFT JOIN identified_object io ON wt.mrid = io.mrid
-             WHERE wt.work = ?`,
-            [workId],
-            (err, rows) => {
-                if (err) return reject({ success: false, err, message: 'Get workTask by work failed' })
-                if (!rows || rows.length === 0) return resolve({ success: false, data: [], message: 'No workTask found for this work' })
-                return resolve({ success: true, data: rows, message: 'Get workTask by work completed' })
-            }
-        )
-    })
+  return new Promise((resolve, reject) => {
+    dbsql.all(
+      `SELECT 
+          wt.*, 
+          bw.*, 
+          d.*, 
+          io.*
+       FROM work_task wt
+       LEFT JOIN base_work bw ON wt.mrid = bw.mrid
+       LEFT JOIN document d ON wt.mrid = d.mrid
+       LEFT JOIN identified_object io ON wt.mrid = io.mrid
+       WHERE wt.work = ?`,
+      [workId],
+      (err, rows) => {
+        if (err) return reject({ success: false, err, message: 'Get workTask by work failed' })
+        if (!rows || rows.length === 0) 
+          return resolve({ success: false, data: [], message: 'No workTask found for this work' })
+        return resolve({ success: true, data: rows, message: 'Get workTask by work completed' })
+      }
+    )
+  })
 }
+

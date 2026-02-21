@@ -16,13 +16,14 @@
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Rated frequency" class="inline-two-input">
                             <div class="rf-wrap">
-                                <el-select v-model="ratingsData.rated_frequency.value">
+                                <el-select v-model="ratingsData.rated_frequency.value" placeholder="Select">
                                     <el-option label="Custom" value="Custom"></el-option>
                                     <el-option :label="'60' + unitSymbol.Hz" value="60"></el-option>
                                     <el-option :label="'50' + unitSymbol.Hz" value="50"></el-option>
                                     <el-option :label="'16.7' + unitSymbol.Hz" value="16.7"></el-option>
                                 </el-select>
-                                <el-input v-model="ratingsData.rated_frequency.custom_value" size="mini">
+                                <el-input v-model="ratingsData.rated_frequency.custom_value" size="mini"
+                                    :disabled="ratingsData.rated_frequency.value !== 'Custom'">
                                     <template slot="append">{{ unitSymbol.Hz }}</template>
                                 </el-input>
                             </div>
@@ -63,6 +64,7 @@
                                 <col style="width: 165px;" />
                                 <col style="width: 165px;" />
                                 <col style="width: 165px;" />
+                                <col style="width: 165px;" />
                                 <col style="width: 40px;" />
                             </colgroup>
                             <thead>
@@ -72,6 +74,7 @@
                                     <th>Voltage L-N*</th>
                                     <th>Insul. level L-L(BIL)</th>
                                     <th>Insulation Class</th>
+                                    <th>Voltage regulation</th>
                                     <th class="action-col" style="color: red;">
                                         <el-button size="mini" type="danger" class="w-100"
                                             @click="removeAllVoltageRating">
@@ -124,51 +127,13 @@
                                         <el-input size="mini" v-model="item.insulation_class"></el-input>
                                     </td>
                                     <td>
+                                        <el-input size="mini" v-model="item.voltage_regulation"></el-input>
+                                    </td>
+                                    <td>
                                         <el-button size="mini" type="danger" class="w-100"
                                             @click="deleteVoltageRating(index)">
                                             <i class="fas fa-trash"></i>
                                         </el-button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </el-col>
-            </el-row>
-
-            <!-- Voltage regulation -->
-            <el-row class="content mgt-10">
-                <el-col :span="24">
-                    <span class="bolder">Voltage regulation</span>
-                    <el-divider></el-divider>
-                </el-col>
-            </el-row>
-            <el-row class="content">
-                <el-col>
-                    <div class="table-scroll">
-                        <table class="table-strip-input-data fixed-table">
-                            <colgroup>
-                                <col style="width: 120px" />
-                                <col style="width: 165px" />
-                            </colgroup>
-                            <thead>
-                                <tr>
-                                    <th class="winding-col">Winding</th>
-                                    <th>Voltage regulation</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="(item, index) in ratingsData.voltage_ratings" :key="index">
-                                    <td>
-                                        <el-select size="mini" v-model="item.winding">
-                                            <el-option label="Prim" value="Prim"></el-option>
-                                            <el-option label="Sec" value="Sec"></el-option>
-                                            <el-option v-if="properties.type === $constant.THREE_WINDING" label="Tert"
-                                                value="Tert"></el-option>
-                                        </el-select>
-                                    </td>
-                                    <td>
-                                        <el-input size="mini" v-model="item.voltage_regulation"></el-input>
                                     </td>
                                 </tr>
                             </tbody>
@@ -230,8 +195,8 @@
                                         <el-input size="mini" v-model="item.rated_power.value">
                                             <el-select size="mini" class="select-in-input"
                                                 v-model="item.rated_power.unit" slot="append">
-                                                <el-option :label="unitMultiplier.m + unitSymbol.VA"
-                                                    :value="unitMultiplier.m + '|' + unitSymbol.VA"></el-option>
+                                                <el-option :label="unitMultiplier.M + unitSymbol.VA"
+                                                    :value="unitMultiplier.M + '|' + unitSymbol.VA"></el-option>
                                                 <el-option :label="unitMultiplier.k + unitSymbol.VA"
                                                     :value="unitMultiplier.k + '|' + unitSymbol.VA"></el-option>
                                             </el-select>
@@ -334,8 +299,8 @@
                                             <el-select size="mini" class="select-in-input"
                                                 v-model="ratingsData.power_ratings[index].rated_power.unit"
                                                 :disabled="true" slot="append">
-                                                <el-option :label="unitMultiplier.m + unitSymbol.VA"
-                                                    :value="unitMultiplier.m + '|' + unitSymbol.VA"></el-option>
+                                                <el-option :label="unitMultiplier.M + unitSymbol.VA"
+                                                    :value="unitMultiplier.M + '|' + unitSymbol.VA"></el-option>
                                                 <el-option :label="unitMultiplier.k + unitSymbol.VA"
                                                     :value="unitMultiplier.k + '|' + unitSymbol.VA"></el-option>
                                             </el-select>
@@ -519,7 +484,7 @@ export default {
                 rated_power: {
                     mrid: '',
                     value: '',
-                    unit: 'm|VA'
+                    unit: 'MVA'
                 },
                 cooling_class: '',
                 temp_rise_wind: {
@@ -580,6 +545,23 @@ const arr = ['Prim', 'Sec', 'Tert']
     width: 100%;
     overflow-x: auto;
     overflow-y: hidden;
+}
+
+::v-deep(.table-scroll::-webkit-scrollbar) {
+    height: 5px;
+}
+
+::v-deep(.table-scroll::-webkit-scrollbar-track) {
+    background: transparent;
+}
+
+::v-deep(.table-scroll::-webkit-scrollbar-thumb) {
+    background-color: rgba(120, 120, 120, 0.6);
+    border-radius: 6px;
+}
+
+::v-deep(.table-scroll::-webkit-scrollbar-thumb:hover) {
+    background-color: rgba(120, 120, 120, 0.85);
 }
 
 ::v-deep(.fixed-table) {

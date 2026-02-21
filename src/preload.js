@@ -1,8 +1,11 @@
-import { userPreload } from '@/preload/index.js'
-import { importPreload } from '@/preload/index.js'
-import { entityPreload, cimPreload, uploadCustomPreload, appOptionPreload } from '@/preload/index.js'
+import {userPreload} from '@/preload/index.js'
+import {importPreload} from '@/preload/index.js'
+import {entityPreload, cimPreload, uploadCustomPreload, appOptionPreload} from '@/preload/index.js'
 
-const { contextBridge } = require('electron')
+const {contextBridge, ipcRenderer} = require('electron')
+const windowControlAPI = {
+    onWindowStateChange: (callback) => ipcRenderer.on('window-state-change', (_event, value) => callback(value))
+}
 
 const appOptionAPI = appOptionPreload.appOptionPreload()
 const uploadCustomAPI = uploadCustomPreload.uploadCustomPreload()
@@ -54,15 +57,60 @@ const breakerEntityAPI = entityPreload.breakerEntityPreload.breakerEntityPreload
 const reactorEntityAPI = entityPreload.reactorEntityPreload.reactorEntityPreload()
 const assetPsrAPI = entityPreload.assetPsrPreload.assetPsrPreload()
 const procedureAPI = cimPreload.procedurePreload.procedurePreload()
+const licenseAPI = cimPreload.licensePreload.licensePreload()
 
-const ipcMain = Object.assign(userAPI, attachmentAPI, exportAPI, importAPI, uploadCustomAPI, surgeArresterAPI,
-    parentOrganizationAPI, substationAPI, locationAPI, streetAddressAPI, streetDetailAPI, townDetailAPI,
-    electronicAddressAPI, personAPI, personRoleAPI, telephoneNumberAPI, configurationEventAPI, substationEntityAPI, parentOrganizationEntityAPI,
-    positionPointAPI, voltageLevelEntityAPI, voltageLevelAPI, bayEntityAPI, bayAPI, powerSystemResourceAPI, surgeArresterEntityAPI,
-    productAssetModelAPI, surgeArresterJobAPI, powerCableJobAPI, oldWorkAPI, assetAPI, transformerEntityAPI, analogAPI,
-    stringMeasurementAPI, discreteAPI, valueToAliasAPI, valueAliasSetAPI, powerCableEntityAPI, voltageTransformerEntityAPI, bushingEntityAPI,
-    bushingAPI, disconnectorEntityAPI, rotatingMachineEntityAPI, currentTransformerEntityAPI, capacitorEntityAPI,
-    breakerEntityAPI, reactorEntityAPI, assetPsrAPI, appOptionAPI, procedureAPI)
-contextBridge.exposeInMainWorld('electronAPI',
-    ipcMain
+const ipcMain = Object.assign(
+    userAPI,
+    attachmentAPI,
+    exportAPI,
+    importAPI,
+    uploadCustomAPI,
+    surgeArresterAPI,
+    parentOrganizationAPI,
+    substationAPI,
+    locationAPI,
+    streetAddressAPI,
+    streetDetailAPI,
+    townDetailAPI,
+    electronicAddressAPI,
+    personAPI,
+    personRoleAPI,
+    telephoneNumberAPI,
+    configurationEventAPI,
+    substationEntityAPI,
+    parentOrganizationEntityAPI,
+    positionPointAPI,
+    voltageLevelEntityAPI,
+    voltageLevelAPI,
+    bayEntityAPI,
+    bayAPI,
+    powerSystemResourceAPI,
+    surgeArresterEntityAPI,
+    productAssetModelAPI,
+    surgeArresterJobAPI,
+    powerCableJobAPI,
+    oldWorkAPI,
+    assetAPI,
+    transformerEntityAPI,
+    analogAPI,
+    stringMeasurementAPI,
+    discreteAPI,
+    valueToAliasAPI,
+    valueAliasSetAPI,
+    powerCableEntityAPI,
+    voltageTransformerEntityAPI,
+    bushingEntityAPI,
+    bushingAPI,
+    disconnectorEntityAPI,
+    rotatingMachineEntityAPI,
+    currentTransformerEntityAPI,
+    capacitorEntityAPI,
+    breakerEntityAPI,
+    reactorEntityAPI,
+    assetPsrAPI,
+    appOptionAPI,
+    procedureAPI,
+    windowControlAPI,
+    licenseAPI
 )
+contextBridge.exposeInMainWorld('electronAPI', ipcMain)

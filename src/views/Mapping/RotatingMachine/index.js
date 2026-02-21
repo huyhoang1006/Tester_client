@@ -46,7 +46,7 @@ export function mapDtoToEntity(dto) {
     entity.assetPsr.psr_id = dto.psrId || null;
 
     /** ================== attachment ================== */
-    entity.attachment.mrid = dto.attachmentId || null;
+    entity.attachment.id = dto.attachmentId || null;
     entity.attachment = dto.attachment || null;
 
 
@@ -122,7 +122,7 @@ export function mapEntityToDto(entity) {
     dto.psrId = entity.assetPsr.psr_id || null;
 
     // ================== attachment ==================
-    dto.attachmentId = entity.attachment.mrid || null;
+    dto.attachmentId = entity.attachment.id || null;
     dto.attachment = entity.attachment || null;
 
     // configsData

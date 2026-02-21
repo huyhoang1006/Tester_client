@@ -6,248 +6,48 @@
                 @clear-selection="clearSelection" />
         </div>
         <div v-show="!clientSlide" class="toolbar">
-            <div style="display: flex; align-items: center">
-                <div @click="resetAllServer" class="path-hover">Organisation</div>
-                <i v-if="pathMapServer && pathMapServer.length > 0" style="margin-left: 10px"
-                    class="fa-solid fa-angle-right"></i>
-            </div>
-            <div style="display: flex; align-items: center" v-for="(item, index) in pathMapServer"
-                :key="`server-${item.id}-${index}`">
-                <div @click="resetPathServer(index)" class="path-hover">{{ item.parent }}</div>
-                <i v-if="index < pathMapServer.length - 1" style="margin-left: 10px"
-                    class="fa-solid fa-angle-right"></i>
-            </div>
+            <TopBarServer :pathMapServer="pathMapServer" @reset-all="resetAllServer" @path-click="resetPathServer" />
         </div>
-        <div id="toolbar-setting-id" class="toolbar-setting">
-            <div>
-                <el-dropdown ref="addDropdown" @command="handleAddCommand" @visible-change="handleDropdownVisibleChange"
-                    trigger="click">
-                    <span class="icon-wrapper">
-                        <i title="Add" style="font-size: 12px" class="fa-solid fa-square-plus"></i>
-                    </span>
-                    <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item v-if="isCommandAllowed('organisation')" command="organisation">
-                            <icon size="12px" folderType="building" badgeColor="146EBE"></icon> add Organisation
-                        </el-dropdown-item>
-                        <el-dropdown-item v-if="isCommandAllowed('substation')" command="substation">
-                            <icon size="12px" folderType="location" badgeColor="146EBE"></icon> add Substation
-                        </el-dropdown-item>
-                        <el-dropdown-item v-if="isCommandAllowed('voltageLevel')" command="voltageLevel">
-                            <icon size="12px" folderType="voltageLevel" badgeColor="146EBE"></icon> add Voltage Level
-                        </el-dropdown-item>
-                        <el-dropdown-item v-if="isCommandAllowed('bay')" command="bay">
-                            <icon size="12px" folderType="bay" badgeColor="146EBE"></icon> add Bay
-                        </el-dropdown-item>
-                        <el-dropdown-item v-if="isCommandAllowed('asset')" command="asset" class="asset-submenu-parent"
-                            @mouseenter.native="showAssetSub = true" @mouseleave.native="showAssetSub = false">
-                            <icon size="12px" folderType="asset" badgeColor="146EBE"></icon> add Asset
-                            <div class="asset-submenu" v-if="showAssetSub" @click.stop @mouseenter.stop
-                                @mouseleave.stop>
-                                <div class="submenu-item" @click="handleAssetCommand('Transformer')">
-                                    <i class="fa-solid fa-bolt"></i>
-                                    <span>Add Transformer</span>
-                                </div>
-                                <div class="submenu-item" @click="handleAssetCommand('Surge arrester')">
-                                    <i class="fa-solid fa-shield-halved"></i>
-                                    <span>Add Surge arrester</span>
-                                </div>
-                                <div class="submenu-item" @click="handleAssetCommand('Bushing')">
-                                    <i class="fa-solid fa-shield"></i>
-                                    <span>Add Bushing</span>
-                                </div>
-                                <div class="submenu-item" @click="handleAssetCommand('Voltage transformer')">
-                                    <i class="fa-solid fa-bolt-lightning"></i>
-                                    <span>Add VT</span>
-                                </div>
-                                <div class="submenu-item" @click="handleAssetCommand('Disconnector')">
-                                    <i class="fa-solid fa-plug-circle-xmark"></i>
-                                    <span>Add Disconnector</span>
-                                </div>
-                                <div class="submenu-item" @click="handleAssetCommand('Power cable')">
-                                    <i class="fa-solid fa-route"></i>
-                                    <span>Add Power cable</span>
-                                </div>
-                                <div class="submenu-item" @click="handleAssetCommand('Current transformer')">
-                                    <i class="fa-solid fa-ruler"></i>
-                                    <span>Add CT</span>
-                                </div>
-                                <div class="submenu-item" @click="handleAssetCommand('Circuit breaker')">
-                                    <i class="fa-solid fa-plug"></i>
-                                    <span>Add Circuit breaker</span>
-                                </div>
-                                <div class="submenu-item" @click="handleAssetCommand('Rotating machine')">
-                                    <i class="fa-solid fa-group-arrows-rotate"></i>
-                                    <span>Add Rotating machine</span>
-                                </div>
-                                <div class="submenu-item" @click="handleAssetCommand('Capacitor')">
-                                    <i class="fa-solid fa-bolt"></i>
-                                    <span>Add Capacitor</span>
-                                </div>
-                                <div class="submenu-item" @click="handleAssetCommand('Reactor')">
-                                    <i class="fa-solid fa-bolt"></i>
-                                    <span>Add Reactor</span>
-                                </div>
-                            </div>
-                        </el-dropdown-item>
-                        <el-dropdown-item v-if="isCommandAllowed('job')" command="job">
-                            <icon size="12px" folderType="job" badgeColor="146EBE"></icon> add Job
-                        </el-dropdown-item>
-                    </el-dropdown-menu>
-                </el-dropdown>
-            </div>
-            <div>
-                <i @click="handleOpenNode" title="Open" style="font-size: 12px" class="fa-regular fa-folder-open"></i>
-            </div>
-            <div>
-                <i @click="duplicateSelectedNodes" title="Duplicate" style="font-size: 12px"
-                    class="fa-solid fa-clone"></i>
-            </div>
-            <div>
-                <el-dropdown @command="handleImportCommand" trigger="click">
-                    <i title="Import" style="font-size: 12px" class="fa-solid fa-file-import"></i>
-                    <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item class="import-json-parent" @mouseenter.native="showSubImport = 'json'"
-                            @mouseleave.native="showSubImport = null">
-                            <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon>
-                            import from JSON
-                            <div class="import-json-submenu" v-if="showSubImport === 'json'" @click.stop
-                                @mouseenter.stop @mouseleave.stop>
-                                <div class="submenu-item" @click="handleImportCommand('importJSON')">import JSON</div>
-                                <div class="submenu-item" @click="handleImportCommand('importJSONCIM')">import JSON by
-                                    CIM</div>
-                            </div>
-                        </el-dropdown-item>
-                        <el-dropdown-item command="importXML">
-                            <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon>
-                            import from XML
-                        </el-dropdown-item>
-                        <el-dropdown-item command="importExcel">
-                            <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon>
-                            import from Excel
-                        </el-dropdown-item>
-                        <el-dropdown-item command="importWord">
-                            <icon size="12px" fileTypeDetail="word" folderType="fileType" badgeColor="146EBE"></icon>
-                            import from Word
-                        </el-dropdown-item>
-                        <el-dropdown-item command="importPDF">
-                            <icon size="12px" fileTypeDetail="pdf" folderType="fileType" badgeColor="146EBE"></icon>
-                            import from PDF
-                        </el-dropdown-item>
-                    </el-dropdown-menu>
-                </el-dropdown>
-            </div>
-            <div>
-                <el-dropdown @command="handleCommand" trigger="click">
-                    <i title="Export" style="font-size: 12px" class="fa-solid fa-file-export"></i>
-                    <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item class="export-json-parent" @mouseenter.native="showSub = 'json'"
-                            @mouseleave.native="showSub = null">
-                            <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon>
-                            export to JSON
-                            <div class="export-json-submenu" v-if="showSub === 'json'" @click.stop @mouseenter.stop
-                                @mouseleave.stop>
-                                <div class="submenu-item" @click="handleCommand('exportJSON')">export JSON</div>
-                                <div class="submenu-item" @click="handleCommand('exportJSONCIM')">export JSON by CIM
-                                </div>
-                            </div>
-                        </el-dropdown-item>
-                        <el-dropdown-item command="exportXML">
-                            <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon>
-                            export to XML
-                        </el-dropdown-item>
-                        <el-dropdown-item command="exportExcel">
-                            <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon>
-                            export to Excel
-                        </el-dropdown-item>
-                        <el-dropdown-item command="exportWord">
-                            <icon size="12px" fileTypeDetail="word" folderType="fileType" badgeColor="146EBE"></icon>
-                            export to Word
-                        </el-dropdown-item>
-                        <el-dropdown-item command="exportPDF">
-                            <icon size="12px" fileTypeDetail="pdf" folderType="fileType" badgeColor="146EBE"></icon>
-                            export to PDF
-                        </el-dropdown-item>
-                    </el-dropdown-menu>
-                </el-dropdown>
-            </div>
-            <div v-if="clientSlide">
-                <i title="Upload" style="font-size: 12px" class="fa-solid fa-upload"></i>
-            </div>
-            <div v-if="!clientSlide">
-                <i @click="handleDownloadNode" title="Download" style="font-size: 12px"
-                    class="fa-solid fa-download"></i>
-            </div>
-            <div>
-                <i @click="handleDeleteNode" title="Delete" style="font-size: 12px" class="fa-solid fa-trash"></i>
-            </div>
-            <div @click="handleClickFmeca">
-                <i title="Fmeca" style="font-size: 12px" class="fa-solid fa-table"></i>
-            </div>
-            <div>
-                <i @click="handleMoveNode" title="Move" style="font-size: 12px"
-                    class="fa-solid fa-arrows-up-down-left-right"></i>
-            </div>
-        </div>
+        <!-- Tree Toolbar -->
+        <TreeToolbar :clientSlide="clientSlide" @add-command="handleAddCommand"
+            @dropdown-visible-change="handleDropdownVisibleChange" @asset-command="handleAssetCommand"
+            @import-command="handleImportCommand" @export-command="handleCommand" @open-node="handleOpenNode"
+            @duplicate="duplicateSelectedNodes" @upload="handleUploadNode" @download="handleDownloadNode"
+            @delete="handleDeleteNode" @fmeca="handleClickFmeca" @move="handleMoveNode" />
         <!-- Thanh điều hướng có thể kéo rộng/kéo hẹp -->
         <div class="resizable-sidebar">
-            <div ref="sidebarClient" v-show="clientSlide" class="sidebar">
-                <div class="title-temp">
-                    <div ref="tabContainer" class="tab-container">
-                        <div @contextmenu.prevent="showContext" ref="locationRoot" @click="showLocationRoot"
-                            class="location">Location</div>
-                        <div ref="ownerRoot" class="tab">Owner</div>
-                    </div>
-                    <contextMenu @show-addSubs="showAddSubs" ref="contextSubstation"></contextMenu>
-                </div>
-                <div class="child-nav">
-                    <ul>
-                        <TreeNode v-for="item in organisationClientList" :key="item.id" :node="item"
-                            @double-click-node="doubleClickNode" :selectedNodes.sync="selectedNodes"
-                            @fetch-children="fetchChildren" @show-properties="showPropertiesDataClient"
-                            @update-selection="updateSelection" @clear-selection="clearSelection"
-                            @open-context-menu="openContextMenuClient">
-                        </TreeNode>
-                    </ul>
-                    <contextMenu @delete-data="deleteDataClient" @show-addSubsInTree="showAddSubsInTree"
-                        @show-addOrganisation="showAddOrganisation" @show-addVoltageLevel="showAddVoltageLevel"
-                        @show-addTransformer="showAddTransformer" @show-addJob="showAddJob"
-                        @show-addBushing="showAddBushing" @show-addSurgeArrester="showAddSurgeArrester"
-                        @show-addCircuit="showAddCircuitBreaker" @show-addVt="showAddVt" @show-addCt="showAddCt"
-                        @show-addPowerCable="showAddPowerCable" @show-addDisconnector="showAddDisconnector"
-                        @show-addCapacitor="showAddCapacitor" @show-addReactor="showAddReactor"
-                        @show-addRotatingMachine="showAddRotatingMachine" @show-addBay="showAddBay"
-                        @export-json="handleExportJSONFromContext" @export-json-cim="handleExportJSONCIMFromContext"
-                        @export-xml="handleExportXMLFromContext" @export-excel="handleExportExcelFromContext"
-                        @export-word="handleExportWordFromContext" @export-pdf="handleExportPDFFromContext"
-                        @duplicate-node="handleDuplicateFromContext" @move-node="handleMoveFromContext"
-                        @import-json="handleImportJSONFromContext" @import-json-cim="handleImportJSONCIMFromContext"
-                        @show-data="showDataClient" ref="contextMenuClient">
-                    </contextMenu>
-                </div>
-            </div>
-            <div ref="sidebarServer" v-show="!clientSlide" class="sidebar">
-                <div class="title-temp">
-                    <div ref="tabContainer" class="tab-container">
-                        <div ref="ownerRootServer" @click="showOwnerServerRoot" class="tab">Owner</div>
-                    </div>
-                </div>
-                <div class="child-nav">
-                    <ul>
-                        <TreeNode v-for="item in ownerServerList" :key="item.id" :node="item"
-                            :selectedNodes.sync="selectedNodes" @fetch-children="fetchChildrenServer"
-                            @show-properties="showPropertiesData" @update-selection="updateSelection"
-                            @clear-selection="clearSelection" @open-context-menu="openContextMenu"
-                            @double-click-node="doubleClickNodeServer">
-                        </TreeNode>
-                    </ul>
-                    <contextMenu @show-data="showData" @export-json="handleExportJSONFromContext"
-                        @export-json-cim="handleExportJSONCIMFromContext" @export-xml="handleExportXMLFromContext"
-                        @export-excel="handleExportExcelFromContext" @export-word="handleExportWordFromContext"
-                        @export-pdf="handleExportPDFFromContext" @duplicate-node="handleDuplicateFromContext"
-                        @move-node="handleMoveFromContext" @import-json="handleImportJSONFromContext"
-                        @import-json-cim="handleImportJSONCIMFromContext" ref="contextMenu"></contextMenu>
-                </div>
-            </div>
+            <ClientTreePanel ref="clientPanel" v-show="clientSlide" :organisationClientList="organisationClientList"
+                :selectedNodes.sync="selectedNodes" @showLocationRoot="showLocationRoot" @show-addSubs="showAddSubs"
+                @double-click-node="doubleClickNode" @fetch-children="fetchChildren"
+                @show-properties="showPropertiesDataClient" @update-selection="updateSelection"
+                @clear-selection="clearSelection" @delete-data="handleDeleteFromContextMenu"
+                @show-addSubsInTree="showAddSubsInTree" @show-addOrganisation="showAddOrganisation"
+                @show-addVoltageLevel="showAddVoltageLevel" @show-addTransformer="showAddTransformer"
+                @show-addJob="showAddJob" @show-addBushing="showAddBushing"
+                @show-addSurgeArrester="showAddSurgeArrester" @show-addCircuit="showAddCircuitBreaker"
+                @show-addVt="showAddVt" @show-addCt="showAddCt" @show-addPowerCable="showAddPowerCable"
+                @show-addDisconnector="showAddDisconnector" @show-addCapacitor="showAddCapacitor"
+                @show-addReactor="showAddReactor" @show-addRotatingMachine="showAddRotatingMachine"
+                @show-addBay="showAddBay" @export-json="handleExportJSONFromContext"
+                @export-json-cim="handleExportJSONCIMFromContext" @export-xml="handleExportXMLFromContext"
+                @export-excel="handleExportExcelFromContext" @export-word="handleExportWordFromContext"
+                @export-pdf="handleExportPDFFromContext" @duplicate-node="handleDuplicateFromContext"
+                @move-node="handleMoveFromContext" @import-json="handleImportJSONFromContext"
+                @show-zero-diagram="handleShowZeroDiagram"
+                @import-json-cim="handleImportJSONCIMFromContext" @show-data="showDataClient" />
+
+            <ServerTreePanel ref="serverPanel" v-show="!clientSlide" :ownerServerList="ownerServerList"
+                :selectedNodes.sync="selectedNodes" @showOwnerServerRoot="showOwnerServerRoot"
+                @fetch-children-server="fetchChildrenServer" @double-click-node-server="doubleClickNodeServer"
+                @show-properties="showPropertiesData" @update-selection="updateSelection"
+                @clear-selection="clearSelection" @show-data="showData" @export-json="handleExportJSONFromContext"
+                @export-json-cim="handleExportJSONCIMFromContext" @export-xml="handleExportXMLFromContext"
+                @export-excel="handleExportExcelFromContext" @export-word="handleExportWordFromContext"
+                @export-pdf="handleExportPDFFromContext" @duplicate-node="handleDuplicateFromContext"
+                @move-node="handleMoveFromContext" @import-json="handleImportJSONFromContext"
+                @show-zero-diagram="handleShowZeroDiagram"
+                @import-json-cim="handleImportJSONCIMFromContext" />
+
             <div @mousedown="startResizeClient" v-if="clientSlide" ref="resizerClient" class="resizer"></div>
             <div @mousedown="startResizeServer" v-if="!clientSlide" ref="resizerServer" class="resizer"></div>
             <div ref="contextDataServer" v-show="!clientSlide" class="context-data">
@@ -448,490 +248,125 @@
                     <LogBar :logData="logDataServer" @hideLogBar="hideLogBar"></LogBar>
                 </div>
             </div>
-            <div ref="contextDataClient" v-show="clientSlide" class="context-data">
-                <div ref="contentDataClient" class="content-data">
-                    <div ref="contentClient" class="content">
-                        <div class="title-content"></div>
-                        <div class="content-content">
-                            <Tabs :side="'client'" ref="clientTabs" v-model="activeTabClient" :tabs="tabsClient"
-                                @close-tab="removeTabClient" />
-                        </div>
-                    </div>
-                    <div @mousedown="startResizeContentClient" ref="resizerContentClient" class="resizer"></div>
-                    <div v-if="propertiesSignClient" ref="propertiesClient" class="properties">
-                        <div class="title-properties">
-                            <div class="title-wrapper">
-                                <div class="title-name">Object Properties</div>
-                                <div style="margin-right: 5px">
-                                    <i @click="hidePropertiesClient" class="fa-solid fa-square-caret-right"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="content-properties">
-                            <div class="content-properties-header">
-                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px"></i>
-                                Owner & Position
-                            </div>
-                            <div class="content-properties-table">
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Name</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.name || '&nbsp;' }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Region</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.region || '&nbsp;' }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Plant</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.plant || '&nbsp;' }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Address</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.address || '&nbsp;' }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">City</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.city || '&nbsp;' }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">State/Province</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">
-                                        {{ propertiesClient.state_province || '&nbsp;' }}
-                                    </div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Postal code</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.postal_code || '&nbsp;' }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Country</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.country || '&nbsp;' }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Geo coordinates</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">
-                                        {{ propertiesClient.geo_coordinates || '&nbsp;' }}
-                                    </div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Phone number</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.phone_no || '&nbsp;' }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Email</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        propertiesClient.email || '&nbsp;' }}</div>
-                                </div>
-                            </div>
-                            <div v-if="assetPropertySignClient" class="content-properties-header">
-                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px"></i>
-                                Asset Properties
-                            </div>
-                            <div v-if="assetPropertySignClient" class="content-properties-table">
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Asset</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetPropertiesClient.asset || '&nbsp;' }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Asset type</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">
-                                        {{ assetPropertiesClient.asset_type || '&nbsp;' }}
-                                    </div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Serial number</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">
-                                        {{ assetPropertiesClient.serial_no || '&nbsp;' }}
-                                    </div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Manufacturer</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">
-                                        {{ assetPropertiesClient.manufacturer || '&nbsp;' }}
-                                    </div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Manufacturer type</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">
-                                        {{ assetPropertiesClient.manufacturer_type || '&nbsp;' }}
-                                    </div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Manufacturing year</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">
-                                        {{ assetPropertiesClient.manufacturing_year || '&nbsp;' }}
-                                    </div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Country</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">
-                                        {{ assetPropertiesClient.country || '&nbsp;' }}
-                                    </div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Apparatus id</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">
-                                        {{ assetPropertiesClient.apparatus_id || '&nbsp;' }}
-                                    </div>
-                                </div>
-                            </div>
-                            <div v-if="jobPropertySignClient" class="content-properties-header">
-                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px"></i>
-                                Job Properties
-                            </div>
-                            <div v-if="jobPropertySignClient" class="content-properties-table">
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Name</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobPropertiesClient.name }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Work order</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobPropertiesClient.work_order }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Creation date</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobPropertiesClient.creation_date }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Execution date</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobPropertiesClient.execution_date }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Tested by</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobPropertiesClient.tested_by }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Approved by</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobPropertiesClient.approved_by }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Ambient condition</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobPropertiesClient.ambient_condition }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Standard</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobPropertiesClient.standard }}</div>
-                                </div>
-                            </div>
-                            <div class="content-properties-header">
-                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px"></i>
-                                Configuration Version
-                            </div>
-                            <div class="content-properties-table">
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Last Modified</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word"></div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Author</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word"></div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Last Saved By</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div v-if="!propertiesSignClient" @click="showPropertiesClient" class="trapezoid"></div>
-                </div>
-                <div ref="logBarClient" v-if="logSignClient" class="log-bar">
-                    <LogBar @reloadLog="reloadLogClient" :logData="logDataClient" @hideLogBar="hideLogBarClient">
-                    </LogBar>
-                </div>
-            </div>
+            <ContextDataClient v-show="clientSlide" ref="contextDataClient" :activeTabClient="activeTabClient"
+                :tabsClient="tabsClient" :propertiesSignClient.sync="propertiesSignClient"
+                :propertiesClient="propertiesClient" :assetPropertySignClient="assetPropertySignClient"
+                :assetPropertiesClient="assetPropertiesClient" :jobPropertySignClient="jobPropertySignClient"
+                :jobPropertiesClient="jobPropertiesClient" :logSignClient.sync="logSignClient"
+                :logDataClient="logDataClient" @update:activeTabClient="activeTabClient = $event"
+                @tab-changed="handleTabSelect" @remove-tab-client="removeTabClient"
+                @reload-log-client="reloadLogClient" />
         </div>
 
-        <el-dialog custom-class="app-dialog" title="Add Substation" :visible.sync="signSubs" @close="handleSubsCancel">
-            <Substation :parentOrganization="parentOrganization" :personList="personList" :locationList="locationList"
-                :organisationId="organisationId" ref="substation"></Substation>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleSubsCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleSubsConfirm">Save</el-button>
-            </span>
-        </el-dialog>
+        <!-- Dialog Components -->
+        <SubstationDialog ref="substationDialog" :visible="signSubs" @update:visible="signSubs = $event"
+            :parentOrganization="parentOrganization" :personList="personList" :locationList="locationList"
+            :organisationId="organisationId" @close="handleSubsCancel" @cancel="handleSubsCancel"
+            @confirm="handleSubsConfirm" />
 
-        <el-dialog custom-class="app-dialog" title="Add Organisation" :visible.sync="signOrg" @close="handleOrgCancel">
-            <Organisation :parent="parentOrganization" ref="organisation"></Organisation>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleOrgCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleOrgConfirm">Save</el-button>
-            </span>
-        </el-dialog>
+        <OrganisationDialog ref="organisationDialog" :visible="signOrg" @update:visible="signOrg = $event"
+            :parentOrganization="parentOrganization" @close="handleOrgCancel" @cancel="handleOrgCancel"
+            @confirm="handleOrgConfirm" />
 
-        <el-dialog custom-class="app-dialog" title="Add Voltage Level" :visible.sync="signVoltageLevel"
-            @close="handleVoltageLevelCancel">
-            <VoltageLevel :locationId="locationId" :parent="parentOrganization" ref="voltageLevel"></VoltageLevel>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger"
-                    @click="handleVoltageLevelCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary"
-                    @click="handleVoltageLevelConfirm">Save</el-button>
-            </span>
-        </el-dialog>
+        <VoltageLevelDialog ref="voltageLevelDialog" :visible="signVoltageLevel"
+            @update:visible="signVoltageLevel = $event" :locationId="locationId"
+            :parentOrganization="parentOrganization" @close="handleVoltageLevelCancel"
+            @cancel="handleVoltageLevelCancel" @confirm="handleVoltageLevelConfirm" />
 
-        <el-dialog custom-class="app-dialog" title="Add Bay Level" :visible.sync="signBay" @close="handleBayCancel">
-            <Bay :locationId="locationId" :parent="parentOrganization" ref="bay"></Bay>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleBayCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleBayConfirm">Save</el-button>
-            </span>
-        </el-dialog>
+        <BayDialog ref="bayDialog" :visible="signBay" @update:visible="signBay = $event" :locationId="locationId"
+            :parentOrganization="parentOrganization" @close="handleBayCancel" @cancel="handleBayCancel"
+            @confirm="handleBayConfirm" />
 
-        <el-dialog title="Add Transformer" :visible.sync="signTransformer" @close="handleTransformerCancel"
+        <TransformerDialog ref="transformerDialog" :visible="signTransformer" @update:visible="signTransformer = $event"
+            :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
+            :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
+            @close="handleTransformerCancel" @cancel="handleTransformerCancel" @confirm="handleTransformerConfirm" />
+
+        <BushingDialog ref="bushingDialog" :visible="signBushing" @update:visible="signBushing = $event"
+            :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
+            :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
+            @close="handleBushingCancel" @cancel="handleBushingCancel" @confirm="handleBushingConfirm" />
+
+        <SurgeArresterDialog ref="surgeArresterDialog" :visible="signSurge" @update:visible="signSurge = $event"
+            :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
+            :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
+            @close="handleSurgeCancel" @cancel="handleSurgeCancel" @confirm="handleSurgeConfirm" />
+
+        <CircuitBreakerDialog ref="circuitBreakerDialog" :visible="signCircuit" @update:visible="signCircuit = $event"
+            :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
+            :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
+            @close="handleCircuitCancel" @cancel="handleCircuitCancel" @confirm="handleCircuitConfirm" />
+
+        <CurrentTransformerDialog ref="currentTransformerDialog" :visible="signCt" @update:visible="signCt = $event"
+            :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
+            :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
+            @close="handleCtCancel" @cancel="handleCtCancel" @confirm="handleCtConfirm" />
+
+        <VoltageTransformerDialog ref="voltageTransformerDialog" :visible="signVt" @update:visible="signVt = $event"
+            :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
+            :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
+            @close="handleVtCancel" @cancel="handleVtCancel" @confirm="handleVtConfirm" />
+
+        <PowerCableDialog ref="powerCableDialog" :visible="signPower" @update:visible="signPower = $event"
+            :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
+            :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
+            @close="handlePowerCancel" @cancel="handlePowerCancel" @confirm="handlePowerConfirm" />
+
+        <DisconnectorDialog ref="disconnectorDialog" :visible="signDisconnector"
+            @update:visible="signDisconnector = $event" :locationId="locationId"
+            :parentOrganization="parentOrganization" :modal="!isDuplicating" :show-close="!isDuplicating"
+            :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
+            @close="handleDisconnectorCancel" @cancel="handleDisconnectorCancel" @confirm="handleDisconnectorConfirm" />
+
+        <RotatingMachineDialog ref="rotatingMachineDialog" :visible="signRotating"
+            @update:visible="signRotating = $event" :locationId="locationId" :parentOrganization="parentOrganization"
             :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="dialogClass">
-            <Transformer :locationId="locationId" :parent="parentOrganization" ref="transformer"></Transformer>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger"
-                    @click="handleTransformerCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary"
-                    @click="handleTransformerConfirm">Save</el-button>
-            </span>
-        </el-dialog>
+            :custom-class="dialogClass" @close="handleRotatingCancel" @cancel="handleRotatingCancel"
+            @confirm="handleRotatingConfirm" />
 
-        <el-dialog title="Add Bushing" :visible.sync="signBushing" @close="handleBushingCancel"
-            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="dialogClass">
-            <Bushing :locationId="locationId" :parent="parentOrganization" ref="bushing"></Bushing>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleBushingCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleBushingConfirm">Save</el-button>
-            </span>
-        </el-dialog>
+        <CapacitorDialog ref="capacitorDialog" :visible="signCapacitor" @update:visible="signCapacitor = $event"
+            :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
+            :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
+            @close="handleCapacitorCancel" @cancel="handleCapacitorCancel" @confirm="handleCapacitorConfirm" />
 
-        <el-dialog title="Add Surge Arrester" :visible.sync="signSurge" @close="handleSurgeCancel"
-            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="dialogClass">
-            <SurgeArrester :locationId="locationId" :parent="parentOrganization" ref="surgeArrester"></SurgeArrester>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleSurgeCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleSurgeConfirm">Save</el-button>
-            </span>
-        </el-dialog>
+        <ReactorDialog ref="reactorDialog" :visible="signReactor" @update:visible="signReactor = $event"
+            :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
+            :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
+            @close="handleReactorCancel" @cancel="handleReactorCancel" @confirm="handleReactorConfirm" />
 
-        <el-dialog title="Add Circuit Breaker" :visible.sync="signCircuit" @close="handleCircuitCancel"
-            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="dialogClass">
-            <CircuitBreaker :locationId="locationId" :parent="parentOrganization" ref="circuitBreaker"></CircuitBreaker>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleCircuitCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleCircuitConfirm">Save</el-button>
-            </span>
-        </el-dialog>
+        <JobDialog ref="jobDialog" :visible="signJob" @update:visible="signJob = $event" :checkJobType="checkJobType"
+            :locationData="locationData" :assetData="assetData" :productAssetModelData="productAssetModelData"
+            :parentOrganization="parentOrganization" :testTypeListData="testTypeListData" @close="handleJobCancel"
+            @cancel="handleJobCancel" @confirm="handleJobConfirm" />
 
-        <el-dialog title="Add Current Transformer" :visible.sync="signCt" @close="handleCtCancel"
-            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="dialogClass">
-            <CurrentTransformer :locationId="locationId" :parent="parentOrganization" ref="currentTransformer">
-            </CurrentTransformer>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleCtCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleCtConfirm">Save</el-button>
-            </span>
-        </el-dialog>
+        <ExportDialog :visible="openExportDialog" @update:visible="openExportDialog = $event" :exportType="exportType"
+            @cancel="handleCancelExport" @confirm="handleExportConfirm" />
 
-        <el-dialog title="Add Voltage Transformer" :visible.sync="signVt" @close="handleVtCancel"
-            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="dialogClass">
-            <VoltageTransformer :locationId="locationId" :parent="parentOrganization" ref="voltageTransformer">
-            </VoltageTransformer>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleVtCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleVtConfirm">Save</el-button>
-            </span>
-        </el-dialog>
+        <ImportDialog :visible="openImportDialog" @update:visible="openImportDialog = $event"
+            @cancel="handleCancelImport" @confirm="handleImportConfirm" />
 
-        <el-dialog title="Add Power Cable" :visible.sync="signPower" @close="handlePowerCancel"
-            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="dialogClass">
-            <PowerCable :locationId="locationId" :parent="parentOrganization" ref="powerCable"></PowerCable>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handlePowerCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handlePowerConfirm">Save</el-button>
-            </span>
-        </el-dialog>
+        <FmecaDialog :visible="signFmeca" @update:visible="signFmeca = $event" @close="handleFmecaCancel"
+            @cancel="handleFmecaCancel" @confirm="handleFmecaConfirm" />
 
-        <el-dialog title="Add Disconnector" :visible.sync="signDisconnector" @close="handleDisconnectorCancel"
-            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="dialogClass">
-            <Disconnector :locationId="locationId" :parent="parentOrganization" ref="disconnector"></Disconnector>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleDisconnectorCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleDisconnectorConfirm">Save</el-button>
-            </span>
-        </el-dialog>
+        <MoveDialog :visible="moveDialogVisible" @update:visible="moveDialogVisible = $event"
+            :moveTreeData="moveTreeData" :selectedTargetNodes="selectedTargetNodes"
+            :selectedTargetNode="selectedTargetNode" :nodeToMove="nodeToMove" :moveDisplayText="moveDisplayText"
+            :moveDisplayData="moveDisplayData" @close="handleMoveCancel" @cancel="handleMoveCancel"
+            @confirm="confirmMoveNode" @fetch-children="fetchChildrenForMove" @update-selection="handleMoveNodeSelection" />
 
-        <el-dialog title="Add Rotating Machine" :visible.sync="signRotating" @close="handleRotatingCancel"
-            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="dialogClass">
-            <RotatingMachine :locationId="locationId" :parent="parentOrganization" ref="rotatingMachine">
-            </RotatingMachine>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger"
-                    @click="handleRotatingCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary"
-                    @click="handleRotatingConfirm">Save</el-button>
-            </span>
-        </el-dialog>
+        <DownloadDialog :visible="downloadDialogVisible" @update:visible="downloadDialogVisible = $event"
+            :moveTreeData="moveTreeData" :moveTreeProps="moveTreeProps" :expandedMoveKeys="expandedMoveKeys"
+            :selectedDownloadTargetNode="selectedDownloadTargetNode" @close="() => downloadDialogVisible = false"
+            @cancel="() => downloadDialogVisible = false" @confirm="confirmDownloadSelection"
+            @node-click="handleDownloadTargetSelection" @node-expand="fetchChildren" />
 
-        <el-dialog title="Add Capacitor" :visible.sync="signCapacitor" @close="handleCapacitorCancel"
-            :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="dialogClass">
-            <Capacitor :locationId="locationId" :parent="parentOrganization" ref="capacitor"> </Capacitor>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger"
-                    @click="handleCapacitorCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary"
-                    @click="handleCapacitorConfirm">Save</el-button>
-            </span>
-        </el-dialog>
-
-        <el-dialog title="Add Reactor" :visible.sync="signReactor" @close="handleReactorCancel" :modal="!isDuplicating"
-            :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass">
-            <Reactor :locationId="locationId" :parent="parentOrganization" ref="reactor"> </Reactor>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleReactorCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleReactorConfirm">Save</el-button>
-            </span>
-        </el-dialog>
-
-        <el-dialog custom-class="app-dialog" title="Add Job" :visible.sync="signJob" @close="handleJobCancel">
-            <component ref="jobData" :is="checkJobType" :locationData="locationData" :assetData="assetData"
-                :productAssetModelData="productAssetModelData" :parent="parentOrganization"
-                :testTypeListData="testTypeListData">
-            </component>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleJobCancel">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleJobConfirm">Save</el-button>
-            </span>
-        </el-dialog>
-
-        <el-dialog custom-class="app-dialog" title="Export" :visible.sync="openExportDialog">
-            <Export :exportType="exportType"></Export>
-            <span slot="footer" class="dialog-footer custom-class">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleCancelExport">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleExportConfirm">Save</el-button>
-            </span>
-        </el-dialog>
-
-        <el-dialog custom-class="app-dialog" title="Import" :visible.sync="openImportDialog">
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" type="danger" @click="handleCancelImport">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleImportConfirm">Save</el-button>
-            </span>
-        </el-dialog>
-
-        <el-dialog custom-class="app-dialog" title="Fmeca" :visible.sync="signFmeca" @close="handleFmecaCancel">
-            <Fmeca></Fmeca>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button size="small" type="danger" @click="handleFmecaCancel">Cancel</el-button>
-                <el-button size="small" type="primary" @click="handleFmecaConfirm">Save</el-button>
-            </span>
-        </el-dialog>
-
-        <el-dialog title="Move Node" :visible.sync="moveDialogVisible" width="450px" @close="handleMoveCancel"
-            custom-class="move-dialog app-dialog">
-            <div style="height: 300px; overflow-y: auto">
-                <div class="child-nav" style="height: 100%; cursor: pointer">
-                    <ul style="list-style: none; padding-left: 0">
-                        <TreeNode v-for="item in moveTreeData" :key="item.mrid" :node="item"
-                            :selectedNodes="selectedTargetNodes" @fetch-children="fetchChildrenForMove"
-                            @update-selection="handleMoveNodeSelection" @open-context-menu="() => { }"
-                            style="width: 100%">
-                        </TreeNode>
-                    </ul>
-                </div>
-            </div>
-            <!-- Dòng kẻ ngăn cách TreeNode và dòng chữ bên dưới -->
-            <div style="border-top: 1px solid #e0e0e0; margin: 6px 0 4px 0"></div>
-            <div v-if="moveDisplayText" style="
-                    margin-top: 8px;
-                    font-size: 13px;
-                    color: #606266;
-                    display: flex;
-                    align-items: center;
-                    width: 100%;
-                    box-sizing: border-box;
-                    padding: 0 12px;
-                    font-weight: bold;
-                ">
-                <!-- Cột 1: Move from (trái) -->
-                <span style="flex: 1; text-align: center; color: black">
-                    {{ moveDisplayText.prefix }}
-                </span>
-
-                <!-- Cột 2: icon + node A (giữa trái) -->
-                <div style="flex: 1; display: flex; align-items: center; gap: 4px; justify-content: center">
-                    <icon v-if="moveDisplayData.sourceIcon" :size="'16px'"
-                        :folderType="moveDisplayData.sourceIcon.folderType"
-                        :assetDetail="moveDisplayData.sourceIcon.assetDetail"
-                        :badgeColor="moveDisplayData.sourceIcon.badgeColor"></icon>
-                    <span style="font-weight: 600" :title="moveDisplayText.sourceFull">
-                        {{ moveDisplayText.source }}
-                    </span>
-                </div>
-
-                <!-- Cột 3: to (ở gần giữa, sát 2 node hơn) -->
-                <span
-                    style="flex: 0; padding: 0 8px; text-align: center; white-space: nowrap; font-weight: bold; color: black">
-                    {{ moveDisplayText.middle }}
-                </span>
-
-                <!-- Cột 4: icon + node B (phải) -->
-                <div style="flex: 1; display: flex; align-items: center; gap: 4px; justify-content: center">
-                    <icon v-if="moveDisplayData.targetIcon" :size="'16px'"
-                        :folderType="moveDisplayData.targetIcon.folderType"
-                        :assetDetail="moveDisplayData.targetIcon.assetDetail"
-                        :badgeColor="moveDisplayData.targetIcon.badgeColor"></icon>
-                    <span style="font-weight: 600" :title="moveDisplayText.targetFull">
-                        {{ moveDisplayText.target }}
-                    </span>
-                </div>
-            </div>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" @click="moveDialogVisible = false"
-                    style="background-color: #d63743; color: #fff">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="confirmMoveNode"
-                    :disabled="!selectedTargetNode">Move</el-button>
-            </span>
-        </el-dialog>
-        <!-- Dialog chọn cha khi download -->
-        <el-dialog custom-class="app-dialog" title="Select Parent Node for Downloaded Asset"
-            :visible.sync="downloadDialogVisible" @close="downloadDialogVisible = false">
-            <div style="height: 300px; overflow-y: auto">
-                <div class="child-nav">
-                    <ul style="list-style: none; padding-left: 0">
-                        <TreeNode v-for="item in moveTreeData" :key="item.mrid" :node="item"
-                            :selectedNodes="selectedDownloadTargetNodes" @fetch-children="fetchChildren"
-                            @update-selection="handleDownloadTargetSelection" @open-context-menu="() => { }">
-                        </TreeNode>
-                    </ul>
-                </div>
-            </div>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" @click="downloadDialogVisible = false">Cancel</el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="confirmDownloadSelection"
-                    :disabled="!selectedDownloadTargetNode">Confirm Download</el-button>
-            </span>
-        </el-dialog>
+            <ZeroDiagramDialog 
+             :visible="signZeroDiagram" 
+            @update:visible="signZeroDiagram = $event"
+            :currentNode="nodeForZeroDiagram"
+            :isServer="!clientSlide" 
+            @close="handleZeroDiagramClose"
+            />
     </div>
 </template>
 <script>
@@ -943,57 +378,19 @@ import pageAlign from '@/views/PageAlign/pageAlign.vue'
 import spinner from '@/views/Common/Spinner.vue'
 import Tabs from '@/views/Common/Tabs.vue'
 import contextMenu from '@/views/Common/ContextMenu.vue'
+import TreeToolbar from './components/TreeToolbar.vue'
 
 //client
 import TopBarClient from './Client/Topbar/index.vue'
-import deleteData from './Client/ClientSide/mixin/Delete/deleteDataClient'
-import showAddBay from './Client/ClientSide/mixin/Bay/showAddBay'
-import showAddBushing from './Client/ClientSide/mixin/Bushing/showAddBushing'
-import showAddCapacitor from './Client/ClientSide/mixin/Capacitor/showAddCapacitor'
-import showAddCircuitBreaker from './Client/ClientSide/mixin/CircuitBreaker/showAddCircuitBreaker'
-import showAddConnector from './Client/ClientSide/mixin/Disconnector/showAddDisconnector'
-import showAddCt from './Client/ClientSide/mixin/Ct/showAddCt'
-import showAddJob from './Client/ClientSide/mixin/Job/showAddJob'
-import showAddOrganisation from './Client/ClientSide/mixin/Organisation/showAddOrganisation'
-import showAddPowerCable from './Client/ClientSide/mixin/PowerCable/showAddPowerCable'
-import showAddReactor from './Client/ClientSide/mixin/Reactor/showAddReactor'
-import showAddRotatingMachine from './Client/ClientSide/mixin/RotatingMachine/showAddRotatingMachine'
-import showAddSubInTree from './Client/ClientSide/mixin/Subs/showAddSubInTree'
-import showAddSubs from './Client/ClientSide/mixin/Subs/showAddSubs'
-import showAddSurgeArrester from './Client/ClientSide/mixin/SurgeArrester/showAddSurgeArrester'
-import showAddTransformer from './Client/ClientSide/mixin/Transformer/showAddTransformer'
-import showAddVt from './Client/ClientSide/mixin/Vt/showAddVt'
-import showAddVoltageLevel from './Client/ClientSide/mixin/VoltageLevel/showAddVoltageLevel'
-import showLocationRoot from './Client/ClientSide/mixin/showLocationRoot'
-import handleDeleteNode from './Client/ClientSide/mixin/Delete/deleteNode'
-import showDataClient from './Client/ClientSide/mixin/showDataClient'
-
-//confirm
-import bayConfirm from './Client/ClientSide/mixin/Bay/bayConfirm'
-import bushingConfirm from './Client/ClientSide/mixin/Bushing/bushingConfirm'
-import capacitorConfirm from './Client/ClientSide/mixin/Capacitor/capacitorConfirm'
-import circuitBreakerConfirm from './Client/ClientSide/mixin/CircuitBreaker/circuitConfirm'
-import disconnectorConfirm from './Client/ClientSide/mixin/Disconnector/disconnectorConfirm'
-import ctConfirm from './Client/ClientSide/mixin/Ct/ctConfirm'
-import jobConfirm from './Client/ClientSide/mixin/Job/jobConfirm'
-import organisationConfirm from './Client/ClientSide/mixin/Organisation/OrgConfirm'
-import powerCableConfirm from './Client/ClientSide/mixin/PowerCable/powerCableConfirm'
-import reactorConfirm from './Client/ClientSide/mixin/Reactor/reactorConfirm'
-import rotatingMachineConfirm from './Client/ClientSide/mixin/RotatingMachine/rotatingConfirm'
-import substationConfirm from './Client/ClientSide/mixin/Subs/subsConfirm'
-import surgeArresterConfirm from './Client/ClientSide/mixin/SurgeArrester/surgeConfirm'
-import transformerConfirm from './Client/ClientSide/mixin/Transformer/transformerConfirm'
-import vtConfirm from './Client/ClientSide/mixin/Vt/vtConfirm'
-import voltageLevelConfirm from './Client/ClientSide/mixin/VoltageLevel/voltageLevelConfirm'
-
-//resize
-import resizeClient from './Client/ClientSide/mixin/Resize/resizeClient'
-import logClient from './Client/ClientSide/mixin/Resize/logClient'
+import ContextDataClient from './Client/ClientContext/ContextData.vue'
 
 // Import Mappers
 import mapClientProperties from '@/utils/MapperClient/mapClientProperties'
 import mapClientAssetProperties from '@/utils/MapperClient/mapClientAssetProperties'
 import mapClientJobProperties from '@/utils/MapperClient/mapClientJobProperties'
+import mapProperties from '@/utils/MapperServer/mapProperties'
+import mapAssetProperties from '@/utils/MapperServer/mapAssetProperties'
+import mapJobProperties from '@/utils/MapperServer/mapJobProperties'
 
 // Import Components
 import Substation from '../LocationInsert/locationLevelView.vue'
@@ -1021,57 +418,58 @@ import JobVoltageTransformer from '@/views/JobView/VoltageTransformer/index.vue'
 import JobCircuitBreaker from '@/views/JobView/CircuitBreaker/index.vue'
 import JobTransformer from '@/views/JobView/Transformer/index.vue'
 
-import mixin from './mixin'
+import mixin from './Common'
 import Attachment from '../Common/Attachment.vue'
-import * as demoAPI from '@/api/demo'
 import Icon from '@/views/Common/Icon.vue'
 import Fmeca from '@/views/Fmeca'
 import Export from '@/views/Export/index.vue'
 
-// Import Mappings (Quan trọng cho Duplicate)
-import * as BreakerMapping from '@/views/Mapping/Breaker/index'
-import * as TransformerMapping from '@/views/Mapping/Transformer/index'
-import * as SubstationMapping from '@/views/Mapping/Substation/index'
-import * as OrganisationMapping from '@/views/Mapping/Organisation/index'
-import * as SurgeArresterMapping from '@/views/Mapping/SurgeArrester/index'
-import * as PowerCableMapping from '@/views/Mapping/PowerCable/index'
-import * as DisconnectorMapping from '@/views/Mapping/Disconnector/index'
-import * as CapacitorMapping from '@/views/Mapping/Capacitor/index'
-import * as VoltageTransformerMapping from '@/views/Mapping/VoltageTransformer/index'
-import * as CurrentTransformerMapping from '@/views/Mapping/CurrentTransformer/index'
-import * as ReactorMapping from '@/views/Mapping/Reactor/index'
-import * as BushingMapping from '@/views/Mapping/Bushing/index'
-import * as rotatingMachineMapping from "@/views/Mapping/RotatingMachine/index"
-import * as VoltageLevelMapping from '@/views/Mapping/VoltageLevel/index'
-import { exportNodeToJSON as exportNodeToJSONUtil } from '@/function/entity/export/index'
-import { importNodeFromJSON as importNodeFromJSONUtil } from '@/function/entity/import/index'
+// Import Dialog Components
+import {
+    SubstationDialog,
+    OrganisationDialog,
+    VoltageLevelDialog,
+    BayDialog,
+    TransformerDialog,
+    BushingDialog,
+    SurgeArresterDialog,
+    CircuitBreakerDialog,
+    CurrentTransformerDialog,
+    VoltageTransformerDialog,
+    PowerCableDialog,
+    DisconnectorDialog,
+    RotatingMachineDialog,
+    CapacitorDialog,
+    ReactorDialog,
+    JobDialog,
+    ExportDialog,
+    ImportDialog,
+    FmecaDialog,
+    MoveDialog,
+    DownloadDialog,
+    ZeroDiagramDialog 
+} from './dialogs'
 
-import TransformerMixin from '@/views/AssetView/Transformer/mixin/index.js'
-import SurgeArresterMixin from '@/views/AssetView/SurgeArrester/mixin/index.js'
-import BushingMixin from '@/views/AssetView/Bushing/mixin/index.js'
-import VoltageTransformerMixin from '@/views/AssetView/VoltageTransformer/mixin/index.js'
-import DisconnectorMixin from '@/views/AssetView/Disconnector/mixin/index.js'
-import PowerCableMixin from '@/views/AssetView/PowerCable/mixin/index.js'
-import CurrentTransformerMixin from '@/views/AssetView/CurrentTransformer/mixin/index.js'
-import CircuitBreakerMixin from '@/views/AssetView/CircuitBreaker/mixin/index.js'
-import RotatingMachineMixin from '@/views/AssetView/RotatingMachine/mixin/index.js'
-import CapacitorMixin from '@/views/AssetView/Capacitor/mixin/index.js'
-import ReactorMixin from '@/views/AssetView/Reactor/mixin/index.js'
-import BayMixin from '@/views/Bay/mixin/index.js'
-import treeNodeFind from './mixin/treeNodeFindMixin'
-import { importTransformer } from '@/function/entity/import/Transformer'
-import moveNode from './mixin/MoveNode/moveNode'
-import confirmMove from './mixin/MoveNode/confirmMove'
-import duplicateAsset from './mixin/Duplicate/duplicateAsset'
-import duplicateNode from './mixin/Duplicate/duplicateNode'
-import cleanDtoForDuplicate from './mixin/Duplicate/cleanDtoForDuplicate'
+
+import mixinTreeNavigation from '@/views/TreeNode/Common/mixinTreeNavigation/mixin'
+import TopBarServer from './Server/TopBarServer/index.vue'
+import uploadNodeMixin from './mixin/Upload/index.js';
+import ClientTreePanel from './Client/ClientTree/index.vue'
+import ServerTreePanel from './Server/ServerTree/index.vue'
 export default {
     name: 'TreeNavigation',
     components: {
-        TopBarClient,
-        mapClientProperties,
+        TreeToolbar,
+        ContextDataClient,
+        ServerTreePanel,
+        ClientTreePanel,
+        mapJobProperties,
+        mapAssetProperties,
+        mapProperties, mapClientProperties,
         mapClientJobProperties,
         mapClientAssetProperties,
+        TopBarServer,
+        TopBarClient,
         LogBar,
         TreeNode,
         pageAlign,
@@ -1102,7 +500,30 @@ export default {
         JobTransformer,
         Icon,
         Fmeca,
-        Export
+        Export,
+        // Dialog Components
+        SubstationDialog,
+        OrganisationDialog,
+        VoltageLevelDialog,
+        BayDialog,
+        TransformerDialog,
+        BushingDialog,
+        SurgeArresterDialog,
+        CircuitBreakerDialog,
+        CurrentTransformerDialog,
+        VoltageTransformerDialog,
+        PowerCableDialog,
+        DisconnectorDialog,
+        RotatingMachineDialog,
+        CapacitorDialog,
+        ReactorDialog,
+        JobDialog,
+        ExportDialog,
+        ImportDialog,
+        FmecaDialog,
+        MoveDialog,
+        DownloadDialog,
+        ZeroDiagramDialog 
     },
     data() {
         return {
@@ -1110,8 +531,6 @@ export default {
             openExportDialog: false,
             openImportDialog: false,
             signFmeca: false,
-            showSub: null,
-            showSubImport: null,
             parentOrganization: null,
             logDataServer: [],
             logDataClient: [],
@@ -1154,7 +573,6 @@ export default {
             pathMapClient: [],
             hideTabContentServer: [],
             hideTabContentClient: [],
-            showAssetSub: false,
             currentTabServer: '',
             isDuplicating: false,
             moveDialogVisible: false,
@@ -1168,6 +586,8 @@ export default {
             nodeToDownloadData: null, // Lưu dữ liệu DTO từ server về
             selectedDownloadTargetNode: null, // Node cha được chọn thủ công
             selectedDownloadTargetNodes: [], // Lưu valid parent types để dùng trong fetchChildrenForMove
+             signZeroDiagram: false, // Biến điều khiển ẩn hiện dialog
+            nodeForZeroDiagram: null, // Biến lưu node đang chọn
             moveTreeProps: {
                 children: 'children',
                 label: 'name',
@@ -1386,19 +806,7 @@ export default {
                 : 'app-dialog'
         }
     },
-    mixins: [mixin, treeNodeFind, deleteData, showAddBay, showAddBushing,
-        showAddCapacitor, showAddCircuitBreaker, showAddConnector, showAddCt,
-        showAddJob, showAddOrganisation, showAddPowerCable, showAddReactor,
-        showAddRotatingMachine, showAddSubInTree, showAddSubs, showAddSurgeArrester,
-        showAddTransformer, showAddVt, showAddVoltageLevel, showLocationRoot, moveNode,
-        confirmMove, handleDeleteNode, duplicateNode, duplicateAsset, showDataClient,
-        cleanDtoForDuplicate, bayConfirm, bushingConfirm, capacitorConfirm,
-        circuitBreakerConfirm, disconnectorConfirm, ctConfirm, jobConfirm,
-        organisationConfirm, powerCableConfirm, reactorConfirm, rotatingMachineConfirm,
-        substationConfirm, surgeArresterConfirm, transformerConfirm, vtConfirm,
-        voltageLevelConfirm, TransformerMixin, SurgeArresterMixin, resizeClient,
-        logClient, 
-        ],
+    mixins: [mixin, mixinTreeNavigation, uploadNodeMixin],
     async beforeMount() {
         try {
             const data = await window.electronAPI.getAllConfigurationEvents()
@@ -1410,1220 +818,14 @@ export default {
             this.$message.error('Failed to fetch log data.')
         }
     },
+mounted() {
+    window.addEventListener("keydown", this.handleKeyDown);
+    this.$nextTick(async () => {
+        await this.showLocationRoot();   
+        await this.showOwnerServerRoot(); 
+    });
+},
     methods: {
-        handleDropdownVisibleChange(visible) {
-            // Nếu dropdown muốn mở mà chưa có node selected, ngăn nó mở
-            if (visible && (!this.selectedNodes || this.selectedNodes.length === 0)) {
-                this.$message.warning('Please select a node first')
-                // Ngăn dropdown mở bằng cách set visible = false
-                this.$nextTick(() => {
-                    // Tìm ref dropdown và close nó
-                    if (this.$refs.addDropdown) {
-                        this.$refs.addDropdown.visible = false
-                    }
-                })
-            }
-        },
-        handleCommand(cmd) {
-            console.log('Command received:', cmd)
-            if (cmd === 'exportExcel') {
-                this.openExportDialog = true
-                this.exportType = 'excel'
-            } else if (cmd === 'exportJSON') {
-                this.exportTreeToJSON('dto')
-            } else if (cmd === 'exportJSONCIM') {
-                this.exportTreeToJSON('cim')
-            } else if (cmd === 'exportXML') {
-                this.openExportDialog = true
-                this.exportType = 'xml'
-            } else if (cmd === 'exportWord') {
-                this.openExportDialog = true
-                this.exportType = 'word'
-            } else if (cmd === 'exportPDF') {
-                this.openExportDialog = true
-                this.exportType = 'pdf'
-            }
-        },
-        async exportTreeToJSON(type) {
-            // Yêu cầu phải chọn ít nhất 1 node để export
-            if (!this.selectedNodes || this.selectedNodes.length === 0) {
-                this.$message.warning('Please select at least one node to export')
-                return
-            }
-
-            const dependencies = {
-                electronAPI: window.electronAPI,
-                mappings: {
-                    SubstationMapping,
-                    OrganisationMapping,
-                    SurgeArresterMapping,
-                    PowerCableMapping,
-                    DisconnectorMapping,
-                    rotatingMachineMapping,
-                    CapacitorMapping,
-                    VoltageTransformerMapping,
-                    CurrentTransformerMapping,
-                    TransformerMapping,
-                    BreakerMapping,
-                    ReactorMapping,
-                    BushingMapping,
-                    VoltageLevelMapping
-                },
-                userId: this.$store.state.user.user_id,
-                messageHandler: this.$message
-            }
-
-            await exportNodeToJSONUtil(this.selectedNodes, type, dependencies)
-        },
-        async handleImportCommand(cmd) {
-            if (cmd === 'importExcel') {
-                this.openImportDialog = true
-            } else if (cmd === 'importJSON') {
-                await this.importTreeFromJSON('dto')
-            } else if (cmd === 'importJSONCIM') {
-                // TODO: Implement import JSON by CIM (sau khi có import JSON thường)
-                this.$message.info('Import JSON by CIM feature is coming soon')
-            } else if (cmd === 'importXML') {
-                this.openImportDialog = true
-            } else if (cmd === 'importWord') {
-                this.openImportDialog = true
-            } else if (cmd === 'importPDF') {
-                this.openImportDialog = true
-            }
-        },
-        async importTreeFromJSON(type) {
-            // Validate: Phải có selectedNode (giống export)
-            if (!this.selectedNodes || this.selectedNodes.length === 0) {
-                this.$message.warning('Please select at least one node to import into')
-                return
-            }
-
-            // Lấy parent node (node được chọn đầu tiên)
-            const parentNode = this.selectedNodes[0]
-
-            try {
-                // Mở file picker để chọn JSON file
-                const fileResult = await window.electronAPI.importJSON()
-
-                if (!fileResult.success || !fileResult.data) {
-                    if (fileResult.message !== 'Import cancelled') {
-                        this.$message.error(fileResult.message || 'Failed to load JSON file')
-                    }
-                    return
-                }
-
-                const dtos = fileResult.data
-
-                // Prepare dependencies
-                const dependencies = {
-                    electronAPI: window.electronAPI,
-                    mappings: {
-                        SubstationMapping,
-                        OrganisationMapping,
-                        SurgeArresterMapping,
-                        PowerCableMapping,
-                        DisconnectorMapping,
-                        rotatingMachineMapping,
-                        CapacitorMapping,
-                        VoltageTransformerMapping,
-                        CurrentTransformerMapping,
-                        TransformerMapping,
-                        BreakerMapping,
-                        ReactorMapping,
-                        BushingMapping,
-                        VoltageLevelMapping
-                    },
-                    userId: this.$store.state.user.user_id,
-                    messageHandler: this.$message
-                }
-
-                // Import với parent node
-                const result = await importNodeFromJSONUtil(dtos, parentNode, dependencies)
-
-                // Tạo node trong tree UI sau khi import thành công
-                if (result.success && result.successCount > 0) {
-                    console.log('Import result:', result)
-                    // Tạo các node đã import vào tree UI
-                    if (result.importedNodes && result.importedNodes.length > 0) {
-                        console.log('Creating nodes in tree UI:', result.importedNodes)
-                        for (const newNodeData of result.importedNodes) {
-                            const node = this.findNodeById(newNodeData.parentId, this.organisationClientList)
-                            if (node) {
-                                const children = Array.isArray(node.children) ? node.children : []
-                                Vue.set(node, 'children', [...children, newNodeData])
-                                console.log('Added node to tree:', newNodeData.mrid, 'to parent:', node.mrid)
-                            } else {
-                                console.warn(`Parent node not found for ${newNodeData.mrid}, parentId: ${newNodeData.parentId}`)
-                            }
-                        }
-                    } else {
-                        console.warn('No importedNodes in result:', result)
-                    }
-
-                    // Refresh tree để đồng bộ với database
-                    // Reset flag để force fetch lại từ server
-                    Vue.set(parentNode, '_childrenFetched', false)
-                    await this.fetchChildren(parentNode)
-                }
-            } catch (error) {
-                console.error('Error importing JSON:', error)
-                this.$message.error('An error occurred while importing JSON')
-            }
-        },
-
-        handleCancelImport() {
-            this.openImportDialog = false
-        },
-
-        handleImportConfirm() {
-            this.openImportDialog = false
-            this.$message.success('Import successfully')
-        },
-        handleCancelExport() {
-            this.openExportDialog = false
-        },
-
-        handleExportConfirm() {
-            this.openExportDialog = false
-            this.$message.success('Export successfully')
-        },
-
-        handleFmecaCancel() {
-            this.signFmeca = false
-        },
-
-        handleFmecaConfirm() {
-            this.signFmeca = false
-            this.$message.success('Save successfully')
-        },
-
-        handleClickFmeca() {
-            this.signFmeca = true
-        },
-        async handleExportJSONFromContext(node) {
-            await this.exportSingleNodeToJSON(node, 'dto')
-        },
-        async handleExportJSONCIMFromContext(node) {
-            await this.exportSingleNodeToJSON(node, 'cim')
-        },
-        async handleDuplicateFromContext(node) {
-            // Set selectedNodes để duplicateSelectedNodes có thể sử dụng
-            this.selectedNodes = [node]
-            // Gọi hàm duplicate
-            await this.duplicateSelectedNodes()
-        },
-
-        // Import handlers từ context menu
-        async handleImportJSONFromContext(node) {
-            if (!node) {
-                this.$message.warning('Please select a node to import into')
-                return
-            }
-
-            try {
-                // Mở file picker để chọn JSON file
-                const fileResult = await window.electronAPI.importJSON()
-
-                if (!fileResult.success || !fileResult.data) {
-                    if (fileResult.message !== 'Import cancelled') {
-                        this.$message.error(fileResult.message || 'Failed to load JSON file')
-                    }
-                    return
-                }
-                const dtos = fileResult.data
-                const dependencies = {
-                    electronAPI: window.electronAPI,
-                    mappings: {
-                        SubstationMapping,
-                        OrganisationMapping,
-                        SurgeArresterMapping,
-                        PowerCableMapping,
-                        DisconnectorMapping,
-                        rotatingMachineMapping,
-                        CapacitorMapping,
-                        VoltageTransformerMapping,
-                        CurrentTransformerMapping,
-                        TransformerMapping,
-                        BreakerMapping,
-                        ReactorMapping,
-                        BushingMapping,
-                        VoltageLevelMapping
-                    },
-                    userId: this.$store.state.user.user_id,
-                    messageHandler: this.$message
-                }
-                const result = await importNodeFromJSONUtil(dtos, node, dependencies)
-                if (result.success && result.successCount > 0) {
-                    // Tạo các node đã import vào tree UI
-                    if (result.importedNodes && result.importedNodes.length > 0) {
-                        console.log('importedNodes:', result.importedNodes)
-                        for (const newNodeData of result.importedNodes) {
-                            const parentNode = this.findNodeById(newNodeData.parentId, this.organisationClientList)
-                            if (parentNode) {
-                                const children = Array.isArray(parentNode.children) ? parentNode.children : []
-                                Vue.set(parentNode, "children", [...children, newNodeData])
-                                console.log('Added node:', newNodeData.mrid, 'to parent:', parentNode.mrid)
-                            } else {
-                                console.warn(`Parent node not found for ${newNodeData.mrid}`)
-                            }
-                        }
-                    } else {
-                        console.warn('No importedNodes in result')
-                    }
-
-                    // Refresh tree để đồng bộ với database
-                    Vue.set(node, '_childrenFetched', false)
-                    await this.fetchChildren(node)
-                }
-            } catch (error) {
-                console.error('Error importing JSON:', error)
-                this.$message.error('An error occurred while importing JSON')
-            }
-
-            // // Refresh tree sau khi import thành công
-            // if (result.success && result.successCount > 0) {
-            //     this.refreshTreeAfterImport(node)
-            // }
-        },
-        async handleImportJSONCIMFromContext(node) {
-            this.$message.info('Import JSON by CIM ')
-        },
-        async exportSingleNodeToJSON(node, type) {
-            if (!node) {
-                this.$message.warning('No node selected to export')
-                return
-            }
-
-            const dependencies = {
-                electronAPI: window.electronAPI,
-                mappings: {
-                    SubstationMapping,
-                    OrganisationMapping,
-                    SurgeArresterMapping,
-                    PowerCableMapping,
-                    DisconnectorMapping,
-                    rotatingMachineMapping,
-                    CapacitorMapping,
-                    VoltageTransformerMapping,
-                    CurrentTransformerMapping,
-                    TransformerMapping,
-                    BreakerMapping,
-                    ReactorMapping,
-                    BushingMapping,
-                    VoltageLevelMapping
-                },
-                userId: this.$store.state.user.user_id,
-                messageHandler: this.$message
-            }
-
-            // Truyền trực tiếp node, không dùng selectedNodes
-            await exportNodeToJSONUtil(node, type, dependencies)
-        },
-        handleExportXMLFromContext(node) {
-            this.openExportDialog = true
-        },
-        handleExportExcelFromContext(node) {
-            this.openExportDialog = true
-        },
-        handleExportWordFromContext(node) {
-            this.openExportDialog = true
-        },
-        handleExportPDFFromContext(node) {
-            this.openExportDialog = true
-        },
-        removeTab(index) {
-            if (this.activeTab.id == this.tabs[index].id) {
-                this.activeTab = {}
-            }
-            this.tabs.splice(index, 1)
-        },
-        removeTabClient(index) {
-            if (this.activeTabClient.mrid == this.tabsClient[index].mrid) {
-                this.activeTabClient = {}
-            }
-            this.tabsClient.splice(index, 1)
-        },
-        hideLogBar(sign) {
-            this.logSign = false
-            const element = this.$refs.contentData
-            element.style.height = '100%'
-        },
-        startResizeServer() {
-            document.addEventListener('mousemove', this.resizeServer)
-            document.addEventListener('mouseup', this.stopResizeServer)
-        },
-        resizeServer(event) {
-            if (!this.$refs.sidebarServer) return
-            let newWidth = (event.clientX / window.innerWidth) * 100
-            let finalWidth = Math.max(10, Math.min(40, newWidth))
-            // Cập nhật width của sidebar và context-data
-            this.$refs.sidebarServer.style.width = finalWidth + 'vw'
-            this.$refs.contextDataServer.style.width = 100 - finalWidth + 'vw'
-        },
-        stopResizeServer() {
-            document.removeEventListener('mousemove', this.resizeServer)
-            document.removeEventListener('mouseup', this.stopResizeServer)
-        },
-        startResizeContentServer() {
-            document.addEventListener('mousemove', this.resizeContentServer)
-            document.addEventListener('mouseup', this.stopResizeContentServer)
-        },
-        resizeContentServer(event) {
-            if (!this.$refs.properties || !this.$refs.contentData) return
-            const parentWidth = this.$refs.contextDataServer.clientWidth
-            let newWidth = parentWidth - event.clientX + this.$refs.contextDataServer.getBoundingClientRect().left
-            const minWidth = parentWidth * 0.1
-            const maxWidth = parentWidth * 0.4
-            newWidth = Math.max(minWidth, Math.min(newWidth, maxWidth))
-            newWidth = (newWidth / parentWidth) * 100
-            // Cập nhật width của sidebar và context-data
-            this.$refs.properties.style.width = `${newWidth}%`
-            this.$refs.content.style.width = `${100 - newWidth}%`
-        },
-        stopResizeContentServer() {
-            document.removeEventListener('mousemove', this.resizeContentServer)
-            document.removeEventListener('mouseup', this.stopResizeContentServer)
-        },
-        showLogBar(sign) {
-            this.logSign = true
-            const element = this.$refs.contentData
-            element.style.height = '80%'
-            this.$nextTick(() => {
-                const elementLog = this.$refs.logBar
-                elementLog.style.height = '20%'
-            })
-        },
-
-        async fetchChildren(node) {
-            // Lưu children hiện có (nếu có) để merge sau
-            // Điều này đảm bảo không mất asset đã add trước đó khi node chưa được expand
-            const existingChildren = Array.isArray(node.children) ? [...node.children] : []
-
-            // Chỉ fetch nếu:
-            // 1. Chưa có children (chưa fetch lần nào)
-            // 2. Hoặc có children nhưng chưa được fetch từ server (chỉ có asset mới add)
-            // 3. Hoặc có children đã fetch nhưng có asset mới add (cần merge)
-            const hasExistingChildren = existingChildren.length > 0
-            const needsFetch = !node.children || !node._childrenFetched || hasExistingChildren
-            if (needsFetch) {
-                try {
-                    let newRows = []
-                    if (node.mode == 'asset') {
-                        const clickedRow = node
-                        if (node.asset && node.asset == 'Surge arrester') {
-                            const jobsReturn = await this.fetchJobsByAssetId(node.mrid)
-                            if (jobsReturn.success) {
-                                jobsReturn.data.forEach((row) => {
-                                    row.parentId = clickedRow.mrid
-                                    row.mode = 'job'
-                                    row.job = 'Surge arrester'
-                                    let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                    row.parentName = parentName
-                                    row.parentArr = [...(clickedRow.parentArr || [])]
-                                    row.parentArr.push({
-                                        mrid: clickedRow.mrid,
-                                        parent: clickedRow.name
-                                    })
-                                })
-                                newRows.push(...jobsReturn.data)
-                            }
-                        }
-                    } else if (node.mode == 'substation') {
-                        const clickedRow = node
-                        const [voltageLevelReturn, bayReturn] = await Promise.all([
-                            window.electronAPI.getVoltageLevelBySubstationId(clickedRow.mrid),
-                            window.electronAPI.getBayByVoltageBySubstationId(null, clickedRow.mrid)
-                        ])
-                        const [
-                            assetTransformerReturn,
-                            assetSurgeReturn,
-                            assetBushingReturn,
-                            assetVtReturn,
-                            assetDisconnectorReturn,
-                            assetPowerCableReturn,
-                            assetRotatingMachineReturn,
-                            assetCurrentTransformerReturn,
-                            assetCapacitorReturn,
-                            assetBreakerReturn,
-                            assetReactorReturn
-                        ] = await this.fetchAssetByPsr(clickedRow.mrid)
-                        if (voltageLevelReturn.success) {
-                            voltageLevelReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'voltageLevel'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...(clickedRow.parentArr || [])]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            })
-                            newRows.push(...voltageLevelReturn.data)
-                        }
-
-                        if (bayReturn.success) {
-                            bayReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'bay'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...(clickedRow.parentArr || [])]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            })
-                            newRows.push(...bayReturn.data)
-                        }
-
-                        if (assetTransformerReturn.success) {
-                            assetTransformerReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'asset'
-                                row.asset = 'Transformer'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...(clickedRow.parentArr || [])]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            })
-                            newRows.push(...assetTransformerReturn.data)
-                        }
-
-                        if (assetSurgeReturn.success) {
-                            assetSurgeReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'asset'
-                                row.asset = 'Surge arrester'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...(clickedRow.parentArr || [])]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            })
-                            newRows.push(...assetSurgeReturn.data)
-                        }
-
-                        if (assetBushingReturn.success) {
-                            assetBushingReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'asset'
-                                row.asset = 'Bushing'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...(clickedRow.parentArr || [])]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            })
-                            newRows.push(...assetBushingReturn.data)
-                        }
-
-                        if (assetVtReturn.success) {
-                            assetVtReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'asset'
-                                row.asset = 'Voltage transformer'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...(clickedRow.parentArr || [])]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            })
-                            newRows.push(...assetVtReturn.data)
-                        }
-
-                        if (assetDisconnectorReturn.success) {
-                            assetDisconnectorReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'asset'
-                                row.asset = 'Disconnector'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...(clickedRow.parentArr || [])]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            })
-                            newRows.push(...assetDisconnectorReturn.data)
-                        }
-
-                        if (assetPowerCableReturn.success) {
-                            assetPowerCableReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'asset'
-                                row.asset = 'Power cable'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...(clickedRow.parentArr || [])]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            })
-                            newRows.push(...assetPowerCableReturn.data)
-                        }
-
-                        if (assetRotatingMachineReturn.success) {
-                            assetRotatingMachineReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'asset'
-                                row.asset = 'Rotating machine'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...(clickedRow.parentArr || [])]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            })
-                            newRows.push(...assetRotatingMachineReturn.data)
-                        }
-
-                        if (assetCapacitorReturn.success) {
-                            assetCapacitorReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'asset'
-                                row.asset = 'Capacitor'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                            })
-                            newRows.push(...assetCapacitorReturn.data)
-                        }
-
-                        if (assetReactorReturn.success) {
-                            assetReactorReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'asset'
-                                row.asset = 'Reactor'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...(clickedRow.parentArr || [])]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            })
-                            newRows.push(...assetReactorReturn.data)
-                        }
-
-                        if (assetCurrentTransformerReturn.success) {
-                            assetCurrentTransformerReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'asset'
-                                row.asset = 'Current transformer'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...(clickedRow.parentArr || [])]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            })
-                            newRows.push(...assetCurrentTransformerReturn.data)
-                        }
-
-                        if (assetBreakerReturn.success) {
-                            assetBreakerReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'asset'
-                                row.asset = 'Circuit breaker'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...(clickedRow.parentArr || [])]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            })
-                            newRows.push(...assetBreakerReturn.data)
-                        }
-                    } else if (node.mode == 'voltageLevel') {
-                        const clickedRow = node
-                        const [bayReturn] = await Promise.all([window.electronAPI.getBayByVoltageBySubstationId(clickedRow.mrid, null)])
-
-                        if (bayReturn.success) {
-                            bayReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'bay'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...(clickedRow.parentArr || [])]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            })
-                            newRows.push(...bayReturn.data)
-                        }
-                    } else if (node.mode == 'bay') {
-                        const clickedRow = node
-                        const [
-                            assetTransformerReturn,
-                            assetSurgeReturn,
-                            assetBushingReturn,
-                            assetVtReturn,
-                            assetDisconnectorReturn,
-                            assetPowerCableReturn,
-                            assetRotatingMachineReturn,
-                            assetCurrentTransformerReturn,
-                            assetCapacitorReturn,
-                            assetBreakerReturn,
-                            assetReactorReturn
-                        ] = await this.fetchAssetByPsr(clickedRow.mrid)
-                        if (assetTransformerReturn.success) {
-                            assetTransformerReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'asset'
-                                row.asset = 'Transformer'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...(clickedRow.parentArr || [])]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            })
-                            newRows.push(...assetTransformerReturn.data)
-                        }
-                        if (assetSurgeReturn.success) {
-                            assetSurgeReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'asset'
-                                row.asset = 'Surge arrester'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...(clickedRow.parentArr || [])]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            })
-                            newRows.push(...assetSurgeReturn.data)
-                        }
-                        if (assetBushingReturn.success) {
-                            assetBushingReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'asset'
-                                row.asset = 'Bushing'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...(clickedRow.parentArr || [])]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            })
-                            newRows.push(...assetBushingReturn.data)
-                        }
-                        if (assetVtReturn.success) {
-                            assetVtReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'asset'
-                                row.asset = 'Voltage transformer'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...(clickedRow.parentArr || [])]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            })
-                            newRows.push(...assetVtReturn.data)
-                        }
-                        if (assetDisconnectorReturn.success) {
-                            assetDisconnectorReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'asset'
-                                row.asset = 'Disconnector'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...(clickedRow.parentArr || [])]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            })
-                            newRows.push(...assetVtReturn.data)
-                        }
-                        if (assetPowerCableReturn.success) {
-                            assetPowerCableReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'asset'
-                                row.asset = 'Power cable'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...(clickedRow.parentArr || [])]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            })
-                            newRows.push(...assetPowerCableReturn.data)
-                        }
-                        if (assetCurrentTransformerReturn.success) {
-                            assetCurrentTransformerReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'asset'
-                                row.asset = 'Current transformer'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...(clickedRow.parentArr || [])]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            })
-                            newRows.push(...assetCurrentTransformerReturn.data)
-                        }
-                        if (assetRotatingMachineReturn.success) {
-                            assetRotatingMachineReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'asset'
-                                row.asset = 'Rotating machine'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...(clickedRow.parentArr || [])]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            })
-                            newRows.push(...assetRotatingMachineReturn.data)
-                        }
-                        if (assetCapacitorReturn.success) {
-                            assetCapacitorReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'asset'
-                                row.asset = 'Capacitor'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...(clickedRow.parentArr || [])]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            })
-                            newRows.push(...assetCapacitorReturn.data)
-                        }
-
-                        if (assetReactorReturn.success) {
-                            assetReactorReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'asset'
-                                row.asset = 'Reactor'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...(clickedRow.parentArr || [])]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            })
-                            newRows.push(...assetReactorReturn.data)
-                        }
-                    } else {
-                        const clickedRow = node
-                        const [organisationReturn, substationReturn] = await Promise.all([
-                            window.electronAPI.getParentOrganizationByParentMrid(clickedRow.mrid),
-                            window.electronAPI.getSubstationsInOrganisationForUser(clickedRow.mrid, this.$store.state.user.user_id)
-                        ])
-                        if (organisationReturn.success && organisationReturn.data && organisationReturn.data.length > 0) {
-                            organisationReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'organisation'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...(clickedRow.parentArr || [])]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            })
-                            newRows.push(...organisationReturn.data)
-                        }
-
-                        if (substationReturn.success && substationReturn.data && substationReturn.data.length > 0) {
-                            substationReturn.data.forEach((row) => {
-                                row.parentId = clickedRow.mrid
-                                row.mode = 'substation'
-                                let parentName = clickedRow.parentName + '/' + clickedRow.name
-                                row.parentName = parentName
-                                row.parentArr = [...(clickedRow.parentArr || [])]
-                                row.parentArr.push({
-                                    mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
-                                })
-                            })
-                            newRows.push(...substationReturn.data)
-                        }
-                    }
-                    // Merge với children hiện có (nếu có) để không mất asset đã add trước đó
-                    if (existingChildren.length > 0) {
-                        // Tạo map của mrid để tránh duplicate
-                        const existingMrids = new Set(existingChildren.map((c) => c.mrid))
-                        // Chỉ thêm children mới nếu chưa có trong existingChildren
-                        const newChildrenToAdd = newRows.filter((row) => !existingMrids.has(row.mrid))
-                        Vue.set(node, 'children', [...existingChildren, ...newChildrenToAdd])
-                    } else {
-                        Vue.set(node, 'children', newRows) // Đảm bảo Vue reactive
-                    }
-                    // Đánh dấu đã fetch để tránh fetch lại không cần thiết
-                    Vue.set(node, '_childrenFetched', true)
-                } catch (error) {
-                    console.error('Error fetching children:', error)
-                    this.$message.error('Có lỗi xảy ra khi tải dữ liệu: ' + error.message)
-                }
-            }
-        },
-
-        async fetchAssetByPsr(psrId) {
-            try {
-                const [
-                    responseTransformer,
-                    responseSurge,
-                    responseBushing,
-                    responseVT,
-                    responseDisconnector,
-                    responsePowerCale,
-                    responseRotatingMachine,
-                    responseCurrentTransformer,
-                    responseCapacitor,
-                    responseBreaker,
-                    responseReactor
-                ] = await Promise.all([
-                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Transformer'),
-                    window.electronAPI.getSurgeArresterByPsrId(psrId),
-                    window.electronAPI.getBushingByPsrId(psrId),
-                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Voltage transformer'),
-                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Disconnector'),
-                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Power cable'),
-                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Rotating machine'),
-                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Current transformer'),
-                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Capacitor'),
-                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Circuit breaker'),
-                    window.electronAPI.getAssetByPsrIdAndKind(psrId, 'Reactor')
-                ])
-                return [
-                    responseTransformer,
-                    responseSurge,
-                    responseBushing,
-                    responseVT,
-                    responseDisconnector,
-                    responsePowerCale,
-                    responseRotatingMachine,
-                    responseCurrentTransformer,
-                    responseCapacitor,
-                    responseBreaker,
-                    responseReactor
-                ]
-            } catch (error) {
-                console.error('Error fetching asset by substation:', error)
-                return {
-                    success: false,
-                    data: [],
-                    message: 'Error fetching asset by substation'
-                }
-            }
-        },
-
-        async fetchJobsByAssetId(assetId) {
-            try {
-                const result = await window.electronAPI.getOldWorkByAssetId(assetId)
-                return result
-            } catch (error) {
-                console.error('Error fetching jobs by asset ID:', error)
-                return {
-                    success: false,
-                    data: [],
-                    message: 'Error fetching jobs by asset ID'
-                }
-            }
-        },
-
-        async checkChildren(node) {
-            // Kiểm tra nếu đã load children trong tree
-            if (node.children && node.children.length > 0) {
-                return { hasChildren: true } // Có children trong tree → không xóa
-            }
-
-            // Nếu chưa load, fetch từ DB để kiểm tra (KHÔNG load vào tree)
-            try {
-                let hasChildren = false
-
-                if (node.mode == 'asset') {
-                    if (node.asset && node.asset != 'Surge arrester') {
-                        const jobsReturn = await this.fetchJobsByAssetId(node.mode, node.mrid)
-                        if (jobsReturn.success && jobsReturn.data.length > 0) {
-                            hasChildren = true
-                        }
-                    }
-                } else if (node.mode == 'substation') {
-                    const [voltageLevelReturn, bayReturn] = await Promise.all([
-                        window.electronAPI.getVoltageLevelBySubstationId(node.mrid),
-                        window.electronAPI.getBayByVoltageBySubstationId(null, node.mrid)
-                    ])
-                    const [
-                        assetSurgeReturn,
-                        assetBushingReturn,
-                        assetVtReturn,
-                        assetDisconnectorReturn,
-                        assetPowerCableReturn,
-                        assetRotatingMachineReturn,
-                        assetCurrentTransformerReturn,
-                        assetCapacitorReturn,
-                        assetReactorReturn
-                    ] = await this.fetchAssetByPsr(node.mrid)
-
-                    // Kiểm tra bất kỳ cái nào có data >0 thì hasChildren = true
-                    if (
-                        (voltageLevelReturn.success && voltageLevelReturn.data.length > 0) ||
-                        (bayReturn.success && bayReturn.data.length > 0) ||
-                        (assetSurgeReturn.success && assetSurgeReturn.data.length > 0) ||
-                        (assetBushingReturn.success && assetBushingReturn.data.length > 0) ||
-                        (assetVtReturn.success && assetVtReturn.data.length > 0) ||
-                        (assetDisconnectorReturn.success && assetDisconnectorReturn.data.length > 0) ||
-                        (assetPowerCableReturn.success && assetPowerCableReturn.data.length > 0) ||
-                        (assetRotatingMachineReturn.success && assetRotatingMachineReturn.data.length > 0) ||
-                        (assetCurrentTransformerReturn.success && assetCurrentTransformerReturn.data.length > 0) ||
-                        (assetCapacitorReturn.success && assetCapacitorReturn.data.length > 0) ||
-                        (assetReactorReturn.success && assetReactorReturn.data.length > 0)
-                    ) {
-                        hasChildren = true
-                    }
-                } else if (node.mode == 'voltageLevel') {
-                    const bayReturn = await window.electronAPI.getBayByVoltageBySubstationId(node.mrid, null)
-                    if (bayReturn.success && bayReturn.data.length > 0) {
-                        hasChildren = true
-                    }
-                } else if (node.mode == 'bay') {
-                    const [
-                        assetSurgeReturn,
-                        assetBushingReturn,
-                        assetVtReturn,
-                        assetDisconnectorReturn,
-                        assetPowerCableReturn,
-                        assetRotatingMachineReturn,
-                        assetCurrentTransformerReturn,
-                        assetCapacitorReturn,
-                        assetReactorReturn
-                    ] = await this.fetchAssetByPsr(node.mrid)
-                    if (
-                        (assetSurgeReturn.success && assetSurgeReturn.data.length > 0) ||
-                        (assetBushingReturn.success && assetBushingReturn.data.length > 0) ||
-                        (assetVtReturn.success && assetVtReturn.data.length > 0) ||
-                        (assetDisconnectorReturn.success && assetDisconnectorReturn.data.length > 0) ||
-                        (assetPowerCableReturn.success && assetPowerCableReturn.data.length > 0) ||
-                        (assetRotatingMachineReturn.success && assetRotatingMachineReturn.data.length > 0) ||
-                        (assetCurrentTransformerReturn.success && assetCurrentTransformerReturn.data.length > 0) ||
-                        (assetCapacitorReturn.success && assetCapacitorReturn.data.length > 0) ||
-                        (assetReactorReturn.success && assetReactorReturn.data.length > 0)
-                    ) {
-                        hasChildren = true
-                    }
-                }
-
-                return { hasChildren }
-            } catch (error) {
-                console.error('Error checking children:', error)
-                return { hasChildren: true } // An toàn: giả sử có children nếu lỗi
-            }
-        },
-
-        async fetchChildrenServer(node) {
-            if (!node.children) {
-                try {
-                    let newRows = []
-                    if (node.mode == 'organisation') {
-                        const newRowsOwner = await demoAPI.getChildOrganisation(node.id)
-                        console.log('newRowsOwner', newRowsOwner)
-                        if (newRowsOwner && newRowsOwner.length > 0) {
-                            newRowsOwner.forEach((row) => {
-                                row.id = row.mrid || row.id || ''
-                                row.name = row.name || ''
-                                row.aliasName = row.shortName || row.name || ''
-                                row.parentId = node.mrid
-                                row.mode = 'organisation'
-                                row.parentName = node.parentName + '/' + node.name
-                                row.parentArr = [...node.parentArr]
-                                row.parentArr.push({
-                                    id: node.id,
-                                    parent: node.name
-                                })
-                            })
-                            newRows.push(...newRowsOwner)
-                        }
-                        const newRowsSubstation = await demoAPI.getChildSubstation(node.id)
-                        console.log('newRowsSubstation', newRowsSubstation)
-                        if (newRowsSubstation && newRowsSubstation.length > 0) {
-                            newRowsSubstation.forEach((row) => {
-                                row.id = row.mrid || row.id || ''
-                                row.name = row.name || ''
-                                row.aliasName = row.shortName || row.name || ''
-                                row.parentId = node.mrid
-                                row.mode = 'substation'
-                                row.parentName = node.parentName + '/' + node.name
-                                row.parentArr = [...node.parentArr]
-                                row.parentArr.push({
-                                    id: node.id,
-                                    parent: node.name
-                                })
-                            })
-                            newRows.push(...newRowsSubstation)
-                        }
-                    } else if (node.mode == 'substation') {
-                        try {
-                            const newRowsBay = await demoAPI.getChildBay(node.id)
-                            console.log('newRowsBay', newRowsBay)
-                            if (newRowsBay && newRowsBay.length > 0) {
-                                newRowsBay.forEach((row) => {
-                                    row.id = row.mrid || row.id || ''
-                                    row.name = row.name || ''
-                                    row.aliasName = row.shortName || row.name || ''
-                                    row.parentId = node.mrid
-                                    row.mode = 'bay'
-                                    row.parentName = node.parentName + '/' + node.name
-                                    row.parentArr = [...node.parentArr]
-                                    row.parentArr.push({
-                                        id: node.id,
-                                        parent: node.name
-                                    })
-                                })
-                                newRows.push(...newRowsBay)
-                            }
-                        } catch (error) {
-                            console.log(error)
-                        }
-                        try {
-                            const newRowsVoltageLevel = await demoAPI.getVoltageLevelBySubstationId(node.id)
-                            if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
-                                newRowsVoltageLevel.forEach((row) => {
-                                    row.id = row.mrid || row.id || ''
-                                    row.name = row.name || ''
-                                    row.aliasName = row.shortName || row.name || ''
-                                    row.parentId = node.mrid
-                                    row.mode = 'voltageLevel'
-                                    row.parentName = node.parentName + '/' + node.name
-                                    row.parentArr = [...node.parentArr]
-                                    row.parentArr.push({
-                                        id: node.id,
-                                        parent: node.name
-                                    })
-                                })
-                                newRows.push(...newRowsVoltageLevel)
-                            }
-                        } catch (error) {
-                            console.log(error)
-                        }
-
-                        try {
-                            const newRowsVoltageLevel = await demoAPI.getAssetByOwner(node.mrid, 'Substation')
-                            if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
-                                newRowsVoltageLevel.forEach((row) => {
-                                    row.id = row.mrid || row.id || ''
-                                    row.name = row.name || ''
-                                    row.aliasName = row.shortName || row.name || ''
-                                    row.parentId = node.mrid
-                                    row.mode = 'asset'
-                                    row.parentName = node.parentName + '/' + node.name
-                                    row.parentArr = [...node.parentArr]
-                                    row.parentArr.push({
-                                        id: node.id,
-                                        parent: node.name
-                                    })
-                                })
-                                newRows.push(...newRowsVoltageLevel)
-                            }
-                        } catch (error) {
-                            console.log(error)
-                        }
-                    } else if (node.mode == 'voltageLevel') {
-                        try {
-                            const newRowsBay = await demoAPI.getBayByVoltageLevel(node.id)
-                            if (newRowsBay && newRowsBay.length > 0) {
-                                newRowsBay.forEach((row) => {
-                                    row.id = row.mrid || row.id || ''
-                                    row.name = row.name || ''
-                                    row.aliasName = row.shortName || row.name || ''
-                                    row.parentId = node.mrid
-                                    row.mode = 'bay'
-                                    row.parentName = node.parentName + '/' + node.name
-                                    row.parentArr = [...node.parentArr]
-                                    row.parentArr.push({
-                                        id: node.id,
-                                        parent: node.name
-                                    })
-                                })
-                                newRows.push(...newRowsBay)
-                            }
-                        } catch (error) {
-                            console.log(error)
-                        }
-                    } else if (node.mode == 'bay') {
-                        try {
-                            const newRowsVoltageLevel = await demoAPI.getAssetByOwner(node.mrid, 'Bay')
-                            if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
-                                newRowsVoltageLevel.forEach((row) => {
-                                    row.id = row.mrid || row.id || ''
-                                    row.name = row.name || ''
-                                    row.aliasName = row.shortName || row.name || ''
-                                    row.parentId = node.mrid
-                                    row.mode = 'asset'
-                                    row.serial_number = row.serialNumber
-                                    row.parentName = node.parentName + '/' + node.name
-                                    row.parentArr = [...node.parentArr]
-                                    row.parentArr.push({
-                                        id: node.id,
-                                        parent: node.name
-                                    })
-                                })
-                                newRows.push(...newRowsVoltageLevel)
-                            }
-                        } catch (error) {
-                            console.log(error)
-                        }
-                    }
-
-                    Vue.set(node, 'children', newRows)
-                } catch (error) {
-                    console.error('Lỗi khi lấy dữ liệu:', error)
-                }
-            }
-        },
-
-        async hideProperties() {
-            this.propertiesSign = false
-            const content = this.$refs.content
-            content.style.width = '100%'
-        },
-
-        async hidePropertiesClient() {
-            this.propertiesSignClient = false
-            const content = this.$refs.contentClient
-            content.style.width = '100%'
-        },
-
-        async showProperties() {
-            this.propertiesSign = true
-            const content = this.$refs.content
-            content.style.width = `calc(75% - 5px)`
-        },
-
-        async showPropertiesClient() {
-            this.propertiesSignClient = true
-            const content = this.$refs.contentClient
-            content.style.width = `calc(75% - 5px)`
-        },
-
         serverSwap(serverSign) {
             if (serverSign == true) {
                 this.clientSlide = false
@@ -2632,118 +834,16 @@ export default {
             }
         },
 
-        async showOwnerServerRoot() {
-            const ownerRootServer = this.$refs.ownerRootServer
-            if (ownerRootServer) {
-                ownerRootServer.style.borderBottom = '2px #aba7a7 solid' // Thêm viền màu đen dày 2px
-                ownerRootServer.style.color = 'rgba(0, 0, 0, 1)' // Chữ rõ nét
-            }
-            this.$nextTick(async () => {
-                await this.getOwnerLocation()
-            })
+        mappingProperties(data) {
+            this.properties = mapProperties(data);
         },
 
-        async showPropertiesData(node) {
-            this.assetPropertySign = false
-            this.jobPropertySign = false
-            if (node.asset != undefined) {
-                this.assetPropertySign = true
-                await this.mappingAssetProperties(node)
-                await this.mappingProperties(node.parent)
-                await this.loadPathMap(node)
-                this.pathMapServer.push({
-                    id: node.id,
-                    parent: node.serial_no
-                })
-            } else if (node.type == 'test') {
-                this.assetPropertySign = true
-                this.jobPropertySign = true
-                await this.mappingProperties(node.parent.parent.parent)
-                await this.mappingAssetProperties(node.parent.parent)
-                await this.mappingJobProperties(node.parent)
-                await this.loadPathMap(node)
-                this.pathMapServer.push({
-                    id: node.id,
-                    parent: node.name
-                })
-            } else if (node.type == 'job') {
-                this.assetPropertySign = true
-                this.jobPropertySign = true
-                await this.mappingProperties(node.parent.parent)
-                await this.mappingAssetProperties(node.parent)
-                await this.mappingJobProperties(node)
-                await this.loadPathMap(node)
-                this.pathMapServer.push({
-                    id: node.id,
-                    parent: node.name
-                })
-            } else {
-                await this.mappingProperties(node)
-                await this.loadPathMap(node)
-                this.pathMapServer.push({
-                    id: node.id,
-                    parent: node.name
-                })
-            }
+        mappingAssetProperties(data) {
+            this.assetProperties = mapAssetProperties(data);
         },
 
-        async loadPathMap(node) {
-            this.pathMapServer = []
-            if (node != undefined) {
-                if (node.parentArr != undefined) {
-                    this.pathMapServer = [...node.parentArr]
-                }
-            }
-        },
-
-        async loadPathMapClient(node) {
-            this.pathMapClient = []
-            if (node != undefined) {
-                if (node.parentArr != undefined) {
-                    this.pathMapClient = [...node.parentArr]
-                }
-            }
-        },
-
-        async mappingProperties(data) {
-            if (data != undefined) {
-                this.properties.name = data.name == undefined || data.name == null ? '' : data.name
-                this.properties.region = data.region == undefined || data.region == null ? '' : data.region
-                this.properties.plant = data.plant == undefined || data.plant == null ? '' : data.plant
-                this.properties.address = data.address == undefined || data.address == null ? '' : data.address
-                this.properties.city = data.city == undefined || data.city == null ? '' : data.city
-                this.properties.state_province = data.state_province == undefined || data.state_province == null ? '' : data.state_province
-                this.properties.postal_code = data.postal_code == undefined || data.postal_code == null ? '' : data.postal_code
-                this.properties.country = data.country == undefined || data.country == null ? '' : data.country
-                this.properties.phone_no = data.phone_no == undefined || data.phone_no == null ? '' : data.phone_no
-                this.properties.email = data.email == undefined || data.email == null ? '' : data.email
-            }
-        },
-
-        async mappingAssetProperties(data) {
-            if (data != undefined) {
-                this.assetProperties.asset = data.asset == undefined || data.asset == null ? '' : data.asset
-                this.assetProperties.asset_type = data.asset_type == undefined || data.asset_type == null ? '' : data.asset_type
-                this.assetProperties.serial_no = data.serial_no == undefined || data.serial_no == null ? '' : data.serial_no
-                this.assetProperties.manufacturer = data.manufacturer == undefined || data.manufacturer == null ? '' : data.manufacturer
-                this.assetProperties.manufacturer_type = data.manufacturer_type == undefined || data.manufacturer_type == null ? '' : data.manufacturer_type
-                this.assetProperties.manufacturing_year = data.manufacturing_year == undefined || data.manufacturing_year == null ? '' : data.manufacturing_year
-                this.assetProperties.country = data.country == undefined || data.country == null ? '' : data.country
-                this.assetProperties.apparatus_id = data.apparatus_id == undefined || data.apparatus_id == null ? '' : data.apparatus_id
-            }
-        },
-
-        async mappingJobProperties(data) {
-            if (data != undefined) {
-                this.jobProperties.name = data.name == undefined || data.name == null ? '' : data.name
-                this.jobProperties.work_order = data.work_order == undefined || data.work_order == null ? '' : data.work_order
-                this.jobProperties.creation_date = data.creation_date == undefined || data.creation_date == null ? '' : data.creation_date
-                this.jobProperties.execution_date = data.execution_date == undefined || data.execution_date == null ? '' : data.execution_date
-                this.jobProperties.approved_by = data.approved_by == undefined || data.approved_by == null ? '' : data.approved_by
-                this.jobProperties.ambient_condition = data.ambient_condition == undefined || data.ambient_condition == null ? '' : data.ambient_condition
-                this.jobProperties.tested_by = data.tested_by == undefined || data.tested_by == null ? '' : data.tested_by
-                this.jobProperties.standard = data.standard == undefined || data.standard == null ? '' : data.standard
-            }
+        mappingJobProperties(data) {
+            this.jobProperties = mapJobProperties(data);
         },
 
         async mappingPropertiesClient(data) {
@@ -2751,71 +851,11 @@ export default {
         },
 
         async mappingAssetPropertiesClient(data) {
-            if (data != undefined) {
-                this.assetPropertiesClient.asset_type =
-                    data.type == undefined || data.type == null ? (data.asset_type == undefined || data.asset_type == null ? '' : data.asset_type) : data.type
-                // serial_no: có thể là serial_no hoặc serial_number
-                this.assetPropertiesClient.serial_no = data.serial_no == undefined || data.serial_no == null ? '' : data.serial_number || data.serial_no || ''
-                this.assetPropertiesClient.manufacturer = data.manufacturer == undefined || data.manufacturer == null ? '' : data.manufacturer
-                this.assetPropertiesClient.manufacturer_type =
-                    data.manufacturer_type == undefined || data.manufacturer_type == null ? '' : data.manufacturer_type
-                // manufacturing_year: có thể là manufacturing_year hoặc manufacturer_year
-                this.assetPropertiesClient.manufacturing_year =
-                    data.manufacturing_year == undefined || data.manufacturing_year == null
-                        ? data.manufacturer_year == undefined || data.manufacturer_year == null
-                            ? ''
-                            : data.manufacturer_year
-                        : data.manufacturing_year
-                // country: có thể là country hoặc country_of_origin
-                this.assetPropertiesClient.country =
-                    data.country == undefined || data.country == null
-                        ? data.country_of_origin == undefined || data.country_of_origin == null
-                            ? ''
-                            : data.country_of_origin
-                        : data.country
-                this.assetPropertiesClient.apparatus_id = data.apparatus_id == undefined || data.apparatus_id == null ? '' : data.apparatus_id
-            }
+            this.assetPropertiesClient = mapClientAssetProperties(data)
         },
 
         async mappingJobPropertiesClient(data) {
-            if (data != undefined) {
-                this.jobPropertiesClient.name = data.name == undefined || data.name == null ? '' : data.name
-                this.jobPropertiesClient.work_order = data.work_order == undefined || data.work_order == null ? '' : data.work_order
-                this.jobPropertiesClient.creation_date = data.creation_date == undefined || data.creation_date == null ? '' : data.creation_date
-                this.jobPropertiesClient.execution_date = data.execution_date == undefined || data.execution_date == null ? '' : data.execution_date
-                this.jobPropertiesClient.approved_by = data.approved_by == undefined || data.approved_by == null ? '' : data.approved_by
-                this.jobPropertiesClient.ambient_condition = data.ambient_condition == undefined || data.ambient_condition == null ? '' : data.ambient_condition
-                this.jobPropertiesClient.tested_by = data.tested_by == undefined || data.tested_by == null ? '' : data.tested_by
-                this.jobPropertiesClient.standard = data.standard == undefined || data.standard == null ? '' : data.standard
-            }
-        },
-
-        async getOwnerLocation() {
-            try {
-                const res = await demoAPI.getOwnerOrganisation()
-                console.log('Owner organisation data:', res)
-                if (res !== null) {
-                    this.ownerServerList = [res].map((item) => {
-                        return {
-                            id: item.id || item.mrid || '',
-                            name: item.name || '',
-                            aliasName: item.shortName || item.name || item.aliasName || '',
-                            parentName: '',
-                            parentArr: [],
-                            mode: item.mode || '',
-                            parentId: '',
-                            mode: 'organisation'
-                        }
-                    })
-                } else {
-                    this.ownerServerList = []
-                    this.$message.warning('Không tìm thấy dữ liệu tổ chức chủ sở hữu.')
-                }
-            } catch (error) {
-                this.$message.error('Có lỗi xảy ra khi lấy danh sách tổ chức chủ sở hữu.')
-                console.error('getOwnerLocation error:', error)
-                this.ownerServerList = []
-            }
+            this.jobPropertiesClient.name = mapClientJobProperties(data)
         },
 
         async updateSelection(node) {
@@ -2845,487 +885,42 @@ export default {
             this.selectedNodes = []
         },
 
-        async openContextMenu(event, node) {
-            this.$refs.contextMenu.openContextMenu(event, node)
-        },
-
-        async openContextMenuClient(event, node) {
-            const menu = this.$refs.contextMenuClient.$el
-            const menuHeight = menu.offsetHeight || 320 // fallback nếu chưa render
-            const menuWidth = menu.offsetWidth || 180
-            // Lấy vị trí click
-            const clickX = event.clientX
-            const clickY = event.clientY
-            // Lấy kích thước cửa sổ
-            const windowHeight = window.innerHeight
-            const windowWidth = window.innerWidth
-
-            // Tính toán vị trí hiển thị
-            let top = clickY
-            let left = clickX
-
-            // Nếu click quá gần mép dưới, hiện menu lên trên
-            if (clickY + menuHeight > windowHeight) {
-                top = clickY - menuHeight
-                if (top < 0) top = 0
-            }
-
-            // Nếu click quá gần mép phải, hiện menu sang trái
-            if (clickX + menuWidth > windowWidth) {
-                left = clickX - menuWidth
-                if (left < 0) left = 0
-            }
-            this.$refs.contextMenuClient.openContextMenu(event, node, { top, left })
-        },
-
-        async showContext(event) {
-            this.$refs.contextSubstation.openContextMenuSubstation(event, this.$constant.ROOT)
-        },
-
-        generateUuid() {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-                const r = (Math.random() * 16) | 0,
-                    v = c === 'x' ? r : (r & 0x3) | 0x8
-                return v.toString(16)
-            })
-        },
-
-        async showData(node) {
-            try {
-                const newNode = { ...node };
-                const nodeKey = newNode.mrid || newNode.id;
-
-                // Tìm index của tab
-                const index = this.tabs.findIndex(t => (t.mrid || t.id) === nodeKey);
-
-                if (index !== -1) {
-                    // Nếu tab đã mở:
-                    this.activeTab = this.tabs[index]; // Cập nhật biến bind v-model
-                    this.$refs.serverTabs.selectTab(this.activeTab, index);
-                } else {
-                    // Nếu tab chưa mở:
-                    this.tabs.push(newNode);
-                    this.activeTab = newNode; // Cập nhật biến bind v-model
-                    const newIndex = this.tabs.length - 1;
-
-                    this.$nextTick(() => {
-                        if (this.$refs.serverTabs) {
-                            this.$refs.serverTabs.selectTab(newNode, newIndex);
-                            this.$refs.serverTabs.loadDataServer(newNode, newIndex);
-                        }
-                    });
-                }
-            } catch (error) {
-                console.error(error);
-            }
-        },
-
-        async handleOpenNode() {
-            if (!this.selectedNodes || this.selectedNodes.length === 0) {
-                this.$message.warning('Please select a node first')
-                return
-            }
-
-            try {
-                // Mở tất cả các node được chọn
-                for (const node of this.selectedNodes) {
-                    // Nếu là client side, mở tab client
-                    if (this.clientSlide) {
-                        await this.showDataClient(node)
-                        await this.showPropertiesDataClient(node)
-                    } else {
-                        // Nếu là server side, mở tab server
-                        await this.showData(node)
-                        await this.showPropertiesData(node)
-                    }
-                }
-            } catch (error) {
-                this.$message.error('Error opening node')
-                console.error(error)
-            }
-        },
-
-        async resetAllServer() {
-            ; (this.selectedNodes = []), (this.assetPropertySign = false)
-            this.jobPropertySign = false
-            this.pathMapServer = []
-            this.properties = {
-                region: '',
-                name: '',
-                plant: '',
-                address: '',
-                city: '',
-                state_province: '',
-                postal_code: '',
-                country: '',
-                phone_no: '',
-                email: ''
-            }
-            this.assetProperties = {
-                asset: '',
-                asset_type: '',
-                serial_no: '',
-                manufacturer: '',
-                manufacturer_type: '',
-                manufacturing_year: '',
-                apparatus_id: '',
-                country: ''
-            }
-            this.jobProperties = {
-                name: '',
-                work_order: '',
-                creation_date: '',
-                execution_date: '',
-                tested_by: '',
-                approved_by: '',
-                ambient_condition: '',
-                standard: ''
-            }
-            this.pageLocationSync = {
-                first: 1,
-                second: 2,
-                third: 3,
-                dot: '...',
-                end: 10
-            }
-            this.displayPageLocationSync = {
-                second: true,
-                third: true,
-                dot: true,
-                end: true
-            }
-            this.pageLocationSyncInstance = {
-                first: '',
-                second: '',
-                third: '',
-                dot: '',
-                end: ''
-            }
-            this.currentLocationSync = {
-                nextP: '',
-                previousP: '',
-                current: 1
-            }
-            this.optionLocationSync = {
-                mode: ''
-            }
-            this.ownerServerList = []
-            this.count = ''
-        },
-
-        async resetPathServer(index) {
-            if (index == 0) {
-                let currentNode = this.ownerServerList.find((node) => node.id === this.pathMapServer[0].id)
-                if (!currentNode) {
-                    return // Không tìm thấy node đầu tiên
-                }
-                await this.clearSelection()
-                await this.showPropertiesData(currentNode)
-                Vue.set(currentNode, 'expanded', !currentNode.expanded)
-            } else {
-                let currentNode = this.ownerServerList.find((node) => node.id === this.pathMapServer[0].id)
-                if (!currentNode) {
-                    return // Không tìm thấy node đầu tiên
-                }
-                for (let i = 1; i <= index; i++) {
-                    if (!currentNode.children) return // Nếu không có children thì dừng lại
-                    currentNode = currentNode.children.find((child) => child.id === this.pathMapServer[i].id)
-                    if (!currentNode) {
-                        return // Không tìm thấy thì dừng lại
-                    }
-                }
-                await this.clearSelection()
-                await this.showPropertiesData(currentNode)
-                Vue.set(currentNode, 'expanded', !currentNode.expanded)
-            }
-        },
-
-        async handleAddCommand(cmd) {
-            const selectedNode = this.selectedNodes && this.selectedNodes.length > 0 ? this.selectedNodes[this.selectedNodes.length - 1] : null
-
-            if (!selectedNode) {
-                this.$message.warning('Please select a node first')
-                return
-            }
-
-            // Validate command against node type
-            const allowedCommands = this.getAllowedCommands(selectedNode)
-            if (!allowedCommands.includes(cmd)) {
-                this.$message.warning('This action is not allowed for this node type')
-                return
-            }
-
-            switch (cmd) {
-                case 'organisation':
-                    this.showAddOrganisation(selectedNode)
-                    break
-                case 'substation':
-                    this.showAddSubsInTree(selectedNode)
-                    break
-                case 'voltageLevel':
-                    this.showAddVoltageLevel(selectedNode)
-                    break
-                case 'bay':
-                    this.showAddBay(selectedNode)
-                    break
-                case 'asset':
-                    this.showAddTransformer(selectedNode)
-                    break
-                case 'job':
-                    this.showAddJob(selectedNode)
-                    break
-            }
-        },
-
-        getAllowedCommands(node) {
-            const commands = []
-
-            if (node.mode === 'organisation') {
-                commands.push('organisation', 'substation')
-            } else if (node.mode === 'substation') {
-                commands.push('voltageLevel', 'bay', 'asset')
-            } else if (node.mode === 'voltageLevel') {
-                commands.push('bay')
-            } else if (node.mode === 'bay') {
-                commands.push('asset', 'job')
-            } else if (node.mode === 'asset') {
-                commands.push('job')
-            }
-
-            return commands
-        },
-
-        async handleAssetCommand(assetType) {
-            const selectedNode = this.selectedNodes && this.selectedNodes.length > 0 ? this.selectedNodes[this.selectedNodes.length - 1] : null
-
-            if (!selectedNode) {
-                this.$message.warning('Please select a node first')
-                return
-            }
-
-            // Map asset type to show* method
-            const assetMethodMap = {
-                Transformer: this.showAddTransformer,
-                'Surge arrester': this.showAddSurgeArrester,
-                Bushing: this.showAddBushing,
-                'Voltage transformer': this.showAddVt,
-                Disconnector: this.showAddDisconnector,
-                'Power cable': this.showAddPowerCable,
-                'Current transformer': this.showAddCt,
-                'Circuit breaker': this.showAddCircuitBreaker,
-                'Rotating machine': this.showAddRotatingMachine,
-                Capacitor: this.showAddCapacitor,
-                Reactor: this.showAddReactor
-            }
-
-            const method = assetMethodMap[assetType]
-            if (method) {
-                await method.call(this, selectedNode)
-            } else {
-                this.$message.warning(`Asset type "${assetType}" not supported`)
-            }
-        },
-
         async doubleClickNodeServer(node) {
             await this.showData(node)
             await this.showPropertiesData(node)
         },
 
-        
-        // Helper: Kiểm tra xem node hoặc children của nó có chứa valid target không
-        hasValidTargetInTree(node, nodeToMove, validParentTypes) {
-            // Bỏ qua node đang được move
-            if (node.mrid === nodeToMove.mrid) return false
-
-            // Nếu node này là valid target
-            if (validParentTypes.includes(node.mode)) {
-                return true
+        // Helper method to get component ref from dialog
+        getDialogComponentRef(dialogRefName, componentRefName) {
+            const dialogRef = this.$refs[dialogRefName]
+            if (dialogRef && typeof dialogRef[`get${componentRefName}Ref`] === 'function') {
+                return dialogRef[`get${componentRefName}Ref`]()
             }
-
-            // Kiểm tra children
-            if (node.children && node.children.length > 0) {
-                for (const child of node.children) {
-                    if (this.hasValidTargetInTree(child, nodeToMove, validParentTypes)) {
-                        return true
-                    }
-                }
-            }
-
-            return false
+            return null
         },
 
-        // 2. Hàm đệ quy xây dựng cây cho Dialog Move
-        // nodeToMove: Node đang được chọn để di chuyển (để ẩn đi khỏi cây đích)
-        // validParentTypes: Danh sách các loại node cha hợp lệ
-        buildMoveTreeData(nodes, nodeToMove, validParentTypes) {
-            let tree = []
-            if (!nodes) return tree
-
-            nodes.forEach((node) => {
-                // 1. Không hiển thị chính node đang di chuyển (và con của nó)
-                if (node.mrid === nodeToMove.mrid) return
-
-                // 2. Chỉ hiển thị node nếu:
-                // - Node này là valid target, HOẶC
-                // - Node này có children chứa valid target (để user có thể mở rộng tìm node hợp lệ)
-                if (!this.hasValidTargetInTree(node, nodeToMove, validParentTypes)) {
-                    return // Bỏ qua node này hoàn toàn
-                }
-
-                // 3. Logic: Node này có được phép làm cha không?
-                const isValidTarget = validParentTypes.includes(node.mode)
-
-                // 4. Đệ quy xử lý con trước để lọc children
-                let filteredChildren = []
-                if (node.children && node.children.length > 0) {
-                    filteredChildren = this.buildMoveTreeData(node.children, nodeToMove, validParentTypes)
-                }
-
-                // 5. Chỉ thêm node vào tree nếu:
-                // - Node này là valid target, HOẶC
-                // - Node này có children hợp lệ (đã được lọc)
-                if (isValidTarget || filteredChildren.length > 0) {
-                    let newNode = {
-                        ...node,
-                        disabled: !isValidTarget,
-                        isValidTarget: isValidTarget,
-                        children: filteredChildren
-                    }
-                    tree.push(newNode)
+        // Helper method to reset form after successful save
+        resetFormAfterSave(component) {
+            this.$nextTick(() => {
+                if (component && typeof component.resetForm === 'function') {
+                    component.resetForm()
                 }
             })
-            return tree
+
         },
 
-        // 5. Fetch children cho move dialog (lọc và set disabled, isValidTarget cho các node mới)
-        async fetchChildrenForMove(node) {
-            // Gọi fetchChildren bình thường
-            await this.fetchChildren(node)
 
-            // Sau khi fetch xong, lọc children bằng buildMoveTreeData để chỉ giữ lại node hợp lệ
-            if (node.children && node.children.length > 0 && this.validParentTypesForMove.length > 0 && this.nodeToMove) {
-                // Sử dụng buildMoveTreeData để lọc children (tự động loại bỏ node không hợp lệ)
-                const filteredChildren = this.buildMoveTreeData(node.children, this.nodeToMove, this.validParentTypesForMove)
-
-                // Cập nhật children của node đã lọc
-                Vue.set(node, 'children', filteredChildren)
-            }
+        async handleMoveCancel() {
+            this.moveDialogVisible = false
+        },
+         handleShowZeroDiagram(node) {
+            this.nodeForZeroDiagram = node;
+            this.signZeroDiagram = true;
+        },
+        handleZeroDiagramClose() {
+            this.signZeroDiagram = false;
         },
 
-        // 1. Khi nhấn nút Download trên toolbar
-        async handleDownloadNode() {
-            if (!this.selectedNodes || this.selectedNodes.length === 0) {
-                this.$message.warning('Please select a node to download')
-                return
-            }
-
-            const node = this.selectedNodes[this.selectedNodes.length - 1]
-
-            try {
-                // 1. Lấy dữ liệu thô từ Server
-                const serverResponse = await demoAPI.getAssetById(node.mrid, 'PowerCable')
-                if (!serverResponse) return
-
-                // 2. Map sang DTO bằng hàm của bạn
-                const PowerCableServerMapper = require('@/views/Mapping/PowerCableTest/index.js')
-                const dto = PowerCableServerMapper.mapServerToDto(serverResponse)
-
-                // 3. QUAN TRỌNG: Gán các ID quan hệ để Map về Entity local không bị lỗi
-                // Vì Database local của bạn chia làm nhiều bảng (Asset, AssetInfo, Model...)
-                dto.assetInfoId = serverResponse.cableInfo?.mRID || serverResponse.cableInfo?.mrid || this.generateUuid()
-                dto.productAssetModelId = serverResponse.assetData?.productAssetModel?.mRID || this.generateUuid()
-                dto.lifecycleDateId = this.generateUuid() // Thường server không trả về ID bảng này, nên tạo mới
-                dto.oldCableInfoId = dto.assetInfoId // Trong PowerCable, OldCableInfo dùng chung ID với AssetInfo
-                dto.assetPsrId = this.generateUuid()
-
-                // 4. Kiểm tra node cha trên Client
-                // node.parentId là ID của cha (Substation/Bay) từ server
-                const clientParent = this.findNodeById(node.parentId, this.organisationClientList)
-
-                if (clientParent) {
-                    // Trường hợp 1: Đã có cha trên Client -> Tự động gắn
-                    dto.psrId = clientParent.mrid
-                    dto.locationId = clientParent.location || clientParent.mrid
-                    await this.executeDownloadAndSave(dto, clientParent)
-                } else {
-                    // Trường hợp 2: Chưa có cha -> Hiện cây Client để chọn cha
-                    this.nodeToDownloadData = dto
-                    this.moveTreeData = this.buildMoveTreeData(this.organisationClientList, { mrid: 'none' }, this.getValidParentTypes('asset'))
-                    this.downloadDialogVisible = true
-                }
-            } catch (error) {
-                console.error('Download error:', error)
-                this.$message.error('Download failed: ' + error.message)
-            }
-        },
-
-        // 2. Hàm thực hiện lưu vào DB (Xử lý ghi đè nếu đã tồn tại)
-        async executeDownloadAndSave(dto, parentNode) {
-            try {
-                const PowerCableMapping = require('@/views/Mapping/PowerCable/index')
-
-                // 1. Kiểm tra xem node này đã có ở client chưa (Dựa vào MRID từ server)
-                const existingLocalRes = await window.electronAPI.getPowerCableEntityByMrid(dto.properties.mrid, dto.psrId)
-
-                let oldEntity
-                if (existingLocalRes.success && existingLocalRes.data) {
-                    // ĐÃ CÓ -> Đây là trường hợp GHI ĐÈ
-                    oldEntity = existingLocalRes.data
-                } else {
-                    // CHƯA CÓ -> Tạo mới hoàn toàn
-                    const PowerCableEntity = require('@/views/Flatten/PowerCable/index').default
-                    oldEntity = new PowerCableEntity()
-                }
-
-                // 2. Chuyển DTO thành Entity chuẩn của client
-                const newEntity = PowerCableMapping.mapDtoToEntity(dto)
-
-                // 3. Lưu vào Database local
-                // Nhờ lệnh "ON CONFLICT(mrid) DO UPDATE" trong các hàm của bạn,
-                // dữ liệu mới sẽ tự động ghi đè lên các bản ghi cũ cùng MRID.
-                const saveRs = await window.electronAPI.insertPowerCableEntity(oldEntity, newEntity)
-
-                if (saveRs.success) {
-                    this.$message.success('Download and overwrite successful!')
-                    this.downloadDialogVisible = false
-
-                    // 4. Refresh lại cây bên Client để thấy node mới/cập nhật
-                    if (parentNode) {
-                        this.$set(parentNode, '_childrenFetched', false)
-                        await this.fetchChildren(parentNode)
-                        this.$set(parentNode, 'expanded', true)
-                    }
-                } else {
-                    this.$message.error('Save failed: ' + saveRs.message)
-                }
-            } catch (error) {
-                console.error('Save error:', error)
-                this.$message.error('Error saving to local database')
-            }
-        },
-
-        // 3. Xử lý khi chọn cha thủ công trong Dialog và nhấn Confirm
-        async confirmDownloadSelection() {
-            if (!this.selectedDownloadTargetNode) {
-                this.$message.warning('Please select a target parent node')
-                return
-            }
-
-            this.nodeToDownloadData.psrId = this.selectedDownloadTargetNode.mrid
-            await this.executeDownloadAndSave(this.nodeToDownloadData, this.selectedDownloadTargetNode)
-        },
-
-        // 4. Handler cho việc chọn node trong tree dialog (tương tự move node)
-        handleDownloadTargetSelection(node) {
-            const targetNode = Array.isArray(node) ? node[node.length - 1] : node
-            if (!targetNode || targetNode.disabled) {
-                this.selectedDownloadTargetNodes = []
-                this.selectedDownloadTargetNode = null
-                return
-            }
-            this.selectedDownloadTargetNodes = [targetNode]
-            this.selectedDownloadTargetNode = targetNode
-        }
     }
 }
 </script>
@@ -3349,56 +944,6 @@ export default {
 .resizable-sidebar {
     display: flex;
     height: calc(100% - 60px);
-}
-
-.sidebar {
-    width: 20%;
-    background-color: white;
-    color: #555;
-    flex-shrink: 0;
-    height: 100%;
-    box-sizing: border-box;
-}
-
-.sidebar ul {
-    list-style: none;
-    padding-left: 20px;
-}
-
-.sidebar li {
-    margin: 5px 0;
-    cursor: pointer;
-}
-
-.sidebar .folder,
-.sidebar .file {
-    display: block;
-    padding: 5px;
-    white-space: nowrap;
-    /* Ngăn văn bản xuống dòng */
-    overflow: hidden;
-    /* Ẩn phần văn bản vượt quá kích thước */
-    text-overflow: ellipsis;
-    /* Hiển thị dấu ... khi văn bản quá dài */
-    font-size: 12px;
-    /* Cỡ chữ cho thư mục và tệp */
-}
-
-.sidebar .folder:hover,
-.sidebar .file:hover {
-    background-color: #555;
-    color: white;
-}
-
-.sidebar .folder i,
-.sidebar .file i {
-    margin-right: 8px;
-    /* Khoảng cách giữa icon và văn bản */
-    width: 16px;
-    /* Kích thước icon */
-    text-align: center;
-    font-size: 12px;
-    /* Cỡ chữ cho icon */
 }
 
 .resizer {
@@ -3450,16 +995,6 @@ export default {
     background-color: #f0f0f0;
 }
 
-.child-nav {
-    overflow-y: hidden;
-    height: calc(100% - 80px);
-    box-sizing: border-box;
-}
-
-.child-nav:hover {
-    overflow-y: auto;
-}
-
 .title-node {
     margin-top: 50px;
 }
@@ -3490,30 +1025,6 @@ export default {
     padding-left: 10px;
 }
 
-.toolbar-setting {
-    background-color: white;
-    height: 30px;
-    display: flex;
-    gap: 30px;
-    border-bottom: 1px solid #cccccc;
-    /* Độ dày 2px, màu đen */
-    align-items: center;
-    font-size: 12px;
-    color: #555;
-    font-weight: 600;
-    box-sizing: border-box;
-    width: 100%;
-    padding-left: 10px;
-}
-
-.toolbar-setting div {
-    cursor: pointer;
-}
-
-.el-dropdown-menu__item {
-    font-size: 12px !important;
-    font-family: Arial, sans-serif !important;
-}
 
 .properties {
     width: 25%;
@@ -3632,53 +1143,6 @@ export default {
     visibility: visible;
 }
 
-.tab-container {
-    height: 100%;
-    width: 100%;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    overflow: hidden;
-}
-
-.location {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    padding: 0 5px;
-    cursor: pointer;
-    border-bottom: 2px #e6e4e4 solid;
-    box-sizing: border-box;
-}
-
-.tab {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    padding-left: 5px;
-    width: 100%;
-    box-sizing: border-box;
-    border-bottom: 2px #e6e4e4 solid;
-}
-
-.trapezoid {
-    position: absolute;
-    top: 50%;
-    /* Căn giữa theo chiều dọc */
-    right: 0;
-    /* Đẩy sát mép phải */
-    transform: translateY(-50%);
-    /* Căn giữa theo chiều dọc */
-    width: 1.2vh !important;
-    /* Độ rộng */
-    height: 10vh;
-    /* Độ cao */
-    background: #d9d9d9;
-    clip-path: polygon(100% 0%, 100% 100%, 0% 80%, 0% 20%);
-}
-
 .page-align {
     width: 100%;
     height: 40px;
@@ -3692,54 +1156,6 @@ export default {
     color: black;
     text-decoration: underline;
     cursor: pointer;
-}
-</style>
-
-<style scoped>
-/* Kiểu dáng dropdown */
-.dropdown {
-    width: 35%;
-    margin-right: 10px;
-}
-
-/* Ô input */
-.dropdown-input {
-    width: 100%;
-    padding-right: 80px;
-    cursor: pointer;
-    background-color: #fff;
-    padding: 0 0 0 10px;
-    height: 40px;
-}
-
-/* Style menu dropdown */
-.dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #fff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    padding: 0;
-    margin: 5px 0;
-    list-style: none;
-    display: none;
-    /* Ẩn mặc định */
-    z-index: 10;
-}
-
-/* Style cho từng mục */
-.dropdown-menu li {
-    padding: 10px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-/* Hover làm nổi bật */
-.dropdown-menu li:hover {
-    background-color: #f0f0f0;
 }
 </style>
 
@@ -3762,101 +1178,6 @@ export default {
 
 .break-word {
     word-break: break-word;
-}
-
-.export-json-parent {
-    position: relative;
-}
-
-.export-json-submenu {
-    position: absolute;
-    left: 100%;
-    top: 0;
-    background: #fff;
-    border: 1px solid #e4e7ed;
-    border-radius: 4px;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-    min-width: 170px;
-    z-index: 1000;
-    padding: 1px 0;
-}
-
-.export-json-submenu .submenu-item {
-    padding: 1px 20px;
-    font-size: 12px;
-    cursor: pointer;
-    color: #606266;
-}
-
-.export-json-submenu .submenu-item:hover {
-    background-color: #f5f7fa;
-    color: rgb(51.8, 80.6, 171);
-}
-
-.import-json-parent {
-    position: relative;
-}
-
-.import-json-submenu {
-    position: absolute;
-    left: 100%;
-    top: 0;
-    background: #fff;
-    border: 1px solid #e4e7ed;
-    border-radius: 4px;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-    min-width: 170px;
-    z-index: 1000;
-    padding: 1px 0;
-}
-
-.import-json-submenu .submenu-item {
-    padding: 1px 20px;
-    font-size: 12px;
-    cursor: pointer;
-    color: #606266;
-}
-
-.import-json-submenu .submenu-item:hover {
-    background-color: #f5f7fa;
-    color: rgb(51.8, 80.6, 171);
-}
-
-.asset-submenu-parent {
-    position: relative;
-}
-
-.asset-submenu {
-    position: absolute;
-    left: 100%;
-    top: 0;
-    background: #fff;
-    border: 1px solid #e4e7ed;
-    border-radius: 4px;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-    min-width: 200px;
-    z-index: 1000;
-    padding: 5px 0;
-}
-
-.asset-submenu .submenu-item {
-    padding: 5px 12px;
-    font-size: 12px;
-    cursor: pointer;
-    color: #606266;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.asset-submenu .submenu-item:hover {
-    background-color: #f5f7fa;
-    color: rgb(20, 110, 190);
-}
-
-.asset-submenu .submenu-item span {
-    flex: 1;
 }
 </style>
 
@@ -3915,9 +1236,7 @@ body.duplicating-mode .v-modal {
     transition: none !important;
 }
 
-.move-dialog .el-dialog__body {
-    padding-top: 0;
-}
+
 
 /* Ẩn tất cả backdrop ngay khi duplicate */
 body.duplicating-mode>.v-modal {
@@ -3927,58 +1246,3 @@ body.duplicating-mode>.v-modal {
 }
 </style>
 
-<style>
-.app-dialog {
-    box-sizing: border-box;
-}
-
-.app-dialog.el-dialog {
-    width: 65%;
-    margin-top: 5vh !important;
-    border-radius: 6px;
-    height: 90vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.app-dialog .el-dialog__body {
-    overflow-y: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    flex: 1;
-}
-
-.app-dialog .el-dialog__body::-webkit-scrollbar {
-    width: 0px;
-    height: 0px;
-}
-
-.app-dialog .el-dialog__footer {
-    padding: 10px 20px;
-    border-top: 1px solid #ebeef5;
-}
-
-.custom-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-}
-
-.custom-footer .footer-btn {
-    display: flex;
-    flex: 1;
-    align-items: center;
-    justify-content: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100px;
-}
-
-@media (max-width: 767px) {
-    .custom-footer {
-        justify-content: center;
-    }
-}
-</style>

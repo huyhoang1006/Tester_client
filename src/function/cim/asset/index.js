@@ -4,9 +4,6 @@ import * as IdentifiedObjectFunc from '../identifiedObject/index.js'
 // Lấy thông tin asset theo mrid
 export const getAssetById = async (mrid) => {
     try {
-        // [DEBUG] Log ID being requested
-        console.log(`[DEBUG] getAssetById called for MRID: ${mrid}`);
-        
         const identifiedResult = await IdentifiedObjectFunc.getIdentifiedObjectById(mrid)
         if (!identifiedResult.success) {
             console.warn(`[DEBUG] IdentifiedObject NOT found for MRID: ${mrid}`, identifiedResult);
@@ -29,6 +26,40 @@ export const getAssetById = async (mrid) => {
     } catch (err) {
         console.error(`[DEBUG] Unexpected Exception in getAssetById for MRID: ${mrid}`, err);
         return { success: false, err: err, message: 'Get asset by id failed' }
+    }
+}
+
+// Lấy Asset theo asset_info id
+export const getAssetByAssetInfoId = async (assetInfoId) => {
+    try {
+        return new Promise((resolve, reject) => {
+            // 1. Tìm mrid của Asset dựa trên asset_info
+            db.get(
+                "SELECT mrid FROM asset WHERE asset_info=?",
+                [assetInfoId],
+                async (err, row) => {
+                    if (err) {
+                        console.error(`[DEBUG] SQLite Error in getAssetByAssetInfoId for AssetInfoId: ${assetInfoId}`, err);
+                        return reject({ success: false, err: err, message: 'Find Asset by AssetInfoId failed' });
+                    }
+                    
+                    if (!row) {
+                        return resolve({ success: false, data: null, message: 'Asset not found for this AssetInfo' });
+                    }
+
+                    // 2. Gọi lại getAssetById để lấy full thông tin (Asset + IdentifiedObject)
+                    try {
+                        const result = await getAssetById(row.mrid);
+                        return resolve(result);
+                    } catch (error) {
+                        return reject(error);
+                    }
+                }
+            )
+        })
+    } catch (err) {
+        console.error(`[DEBUG] Unexpected Exception in getAssetByAssetInfoId`, err);
+        return { success: false, err: err, message: 'Get Asset by AssetInfoId failed' };
     }
 }
 
@@ -170,7 +201,7 @@ export const insertAsset = async (asset) => {
                         function (err) {
                             if (err) {
                                 db.run('ROLLBACK')
-                                return reject({ success: false, err : err, message: 'Insert asset failed' })
+                                return reject({ success: false, err: err, message: 'Insert asset failed' })
                             }
                             db.run('COMMIT')
                             return resolve({ success: true, data: asset, message: 'Insert asset completed' })
@@ -179,7 +210,7 @@ export const insertAsset = async (asset) => {
                 })
                 .catch(err => {
                     db.run('ROLLBACK')
-                    return reject({ success: false, err : err, message: 'Insert asset transaction failed' })
+                    return reject({ success: false, err: err, message: 'Insert asset transaction failed' })
                 })
         })
     })
@@ -273,7 +304,7 @@ export const deleteAssetById = async (mrid) => {
                 return resolve({ success: true, data: mrid, message: 'Delete asset (and cascade identified object) completed' })
             })
             .catch(err => {
-                return reject({ success: false, err : err, message: 'Delete asset transaction failed' })
+                return reject({ success: false, err: err, message: 'Delete asset transaction failed' })
             })
     })
 }
@@ -432,7 +463,7 @@ export const deleteAssetByIdTransaction = async (mrid, dbsql) => {
                 return resolve({ success: true, data: mrid, message: 'Delete asset (and cascade identified object) completed' })
             })
             .catch(err => {
-                return reject({ success: false, err : err, message: 'Delete asset transaction failed' })
+                return reject({ success: false, err: err, message: 'Delete asset transaction failed' })
             })
     })
 }

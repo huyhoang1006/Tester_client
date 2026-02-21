@@ -3,10 +3,11 @@ class OldBushingInfo extends BushingInfo {
     constructor() {
         super();
         this.high_voltage_limit = null;
-        this.power_transformer_info_id = null;
         this.c2_capacitance = null;
         this.c2_power_factor = null;
         this.rated_frequency = null
+        this.transformer_end_info = null
+        this.phase = null
     }
 }
 

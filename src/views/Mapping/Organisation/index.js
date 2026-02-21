@@ -80,12 +80,14 @@ export const OrgEntityToOrgDto = (orgEntity) => {
 
     // Street Address
     orgDto.streetAddressId = orgEntity.streetAddress.mrid || '';
+    orgDto.postal_code = orgEntity.streetAddress.postal_code || ''; // Thêm postal code
 
         
     // Street Detail
 
     orgDto.streetDetailId = orgEntity.streetDetail.mrid || '';
     orgDto.street = orgEntity.streetDetail.address_general || '';
+    orgDto.address = orgEntity.streetDetail.address_general || ''; // Thêm trường address để dễ sử dụng
 
     // Town Detail
 
@@ -106,7 +108,7 @@ export const OrgEntityToOrgDto = (orgEntity) => {
     orgDto.phoneNumber = orgEntity.telephoneNumber.itu_phone || '';
 
     // Attachment
-    orgDto.attachmentId = orgEntity.attachment.mrid || '';
+    orgDto.attachmentId = orgEntity.attachment.id || '';
     orgDto.attachment = orgEntity.attachment;
 
     // Configuration Events

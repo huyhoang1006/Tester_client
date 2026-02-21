@@ -183,7 +183,6 @@ export const syncFilesWithFullRollback = (srcList, dest, fatherMrid) => {
 export const backupAllFilesInDir = (srcDir, backupDir, fatherMrid) => {
     srcDir = path.join(srcDir || attachmentContext.getAttachmentDir(), fatherMrid || '');
     backupDir = backupDir || path.join(srcDir, '__backup__');
-    console.log('Backup directory:', backupDir);
     try {
         if (!fs.existsSync(backupDir)) {
             fs.mkdirSync(backupDir, { recursive: true });
@@ -218,7 +217,7 @@ export const syncFilesWithDeletion = (srcList, destDir, fatherMrid) => {
         copiedFiles: [],
         deletedFiles: [],
         skippedFiles: [],
-        data : [],
+        data: [],
         error: null
     };
 
@@ -228,31 +227,35 @@ export const syncFilesWithDeletion = (srcList, destDir, fatherMrid) => {
     try {
         if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
 
-        if(srcList === null || srcList.length === '') {
-            srcList = [];
-        }
+        // ✅ Chuẩn hóa srcList
+        if (!Array.isArray(srcList)) srcList = [];
+
         const srcFileNames = srcList.map(item => path.basename(item.path));
         const existingItems = fs.readdirSync(destDir);
 
+        // ✅ Nếu srcList rỗng → xóa hết file
         for (const item of existingItems) {
             const fullPath = path.join(destDir, item);
             if (fs.statSync(fullPath).isDirectory()) continue;
+
             if (!srcFileNames.includes(item)) {
                 fs.unlinkSync(fullPath);
                 result.deletedFiles.push(item);
             }
         }
 
+        // copy file mới (nếu có)
         for (const item of srcList) {
             const fileName = path.basename(item.path);
             const destPath = path.join(destDir, fileName);
+
             if (!fs.existsSync(item.path)) {
                 result.skippedFiles.push(fileName);
                 continue;
             }
+
             fs.copyFileSync(item.path, destPath);
             result.copiedFiles.push(fileName);
-
             result.data.push({ path: destPath });
         }
 
@@ -260,10 +263,11 @@ export const syncFilesWithDeletion = (srcList, destDir, fatherMrid) => {
         return result;
 
     } catch (err) {
-        result.error = err.message;
+        result.error = err;
         return result;
     }
 };
+
 
 export const deleteBackupFiles = (backupDir, fatherMrid) => {
     backupDir = backupDir || path.join(attachmentContext.getAttachmentDir(), fatherMrid || '', '__backup__');
@@ -275,7 +279,6 @@ export const deleteBackupFiles = (backupDir, fatherMrid) => {
 };
 
 export const deleteDirectory = (directory, fatherMrid) => {
-    console.log('Deleting directory:', directory);
     directory = directory || path.join(attachmentContext.getAttachmentDir(), fatherMrid);
     if (fs.existsSync(directory)) {
         fs.rmSync(directory, { recursive: true, force: true });

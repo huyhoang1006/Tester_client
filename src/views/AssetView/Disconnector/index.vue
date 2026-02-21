@@ -1,6 +1,6 @@
 <template>
     <div id="asset">
-        <div style="min-height: 500px; display: flex; flex-direction: column;">
+        <div style="display: flex; flex-direction: column;">
             <div style="flex: 1; display: flex; flex-direction: column;">
                 <disconnectTransProperty :properties.sync="disconnector.properties"></disconnectTransProperty>
                 <ratings :ratings.sync="disconnector.ratings"></ratings>
@@ -22,7 +22,7 @@ export default {
     },
     data() {
         return {
-            title : 'disconnector',
+            title: 'disconnector',
         }
     },
     computed: {
@@ -30,9 +30,9 @@ export default {
             return this.parent
         }
     },
-    mixins : [mixin],
+    mixins: [mixin],
     props: {
-        parent : {
+        parent: {
             type: Object,
             default: () => ({})
         },
@@ -86,6 +86,6 @@ td {
 
 ::v-deep .el-input__inner,
 ::v-deep .el-select .el-input__inner {
-  font-size: 12px !important;
+    font-size: 12px !important;
 }
 </style>

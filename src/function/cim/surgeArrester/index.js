@@ -34,22 +34,20 @@ export const insertSurgeArrester = async (arrester) => {
                     }
                     db.run(
                         `INSERT INTO surge_arrester(
-                            mrid, unit_count, manufacturer_type, asset_system_code, phases, transformer_end_info_id
-                        ) VALUES (?, ?, ?, ?, ?, ?)
+                            mrid, unit_count, manufacturer_type, asset_system_code, phases
+                        ) VALUES (?, ?, ?, ?, ?)
                         ON CONFLICT(mrid) DO UPDATE SET
                             unit_count = excluded.unit_count,
                             manufacturer_type = excluded.manufacturer_type,
                             asset_system_code = excluded.asset_system_code,
-                            phases = excluded.phases,
-                            transformer_end_info_id = excluded.transformer_end_info_id
+                            phases = excluded.phases
                         `,
                         [
                             arrester.mrid,
                             arrester.unit_count,
                             arrester.manufacturer_type,
                             arrester.asset_system_code,
-                            arrester.phases,
-                            arrester.transformer_end_info_id
+                            arrester.phases
                         ],
                         function (err) {
                             if (err) {
@@ -78,22 +76,20 @@ export const insertSurgeArresterTransaction = async (arrester, dbsql) => {
             }
             dbsql.run(
                 `INSERT INTO surge_arrester(
-                    mrid, unit_count, manufacturer_type, asset_system_code, phases, transformer_end_info_id
-                ) VALUES (?, ?, ?, ?, ?, ?)
+                    mrid, unit_count, manufacturer_type, asset_system_code, phases
+                ) VALUES (?, ?, ?, ?, ?)
                 ON CONFLICT(mrid) DO UPDATE SET
                     unit_count = excluded.unit_count,
                     manufacturer_type = excluded.manufacturer_type,
                     asset_system_code = excluded.asset_system_code,
-                    phases = excluded.phases,
-                    transformer_end_info_id = excluded.transformer_end_info_id
+                    phases = excluded.phases
                 `,
                 [
                     arrester.mrid,
                     arrester.unit_count,
                     arrester.manufacturer_type,
                     arrester.asset_system_code,
-                    arrester.phases,
-                    arrester.transformer_end_info_id
+                    arrester.phases
                 ],
                 function (err) {
                     if (err) {
@@ -124,15 +120,13 @@ export const updateSurgeArrester = async (mrid, arrester) => {
                             unit_count = ?,
                             manufacturer_type = ?,
                             asset_system_code = ?,
-                            phases = ?,
-                            transformer_end_info_id = ?
+                            phases = ?
                         WHERE mrid = ?`,
                         [
                             arrester.unit_count,
                             arrester.manufacturer_type,
                             arrester.asset_system_code,
                             arrester.phases,
-                            arrester.transformer_end_info_id,
                             mrid
                         ],
                         function (err) {
@@ -166,15 +160,13 @@ export const updateSurgeArresterTransaction = async (mrid, arrester, dbsql) => {
                     unit_count = ?,
                     manufacturer_type = ?,
                     asset_system_code = ?,
-                    phases = ?,
-                    transformer_end_info_id = ?
+                    phases = ?
                 WHERE mrid = ?`,
                 [
                     arrester.unit_count,
                     arrester.manufacturer_type,
                     arrester.asset_system_code,
                     arrester.phases,
-                    arrester.transformer_end_info_id,
                     mrid
                 ],
                 function (err) {

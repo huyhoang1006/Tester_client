@@ -15,7 +15,6 @@ import { insertOldBushingInfoTransaction, getOldBushingInfoById, deleteOldBushin
 import BushingEntity from '@/views/Flatten/Bushing';
 
 export const insertBushingEntity = async (entity) => {
-    console.log(entity.attachment)
     try {
         if (entity.bushing.mrid === null || entity.bushing.mrid === '') {
             const result = {
@@ -92,6 +91,49 @@ export const insertBushingEntity = async (entity) => {
         console.error('Error retrieving bushing entity:', error);
         await runAsync('ROLLBACK');
         return { success: false, error, message: 'Error retrieving bushing entity' };
+    }
+}
+
+export const insertBushingEntityLiteTransaction = async (entity, dbsql) => {
+    if (entity.bushing.mrid === null || entity.bushing.mrid === '') {
+        const result = {
+            success: false,
+            error: new Error("MRID is required for bushing Entity"),
+            message: '',
+        }
+        return result;
+    } else {
+
+        //voltage
+        for (const voltage of entity.voltage) {
+            await insertVoltageTransaction(voltage, dbsql);
+        }
+
+        //currentFlow
+        for (const currentFlow of entity.currentFlow) {
+            await insertCurrentFlowTransaction(currentFlow, dbsql);
+        }
+
+        //frequency
+        for (const frequency of entity.frequency) {
+            await insertFrequencyTransaction(frequency, dbsql);
+        }
+
+        //percent
+        for (const percent of entity.percent) {
+            await insertPercentTransaction(percent, dbsql);
+        }
+
+        //capacitance
+        for (const capacitance of entity.capacitance) {
+            await insertCapacitanceTransaction(capacitance, dbsql);
+        }
+
+        await insertLifecycleDateTransaction(entity.lifecycleDate, dbsql);
+        await insertProductAssetModelTransaction(entity.productAssetModel, dbsql);
+        await insertOldBushingInfoTransaction(entity.oldBushingInfo, dbsql)
+        await insertBushingTransaction(entity.bushing, dbsql);
+        return { success: true, data: entity, message: 'Bushing entity inserted successfully' };
     }
 }
 
@@ -185,6 +227,82 @@ export const getBushingEntityById = async (id, psrId) => {
     }
 }
 
+export const getBushingEntityLiteById = async (id) => {
+    
+    if (id == null || id === '') {
+        return { success: false, error: new Error('Invalid ID') };
+    } else {
+        const entity = new BushingEntity()
+        const dataBushing = await getBushingById(id);
+        if (dataBushing.success) {
+            entity.bushing = dataBushing.data
+            const dataLifecycleDate = await getLifecycleDateById(entity.bushing.lifecycle_date);
+            if (dataLifecycleDate.success) {
+                entity.lifecycleDate = dataLifecycleDate.data;
+            }
+            const dataOldBushingInfo = await getOldBushingInfoById(entity.bushing.asset_info);
+            if (dataOldBushingInfo.success) {
+                entity.oldBushingInfo = dataOldBushingInfo.data;
+            }
+
+            const productAssetModelId = entity.oldBushingInfo.product_asset_model;
+            const dataProductAssetModel = await getProductAssetModelById(productAssetModelId);
+            if (dataProductAssetModel.success) {
+                entity.productAssetModel = dataProductAssetModel.data;
+            }
+
+            const voltageArr = ['high_voltage_limit', 'rated_impulse_withstand_voltage', 'rated_line_to_ground_voltage']
+            const currentFlowArr = ['rated_current']
+            const percentArr = ['c2_power_factor', 'c_power_factor']
+            const capacitanceArr = ['c2_capacitance', 'c_capacitance']
+            const frequencyArr = ['rated_frequency']
+
+            for (let attribute of voltageArr) {
+                const voltage = await getVoltageById(entity.oldBushingInfo[attribute])
+                if (voltage.success) {
+                    entity.voltage.push(voltage.data);
+                }
+            }
+
+            for (let attribute of currentFlowArr) {
+                const currentFlow = await getCurrentFlowById(entity.oldBushingInfo[attribute])
+                if (currentFlow.success) {
+                    entity.currentFlow.push(currentFlow.data);
+                }
+            }
+
+            for (let attribute of percentArr) {
+                const percent = await getPercentById(entity.oldBushingInfo[attribute])
+                if (percent.success) {
+                    entity.percent.push(percent.data);
+                }
+            }
+
+            for (let attribute of capacitanceArr) {
+                const capacitance = await getCapacitanceById(entity.oldBushingInfo[attribute])
+                if (capacitance.success) {
+                    entity.capacitance.push(capacitance.data);
+                }
+            }
+
+            for (let attribute of frequencyArr) {
+                const frequency = await getFrequencyById(entity.oldBushingInfo[attribute])
+                if (frequency.success) {
+                    entity.frequency.push(frequency.data);
+                }
+            }
+
+            return {
+                success: true,
+                data: entity,
+                message: 'Bushing entity retrieved successfully'
+            }
+        } else {
+            return { success: false, error: dataBushing.error, message: dataBushing.message };
+        }
+    }
+}
+
 export const deleteBushingEntity = async (data) => {
     try {
         if (data.bushing == null || data.bushing.mrid == null || data.bushing.mrid === '') {
@@ -252,6 +370,45 @@ export const deleteBushingEntity = async (data) => {
     } catch (error) {
         console.error('Error deleting Bushing entity:', error);
         return { success: false, error, message: 'Error deleting Bushing entity' };
+    }
+}
+
+export const deleteBushingEntityLiteTransaction = async (data, dbsql) => {
+    if (data.bushing == null || data.bushing.mrid == null || data.bushing.mrid === '') {
+        return { success: false, error: new Error('Invalid ID') };
+    } else {
+        if (data.bushing.mrid) {
+            await deleteBushingTransaction(data.bushing.mrid, dbsql);
+        }
+
+        if (data.oldBushingInfo.mrid) {
+            await deleteOldBushingInfoTransaction(data.oldBushingInfo.mrid, dbsql);
+        }
+
+        if (data.lifecycleDate && data.lifecycleDate.mrid) {
+            await deleteLifecycleDateByIdTransaction(data.lifecycleDate.mrid, dbsql);
+        }
+
+        if (data.productAssetModel && data.productAssetModel.mrid) {
+            await deleteProductAssetModelByIdTransaction(data.productAssetModel.mrid, dbsql);
+        }
+
+        for (const voltage of data.voltage) {
+            if (voltage.mrid) {
+                await deleteVoltageByIdTransaction(voltage.mrid, dbsql);
+            }
+        }
+        for (const frequency of data.frequency) {
+            if (frequency.mrid) {
+                await deleteFrequencyByIdTransaction(frequency.mrid, dbsql);
+            }
+        }
+        for (const currentFlow of data.currentFlow) {
+            if (currentFlow.mrid) {
+                await deleteCurrentFlowByIdTransaction(currentFlow.mrid, dbsql);
+            }
+        }
+        return { success: true, message: 'Bushing entity deleted successfully' };
     }
 }
 

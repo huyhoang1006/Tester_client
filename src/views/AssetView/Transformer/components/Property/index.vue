@@ -1,5 +1,5 @@
 <template>
-    <div class="mgt-20 property">
+    <div class="mgy-20 property">
         <div class="col-content">
             <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                 <span class="bolder">Properties</span>
@@ -53,6 +53,7 @@
 <script>
 import {country} from '@/views/ConstantAsset/index'
 import Attachment from '@/views/Common/Attachment.vue'
+import MANUFACTURER_MAP from '@/views/ConstantAsset/manufacturer.js';
 
 export default {
     name: 'Property',
@@ -78,15 +79,7 @@ export default {
         return {
             labelWidth: `${120}px`,
             countryData : country.default,
-            manufacturerList : ['ABB', 'ABB Sécheron', 'ACEC', 'Mitsubishi Electric', 'Aditya Vidyut Appliances Ltd', 'AEG', 'Alstohm Savoisienne', 'Alstom',
-        'ANSALDO', 'APEX', 'Areva', 'Areva Unido', 'Artrans - Los Conce', 'ASA Trafobau GmbH', 'ASEA', 'BBC', 'Bharat Bijilee Ltd.', 'Bharat Heavy Electricals, Ltd.',
-        'BHEL', 'Crompton Greaves', 'DAIHEN', 'DELTA STAR', 'DIAMOND POWER INFRASTRUCTURE LIMITED', 'EBG', 'EFACEC', 'EEMC', 'electroputere', 'Elettromeccania colombo',
-        'ELIN', 'ELTA', 'Emco Transformers Ltd.', 'Ferranti-Packard', 'Fuji Electric', 'FORTUNE ELECTRIC CO.,LTD.', 'FIRST PHILEC', 'FPE', 'Franco Transfo', 'GE PROLEC',
-        'General Electric','Getra', 'HAMMOND', 'HAVEC', 'HAWKER SIDDELEY', 'HEM', 'Helmke', 'HICO', 'Hitachi Energy', 'HOWARD', 'HYOSUNG', 'Hyundai', 'IEM', 'Imefy', 'Italtrafo',
-        'JAEPS', 'Jeumont-Schneider', 'JORDAN', 'JSHP', 'JSP', 'JST', 'KONČAR', 'Kuhlman', 'Leeper', 'Matelec', 'McGraw Edison', 'MF Trasformatori', 'MITSUBISHI', 'NGEF', 'OASA',
-        'Ocrev', 'Oerlikon', 'OFFICINE TRANSFORMATORI ELECTRICI', 'Parsons Peebles', 'PAUWELS', 'Peebles', 'PENNSYLVANIA TRANSFORMER', 'SAVOISIENNE', 'Schneider Electric', 
-        'Schorch', 'SGB', 'Siemens', 'SMIT', 'TAMINI', 'TBEA', 'TELK', 'TIRONI', 'TOSHIBA', 'TRAFO UNION', 'UNIDO', 'VEE', 'Waukesha', 'Westinghouse', 'Wilson transformer',
-        'ZTR'],
+            manufacturerList : MANUFACTURER_MAP['TransformerDataDto'],
             attachmentData : [],
         }
     },
@@ -153,3 +146,4 @@ export default {
     }
 }
 </style>
+        

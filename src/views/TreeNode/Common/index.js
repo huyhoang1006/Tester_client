@@ -1,0 +1,29 @@
+/* eslint-disable */
+export default {
+    mounted() {
+        window.addEventListener("keydown", this.handleKeyDown);
+    },
+    beforeDestroy() {
+        window.removeEventListener("keydown", this.handleKeyDown);
+    },
+    methods: {
+        handleKeyDown(event) {
+            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
+                event.preventDefault()
+                this.saveCtrSInTree();
+            }
+        },
+        saveCtrSInTree() {
+            if(this.clientSlide) {
+                const clientTabs = this.getClientTabsRef ? this.getClientTabsRef() : this.$refs.clientTabs
+                if(clientTabs) {
+                    clientTabs.saveCtrlS()
+                }
+            } else {
+                if(this.$refs.serverTabs) {
+                    this.$refs.serverTabs.saveCtrlS()
+                }
+            }
+        }
+    }
+};

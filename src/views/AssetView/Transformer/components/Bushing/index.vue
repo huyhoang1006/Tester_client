@@ -445,6 +445,23 @@ export default {
     overflow-y: hidden;
 }
 
+::v-deep(.table-scroll::-webkit-scrollbar) {
+    height: 5px;
+}
+
+::v-deep(.table-scroll::-webkit-scrollbar-track) {
+    background: transparent;
+}
+
+::v-deep(.table-scroll::-webkit-scrollbar-thumb) {
+    background-color: rgba(120, 120, 120, 0.6);
+    border-radius: 6px;
+}
+
+::v-deep(.table-scroll::-webkit-scrollbar-thumb:hover) {
+    background-color: rgba(120, 120, 120, 0.85);
+}
+
 ::v-deep(.fixed-table) {
     width: max-content;
     table-layout: fixed;

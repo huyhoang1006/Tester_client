@@ -24,6 +24,50 @@ export const getOldBushingInfoById = async (mrid) => {
     }
 }
 
+export const getOldBushingInfoByTransformerEndInfoIds = async (transformerEndInfoIds) => {
+    try {
+        if (!Array.isArray(transformerEndInfoIds) || transformerEndInfoIds.length === 0) {
+            return {
+                success: true,
+                data: [],
+                message: 'TransformerEndInfoIds is empty'
+            }
+        }
+
+        const placeholders = transformerEndInfoIds.map(() => '?').join(',')
+
+        return new Promise((resolve, reject) => {
+            db.all(
+                `SELECT mrid 
+                 FROM old_bushing_info 
+                 WHERE transformer_end_info IN (${placeholders})`,
+                transformerEndInfoIds,
+                (err, rows) => {
+                    if (err) {
+                        return reject({
+                            success: false,
+                            err,
+                            message: 'Get OldBushingInfo by transformerEndInfoIds failed'
+                        })
+                    }
+
+                    return resolve({
+                        success: true,
+                        data: rows || [],
+                        message: 'Get OldBushingInfo by transformerEndInfoIds completed'
+                    })
+                }
+            )
+        })
+    } catch (err) {
+        return {
+            success: false,
+            err,
+            message: 'Get OldBushingInfo by transformerEndInfoIds failed'
+        }
+    }
+}
+
 // Thêm mới oldBushingInfo (transaction)
 export const insertOldBushingInfoTransaction = async (info, dbsql) => {
     return new Promise(async (resolve, reject) => {
@@ -34,20 +78,24 @@ export const insertOldBushingInfoTransaction = async (info, dbsql) => {
             }
             dbsql.run(
                 `INSERT INTO old_bushing_info(
-                    mrid, high_voltage_limit, c2_capacitance, c2_power_factor, rated_frequency
-                ) VALUES (?, ?, ?, ?, ?)
+                    mrid, high_voltage_limit, c2_capacitance, c2_power_factor, rated_frequency, transformer_end_info, phase
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(mrid) DO UPDATE SET
                     high_voltage_limit = excluded.high_voltage_limit,
                     c2_capacitance = excluded.c2_capacitance,
                     c2_power_factor = excluded.c2_power_factor,
-                    rated_frequency = excluded.rated_frequency
+                    rated_frequency = excluded.rated_frequency,
+                    transformer_end_info = excluded.transformer_end_info,
+                    phase = excluded.phase
                 `,
                 [
                     info.mrid,
                     info.high_voltage_limit,
                     info.c2_capacitance,
                     info.c2_power_factor,
-                    info.rated_frequency
+                    info.rated_frequency,
+                    info.transformer_end_info,
+                    info.phase
                 ],
                 function (err) {
                     if (err) {
@@ -75,13 +123,17 @@ export const updateOldBushingInfoTransaction = async (mrid, info, dbsql) => {
                     high_voltage_limit = ?,
                     c2_capacitance = ?,
                     c2_power_factor = ?,
-                    rated_frequency = ?
+                    rated_frequency = ?,
+                    transformer_end_info = ?,
+                    phase = ?
                 WHERE mrid = ?`,
                 [
                     info.high_voltage_limit,
                     info.c2_capacitance,
                     info.c2_power_factor,
                     info.rated_frequency,
+                    info.transformer_end_info,
+                    info.phase,
                     mrid
                 ],
                 function (err) {

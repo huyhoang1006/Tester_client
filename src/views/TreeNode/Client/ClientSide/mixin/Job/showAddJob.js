@@ -51,6 +51,7 @@ export default {
 
                 if (node.asset == 'Surge arrester') {
                     const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Surge arrester")
+                    console.log('dataTestType', dataTestType)
                     const dataSurgeArrester = await window.electronAPI.getSurgeArresterByMrid(node.mrid)
                     if (dataSurgeArrester.success) {
                         this.assetData = dataSurgeArrester.data
@@ -65,43 +66,43 @@ export default {
                     this.checkJobType = 'JobSurgeArrester'
                     this.signJob = true
                 } else if (node.asset == 'Power cable') {
-                    // const dataTestType = await window.electronAPI.getAllTestTypePowerCable()
-                    // if (dataTestType.success) {
-                    //     this.testTypeListData = dataTestType.data
-                    // } else {
-                    //     this.testTypeListData = []
-                    // }
+                    const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Power cable")
+                    if (dataTestType.success) {
+                        this.testTypeListData = dataTestType.data
+                    } else {
+                        this.testTypeListData = []
+                    }
                     this.checkJobType = 'JobPowerCable'
                     this.signJob = true
                 } else if (node.asset == 'Disconnector') {
-                    // const dataTestType = await window.electronAPI.getAllTestTypeDisconnector()
-                    // if (dataTestType.success) {
-                    //     this.testTypeListData = dataTestType.data
-                    // } else {
-                    //     this.testTypeListData = []
-                    // }
+                    const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Disconnector")
+                    if (dataTestType.success) {
+                        this.testTypeListData = dataTestType.data
+                    } else {
+                        this.testTypeListData = []
+                    }
                     this.checkJobType = 'JobDisconnector'
                     this.signJob = true
                 } else if (node.asset == 'Current transformer') {
-                    // const dataTestType = await window.electronAPI.getAllTestTypeCT()
-                    // if (dataTestType.success) {
-                    //     this.testTypeListData = dataTestType.data
-                    // } else {
-                    //     this.testTypeListData = []
-                    // }
+                    const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Current transformer")
+                    if (dataTestType.success) {
+                        this.testTypeListData = dataTestType.data
+                    } else {
+                        this.testTypeListData = []
+                    }
                     this.checkJobType = 'JobCurrentTransformer'
                     this.signJob = true
                 } else if (node.asset == 'Voltage transformer') {
-                    // const dataTestType = await window.electronAPI.getAllTestTypeVT()
-                    // if (dataTestType.success) {
-                    //     this.testTypeListData = dataTestType.data
-                    // } else {
-                    //     this.testTypeListData = []
-                    // }
+                    const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Voltage transformer")
+                    if (dataTestType.success) {
+                        this.testTypeListData = dataTestType.data
+                    } else {
+                        this.testTypeListData = []
+                    }
                     this.checkJobType = 'JobVoltageTransformer'
                     this.signJob = true
                 } else if (node.asset == 'Circuit breaker') {
-                    // const dataTestType = await window.electronAPI.getAllTestTypeCircuitBreaker()
+                    const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Circuit breaker")
                     const dataBreakerEntity = await window.electronAPI.getBreakerEntityByMrid(node.mrid)
                     const dto = BreakerMapping.mapEntityToDto(dataBreakerEntity.data)
                     if (dataBreakerEntity.success) {
@@ -109,15 +110,15 @@ export default {
                     } else {
                         this.assetData = {}
                     }
-                    // if (dataTestType.success) {
-                    //     this.testTypeListData = dataTestType.data
-                    // } else {
-                    //     this.testTypeListData = []
-                    // }
+                    if (dataTestType.success) {
+                        this.testTypeListData = dataTestType.data
+                    } else {
+                        this.testTypeListData = []
+                    }
                     this.checkJobType = 'JobCircuitBreaker'
                     this.signJob = true
                 } else if (node.asset == 'Transformer') {
-                    // const dataTestType = await window.electronAPI.getAllTestTypeTransformers()
+                    const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Transformer")
                     const dataTransformerEntity = await window.electronAPI.getTransformerEntityByMrid(node.mrid)
                     const dto = TransformerMapping.transformerEntityToDto(dataTransformerEntity.data)
                     if (dataTransformerEntity.success) {
@@ -125,11 +126,11 @@ export default {
                     } else {
                         this.assetData = {}
                     }
-                    // if (dataTestType.success) {
-                    //     this.testTypeListData = dataTestType.data
-                    // } else {
-                    //     this.testTypeListData = []
-                    // }
+                    if (dataTestType.success) {
+                        this.testTypeListData = dataTestType.data
+                    } else {
+                        this.testTypeListData = []
+                    }
                     this.checkJobType = 'JobTransformer'
                     this.signJob = true
                 } else {

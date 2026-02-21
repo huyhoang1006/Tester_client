@@ -145,6 +145,8 @@ export default {
                     data.attachment.type = 'asset'
                     data.attachment.id_foreign = data.properties.mrid
                 }
+            } else {
+                data.attachment.path = JSON.stringify(this.attachmentData)
             }
         },
 
