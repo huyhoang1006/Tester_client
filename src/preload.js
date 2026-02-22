@@ -58,6 +58,7 @@ const reactorEntityAPI = entityPreload.reactorEntityPreload.reactorEntityPreload
 const assetPsrAPI = entityPreload.assetPsrPreload.assetPsrPreload()
 const procedureAPI = cimPreload.procedurePreload.procedurePreload()
 const licenseAPI = cimPreload.licensePreload.licensePreload()
+const notificationEntityAPI = entityPreload.notificationEntityPreload.notificationEntityPreload()
 
 const ipcMain = Object.assign(
     userAPI,
@@ -111,6 +112,7 @@ const ipcMain = Object.assign(
     appOptionAPI,
     procedureAPI,
     windowControlAPI,
-    licenseAPI
+    licenseAPI,
+    notificationEntityAPI
 )
 contextBridge.exposeInMainWorld('electronAPI', ipcMain)

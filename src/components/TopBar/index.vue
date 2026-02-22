@@ -15,6 +15,68 @@
             </div>
 
             <div class="right-bar">
+                <!-- Notification Bell -->
+                <div v-if="user" @click.stop="handleNotificationDropdown" class="dropdown-trigger-wrapper">
+                    <el-dropdown ref="notificationDropdown" trigger="click" placement="bottom-end" :hide-on-click="false">
+                        <div class="topbar-btn notification-btn">
+                            <i style="font-size: 15px; color: white;" class="fas fa-bell"></i>
+                            <span v-if="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
+                        </div>
+                        <el-dropdown-menu slot="dropdown" class="notification-dropdown-menu">
+                            <div class="notification-header">
+                                <span class="notification-title">Thông báo</span>
+                                <span class="notification-count">{{ notifications.length }} thông báo</span>
+                            </div>
+                            <div class="notification-list">
+                                <div v-for="notification in displayedNotifications" :key="notification.id"
+                                    class="notification-item" :class="{ 'unread': !notification.read }">
+                                    <div class="notification-content" @click.stop="markAsRead(notification.id)">
+                                        <div class="notification-icon">
+                                            <i :class="notification.icon"></i>
+                                        </div>
+                                        <div class="notification-text">
+                                            <div class="notification-message">{{ notification.message }}</div>
+                                            <div class="notification-time">{{ notification.time }}</div>
+                                        </div>
+                                    </div>
+                                    <el-dropdown trigger="click" placement="bottom-end" :append-to-body="false">
+                                        <div class="notification-menu-btn" @click.stop>
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </div>
+                                        <el-dropdown-menu slot="dropdown" class="notification-action-menu">
+                                            <el-dropdown-item @click.native.stop="loadMoreNotifications">
+                                                <i class="fas fa-plus-circle"></i>
+                                                Hiện thêm thông báo
+                                            </el-dropdown-item>
+                                            <el-dropdown-item @click.native.stop="hideNotification(notification.id)">
+                                                <i class="fas fa-eye-slash"></i>
+                                                Ẩn thông báo
+                                            </el-dropdown-item>
+                                            <el-dropdown-item @click.native.stop="deleteNotification(notification.id)">
+                                                <i class="fas fa-trash"></i>
+                                                Xóa thông báo
+                                            </el-dropdown-item>
+                                        </el-dropdown-menu>
+                                    </el-dropdown>
+                                </div>
+                            </div>
+                            <div class="notification-footer">
+                                <span class="notification-pagination">Trang {{ currentPage }}/{{ totalPages }}</span>
+                                <div class="notification-footer-actions">
+                                    <el-button v-if="currentPage < totalPages" 
+                                        size="mini" type="text" @click.stop="nextPage">
+                                        Trang tiếp theo
+                                    </el-button>
+                                    <el-button v-if="currentPage > 1" 
+                                        size="mini" type="text" @click.stop="prevPage">
+                                        Trang trước
+                                    </el-button>
+                                </div>
+                            </div>
+                        </el-dropdown-menu>
+                    </el-dropdown>
+                </div>
+
                 <div @click.stop="handleDropdown" class="dropdown-trigger-wrapper">
                     <el-dropdown ref="dropdown" @command="handleCommand" trigger="click" placement="bottom-end">
                         <div class="topbar-btn">
@@ -155,7 +217,11 @@ export default {
             updateInfo: {
                 version: '',
                 releaseNotes: ''
-            }
+            },
+            notificationLimit: 10,
+            currentPage: 1,
+            itemsPerPage: 10,
+            notifications: []
         }
     },
     mounted() {
@@ -166,13 +232,47 @@ export default {
                 this.isMaximized = isMax;
             })
         }
+        
+        // Load notifications from database
+        this.loadNotifications()
         // this.updateSearchState()
         // window.addEventListener('resize', this.updateSearchState)
     },
     // beforeDestroy() {
     //     window.removeEventListener('resize', this.updateSearchState)
     // },
-    computed: mapState(['user', 'serverAddr']),
+    computed: {
+        ...mapState(['user', 'serverAddr']),
+        unreadCount() {
+            return this.notifications.filter(n => !n.read && !n.hidden).length
+        },
+        displayedNotifications() {
+            const visibleNotifications = this.notifications.filter(n => !n.hidden)
+            const startIndex = (this.currentPage - 1) * this.itemsPerPage
+            
+            // Nếu trang 1 đã hiển thị 15, thì trang 2 bắt đầu từ index 15
+            const actualStartIndex = this.currentPage === 1 ? 0 : 
+                (this.currentPage === 2 && this.notificationLimit > this.itemsPerPage) ? this.notificationLimit : startIndex
+            
+            const itemsToShow = this.currentPage === 1 ? this.notificationLimit : this.itemsPerPage
+            
+            return visibleNotifications.slice(actualStartIndex, actualStartIndex + itemsToShow)
+        },
+        totalPages() {
+            const visibleCount = this.notifications.filter(n => !n.hidden).length
+            // Nếu trang 1 hiển thị 15, tổng số trang phải tính lại
+            const page1Items = this.notificationLimit
+            const remainingItems = visibleCount - page1Items
+            return remainingItems > 0 ? 2 : 1
+        },
+        canLoadMore() {
+            const visibleNotifications = this.notifications.filter(n => !n.hidden)
+            const maxForCurrentPage = this.itemsPerPage + 5 // 10 + 5 = 15 max
+            return this.currentPage === 1 && 
+                   this.notificationLimit < maxForCurrentPage && 
+                   this.notificationLimit < visibleNotifications.length
+        }
+    },
     methods: {
         // updateSearchState() {
         //     const topbar = document.getElementById('top-windows')
@@ -209,20 +309,8 @@ export default {
             }
         },
         checkForUpdate() {
-            const mockUpdateData = {
-                version: '1.0.0',
-                releaseNotes: ` • Improve performance
-                                • Fix login bug
-                                • Enhance UI glass effect
-                                • Enhance UI glass effect
-                                • Enhance UI glass effect
-                                • Enhance UI glass effect
-                                • Enhance UI glass effect
-                                • Enhance UI glass effect
-                                • Optimize memory usage`
-            }
-            this.updateInfo = mockUpdateData
-            this.dialogUpdate = true
+            // TODO: Implement real update check logic
+            this.$message.info('Đang kiểm tra phiên bản mới...')
         },
         handleUpdate() {
             this.dialogUpdate = false
@@ -262,6 +350,108 @@ export default {
         },
         handleDropdown() {
             this.$refs.dropdown.handleClick();
+        },
+        handleNotificationDropdown() {
+            this.$refs.notificationDropdown.handleClick();
+        },
+        async loadNotifications() {
+            try {
+                const response = await window.electronAPI.getAllNotifications()
+                if (response.success) {
+                    this.notifications = response.data.map(n => ({
+                        id: n.id,
+                        message: n.message,
+                        time: n.time,
+                        read: n.read === 1,
+                        icon: n.icon,
+                        hidden: n.hidden === 1
+                    }))
+                }
+            } catch (error) {
+                console.error('Error loading notifications:', error)
+                this.$message.error('Không thể tải thông báo')
+            }
+        },
+        async markAsRead(notificationId) {
+            try {
+                const response = await window.electronAPI.markNotificationAsRead(notificationId)
+                if (response.success) {
+                    const notification = this.notifications.find(n => n.id === notificationId)
+                    if (notification) {
+                        notification.read = true
+                    }
+                }
+            } catch (error) {
+                console.error('Error marking notification as read:', error)
+            }
+        },
+        async hideNotification(notificationId) {
+            try {
+                const response = await window.electronAPI.hideNotification(notificationId)
+                if (response.success) {
+                    const notification = this.notifications.find(n => n.id === notificationId)
+                    if (notification) {
+                        notification.hidden = true
+                    }
+                    this.$message.success('Đã ẩn thông báo')
+                }
+            } catch (error) {
+                console.error('Error hiding notification:', error)
+                this.$message.error('Không thể ẩn thông báo')
+            }
+        },
+        async deleteNotification(notificationId) {
+            try {
+                const response = await window.electronAPI.deleteNotification(notificationId)
+                if (response.success) {
+                    const index = this.notifications.findIndex(n => n.id === notificationId)
+                    if (index !== -1) {
+                        this.notifications.splice(index, 1)
+                    }
+                    this.$message.success('Đã xóa thông báo')
+                }
+            } catch (error) {
+                console.error('Error deleting notification:', error)
+                this.$message.error('Không thể xóa thông báo')
+            }
+        },
+        handleNotificationAction(command) {
+            const { action, id } = command
+            const notification = this.notifications.find(n => n.id === id)
+            
+            if (!notification) return
+
+            switch (action) {
+                case 'show_more':
+                    this.loadMoreNotifications()
+                    break
+                case 'hide':
+                    notification.hidden = true
+                    this.$message.success('Đã ẩn thông báo')
+                    break
+                case 'delete':
+                    const index = this.notifications.findIndex(n => n.id === id)
+                    if (index !== -1) {
+                        this.notifications.splice(index, 1)
+                        this.$message.success('Đã xóa thông báo')
+                    }
+                    break
+            }
+        },
+        loadMoreNotifications() {
+            this.notificationLimit += 5
+        },
+        nextPage() {
+            if (this.currentPage < this.totalPages) {
+                this.currentPage++
+                // Không reset notificationLimit, giữ nguyên để tính toán đúng
+            }
+        },
+        prevPage() {
+            if (this.currentPage > 1) {
+                this.currentPage--
+                // Không reset notificationLimit
+            }
         }
     }
 }
@@ -404,6 +594,29 @@ export default {
 
 .close-icon:hover {
     background-color: red !important;
+}
+
+.notification-btn {
+    position: relative;
+}
+
+.notification-badge {
+    position: absolute;
+    top: 5px;
+    left: 8px;
+    background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    box-shadow: 0 2px 6px rgba(255, 0, 0, 0.4);
+    border: 2px solid rgba(1, 37, 150, 0.8);
 }
 
 ::v-deep(.app-dialog) {
@@ -757,5 +970,228 @@ export default {
 .dropdown-menu.el-dropdown-menu .danger-item:active {
     transform: translateY(0);
     box-shadow: 0 2px 8px rgba(204, 5, 20, 0.4) !important;
+}
+
+.notification-dropdown-menu.el-dropdown-menu {
+    z-index: 3000 !important;
+    margin-top: 12px !important;
+    padding: 0 !important;
+    background: rgba(20, 20, 20, 0.5) !important;
+    backdrop-filter: blur(6px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
+    font-family: 'Segoe UI', sans-serif;
+    -webkit-app-region: no-drag;
+    width: 380px;
+    max-height: 600px;
+    overflow: hidden;
+    position: relative;
+}
+
+.notification-dropdown-menu.el-dropdown-menu .popper__arrow {
+    display: none !important;
+}
+
+.notification-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notification-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.notification-count {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.notification-list {
+    max-height: 480px;
+    overflow-y: auto;
+    position: relative;
+}
+
+.notification-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notification-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.notification-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.notification-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.2s ease;
+    gap: 8px;
+}
+
+.notification-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.notification-item.unread {
+    background: rgba(30, 91, 184, 0.15);
+}
+
+.notification-item.unread:hover {
+    background: rgba(30, 91, 184, 0.25);
+}
+
+.notification-content {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.notification-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(30, 91, 184, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.notification-icon i {
+    font-size: 16px;
+    color: #ffffff;
+}
+
+.notification-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-message {
+    font-size: 13px;
+    font-weight: 500;
+    color: #ffffff;
+    line-height: 1.4;
+    margin-bottom: 4px;
+}
+
+.notification-time {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.notification-menu-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+}
+
+.notification-menu-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.notification-menu-btn i {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.notification-footer {
+    padding: 12px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notification-pagination {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 500;
+}
+
+.notification-footer-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.notification-footer .el-button--text {
+    color: #ffffff !important;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 8px !important;
+}
+
+.notification-footer .el-button--text:hover {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.notification-action-menu.el-dropdown-menu {
+    z-index: 3001 !important;
+    margin-top: 4px !important;
+    padding: 6px !important;
+    background: rgba(20, 20, 20, 0.5) !important;
+    backdrop-filter: blur(6px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
+    min-width: 160px;
+}
+
+.notification-action-menu.el-dropdown-menu .popper__arrow {
+    display: none !important;
+}
+
+.notification-action-menu.el-dropdown-menu .el-dropdown-menu__item {
+    font-size: 12px;
+    font-weight: 540;
+    color: #ffffff !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    line-height: 28px !important;
+    padding: 2px 12px !important;
+    margin: 0 !important;
+    border-radius: 6px;
+    background: transparent;
+    transition: background 0.2s ease;
+}
+
+.notification-action-menu.el-dropdown-menu .el-dropdown-menu__item i {
+    width: 14px;
+    text-align: center;
+    font-size: 12px;
+    color: #ffffff;
+}
+
+.notification-action-menu.el-dropdown-menu .el-dropdown-menu__item:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
 }
 </style>
