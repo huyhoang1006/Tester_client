@@ -2,7 +2,7 @@ import db from '../../datacontext/index.js'
 
 export const getAllNotifications = async () => {
     try {
-        const sql = `SELECT * FROM notification ORDER BY created_at DESC`
+        const sql = `SELECT * FROM notification ORDER BY mrid DESC`
         const notifications = await allAsync(sql)
         return { success: true, data: notifications, message: 'Notifications retrieved successfully' }
     } catch (error) {
@@ -11,10 +11,10 @@ export const getAllNotifications = async () => {
     }
 }
 
-export const getNotificationById = async (id) => {
+export const getNotificationById = async (mrid) => {
     try {
-        const sql = `SELECT * FROM notification WHERE id = ?`
-        const notification = await getAsync(sql, [id])
+        const sql = `SELECT * FROM notification WHERE mrid = ?`
+        const notification = await getAsync(sql, [mrid])
         if (notification) {
             return { success: true, data: notification, message: 'Notification retrieved successfully' }
         } else {
@@ -28,14 +28,14 @@ export const getNotificationById = async (id) => {
 
 export const insertNotification = async (entity) => {
     try {
-        const sql = `INSERT INTO notification (message, time, read, icon, hidden, created_at) 
-                     VALUES (?, ?, ?, ?, ?, datetime('now'))`
+        const sql = `INSERT INTO notification (mrid, name, message, type, status) 
+                     VALUES (?, ?, ?, ?, ?)`
         await runAsync(sql, [
+            entity.mrid,
+            entity.name,
             entity.message,
-            entity.time,
-            entity.read || 0,
-            entity.icon,
-            entity.hidden || 0
+            entity.type,
+            entity.status
         ])
         return { success: true, data: entity, message: 'Notification inserted successfully' }
     } catch (error) {
@@ -44,16 +44,15 @@ export const insertNotification = async (entity) => {
     }
 }
 
-export const updateNotification = async (id, entity) => {
+export const updateNotification = async (mrid, entity) => {
     try {
-        const sql = `UPDATE notification SET message = ?, time = ?, read = ?, icon = ?, hidden = ? WHERE id = ?`
+        const sql = `UPDATE notification SET name = ?, message = ?, type = ?, status = ? WHERE mrid = ?`
         await runAsync(sql, [
+            entity.name,
             entity.message,
-            entity.time,
-            entity.read,
-            entity.icon,
-            entity.hidden,
-            id
+            entity.type,
+            entity.status,
+            mrid
         ])
         return { success: true, data: entity, message: 'Notification updated successfully' }
     } catch (error) {
@@ -62,10 +61,10 @@ export const updateNotification = async (id, entity) => {
     }
 }
 
-export const markAsRead = async (id) => {
+export const markAsRead = async (mrid) => {
     try {
-        const sql = `UPDATE notification SET read = 1 WHERE id = ?`
-        await runAsync(sql, [id])
+        const sql = `UPDATE notification SET status = 'read' WHERE mrid = ?`
+        await runAsync(sql, [mrid])
         return { success: true, message: 'Notification marked as read' }
     } catch (error) {
         console.error('Error marking notification as read:', error)
@@ -73,10 +72,10 @@ export const markAsRead = async (id) => {
     }
 }
 
-export const hideNotification = async (id) => {
+export const hideNotification = async (mrid) => {
     try {
-        const sql = `UPDATE notification SET hidden = 1 WHERE id = ?`
-        await runAsync(sql, [id])
+        const sql = `UPDATE notification SET status = 'hidden' WHERE mrid = ?`
+        await runAsync(sql, [mrid])
         return { success: true, message: 'Notification hidden successfully' }
     } catch (error) {
         console.error('Error hiding notification:', error)
@@ -84,10 +83,10 @@ export const hideNotification = async (id) => {
     }
 }
 
-export const deleteNotification = async (id) => {
+export const deleteNotification = async (mrid) => {
     try {
-        const sql = `DELETE FROM notification WHERE id = ?`
-        await runAsync(sql, [id])
+        const sql = `DELETE FROM notification WHERE mrid = ?`
+        await runAsync(sql, [mrid])
         return { success: true, message: 'Notification deleted successfully' }
     } catch (error) {
         console.error('Error deleting notification:', error)
