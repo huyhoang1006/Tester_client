@@ -359,18 +359,34 @@ export default {
                 const response = await window.electronAPI.getAllNotifications()
                 if (response.success) {
                     this.notifications = response.data.map(n => ({
-                        id: n.id,
+                        id: n.mrid,
                         message: n.message,
-                        time: n.time,
-                        read: n.read === 1,
-                        icon: n.icon,
-                        hidden: n.hidden === 1
+                        time: n.name, // Dùng name làm time
+                        read: n.status === 'read',
+                        icon: this.getIconByType(n.type),
+                        hidden: n.status === 'hidden'
                     }))
                 }
             } catch (error) {
                 console.error('Error loading notifications:', error)
                 this.$message.error('Không thể tải thông báo')
             }
+        },
+        getIconByType(type) {
+            const iconMap = {
+                'success': 'fas fa-check-circle',
+                'info': 'fas fa-info-circle',
+                'warning': 'fas fa-exclamation-triangle',
+                'error': 'fas fa-times-circle',
+                'update': 'fas fa-download',
+                'maintenance': 'fas fa-wrench',
+                'user': 'fas fa-user-plus',
+                'test': 'fas fa-clipboard-check',
+                'backup': 'fas fa-database',
+                'calendar': 'fas fa-calendar-alt',
+                'report': 'fas fa-file-alt'
+            }
+            return iconMap[type] || 'fas fa-bell'
         },
         async markAsRead(notificationId) {
             try {
