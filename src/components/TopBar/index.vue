@@ -17,7 +17,8 @@
             <div class="right-bar">
                 <!-- Notification Bell -->
                 <div v-if="user" @click.stop="handleNotificationDropdown" class="dropdown-trigger-wrapper">
-                    <el-dropdown ref="notificationDropdown" trigger="click" placement="bottom-end" :hide-on-click="false">
+                    <el-dropdown ref="notificationDropdown" trigger="click" placement="bottom-end"
+                        :hide-on-click="false">
                         <div class="topbar-btn notification-btn">
                             <i style="font-size: 15px; color: white;" class="fas fa-bell"></i>
                             <span v-if="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
@@ -32,9 +33,10 @@
                                 </div>
                             </div>
                             <div class="notification-list">
-<div v-for="notification in displayedNotifications" :key="notification.mrid"
+                                <div v-for="notification in displayedNotifications" :key="notification.mrid"
                                     class="notification-item" :class="{ 'unread': notification.status === 'unread' }">
-                                    <div class="notification-content" @click.stop="openNotificationDetail(notification)">
+                                    <div class="notification-content"
+                                        @click.stop="openNotificationDetail(notification)">
                                         <div class="notification-icon">
                                             <i :class="notification.icon"></i>
                                         </div>
@@ -56,7 +58,8 @@
                                                 <i class="fas fa-check"></i>
                                                 Đánh dấu đã đọc
                                             </el-dropdown-item>
-                                            <el-dropdown-item @click.native.stop="deleteNotification(notification.mrid)">
+                                            <el-dropdown-item
+                                                @click.native.stop="deleteNotification(notification.mrid)">
                                                 <i class="fas fa-trash"></i>
                                                 Xóa thông báo
                                             </el-dropdown-item>
@@ -67,12 +70,11 @@
                             <div class="notification-footer">
                                 <span class="notification-pagination">Trang {{ currentPage }}/{{ totalPages }}</span>
                                 <div class="notification-footer-actions">
-                                    <el-button v-if="currentPage < totalPages" 
-                                        size="mini" type="text" @click.stop="nextPage">
+                                    <el-button v-if="currentPage < totalPages" size="mini" type="text"
+                                        @click.stop="nextPage">
                                         Trang tiếp theo
                                     </el-button>
-                                    <el-button v-if="currentPage > 1" 
-                                        size="mini" type="text" @click.stop="prevPage">
+                                    <el-button v-if="currentPage > 1" size="mini" type="text" @click.stop="prevPage">
                                         Trang trước
                                     </el-button>
                                 </div>
@@ -183,13 +185,8 @@
         </el-dialog>
 
         <!-- Notification Detail Dialog -->
-        <el-dialog 
-            custom-class="app-dialog" 
-            title="Chi tiết thông báo" 
-            :visible.sync="dialogNotificationDetail" 
-            :modal="true"
-            append-to-body
-            width="500px">
+        <el-dialog custom-class="app-dialog" title="Chi tiết thông báo" :visible.sync="dialogNotificationDetail"
+            :modal="true" append-to-body width="500px">
             <div v-if="selectedNotification" class="notification-detail">
                 <div class="notification-detail-header">
                     <div class="notification-detail-icon">
@@ -264,7 +261,7 @@ export default {
                 version: '',
                 releaseNotes: ''
             },
-notificationLimit: 10,
+            notificationLimit: 10,
             currentPage: 1,
             itemsPerPage: 10,
             notifications: [],
@@ -281,7 +278,7 @@ notificationLimit: 10,
                 this.isMaximized = isMax;
             })
         }
-        
+
         // Load notifications from database
         this.loadNotifications()
         // this.updateSearchState()
@@ -292,21 +289,21 @@ notificationLimit: 10,
     // },
     computed: {
         ...mapState(['user', 'serverAddr']),
-unreadCount() {
+        unreadCount() {
             return this.notifications.filter(n => n.status === 'unread').length
         },
-displayedNotifications() {
+        displayedNotifications() {
             const visibleNotifications = this.notifications
             const startIndex = (this.currentPage - 1) * this.itemsPerPage
-            
+
             // Nếu trang 1 đã hiển thị 15, thì trang 2 bắt đầu từ index 15
-            const actualStartIndex = this.currentPage === 1 ? 0 : 
+            const actualStartIndex = this.currentPage === 1 ? 0 :
                 (this.currentPage === 2 && this.notificationLimit > this.itemsPerPage) ? this.notificationLimit : startIndex
-            
+
             const itemsToShow = this.currentPage === 1 ? this.notificationLimit : this.itemsPerPage
-            
+
             return visibleNotifications.slice(actualStartIndex, actualStartIndex + itemsToShow)
-},
+        },
         totalPages() {
             const visibleCount = this.notifications.length
             // Nếu trang 1 hiển thị 15, tổng số trang phải tính lại
@@ -317,9 +314,9 @@ displayedNotifications() {
         canLoadMore() {
             const visibleNotifications = this.notifications
             const maxForCurrentPage = this.itemsPerPage + 5 // 10 + 5 = 15 max
-            return this.currentPage === 1 && 
-                   this.notificationLimit < maxForCurrentPage && 
-                   this.notificationLimit < visibleNotifications.length
+            return this.currentPage === 1 &&
+                this.notificationLimit < maxForCurrentPage &&
+                this.notificationLimit < visibleNotifications.length
         }
     },
     methods: {
@@ -359,7 +356,21 @@ displayedNotifications() {
         },
         checkForUpdate() {
             // TODO: Implement real update check logic
-            this.$message.info('Đang kiểm tra phiên bản mới...')
+            const duration = 3000
+
+            this.$message({
+                type: 'info',
+                message: "Checking for new version...",
+                duration
+            })
+
+            setTimeout(() => {
+                this.updateInfo = {
+                    version: '1.2.3',
+                    releaseNotes: '• Fix bug\n• Improve performance\n• Add new feature'
+                }
+                this.dialogUpdate = true
+            }, duration)
         },
         handleUpdate() {
             this.dialogUpdate = false
@@ -403,7 +414,7 @@ displayedNotifications() {
         handleNotificationDropdown() {
             this.$refs.notificationDropdown.handleClick();
         },
-async loadNotifications() {
+        async loadNotifications() {
             this.isReloading = true
             try {
                 const response = await window.electronAPI.getAllNotifications()
@@ -433,7 +444,7 @@ async loadNotifications() {
                 this.markAsRead(notification.mrid)
             }
         },
-getIconByType(type) {
+        getIconByType(type) {
             const iconMap = {
                 'success': 'fas fa-check-circle',
                 'info': 'fas fa-info-circle',
@@ -510,7 +521,7 @@ getIconByType(type) {
         handleNotificationAction(command) {
             const { action, mrid } = command
             const notification = this.notifications.find(n => n.mrid === mrid)
-            
+
             if (!notification) return
 
             switch (action) {
@@ -1125,8 +1136,13 @@ getIconByType(type) {
 }
 
 @keyframes fa-spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .notification-list {
