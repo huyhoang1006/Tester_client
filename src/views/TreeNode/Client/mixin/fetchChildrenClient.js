@@ -96,6 +96,8 @@ export default {
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
+                                // Đánh dấu rằng node này đã có đầy đủ thông tin properties từ API
+                                row._hasFullProperties = true
                             })
                             newRows.push(...assetTransformerReturn.data)
                         }
@@ -112,6 +114,8 @@ export default {
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
+                                // Đánh dấu rằng node này đã có đầy đủ thông tin properties từ API
+                                row._hasFullProperties = true
                             })
                             newRows.push(...assetSurgeReturn.data)
                         }
@@ -128,6 +132,8 @@ export default {
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
+                                // Đánh dấu rằng node này đã có đầy đủ thông tin properties từ API
+                                row._hasFullProperties = true
                             })
                             newRows.push(...assetBushingReturn.data)
                         }
@@ -144,6 +150,8 @@ export default {
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
+                                // Đánh dấu rằng node này đã có đầy đủ thông tin properties từ API
+                                row._hasFullProperties = true
                             })
                             newRows.push(...assetVtReturn.data)
                         }
@@ -161,6 +169,8 @@ export default {
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
+                                // Đánh dấu rằng node này đã có đầy đủ thông tin properties từ API
+                                row._hasFullProperties = true
                             })
                             newRows.push(...dataArray)
                         }
@@ -177,6 +187,8 @@ export default {
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
+                                // Đánh dấu rằng node này đã có đầy đủ thông tin properties từ API
+                                row._hasFullProperties = true
                             })
                             newRows.push(...assetPowerCableReturn.data)
                         }
@@ -193,6 +205,8 @@ export default {
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
+                                // Đánh dấu rằng node này đã có đầy đủ thông tin properties từ API
+                                row._hasFullProperties = true
                             })
                             newRows.push(...assetRotatingMachineReturn.data)
                         }
@@ -204,6 +218,8 @@ export default {
                                 row.asset = 'Capacitor'
                                 let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
+                                // Đánh dấu rằng node này đã có đầy đủ thông tin properties từ API
+                                row._hasFullProperties = true
                             })
                             newRows.push(...assetCapacitorReturn.data)
                         }
@@ -220,6 +236,8 @@ export default {
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
+                                // Đánh dấu rằng node này đã có đầy đủ thông tin properties từ API
+                                row._hasFullProperties = true
                             })
                             newRows.push(...assetReactorReturn.data)
                         }
@@ -236,6 +254,8 @@ export default {
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
+                                // Đánh dấu rằng node này đã có đầy đủ thông tin properties từ API
+                                row._hasFullProperties = true
                             })
                             newRows.push(...assetCurrentTransformerReturn.data)
                         }
@@ -252,6 +272,8 @@ export default {
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
+                                // Đánh dấu rằng node này đã có đầy đủ thông tin properties từ API
+                                row._hasFullProperties = true
                             })
                             newRows.push(...assetBreakerReturn.data)
                         }
@@ -300,6 +322,7 @@ export default {
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
+                                row._hasFullProperties = true
                             })
                             newRows.push(...assetTransformerReturn.data)
                         }
@@ -315,6 +338,7 @@ export default {
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
+                                row._hasFullProperties = true
                             })
                             newRows.push(...assetSurgeReturn.data)
                         }
@@ -330,6 +354,7 @@ export default {
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
+                                row._hasFullProperties = true
                             })
                             newRows.push(...assetBushingReturn.data)
                         }
@@ -345,6 +370,7 @@ export default {
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
+                                row._hasFullProperties = true
                             })
                             newRows.push(...assetVtReturn.data)
                         }
@@ -361,6 +387,7 @@ export default {
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
+                                row._hasFullProperties = true
                             })
                             newRows.push(...dataArray)
                         }
@@ -376,6 +403,7 @@ export default {
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
+                                row._hasFullProperties = true
                             })
                             newRows.push(...assetPowerCableReturn.data)
                         }
@@ -391,6 +419,7 @@ export default {
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
+                                row._hasFullProperties = true
                             })
                             newRows.push(...assetCurrentTransformerReturn.data)
                         }
@@ -406,6 +435,7 @@ export default {
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
+                                row._hasFullProperties = true
                             })
                             newRows.push(...assetRotatingMachineReturn.data)
                         }
@@ -421,6 +451,7 @@ export default {
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
+                                row._hasFullProperties = true
                             })
                             newRows.push(...assetCapacitorReturn.data)
                         }
@@ -437,6 +468,7 @@ export default {
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
+                                row._hasFullProperties = true
                             })
                             newRows.push(...assetReactorReturn.data)
                         }
@@ -457,6 +489,9 @@ export default {
                                     mrid: clickedRow.mrid,
                                     parent: clickedRow.name
                                 })
+                                // Đánh dấu rằng node này đã có đầy đủ thông tin properties từ API
+                                // Để tránh gọi API lại trong showPropertiesDataClient
+                                row._hasFullProperties = true
                             })
                             newRows.push(...organisationReturn.data)
                         }

@@ -9,7 +9,7 @@ export default {
             
             try {
                 // Gọi showPropertiesDataClient để cập nhật Object Properties
-                // await this.showPropertiesDataClient(newTab)
+                await this.showPropertiesDataClient(newTab)
             } catch (error) {
                 console.error('Error updating properties for tab:', error)
             }

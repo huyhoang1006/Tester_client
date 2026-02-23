@@ -67,57 +67,44 @@ export const insertParentOrganizationTransaction = async (parentOrganization, db
     })
 }
 
-// Lấy parent Organization theo mrid (gộp cả cha và thông tin address, city)
+// Lấy parent Organization theo mrid (gộp cả cha và thông tin address, city, phone, email, geo)
 export const getParentOrganizationById = async (mrid) => {
     try {
-        const orgResult = await organisationFunc.getOrganisationById(mrid)
-        if (!orgResult.success) {
-            return { success: false, data: null, message: 'Organisation not found' }
-        }
-        
-        // Lấy thêm thông tin address và city từ các bảng liên quan
-        const orgData = orgResult.data
-        
-        // Lấy street_address, street_detail và town_detail nếu có
-        if (orgData.street_address) {
+        return new Promise((resolve, reject) => {
             const query = `
                 SELECT 
+                    o.*, 
+                    i.*,
                     sd.address_general as address,
                     td.city,
-                    td.state_or_province,
+                    td.state_or_province as state_province,
                     td.country,
                     td.ward_or_commune,
                     td.district_or_town,
-                    sa.postal_code
-                FROM street_address sa
+                    tn.itu_phone as phone_no,
+                    ea.email as email,
+                    (SELECT x FROM geo_map WHERE organisation_id = o.mrid ORDER BY mrid ASC LIMIT 1) as geo_x,
+                    (SELECT y FROM geo_map WHERE organisation_id = o.mrid ORDER BY mrid ASC LIMIT 1) as geo_y
+                FROM organisation o
+                JOIN identified_object i ON o.mrid = i.mrid
+                LEFT JOIN street_address sa ON o.street_address = sa.mrid
                 LEFT JOIN street_detail sd ON sa.street_detail = sd.mrid
                 LEFT JOIN town_detail td ON sa.town_detail = td.mrid
-                WHERE sa.mrid = ?
+                LEFT JOIN electronic_address ea ON o.electronic_address = ea.mrid
+                LEFT JOIN telephone_number tn ON o.phone = tn.mrid
+                WHERE o.mrid = ?
             `
             
-            const addressResult = await new Promise((resolve, reject) => {
-                db.get(query, [orgData.street_address], (err, row) => {
-                    if (err) {
-                        console.warn('Failed to fetch address details:', err)
-                        resolve(null)
-                    } else {
-                        resolve(row)
-                    }
-                })
+            db.get(query, [mrid], (err, row) => {
+                if (err) {
+                    return reject({ success: false, err, message: 'Get parent organization failed' })
+                }
+                if (!row) {
+                    return resolve({ success: false, data: null, message: 'Parent organization not found' })
+                }
+                return resolve({ success: true, data: row, message: 'Get parent organization completed' })
             })
-            
-            if (addressResult) {
-                orgData.address = addressResult.address || null
-                orgData.city = addressResult.city || null
-                orgData.state_or_province = addressResult.state_or_province || null
-                orgData.country = addressResult.country || null
-                orgData.ward_or_commune = addressResult.ward_or_commune || null
-                orgData.district_or_town = addressResult.district_or_town || null
-                orgData.postal_code = addressResult.postal_code || null
-            }
-        }
-        
-        return { success: true, data: orgData, message: 'Get parent organization completed' }
+        })
     } catch (err) {
         console.log("Get parent organization error:", err)
         return { success: false, err, message: 'Get parent organization failed' }
@@ -133,16 +120,21 @@ export const getParentOrganizationByParentId = async (parentId) => {
                 i.*,
                 sd.address_general as address,
                 td.city,
-                td.state_or_province,
+                td.state_or_province as state_province,
                 td.country,
                 td.ward_or_commune,
                 td.district_or_town,
-                sa.postal_code
+                tn.itu_phone as phone_no,
+                ea.email as email,
+                (SELECT x FROM geo_map WHERE organisation_id = o.mrid ORDER BY mrid ASC LIMIT 1) as geo_x,
+                (SELECT y FROM geo_map WHERE organisation_id = o.mrid ORDER BY mrid ASC LIMIT 1) as geo_y
              FROM organisation o
              JOIN identified_object i ON o.mrid = i.mrid
              LEFT JOIN street_address sa ON o.street_address = sa.mrid
              LEFT JOIN street_detail sd ON sa.street_detail = sd.mrid
              LEFT JOIN town_detail td ON sa.town_detail = td.mrid
+             LEFT JOIN electronic_address ea ON o.electronic_address = ea.mrid
+             LEFT JOIN telephone_number tn ON o.phone = tn.mrid
              WHERE o.parent_organisation = ?`,
             [parentId],
             (err, rows) => {
@@ -152,6 +144,7 @@ export const getParentOrganizationByParentId = async (parentId) => {
                 if (!rows || rows.length === 0) {
                     return resolve({ success: true, data: [], message: 'No parent organizations found' })
                 }
+               
                 return resolve({ success: true, data: rows, message: 'Get parent organizations by parentId completed' })
             }
         )

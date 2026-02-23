@@ -1,21 +1,13 @@
-import * as BreakerMapping from '@/views/Mapping/Breaker/index'
-import * as TransformerMapping from '@/views/Mapping/Transformer/index'
+
 import * as SubstationMapping from '@/views/Mapping/Substation/index'
-import * as SurgeArresterMapping from '@/views/Mapping/SurgeArrester/index'
-import * as PowerCableMapping from '@/views/Mapping/PowerCable/index'
-import * as DisconnectorMapping from '@/views/Mapping/Disconnector/index'
-import * as CapacitorMapping from '@/views/Mapping/Capacitor/index'
-import * as VoltageTransformerMapping from '@/views/Mapping/VoltageTransformer/index'
-import * as CurrentTransformerMapping from '@/views/Mapping/CurrentTransformer/index'
-import * as ReactorMapping from '@/views/Mapping/Reactor/index'
-import * as BushingMapping from '@/views/Mapping/Bushing/index'
-import * as rotatingMachineMapping from "@/views/Mapping/RotatingMachine/index"
 
 
 export default {
     methods: {
         async doubleClickNode(node) {
             await this.showDataClient(node)
+            // showPropertiesDataClient được gọi tự động từ single click event
+            // Không cần gọi lại ở đây để tránh duplicate
             // await this.showPropertiesDataClient(node)
         },
         async showDataClient(node) {
@@ -57,93 +49,94 @@ export default {
             this.jobPropertySignClient = false
             if (node.asset != undefined) {
                 this.assetPropertySignClient = true
-                // Fetch dữ liệu asset từ API để lấy đầy đủ thông tin
-                let assetData = null
-                try {
-                    if (node.asset === 'Transformer') {
-                        // @ts-ignore
-                        const entityRes = await window.electronAPI.getTransformerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            assetData = TransformerMapping.transformerEntityToDto(entityRes.data)
-                        }
-                    } else if (node.asset === 'Bushing') {
-                        // @ts-ignore
-                        const entityRes = await window.electronAPI.getBushingEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            assetData = BushingMapping.mapEntityToDto(entityRes.data)
-                        }
-                    } else if (node.asset === 'Circuit breaker') {
-                        // @ts-ignore
-                        const entityRes = await window.electronAPI.getBreakerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            assetData = BreakerMapping.mapEntityToDto(entityRes.data)
-                        }
-                    } else if (node.asset === 'Surge arrester') {
-                        // @ts-ignore
-                        const entityRes = await window.electronAPI.getSurgeArresterEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            assetData = SurgeArresterMapping.mapEntityToDto(entityRes.data)
-                        }
-                    } else if (node.asset === 'Power cable') {
-                        // @ts-ignore
-                        const entityRes = await window.electronAPI.getPowerCableEntityByMrid(node.mrid, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            assetData = PowerCableMapping.mapEntityToDto(entityRes.data)
-                        }
-                    } else if (node.asset === 'Disconnector') {
-                        // @ts-ignore
-                        const entityRes = await window.electronAPI.getDisconnectorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            assetData = DisconnectorMapping.disconnectorEntityToDto(entityRes.data)
-                        }
-                    } else if (node.asset === 'Capacitor') {
-                        // @ts-ignore
-                        const entityRes = await window.electronAPI.getCapacitorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            assetData = CapacitorMapping.mapEntityToDto(entityRes.data)
-                        }
-                    } else if (node.asset === 'Voltage transformer') {
-                        // @ts-ignore
-                        const entityRes = await window.electronAPI.getVoltageTransformerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            assetData = VoltageTransformerMapping.mapEntityToDto(entityRes.data)
-                        }
-                    } else if (node.asset === 'Current transformer') {
-                        // @ts-ignore
-                        const entityRes = await window.electronAPI.getCurrentTransformerEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            assetData = CurrentTransformerMapping.mapEntityToDto(entityRes.data)
-                        }
-                    } else if (node.asset === 'Reactor') {
-                        // @ts-ignore
-                        const entityRes = await window.electronAPI.getReactorEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            assetData = ReactorMapping.mapEntityToDto(entityRes.data)
-                        }
-                    } else if (node.asset === 'Rotating machine') {
-                        // @ts-ignore
-                        const entityRes = await window.electronAPI.getRotatingMachineEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (entityRes.success && entityRes.data) {
-                            assetData = rotatingMachineMapping.mapEntityToDto(entityRes.data)
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error fetching asset data:', error)
-                }
-
-                // Map từ DTO nếu có, nếu không thì map từ node
-                if (assetData && assetData.properties) {
-                    await this.mappingAssetPropertiesClient(assetData.properties)
-                    // Set asset name từ node.asset
-                    this.assetPropertiesClient.asset = node.asset || ''
-                } else {
-                    await this.mappingAssetPropertiesClient(node)
-                }
+                
+                // Tất cả asset đều có _hasFullProperties = true từ fetchChildren
+                // Không cần gọi API, dùng trực tiếp data từ node
+                 console.log('[OPTIMIZED] Using existing asset data from fetchChildren, no API call needed')
+                // console.log('[DEBUG] Asset data:', {
+                //     apparatus_id: node.apparatus_id,
+                //     serial_number: node.serial_number,
+                //     manufacturer: node.manufacturer,
+                //     manufacturer_type: node.manufacturer_type || node.asset_info_manufacturer_type,
+                //     manufacturing_year: node.manufacturing_year,
+                //     country_of_origin: node.country_of_origin
+                // })
+                
+                // Map trực tiếp từ node
+                await this.mappingAssetPropertiesClient(node)
+                this.assetPropertiesClient.asset = node.asset || ''
 
                 // Tìm parent thực sự từ cây dữ liệu thay vì dùng node.parent
                 const parentNode = node.parentId ? this.findNodeById(node.parentId, this.organisationClientList) : null
                 if (parentNode) {
-                    await this.mappingPropertiesClient(parentNode)
+                    let parentDetailData = parentNode
+                    
+                    // Nếu parent là Substation, cần lấy đầy đủ thông tin
+                    if (parentNode.mode === 'substation') {
+                        // Kiểm tra xem đã cache entity data chưa
+                        if (parentNode._cachedEntityData) {
+                            console.log('[OPTIMIZED] Using cached substation entity data')
+                            parentDetailData = parentNode._cachedEntityData
+                        } else {
+                            try {
+                                console.log('[API CALL] Fetching parent substation detail for asset')
+                                // @ts-ignore
+                                const res = await window.electronAPI.getSubstationEntityByMrid(parentNode.mrid, this.$store.state.user.user_id, parentNode.parentId)
+                                if (res.success && res.data) {
+                                    parentDetailData = SubstationMapping.mapEntityToDto(res.data)
+                                    // Cache kết quả vào node để lần sau không cần gọi API
+                                    parentNode._cachedEntityData = parentDetailData
+                                }
+                            } catch (error) {
+                                console.error('Error fetching parent substation detail:', error)
+                            }
+                        }
+                    }
+                    // Nếu parent là Organisation, kiểm tra xem đã có đầy đủ thông tin chưa
+                    else if (parentNode.mode === 'organisation') {
+                        if (parentNode._hasFullProperties) {
+                            console.log('[OPTIMIZED] Using existing parent organisation data')
+                            parentDetailData = parentNode
+                        } else {
+                            try {
+                                console.log('[API CALL] Fetching parent organisation detail for asset')
+                                // @ts-ignore
+                                const res = await window.electronAPI.getOrganisationEntityByMrid(parentNode.mrid)
+                                if (res.success && res.data) {
+                                    const orgMapping = await import('@/views/Mapping/Organisation/index')
+                                    parentDetailData = orgMapping.OrgEntityToOrgDto(res.data)
+                                }
+                            } catch (error) {
+                                console.error('Error fetching parent organisation detail:', error)
+                            }
+                        }
+                    }
+                    // Nếu parent là Bay hoặc VoltageLevel, lấy thông tin từ grandparent (Substation)
+                    else if (parentNode.mode === 'bay' || parentNode.mode === 'voltageLevel') {
+                        const grandParentNode = parentNode.parentId ? this.findNodeById(parentNode.parentId, this.organisationClientList) : null
+                        if (grandParentNode && grandParentNode.mode === 'substation') {
+                            // Kiểm tra xem đã cache entity data chưa
+                            if (grandParentNode._cachedEntityData) {
+                                console.log('[OPTIMIZED] Using cached grandparent substation entity data')
+                                parentDetailData = grandParentNode._cachedEntityData
+                            } else {
+                                try {
+                                    console.log('[API CALL] Fetching grandparent substation detail for asset in bay/voltageLevel')
+                                    // @ts-ignore
+                                    const res = await window.electronAPI.getSubstationEntityByMrid(grandParentNode.mrid, this.$store.state.user.user_id, grandParentNode.parentId)
+                                    if (res.success && res.data) {
+                                        parentDetailData = SubstationMapping.mapEntityToDto(res.data)
+                                        // Cache kết quả vào node để lần sau không cần gọi API
+                                        grandParentNode._cachedEntityData = parentDetailData
+                                    }
+                                } catch (error) {
+                                    console.error('Error fetching grandparent substation detail:', error)
+                                }
+                            }
+                        }
+                    }
+                    
+                    await this.mappingPropertiesClient(parentDetailData)
                 }
                 await this.loadPathMapClient(node)
                 // Với asset: ưu tiên serial_number/serial_no, nếu không có thì dùng name
@@ -200,31 +193,57 @@ export default {
             } else {
                 let detailData = node
 
-                // Nếu là Substation, gọi API lấy full thông tin
+                // Nếu là Substation, kiểm tra xem đã có đầy đủ thông tin từ fetchChildren chưa
                 if (node.mode === 'substation') {
-                    try {
-                        // @ts-ignore
-                        const res = await window.electronAPI.getSubstationEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
-                        if (res.success && res.data) {
-                            // Map từ Entity sang DTO để có các trường street, city, email...
-                            detailData = SubstationMapping.mapEntityToDto(res.data)
+                    // Kiểm tra xem đã cache entity data chưa
+                    if (node._cachedEntityData) {
+                        console.log('[OPTIMIZED] Using cached substation entity data')
+                        detailData = node._cachedEntityData
+                    } else {
+                        try {
+                            console.log('[API CALL] Fetching substation detail from API')
+                            // @ts-ignore
+                            const res = await window.electronAPI.getSubstationEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
+                            if (res.success && res.data) {
+                                // Map từ Entity sang DTO để có các trường street, city, email...
+                                detailData = SubstationMapping.mapEntityToDto(res.data)
+                                // Cache kết quả vào node để lần sau không cần gọi API
+                                node._cachedEntityData = detailData
+                            }
+                        } catch (error) {
+                            console.error('Error fetching substation detail:', error)
                         }
-                    } catch (error) {
-                        console.error('Error fetching substation detail:', error)
                     }
                 }
-                // Nếu là Organisation, gọi API lấy full thông tin (bao gồm address, city, state, country)
+                // Nếu là Organisation, kiểm tra xem đã có đầy đủ thông tin từ fetchChildren chưa
                 else if (node.mode === 'organisation') {
-                    try {
-                        // @ts-ignore
-                        const res = await window.electronAPI.getOrganisationEntityByMrid(node.mrid)
-                        if (res.success && res.data) {
-                            // Map từ Entity sang DTO để có các trường address, city, state, country...
-                            const orgMapping = await import('@/views/Mapping/Organisation/index')
-                            detailData = orgMapping.OrgEntityToOrgDto(res.data)
+                    // Nếu node đã có flag _hasFullProperties = true, nghĩa là fetchChildren đã lấy đầy đủ thông tin
+                    // Không cần gọi API lại, tận dụng luôn dữ liệu đã có
+                    if (node._hasFullProperties) {
+                        console.log('[OPTIMIZED] Using existing organisation data from fetchChildren, no API call needed')
+                        console.log('[DEBUG] Node data:', {
+                            name: node.name,
+                            geo_x: node.geo_x,
+                            geo_y: node.geo_y,
+                            phone_no: node.phone_no,
+                            email: node.email
+                        })
+                        detailData = node
+                    } else {
+                        // Trường hợp node chưa có đầy đủ thông tin (ví dụ: root node, hoặc node được load từ nguồn khác)
+                        // Mới gọi API để lấy
+                        try {
+                            console.log('[API CALL] Fetching organisation detail from API')
+                            // @ts-ignore
+                            const res = await window.electronAPI.getOrganisationEntityByMrid(node.mrid)
+                            if (res.success && res.data) {
+                                // Map từ Entity sang DTO để có các trường address, city, state, country...
+                                const orgMapping = await import('@/views/Mapping/Organisation/index')
+                                detailData = orgMapping.OrgEntityToOrgDto(res.data)
+                            }
+                        } catch (error) {
+                            console.error('Error fetching organisation detail:', error)
                         }
-                    } catch (error) {
-                        console.error('Error fetching organisation detail:', error)
                     }
                 }
 
