@@ -29,9 +29,9 @@ export const getAllNotifications = () => {
 }
 
 export const getNotificationById = () => {
-    ipcMain.handle('getNotificationById', async function (event, id) {
+    ipcMain.handle('getNotificationById', async function (event, mrid) {
         try {
-            const rs = await entityFunc.notificationEntityFunc.getNotificationById(id)
+            const rs = await entityFunc.notificationEntityFunc.getNotificationById(mrid)
             if (rs.success == true) {
                 return {
                     success: true,
@@ -81,9 +81,9 @@ export const insertNotification = () => {
 }
 
 export const updateNotification = () => {
-    ipcMain.handle('updateNotification', async function (event, id, data) {
+    ipcMain.handle('updateNotification', async function (event, mrid, data) {
         try {
-            const rs = await entityFunc.notificationEntityFunc.updateNotification(id, data)
+            const rs = await entityFunc.notificationEntityFunc.updateNotification(mrid, data)
             if (rs.success == true) {
                 return {
                     success: true,
@@ -107,9 +107,9 @@ export const updateNotification = () => {
 }
 
 export const markAsRead = () => {
-    ipcMain.handle('markNotificationAsRead', async function (event, id) {
+    ipcMain.handle('markNotificationAsRead', async function (event, mrid) {
         try {
-            const rs = await entityFunc.notificationEntityFunc.markAsRead(id)
+            const rs = await entityFunc.notificationEntityFunc.markAsRead(mrid)
             if (rs.success == true) {
                 return {
                     success: true,
@@ -131,10 +131,10 @@ export const markAsRead = () => {
     })
 }
 
-export const hideNotification = () => {
-    ipcMain.handle('hideNotification', async function (event, id) {
+export const hmrideNotification = () => {
+    ipcMain.handle('hmrideNotification', async function (event, mrid) {
         try {
-            const rs = await entityFunc.notificationEntityFunc.hideNotification(id)
+            const rs = await entityFunc.notificationEntityFunc.hmrideNotification(mrid)
             if (rs.success == true) {
                 return {
                     success: true,
@@ -157,9 +157,9 @@ export const hideNotification = () => {
 }
 
 export const deleteNotification = () => {
-    ipcMain.handle('deleteNotification', async function (event, id) {
+    ipcMain.handle('deleteNotification', async function (event, mrid) {
         try {
-            const rs = await entityFunc.notificationEntityFunc.deleteNotification(id)
+            const rs = await entityFunc.notificationEntityFunc.deleteNotification(mrid)
             if (rs.success == true) {
                 return {
                     success: true,
@@ -187,6 +187,6 @@ export const active = () => {
     insertNotification()
     updateNotification()
     markAsRead()
-    hideNotification()
+    hmrideNotification()
     deleteNotification()
 }
