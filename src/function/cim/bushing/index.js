@@ -118,10 +118,20 @@ export const getBushingByPsrId = (psrId) => {
         const query = `
             SELECT 
                 sa.*, 
-                a.* 
+                a.*,
+                io.name AS apparatus_id,
+                io.alias_name,
+                io.description,
+                pam.manufacturer,
+                ai.manufacturer_type AS asset_info_manufacturer_type,
+                ld.manufactured_date AS manufacturing_year
             FROM bushing sa
             INNER JOIN asset a ON sa.mrid = a.mrid
             INNER JOIN asset_psr ap ON a.mrid = ap.asset_id
+            LEFT JOIN identified_object io ON a.mrid = io.mrid
+            LEFT JOIN product_asset_model pam ON a.product_asset_model = pam.mrid
+            LEFT JOIN asset_info ai ON a.asset_info = ai.mrid
+            LEFT JOIN lifecycle_date ld ON a.lifecycle_date = ld.mrid
             WHERE ap.psr_id = ?
         `;
 
