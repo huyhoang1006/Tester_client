@@ -25,14 +25,18 @@
                         <el-dropdown-menu slot="dropdown" class="notification-dropdown-menu">
                             <div class="notification-header">
                                 <span class="notification-title">Thông báo</span>
-                                <span class="notification-count">{{ notifications.length }} thông báo</span>
+                                <div class="notification-header-actions">
+                                    <el-button type="text" size="mini" @click.stop="loadNotifications" title="Tải lại">
+                                        <i class="fas fa-sync-alt" :class="{ 'fa-spin': isReloading }"></i>
+                                    </el-button>
+                                </div>
                             </div>
                             <div class="notification-list">
-                                <div v-for="notification in displayedNotifications" :key="notification.mrid"
-                                    class="notification-item" :class="{ 'unread': notification.status !== 'read' }">
-                                    <div class="notification-content" @click.stop="markAsRead(notification.mrid)">
+<div v-for="notification in displayedNotifications" :key="notification.mrid"
+                                    class="notification-item" :class="{ 'unread': notification.status === 'unread' }">
+                                    <div class="notification-content" @click.stop="openNotificationDetail(notification)">
                                         <div class="notification-icon">
-                                            <i :class="notification.type"></i>
+                                            <i :class="notification.icon"></i>
                                         </div>
                                         <div class="notification-text">
                                             <div class="notification-message">{{ notification.message }}</div>
@@ -48,9 +52,9 @@
                                                 <i class="fas fa-plus-circle"></i>
                                                 Hiện thêm thông báo
                                             </el-dropdown-item>
-                                            <el-dropdown-item @click.native.stop="hideNotification(notification.mrid)">
-                                                <i class="fas fa-eye-slash"></i>
-                                                Ẩn thông báo
+                                            <el-dropdown-item @click.native.stop="markAsRead(notification.mrid)">
+                                                <i class="fas fa-check"></i>
+                                                Đánh dấu đã đọc
                                             </el-dropdown-item>
                                             <el-dropdown-item @click.native.stop="deleteNotification(notification.mrid)">
                                                 <i class="fas fa-trash"></i>
@@ -177,6 +181,48 @@
                 </el-button>
             </span>
         </el-dialog>
+
+        <!-- Notification Detail Dialog -->
+        <el-dialog 
+            custom-class="app-dialog" 
+            title="Chi tiết thông báo" 
+            :visible.sync="dialogNotificationDetail" 
+            :modal="true"
+            append-to-body
+            width="500px">
+            <div v-if="selectedNotification" class="notification-detail">
+                <div class="notification-detail-header">
+                    <div class="notification-detail-icon">
+                        <i :class="getNotificationIcon(selectedNotification.type)"></i>
+                    </div>
+                    <div class="notification-detail-title">
+                        <h3>{{ selectedNotification.name }}</h3>
+                        <span class="notification-detail-status" :class="selectedNotification.status">
+                            {{ selectedNotification.status === 'read' ? 'Đã đọc' : 'Chưa đọc' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="notification-detail-body">
+                    <p>{{ selectedNotification.message }}</p>
+                </div>
+                <div class="notification-detail-meta">
+                    <div class="notification-detail-type">
+                        <strong>Loại:</strong> {{ selectedNotification.type }}
+                    </div>
+                    <div class="notification-detail-time" v-if="selectedNotification.created_at">
+                        <strong>Thời gian:</strong> {{ formatDateTime(selectedNotification.created_at) }}
+                    </div>
+                </div>
+            </div>
+            <span slot="footer" class="dialog-footer custom-footer">
+                <el-button class="footer-btn" size="small" @click="dialogNotificationDetail = false">
+                    Đóng
+                </el-button>
+                <el-button class="footer-btn" size="small" type="primary" @click="loadNotifications">
+                    <i class="fas fa-sync-alt"></i> Tải lại
+                </el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 
@@ -218,10 +264,13 @@ export default {
                 version: '',
                 releaseNotes: ''
             },
-            notificationLimit: 10,
+notificationLimit: 10,
             currentPage: 1,
             itemsPerPage: 10,
-            notifications: []
+            notifications: [],
+            isReloading: false,
+            dialogNotificationDetail: false,
+            selectedNotification: null
         }
     },
     mounted() {
@@ -243,11 +292,11 @@ export default {
     // },
     computed: {
         ...mapState(['user', 'serverAddr']),
-        unreadCount() {
-            return this.notifications.filter(n => n.status !== 'read' && n.status !== 'hidden').length
+unreadCount() {
+            return this.notifications.filter(n => n.status === 'unread').length
         },
-        displayedNotifications() {
-            const visibleNotifications = this.notifications.filter(n => n.status !== 'hidden')
+displayedNotifications() {
+            const visibleNotifications = this.notifications
             const startIndex = (this.currentPage - 1) * this.itemsPerPage
             
             // Nếu trang 1 đã hiển thị 15, thì trang 2 bắt đầu từ index 15
@@ -257,16 +306,16 @@ export default {
             const itemsToShow = this.currentPage === 1 ? this.notificationLimit : this.itemsPerPage
             
             return visibleNotifications.slice(actualStartIndex, actualStartIndex + itemsToShow)
-        },
+},
         totalPages() {
-            const visibleCount = this.notifications.filter(n => n.status !== 'hidden').length
+            const visibleCount = this.notifications.length
             // Nếu trang 1 hiển thị 15, tổng số trang phải tính lại
             const page1Items = this.notificationLimit
             const remainingItems = visibleCount - page1Items
             return remainingItems > 0 ? 2 : 1
         },
         canLoadMore() {
-            const visibleNotifications = this.notifications.filter(n => n.status !== 'hidden')
+            const visibleNotifications = this.notifications
             const maxForCurrentPage = this.itemsPerPage + 5 // 10 + 5 = 15 max
             return this.currentPage === 1 && 
                    this.notificationLimit < maxForCurrentPage && 
@@ -354,7 +403,8 @@ export default {
         handleNotificationDropdown() {
             this.$refs.notificationDropdown.handleClick();
         },
-        async loadNotifications() {
+async loadNotifications() {
+            this.isReloading = true
             try {
                 const response = await window.electronAPI.getAllNotifications()
                 if (response.success) {
@@ -363,16 +413,27 @@ export default {
                         name: n.name,
                         message: n.message,
                         type: n.type,
-                        status: n.status,
+                        status: n.status || 'unread',
+                        created_at: n.created_at,
                         icon: this.getIconByType(n.type)
                     }))
+                    this.$message.success('Đã tải lại thông báo')
                 }
             } catch (error) {
                 console.error('Error loading notifications:', error)
                 this.$message.error('Không thể tải thông báo')
+            } finally {
+                this.isReloading = false
             }
         },
-        getIconByType(type) {
+        openNotificationDetail(notification) {
+            this.selectedNotification = notification
+            this.dialogNotificationDetail = true
+            if (notification.status !== 'read') {
+                this.markAsRead(notification.mrid)
+            }
+        },
+getIconByType(type) {
             const iconMap = {
                 'success': 'fas fa-check-circle',
                 'info': 'fas fa-info-circle',
@@ -387,6 +448,21 @@ export default {
                 'report': 'fas fa-file-alt'
             }
             return iconMap[type] || 'fas fa-bell'
+        },
+        getNotificationIcon(type) {
+            return this.getIconByType(type)
+        },
+        formatDateTime(dateStr) {
+            if (!dateStr) return ''
+            const date = new Date(dateStr)
+            if (isNaN(date.getTime())) return dateStr
+            return date.toLocaleString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            })
         },
         async markAsRead(notificationId) {
             try {
@@ -1029,6 +1105,30 @@ export default {
     color: rgba(255, 255, 255, 0.6);
 }
 
+.notification-header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.notification-header-actions .el-button {
+    color: rgba(255, 255, 255, 0.7);
+    padding: 4px 8px;
+}
+
+.notification-header-actions .el-button:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.notification-header-actions .fa-spin {
+    animation: fa-spin 1s linear infinite;
+}
+
+@keyframes fa-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
 .notification-list {
     max-height: 480px;
     overflow-y: auto;
@@ -1070,8 +1170,24 @@ export default {
     background: rgba(30, 91, 184, 0.15);
 }
 
+.notification-item.unread .notification-message {
+    font-weight: 600;
+}
+
+.notification-item.unread .notification-text {
+    color: #ffffff;
+}
+
 .notification-item.unread:hover {
     background: rgba(30, 91, 184, 0.25);
+}
+
+.notification-item:not(.unread) {
+    opacity: 0.7;
+}
+
+.notification-item:not(.unread):hover {
+    opacity: 1;
 }
 
 .notification-content {
@@ -1209,5 +1325,91 @@ export default {
 .notification-action-menu.el-dropdown-menu .el-dropdown-menu__item:hover {
     background: rgba(255, 255, 255, 0.2) !important;
     color: #ffffff !important;
+}
+
+.notification-detail {
+    color: #ffffff;
+}
+
+.notification-detail-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.notification-detail-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(30, 91, 184, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.notification-detail-icon i {
+    font-size: 24px;
+    color: #ffffff;
+}
+
+.notification-detail-title {
+    flex: 1;
+}
+
+.notification-detail-title h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.notification-detail-status {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.notification-detail-status.read {
+    background: rgba(76, 175, 80, 0.2);
+    color: #81c784;
+}
+
+.notification-detail-status.unread {
+    background: rgba(255, 152, 0, 0.2);
+    color: #ffb74d;
+}
+
+.notification-detail-body {
+    margin-bottom: 16px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    line-height: 1.6;
+}
+
+.notification-detail-body p {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.notification-detail-type {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.notification-detail-meta {
+    display: flex;
+    gap: 20px;
+    margin-top: 12px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.notification-detail-time {
+    color: rgba(255, 255, 255, 0.6);
 }
 </style>

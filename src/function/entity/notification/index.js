@@ -20,13 +20,14 @@ export const getNotificationById = async (mrid) => {
 }
 
 export const insertNotification = async (entity) => {
+    const createdAt = entity.created_at || new Date().toISOString()
     return new Promise((resolve, reject) => {
         db.run(
-            `INSERT INTO notification (mrid, name, message, type, status) VALUES (?, ?, ?, ?, ?)`,
-            [entity.mrid, entity.name, entity.message, entity.type, entity.status],
+            `INSERT INTO notification (mrid, name, message, type, status, created_at) VALUES (?, ?, ?, ?, ?, ?)`,
+            [entity.mrid, entity.name, entity.message, entity.type, entity.status || 'unread', createdAt],
             function (err) {
                 if (err) reject(err)
-                else resolve({ success: true, data: entity, message: 'Notification inserted successfully' })
+                else resolve({ success: true, data: { ...entity, created_at: createdAt }, message: 'Notification inserted successfully' })
             }
         )
     })
