@@ -32,7 +32,7 @@
                                     class="notification-item" :class="{ 'unread': notification.status !== 'read' }">
                                     <div class="notification-content" @click.stop="markAsRead(notification.mrid)">
                                         <div class="notification-icon">
-                                            <i :class="notification.icon"></i>
+                                            <i :class="notification.type"></i>
                                         </div>
                                         <div class="notification-text">
                                             <div class="notification-message">{{ notification.message }}</div>

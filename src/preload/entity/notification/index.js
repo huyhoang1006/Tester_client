@@ -5,23 +5,23 @@ export const notificationEntityPreload = () => {
         getAllNotifications: async () => {
             return await ipcRenderer.invoke('getAllNotifications')
         },
-        getNotificationById: async (id) => {
-            return await ipcRenderer.invoke('getNotificationById', id)
+        getNotificationById: async (mrid) => {
+            return await ipcRenderer.invoke('getNotificationById', mrid)
         },
         insertNotification: async (data) => {
             return await ipcRenderer.invoke('insertNotification', data)
         },
-        updateNotification: async (id, data) => {
-            return await ipcRenderer.invoke('updateNotification', id, data)
+        updateNotification: async (mrid, data) => {
+            return await ipcRenderer.invoke('updateNotification', mrid, data)
         },
-        markNotificationAsRead: async (id) => {
-            return await ipcRenderer.invoke('markNotificationAsRead', id)
+        markNotificationAsRead: async (mrid) => {
+            return await ipcRenderer.invoke('markNotificationAsRead', mrid)
         },
-        hideNotification: async (id) => {
-            return await ipcRenderer.invoke('hideNotification', id)
+        hmrideNotification: async (mrid) => {
+            return await ipcRenderer.invoke('hmrideNotification', mrid)
         },
-        deleteNotification: async (id) => {
-            return await ipcRenderer.invoke('deleteNotification', id)
+        deleteNotification: async (mrid) => {
+            return await ipcRenderer.invoke('deleteNotification', mrid)
         }
     }
 }
