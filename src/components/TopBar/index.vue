@@ -28,15 +28,15 @@
                                 <span class="notification-count">{{ notifications.length }} thông báo</span>
                             </div>
                             <div class="notification-list">
-                                <div v-for="notification in displayedNotifications" :key="notification.id"
-                                    class="notification-item" :class="{ 'unread': !notification.read }">
-                                    <div class="notification-content" @click.stop="markAsRead(notification.id)">
+                                <div v-for="notification in displayedNotifications" :key="notification.mrid"
+                                    class="notification-item" :class="{ 'unread': notification.status !== 'read' }">
+                                    <div class="notification-content" @click.stop="markAsRead(notification.mrid)">
                                         <div class="notification-icon">
                                             <i :class="notification.icon"></i>
                                         </div>
                                         <div class="notification-text">
                                             <div class="notification-message">{{ notification.message }}</div>
-                                            <div class="notification-time">{{ notification.time }}</div>
+                                            <div class="notification-time">{{ notification.name }}</div>
                                         </div>
                                     </div>
                                     <el-dropdown trigger="click" placement="bottom-end" :append-to-body="false">
@@ -48,11 +48,11 @@
                                                 <i class="fas fa-plus-circle"></i>
                                                 Hiện thêm thông báo
                                             </el-dropdown-item>
-                                            <el-dropdown-item @click.native.stop="hideNotification(notification.id)">
+                                            <el-dropdown-item @click.native.stop="hideNotification(notification.mrid)">
                                                 <i class="fas fa-eye-slash"></i>
                                                 Ẩn thông báo
                                             </el-dropdown-item>
-                                            <el-dropdown-item @click.native.stop="deleteNotification(notification.id)">
+                                            <el-dropdown-item @click.native.stop="deleteNotification(notification.mrid)">
                                                 <i class="fas fa-trash"></i>
                                                 Xóa thông báo
                                             </el-dropdown-item>
@@ -244,10 +244,10 @@ export default {
     computed: {
         ...mapState(['user', 'serverAddr']),
         unreadCount() {
-            return this.notifications.filter(n => !n.read && !n.hidden).length
+            return this.notifications.filter(n => n.status !== 'read' && n.status !== 'hidden').length
         },
         displayedNotifications() {
-            const visibleNotifications = this.notifications.filter(n => !n.hidden)
+            const visibleNotifications = this.notifications.filter(n => n.status !== 'hidden')
             const startIndex = (this.currentPage - 1) * this.itemsPerPage
             
             // Nếu trang 1 đã hiển thị 15, thì trang 2 bắt đầu từ index 15
@@ -259,14 +259,14 @@ export default {
             return visibleNotifications.slice(actualStartIndex, actualStartIndex + itemsToShow)
         },
         totalPages() {
-            const visibleCount = this.notifications.filter(n => !n.hidden).length
+            const visibleCount = this.notifications.filter(n => n.status !== 'hidden').length
             // Nếu trang 1 hiển thị 15, tổng số trang phải tính lại
             const page1Items = this.notificationLimit
             const remainingItems = visibleCount - page1Items
             return remainingItems > 0 ? 2 : 1
         },
         canLoadMore() {
-            const visibleNotifications = this.notifications.filter(n => !n.hidden)
+            const visibleNotifications = this.notifications.filter(n => n.status !== 'hidden')
             const maxForCurrentPage = this.itemsPerPage + 5 // 10 + 5 = 15 max
             return this.currentPage === 1 && 
                    this.notificationLimit < maxForCurrentPage && 
@@ -359,12 +359,12 @@ export default {
                 const response = await window.electronAPI.getAllNotifications()
                 if (response.success) {
                     this.notifications = response.data.map(n => ({
-                        id: n.mrid,
+                        mrid: n.mrid,
+                        name: n.name,
                         message: n.message,
-                        time: n.name, // Dùng name làm time
-                        read: n.status === 'read',
-                        icon: this.getIconByType(n.type),
-                        hidden: n.status === 'hidden'
+                        type: n.type,
+                        status: n.status,
+                        icon: this.getIconByType(n.type)
                     }))
                 }
             } catch (error) {
@@ -392,9 +392,9 @@ export default {
             try {
                 const response = await window.electronAPI.markNotificationAsRead(notificationId)
                 if (response.success) {
-                    const notification = this.notifications.find(n => n.id === notificationId)
+                    const notification = this.notifications.find(n => n.mrid === notificationId)
                     if (notification) {
-                        notification.read = true
+                        notification.status = 'read'
                     }
                 }
             } catch (error) {
@@ -405,9 +405,9 @@ export default {
             try {
                 const response = await window.electronAPI.hideNotification(notificationId)
                 if (response.success) {
-                    const notification = this.notifications.find(n => n.id === notificationId)
+                    const notification = this.notifications.find(n => n.mrid === notificationId)
                     if (notification) {
-                        notification.hidden = true
+                        notification.status = 'hidden'
                     }
                     this.$message.success('Đã ẩn thông báo')
                 }
@@ -420,7 +420,7 @@ export default {
             try {
                 const response = await window.electronAPI.deleteNotification(notificationId)
                 if (response.success) {
-                    const index = this.notifications.findIndex(n => n.id === notificationId)
+                    const index = this.notifications.findIndex(n => n.mrid === notificationId)
                     if (index !== -1) {
                         this.notifications.splice(index, 1)
                     }
@@ -432,8 +432,8 @@ export default {
             }
         },
         handleNotificationAction(command) {
-            const { action, id } = command
-            const notification = this.notifications.find(n => n.id === id)
+            const { action, mrid } = command
+            const notification = this.notifications.find(n => n.mrid === mrid)
             
             if (!notification) return
 
@@ -442,11 +442,11 @@ export default {
                     this.loadMoreNotifications()
                     break
                 case 'hide':
-                    notification.hidden = true
+                    notification.status = 'hidden'
                     this.$message.success('Đã ẩn thông báo')
                     break
                 case 'delete':
-                    const index = this.notifications.findIndex(n => n.id === id)
+                    const index = this.notifications.findIndex(n => n.mrid === mrid)
                     if (index !== -1) {
                         this.notifications.splice(index, 1)
                         this.$message.success('Đã xóa thông báo')
