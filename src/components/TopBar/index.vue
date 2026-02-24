@@ -16,18 +16,38 @@
 
             <div class="right-bar">
                 <!-- Notification Bell -->
-                <div v-if="user" @click.stop="handleNotificationDropdown" class="dropdown-trigger-wrapper">
-                    <el-dropdown ref="notificationDropdown" trigger="click" placement="bottom-end"
-                        :hide-on-click="false">
-                        <div class="topbar-btn notification-btn">
-                            <i style="font-size: 15px; color: white;" class="fas fa-bell"></i>
-                            <span v-if="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
-                        </div>
+                <div 
+                v-if="user" 
+                
+                class="dropdown-trigger-wrapper"
+                style="-webkit-app-region: no-drag;"
+                >
+                    <el-dropdown 
+                    ref="notificationDropdown" 
+                    trigger="click" 
+                    placement="bottom-end"
+                    :hide-on-click="false"
+                    >
+                        <el-tooltip 
+                        content="Notifications" 
+                        placement="bottom"
+                        trigger="hover"
+                        :append-to-body="true">
+
+                            <div 
+                            class="topbar-btn notification-btn" 
+                            @click.stop="handleNotificationDropdown"
+                            >
+                                <i style="font-size: 15px; color: white;" class="fas fa-bell"></i>
+                                <span v-if="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
+                            </div>
+
+                        </el-tooltip>
                         <el-dropdown-menu slot="dropdown" class="notification-dropdown-menu">
                             <div class="notification-header">
-                                <span class="notification-title">Thông báo</span>
+                                <span class="notification-title">Notifications</span>
                                 <div class="notification-header-actions">
-                                    <el-button type="text" size="mini" @click.stop="loadNotifications" title="Tải lại">
+                                    <el-button type="text" size="mini" @click.stop="loadNotifications" title="Refresh Notifications">
                                         <i class="fas fa-sync-alt" :class="{ 'fa-spin': isReloading }"></i>
                                     </el-button>
                                 </div>
@@ -52,37 +72,38 @@
                                         <el-dropdown-menu slot="dropdown" class="notification-action-menu">
                                             <el-dropdown-item @click.native.stop="loadMoreNotifications">
                                                 <i class="fas fa-plus-circle"></i>
-                                                Hiện thêm thông báo
+                                                Show More Notifications
                                             </el-dropdown-item>
                                             <el-dropdown-item @click.native.stop="markAsRead(notification.mrid)">
                                                 <i class="fas fa-check"></i>
-                                                Đánh dấu đã đọc
+                                                Mark as Read
                                             </el-dropdown-item>
                                             <el-dropdown-item
                                                 @click.native.stop="deleteNotification(notification.mrid)">
                                                 <i class="fas fa-trash"></i>
-                                                Xóa thông báo
+                                                Delete Notification
                                             </el-dropdown-item>
                                         </el-dropdown-menu>
                                     </el-dropdown>
                                 </div>
                             </div>
                             <div class="notification-footer">
-                                <span class="notification-pagination">Trang {{ currentPage }}/{{ totalPages }}</span>
+                                <span class="notification-pagination">Page {{ currentPage }}/{{ totalPages }}</span>
                                 <div class="notification-footer-actions">
                                     <el-button v-if="currentPage < totalPages" size="mini" type="text"
                                         @click.stop="nextPage">
-                                        Trang tiếp theo
+                                        Next Page
                                     </el-button>
                                     <el-button v-if="currentPage > 1" size="mini" type="text" @click.stop="prevPage">
-                                        Trang trước
+                                        Previous Page
                                     </el-button>
                                 </div>
                             </div>
                         </el-dropdown-menu>
                     </el-dropdown>
                 </div>
-
+            
+                <el-tooltip content="Settings" placement="bottom">
                 <div @click.stop="handleDropdown" class="dropdown-trigger-wrapper">
                     <el-dropdown ref="dropdown" @command="handleCommand" trigger="click" placement="bottom-end">
                         <div class="topbar-btn">
@@ -126,16 +147,26 @@
                         </el-dropdown-menu>
                     </el-dropdown>
                 </div>
+                </el-tooltip>
+
+                <el-tooltip content="Minimize" placement="bottom">
                 <div @click="minimizeApp" class="topbar-btn">
                     <i style="font-size: 15px; color: white;" class="far fa-window-minimize"></i>
                 </div>
+                </el-tooltip>
+
+                <el-tooltip content="Maximize" placement="bottom">                
                 <div @click="maximizeApp" class="topbar-btn">
                     <i style="font-size: 15px; color: white;" v-if="isMaximized" class="far fa-window-restore"></i>
                     <i style="font-size: 15px; color: white;" v-else class="far fa-window-maximize"></i>
                 </div>
+                </el-tooltip>
+
+                <el-tooltip content="Close" placement="bottom">
                 <div @click="closeApp" class="close-icon">
                     <i style="font-size: 15px; color: white;" class="fas fa-window-close"></i>
                 </div>
+                </el-tooltip>
             </div>
         </div>
 
@@ -428,11 +459,11 @@ export default {
                         created_at: n.created_at,
                         icon: this.getIconByType(n.type)
                     }))
-                    this.$message.success('Đã tải lại thông báo')
+                    this.$message.success('Loaded notifications successfully')
                 }
             } catch (error) {
                 console.error('Error loading notifications:', error)
-                this.$message.error('Không thể tải thông báo')
+                this.$message.error('Failed to load notifications')
             } finally {
                 this.isReloading = false
             }
@@ -1427,5 +1458,11 @@ export default {
 
 .notification-detail-time {
     color: rgba(255, 255, 255, 0.6);
+}
+.topbar-btn {
+    -webkit-app-region: no-drag;
+}
+.right-bar {
+   -webkit-app-region: no-drag;
 }
 </style>
