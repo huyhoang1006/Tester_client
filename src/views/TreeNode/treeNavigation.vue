@@ -835,38 +835,30 @@ mounted() {
                 //console.log('[TREE-NAV] Before update - node._cachedEntityData:', treeNode._cachedEntityData)
                 
                 if (mode === 'asset') {
-                    // Update asset node
-                    Object.assign(treeNode, {
-                        serial_number: data.properties?.serial_no,
-                        manufacturer: data.properties?.manufacturer,
-                        type: data.properties?.type,
-                        // Set flag và cache
-                        _hasFullProperties: true,
-                        _cachedEntityData: data
-                    })
+                    // Update asset node - Dùng Vue.set để đảm bảo reactivity
+                    this.$set(treeNode, 'serial_number', data.properties?.serial_no)
+                    this.$set(treeNode, 'apparatus_id', data.properties?.apparatus_id)
+                    this.$set(treeNode, 'manufacturer', data.properties?.manufacturer)
+                    this.$set(treeNode, 'type', data.properties?.type)
+                    this.$set(treeNode, '_hasFullProperties', true)
+                    this.$set(treeNode, '_cachedEntityData', data)
                 } else if (mode === 'substation') {
-                    // Update substation node
-                    Object.assign(treeNode, {
-                        name: data.name,
-                        type: data.type,
-                        generation: data.generation,
-                        industry: data.industry,
-                        // Set flag và cache
-                        _hasFullProperties: true,
-                        _cachedEntityData: data
-                    })
+                    // Update substation node - Dùng Vue.set để đảm bảo reactivity
+                    this.$set(treeNode, 'name', data.name)
+                    this.$set(treeNode, 'type', data.type)
+                    this.$set(treeNode, 'generation', data.generation)
+                    this.$set(treeNode, 'industry', data.industry)
+                    this.$set(treeNode, '_hasFullProperties', true)
+                    this.$set(treeNode, '_cachedEntityData', data)
                 } else {
-                    // Update organisation node
-                    Object.assign(treeNode, {
-                        name: data.name,
-                        geo_x: data.x_position,
-                        geo_y: data.y_position,
-                        phone_no: data.phoneNumber,
-                        email: data.email,
-                        // Set flag và cache
-                        _hasFullProperties: true,
-                        _cachedEntityData: data
-                    })
+                    // Update organisation node - Dùng Vue.set để đảm bảo reactivity
+                    this.$set(treeNode, 'name', data.name)
+                    this.$set(treeNode, 'geo_x', data.x_position)
+                    this.$set(treeNode, 'geo_y', data.y_position)
+                    this.$set(treeNode, 'phone_no', data.phoneNumber)
+                    this.$set(treeNode, 'email', data.email)
+                    this.$set(treeNode, '_hasFullProperties', true)
+                    this.$set(treeNode, '_cachedEntityData', data)
                 }
                 
                 //console.log('[TREE-NAV] After update - node._cachedEntityData:', treeNode._cachedEntityData)
