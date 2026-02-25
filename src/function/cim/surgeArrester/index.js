@@ -21,6 +21,46 @@ export const getSurgeArresterById = async (mrid) => {
     }
 }
 
+export const getSurgeArresterByAssetId = (assetId) => {
+    return new Promise((resolve, reject) => {
+
+        const query = `
+            SELECT 
+                io.*, 
+                a.*, 
+                sa.*
+            FROM surge_arrester sa
+            INNER JOIN asset a ON sa.mrid = a.mrid
+            INNER JOIN identified_object io ON a.mrid = io.mrid
+            WHERE sa.asset_id = ?
+        `;
+
+        db.all(query, [assetId], (err, rows) => {
+            if (err) {
+                return reject({
+                    success: false,
+                    error: err.message,
+                    message: 'Database query failed when getting surge arrester by Asset ID'
+                });
+            }
+
+            if (!rows || rows.length === 0) {
+                return resolve({
+                    success: false,
+                    data: [],
+                    message: `No surge arrester found for Asset ID: ${assetId}`
+                });
+            }
+
+            return resolve({
+                success: true,
+                data: rows,
+                message: 'Surge arrester retrieved successfully with full inheritance data'
+            });
+        });
+    });
+};
+
 // Thêm mới surge arrester
 export const insertSurgeArrester = async (arrester) => {
     return new Promise((resolve, reject) => {
@@ -34,20 +74,20 @@ export const insertSurgeArrester = async (arrester) => {
                     }
                     db.run(
                         `INSERT INTO surge_arrester(
-                            mrid, unit_count, manufacturer_type, asset_system_code, phases
+                            mrid, unit_count, manufacturer_type, asset_system_code, asset_id
                         ) VALUES (?, ?, ?, ?, ?)
                         ON CONFLICT(mrid) DO UPDATE SET
                             unit_count = excluded.unit_count,
                             manufacturer_type = excluded.manufacturer_type,
                             asset_system_code = excluded.asset_system_code,
-                            phases = excluded.phases
+                            asset_id = excluded.asset_id
                         `,
                         [
                             arrester.mrid,
                             arrester.unit_count,
                             arrester.manufacturer_type,
                             arrester.asset_system_code,
-                            arrester.phases
+                            arrester.asset_id
                         ],
                         function (err) {
                             if (err) {
@@ -76,20 +116,20 @@ export const insertSurgeArresterTransaction = async (arrester, dbsql) => {
             }
             dbsql.run(
                 `INSERT INTO surge_arrester(
-                    mrid, unit_count, manufacturer_type, asset_system_code, phases
+                    mrid, unit_count, manufacturer_type, asset_system_code, asset_id
                 ) VALUES (?, ?, ?, ?, ?)
                 ON CONFLICT(mrid) DO UPDATE SET
                     unit_count = excluded.unit_count,
                     manufacturer_type = excluded.manufacturer_type,
                     asset_system_code = excluded.asset_system_code,
-                    phases = excluded.phases
+                    asset_id = excluded.asset_id
                 `,
                 [
                     arrester.mrid,
                     arrester.unit_count,
                     arrester.manufacturer_type,
                     arrester.asset_system_code,
-                    arrester.phases
+                    arrester.asset_id
                 ],
                 function (err) {
                     if (err) {
@@ -120,13 +160,13 @@ export const updateSurgeArrester = async (mrid, arrester) => {
                             unit_count = ?,
                             manufacturer_type = ?,
                             asset_system_code = ?,
-                            phases = ?
+                            asset_id = ?
                         WHERE mrid = ?`,
                         [
                             arrester.unit_count,
                             arrester.manufacturer_type,
                             arrester.asset_system_code,
-                            arrester.phases,
+                            arrester.asset_id,
                             mrid
                         ],
                         function (err) {
@@ -160,13 +200,13 @@ export const updateSurgeArresterTransaction = async (mrid, arrester, dbsql) => {
                     unit_count = ?,
                     manufacturer_type = ?,
                     asset_system_code = ?,
-                    phases = ?
+                    asset_id = ?
                 WHERE mrid = ?`,
                 [
                     arrester.unit_count,
                     arrester.manufacturer_type,
                     arrester.asset_system_code,
-                    arrester.phases,
+                    arrester.asset_id,
                     mrid
                 ],
                 function (err) {

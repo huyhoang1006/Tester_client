@@ -5,7 +5,6 @@ export default {
         async getOwnerLocation() {
             try {
                 const res = await demoAPI.getOwnerOrganisation()
-                console.log('Owner organisation data:', res)
                 if (res !== null) {
                     this.ownerServerList = [res].map((item) => {
                         return {

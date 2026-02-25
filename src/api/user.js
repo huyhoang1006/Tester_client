@@ -41,8 +41,6 @@ export const login = (data) => {
         grant_type: 'password'
     }
 
-    console.log('Login calling to:', loginUrl) // Log ra để kiểm tra xem URL đúng chưa
-
     // Sử dụng axios gốc (để tránh interceptor của client)
     return axios.post(loginUrl, qs.stringify(formData), {
         headers: {

@@ -1,5 +1,6 @@
 import SurgeArresterEntity from "@/views/Flatten/SurgeArrester";
 import OldSurgeArresterInfo from "@/views/Cim/OldSurgeArresterInfo";
+import SurgeArrester from "@/views/Cim/SurgeArrester";
 import SurgeArresterDto from "@/views/Dto/SurgeAsset";
 import Voltage from "@/views/Cim/Voltage";
 import CurrentFlow from "@/views/Cim/CurrentFlow";
@@ -14,7 +15,7 @@ export function mapDtoToEntity(dto) {
     entity.surgeArrester.kind = dto.properties.kind || null;
     entity.surgeArrester.type = dto.properties.type || null;
     entity.surgeArrester.serial_number = dto.properties.serial_no || null;
-    entity.surgeArrester.asset_info = dto.oldSurgeArresterInfoId || null;
+    entity.surgeArrester.asset_info = dto.assetInfoId || null;
     entity.productAssetModel.manufacturer = dto.properties.manufacturer || null;
     entity.surgeArrester.manufacturer_type = dto.properties.manufacturer_type || null;
     entity.surgeArrester.country_of_origin = dto.properties.country_of_origin || null;
@@ -24,27 +25,33 @@ export function mapDtoToEntity(dto) {
     entity.productAssetModel.mrid = dto.productAssetModelId || null;
     entity.surgeArrester.location = dto.locationId || null;
     entity.surgeArrester.product_asset_model = dto.productAssetModelId || null;
+    entity.surgeArrester.asset_system_code = dto.properties.asset_system_code || null
 
     // lifecycle date
     entity.lifecycleDate.manufactured_date = dto.properties.manufacturer_year || null;
     entity.lifecycleDate.mrid = dto.lifecycleDateId || null;
     entity.surgeArrester.lifecycle_date = dto.lifecycleDateId || null;
 
+    entity.oldSurgeArresterInfo.mrid = dto.assetInfoId || null
+    entity.oldSurgeArresterInfo.product_asset_model = entity.productAssetModel.mrid || null
+
     //assetPsr
-    entity.assetPsr.mrid = dto.properties.mrid;
+    entity.assetPsr.mrid = dto.assetPsrId
     entity.assetPsr.asset_id = dto.properties.mrid || null;
     entity.assetPsr.psr_id = dto.psrId || null;
 
     //tableRating
     for(let data of dto.ratings.tableRating) {
+        const newAssetUnit = new SurgeArrester()
         const newData = new OldSurgeArresterInfo();
-        newData.mrid = data.mrid || null;
-        newData.product_asset_model = dto.productAssetModelId || null;
+
+        newAssetUnit.mrid = data.mrid || null
+        newAssetUnit.asset_info = data.assetInfoId || null
+        newAssetUnit.asset_id = dto.properties.mrid || null;
+        newData.mrid = data.assetInfoId || null;
 
         //serial number
-        newData.serial_number = data.serial || null;
-
-        newData.surge_arrester_id = dto.properties.mrid || null;
+        newAssetUnit.serial_number = data.serial || null;
 
         //Rated voltage Ur
         newData.rated_voltage = data.ratedVoltage.mrid || null;
@@ -116,7 +123,8 @@ export function mapDtoToEntity(dto) {
         newIsoVoltage.value = data.isoVoltage.value || null;
         entity.voltage.push(newIsoVoltage);
 
-        entity.oldSurgeArresterInfo.push(newData);
+        entity.assetInfoUnit.push(newData);
+        entity.assetUnit.push(newAssetUnit)
     }
 
     //attachment
@@ -129,13 +137,12 @@ export function mapDtoToEntity(dto) {
 
 export function mapEntityToDto(entity) {
     const dto = new SurgeArresterDto();
-
     //properties
     dto.properties.mrid = entity.surgeArrester.mrid || '';
     dto.properties.kind = entity.surgeArrester.kind || '';
     dto.properties.type = entity.surgeArrester.type || '';
     dto.properties.serial_no = entity.surgeArrester.serial_number || '';
-    dto.oldSurgeArresterInfoId = entity.surgeArrester.asset_info || '';
+    dto.assetInfoId = entity.surgeArrester.asset_info || '';
     dto.properties.manufacturer = entity.productAssetModel.manufacturer || '';
     dto.productAssetModelId = entity.productAssetModel.mrid || '';
     dto.properties.manufacturer_type = entity.surgeArrester.manufacturer_type || '';
@@ -155,16 +162,17 @@ export function mapEntityToDto(entity) {
     //assetPsr
     dto.assetPsrId = entity.assetPsr.mrid || '';
     dto.psrId = entity.assetPsr.psr_id || '';
-    dto.assetInfoId = entity.assetPsr.asset_id || '';
 
     //attachment
     dto.attachmentId = entity.attachment.id || '';
     dto.attachment = entity.attachment;
 
     //ratings
-    for(let i=0; i<entity.oldSurgeArresterInfo.length; i++) {
+    for(let i=0; i<entity.assetUnit.length; i++) {
+        const assetInfoUnit = entity.assetInfoUnit.find(x => x.mrid === entity.assetUnit[i].asset_info)
         const data = {
             mrid: '',
+            assetInfoId: '',
             position : '',
             serial : '',
             ratedVoltage : {
@@ -203,12 +211,13 @@ export function mapEntityToDto(entity) {
                 unit: UnitMultiplier.k + '|' + UnitSymbol.V
             }
         }
-        data.mrid = entity.oldSurgeArresterInfo[i].mrid || '';
-        data.serial = entity.oldSurgeArresterInfo[i].serial_number || '';
+        data.mrid = entity.assetUnit[i].mrid || '';
+        data.serial = entity.assetUnit[i].serial_number || '';
+        data.assetInfoId = entity.assetUnit[i].asset_info || ''
         data.position = i + 1;
         
         //Rated voltage Ur
-        data.ratedVoltage.mrid = entity.oldSurgeArresterInfo[i].rated_voltage || '';
+        data.ratedVoltage.mrid = assetInfoUnit.rated_voltage || '';
         for(let voltage of entity.voltage) {
             if(voltage.mrid === data.ratedVoltage.mrid) {
                 data.ratedVoltage.value = voltage.value || '';
@@ -216,7 +225,7 @@ export function mapEntityToDto(entity) {
             }
         }
         //maximum_system_voltage
-        data.maximumVoltage.mrid = entity.oldSurgeArresterInfo[i].maximum_system_voltage || '';
+        data.maximumVoltage.mrid = assetInfoUnit.maximum_system_voltage || '';
         for(let voltage of entity.voltage) {
             if(voltage.mrid === data.maximumVoltage.mrid) {
                 data.maximumVoltage.value = voltage.value || '';
@@ -225,7 +234,7 @@ export function mapEntityToDto(entity) {
         }
 
         //continuous_operating_voltage
-        data.continousVoltage.mrid = entity.oldSurgeArresterInfo[i].continuous_operating_voltage || '';
+        data.continousVoltage.mrid = assetInfoUnit.continuous_operating_voltage || '';
         for(let voltage of entity.voltage) {
             if(voltage.mrid === data.continousVoltage.mrid) {
                 data.continousVoltage.value = voltage.value || '';
@@ -234,7 +243,7 @@ export function mapEntityToDto(entity) {
         }
 
         //short_time_with_stand_current
-        data.shortCurrent.mrid = entity.oldSurgeArresterInfo[i].short_time_with_stand_current || '';
+        data.shortCurrent.mrid = assetInfoUnit.short_time_with_stand_current || '';
         for(let currentFlow of entity.currentFlow) {
             if(currentFlow.mrid === data.shortCurrent.mrid) {
                 data.shortCurrent.value = currentFlow.value || '';
@@ -243,7 +252,7 @@ export function mapEntityToDto(entity) {
         }
 
         //rated_duration_of_short_circuit
-        data.ratedCircuit.mrid = entity.oldSurgeArresterInfo[i].rated_duration_of_short_circuit || '';
+        data.ratedCircuit.mrid = assetInfoUnit.rated_duration_of_short_circuit || '';
         for(let seconds of entity.seconds) {
             if(seconds.mrid === data.ratedCircuit.mrid) {
                 data.ratedCircuit.value = seconds.value || '';
@@ -252,7 +261,7 @@ export function mapEntityToDto(entity) {
         }
 
         //pf_with_stand_voltage_earth_between_pole
-        data.polesVoltage.mrid = entity.oldSurgeArresterInfo[i].pf_with_stand_voltage_earth_between_pole || '';
+        data.polesVoltage.mrid = assetInfoUnit.pf_with_stand_voltage_earth_between_pole || '';
         for(let voltage of entity.voltage) {
             if(voltage.mrid === data.polesVoltage.mrid) {
                 data.polesVoltage.value = voltage.value || '';
@@ -261,14 +270,13 @@ export function mapEntityToDto(entity) {
         }
 
         //pf_with_stand_voltage_isolated_distance
-        data.isoVoltage.mrid = entity.oldSurgeArresterInfo[i].pf_with_stand_voltage_isolated_distance || '';
+        data.isoVoltage.mrid = assetInfoUnit.pf_with_stand_voltage_isolated_distance || '';
         for(let voltage of entity.voltage) {
             if(voltage.mrid === data.isoVoltage.mrid) {
                 data.isoVoltage.value = voltage.value || '';
                 data.isoVoltage.unit = voltage.multiplier + '|' + voltage.unit || '';
             }
         }
-
         dto.ratings.tableRating.push(data);
     }
 

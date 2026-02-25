@@ -147,6 +147,7 @@ export default {
                 for (let i = 0; i < data - lengthData; i++) {
                     this.ratingsData.tableRating.push({
                         mrid: '',
+                        assetInfoId: '',
                         position: i + 1 + lengthData,
                         serial: '',
                         ratedVoltage: {

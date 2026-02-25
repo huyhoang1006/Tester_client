@@ -8,8 +8,8 @@ import * as updateModule from './update/index'
 import fs from 'fs'
 import path from 'path'
 import {v4 as newUuid} from 'uuid'
-import {userFunc} from '@/function'
-import {ipcUploadCustom} from '@/ipcmain'
+// import {userFunc} from '@/function'
+// import {ipcUploadCustom} from '@/ipcmain'
 import {ipcCim, ipcEntity, ipcAppOption} from '@/ipcmain'
 let win
 
@@ -238,11 +238,11 @@ app.on('ready', async () => {
 
     await updateModule.active()
 
-    ipcMain.handle('login', async function (event, user) {
-        const _user = await userFunc.getUser(user)
-        if (_user === undefined) return false
-        else return _user
-    })
+    // ipcMain.handle('login', async function (event, user) {
+    //     const _user = await userFunc.getUser(user)
+    //     if (_user === undefined) return false
+    //     else return _user
+    // })
 
     // upload attachment
 
@@ -312,7 +312,7 @@ app.on('ready', async () => {
     })
 
     //upload custom
-    ipcUploadCustom.active()
+    // ipcUploadCustom.active()
 
     //cim
     ipcCim.active()
@@ -323,43 +323,43 @@ app.on('ready', async () => {
     //app option
     ipcAppOption.active()
 
-    ipcMain.handle('getAllUser', async function (event) {
-        const _users = await userFunc.getAllUser()
-        if (_users === undefined) return false
-        else return _users
-    })
+    // ipcMain.handle('getAllUser', async function (event) {
+    //     const _users = await userFunc.getAllUser()
+    //     if (_users === undefined) return false
+    //     else return _users
+    // })
 
-    ipcMain.handle('signup', async function (event, user) {
-        const check = await userFunc.checkUserExist(user)
-        if (!check) {
-            const rs = await userFunc.insertUser(user)
-            if (rs === true) {
-                return {
-                    success: true,
-                    message: 'Success'
-                }
-            }
-        } else
-            return {
-                success: false,
-                message: 'User is exist'
-            }
-    })
+    // ipcMain.handle('signup', async function (event, user) {
+    //     const check = await userFunc.checkUserExist(user)
+    //     if (!check) {
+    //         const rs = await userFunc.insertUser(user)
+    //         if (rs === true) {
+    //             return {
+    //                 success: true,
+    //                 message: 'Success'
+    //             }
+    //         }
+    //     } else
+    //         return {
+    //             success: false,
+    //             message: 'User is exist'
+    //         }
+    // })
 
-    ipcMain.handle('changePass', async function (event, user) {
-        const rs = await userFunc.changePass(user)
-        if (rs === true) {
-            return {
-                success: true,
-                message: 'Success'
-            }
-        } else {
-            return {
-                success: false,
-                message: rs
-            }
-        }
-    })
+    // ipcMain.handle('changePass', async function (event, user) {
+    //     const rs = await userFunc.changePass(user)
+    //     if (rs === true) {
+    //         return {
+    //             success: true,
+    //             message: 'Success'
+    //         }
+    //     } else {
+    //         return {
+    //             success: false,
+    //             message: rs
+    //         }
+    //     }
+    // })
 
     ipcMain.handle('updateOnlineMonitoringData', async function (event, online_monitoring) {
         try {

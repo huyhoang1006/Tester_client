@@ -49,21 +49,17 @@ export default {
         isActive: {
             immediate: true,
             handler(newVal) {
-                console.log('[GlobalLoading] isActive changed:', newVal);
                 if (newVal) {
                     // Cache display text khi loading bắt đầu
                     const customText = this.$store.state.loading.customText;
                     const action = this.$store.state.loading.action;
                     this.cachedDisplayText = customText || ACTION_TEXTS[action] || ACTION_TEXTS.default;
-                    
-                    console.log('[GlobalLoading] Starting - Text:', this.cachedDisplayText);
-                    
+                        
                     // Hiển thị modal, reset về 0 và chạy progress
                     this.showModal = true;
                     this.internalPercent = 0;
                     this.startProgress();
                 } else {
-                    console.log('[GlobalLoading] Stopping - Running finishProgress');
                     // Kết thúc loading: chạy siêu nhanh đến 100%, sau đó mới ẩn modal
                     this.stopProgress();
                     this.finishProgress();

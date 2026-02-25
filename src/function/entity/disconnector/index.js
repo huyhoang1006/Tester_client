@@ -1,7 +1,7 @@
 import db from '../../datacontext/index'
 import path from 'path'
 import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, deleteDirectory } from '@/function/entity/attachment'
-import { attachmentContext } from '@/function/entity/attachment'
+import * as attachmentContext from '@/function/attachmentcontext'
 import { insertVoltageTransaction, deleteVoltageByIdTransaction } from '@/function/cim/voltage';
 import { insertSecondsTransaction, deleteSecondsByIdTransaction } from '@/function/cim/seconds';
 import { insertCurrentFlowTransaction, deleteCurrentFlowByIdTransaction } from '@/function/cim/currentFlow';
@@ -76,7 +76,6 @@ export const insertDisconnectorEntity = async (entity) => {
 
             try {
                 await insertLifecycleDateTransaction(entity.lifecycleDate, db);
-                console.log('LifecycleDate inserted successfully');
             } catch (error) {
                 console.error('Error inserting LifecycleDate:', error);
                 throw error;
@@ -84,7 +83,6 @@ export const insertDisconnectorEntity = async (entity) => {
 
             try {
                 await insertProductAssetModelTransaction(entity.productAssetModel, db);
-                console.log('ProductAssetModel inserted successfully');
             } catch (error) {
                 console.error('Error inserting ProductAssetModel:', error);
                 throw error;
@@ -92,7 +90,6 @@ export const insertDisconnectorEntity = async (entity) => {
 
             try {
                 await insertDisconnectorInfoTransaction(entity.disconnectorInfo, db);
-                console.log('DisconnectorInfo inserted successfully');
             } catch (error) {
                 console.error('Error inserting DisconnectorInfo:', error);
                 throw error;
@@ -100,7 +97,6 @@ export const insertDisconnectorEntity = async (entity) => {
 
             try {
                 await insertAssetTransaction(entity.asset, db);
-                console.log('Asset inserted successfully');
             } catch (error) {
                 console.error('Error inserting Asset:', error);
                 throw error;
@@ -108,7 +104,6 @@ export const insertDisconnectorEntity = async (entity) => {
 
             try {
                 await insertAssetPsrTransaction(entity.assetPsr, db);
-                console.log('AssetPsr inserted successfully');
             } catch (error) {
                 console.error('Error inserting AssetPsr:', error);
                 throw error;
@@ -281,25 +276,21 @@ export const deleteDisconnectorEntity = async (data) => {
                     syncFilesWithDeletion(pathData, null, data.asset.mrid);
                 }
             }
-            console.log('1');
 
             // Delete attachment record (no dependencies)
             if (data.attachment && data.attachment.id) {
                 await deleteAttachmentByIdTransaction(data.attachment.id, db);
             }
-            console.log('2');
 
             // Delete asset-psr link (depends on asset)
             if (data.assetPsr && data.assetPsr.mrid) {
                 await deleteAssetPsrTransaction(data.assetPsr.mrid, db);
             }
-            console.log('3');
 
             // Delete main asset (has foreign key references to lifecycleDate)
             if (data.asset && data.asset.mrid) {
                 await deleteAssetByIdTransaction(data.asset.mrid, db);
             }
-            console.log('4');
 
             // Delete disconnector info (depends on asset - must be before asset)
             if (data.disconnectorInfo && data.disconnectorInfo.mrid) {
@@ -309,18 +300,15 @@ export const deleteDisconnectorEntity = async (data) => {
                     throw (delInfoRes && delInfoRes.err) || new Error('Delete DisconnectorInfo failed');
                 }
             }
-            console.log('5');
 
             if (data.productAssetModel && data.productAssetModel.mrid) {
                 await deleteProductAssetModelByIdTransaction(data.productAssetModel.mrid, db);
             }
-            console.log('6');
 
             // Delete lifecycleDate and productAssetModel (after asset is deleted)
             if (data.lifecycleDate && data.lifecycleDate.mrid) {
                 await deleteLifecycleDateByIdTransaction(data.lifecycleDate.mrid, db);
             }
-            console.log('7');
 
             // //voltage
             // for (const voltage of entity.voltage) {
@@ -356,7 +344,6 @@ export const deleteDisconnectorEntity = async (data) => {
                     await deleteVoltageByIdTransaction(voltage.mrid, db);
                 }
             }
-            console.log('8');
 
             //frequency
             for (const frequency of data.frequency) {
@@ -364,7 +351,6 @@ export const deleteDisconnectorEntity = async (data) => {
                     await deleteFrequencyByIdTransaction(frequency.mrid, db);
                 }
             }
-            console.log('9');
 
             //second
             for (const second of data.seconds) {
@@ -372,7 +358,6 @@ export const deleteDisconnectorEntity = async (data) => {
                     await deleteSecondsByIdTransaction(second.mrid, db);
                 }
             }
-            console.log('10');
 
             //currentFlow
             for (const currentFlow of data.currentFlow) {
@@ -380,7 +365,6 @@ export const deleteDisconnectorEntity = async (data) => {
                     await deleteCurrentFlowByIdTransaction(currentFlow.mrid, db);
                 }
             }
-            console.log('11');
 
             await runAsync('COMMIT');
 

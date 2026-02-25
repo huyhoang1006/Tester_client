@@ -86,10 +86,8 @@ export default {
                 if (this.transformerDto.properties.type && this.transformerDto.properties.kind && this.transformerDto.properties.serial_no) {
                     const data = JSON.parse(JSON.stringify(this.transformerDto));
                     const result = this.checkTransformerDto(data);
-                    console.log(result)
                     const oldResult = this.checkTransformerDto(this.oldTransformerDto);
                     const resultEntity = transformerMapping.transformerDtoToEntity(result);
-                    console.log(resultEntity)
                     const oldResultEntity = transformerMapping.transformerDtoToEntity(oldResult);
                     let rs = await window.electronAPI.insertTransformerEntity(oldResultEntity, resultEntity)
                     if (rs.success) {
@@ -175,7 +173,6 @@ export default {
             this.checkZeroImpedance(data)
             this.checkOther(data)
             this.checkTapChangerId(data)
-            this.checkTapChangerAssetPsr(data)
             this.checkBushing(data)
             this.checkSurgeArrester(data)
             return data;
@@ -484,25 +481,16 @@ export default {
                 if(data.tap_changers.mrid === null || data.tap_changers.mrid === '') {
                     data.tap_changers.mrid = uuid.newUuid()
                 }
-                if(data.tap_changers.assetId == null || data.tap_changers.assetId === '') {
-                    data.tap_changers.assetId = uuid.newUuid()
+                if(data.tap_changers.assetInfoId == null || data.tap_changers.assetInfoId === '') {
+                    data.tap_changers.assetInfoId = uuid.newUuid()
                 }
                 if(data.tap_changers.productAssetModelId == null || data.tap_changers.productAssetModelId === '') {
                     data.tap_changers.productAssetModelId = uuid.newUuid()
                 }
-                if(data.tap_changers.ratioTapchangerTableId == null || data.tap_changers.ratioTapchangerTableId === '') {
-                    data.tap_changers.ratioTapchangerTableId = uuid.newUuid()
-                }
-            }
-        },
-        
-        checkTapChangerAssetPsr(data) {
-            if(data.tap_changers.mode != '') {
-                if(data.tap_changers.assetPsr.mrid === null || data.tap_changers.assetPsr.mrid === '') {
-                    data.tap_changers.assetPsr.mrid = uuid.newUuid()
-                }
-                if(data.tap_changers.assetPsr.psr_id === null || data.tap_changers.assetPsr.psr_id === '') {
-                    data.tap_changers.assetPsr.psr_id = uuid.newUuid()
+                for(const point of data.tap_changers.voltage_table) {
+                    if(point.voltage.mrid == null || point.voltage.mrid == '') {
+                        point.voltage.mrid = uuid.newUuid()
+                    }
                 }
             }
         },
@@ -528,19 +516,55 @@ export default {
         checkSurgeArrester(data) {
             for(const surgeArrester of data.surge_arrester.prim) {
                 this.traverseAndFillMrid(surgeArrester)
+                if(surgeArrester.properties.assetInfoId === '' || surgeArrester.properties.assetInfoId === null) {
+                    surgeArrester.properties.assetInfoId = uuid.newUuid()
+                }
+                if(surgeArrester.properties.lifecycleDateId === '' || surgeArrester.properties.lifecycleDateId === null) {
+                    surgeArrester.properties.lifecycleDateId = uuid.newUuid()
+                }
+                if(surgeArrester.properties.productAssetModelId === '' || surgeArrester.properties.productAssetModelId === null) {
+                    surgeArrester.properties.productAssetModelId = uuid.newUuid()
+                }
                 for(const dataTable of surgeArrester.ratings.table) {
+                    if(dataTable.assetInfoId === null || dataTable.assetInfoId === '') {
+                        dataTable.assetInfoId = uuid.newUuid()
+                    }
                     this.traverseAndFillMrid(dataTable)
                 }
             }
             for(const surgeArrester of data.surge_arrester.sec) {
                 this.traverseAndFillMrid(surgeArrester)
+                if(surgeArrester.properties.assetInfoId === '' || surgeArrester.properties.assetInfoId === null) {
+                    surgeArrester.properties.assetInfoId = uuid.newUuid()
+                }
+                if(surgeArrester.properties.lifecycleDateId === '' || surgeArrester.properties.lifecycleDateId === null) {
+                    surgeArrester.properties.lifecycleDateId = uuid.newUuid()
+                }
+                if(surgeArrester.properties.productAssetModelId === '' || surgeArrester.properties.productAssetModelId === null) {
+                    surgeArrester.properties.productAssetModelId = uuid.newUuid()
+                }
                 for(const dataTable of surgeArrester.ratings.table) {
+                    if(dataTable.assetInfoId === null || dataTable.assetInfoId === '') {
+                        dataTable.assetInfoId = uuid.newUuid()
+                    }
                     this.traverseAndFillMrid(dataTable)
                 }
             }
             for(const surgeArrester of data.surge_arrester.tert) {
                 this.traverseAndFillMrid(surgeArrester)
+                if(surgeArrester.properties.assetInfoId === '' || surgeArrester.properties.assetInfoId === null) {
+                    surgeArrester.properties.assetInfoId = uuid.newUuid()
+                }
+                if(surgeArrester.properties.lifecycleDateId === '' || surgeArrester.properties.lifecycleDateId === null) {
+                    surgeArrester.properties.lifecycleDateId = uuid.newUuid()
+                }
+                if(surgeArrester.properties.productAssetModelId === '' || surgeArrester.properties.productAssetModelId === null) {
+                    surgeArrester.properties.productAssetModelId = uuid.newUuid()
+                }
                 for(const dataTable of surgeArrester.ratings.table) {
+                    if(dataTable.assetInfoId === null || dataTable.assetInfoId === '') {
+                        dataTable.assetInfoId = uuid.newUuid()
+                    }
                     this.traverseAndFillMrid(dataTable)
                 }
             }

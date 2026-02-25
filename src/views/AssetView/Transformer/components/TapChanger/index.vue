@@ -102,7 +102,7 @@
                                             <el-input size="mini" type="text" v-model="item.tap"></el-input>
                                         </td>
                                         <td>
-                                            <el-input size="mini" type="number" v-model="item.voltage">
+                                            <el-input size="mini" type="number" v-model="item.voltage.value">
                                                 <template slot="append">V</template>
                                             </el-input>
                                         </td>
@@ -218,7 +218,7 @@
                                             <el-input size="mini" type="text" v-model="item.tap"></el-input>
                                         </td>
                                         <td>
-                                            <el-input size="mini" type="text" v-model="item.voltage">
+                                            <el-input size="mini" type="text" v-model="item.voltage.value">
                                                 <template slot="append">V</template>
                                             </el-input>
                                         </td>
@@ -340,7 +340,11 @@ export default {
                         this.tapChangersData.voltage_table.push({
                             id,
                             tap: i,
-                            voltage: 0
+                            voltage: {
+                                mrid : '',
+                                value : 0,
+                                unit : "V"
+                            }
                         })
                     }
                 } else {
@@ -349,7 +353,11 @@ export default {
                         this.tapChangersData.voltage_table.push({
                             id,
                             tap: i,
-                            voltage: 0
+                            voltage: {
+                                mrid : '',
+                                value : 0,
+                                unit : "V"
+                            }
                         })
                     }
                 }
@@ -363,7 +371,11 @@ export default {
                             this.tapChangersData.voltage_table.push({
                                 id,
                                 tap: i,
-                                voltage: 0
+                                voltage: {
+                                    mrid : '',
+                                    value : 0,
+                                    unit : "V"
+                                }
                             })
                         }
                     } else {
@@ -372,7 +384,11 @@ export default {
                             this.tapChangersData.voltage_table.push({
                                 id,
                                 tap: this.tapChangersData.no_of_taps - i,
-                                voltage: 0
+                                voltage: {
+                                    mrid : '',
+                                    value : 0,
+                                    unit : "V"
+                                }
                             })
                         }
                         for (let i = 0; i < this.tapChangersData.no_of_taps; i++) {
@@ -390,7 +406,11 @@ export default {
                     this.tapChangersData.voltage_table.push({
                         id,
                         tap: i,
-                        voltage: 0
+                        voltage: {
+                            mrid : '',
+                            value : 0,
+                            unit : "V"
+                        }
                     })
                 }
             } else {
@@ -399,7 +419,11 @@ export default {
                     this.tapChangersData.voltage_table.push({
                         id,
                         tap: i,
-                        voltage: 0
+                        voltage: {
+                            mrid : '',
+                            value : 0,
+                            unit : "V"
+                        }
                     })
                 }
             }
@@ -419,7 +443,11 @@ export default {
             await this.tapChangersData.voltage_table.push({
                 id,
                 tap: '',
-                voltage: ''
+                voltage: {
+                    mrid : '',
+                    value : 0,
+                    unit : "V"
+                }
             })
             this.tapChangersData.no_of_taps++
         },
@@ -436,7 +464,11 @@ export default {
             const row = {
                 id,
                 tap: '',
-                voltage: ''
+                voltage: {
+                    mrid : '',
+                    value : 0,
+                    unit : "V"
+                }
             }
             this.tapChangersData.voltage_table.splice(index + 1, 0, row)
             this.tapChangersData.no_of_taps++
@@ -449,7 +481,7 @@ export default {
         },
         calculateResult(data) {
             for (let i = 0; i < this.tapChangersData.no_of_taps; i++) {
-                this.tapChangersData.voltage_table[i].voltage = data[i]
+                this.tapChangersData.voltage_table[i].voltage.value = data[i]
             }
         }
     }

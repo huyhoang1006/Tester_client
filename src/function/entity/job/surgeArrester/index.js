@@ -1,7 +1,7 @@
 import db from '../../../datacontext/index.js'
 import * as attachmentContext from '../../../attachmentcontext/index'
 import path from 'path'
-import { uploadAttachmentTransaction, dedeleteAttachmentByIdTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType } from '@/function/entity/attachment'
+import { uploadAttachmentTransaction, deleteAttachmentByIdTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType } from '@/function/entity/attachment'
 import {insertOldWorkTransaction, getOldWorkById, deleteOldWorkByIdTransaction} from "@/function/cim/oldWork/index"
 import { insertTestingEquipmentTransaction, getTestingEquipmentByWorkId, deleteTestingEquipmentByIdTransaction } from '../../testingEquipment/index.js'
 import SurgeArresterJobEntity from '@/views/Flatten/Job/SurgeArrester/index.js'
@@ -394,13 +394,13 @@ export const deleteSurgeArresterJobEntity = async (entity) => {
         // 6. Xóa bản ghi Attachment trong Database
         // Xóa Main Attachment
         if (entity.attachment && entity.attachment.id) {
-            await dedeleteAttachmentByIdTransaction(entity.attachment.id, db);
+            await deleteAttachmentByIdTransaction(entity.attachment.id, db);
         }
         // Xóa Attachment của từng WorkTask (Test Attachments)
         if (entity.attachmentTest && entity.attachmentTest.length > 0) {
             for (const attachment of entity.attachmentTest) {
                 if (attachment.id) {
-                    await dedeleteAttachmentByIdTransaction(attachment.id, db);
+                    await deleteAttachmentByIdTransaction(attachment.id, db)
                 }
             }
         }

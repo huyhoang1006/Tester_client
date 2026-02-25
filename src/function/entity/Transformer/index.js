@@ -29,11 +29,12 @@ import {insertShortCircuitTestTransaction, getShortCircuitTestByTransformerEndIn
 import {insertSCTTransformerEndInfoTransaction, getSCTTransformerEndInfoByShortCircuitTestId, deleteSCTTransformerEndInfoByIdTransaction} from "@/function/cim/shortCircuitTestTransformerEndInfo"
 import {insertShortCircuitRatingTransaction, deleteShortCircuitRatingByIdTransaction, getShortCircuitRatingByPowerTransformerInfoId} from '@/function/cim/shortCircuitRating'
 import {insertOldTapChangerInfoTransaction, getOldTapChangerInfoByPowerTransformerInfoId} from '@/function/cim/oldTapChangerInfo'
-import {insertRatioTapChangerTransaction, getRatioTapChangerByAssetId} from '@/function/cim/ratioTapChanger'
-import {getRatioTapChangerTableById, insertRatioTapChangerTableTransaction} from '@/function/cim/ratioTapChangerTable'
-import {getListByRatioTapChangerTableId, insertRatioTapChangerTablePointTransaction, deleteRatioTapChangerTablePointTransaction} from '@/function/cim/ratioTapChangerTablePoint'
+import {insertTapChangerTablePointTransaction, getTapChangerTablePointByTapChangerInfoId, deleteTapChangerTablePointTransaction} from '@/function/cim/tapChangerTablePoint'
+import { insertSurgeArresterLiteEntity, deleteSurgeArresterLiteEntity, getSurgeArresterLiteEntityById } from '@/function/entity/surgeArrester'
+import {getSurgeArresterByAssetId} from '@/function/cim/surgeArrester'
 import {getOldBushingInfoByTransformerEndInfoIds} from '@/function/cim/oldBushingInfo'
 import TransformerEntity from '@/views/Flatten/Transformer/index';
+import SurgeArrester from '@/views/Flatten/SurgeArrester'
 import * as bushingFunc from '../Bushing/index'
 
 // Helper to check if a value is used in a column of a table
@@ -149,58 +150,86 @@ export const insertTransformerEntity = async (old_entity,entity) => {
 
             if (entity.tapChanger) {
                 const tc = entity.tapChanger
+                const oldTc = old_entity.tapChanger
                 if(tc.productAssetModel && tc.productAssetModel.mrid) {
                     await insertProductAssetModelTransaction(tc.productAssetModel, db);
                 }
                 if(tc.oldTapChangerInfo && tc.oldTapChangerInfo.mrid) {
-                    // LINKING: Connect TapChanger to this Transformer
                     tc.oldTapChangerInfo.power_transformer_info_id = entity.oldPowerTransformerInfo.mrid;
                     await insertOldTapChangerInfoTransaction(tc.oldTapChangerInfo, db);
                 }
                 if(tc.asset && tc.asset.mrid) {
                     await insertAssetTransaction(tc.asset, db);
                 }
-                // 5.4 Insert Table & Sync Points (SỬA LẠI: Dùng old_entity)
-                if(tc.ratioTapChangerTable && tc.ratioTapChangerTable.mrid) {
-                    const tableId = tc.ratioTapChangerTable.mrid;
-                    await insertRatioTapChangerTableTransaction(tc.ratioTapChangerTable, db);
-                    
-                    // --- Xử lý đồng bộ Points ---
-                    // 1. Lấy danh sách điểm mới
-                    const newPoints = tc.ratioTapChangerTablePoint || [];
-                    
-                    // 2. Lấy danh sách điểm cũ từ old_entity (check null safety)
-                    const oldPoints = (old_entity && old_entity.tapChanger && old_entity.tapChanger.ratioTapChangerTablePoint) 
-                        ? old_entity.tapChanger.ratioTapChangerTablePoint 
-                        : [];
+                //voltage
+                const newIds = tc.voltage.map(v => v.mrid).filter(id => id); // bỏ null/empty
+                const oldIds = oldTc.voltage.map(v => v.mrid).filter(id => id);
 
-                    // 3. Tìm các điểm cần xóa (có trong old nhưng ko có trong new)
-                    const newIds = newPoints.map(p => p.mrid).filter(id => id);
-                    const pointsToDelete = oldPoints.filter(p => p.mrid && !newIds.includes(p.mrid));
-
-                    // 4. Thực hiện xóa
-                    for (const point of pointsToDelete) {
-                        await deleteRatioTapChangerTablePointTransaction(point.mrid, db);
-                    }
-
-                    // 5. Thực hiện Insert/Update các điểm mới
-                    for(const point of newPoints) {
-                        if(point.mrid) {
-                            point.ratio_tap_changer_table = tableId; // Đảm bảo FK chính xác
-                            await insertRatioTapChangerTablePointTransaction(point, db);
-                        }
-                    }
+                const toAdd = tc.voltage.filter(v => v.mrid && !oldIds.includes(v.mrid));
+                const toDelete = oldTc.voltage.filter(v => v.mrid && !newIds.includes(v.mrid));
+                const toUpdate = tc.voltage.filter(v => v.mrid && oldIds.includes(v.mrid));
+                for (const voltage of toAdd) {
+                    await insertVoltageTransaction(voltage, db);
                 }
-                if(tc.ratioTapChanger && tc.ratioTapChanger.mrid) {
-                    await insertRatioTapChangerTransaction(tc.ratioTapChanger, db);
+                for (const voltage of toUpdate) {
+                    await insertVoltageTransaction(voltage, db);
                 }
-                if(tc.assetPsr && tc.assetPsr.mrid) {
-                    await insertAssetPsrTransaction(tc.assetPsr, db);
+
+                const newIdsPoint = tc.tapChangerTablePoint.map(v => v.mrid).filter(id => id); // bỏ null/empty
+                const oldIdsPoint = oldTc.tapChangerTablePoint.map(v => v.mrid).filter(id => id);
+
+                const toAddPoint = tc.tapChangerTablePoint.filter(v => v.mrid && !oldIdsPoint.includes(v.mrid));
+                const toDeletePoint = oldTc.tapChangerTablePoint.filter(v => v.mrid && !newIdsPoint.includes(v.mrid));
+                const toUpdatePoint = tc.tapChangerTablePoint.filter(v => v.mrid && oldIdsPoint.includes(v.mrid));
+                for (const tapChangerTablePoint of toAddPoint) {
+                    await insertTapChangerTablePointTransaction(tapChangerTablePoint, db);
+                }
+                for (const tapChangerTablePoint of toUpdatePoint) {
+                    await insertTapChangerTablePointTransaction(tapChangerTablePoint, db);
+                }
+
+                for(const tapChangerTablePoint of toDeletePoint) {
+                    await deleteTapChangerTablePointTransaction(tapChangerTablePoint.mrid, db)
+                }
+
+                for(const voltage of toDelete) {
+                    await deleteVoltageByIdTransaction(voltage.mrid, db)
                 }
             }
 
-            for(const bushing of entity.bushing) {
+            const newIdsBushing = entity.bushing.map(v => v.mrid).filter(id => id); // bỏ null/empty
+            const oldIdsBushing = old_entity.bushing.map(v => v.mrid).filter(id => id);
+
+            const toAddBushing = entity.bushing.filter(v => v.mrid && !oldIdsBushing.includes(v.mrid));
+            const toDeleteBushing = old_entity.bushing.filter(v => v.mrid && !newIdsBushing.includes(v.mrid));
+
+            const toUpdateBushing = entity.bushing.filter(v => v.mrid && oldIdsBushing.includes(v.mrid));
+            for (const bushing of toAddBushing) {
                 await bushingFunc.insertBushingEntityLiteTransaction(bushing, db)
+            }
+            for (const bushing of toUpdateBushing) {
+                await bushingFunc.insertBushingEntityLiteTransaction(bushing, db)
+            }
+            for(const bushing of toDeleteBushing) {
+                await bushingFunc.deleteBushingEntityLiteTransaction(bushing, db)
+            }
+
+            const newIdsSurge = entity.surgeArrester.map(v => v.surgeArrester.mrid).filter(id => id); // bỏ null/empty
+            const oldIdsSurge = old_entity.surgeArrester.map(v => v.surgeArrester.mrid).filter(id => id);
+
+            const toAddSurge = entity.surgeArrester.filter(v => v.surgeArrester.mrid && !oldIdsSurge.includes(v.surgeArrester.mrid));
+            const toDeleteSurge = old_entity.surgeArrester.filter(v => v.surgeArrester.mrid && !newIdsSurge.includes(v.surgeArrester.mrid));
+
+            const toUpdateSurge = entity.surgeArrester.filter(v => v.surgeArrester.mrid && oldIdsSurge.includes(v.surgeArrester.mrid));
+            for (const surge of toAddSurge) {
+                await insertSurgeArresterLiteEntity(surge, new SurgeArrester(), db)
+            }
+            for (const surge of toUpdateSurge) {
+                const oldSurge = old_entity.surgeArrester.find(x => x.surgeArrester.mrid === surge.surgeArrester.mrid)
+                await insertSurgeArresterLiteEntity(surge, oldSurge, db)
+            }
+            for(const surge of toDeleteSurge) {
+                await deleteSurgeArresterLiteEntity(surge, db)
             }
 
             for(const tableType of [...tableTypes].reverse()) {
@@ -366,24 +395,14 @@ export const getTransformerEntityById = async (id, psrId) => {
                     entity.tapChanger.productAssetModel = dataProductAssetModelTapChanger.data
                 }
 
-                const dataRatioTapChangerPsr = await getRatioTapChangerByAssetId(entity.tapChanger.asset.mrid)
-                if(dataRatioTapChangerPsr.success) {
-                    entity.tapChanger.ratioTapChanger = dataRatioTapChangerPsr.data
+                const dataTapChangerTablePoint = await getTapChangerTablePointByTapChangerInfoId(entity.tapChanger.oldTapChangerInfo.mrid)
+                if(dataTapChangerTablePoint.success) {
+                    entity.tapChanger.tapChangerTablePoint = dataTapChangerTablePoint.data
                 }
 
-                const dataTapchangerAssetPsr = await getAssetPsrByAssetIdAndPsrId(entity.tapChanger.asset.mrid, entity.tapChanger.ratioTapChanger.mrid)
-                if(dataTapchangerAssetPsr.success) {
-                    entity.tapChanger.assetPsr = dataTapchangerAssetPsr.data
-                }
-
-                const dataRatioTapChangerTable = await getRatioTapChangerTableById(entity.tapChanger.ratioTapChanger.ratio_tap_changer_table)
-                if(dataRatioTapChangerTable.success) {
-                    entity.tapChanger.ratioTapChangerTable = dataRatioTapChangerTable.data
-                }
-
-                const dataRatioTapChangerTablePoint = await getListByRatioTapChangerTableId(entity.tapChanger.ratioTapChangerTable.mrid)
-                if(dataRatioTapChangerTablePoint.success) {
-                    entity.tapChanger.ratioTapChangerTablePoint = dataRatioTapChangerTablePoint.data
+                const dataTapChangerVoltage = await getVoltageByIds(entity.tapChanger.tapChangerTablePoint.map(x => x.voltage))
+                if(dataTapChangerVoltage.success) {
+                    entity.tapChanger.voltage = dataTapChangerVoltage.data
                 }
 
                 const idsTransformerEndInfo = entity.oldTransformerEndInfo.map(x => x.mrid)
@@ -397,6 +416,16 @@ export const getTransformerEntityById = async (id, psrId) => {
                             if(dataBushing.success) {
                                 entity.bushing.push(dataBushing.data)
                             }
+                        }
+                    }
+                }
+
+                const dataSurgeArrester = await getSurgeArresterByAssetId(entity.asset.mrid)
+                if(dataSurgeArrester.success) {
+                    for(const surge of dataSurgeArrester.data) {
+                        const dataSurge = await getSurgeArresterLiteEntityById(surge.mrid)
+                        if(dataSurge.success) {
+                            entity.surgeArrester.push(dataSurge.data)
                         }
                     }
                 }

@@ -19,30 +19,42 @@ export const getTapChangerTablePointById = async (mrid) => {
     }
 }
 
+export const getTapChangerTablePointByTapChangerInfoId = async (tap_changer_info_id) => {
+    try {
+        return new Promise((resolve, reject) => {
+            db.all(
+                `SELECT * FROM tap_changer_table_point WHERE tap_changer_info_id=?`,
+                [tap_changer_info_id],
+                (err, row) => {
+                    if (err) return reject({ success: false, err, message: 'Get tapChangerTablePoint by tap changer info id failed' })
+                    if (!row || row.length == 0) return resolve({ success: false, data: null, message: 'TapChangerTablePoint not found' })
+                    return resolve({ success: true, data: row, message: 'Get tapChangerTablePoint by tap changer info id completed' })
+                }
+            )
+        }) 
+    } catch (err) {
+        return { success: false, err, message: 'Get tapChangerTablePoint by tap changer info id failed' }
+    }
+}
+
 // Thêm mới TapChangerTablePoint (transaction)
 export const insertTapChangerTablePointTransaction = async (info, dbsql) => {
     return new Promise((resolve, reject) => {
         try {
             dbsql.run(
                 `INSERT INTO tap_changer_table_point(
-                    mrid, b, g, r, ratio, step, x
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                    mrid, step, voltage, tap_changer_info_id
+                ) VALUES (?, ?, ?, ?)
                 ON CONFLICT(mrid) DO UPDATE SET
-                    b = excluded.b,
-                    g = excluded.g,
-                    r = excluded.r,
-                    ratio = excluded.ratio,
                     step = excluded.step,
-                    x = excluded.x
+                    voltage = excluded.voltage,
+                    tap_changer_info_id = excluded.tap_changer_info_id
                 `,
                 [
                     info.mrid,
-                    info.b,
-                    info.g,
-                    info.r,
-                    info.ratio,
                     info.step,
-                    info.x
+                    info.voltage,
+                    info.tap_changer_info_id
                 ],
                 function (err) {
                     if (err) {
@@ -63,20 +75,14 @@ export const updateTapChangerTablePointTransaction = async (mrid, info, dbsql) =
         try {
             dbsql.run(
                 `UPDATE tap_changer_table_point SET
-                    b = ?,
-                    g = ?,
-                    r = ?,
-                    ratio = ?,
                     step = ?,
-                    x = ?
+                    voltage = ?,
+                    tap_changer_info_id = ?
                 WHERE mrid = ?`,
                 [
-                    info.b,
-                    info.g,
-                    info.r,
-                    info.ratio,
                     info.step,
-                    info.x,
+                    info.voltage,
+                    info.tap_changer_info_id,
                     mrid
                 ],
                 function (err) {

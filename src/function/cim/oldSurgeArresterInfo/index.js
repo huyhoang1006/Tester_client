@@ -21,53 +21,53 @@ export const getOldSurgeArresterInfoById = async (mrid) => {
     }
 }
 
-export const getOldSurgeArresterInfoBySurgeArresterId = async (surgeArresterId) => {
-    try {
-        return new Promise((resolve, reject) => {
-            const query = `
-                SELECT 
-                    oi.*,          -- IdentifiedObject
-                    ai.*,          -- AssetInfo
-                    sai.*,         -- SurgeArresterInfo
-                    oai.*          -- OldSurgeArresterInfo
-                FROM old_surge_arrester_info oai
-                INNER JOIN surge_arrester_info sai ON oai.mrid = sai.mrid
-                INNER JOIN asset_info ai ON sai.mrid = ai.mrid
-                INNER JOIN identified_object oi ON ai.mrid = oi.mrid
-                WHERE oai.surge_arrester_id = ?
-            `;
+export const getOldSurgeArresterInfoBySurgeArresterId = (surgeArresterId) => {
+    return new Promise((resolve, reject) => {
 
-            db.all(query, [surgeArresterId], (err, rows) => {
-                if (err) {
-                    return reject({
-                        success: false,
-                        err: err,
-                        message: 'Get old surge arrester info with inheritance failed'
-                    });
-                }
-                if (!rows || rows.length === 0) {
-                    return resolve({
-                        success: false,
-                        data: [],
-                        message: 'No old surge arrester info found for this surge arrester ID'
-                    });
-                }
-                return resolve({
-                    success: true,
-                    data: rows,
-                    message: 'Get old surge arrester info with inheritance completed'
+        const query = `
+            SELECT 
+                oi.*, 
+                ai.*, 
+                sai.*, 
+                oai.*
+            FROM asset a
+            INNER JOIN asset_info ai 
+                ON a.asset_info = ai.mrid
+            INNER JOIN surge_arrester_info sai 
+                ON sai.mrid = ai.mrid
+            INNER JOIN old_surge_arrester_info oai 
+                ON oai.mrid = sai.mrid
+            INNER JOIN identified_object oi 
+                ON oi.mrid = ai.mrid
+            WHERE a.mrid = ?
+        `;
+
+        db.get(query, [surgeArresterId], (err, row) => {
+
+            if (err) {
+                return reject({
+                    success: false,
+                    err: err,
+                    message: 'Get old surge arrester info failed'
                 });
+            }
+
+            if (!row) {
+                return resolve({
+                    success: false,
+                    data: null,
+                    message: 'No old surge arrester info found'
+                });
+            }
+
+            return resolve({
+                success: true,
+                data: row,
+                message: 'Get old surge arrester info completed'
             });
         });
-    } catch (err) {
-        return { 
-            success: false, 
-            err: err,
-            message: 'Get old surge arrester info with inheritance failed'
-        };
-    }
+    });
 };
-
 
 // Thêm mới old surge arrester info
 export const insertOldSurgeArresterInfo = async (info) => {
@@ -82,31 +82,27 @@ export const insertOldSurgeArresterInfo = async (info) => {
                     }
                     db.run(
                         `INSERT INTO old_surge_arrester_info(
-                            mrid, serial_number, maximum_system_voltage, short_time_with_stand_current,
+                            mrid, maximum_system_voltage, short_time_with_stand_current,
                             rated_duration_of_short_circuit, pf_with_stand_voltage_earth_between_pole,
-                            pf_with_stand_voltage_isolated_distance, surge_arrester_id, voltage_ll, voltage_ln, transformer_end_info
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            pf_with_stand_voltage_isolated_distance, voltage_ll, voltage_ln, transformer_end_info
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                         ON CONFLICT(mrid) DO UPDATE SET
-                            serial_number = excluded.serial_number,
                             maximum_system_voltage = excluded.maximum_system_voltage,
                             short_time_with_stand_current = excluded.short_time_with_stand_current,
                             rated_duration_of_short_circuit = excluded.rated_duration_of_short_circuit,
                             pf_with_stand_voltage_earth_between_pole = excluded.pf_with_stand_voltage_earth_between_pole,
                             pf_with_stand_voltage_isolated_distance = excluded.pf_with_stand_voltage_isolated_distance,
-                            surge_arrester_id = excluded.surge_arrester_id,
                             voltage_ll = excluded.voltage_ll,
                             voltage_ln = excluded.voltage_ln,
                             transformer_end_info = excluded.transformer_end_info
                         `,
                         [
                             info.mrid,
-                            info.serial_number,
                             info.maximum_system_voltage,
                             info.short_time_with_stand_current,
                             info.rated_duration_of_short_circuit,
                             info.pf_with_stand_voltage_earth_between_pole,
                             info.pf_with_stand_voltage_isolated_distance,
-                            info.surge_arrester_id,
                             info.voltage_ll,
                             info.voltage_ln,
                             info.transformer_end_info
@@ -139,33 +135,31 @@ export const insertOldSurgeArresterInfoTransaction = (info, dbsql) => {
             }
             dbsql.run(
                 `INSERT INTO old_surge_arrester_info(
-                    mrid, serial_number, maximum_system_voltage, short_time_with_stand_current,
+                    mrid, maximum_system_voltage, short_time_with_stand_current,
                     rated_duration_of_short_circuit, pf_with_stand_voltage_earth_between_pole,
-                    pf_with_stand_voltage_isolated_distance, surge_arrester_id, voltage_ll, voltage_ln, transformer_end_info
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    pf_with_stand_voltage_isolated_distance, voltage_ll, voltage_ln, phase, transformer_end_info
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(mrid) DO UPDATE SET
-                    serial_number = excluded.serial_number,
                     maximum_system_voltage = excluded.maximum_system_voltage,
                     short_time_with_stand_current = excluded.short_time_with_stand_current,
                     rated_duration_of_short_circuit = excluded.rated_duration_of_short_circuit,
                     pf_with_stand_voltage_earth_between_pole = excluded.pf_with_stand_voltage_earth_between_pole,
                     pf_with_stand_voltage_isolated_distance = excluded.pf_with_stand_voltage_isolated_distance,
-                    surge_arrester_id = excluded.surge_arrester_id,
                     voltage_ll = excluded.voltage_ll,
                     voltage_ln = excluded.voltage_ln,
+                    phase = excluded.phase,
                     transformer_end_info = excluded.transformer_end_info
                 `,
                 [
                     info.mrid,
-                    info.serial_number,
                     info.maximum_system_voltage,
                     info.short_time_with_stand_current,
                     info.rated_duration_of_short_circuit,
                     info.pf_with_stand_voltage_earth_between_pole,
                     info.pf_with_stand_voltage_isolated_distance,
-                    info.surge_arrester_id,
                     info.voltage_ll,
                     info.voltage_ln,
+                    info.phase,
                     info.transformer_end_info
                 ],
                 function (err) {
@@ -196,27 +190,25 @@ export const updateOldSurgeArresterInfo = async (mrid, info) => {
                     }
                     db.run(
                         `UPDATE old_surge_arrester_info SET
-                            serial_number = ?,
                             maximum_system_voltage = ?,
                             short_time_with_stand_current = ?,
                             rated_duration_of_short_circuit = ?,
                             pf_with_stand_voltage_earth_between_pole = ?,
                             pf_with_stand_voltage_isolated_distance = ?,
-                            surge_arrester_id = ?,
                             voltage_ll = ?,
                             voltage_ln = ?,
+                            phase = ?,
                             transformer_end_info = ?
                         WHERE mrid = ?`,
                         [
-                            info.serial_number,
                             info.maximum_system_voltage,
                             info.short_time_with_stand_current,
                             info.rated_duration_of_short_circuit,
                             info.pf_with_stand_voltage_earth_between_pole,
                             info.pf_with_stand_voltage_isolated_distance,
-                            info.surge_arrester_id,
                             info.voltage_ll,
                             info.voltage_ln,
+                            info.phase,
                             info.transformer_end_info,
                             mrid
                         ],
@@ -248,27 +240,25 @@ export const updateOldSurgeArresterInfoTransaction = (mrid, info, dbsql) => {
             }
             dbsql.run(
                 `UPDATE old_surge_arrester_info SET
-                    serial_number = ?,
                     maximum_system_voltage = ?,
                     short_time_with_stand_current = ?,
                     rated_duration_of_short_circuit = ?,
                     pf_with_stand_voltage_earth_between_pole = ?,
                     pf_with_stand_voltage_isolated_distance = ?,
-                    surge_arrester_id = ?,
                     voltage_ll = ?,
                     voltage_ln = ?,
+                    phase = ?,
                     transformer_end_info = ?
                 WHERE mrid = ?`,
                 [
-                    info.serial_number,
                     info.maximum_system_voltage,
                     info.short_time_with_stand_current,
                     info.rated_duration_of_short_circuit,
                     info.pf_with_stand_voltage_earth_between_pole,
                     info.pf_with_stand_voltage_isolated_distance,
-                    info.surge_arrester_id,
                     info.voltage_ll,
                     info.voltage_ln,
+                    info.phase,
                     info.transformer_end_info,
                     mrid
                 ],

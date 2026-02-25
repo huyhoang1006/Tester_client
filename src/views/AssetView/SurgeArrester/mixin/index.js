@@ -16,7 +16,6 @@ export default {
                 if (this.surge_arrester_data.properties.serial_no !== null && this.surge_arrester_data.properties.serial_no !== '') {
                     const data = JSON.parse(JSON.stringify(this.surge_arrester_data));
                     const result = this.checkSurgeArresterData(data);
-                    console.log(result)
                     const oldResult = this.checkSurgeArresterData(this.surge_arrester_data_old);
                     const resultEntity = Mapping.mapDtoToEntity(result);
                     const oldResultEntity = Mapping.mapDtoToEntity(oldResult);
@@ -75,6 +74,7 @@ export default {
         checkSurgeArresterData(data) {
             try {
                 this.checkProperty(data);
+                this.checkAssetInfoId(data)
                 this.checkLifecycleDate(data);
                 this.checkPsrId(data);
                 this.checkProductAssetModel(data);
@@ -91,6 +91,12 @@ export default {
         checkProperty(data) {
             if (data.properties.mrid == null || data.properties.mrid == '') {
                 data.properties.mrid = uuid.newUuid();
+            }
+        },
+
+        checkAssetInfoId(data) {
+            if(data.assetInfoId == null || data.assetInfoId == '') {
+                data.assetInfoId = uuid.newUuid()
             }
         },
 
@@ -143,6 +149,9 @@ export default {
             for (let i = 0; i < data.ratings.tableRating.length; i++) {
                 if (data.ratings.tableRating[i].mrid === null || data.ratings.tableRating[i].mrid === '') {
                     data.ratings.tableRating[i].mrid = uuid.newUuid();
+                }
+                if (data.ratings.tableRating[i].assetInfoId === null || data.ratings.tableRating[i].assetInfoId === '') {
+                    data.ratings.tableRating[i].assetInfoId = uuid.newUuid();
                 }
                 if (data.ratings.tableRating[i].continousVoltage.mrid === null || data.ratings.tableRating[i].continousVoltage.mrid === '') {
                     data.ratings.tableRating[i].continousVoltage.mrid = uuid.newUuid();

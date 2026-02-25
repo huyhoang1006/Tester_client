@@ -30,7 +30,7 @@
                 </thead>
                 <tbody>
                     <tr v-for="(item, index) in ratingsData.table" :key="index">
-                        <td>{{ item.position }}</td>
+                        <td>{{ index + 1 }}</td>
                         <td>
                             <el-input size="mini" v-model="item.serial">
                             </el-input>
@@ -94,6 +94,7 @@ export default {
                 for (let i = 0; i < value; i++) {
                     this.ratingsData.table.push({
                         mrid : '',
+                        assetInfoId : '',
                         position: i + 1,
                         serial: '',
                         voltageLl: {
@@ -118,6 +119,7 @@ export default {
                     for (let i = this.ratingsData.table.length; i < value; i++) {
                         this.ratingsData.table.push({
                             mrid : '',
+                            assetInfoId : '',
                             position: i + 1,
                             serial: '',
                             voltageLl: {

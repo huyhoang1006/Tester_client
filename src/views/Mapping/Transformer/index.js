@@ -21,11 +21,12 @@ import Volume from "@/views/Cim/Volume"
 import Mass from "@/views/Cim/Mass"
 import { UnitSymbol } from "@/views/Enum/UnitSymbol"
 import { UnitMultiplier } from "@/views/Enum/UnitMultiplier"
-import RatioTapChangerTablePoint from '@/views/Cim/RatioTapChangerTablePoint'
+import TapChangerTablePoint from '@/views/Cim/TapChangerTablePoint'
 import BushingAssetEntity from "@/views/Flatten/Bushing"
 import SurgeArresterEntity from '@/views/Flatten/SurgeArrester'
 import Capacitance from "@/views/Cim/Capacitance"
 import OldSurgeArresterInfo from "@/views/Cim/OldSurgeArresterInfo"
+import SurgeArrester from "@/views/Cim/SurgeArrester"
 
 export const transformerDtoToEntity = (dto) => {
     const entity = new TransformerEntity();
@@ -549,11 +550,12 @@ export const transformerDtoToEntity = (dto) => {
     entity.tapChanger.asset.mrid = dto.tap_changers.mrid || null
     entity.tapChanger.asset.serial_number = dto.tap_changers.serial_no || null
     entity.tapChanger.asset.kind = 'Tap changer'
+    entity.tapChanger.asset.type = dto.tap_changers.mode || null
     entity.tapChanger.oldTapChangerInfo.product_asset_model = dto.tap_changers.productAssetModelId || null
     entity.tapChanger.productAssetModel.manufacturer = dto.tap_changers.manufacturer || null
     entity.tapChanger.productAssetModel.mrid = dto.tap_changers.productAssetModelId || null
-    entity.tapChanger.asset.asset_info = dto.tap_changers.assetId || null
-    entity.tapChanger.oldTapChangerInfo.mrid = dto.tap_changers.assetId || null
+    entity.tapChanger.asset.asset_info = dto.tap_changers.assetInfoId || null
+    entity.tapChanger.oldTapChangerInfo.mrid = dto.tap_changers.assetInfoId || null
     entity.tapChanger.oldTapChangerInfo.manufacturer_type = dto.tap_changers.manufacturer_type || null
 
     for (const transformer_end_info of entity.oldTransformerEndInfo) {
@@ -571,28 +573,17 @@ export const transformerDtoToEntity = (dto) => {
     entity.tapChanger.oldTapChangerInfo.tap_scheme = dto.tap_changers.tap_scheme || null
     entity.tapChanger.oldTapChangerInfo.number_of_tap = dto.tap_changers.no_of_taps || null
     entity.tapChanger.oldTapChangerInfo.power_transformer_info_id = dto.oldPowerTransformerInfoId || null;
-    entity.tapChanger.assetPsr.asset_id = dto.tap_changers.mrid || null
-    entity.tapChanger.assetPsr.psr_id = dto.tap_changers.assetPsr.psr_id || null
-    entity.tapChanger.assetPsr.mrid = dto.tap_changers.assetPsr.mrid || null
-    entity.tapChanger.ratioTapChanger.mrid = dto.tap_changers.assetPsr.psr_id || null
-    entity.tapChanger.ratioTapChanger.ratio_tap_changer_table = dto.tap_changers.ratioTapchangerTableId || null
-    if (dto.tap_changers.mode == 'oltc') {
-        entity.tapChanger.ratioTapChanger.control_enabled = true
-        entity.tapChanger.ratioTapChanger.ltc_flag = true
-    } else {
-        entity.tapChanger.ratioTapChanger.control_enabled = null
-        entity.tapChanger.ratioTapChanger.ltc_flag = null
-    }
-    entity.tapChanger.ratioTapChangerTable.mrid = dto.tap_changers.ratioTapchangerTableId || null
     for (const point of dto.tap_changers.voltage_table) {
-        const ratioTapChangerTablePoint = new RatioTapChangerTablePoint()
-        ratioTapChangerTablePoint.mrid = point.id
-        ratioTapChangerTablePoint.step = point.tap
-        ratioTapChangerTablePoint.ratio = point.voltage
-        ratioTapChangerTablePoint.ratio_tap_changer_table = dto.tap_changers.ratioTapchangerTableId
-        entity.tapChanger.ratioTapChangerTablePoint.push(ratioTapChangerTablePoint)
+        const tapChangerTablePoint = new TapChangerTablePoint()
+        tapChangerTablePoint.mrid = point.id
+        tapChangerTablePoint.step = point.tap
+        tapChangerTablePoint.voltage = point.voltage.mrid
+        tapChangerTablePoint.tap_changer_info_id = entity.tapChanger.oldTapChangerInfo.mrid || null
+        const voltage = new Voltage()
+        mappingUnit(voltage, point.voltage)
+        entity.tapChanger.voltage.push(voltage)
+        entity.tapChanger.tapChangerTablePoint.push(tapChangerTablePoint)
     }
-
     const winding = ['prim', 'sec', 'tert']
     for (const winding_data of winding) {
         for (const bushing of dto.bushing_data[winding_data]) {
@@ -677,37 +668,57 @@ export const transformerDtoToEntity = (dto) => {
                 const surgeArresterAsset = new SurgeArresterEntity()
                 surgeArresterAsset.surgeArrester.mrid = surge.properties.mrid || null
                 surgeArresterAsset.surgeArrester.serial_number = surge.properties.serial_no || null
-                surgeArresterAsset.surgeArrester.alias_name = surge.properties.asset_system_code || null
+                surgeArresterAsset.surgeArrester.asset_system_code = surge.properties.asset_system_code || null
                 surgeArresterAsset.surgeArrester.asset_info = surge.properties.assetInfoId || null
-                surgeArresterAsset.surgeArrester.product_asset_model = surge.properties.productAssetModelId || null
                 surgeArresterAsset.surgeArrester.kind = 'Surge arrester'
+                surgeArresterAsset.oldSurgeArresterInfo.mrid = surge.properties.assetInfoId || null
+                surgeArresterAsset.oldSurgeArresterInfo.product_asset_model = surge.properties.productAssetModelId || null
                 surgeArresterAsset.productAssetModel.mrid = surge.properties.productAssetModelId || null
                 surgeArresterAsset.productAssetModel.manufacturer = surge.properties.manufacturer || null
                 surgeArresterAsset.surgeArrester.lifecycle_date = surge.properties.lifecycleDateId || null
                 surgeArresterAsset.lifecycleDate.mrid = surge.properties.lifecycleDateId || null
                 surgeArresterAsset.lifecycleDate.manufactured_date = surge.properties.manufacturer_year || null
                 surgeArresterAsset.surgeArrester.unit_count = surge.ratings.unit || null
+                surgeArresterAsset.oldSurgeArresterInfo.phase = surge.ratings.pos || null
+                surgeArresterAsset.surgeArrester.asset_id = entity.asset.mrid || null
+                for (const transformer_end_info of entity.oldTransformerEndInfo) {
+                    if (transformer_end_info.end_number == 1 && winding_data == 'prim') {
+                        surgeArresterAsset.oldSurgeArresterInfo.transformer_end_info = transformer_end_info.mrid
+                        break
+                    } else if (transformer_end_info.end_number == 2 && winding_data == 'sec') {
+                        surgeArresterAsset.oldSurgeArresterInfo.transformer_end_info = transformer_end_info.mrid
+                        break
+                    } else if (transformer_end_info.end_number == 3 && winding_data == 'tert') {
+                        surgeArresterAsset.oldSurgeArresterInfo.transformer_end_info = transformer_end_info.mrid
+                        break
+                    }
+                }
                 for (const surgeInfo of surge.ratings.table) {
-                    const oldSurgeArresterInfo = new OldSurgeArresterInfo()
-                    oldSurgeArresterInfo.mrid = surgeInfo.mrid || null
-                    oldSurgeArresterInfo.serial_number = surgeInfo.serial_no || null
+                    const oldSurgeArresterInfoUnit = new OldSurgeArresterInfo()
+                    const surgeArresterUnit = new SurgeArrester()
+                    oldSurgeArresterInfoUnit.mrid = surgeInfo.assetInfoId || null
+                    surgeArresterUnit.serial_number = surgeInfo.serial || null
+                    surgeArresterUnit.mrid = surgeInfo.mrid || null
+                    surgeArresterUnit.asset_info = surgeInfo.assetInfoId || null
+                    surgeArresterUnit.asset_id = surgeArresterAsset.surgeArrester.mrid || null
 
-                    oldSurgeArresterInfo.voltage_ll = surgeInfo.voltageLl.mrid || null
+                    oldSurgeArresterInfoUnit.voltage_ll = surgeInfo.voltageLl.mrid || null
                     const voltageLl = new Voltage();
                     mappingUnit(voltageLl, surgeInfo.voltageLl)
                     surgeArresterAsset.voltage.push(voltageLl)
 
-                    oldSurgeArresterInfo.voltage_ln = surgeInfo.voltageLn.mrid || null
+                    oldSurgeArresterInfoUnit.voltage_ln = surgeInfo.voltageLn.mrid || null
                     const voltageLn = new Voltage();
                     mappingUnit(voltageLn, surgeInfo.voltageLn)
                     surgeArresterAsset.voltage.push(voltageLn)
 
-                    oldSurgeArresterInfo.continuous_operating_voltage = surgeInfo.mcovRating.mrid || null
+                    oldSurgeArresterInfoUnit.continuous_operating_voltage = surgeInfo.mcovRating.mrid || null
                     const voltage = new Voltage();
-                    mappingUnit(voltage, surgeInfo.mcovRatingData)
+                    mappingUnit(voltage, surgeInfo.mcovRating)
                     surgeArresterAsset.voltage.push(voltage)
 
-                    surgeArresterAsset.oldSurgeArresterInfo.push(oldSurgeArresterInfo)
+                    surgeArresterAsset.assetInfoUnit.push(oldSurgeArresterInfoUnit)
+                    surgeArresterAsset.assetUnit.push(surgeArresterUnit)
                 }
 
                 entity.surgeArrester.push(surgeArresterAsset)
@@ -1149,11 +1160,11 @@ export const transformerEntityToDto = (entity) => {
         }
     }
 
-    dto.tap_changers.assetId = entity.tapChanger.asset.mrid || ''
+    dto.tap_changers.mrid = entity.tapChanger.asset.mrid || ''
     dto.tap_changers.serial_no = entity.tapChanger.asset.serial_number || ''
     dto.tap_changers.productAssetModelId = entity.tapChanger.oldTapChangerInfo.product_asset_model || ''
     dto.tap_changers.manufacturer = entity.tapChanger.productAssetModel.manufacturer || ''
-    dto.tap_changers.assetId = entity.tapChanger.oldTapChangerInfo.mrid || ''
+    dto.tap_changers.assetInfoId = entity.tapChanger.oldTapChangerInfo.mrid || ''
     dto.tap_changers.manufacturer_type = entity.tapChanger.oldTapChangerInfo.manufacturer_type || ''
     for (const transformer_end_info of entity.oldTransformerEndInfo) {
         if (transformer_end_info.mrid == entity.tapChanger.oldTapChangerInfo.transformer_end_info) {
@@ -1169,24 +1180,31 @@ export const transformerEntityToDto = (entity) => {
     }
     dto.tap_changers.tap_scheme = entity.tapChanger.oldTapChangerInfo.tap_scheme || ''
     dto.tap_changers.no_of_taps = entity.tapChanger.oldTapChangerInfo.number_of_tap || ''
-    dto.tap_changers.mrid = entity.tapChanger.assetPsr.asset_id || ''
-    dto.tap_changers.assetPsr.psr_id = entity.tapChanger.assetPsr.psr_id || ''
-    dto.tap_changers.assetPsr.mrid = entity.tapChanger.assetPsr.mrid || ''
-    dto.tap_changers.ratioTapchangerTableId = entity.tapChanger.ratioTapChanger.ratio_tap_changer_table || ''
-    if (entity.tapChanger.ratioTapChanger.control_enabled == true && entity.tapChanger.ratioTapChanger.ltc_flag == true) {
-        dto.tap_changers.mode = 'oltc'
-    } else {
-        dto.tap_changers.mode = 'detc'
-    }
-    for (const t of entity.tapChanger.ratioTapChangerTablePoint) {
+    dto.tap_changers.mode = entity.tapChanger.asset.type || ''
+    for (const t of entity.tapChanger.tapChangerTablePoint) {
         const point = {
             id: '',
             tap: '',
-            voltage: ''
+            voltage: {
+                mrid : '',
+                value : '',
+                unit : 'V'
+            }
         }
         point.id = t.mrid
         point.tap = t.step
-        point.voltage = t.ratio
+        for(const voltage of entity.tapChanger.voltage) {
+            if(voltage.mrid == t.voltage) {
+                point.voltage.mrid = voltage.mrid
+                point.voltage.value = voltage.value
+                if(voltage.multiplier === '' || voltage.multiplier === null) {
+                    point.voltage.unit = voltage.unit
+                } else {
+                    point.voltage.unit = voltage.multiplier + '|' + voltage.unit
+                }
+                break
+            }
+        }
         dto.tap_changers.voltage_table.push(point)
     }
 
@@ -1339,6 +1357,106 @@ export const transformerEntityToDto = (entity) => {
             }
         }
     }
+
+    for (const transformer_end_info of entity.oldTransformerEndInfo) {
+        for(const surgeArresterData of entity.surgeArrester) {
+            if(surgeArresterData.oldSurgeArresterInfo.transformer_end_info === transformer_end_info.mrid) {
+                const surgeTemplate = {
+                    sign: true,
+                    properties : {
+                        assetInfoId : '',
+                        asset_system_code : '',
+                        lifecycleDateId : '',
+                        manufacturer : '',
+                        manufacturer_year : '',
+                        mrid : '',
+                        productAssetModelId : '',
+                        serial_no : ''
+                    },
+                    ratings : {
+                        pos : '',
+                        unit : '',
+                        table : []
+                    }
+                }
+                surgeTemplate.properties.mrid = surgeArresterData.surgeArrester.mrid || ''
+                surgeTemplate.properties.assetInfoId = surgeArresterData.oldSurgeArresterInfo.mrid || ''
+                surgeTemplate.properties.asset_system_code = surgeArresterData.surgeArrester.asset_system_code || ''
+                surgeTemplate.properties.lifecycleDateId = surgeArresterData.lifecycleDate.mrid || ''
+                surgeTemplate.properties.manufacturer = surgeArresterData.productAssetModel.manufacturer || ''
+                surgeTemplate.properties.serial_no = surgeArresterData.surgeArrester.serial_number || ''
+                surgeTemplate.properties.manufacturer_year = surgeArresterData.lifecycleDate.manufactured_date || ''
+                surgeTemplate.properties.productAssetModelId = surgeArresterData.productAssetModel.mrid || ''
+
+                surgeTemplate.ratings.pos = surgeArresterData.oldSurgeArresterInfo.phase || ''
+                surgeTemplate.ratings.unit = surgeArresterData.surgeArrester.unit_count || ''
+
+                for(const assetUnit of surgeArresterData.assetUnit) {
+                    const assetUnitInfo = surgeArresterData.assetInfoUnit.find(x => x.mrid === assetUnit.asset_info)
+                    const tableUnit = {
+                        mrid : '',
+                        assetInfoId : '',
+                        serial: '',
+                        voltageLl: {
+                            mrid: '',
+                            value: '',
+                            unit: UnitMultiplier.k + '|' + UnitSymbol.V,
+                        },
+                        voltageLn: {
+                            mrid: '',
+                            value: '',
+                            unit: UnitMultiplier.k + '|' + UnitSymbol.V,
+                        },
+                        mcovRating: {
+                            mrid: '',
+                            value: '',
+                            unit: UnitMultiplier.k + '|' + UnitSymbol.V,
+                        }
+                    }
+                    tableUnit.mrid = assetUnit.mrid || ''
+                    tableUnit.assetInfoId = assetUnitInfo.mrid || ''
+                    tableUnit.serial = assetUnit.serial_number || ''
+
+                    tableUnit.voltageLl.mrid = assetUnitInfo.voltage_ll || ''
+                    for(const voltage of surgeArresterData.voltage) {
+                        if(voltage.mrid === tableUnit.voltageLl.mrid) {
+                            tableUnit.voltageLl.value = voltage.value
+                            tableUnit.voltageLl.unit = voltage.multiplier ? voltage.multiplier + '|' + voltage.unit : voltage.unit
+                        }
+                    }
+
+                    tableUnit.voltageLn.mrid = assetUnitInfo.voltage_ln || ''
+                    for(const voltage of surgeArresterData.voltage) {
+                        if(voltage.mrid === tableUnit.voltageLn.mrid) {
+                            tableUnit.voltageLn.value = voltage.value
+                            tableUnit.voltageLn.unit = voltage.multiplier ? voltage.multiplier + '|' + voltage.unit : voltage.unit
+                        }
+                    }
+
+                    tableUnit.mcovRating.mrid = assetUnitInfo.continuous_operating_voltage || ''
+                    for(const voltage of surgeArresterData.voltage) {
+                        if(voltage.mrid === tableUnit.mcovRating.mrid) {
+                            tableUnit.mcovRating.value = voltage.value
+                            tableUnit.mcovRating.unit = voltage.multiplier ? voltage.multiplier + '|' + voltage.unit : voltage.unit
+                        }
+                    }
+                    
+                    surgeTemplate.ratings.table.push(tableUnit)
+                }
+
+                if (transformer_end_info.end_number == 1) {
+                    dto.surge_arrester.prim.push(surgeTemplate)
+                } else if (transformer_end_info.end_number == 2) {
+                    dto.surge_arrester.sec.push(surgeTemplate)
+                } else if (transformer_end_info.end_number == 3) {
+                    dto.surge_arrester.tert.push(surgeTemplate)
+                }
+            }
+        }
+    }
+
+    console.log(dto)
+
     return dto;
 }
 
