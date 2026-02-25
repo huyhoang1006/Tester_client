@@ -19,7 +19,7 @@
                         <span v-else-if="tab.mode == 'substation'" class="tab-label">{{ tab.name }}</span>
                         <span v-else-if="tab.mode == 'voltageLevel'" class="tab-label">{{ tab.name }}</span>
                         <span v-else-if="tab.mode == 'bay'" class="tab-label">{{ tab.name }}</span>
-                        <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.serial_number }}</span>
+                        <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.apparatus_id || tab.serial_number }}</span>
                         <span v-else-if="tab.mode == 'job'" class="tab-label">{{ tab.name }}</span>
                     </div>
                     <span class="close-icon mgr-10 mgl-10"
@@ -63,7 +63,7 @@
                         <span v-else-if="tab.mode == 'substation'" class="tab-label">{{ tab.name }}</span>
                         <span v-else-if="tab.mode == 'voltageLevel'" class="tab-label">{{ tab.name }}</span>
                         <span v-else-if="tab.mode == 'bay'" class="tab-label">{{ tab.name }}</span>
-                        <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.serial_number }}</span>
+                        <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.apparatus_id || tab.serial_number }}</span>
                         <span v-else-if="tab.mode == 'job'" class="tab-label">{{ tab.name }}</span>
                     </div>
                     <span class="close-icon mgr-10 mgl-10"
@@ -287,8 +287,24 @@ export default {
                     }
                     
                     console.log('[RELOAD] Calling loadData on component with:', data)
-                    this.$refs.componentLoadData[index].loadData(data)
+                    // ✅ Check component exists before calling loadData
+                    if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                        this.$refs.componentLoadData[index].loadData(data)
+                    } else {
+                        console.warn('[RELOAD] Component not ready, waiting for next tick')
+                        await this.$nextTick()
+                        if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                            this.$refs.componentLoadData[index].loadData(data)
+                        }
+                    }
                     console.log('[RELOAD] Substation data loaded successfully')
+                    
+                    // ✅ Update tab với data mới
+                    if (data.dto) {
+                        Object.assign(tab, {
+                            name: data.dto.name
+                        })
+                    }
                     
                     // ✅ Update node trong tree với data mới và set cache flag
                     this.$emit('update-node-data', {
@@ -332,8 +348,23 @@ export default {
                     }
                     
                     console.log('[RELOAD] Calling loadData on component with:', orgEntity)
-                    this.$refs.componentLoadData[index].loadData(orgEntity)
+                    // ✅ Check component exists before calling loadData
+                    if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                        this.$refs.componentLoadData[index].loadData(orgEntity)
+                    } else {
+                        console.warn('[RELOAD] Component not ready, waiting for next tick')
+                        await this.$nextTick()
+                        if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                            this.$refs.componentLoadData[index].loadData(orgEntity)
+                        }
+                    }
                     console.log('[RELOAD] Organisation data loaded successfully')
+                    
+                    // ✅ Update tab với data mới
+                    Object.assign(tab, {
+                        name: orgEntity.name,
+                        aliasName: orgEntity.aliasName
+                    })
                     
                     // ✅ Update node trong tree với data mới và set cache flag
                     // Emit event để parent update node trong tree
@@ -352,7 +383,16 @@ export default {
                         if (!voltageLevelDto.name || voltageLevelDto.name === '') {
                             voltageLevelDto.name = tab.name || ''
                         }
-                        this.$refs.componentLoadData[index].loadData(voltageLevelDto)
+                        
+                        // ✅ Check component exists before calling loadData
+                        if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                            this.$refs.componentLoadData[index].loadData(voltageLevelDto)
+                        }
+                        
+                        // ✅ Update tab với data mới
+                        Object.assign(tab, {
+                            name: voltageLevelDto.name
+                        })
                     } else {
                         // Nếu entity chưa tồn tại, tạo DTO mới từ tab data
                         const VoltageLevelDto = require('@/views/Dto/VoltageLevel').default
@@ -360,7 +400,11 @@ export default {
                         volDto.name = tab.name || ''
                         volDto.voltageLevelId = tab.mrid || ''
                         volDto.substationId = tab.parentId || ''
-                        this.$refs.componentLoadData[index].loadData(volDto)
+                        
+                        // ✅ Check component exists before calling loadData
+                        if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                            this.$refs.componentLoadData[index].loadData(volDto)
+                        }
                     }
                 } else if (tab.mode === 'bay') {
                     const data = await window.electronAPI.getBayEntityByMrid(tab.mrid)
@@ -370,7 +414,16 @@ export default {
                         if (!bayData.name || bayData.name === '') {
                             bayData.name = tab.name || ''
                         }
-                        this.$refs.componentLoadData[index].loadData(bayData)
+                        
+                        // ✅ Check component exists before calling loadData
+                        if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                            this.$refs.componentLoadData[index].loadData(bayData)
+                        }
+                        
+                        // ✅ Update tab với data mới
+                        Object.assign(tab, {
+                            name: bayData.name
+                        })
                     } else {
                         // Nếu entity chưa tồn tại, tạo object mới từ tab data
                         const bayData = {
@@ -378,7 +431,11 @@ export default {
                             mrid: tab.mrid || '',
                             voltageLevel: tab.parentId || ''
                         }
-                        this.$refs.componentLoadData[index].loadData(bayData)
+                        
+                        // ✅ Check component exists before calling loadData
+                        if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                            this.$refs.componentLoadData[index].loadData(bayData)
+                        }
                     }
                 } else if (tab.mode === 'asset') {
                     //console.log('[RELOAD] Loading asset data for:', tab.asset, 'mrid:', tab.mrid)
@@ -387,7 +444,25 @@ export default {
                     if (savedData) {
                         console.log('[RELOAD] Using savedData from save operation - NO API CALL!')
                         this.parentOrganization = { mrid: tab.parentId }
-                        this.$refs.componentLoadData[index].loadData(savedData)
+                        
+                        // ✅ Check component exists before calling loadData
+                        if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                            this.$refs.componentLoadData[index].loadData(savedData)
+                        } else {
+                            console.warn('[RELOAD] Component not ready, waiting for next tick')
+                            await this.$nextTick()
+                            if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                                this.$refs.componentLoadData[index].loadData(savedData)
+                            }
+                        }
+                        
+                        // ✅ Update tab với data mới
+                        Object.assign(tab, {
+                            serial_number: savedData.properties?.serial_no,
+                            apparatus_id: savedData.properties?.apparatus_id,
+                            manufacturer: savedData.properties?.manufacturer,
+                            type: savedData.properties?.type
+                        })
                         
                         // Update node và emit events
                         this.$emit('update-node-data', {

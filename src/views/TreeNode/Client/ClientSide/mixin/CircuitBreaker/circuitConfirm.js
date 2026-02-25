@@ -55,6 +55,7 @@ export default {
                                 mrid: assetData.mrid,
                                 name: assetData.name || assetData.serial_number || 'Unnamed Circuit Breaker',
                                 serial_number: assetData.serial_number,
+                                apparatus_id: assetData.apparatus_id,
                                 parentId: this.parentOrganization.mrid,
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
