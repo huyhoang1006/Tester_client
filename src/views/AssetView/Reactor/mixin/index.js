@@ -49,13 +49,19 @@ export default {
         },
 
         async saveCtrS() {
+            console.log('[REACTOR] saveCtrS called')
             const data = await this.saveAsset()
+            console.log('[REACTOR] saveAsset result:', data)
             if (data && data.success) {
                 if (data.data) {
                     const dto = Mapping.mapEntityToDto(data.data)
                     this.loadData(dto)
                 }
                 this.$message.success("Asset saved successfully")
+                
+                console.log('[REACTOR] Emitting reload event with saved data')
+                this.$emit('reload', { savedData: this.reactor })
+                console.log('[REACTOR] Reload event emitted')
             } else {
                 this.$message.error("Failed to save asset")
             }

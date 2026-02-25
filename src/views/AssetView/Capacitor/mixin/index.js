@@ -48,7 +48,9 @@ export default {
         },
 
         async saveCtrS() {
+            console.log('[CAPACITOR] saveCtrS called')
             const data = await this.saveAsset()
+            console.log('[CAPACITOR] saveAsset result:', data)
             if (data && data.success) {
                 // Load back the saved entity so the UI shows exactly what was stored
                 if (data.data) {
@@ -57,6 +59,10 @@ export default {
                     this.loadData(dto)
                 }
                 this.$message.success("Asset saved successfully")
+                
+                console.log('[CAPACITOR] Emitting reload event with saved data')
+                this.$emit('reload', { savedData: this.capacitor })
+                console.log('[CAPACITOR] Reload event emitted')
             } else {
                 this.$message.error("Failed to save asset")
             }

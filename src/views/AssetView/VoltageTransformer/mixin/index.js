@@ -54,9 +54,15 @@ export default {
             }
         },
         async saveCtrS() {
+            console.log('[VOLTAGE_TRANSFORMER] saveCtrS called')
             const data = await this.saveAsset()
+            console.log('[VOLTAGE_TRANSFORMER] saveAsset result:', data)
             if (data.success) {
                 this.$message.success("Asset saved successfully")
+                
+                console.log('[VOLTAGE_TRANSFORMER] Emitting reload event with saved data')
+                this.$emit('reload', { savedData: this.voltageTransformer })
+                console.log('[VOLTAGE_TRANSFORMER] Reload event emitted')
             } else {
                 this.$message.error("Failed to save asset")
             }

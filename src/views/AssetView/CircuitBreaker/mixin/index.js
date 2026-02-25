@@ -84,7 +84,9 @@ export default {
                 this.attachmentData = []
         },
         async saveCtrS() {
+            console.log('[CIRCUIT_BREAKER] saveCtrS called')
             const data = await this.saveAsset()
+            console.log('[CIRCUIT_BREAKER] saveAsset result:', data)
             if (data && data.success) {
                 // Load back the saved entity so the UI shows exactly what was stored
                 if (data.data) {
@@ -93,6 +95,10 @@ export default {
                     this.loadData(dto)
                 }
                 this.$message.success("Asset saved successfully")
+                
+                console.log('[CIRCUIT_BREAKER] Emitting reload event with saved data')
+                this.$emit('reload', { savedData: this.circuitBreakerDto })
+                console.log('[CIRCUIT_BREAKER] Reload event emitted')
             } else {
                 this.$message.error("Failed to save asset")
             }

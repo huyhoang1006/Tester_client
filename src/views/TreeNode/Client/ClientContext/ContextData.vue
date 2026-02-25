@@ -6,7 +6,9 @@
                 <div class="content-content">
                     <Tabs :side="'client'" ref="clientTabs" :value="activeTabClient" :tabs="tabsClient"
                         @input="onTabChange"
-                        @close-tab="removeTabClient" />
+                        @close-tab="removeTabClient"
+                        @update-node-data="handleUpdateNodeData"
+                        @refresh-properties="handleRefreshProperties" />
                 </div>
             </div>
             <div @mousedown="startResizeContentClient" ref="resizerContentClient" class="resizer"></div>
@@ -31,11 +33,7 @@
                                 propertiesClient.name || '&nbsp;' }}</div>
                         </div>
                         
-                        <div class="content-properties-table-flex">
-                            <div class="content-properties-table-header">Plant</div>
-                            <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                propertiesClient.plant || '&nbsp;' }}</div>
-                        </div>
+        
                         <div class="content-properties-table-flex">
                             <div class="content-properties-table-header">Address</div>
                             <div class="content-properties-table-content fixed-box pl10 break-word">{{
@@ -52,11 +50,7 @@
                                 {{ propertiesClient.state_province || '&nbsp;' }}
                             </div>
                         </div>
-                        <div class="content-properties-table-flex">
-                            <div class="content-properties-table-header">Postal code</div>
-                            <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                propertiesClient.postal_code || '&nbsp;' }}</div>
-                        </div>
+                        
                         <div class="content-properties-table-flex">
                             <div class="content-properties-table-header">Country</div>
                             <div class="content-properties-table-content fixed-box pl10 break-word">{{
@@ -349,6 +343,16 @@ export default {
         },
         async reloadLogClient(doneCallback) {
             this.$emit('reload-log-client', doneCallback)
+        },
+        handleUpdateNodeData(payload) {
+            console.log('[UPDATE-NODE-DATA] Event received:', payload)
+            // Emit lên parent (treeNavigation) để update node trong tree
+            this.$emit('update-node-data', payload)
+        },
+        handleRefreshProperties(tab) {
+            console.log('[REFRESH-PROPERTIES] Event received for tab:', tab)
+            // Emit lên parent (treeNavigation) để gọi showPropertiesDataClient
+            this.$emit('refresh-properties', tab)
         },
         showLogBarClient() {
             this.$emit('update:logSignClient', true)

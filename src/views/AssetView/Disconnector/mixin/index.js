@@ -115,7 +115,9 @@ export default {
         },
 
         async saveCtrS() {
+            console.log('[DISCONNECTOR] saveCtrS called')
             const data = await this.saveAsset()
+            console.log('[DISCONNECTOR] saveAsset result:', data)
             if (data && data.success) {
                 // Load back the saved entity so the UI shows exactly what was stored
                 if (data.data) {
@@ -124,6 +126,10 @@ export default {
                     this.loadData(dto)
                 }
                 this.$message.success("Asset saved successfully")
+                
+                console.log('[DISCONNECTOR] Emitting reload event with saved data')
+                this.$emit('reload', { savedData: this.disconnector })
+                console.log('[DISCONNECTOR] Reload event emitted')
             } else {
                 this.$message.error("Failed to save asset")
             }

@@ -48,9 +48,16 @@ export default {
         },
 
         async saveCtrS() {
+            console.log('[SURGE_ARRESTER] saveCtrS called')
             const data = await this.saveAsset()
+            console.log('[SURGE_ARRESTER] saveAsset result:', data)
             if (data.success) {
                 this.$message.success("Asset saved successfully")
+                
+                console.log('[SURGE_ARRESTER] Emitting reload event with saved data')
+                // ✅ Emit reload event với savedData - KHÔNG cần gọi API!
+                this.$emit('reload', { savedData: this.surge_arrester_data })
+                console.log('[SURGE_ARRESTER] Reload event emitted')
             } else {
                 this.$message.error("Failed to save asset")
             }

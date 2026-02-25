@@ -31,7 +31,7 @@
         </div>
         <div class="tabs-content">
             <div v-show="activeTab.mrid === item.mrid" class="mgr-20 mgt-20 mgb-20 mgl-20" v-for="(item, index) in tabs" :key="item.mrid">
-                <component mode="update" @reload="loadData"
+                <component mode="update" @reload="handleReload(item, index, $event)"
                     ref="componentLoadData" :sideData="sideSign" :is="checkTab(item)" :organisationId="item.parentId"
                     :testTypeListData="testTypeListData" :assetData="assetData"
                     :productAssetModelData="productAssetModelData" :parent="parentOrganization"
@@ -75,7 +75,7 @@
         </div>
         <div class="tabs-content">
             <div class="mgr-20 mgt-20 mgb-20 mgl-20" v-for="(item, index) in tabs" :key="item.mrid || item.id">
-                <component mode="update" @reload="loadData" v-show="compareTab(activeTab, item)"
+                <component mode="update" @reload="handleReload(item, index, $event)" v-show="compareTab(activeTab, item)"
                     ref="componentLoadData" :sideData="sideSign" :is="checkTab(item)" :organisationId="String(item.parentId)"
                     :testTypeListData="testTypeListData" :assetData="assetData"
                     :productAssetModelData="productAssetModelData" :parent="parentOrganization"
@@ -189,80 +189,161 @@ export default {
         }
     },
     methods: {
-        async loadData(tab, index) {
+        handleReload(tab, index, ...args) {
+            console.log('[RELOAD] handleReload called:', { tab, index, args })
+            
+            // Xử lý 2 format khác nhau:
+            // - Organisation: emit('reload', { savedData: ... })
+            // - Substation: emit('reload', substation, { savedData: ... })
+            
+            let savedData
+            
+            if (args.length === 1) {
+                // Format 1: Organisation - args[0] = { savedData: ... }
+                const eventData = args[0]
+                savedData = eventData?.savedData
+                console.log('[RELOAD] Organisation format detected')
+            } else if (args.length === 2) {
+                // Format 2: Substation - args[0] = substation, args[1] = { savedData: ... }
+                const eventData = args[1]
+                savedData = eventData?.savedData
+                console.log('[RELOAD] Substation format detected')
+            }
+            
+            console.log('[RELOAD] Extracted savedData:', savedData)
+            this.loadData(tab, index, savedData)
+        },
+        async loadData(tab, index, savedData) {
+            console.log('[RELOAD] loadData called with:', { tab, index, savedData, side: this.side })
             if (this.side === 'client') {
-                await this.loadDataClient(tab, index)
+                await this.loadDataClient(tab, index, savedData)
             } else {
-                await this.loadDataServer(tab, index)
+                await this.loadDataServer(tab, index, savedData)
             }
         },
-        async loadDataClient(tab, index) {
+        async loadDataClient(tab, index, savedData) {
             try {
+                console.log('[RELOAD] loadDataClient called:', { tab, index, savedData })
                 if (index == null) {
                     index = this.tabs.findIndex(t => t.mrid === tab.mrid);
+                    console.log('[RELOAD] Found index:', index)
                     if (index === -1) {
                         this.$message.error("Tab not found");
                         return;
                     }
                 }
                 if (tab.mode === 'substation') {
-                    const [dataLocation, dataPerson, dataEntity] = await Promise.all([
-                        window.electronAPI.getLocationByOrganisationId(tab.parentId),
-                        window.electronAPI.getPersonByOrganisationId(tab.parentId),
-                        window.electronAPI.getSubstationEntityByMrid(tab.mrid, this.$store.state.user.user_id, tab.parentId)
-                    ]);
-                    const data = {
-                        locationList: [],
-                        personList: [],
-                        dto: null,
-                        substation: tab
-                    }
-                    if (dataLocation.success) {
-                        data.locationList = dataLocation.data
+                    console.log('[RELOAD] Loading substation data for mrid:', tab.mrid)
+                    
+                    let data
+                    
+                    // ✅ Nếu có savedData từ save, dùng luôn - KHÔNG gọi API!
+                    if (savedData) {
+                        console.log('[RELOAD] Using savedData from save operation - NO API CALL!')
+                        data = savedData
                     } else {
-                        data.locationList = []
-                    }
+                        // Chỉ gọi API khi không có savedData (ví dụ: reload thủ công)
+                        console.log('[RELOAD] No savedData, fetching from API')
+                        const [dataLocation, dataPerson, dataEntity] = await Promise.all([
+                            window.electronAPI.getLocationByOrganisationId(tab.parentId),
+                            window.electronAPI.getPersonByOrganisationId(tab.parentId),
+                            window.electronAPI.getSubstationEntityByMrid(tab.mrid, this.$store.state.user.user_id, tab.parentId)
+                        ]);
+                        
+                        data = {
+                            locationList: [],
+                            personList: [],
+                            dto: null,
+                            substation: tab
+                        }
+                        
+                        if (dataLocation.success) {
+                            data.locationList = dataLocation.data
+                        } else {
+                            data.locationList = []
+                        }
 
-                    if (dataPerson.success) {
-                        data.personList = dataPerson.data
-                    } else {
-                        data.personList = []
-                    }
+                        if (dataPerson.success) {
+                            data.personList = dataPerson.data
+                        } else {
+                            data.personList = []
+                        }
 
-                    if (dataEntity.success) {
-                        const dto = subsMapper.mapEntityToDto(dataEntity.data)
-                        // Đảm bảo name được set từ tab nếu entity không có name
-                        if (!dto.name || dto.name === '') {
+                        if (dataEntity.success) {
+                            const dto = subsMapper.mapEntityToDto(dataEntity.data)
+                            // Đảm bảo name được set từ tab nếu entity không có name
+                            if (!dto.name || dto.name === '') {
+                                dto.name = tab.name || ''
+                            }
+                            data.dto = dto
+                        } else {
+                            // Nếu entity chưa tồn tại, tạo DTO mới từ tab data
+                            const dto = new SubstationDto()
                             dto.name = tab.name || ''
+                            dto.subsId = tab.mrid || ''
+                            dto.organisationId = tab.parentId || ''
+                            data.dto = dto
                         }
-                        data.dto = dto
-                    } else {
-                        // Nếu entity chưa tồn tại, tạo DTO mới từ tab data
-                        const dto = new SubstationDto()
-                        dto.name = tab.name || ''
-                        dto.subsId = tab.mrid || ''
-                        dto.organisationId = tab.parentId || ''
-                        data.dto = dto
                     }
+                    
+                    console.log('[RELOAD] Calling loadData on component with:', data)
                     this.$refs.componentLoadData[index].loadData(data)
+                    console.log('[RELOAD] Substation data loaded successfully')
+                    
+                    // ✅ Update node trong tree với data mới và set cache flag
+                    this.$emit('update-node-data', {
+                        mrid: tab.mrid,
+                        data: data.dto,
+                        mode: 'substation'
+                    })
+                    
+                    // ✅ Emit event để update Object Properties
+                    this.$emit('refresh-properties', tab)
                 } else if (tab.mode === 'organisation') {
-                    const data = await window.electronAPI.getOrganisationEntityByMrid(tab.mrid)
-                    if (data.success) {
-                        const orgEntity = orgMapper.OrgEntityToOrgDto(data.data)
-                        // Đảm bảo name được set từ tab nếu entity không có name
-                        if (!orgEntity.name || orgEntity.name === '') {
-                            orgEntity.name = tab.name || ''
-                        }
-                        this.$refs.componentLoadData[index].loadData(orgEntity)
+                    console.log('[RELOAD] Loading organisation data for mrid:', tab.mrid)
+                    
+                    let orgEntity
+                    
+                    // ✅ Nếu có savedData từ save, dùng luôn - KHÔNG gọi API!
+                    if (savedData) {
+                        console.log('[RELOAD] Using savedData from save operation - NO API CALL!')
+                        orgEntity = savedData
                     } else {
-                        // Nếu entity chưa tồn tại, tạo DTO mới từ tab data
-                        const OrganisationDto = require('@/views/Dto/Organisation').default
-                        const orgDto = new OrganisationDto()
-                        orgDto.name = tab.name || ''
-                        orgDto.organisationId = tab.mrid || ''
-                        orgDto.parentId = tab.parentId || ''
-                        this.$refs.componentLoadData[index].loadData(orgDto)
+                        // Chỉ gọi API khi không có savedData (ví dụ: reload thủ công)
+                        console.log('[RELOAD] No savedData, fetching from API')
+                        const data = await window.electronAPI.getOrganisationEntityByMrid(tab.mrid)
+                        console.log('[RELOAD] Organisation data received:', data)
+                        if (data.success) {
+                            orgEntity = orgMapper.OrgEntityToOrgDto(data.data)
+                        } else {
+                            // Nếu entity chưa tồn tại, tạo DTO mới từ tab data
+                            const OrganisationDto = require('@/views/Dto/Organisation').default
+                            const orgDto = new OrganisationDto()
+                            orgDto.name = tab.name || ''
+                            orgDto.organisationId = tab.mrid || ''
+                            orgDto.parentId = tab.parentId || ''
+                            orgEntity = orgDto
+                        }
                     }
+                    
+                    // Đảm bảo name được set từ tab nếu entity không có name
+                    if (!orgEntity.name || orgEntity.name === '') {
+                        orgEntity.name = tab.name || ''
+                    }
+                    
+                    console.log('[RELOAD] Calling loadData on component with:', orgEntity)
+                    this.$refs.componentLoadData[index].loadData(orgEntity)
+                    console.log('[RELOAD] Organisation data loaded successfully')
+                    
+                    // ✅ Update node trong tree với data mới và set cache flag
+                    // Emit event để parent update node trong tree
+                    this.$emit('update-node-data', {
+                        mrid: tab.mrid,
+                        data: orgEntity
+                    })
+                    
+                    // ✅ Emit event để update Object Properties (sẽ dùng cache, không gọi API)
+                    this.$emit('refresh-properties', tab)
                 } else if (tab.mode === 'voltageLevel') {
                     const data = await window.electronAPI.getVoltageLevelEntityByMrid(tab.mrid)
                     if (data.success) {
@@ -300,7 +381,27 @@ export default {
                         this.$refs.componentLoadData[index].loadData(bayData)
                     }
                 } else if (tab.mode === 'asset') {
-                    if (tab.asset === 'Surge arrester') {
+                    //console.log('[RELOAD] Loading asset data for:', tab.asset, 'mrid:', tab.mrid)
+                    
+                    // ✅ Nếu có savedData từ save, dùng luôn - KHÔNG gọi API!
+                    if (savedData) {
+                        console.log('[RELOAD] Using savedData from save operation - NO API CALL!')
+                        this.parentOrganization = { mrid: tab.parentId }
+                        this.$refs.componentLoadData[index].loadData(savedData)
+                        
+                        // Update node và emit events
+                        this.$emit('update-node-data', {
+                            mrid: tab.mrid,
+                            data: savedData,
+                            mode: 'asset',
+                            assetType: tab.asset
+                        })
+                        this.$emit('refresh-properties', tab)
+                    } else {
+                        // Gọi API để load asset (sẽ được cache sau khi load thành công)
+                        //console.log('[RELOAD] Loading asset from API (will be cached after load)')
+                        
+                        if (tab.asset === 'Surge arrester') {
                         this.parentOrganization = {
                             mrid: tab.parentId
                         }
@@ -313,6 +414,14 @@ export default {
                                 surgeArresterDto.properties.serial_no = tab.serial_number || ''
                             }
                             this.$refs.componentLoadData[index].loadData(surgeArresterDto)
+                            
+                            // ✅ Cache DTO vào tree node
+                            this.$emit('update-node-data', {
+                                mrid: tab.mrid,
+                                data: surgeArresterDto,
+                                mode: 'asset',
+                                assetType: tab.asset
+                            })
                         } else {
                             // Nếu entity chưa tồn tại, tạo DTO mới từ tab data
                             const SurgeArresterDto = require('@/views/Dto/SurgeArrester').default
@@ -335,6 +444,14 @@ export default {
                                 BushingDto.properties.serial_no = tab.serial_number || ''
                             }
                             this.$refs.componentLoadData[index].loadData(BushingDto)
+                            
+                            // ✅ Cache DTO vào tree node để lần sau không cần gọi API
+                            this.$emit('update-node-data', {
+                                mrid: tab.mrid,
+                                data: BushingDto,
+                                mode: 'asset',
+                                assetType: tab.asset
+                            })
                         } else {
                             this.$message.error("Failed to load bushing data");
                         }
@@ -351,6 +468,14 @@ export default {
                                 currentTransformerDto.properties.serial_no = tab.serial_number || ''
                             }
                             this.$refs.componentLoadData[index].loadData(currentTransformerDto)
+                            
+                            // ✅ Cache DTO vào tree node
+                            this.$emit('update-node-data', {
+                                mrid: tab.mrid,
+                                data: currentTransformerDto,
+                                mode: 'asset',
+                                assetType: tab.asset
+                            })
                         } else {
                             this.$message.error("Failed to load Current transformer data");
                         }
@@ -368,6 +493,14 @@ export default {
                                 vtDto.properties.serial_no = tab.serial_number || ''
                             }
                             this.$refs.componentLoadData[index].loadData(vtDto)
+                            
+                            // ✅ Cache DTO vào tree node
+                            this.$emit('update-node-data', {
+                                mrid: tab.mrid,
+                                data: vtDto,
+                                mode: 'asset',
+                                assetType: tab.asset
+                            })
                         } else {
                             this.$message.error("Failed to load Voltage transformer data");
                         }
@@ -384,6 +517,14 @@ export default {
                                 disconnectorDto.properties.serial_no = tab.serial_number || ''
                             }
                             this.$refs.componentLoadData[index].loadData(disconnectorDto)
+                            
+                            // ✅ Cache DTO vào tree node
+                            this.$emit('update-node-data', {
+                                mrid: tab.mrid,
+                                data: disconnectorDto,
+                                mode: 'asset',
+                                assetType: tab.asset
+                            })
                         } else {
                             this.$message.error("Failed to load Disconnector data");
                         }
@@ -400,6 +541,14 @@ export default {
                                 powerCableDto.properties.serial_no = tab.serial_number || ''
                             }
                             this.$refs.componentLoadData[index].loadData(powerCableDto)
+                            
+                            // ✅ Cache DTO vào tree node
+                            this.$emit('update-node-data', {
+                                mrid: tab.mrid,
+                                data: powerCableDto,
+                                mode: 'asset',
+                                assetType: tab.asset
+                            })
                         } else {
                             this.$message.error("Failed to load Power cable data");
                         }
@@ -416,6 +565,14 @@ export default {
                                 rotatingMachineDto.properties.serial_no = tab.serial_number || ''
                             }
                             this.$refs.componentLoadData[index].loadData(rotatingMachineDto)
+                            
+                            // ✅ Cache DTO vào tree node
+                            this.$emit('update-node-data', {
+                                mrid: tab.mrid,
+                                data: rotatingMachineDto,
+                                mode: 'asset',
+                                assetType: tab.asset
+                            })
                         } else {
                             this.$message.error("Failed to load Rotating Machine data");
                         }
@@ -432,6 +589,14 @@ export default {
                                 capacitorDto.properties.serial_no = tab.serial_number || ''
                             }
                             this.$refs.componentLoadData[index].loadData(capacitorDto)
+                            
+                            // ✅ Cache DTO vào tree node
+                            this.$emit('update-node-data', {
+                                mrid: tab.mrid,
+                                data: capacitorDto,
+                                mode: 'asset',
+                                assetType: tab.asset
+                            })
                         }
                         else {
                             this.$message.error("Failed to load Capacitor data");
@@ -449,6 +614,14 @@ export default {
                                 breakerDto.properties.serial_no = tab.serial_number || ''
                             }
                             this.$refs.componentLoadData[index].loadData(breakerDto)
+                            
+                            // ✅ Cache DTO vào tree node
+                            this.$emit('update-node-data', {
+                                mrid: tab.mrid,
+                                data: breakerDto,
+                                mode: 'asset',
+                                assetType: tab.asset
+                            })
                         } else {
                             this.$message.error("Failed to load circuit breaker data");
                         }    
@@ -465,6 +638,14 @@ export default {
                                 transformerDto.properties.serial_no = tab.serial_number || ''
                             }
                             this.$refs.componentLoadData[index].loadData(transformerDto)
+                            
+                            // ✅ Cache DTO vào tree node
+                            this.$emit('update-node-data', {
+                                mrid: tab.mrid,
+                                data: transformerDto,
+                                mode: 'asset',
+                                assetType: tab.asset
+                            })
                         } else {
                             this.$message.error("Failed to load transformer data");
                         }    
@@ -481,10 +662,19 @@ export default {
                                 reactorDto.properties.serial_no = tab.serial_number || ''
                             }
                             this.$refs.componentLoadData[index].loadData(reactorDto)
+                            
+                            // ✅ Cache DTO vào tree node
+                            this.$emit('update-node-data', {
+                                mrid: tab.mrid,
+                                data: reactorDto,
+                                mode: 'asset',
+                                assetType: tab.asset
+                            })
                         } else {
                             this.$message.error("Failed to load reactor data");
                         }    
                     }
+                    } // ✅ Đóng block else của savedData check
                 } else if (tab.mode === 'job') {
                     const dataAsset = await window.electronAPI.getAssetByMrid(tab.parentId)
                     if (dataAsset.success) {

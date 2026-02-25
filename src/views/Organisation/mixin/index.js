@@ -14,9 +14,16 @@ export default {
     },
     methods: {
         async saveCtrS() {
+            console.log('[ORGANISATION] saveCtrS called')
             const data = await this.saveOrganisation()
+            console.log('[ORGANISATION] saveOrganisation result:', data)
             if (data.success) {
                 this.$message.success("Organisation saved successfully")
+                
+                console.log('[ORGANISATION] Emitting reload event with saved data')
+                // ✅ Emit reload event với data đã save - KHÔNG cần gọi API!
+                this.$emit('reload', { savedData: this.properties })
+                console.log('[ORGANISATION] Reload event emitted')
             } else {
                 this.$message.error("Failed to save organisation")
             }

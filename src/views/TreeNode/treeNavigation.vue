@@ -105,11 +105,7 @@
                                     <div class="content-properties-table-content fixed-box pl10 break-word">{{
                                         properties.state_province }}</div>
                                 </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Postal code</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        properties.postal_code }}</div>
-                                </div>
+                                
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Country</div>
                                     <div class="content-properties-table-content fixed-box pl10 break-word">{{
@@ -255,6 +251,8 @@
                 :jobPropertiesClient="jobPropertiesClient" :logSignClient.sync="logSignClient"
                 :logDataClient="logDataClient" @update:activeTabClient="activeTabClient = $event"
                 @tab-changed="handleTabSelect" @remove-tab-client="removeTabClient"
+                @update-node-data="handleUpdateNodeData"
+                @refresh-properties="handleRefreshPropertiesClient"
                 @reload-log-client="reloadLogClient" />
         </div>
 
@@ -826,6 +824,74 @@ mounted() {
     });
 },
     methods: {
+        handleUpdateNodeData(payload) {
+            //console.log('[TREE-NAV] handleUpdateNodeData called:', payload)
+            const { mrid, data, mode, assetType } = payload
+            
+            // Tìm node trong tree
+            const treeNode = this.findNodeById(mrid, this.organisationClientList)
+            if (treeNode) {
+                //console.log('[TREE-NAV] Found node in tree, updating with fresh data')
+                //console.log('[TREE-NAV] Before update - node._cachedEntityData:', treeNode._cachedEntityData)
+                
+                if (mode === 'asset') {
+                    // Update asset node
+                    Object.assign(treeNode, {
+                        serial_number: data.properties?.serial_no,
+                        manufacturer: data.properties?.manufacturer,
+                        type: data.properties?.type,
+                        // Set flag và cache
+                        _hasFullProperties: true,
+                        _cachedEntityData: data
+                    })
+                } else if (mode === 'substation') {
+                    // Update substation node
+                    Object.assign(treeNode, {
+                        name: data.name,
+                        type: data.type,
+                        generation: data.generation,
+                        industry: data.industry,
+                        // Set flag và cache
+                        _hasFullProperties: true,
+                        _cachedEntityData: data
+                    })
+                } else {
+                    // Update organisation node
+                    Object.assign(treeNode, {
+                        name: data.name,
+                        geo_x: data.x_position,
+                        geo_y: data.y_position,
+                        phone_no: data.phoneNumber,
+                        email: data.email,
+                        // Set flag và cache
+                        _hasFullProperties: true,
+                        _cachedEntityData: data
+                    })
+                }
+                
+                //console.log('[TREE-NAV] After update - node._cachedEntityData:', treeNode._cachedEntityData)
+                //console.log('[TREE-NAV] After update - node._hasFullProperties:', treeNode._hasFullProperties)
+                //console.log('[TREE-NAV] Node updated successfully with cache flag set')
+            } else {
+                //console.warn('[TREE-NAV] Node not found in tree:', mrid)
+            }
+        },
+        async handleRefreshPropertiesClient(tab) {
+            //console.log('[TREE-NAV] handleRefreshPropertiesClient called for tab:', tab)
+            
+            // ✅ Tìm node trong tree (node đã được update với _cachedEntityData)
+            const treeNode = this.findNodeById(tab.mrid, this.organisationClientList)
+            if (treeNode) {
+                //console.log('[TREE-NAV] Found treeNode, using it instead of tab')
+                //console.log('[TREE-NAV] treeNode._cachedEntityData:', treeNode._cachedEntityData)
+                // Gọi showPropertiesDataClient với treeNode (có _cachedEntityData)
+                await this.showPropertiesDataClient(treeNode)
+            } else {
+                //console.warn('[TREE-NAV] TreeNode not found, using tab as fallback')
+                // Fallback: dùng tab nếu không tìm thấy node
+                await this.showPropertiesDataClient(tab)
+            }
+        },
         serverSwap(serverSign) {
             if (serverSign == true) {
                 this.clientSlide = false

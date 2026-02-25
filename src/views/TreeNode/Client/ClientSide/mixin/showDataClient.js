@@ -36,7 +36,15 @@ export default {
                     const clientTabs = this.getClientTabsRef ? this.getClientTabsRef() : this.$refs.clientTabs
                     if (clientTabs) {
                         clientTabs.selectTab(this.activeTabClient, newTabs.length - 1)
-                        clientTabs.loadData(newNode, newTabs.length - 1)
+                        
+                        // ✅ Nếu node có cache (_cachedEntityData), truyền vào như savedData
+                        if (newNode._cachedEntityData) {
+                            console.log('[SHOW-DATA] Using cached entity data, no API call needed')
+                            clientTabs.loadData(newNode, newTabs.length - 1, newNode._cachedEntityData)
+                        } else {
+                            console.log('[SHOW-DATA] No cache, will load from API')
+                            clientTabs.loadData(newNode, newTabs.length - 1)
+                        }
                     }
                 }
             } catch (error) {
@@ -45,25 +53,53 @@ export default {
             }
         },
         async showPropertiesDataClient(node) {
+            // Debounce: Tránh gọi API nhiều lần trong thời gian ngắn
+            const now = Date.now()
+            const lastCall = this._lastPropertiesCall || 0
+            const isSameNode = this._lastPropertiesNode?.mrid === node.mrid
+            
+            // Nếu cùng node và gọi trong vòng 300ms → skip
+            if (isSameNode && (now - lastCall) < 300) {
+                //console.log('[DEBOUNCE] Skipping duplicate call for same node')
+                return
+            }
+            
+            // Update tracking
+            this._lastPropertiesCall = now
+            this._lastPropertiesNode = node
+            
             this.assetPropertySignClient = false
             this.jobPropertySignClient = false
             if (node.asset != undefined) {
                 this.assetPropertySignClient = true
                 
-                // Tất cả asset đều có _hasFullProperties = true từ fetchChildren
-                // Không cần gọi API, dùng trực tiếp data từ node
-                 console.log('[OPTIMIZED] Using existing asset data from fetchChildren, no API call needed')
-                // console.log('[DEBUG] Asset data:', {
-                //     apparatus_id: node.apparatus_id,
-                //     serial_number: node.serial_number,
-                //     manufacturer: node.manufacturer,
-                //     manufacturer_type: node.manufacturer_type || node.asset_info_manufacturer_type,
-                //     manufacturing_year: node.manufacturing_year,
-                //     country_of_origin: node.country_of_origin
-                // })
+                let assetDetailData
                 
-                // Map trực tiếp từ node
-                await this.mappingAssetPropertiesClient(node)
+                // ✅ Ưu tiên dùng _cachedEntityData nếu có (data mới từ save)
+                if (node._cachedEntityData) {
+                    console.log('[OPTIMIZED] Using cached asset entity data from save operation, no API call needed')
+                    // DTO structure: data.properties.serial_no, data.properties.manufacturer, etc.
+                    // Cần flatten để mapping function có thể đọc được
+                    // Lưu ý: Một số asset dùng manufacturer_year, một số dùng manufacturing_year
+                    assetDetailData = {
+                        serial_number: node._cachedEntityData.properties?.serial_no,
+                        manufacturer: node._cachedEntityData.properties?.manufacturer,
+                        manufacturer_type: node._cachedEntityData.properties?.manufacturer_type,
+                        // Hỗ trợ cả 2 tên field: manufacturer_year (8 assets) và manufacturing_year (3 assets: Disconnector, Capacitor, Reactor)
+                        manufacturer_year: node._cachedEntityData.properties?.manufacturer_year || node._cachedEntityData.properties?.manufacturing_year,
+                        country_of_origin: node._cachedEntityData.properties?.country_of_origin,
+                        apparatus_id: node._cachedEntityData.properties?.apparatus_id,
+                        type: node.type || node._cachedEntityData.properties?.type  // ✅ Lấy từ node.type (đã được update) hoặc từ cached data
+                    }
+                } else {
+                    // Tất cả asset đều có _hasFullProperties = true từ fetchChildren
+                    // Không cần gọi API, dùng trực tiếp data từ node
+                    console.log('[OPTIMIZED] Using existing asset data from fetchChildren, no API call needed')
+                    assetDetailData = node
+                }
+                
+                // Map từ assetDetailData
+                await this.mappingAssetPropertiesClient(assetDetailData)
                 this.assetPropertiesClient.asset = node.asset || ''
 
                 // Tìm parent thực sự từ cây dữ liệu thay vì dùng node.parent
@@ -79,7 +115,7 @@ export default {
                             parentDetailData = parentNode._cachedEntityData
                         } else {
                             try {
-                                console.log('[API CALL] Fetching parent substation detail for asset')
+                                //console.log('[API CALL] Fetching parent substation detail for asset')
                                 // @ts-ignore
                                 const res = await window.electronAPI.getSubstationEntityByMrid(parentNode.mrid, this.$store.state.user.user_id, parentNode.parentId)
                                 if (res.success && res.data) {
@@ -220,15 +256,24 @@ export default {
                     // Nếu node đã có flag _hasFullProperties = true, nghĩa là fetchChildren đã lấy đầy đủ thông tin
                     // Không cần gọi API lại, tận dụng luôn dữ liệu đã có
                     if (node._hasFullProperties) {
-                        console.log('[OPTIMIZED] Using existing organisation data from fetchChildren, no API call needed')
-                        console.log('[DEBUG] Node data:', {
-                            name: node.name,
-                            geo_x: node.geo_x,
-                            geo_y: node.geo_y,
-                            phone_no: node.phone_no,
-                            email: node.email
-                        })
-                        detailData = node
+                        console.log('[DEBUG] node._hasFullProperties = true')
+                        console.log('[DEBUG] node._cachedEntityData:', node._cachedEntityData)
+                        
+                        // ✅ Ưu tiên dùng _cachedEntityData nếu có (data mới từ save)
+                        if (node._cachedEntityData) {
+                            console.log('[OPTIMIZED] Using cached entity data from save operation, no API call needed')
+                            detailData = node._cachedEntityData
+                        } else {
+                            console.log('[OPTIMIZED] Using existing organisation data from fetchChildren, no API call needed')
+                            console.log('[DEBUG] Node data:', {
+                                name: node.name,
+                                geo_x: node.geo_x,
+                                geo_y: node.geo_y,
+                                phone_no: node.phone_no,
+                                email: node.email
+                            })
+                            detailData = node
+                        }
                     } else {
                         // Trường hợp node chưa có đầy đủ thông tin (ví dụ: root node, hoặc node được load từ nguồn khác)
                         // Mới gọi API để lấy

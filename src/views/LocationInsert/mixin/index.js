@@ -20,11 +20,25 @@ export default {
     computed: mapState(['user', 'selectedLocation']),
     methods: {
         async saveCtrS() {
+            console.log('[SUBSTATION] saveCtrS called')
             try {
                 const { success, data } = await this.saveSubstation()
+                console.log('[SUBSTATION] saveSubstation result:', { success, data })
                 if (success) {
                     this.$message.success('Substation saved successfully')
-                    this.$emit('reload', this.substation, null)
+                    
+                    console.log('[SUBSTATION] Emitting reload event with saved data')
+                    // ✅ Emit reload event với savedData - KHÔNG cần gọi API!
+                    // Substation emit với format khác: (substation, savedData)
+                    this.$emit('reload', this.substation, { 
+                        savedData: {
+                            locationList: this.locationListData,
+                            personList: this.personListData,
+                            dto: this.properties,
+                            substation: this.substation
+                        }
+                    })
+                    console.log('[SUBSTATION] Reload event emitted')
                 }
             } catch (error) {
                 console.error('Error saving substation:', error);
@@ -496,7 +510,7 @@ export default {
                         this.properties.electronicAddressId = electronicAddressData.data.mrid || null;
                     }
                     if (personRoleData.success && personRoleData.data) {
-                        this.properties.personRole = personRoleData.data.department || '';
+                        this.properties.department = personRoleData.data.department || '';
                         this.properties.position = personRoleData.data.position || '';
                         this.properties.personRoleId = personRoleData.data.mrid || null;
                     }
