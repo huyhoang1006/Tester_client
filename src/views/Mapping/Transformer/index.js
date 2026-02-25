@@ -725,7 +725,6 @@ export const transformerDtoToEntity = (dto) => {
             }
         }
     }
-
     return entity
 
 }
@@ -1454,9 +1453,6 @@ export const transformerEntityToDto = (entity) => {
             }
         }
     }
-
-    console.log(dto)
-
     return dto;
 }
 

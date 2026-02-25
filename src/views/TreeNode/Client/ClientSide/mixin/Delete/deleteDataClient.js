@@ -355,6 +355,7 @@ export default {
                                 this.$message.error('Entity not found')
                                 return
                             }
+                            console.log(entity.data)
                             const deleteSign = await window.electronAPI.deleteTransformerEntity(entity.data)
                             if (!deleteSign.success) {
                                 this.$message.error('Delete data failed: ' + (deleteSign.message || 'Unknown error'))

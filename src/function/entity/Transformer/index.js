@@ -197,13 +197,13 @@ export const insertTransformerEntity = async (old_entity,entity) => {
                 }
             }
 
-            const newIdsBushing = entity.bushing.map(v => v.mrid).filter(id => id); // bỏ null/empty
-            const oldIdsBushing = old_entity.bushing.map(v => v.mrid).filter(id => id);
+            const newIdsBushing = entity.bushing.map(v => v.bushing.mrid).filter(id => id); // bỏ null/empty
+            const oldIdsBushing = old_entity.bushing.map(v => v.bushing.mrid).filter(id => id);
 
-            const toAddBushing = entity.bushing.filter(v => v.mrid && !oldIdsBushing.includes(v.mrid));
-            const toDeleteBushing = old_entity.bushing.filter(v => v.mrid && !newIdsBushing.includes(v.mrid));
+            const toAddBushing = entity.bushing.filter(v => v.bushing.mrid && !oldIdsBushing.includes(v.bushing.mrid));
+            const toDeleteBushing = old_entity.bushing.filter(v => v.bushing.mrid && !newIdsBushing.includes(v.bushing.mrid));
 
-            const toUpdateBushing = entity.bushing.filter(v => v.mrid && oldIdsBushing.includes(v.mrid));
+            const toUpdateBushing = entity.bushing.filter(v => v.bushing.mrid && oldIdsBushing.includes(v.bushing.mrid));
             for (const bushing of toAddBushing) {
                 await bushingFunc.insertBushingEntityLiteTransaction(bushing, db)
             }
@@ -519,6 +519,17 @@ export const deleteTransformerEntity = async (data) => {
                 if( data.attachment.id) {
                     await deleteAttachmentByIdTransaction(data.attachment.id, db);
                 }
+
+                //delete bushing
+                for(const bushing of data.bushing) {
+                    bushingFunc.deleteBushingEntityLiteTransaction(bushing, db)
+                }
+                
+                // delete surge
+                for(const surge of data.surgeArrester) {
+                    await deleteSurgeArresterLiteEntity(surge, db)
+                }
+
                 if(data.assetPsr && data.assetPsr.mrid) {
                     await deleteAssetPsrTransaction(data.assetPsr.mrid, db);
                 }

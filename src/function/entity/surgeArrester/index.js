@@ -561,7 +561,7 @@ export const deleteSurgeArresterLiteEntity = async (data, dbsql) => {
         }
     } catch (error) {
         console.error('Error deleting Surge Arrester entity:', error);
-        return { success: false, error, message: 'Error deleting Surge Arrester entity' };
+        throw error
     }
 }
 
