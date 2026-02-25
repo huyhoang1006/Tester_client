@@ -62,9 +62,15 @@ export default {
             }
         },
         async saveCtrS() {
+            console.log('[CURRENT_TRANSFORMER] saveCtrS called')
             const data = await this.saveAsset()
+            console.log('[CURRENT_TRANSFORMER] saveAsset result:', data)
             if (data.success) {
                 this.$message.success("Asset saved successfully")
+                
+                console.log('[CURRENT_TRANSFORMER] Emitting reload event with saved data')
+                this.$emit('reload', { savedData: this.currentTransformer })
+                console.log('[CURRENT_TRANSFORMER] Reload event emitted')
             } else {
                 this.$message.error("Failed to save asset")
             }

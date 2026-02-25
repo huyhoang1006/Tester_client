@@ -8,8 +8,21 @@ export default {
             if (oldTab && oldTab.mrid === newTab.mrid) return
             
             try {
-                // Gọi showPropertiesDataClient để cập nhật Object Properties
-                await this.showPropertiesDataClient(newTab)
+                //console.log('[TAB-SYNC] Tab changed to:', newTab)
+                
+                // ✅ Tìm treeNode trong tree (có _cachedEntityData)
+                const treeNode = this.findNodeById(newTab.mrid, this.organisationClientList)
+                
+                if (treeNode) {
+                    //console.log('[TAB-SYNC] Found treeNode, using it instead of tab')
+                    //console.log('[TAB-SYNC] treeNode._cachedEntityData:', treeNode._cachedEntityData)
+                    // Gọi showPropertiesDataClient với treeNode (có cache)
+                    await this.showPropertiesDataClient(treeNode)
+                } else {
+                    //console.warn('[TAB-SYNC] TreeNode not found, using tab as fallback')
+                    // Fallback: dùng tab nếu không tìm thấy node
+                    await this.showPropertiesDataClient(newTab)
+                }
             } catch (error) {
                 console.error('Error updating properties for tab:', error)
             }

@@ -49,9 +49,15 @@ export default {
         },
 
         async saveCtrS() {
+            console.log('[POWER_CABLE] saveCtrS called')
             const data = await this.saveAsset()
+            console.log('[POWER_CABLE] saveAsset result:', data)
             if (data.success) {
                 this.$message.success("Asset saved successfully")
+                
+                console.log('[POWER_CABLE] Emitting reload event with saved data')
+                this.$emit('reload', { savedData: this.powerCable })
+                console.log('[POWER_CABLE] Reload event emitted')
             } else {
                 this.$message.error("Failed to save asset")
             }

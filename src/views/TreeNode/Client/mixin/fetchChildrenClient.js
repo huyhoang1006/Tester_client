@@ -265,6 +265,8 @@ export default {
                                 row.parentId = clickedRow.mrid
                                 row.mode = 'asset'
                                 row.asset = 'Circuit breaker'
+                                // ✅ Preserve type from API if exists
+                                // row.type already exists from API, don't overwrite it
                                 let parentName = clickedRow.parentName + '/' + clickedRow.name
                                 row.parentName = parentName
                                 row.parentArr = [...(clickedRow.parentArr || [])]

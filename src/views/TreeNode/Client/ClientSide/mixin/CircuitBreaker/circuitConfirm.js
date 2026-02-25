@@ -59,7 +59,8 @@ export default {
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
                                 mode: 'asset',
-                                asset: 'Circuit breaker'
+                                asset: 'Circuit breaker',
+                                type: assetData.type
                             }
                             newRows.push(newRow)
                             const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)

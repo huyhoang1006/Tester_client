@@ -46,7 +46,9 @@ export default {
         },
 
         async saveCtrS() {
+            console.log('[ROTATING_MACHINE] saveCtrS called')
             const data = await this.saveAsset()
+            console.log('[ROTATING_MACHINE] saveAsset result:', data)
             if (data && data.success) {
                 // Load back the saved entity so the UI shows exactly what was stored
                 if (data.data) {
@@ -55,6 +57,10 @@ export default {
                     this.loadData(dto)
                 }
                 this.$message.success("Asset saved successfully")
+                
+                console.log('[ROTATING_MACHINE] Emitting reload event with saved data')
+                this.$emit('reload', { savedData: this.rotatingMachine })
+                console.log('[ROTATING_MACHINE] Reload event emitted')
             } else {
                 this.$message.error("Failed to save asset")
             }
