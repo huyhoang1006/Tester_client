@@ -1684,6 +1684,16 @@ export default {
         },
 
         changeSurgeArresterData() {
+            // ✅ Safe check: Đảm bảo surge_arrester và bushing_data tồn tại
+            if (!this.transformerDto.surge_arrester || !this.transformerDto.bushing_data) {
+                return
+            }
+            
+            // ✅ Safe check: Đảm bảo prim và sec tồn tại
+            if (!this.transformerDto.surge_arrester.prim || !this.transformerDto.bushing_data.prim) {
+                return
+            }
+            
             const surgeArresterTemplate = {
                 sign: false,
                 properties: {
@@ -1726,6 +1736,11 @@ export default {
                 }
             }
             //secondary
+            // ✅ Safe check: Đảm bảo sec tồn tại
+            if (!this.transformerDto.surge_arrester.sec || !this.transformerDto.bushing_data.sec) {
+                return
+            }
+            
             if (this.transformerDto.surge_arrester.sec.length === 0) {
                 for (let i = 0; i < this.transformerDto.bushing_data.sec.length; i++) {
                     const surgeArresterSec = JSON.parse(JSON.stringify(surgeArresterTemplate))

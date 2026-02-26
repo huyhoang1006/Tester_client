@@ -8,7 +8,7 @@
                         <span class="bolder">Properties</span>
                         <el-divider class="thick-divider"></el-divider>
                         <el-form-item label="Name">
-                            <el-input v-model="properties.name"></el-input>
+                            <el-input v-model="properties.name" v-if="properties"></el-input>
                         </el-form-item>
                         <el-form-item label="Type">
                         </el-form-item>
@@ -35,8 +35,8 @@
                         <el-form-item label="Location name" class="custom-label">
                             <el-select @change="changeLocationName" style="width: 100%;" filterable allow-create
                                 v-model="locationTemp">
-                                <el-option v-for="(item, index) in locationListData" :key="index" :label="item.name"
-                                    :value="item.mrid"> </el-option>
+                                <el-option v-for="(item, index) in locationListData" :key="index" :label="item && item.name ? item.name : ''"
+                                    :value="item && item.mrid ? item.mrid : ''"> </el-option>
                             </el-select>
                         </el-form-item>
                         <el-form-item label="Street" class="custom-label">
@@ -140,8 +140,8 @@
                         <el-form-item label="Name">
                             <el-select @change="changePersonName" style="width: 100%;" filterable allow-create
                                 v-model="personTemp">
-                                <el-option v-for="(item, index) in personListData" :key="index" :label="item.name"
-                                    :value="item.mrid"> </el-option>
+                                <el-option v-for="(item, index) in personListData" :key="index" :label="item && item.name ? item.name : ''"
+                                    :value="item && item.mrid ? item.mrid : ''"> </el-option>
                             </el-select>
                         </el-form-item>
                         <el-form-item label="Phone number">

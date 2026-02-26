@@ -276,6 +276,7 @@ export default {
                         }
                     }
                     
+                    
                     // ✅ Check component exists before calling loadData
                     if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
                         this.$refs.componentLoadData[index].loadData(data)

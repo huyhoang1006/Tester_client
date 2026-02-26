@@ -345,12 +345,12 @@ export default {
             this.$emit('reload-log-client', doneCallback)
         },
         handleUpdateNodeData(payload) {
-            console.log('[UPDATE-NODE-DATA] Event received:', payload)
+           
             // Emit lên parent (treeNavigation) để update node trong tree
             this.$emit('update-node-data', payload)
         },
         handleRefreshProperties(tab) {
-            console.log('[REFRESH-PROPERTIES] Event received for tab:', tab)
+            
             // Emit lên parent (treeNavigation) để gọi showPropertiesDataClient
             this.$emit('refresh-properties', tab)
         },

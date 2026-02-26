@@ -20,14 +20,11 @@ export default {
     computed: mapState(['user', 'selectedLocation']),
     methods: {
         async saveCtrS() {
-            console.log('[SUBSTATION] saveCtrS called')
             try {
                 const { success, data } = await this.saveSubstation()
-                console.log('[SUBSTATION] saveSubstation result:', { success, data })
                 if (success) {
                     this.$message.success('Substation saved successfully')
                     
-                    console.log('[SUBSTATION] Emitting reload event with saved data')
                     // ✅ Emit reload event với savedData - KHÔNG cần gọi API!
                     // Substation emit với format khác: (substation, savedData)
                     this.$emit('reload', this.substation, { 
@@ -38,7 +35,6 @@ export default {
                             substation: this.substation
                         }
                     })
-                    console.log('[SUBSTATION] Reload event emitted')
                 }
             } catch (error) {
                 console.error('Error saving substation:', error);
@@ -48,10 +44,16 @@ export default {
         async loadData(data) {
             try {
                 const { locationList, personList, dto, substation } = data
-                this.properties = dto
-                this.locationListData = locationList
-                console.log('Location List Data:', this.locationListData);
-                this.personListData = personList
+                
+                // ✅ Validation: Đảm bảo dto luôn có giá trị
+                if (!dto) {
+                    this.properties = new substationDto()
+                } else {
+                    this.properties = dto
+                }
+                
+                this.locationListData = locationList || []
+                this.personListData = personList || []
                 this.locationTemp = this.properties.locationId || ""
                 this.personTemp = this.properties.personId || ""
                 this.substation = substation
