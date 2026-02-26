@@ -825,7 +825,11 @@ mounted() {
 },
     methods: {
         handleUpdateNodeData(payload) {
-            //console.log('[TREE-NAV] handleUpdateNodeData called:', payload)
+            // ✅ Validation: Đảm bảo payload hợp lệ
+            if (!payload || !payload.mrid || !payload.data) {
+                return
+            }
+            
             const { mrid, data, mode, assetType } = payload
             
             // Tìm node trong tree
@@ -844,15 +848,15 @@ mounted() {
                     this.$set(treeNode, '_cachedEntityData', data)
                 } else if (mode === 'substation') {
                     // Update substation node - Dùng Vue.set để đảm bảo reactivity
-                    this.$set(treeNode, 'name', data.name)
-                    this.$set(treeNode, 'type', data.type)
-                    this.$set(treeNode, 'generation', data.generation)
-                    this.$set(treeNode, 'industry', data.industry)
+                    this.$set(treeNode, 'name', data.name || '')
+                    this.$set(treeNode, 'type', data.type || '')
+                    this.$set(treeNode, 'generation', data.generation || '')
+                    this.$set(treeNode, 'industry', data.industry || '')
                     this.$set(treeNode, '_hasFullProperties', true)
                     this.$set(treeNode, '_cachedEntityData', data)
                 } else {
                     // Update organisation node - Dùng Vue.set để đảm bảo reactivity
-                    this.$set(treeNode, 'name', data.name)
+                    this.$set(treeNode, 'name', data.name || '')
                     this.$set(treeNode, 'geo_x', data.x_position)
                     this.$set(treeNode, 'geo_y', data.y_position)
                     this.$set(treeNode, 'phone_no', data.phoneNumber)

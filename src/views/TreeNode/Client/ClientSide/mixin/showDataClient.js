@@ -16,7 +16,7 @@ export default {
                 const newNode = { ...node }
                 const index = this.tabsClient.findIndex((item) => item.mrid === newNode.mrid)
                 if (index !== -1) {
-                    // Nếu tab đã tồn tại, active nó
+                    // Nếu tab đã tồn tại, chỉ active nó (KHÔNG reload data)
                     this.activeTabClient = newNode
                     const clientTabs = this.getClientTabsRef ? this.getClientTabsRef() : this.$refs.clientTabs
                     if (clientTabs) {
@@ -37,12 +37,10 @@ export default {
                     if (clientTabs) {
                         clientTabs.selectTab(this.activeTabClient, newTabs.length - 1)
                         
-                        // ✅ Nếu node có cache (_cachedEntityData), truyền vào như savedData
-                        if (newNode._cachedEntityData) {
-                            clientTabs.loadData(newNode, newTabs.length - 1, newNode._cachedEntityData)
-                        } else {
-                            clientTabs.loadData(newNode, newTabs.length - 1)
-                        }
+                        // ✅ KHÔNG truyền _cachedEntityData như savedData khi tạo tab mới
+                        // Luôn gọi API để load đầy đủ locationList, personList
+                        // _cachedEntityData chỉ dùng cho việc update properties, không dùng cho loadData
+                        clientTabs.loadData(newNode, newTabs.length - 1)
                     }
                 }
             } catch (error) {
