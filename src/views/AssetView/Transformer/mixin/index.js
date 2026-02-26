@@ -133,9 +133,7 @@ export default {
         },
 
         async saveCtrS() {
-            console.log('[TRANSFORMER] saveCtrS called')
             const data = await this.saveAsset()
-            console.log('[TRANSFORMER] saveAsset result:', data)
             if (data && data.success) {
                 // Load back the saved entity so the UI shows exactly what was stored
                 if (data.data) {
@@ -144,11 +142,7 @@ export default {
                     this.loadData(dto)
                 }
                 this.$message.success("Asset saved successfully")
-                
-                console.log('[TRANSFORMER] Emitting reload event with saved data')
-                // ✅ Emit reload event với savedData - KHÔNG cần gọi API!
                 this.$emit('reload', { savedData: this.transformerDto })
-                console.log('[TRANSFORMER] Reload event emitted')
             } else {
                 this.$message.error("Failed to save asset")
             }

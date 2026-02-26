@@ -39,10 +39,8 @@ export default {
                         
                         // ✅ Nếu node có cache (_cachedEntityData), truyền vào như savedData
                         if (newNode._cachedEntityData) {
-                            console.log('[SHOW-DATA] Using cached entity data, no API call needed')
                             clientTabs.loadData(newNode, newTabs.length - 1, newNode._cachedEntityData)
                         } else {
-                            console.log('[SHOW-DATA] No cache, will load from API')
                             clientTabs.loadData(newNode, newTabs.length - 1)
                         }
                     }
@@ -60,7 +58,6 @@ export default {
             
             // Nếu cùng node và gọi trong vòng 300ms → skip
             if (isSameNode && (now - lastCall) < 300) {
-                //console.log('[DEBOUNCE] Skipping duplicate call for same node')
                 return
             }
             
@@ -77,7 +74,6 @@ export default {
                 
                 // ✅ Ưu tiên dùng _cachedEntityData nếu có (data mới từ save)
                 if (node._cachedEntityData) {
-                    console.log('[OPTIMIZED] Using cached asset entity data from save operation, no API call needed')
                     // DTO structure: data.properties.serial_no, data.properties.manufacturer, etc.
                     // Cần flatten để mapping function có thể đọc được
                     // Lưu ý: Một số asset dùng manufacturer_year, một số dùng manufacturing_year
@@ -94,7 +90,6 @@ export default {
                 } else {
                     // Tất cả asset đều có _hasFullProperties = true từ fetchChildren
                     // Không cần gọi API, dùng trực tiếp data từ node
-                    console.log('[OPTIMIZED] Using existing asset data from fetchChildren, no API call needed')
                     assetDetailData = node
                 }
                 
@@ -111,7 +106,6 @@ export default {
                     if (parentNode.mode === 'substation') {
                         // Kiểm tra xem đã cache entity data chưa
                         if (parentNode._cachedEntityData) {
-                            console.log('[OPTIMIZED] Using cached substation entity data')
                             parentDetailData = parentNode._cachedEntityData
                         } else {
                             try {
@@ -131,11 +125,9 @@ export default {
                     // Nếu parent là Organisation, kiểm tra xem đã có đầy đủ thông tin chưa
                     else if (parentNode.mode === 'organisation') {
                         if (parentNode._hasFullProperties) {
-                            console.log('[OPTIMIZED] Using existing parent organisation data')
                             parentDetailData = parentNode
                         } else {
                             try {
-                                console.log('[API CALL] Fetching parent organisation detail for asset')
                                 // @ts-ignore
                                 const res = await window.electronAPI.getOrganisationEntityByMrid(parentNode.mrid)
                                 if (res.success && res.data) {
@@ -153,11 +145,9 @@ export default {
                         if (grandParentNode && grandParentNode.mode === 'substation') {
                             // Kiểm tra xem đã cache entity data chưa
                             if (grandParentNode._cachedEntityData) {
-                                console.log('[OPTIMIZED] Using cached grandparent substation entity data')
                                 parentDetailData = grandParentNode._cachedEntityData
                             } else {
                                 try {
-                                    console.log('[API CALL] Fetching grandparent substation detail for asset in bay/voltageLevel')
                                     // @ts-ignore
                                     const res = await window.electronAPI.getSubstationEntityByMrid(grandParentNode.mrid, this.$store.state.user.user_id, grandParentNode.parentId)
                                     if (res.success && res.data) {
@@ -233,11 +223,9 @@ export default {
                 if (node.mode === 'substation') {
                     // Kiểm tra xem đã cache entity data chưa
                     if (node._cachedEntityData) {
-                        console.log('[OPTIMIZED] Using cached substation entity data')
                         detailData = node._cachedEntityData
                     } else {
                         try {
-                            console.log('[API CALL] Fetching substation detail from API')
                             // @ts-ignore
                             const res = await window.electronAPI.getSubstationEntityByMrid(node.mrid, this.$store.state.user.user_id, node.parentId)
                             if (res.success && res.data) {
@@ -256,29 +244,17 @@ export default {
                     // Nếu node đã có flag _hasFullProperties = true, nghĩa là fetchChildren đã lấy đầy đủ thông tin
                     // Không cần gọi API lại, tận dụng luôn dữ liệu đã có
                     if (node._hasFullProperties) {
-                        console.log('[DEBUG] node._hasFullProperties = true')
-                        console.log('[DEBUG] node._cachedEntityData:', node._cachedEntityData)
                         
                         // ✅ Ưu tiên dùng _cachedEntityData nếu có (data mới từ save)
                         if (node._cachedEntityData) {
-                            console.log('[OPTIMIZED] Using cached entity data from save operation, no API call needed')
                             detailData = node._cachedEntityData
                         } else {
-                            console.log('[OPTIMIZED] Using existing organisation data from fetchChildren, no API call needed')
-                            console.log('[DEBUG] Node data:', {
-                                name: node.name,
-                                geo_x: node.geo_x,
-                                geo_y: node.geo_y,
-                                phone_no: node.phone_no,
-                                email: node.email
-                            })
                             detailData = node
                         }
                     } else {
                         // Trường hợp node chưa có đầy đủ thông tin (ví dụ: root node, hoặc node được load từ nguồn khác)
                         // Mới gọi API để lấy
                         try {
-                            console.log('[API CALL] Fetching organisation detail from API')
                             // @ts-ignore
                             const res = await window.electronAPI.getOrganisationEntityByMrid(node.mrid)
                             if (res.success && res.data) {

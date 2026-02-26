@@ -190,7 +190,6 @@ export default {
     },
     methods: {
         handleReload(tab, index, ...args) {
-            console.log('[RELOAD] handleReload called:', { tab, index, args })
             
             // Xử lý 2 format khác nhau:
             // - Organisation: emit('reload', { savedData: ... })
@@ -202,19 +201,15 @@ export default {
                 // Format 1: Organisation - args[0] = { savedData: ... }
                 const eventData = args[0]
                 savedData = eventData?.savedData
-                console.log('[RELOAD] Organisation format detected')
             } else if (args.length === 2) {
                 // Format 2: Substation - args[0] = substation, args[1] = { savedData: ... }
                 const eventData = args[1]
                 savedData = eventData?.savedData
-                console.log('[RELOAD] Substation format detected')
             }
             
-            console.log('[RELOAD] Extracted savedData:', savedData)
             this.loadData(tab, index, savedData)
         },
         async loadData(tab, index, savedData) {
-            console.log('[RELOAD] loadData called with:', { tab, index, savedData, side: this.side })
             if (this.side === 'client') {
                 await this.loadDataClient(tab, index, savedData)
             } else {
@@ -223,27 +218,22 @@ export default {
         },
         async loadDataClient(tab, index, savedData) {
             try {
-                console.log('[RELOAD] loadDataClient called:', { tab, index, savedData })
                 if (index == null) {
                     index = this.tabs.findIndex(t => t.mrid === tab.mrid);
-                    console.log('[RELOAD] Found index:', index)
                     if (index === -1) {
                         this.$message.error("Tab not found");
                         return;
                     }
                 }
                 if (tab.mode === 'substation') {
-                    console.log('[RELOAD] Loading substation data for mrid:', tab.mrid)
                     
                     let data
                     
                     // ✅ Nếu có savedData từ save, dùng luôn - KHÔNG gọi API!
                     if (savedData) {
-                        console.log('[RELOAD] Using savedData from save operation - NO API CALL!')
                         data = savedData
                     } else {
                         // Chỉ gọi API khi không có savedData (ví dụ: reload thủ công)
-                        console.log('[RELOAD] No savedData, fetching from API')
                         const [dataLocation, dataPerson, dataEntity] = await Promise.all([
                             window.electronAPI.getLocationByOrganisationId(tab.parentId),
                             window.electronAPI.getPersonByOrganisationId(tab.parentId),
@@ -286,18 +276,15 @@ export default {
                         }
                     }
                     
-                    console.log('[RELOAD] Calling loadData on component with:', data)
                     // ✅ Check component exists before calling loadData
                     if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
                         this.$refs.componentLoadData[index].loadData(data)
                     } else {
-                        console.warn('[RELOAD] Component not ready, waiting for next tick')
                         await this.$nextTick()
                         if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
                             this.$refs.componentLoadData[index].loadData(data)
                         }
                     }
-                    console.log('[RELOAD] Substation data loaded successfully')
                     
                     // ✅ Update tab với data mới
                     if (data.dto) {
@@ -316,19 +303,15 @@ export default {
                     // ✅ Emit event để update Object Properties
                     this.$emit('refresh-properties', tab)
                 } else if (tab.mode === 'organisation') {
-                    console.log('[RELOAD] Loading organisation data for mrid:', tab.mrid)
                     
                     let orgEntity
                     
                     // ✅ Nếu có savedData từ save, dùng luôn - KHÔNG gọi API!
                     if (savedData) {
-                        console.log('[RELOAD] Using savedData from save operation - NO API CALL!')
                         orgEntity = savedData
                     } else {
                         // Chỉ gọi API khi không có savedData (ví dụ: reload thủ công)
-                        console.log('[RELOAD] No savedData, fetching from API')
                         const data = await window.electronAPI.getOrganisationEntityByMrid(tab.mrid)
-                        console.log('[RELOAD] Organisation data received:', data)
                         if (data.success) {
                             orgEntity = orgMapper.OrgEntityToOrgDto(data.data)
                         } else {
@@ -347,18 +330,15 @@ export default {
                         orgEntity.name = tab.name || ''
                     }
                     
-                    console.log('[RELOAD] Calling loadData on component with:', orgEntity)
                     // ✅ Check component exists before calling loadData
                     if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
                         this.$refs.componentLoadData[index].loadData(orgEntity)
                     } else {
-                        console.warn('[RELOAD] Component not ready, waiting for next tick')
                         await this.$nextTick()
                         if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
                             this.$refs.componentLoadData[index].loadData(orgEntity)
                         }
                     }
-                    console.log('[RELOAD] Organisation data loaded successfully')
                     
                     // ✅ Update tab với data mới
                     Object.assign(tab, {
@@ -438,18 +418,14 @@ export default {
                         }
                     }
                 } else if (tab.mode === 'asset') {
-                    //console.log('[RELOAD] Loading asset data for:', tab.asset, 'mrid:', tab.mrid)
-                    
                     // ✅ Nếu có savedData từ save, dùng luôn - KHÔNG gọi API!
                     if (savedData) {
-                        console.log('[RELOAD] Using savedData from save operation - NO API CALL!')
                         this.parentOrganization = { mrid: tab.parentId }
                         
                         // ✅ Check component exists before calling loadData
                         if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
                             this.$refs.componentLoadData[index].loadData(savedData)
                         } else {
-                            console.warn('[RELOAD] Component not ready, waiting for next tick')
                             await this.$nextTick()
                             if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
                                 this.$refs.componentLoadData[index].loadData(savedData)
@@ -474,7 +450,6 @@ export default {
                         this.$emit('refresh-properties', tab)
                     } else {
                         // Gọi API để load asset (sẽ được cache sau khi load thành công)
-                        //console.log('[RELOAD] Loading asset from API (will be cached after load)')
                         
                         if (tab.asset === 'Surge arrester') {
                         this.parentOrganization = {
