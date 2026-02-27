@@ -11,7 +11,13 @@
                         <icon v-if="tab.mode == 'substation'" size="16px" folderType="location" badgeColor="146EBE"></icon>
                         <icon v-else-if="tab.mode == 'voltageLevel'" size="16px" folderType="voltageLevel" badgeColor="146EBE"></icon>
                         <icon v-else-if="tab.mode == 'bay'" size="16px" folderType="bay" badgeColor="146EBE"></icon>
-                        <icon v-else-if="tab.mode == 'asset'" size="16px" folderType="asset" :assetDetail="tab.asset" badgeColor="146EBE"></icon>
+                        <icon v-else-if="tab.mode == 'asset'" 
+                            size="16px" 
+                            folderType="asset" 
+                            :assetDetail="tab.asset" 
+                            :transformerType="tab.type" 
+                            badgeColor="146EBE">
+                        </icon>
                         <icon v-else-if="tab.mode == 'job'" size="16px" folderType="job" badgeColor="FF0000"></icon>
                         <icon v-else-if="tab.mode == 'test'" size="16px" folderType="test" badgeColor="008001"></icon>
                         <icon v-else size="16px" folderType="building" badgeColor="008001"></icon>
@@ -55,7 +61,13 @@
                         <icon v-if="tab.mode == 'substation'" size="16px" folderType="location" badgeColor="146EBE"></icon>
                         <icon v-else-if="tab.mode == 'voltageLevel'" size="16px" folderType="voltageLevel" badgeColor="146EBE"></icon>
                         <icon v-else-if="tab.mode == 'bay'" size="16px" folderType="bay" badgeColor="146EBE"></icon>
-                        <icon v-else-if="tab.mode == 'asset'" size="16px" folderType="asset" :assetDetail="tab.asset" badgeColor="146EBE"></icon>
+                        <icon v-else-if="tab.mode == 'asset'" 
+                            size="16px" 
+                            folderType="asset" 
+                            :assetDetail="tab.asset" 
+                            :transformerType="tab.type" 
+                            badgeColor="146EBE">
+                        </icon>
                         <icon v-else-if="tab.mode == 'job'" size="16px" folderType="job" badgeColor="FF0000"></icon>
                         <icon v-else-if="tab.mode == 'test'" size="16px" folderType="test" badgeColor="008001"></icon>
                         <icon v-else size="16px" folderType="building" badgeColor="008001"></icon>

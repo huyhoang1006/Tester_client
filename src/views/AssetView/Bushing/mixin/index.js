@@ -51,7 +51,7 @@ export default {
             console.log('[BUSHING] saveAsset result:', data)
             if (data.success) {
                 this.$message.success("Asset saved successfully")
-                
+
                 console.log('[BUSHING] Emitting reload event with saved data')
                 this.$emit('reload', { savedData: this.bushing_data })
                 console.log('[BUSHING] Reload event emitted')
