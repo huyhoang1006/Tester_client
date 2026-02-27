@@ -4,21 +4,21 @@ import db from '../../datacontext/index'
 export const initLicenseLimitation = () => {
 
     const defaultLicenses = [
-        { name: 'Organisation', limit: 100 },
-        { name: 'Substation', limit: 100 },
-        { name: 'Voltage Level', limit: 100 },
-        { name: 'Bay', limit: 100 },
-        { name: 'Transformer', limit: 100 },
-        { name: 'Power cable', limit: 100 },
-        { name: 'Circuit breaker', limit: 100 },
-        { name: 'Current transformer', limit: 100 },
-        { name: 'Voltage transformer', limit: 100 },
-        { name: 'Disconnector', limit: 100 },
-        { name: 'Bushing', limit: 100 },
-        { name: 'Reactor', limit: 100 },
-        { name: 'Capacitor', limit: 100 },
-        { name: 'Rotating machine', limit: 100 },
-        { name: 'Surge Arrester', limit: 100 }
+        { name: 'Organisation', limit: 999999999 },
+        { name: 'Substation', limit: 999999999 },
+        { name: 'Voltage Level', limit: 999999999 },
+        { name: 'Bay', limit: 999999999 },
+        { name: 'Transformer', limit: 999999999 },
+        { name: 'Power cable', limit: 999999999 },
+        { name: 'Circuit breaker', limit: 999999999 },
+        { name: 'Current transformer', limit: 999999999 },
+        { name: 'Voltage transformer', limit: 999999999 },
+        { name: 'Disconnector', limit: 999999999 },
+        { name: 'Bushing', limit: 999999999 },
+        { name: 'Reactor', limit: 999999999 },
+        { name: 'Capacitor', limit: 999999999 },
+        { name: 'Rotating machine', limit: 999999999 },
+        { name: 'Surge Arrester', limit: 999999999 }
     ];
 
     db.serialize(() => {

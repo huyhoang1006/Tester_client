@@ -820,7 +820,7 @@ mounted() {
     window.addEventListener("keydown", this.handleKeyDown);
     this.$nextTick(async () => {
         await this.showLocationRoot();   
-        await this.showOwnerServerRoot(); 
+        // await this.showOwnerServerRoot(); 
     });
 },
     methods: {

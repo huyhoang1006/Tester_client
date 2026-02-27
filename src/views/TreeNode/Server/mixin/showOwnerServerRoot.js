@@ -1,13 +1,15 @@
 export default {
     methods: {
         async showOwnerServerRoot() {
-            await this.getOwnerLocation()
-            if (this.ownerServerList && this.ownerServerList.length > 0) {
-                for (const node of this.ownerServerList) {
-                    await this.fetchChildrenServer(node);
-                    this.$set(node, 'expanded', true);
-                }
+            const ownerRootServer = this.$refs.ownerRootServer
+            if (ownerRootServer) {
+                ownerRootServer.style.borderBottom = '2px #aba7a7 solid' // Thêm viền màu đen dày 2px
+                ownerRootServer.style.color = 'rgba(0, 0, 0, 1)' // Chữ rõ nét
             }
-        },
+            this.$nextTick(async () => {
+                await this.getOwnerLocation()
+            })
+        }
+
     }
 }
