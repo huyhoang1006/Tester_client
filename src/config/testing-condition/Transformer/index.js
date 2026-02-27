@@ -5,10 +5,10 @@ const context = require.context(
   /\.json$/      // chỉ lấy file .json
 )
 
-const surgeArresterConditionMap = context.keys().reduce((acc, key) => {
+const TransformerTestMap = context.keys().reduce((acc, key) => {
   const name = key.replace('./', '').replace('.json', '')
   acc[name] = context(key)
   return acc
 }, {})
 
-export default surgeArresterConditionMap
+export default TransformerTestMap

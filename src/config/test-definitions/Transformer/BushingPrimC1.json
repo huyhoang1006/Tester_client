@@ -1,5 +1,54 @@
 {
     "testId": "cd37afa1-0357-4fe3-b52e-cd960c39a1cf",
     "testCode": "GeneralInspection",
-    "testName": "General inspection"
+    "testName": "General inspection",
+    "columns": [
+        {
+            "mrid": "c2b9f0a1-1a9d-4a22-8e44-000000000004",
+            "code": "measurement",
+            "name": "Measurement",
+            "type": "string"
+        },
+        {
+            "mrid": "01c47c67-4295-4bf6-a0c5-9c14ec8d905e",
+            "code": "test_mode",
+            "name": "Test mode",
+            "type": "string"
+        },
+        {
+            "mrid": "8a1f2b3c-4d5e-4a6b-9c01-0f1e2d3c4b5a",
+            "code": "test_voltage",
+            "name": "Test voltage",
+            "type": "analog",
+            "unit": "k|V"
+        },
+        {
+            "mrid": "c74b6a9a-5e33-4040-be57-a2e7c82e5e19",
+            "code": "df_ref",
+            "name": "DF ref",
+            "type": "analog",
+            "unit": "%"
+        },
+        {
+            "mrid": "610bb02e-0e71-452e-80b3-34753b9cf484",
+            "code": "c_ref",
+            "name": "C ref",
+            "type": "analog",
+            "unit": "pF"
+        },
+        {
+            "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+            "code": "df_meas",
+            "name": "DF meas",
+            "type": "analog",
+            "unit": "%"
+        },
+        {
+            "mrid": "1d340ee5-9c57-422a-a049-ea57d2beedb7",
+            "code": "c_meas",
+            "name": "C meas",
+            "type": "analog",
+            "unit": "pF"
+        }
+    ]
 }

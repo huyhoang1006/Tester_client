@@ -54,7 +54,7 @@
                             </div>
                         </td>
                         <td>
-                            <el-select size="mini" v-model="item.testMode.value">
+                            <el-select size="mini" v-model="item.test_mode.value">
                                 <el-option label="GST" value="GST"></el-option>
                                 <el-option label="GSTg-A" value="GSTg-A"></el-option>
                                 <el-option label="GSTg-B" value="GSTg-B"></el-option>
@@ -68,19 +68,19 @@
                             <el-input size="mini" type="text" v-model="item.test_voltage.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.dfref.value"></el-input>
+                            <el-input size="mini" type="text" v-model="item.df_ref.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.cref.value"></el-input>
+                            <el-input size="mini" type="text" v-model="item.c_ref.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.dfmeas.value"></el-input>
+                            <el-input size="mini" type="text" v-model="item.df_meas.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.cmeas.value"></el-input>
+                            <el-input size="mini" type="text" v-model="item.c_meas.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.ccal.value"></el-input>
+                            <el-input size="mini" type="text" v-model="item.delta_c_percent.value"></el-input>
                         </td>
                         <td>
                             <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -158,7 +158,7 @@ export default {
                     unit : "",
                     type : "string"
                 },
-                testMode : {
+                test_mode : {
                     mrid : "",
                     value : "",
                     unit : "",
@@ -170,31 +170,31 @@ export default {
                     unit : "kV",
                     type : "analog"
                 },
-                dfref : {
+                df_ref : {
                     mrid : "",
                     value : "",
                     unit : "%",
                     type : "analog"
                 },
-                cref : {
+                c_ref : {
                     mrid : "",
                     value : "",
                     unit : "pF",
                     type : "analog"
                 },
-                dfmeas : {
+                df_meas : {
                     mrid : "",
                     value : "",
                     unit : "%",
                     type : "analog"
                 },
-                cmeas : {
+                c_meas : {
                     mrid : "",
                     value : "",
                     unit : "pF",
                     type : "analog"
                 },
-                ccal : {
+                delta_c_percent : {
                     mrid : "",
                     value : "",
                     unit : "%",
@@ -237,7 +237,7 @@ export default {
                     unit : "",
                     type : "string"
                 },
-                testMode : {
+                test_mode : {
                     mrid : "",
                     value : "",
                     unit : "",
@@ -249,26 +249,31 @@ export default {
                     unit : "kV",
                     type : "analog"
                 },
-                dfref : {
+                df_ref : {
                     mrid : "",
                     value : "",
                     unit : "%",
                     type : "analog"
                 },
-                cref : {
+                c_ref : {
                     mrid : "",
                     value : "",
                     unit : "pF",
                     type : "analog"
                 },
-                dfmeas : {
+                df_meas : {
                     mrid : "",
                     value : "",
                     unit : "%",
                     type : "analog"
                 },
-                cmeas : '',
-                ccal : {
+                c_meas : {
+                    mrid : "",
+                    value : "",
+                    unit : "pF",
+                    type : "analog"
+                },
+                delta_c_percent : {
                     mrid : "",
                     value : "",
                     unit : "%",
@@ -296,24 +301,24 @@ export default {
 
         calcDeltaC() {
             this.testData.table.forEach(item => {
-                if(!isNaN(parseFloat(item.cref)) && !isNaN(parseFloat(item.cmeas)) && item.cref != 0) {
-                    item.ccal = (100 * (parseFloat(item.cmeas) - parseFloat(item.cref)) / parseFloat(item.cref)).toFixed(4)
+                if(!isNaN(parseFloat(item.c_ref.value)) && !isNaN(parseFloat(item.c_meas.value)) && item.c_ref.value != 0) {
+                    item.delta_c_percent.value = (100 * (parseFloat(item.c_meas.value) - parseFloat(item.c_ref.value)) / parseFloat(item.c_ref.value)).toFixed(4)
                 }
             })
         },
 
         clear() {
             this.testData.table.forEach((element) => {
-                element.measurement = "",
-                element.testMode = '',
+                element.measurement.value = "",
+                element.test_mode.value = '',
                 element.test_voltage = '',
-                element.dfref = '',
-                element.cref = '',
-                element.dfmeas = '',
-                element.cmeas = '',
-                element.ccal = '',
-                element.assessment = '',
-                element.condition_indicator = ''
+                element.df_ref.value = '',
+                element.c_ref.value = '',
+                element.df_meas.value = '',
+                element.c_meas.value = '',
+                element.delta_c_percent.value = '',
+                element.assessment.value = '',
+                element.condition_indicator.value = ''
             })
         },
         nameColor(data) {

@@ -81,7 +81,7 @@
                             <el-input size="mini" type="text" v-model="item.df_change.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.tri_c_meas.value"></el-input>
+                            <el-input size="mini" type="text" v-model="item.delta_c_percent.value"></el-input>
                         </td>
                         <td>
                             <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -149,9 +149,9 @@
                     </tr>
                     <tr>
                         <th class="width100">ΔC cal (%)</th>
-                        <td class="width100"> ≤ {{ assessmentSetting.data.iec.oip.tri_c_meas.value }}</td>
-                        <td class="width100"> ≤ {{ assessmentSetting.data.iec.rip.tri_c_meas.value }}</td>
-                        <td class="width100"> ≤ {{ assessmentSetting.data.iec.rbp.tri_c_meas.value }}</td>
+                        <td class="width100"> ≤ {{ assessmentSetting.data.iec.oip.delta_c_percent.value }}</td>
+                        <td class="width100"> ≤ {{ assessmentSetting.data.iec.rip.delta_c_percent.value }}</td>
+                        <td class="width100"> ≤ {{ assessmentSetting.data.iec.rbp.delta_c_percent.value }}</td>
                         <th class="width100"><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
                     <tr>
@@ -163,9 +163,9 @@
                     </tr>
                     <tr>
                         <th class="width100">ΔC cal (%)</th>
-                        <td class="width100"> > {{ assessmentSetting.data.iec.oip.tri_c_meas.value }}</td>
-                        <td class="width100"> > {{ assessmentSetting.data.iec.rip.tri_c_meas.value }}</td>
-                        <td class="width100"> > {{ assessmentSetting.data.iec.rbp.tri_c_meas.value }}</td>
+                        <td class="width100"> > {{ assessmentSetting.data.iec.oip.delta_c_percent.value }}</td>
+                        <td class="width100"> > {{ assessmentSetting.data.iec.rip.delta_c_percent.value }}</td>
+                        <td class="width100"> > {{ assessmentSetting.data.iec.rbp.delta_c_percent.value }}</td>
                         <th class="width100"><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
                 </tbody>
@@ -194,9 +194,9 @@
                     </tr>
                     <tr>
                         <th class="width100">ΔC cal (%)</th>
-                        <td class="width100"> ≤ {{ assessmentSetting.data.ieee.oip.tri_c_meas.value }}</td>
-                        <td class="width100"> ≤ {{ assessmentSetting.data.ieee.rip.tri_c_meas.value }}</td>
-                        <td class="width100"> ≤ {{ assessmentSetting.data.ieee.rbp.tri_c_meas.value }}</td>
+                        <td class="width100"> ≤ {{ assessmentSetting.data.ieee.oip.delta_c_percent.value }}</td>
+                        <td class="width100"> ≤ {{ assessmentSetting.data.ieee.rip.delta_c_percent.value }}</td>
+                        <td class="width100"> ≤ {{ assessmentSetting.data.ieee.rbp.delta_c_percent.value }}</td>
                         <th class="width100"><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
                     <tr>
@@ -208,9 +208,9 @@
                     </tr>
                     <tr>
                         <th class="width100">ΔC cal (%)</th>
-                        <td class="width100"> > {{ assessmentSetting.data.ieee.oip.tri_c_meas.value }}</td>
-                        <td class="width100"> > {{ assessmentSetting.data.ieee.rip.tri_c_meas.value }}</td>
-                        <td class="width100"> > {{ assessmentSetting.data.ieee.rbp.tri_c_meas.value }}</td>
+                        <td class="width100"> > {{ assessmentSetting.data.ieee.oip.delta_c_percent.value }}</td>
+                        <td class="width100"> > {{ assessmentSetting.data.ieee.rip.delta_c_percent.value }}</td>
+                        <td class="width100"> > {{ assessmentSetting.data.ieee.rbp.delta_c_percent.value }}</td>
                         <th class="width100"><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
                 </tbody>
@@ -239,9 +239,9 @@
                     </tr>
                     <tr>
                         <th>ΔC cal (%)</th>
-                        <td>≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.oip.tri_c_meas.value"></el-input></td>
-                        <td>≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.rip.tri_c_meas.value"></el-input></td>
-                        <td>≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.rbp.tri_c_meas.value"></el-input></td>
+                        <td>≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.oip.delta_c_percent.value"></el-input></td>
+                        <td>≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.rip.delta_c_percent.value"></el-input></td>
+                        <td>≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.rbp.delta_c_percent.value"></el-input></td>
                         <th><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
                     <tr>
@@ -253,9 +253,9 @@
                     </tr>
                     <tr>
                         <th>ΔC cal (%)</th>
-                        <td>> <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.oip.tri_c_meas.value"></el-input></td>
-                        <td>> <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.rip.tri_c_meas.value"></el-input></td>
-                        <td>> <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.rbp.tri_c_meas.value"></el-input></td>
+                        <td>> <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.oip.delta_c_percent.value"></el-input></td>
+                        <td>> <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.rip.delta_c_percent.value"></el-input></td>
+                        <td>> <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.rbp.delta_c_percent.value"></el-input></td>
                         <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
                 </tbody>
@@ -344,28 +344,28 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>ΔC cal ≤ <el-input size="mini" class="w-100px" v-model="conditionIndicatorC.good.tri_c_meas[0].value"></el-input></td>
+                        <td>ΔC cal ≤ <el-input size="mini" class="w-100px" v-model="conditionIndicatorC.good.delta_c_percent[0].value"></el-input></td>
                         <td class="Good">Good</td>
                         <td><el-input size="mini" v-model="conditionIndicatorC.good.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorC.fair.tri_c_meas[0].value"></el-input> &lt; ΔC cal ≤
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorC.fair.tri_c_meas[1].value"></el-input>
+                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorC.fair.delta_c_percent[0].value"></el-input> &lt; ΔC cal ≤
+                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorC.fair.delta_c_percent[1].value"></el-input>
                         </td>
                         <td class="Fair">Fair</td>
                         <td><el-input size="mini" v-model="conditionIndicatorC.fair.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorC.poor.tri_c_meas[0].value"></el-input> &lt; ΔC cal ≤
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorC.poor.tri_c_meas[1].value"></el-input>
+                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorC.poor.delta_c_percent[0].value"></el-input> &lt; ΔC cal ≤
+                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorC.poor.delta_c_percent[1].value"></el-input>
                         </td>
                         <td class="Poor">Poor</td>
                         <td><el-input size="mini" v-model="conditionIndicatorC.poor.score.value"></el-input></td>
                     </tr>
                     <tr>
-                        <td>ΔC cal > <el-input size="mini" class="w-100px" v-model="conditionIndicatorC.bad.tri_c_meas[1].value"></el-input></td>
+                        <td>ΔC cal > <el-input size="mini" class="w-100px" v-model="conditionIndicatorC.bad.delta_c_percent[1].value"></el-input></td>
                         <td class="Bad">Bad</td>
                         <td><el-input size="mini" v-model="conditionIndicatorC.bad.score.value"></el-input></td>
                     </tr>
@@ -469,7 +469,7 @@ export default {
                                         unit: '',
                                         type: 'analog'
                                     },
-                                    tri_c_meas: {
+                                    delta_c_percent: {
                                         mrid: '',
                                         value: '',
                                         unit: '',
@@ -567,7 +567,7 @@ export default {
                                         unit: '',
                                         type: 'analog'
                                     },
-                                    tri_c_meas: {
+                                    delta_c_percent: {
                                         mrid: '',
                                         value: '',
                                         unit: '',
@@ -616,7 +616,7 @@ export default {
             this.testData.table.forEach(element => {
                 if(!isNaN(parseFloat(element.c_meas))) {
                     if(!isNaN(parseFloat(element.c_ref)) && element.c_ref != 0) {
-                        element.tri_c_meas = 100*(element.c_meas - element.c_ref)/element.c_ref
+                        element.delta_c_percent = 100*(element.c_meas - element.c_ref)/element.c_ref
                     }
                 }
             })
@@ -696,21 +696,21 @@ export default {
             this.testData.table.forEach((element) => {
                 if(element.assessment === "Pass") {
                     if(this.assessmentSetting.option === "IEC") {
-                        if(!isNaN(parseFloat(element.tri_c_meas))) {
+                        if(!isNaN(parseFloat(element.delta_c_percent))) {
                             if(element.insulation === "Resin-bonded paper") {
-                                if(Math.abs(element.tri_c_meas) <= this.assessmentSetting.data.iec.rbp.tri_c_meas ) {
+                                if(Math.abs(element.delta_c_percent) <= this.assessmentSetting.data.iec.rbp.delta_c_percent ) {
                                     element.assessment = "Pass"
                                 } else {
                                     element.assessment = "Fail"
                                 }
                             } else if(element.insulation === "Resin-impregnated paper") {
-                                if(Math.abs(element.tri_c_meas) <= this.assessmentSetting.data.iec.rip.tri_c_meas ) {
+                                if(Math.abs(element.delta_c_percent) <= this.assessmentSetting.data.iec.rip.delta_c_percent ) {
                                     element.assessment = "Pass"
                                 } else {
                                     element.assessment = "Fail"
                                 }
                             } else {
-                                if(Math.abs(element.tri_c_meas) <= this.assessmentSetting.data.iec.oip.tri_c_meas ) {
+                                if(Math.abs(element.delta_c_percent) <= this.assessmentSetting.data.iec.oip.delta_c_percent ) {
                                     element.assessment = "Pass"
                                 } else {
                                     element.assessment = "Fail"
@@ -718,21 +718,21 @@ export default {
                             }
                         }
                     } else if(this.assessmentSetting.option === "IEEE") {
-                        if(!isNaN(parseFloat(element.tri_c_meas))) {
+                        if(!isNaN(parseFloat(element.delta_c_percent))) {
                             if(element.insulation === "Resin-bonded paper") {
-                                if(Math.abs(element.tri_c_meas) <= this.assessmentSetting.data.ieee.rbp.tri_c_meas ) {
+                                if(Math.abs(element.delta_c_percent) <= this.assessmentSetting.data.ieee.rbp.delta_c_percent ) {
                                     element.assessment = "Pass"
                                 } else {
                                     element.assessment = "Fail"
                                 }
                             } else if(element.insulation === "Resin-impregnated paper") {
-                                if(Math.abs(element.tri_c_meas) <= this.assessmentSetting.data.ieee.rip.tri_c_meas ) {
+                                if(Math.abs(element.delta_c_percent) <= this.assessmentSetting.data.ieee.rip.delta_c_percent ) {
                                     element.assessment = "Pass"
                                 } else {
                                     element.assessment = "Fail"
                                 }
                             } else {
-                                if(Math.abs(element.tri_c_meas) <= this.assessmentSetting.data.ieee.oip.tri_c_meas ) {
+                                if(Math.abs(element.delta_c_percent) <= this.assessmentSetting.data.ieee.oip.delta_c_percent ) {
                                     element.assessment = "Pass"
                                 } else {
                                     element.assessment = "Fail"
@@ -740,21 +740,21 @@ export default {
                             }
                         }
                     } else {
-                        if(!isNaN(parseFloat(element.tri_c_meas))) {
+                        if(!isNaN(parseFloat(element.delta_c_percent))) {
                             if(element.insulation === "Resin-bonded paper") {
-                                if(Math.abs(element.tri_c_meas) <= this.assessmentSetting.data.custom.rbp.tri_c_meas ) {
+                                if(Math.abs(element.delta_c_percent) <= this.assessmentSetting.data.custom.rbp.delta_c_percent ) {
                                     element.assessment = "Pass"
                                 } else {
                                     element.assessment = "Fail"
                                 }
                             } else if(element.insulation === "Resin-impregnated paper") {
-                                if(Math.abs(element.tri_c_meas) <= this.assessmentSetting.data.custom.rip.tri_c_meas ) {
+                                if(Math.abs(element.delta_c_percent) <= this.assessmentSetting.data.custom.rip.delta_c_percent ) {
                                     element.assessment = "Pass"
                                 } else {
                                     element.assessment = "Fail"
                                 }
                             } else {
-                                if(Math.abs(element.tri_c_meas) <= this.assessmentSetting.data.custom.oip.tri_c_meas ) {
+                                if(Math.abs(element.delta_c_percent) <= this.assessmentSetting.data.custom.oip.delta_c_percent ) {
                                     element.assessment = "Pass"
                                 } else {
                                     element.assessment = "Fail"
@@ -775,7 +775,7 @@ export default {
                 element.df_meas.value = ''
                 element.c_meas.value = ''
                 element.df_change.value = ''
-                element.tri_c_meas.value = ''
+                element.delta_c_percent.value = ''
                 element.assessment.value = ''
                 element.condition_indicator_df.value = ''
                 element.condition_indicator_c.value = ''

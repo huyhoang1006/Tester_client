@@ -41,7 +41,7 @@
                            {{ index + 1 }}
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.items.value" style="width: 200px;"></el-input>
+                            <el-input size="mini" type="text" v-model="item.item.value" style="width: 200px;"></el-input>
                         </td>
                         <td>
                             <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -113,7 +113,7 @@ export default {
         add() {
             this.testData.table.push({
                 mrid : "",
-                items : {
+                item : {
                     mrid : "",
                     value : "",
                     unit : "",
@@ -150,7 +150,7 @@ export default {
         addTest(index) {
             const data = {
                 mrid : "",
-                items : {
+                item : {
                     mrid : "",
                     value : "",
                     unit : "",
@@ -177,9 +177,9 @@ export default {
 
         clear() {
             this.testData.table.forEach((element) => {
-                element.items = '',
-                element.assessment = '',
-                element.condition_indicator = ''
+                element.item.value = '',
+                element.assessment.value = '',
+                element.condition_indicator.value = ''
             })
         },
         nameColor(data) {

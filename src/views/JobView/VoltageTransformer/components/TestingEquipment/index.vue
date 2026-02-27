@@ -93,7 +93,7 @@ export default {
                 serial_number: '',
                 calibration_date: '',
                 work_id: '',
-                test_type_surge_arrester_id: []
+                test_type_voltage_transformer_id: []
             }
             this.testingEquipmentListData.push(data);
         },
@@ -104,7 +104,7 @@ export default {
                 serial_number: '',
                 calibration_date: '',
                 work_id : '',
-                test_type_surge_arrester_id: []
+                test_type_voltage_transformer_id: []
             }
             this.testingEquipmentListData.splice(index + 1, 0, data);
         },

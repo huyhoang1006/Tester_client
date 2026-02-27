@@ -49,7 +49,7 @@
                             </div>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.v_test.value"></el-input>
+                            <el-input size="mini" type="text" v-model="item.test_voltage.value"></el-input>
                         </td>
                         <td>
                             <el-input size="mini" type="text" v-model="item.r60s.value"></el-input>
@@ -130,7 +130,7 @@ export default {
                     unit : "",
                     type : "string"
                 },
-                v_test : {
+                test_voltage : {
                     mrid : "",
                     value : "",
                     unit : "V",
@@ -179,7 +179,7 @@ export default {
                     unit : "",
                     type : "string"
                 },
-                v_test : {
+                test_voltage : {
                     mrid : "",
                     value : "",
                     unit : "V",
@@ -212,11 +212,11 @@ export default {
 
         clear() {
             this.testData.table.forEach((element) => {
-                element.measurement = "",
-                element.test_voltage = '',
-                element.r60s = '',
-                element.assessment = '',
-                element.condition_indicator = ''
+                element.measurement.value = "",
+                element.test_voltage.value = '',
+                element.r60s.value = '',
+                element.assessment.value = '',
+                element.condition_indicator.value = ''
             })
         },
         nameColor(data) {

@@ -124,11 +124,37 @@ export default {
 
         loadData(data) {
             this.oldTransformerDto = JSON.parse(JSON.stringify(data));
+            const surgeArresterTemp = JSON.parse(JSON.stringify(data.surge_arrester))
+            data.surge_arrester = {
+                prim : [],
+                sec : [],
+                tert : []
+            }
             this.transformerDto = data;
             if (data.attachment && data.attachment.path) {
                 this.attachmentData = JSON.parse(data.attachment.path)
             } else {
                 this.attachmentData = []
+            }
+            this.$nextTick(async () => {
+                await this.loadSurgeArrester(surgeArresterTemp, this.transformerDto.surge_arrester);
+            });
+        },
+
+        async loadSurgeArrester(surgeTemp, surgeArray) {
+            const windingData = ['prim', 'sec', 'tert']
+
+            for (const winding of windingData) {
+                for (let i = 0; i < surgeArray[winding].length; i++) {
+                    const surgeData = surgeArray[winding][i]
+
+                    const data = surgeTemp[winding]
+                        .find(x => x.ratings.pos === surgeData.ratings.pos)
+
+                    if (data != null) {
+                        surgeArray[winding][i] = data  // ✅ Gán lại vào mảng
+                    }
+                }
             }
         },
 

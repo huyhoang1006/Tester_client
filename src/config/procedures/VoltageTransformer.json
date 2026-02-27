@@ -15,7 +15,7 @@
   },
   {
     "mrid": "cf3a06a1-11ee-43f1-b2ce-cfd61f26a6f9",
-    "code": "DcWindingRes",
+    "code": "DcWindingResistance",
     "name": "DC Winding resistance",
     "kind": "test"
   },

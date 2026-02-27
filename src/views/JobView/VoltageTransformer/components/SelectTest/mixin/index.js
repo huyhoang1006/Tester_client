@@ -1,42 +1,30 @@
-import { mapState } from 'vuex'
-
+/* eslint-disable */
+import voltageTransformerTestMap from '@/config/test-definitions/VoltageTransformer'
+import voltageTransformerConditionMap from '@/config/testing-condition/VoltageTransformer'
+import * as common from '../../../../Common/index.js'
 export default {
     data() {
         return {}
     },
-    computed: mapState(['selectedAsset', 'selectedJob']),
-    async beforeMount() { },
     methods: {
         async initTest(testTypeCode, assetData) {
-            // Use assetData prop if provided and valid, otherwise fallback to selectedAsset from Vuex
-            let asset = null
-            if (assetData && Object.keys(assetData).length > 0) {
-                asset = assetData
-            } else if (this.selectedAsset && this.selectedAsset.length > 0) {
-                asset = this.selectedAsset[0]
-            }
-
-            if (!asset) {
-                console.error('No asset data available for initTest')
-                return null
-            }
 
             let data = null
             switch (testTypeCode) {
                 case 'InsulationResistance':
-                    data = this.initInsulationResistance(asset)
+                    data = this.initInsulationResistance(testTypeCode)
                     break
                 case 'VTRatio':
-                    data = await this.initVTRatio(asset)
+                    data = await this.initVTRatio(testTypeCode)
                     break
                 case 'DcWindingRes':
-                    data = await this.initDcWindingRes(asset)
+                    data = await this.initDcWindingRes(testTypeCode)
                     break
                 case 'VTDfcap':
-                    data = await this.initVTDfcap()
+                    data = await this.initVTDfcap(testTypeCode)
                     break
                 case 'GeneralInspection':
-                    data = await this.initGeneralInspection()
+                    data = await this.initGeneralInspection(testTypeCode)
                     break
             }
 

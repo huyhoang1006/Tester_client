@@ -254,11 +254,11 @@ export default {
 
         calcRdev() {
             this.testData.table.forEach(element => {
-                if(!isNaN(parseFloat(element.ratio_meas)) && element.ratio_meas != 0) {
-                    if( !isNaN(element.upr) && !isNaN(element.usr) && element.usr != 0) {
-                        element.ratio_dev = (100 * (parseFloat(element.ratio_meas) - (parseFloat(element.upr)/parseFloat(element.usr)))/(parseFloat(element.upr)/parseFloat(element.usr))).toFixed(4) 
-                    } else if(!isNaN(parseFloat(element.uprValue)) && !isNaN(parseFloat(element.usrValue)) && element.usrValue != 0) {
-                        element.ratio_dev = (100 * (parseFloat(element.ratio_meas) - (parseFloat(element.uprValue)/parseFloat(element.usrValue)))/(parseFloat(element.upr)/parseFloat(element.usr))).toFixed(4)
+                if(!isNaN(parseFloat(element.ratio_meas.value)) && element.ratio_meas.value != 0) {
+                    if( !isNaN(element.upr.value) && !isNaN(element.usr.value) && element.usr.value != 0) {
+                        element.ratio_dev.value = (100 * (parseFloat(element.ratio_meas.value) - (parseFloat(element.upr.value)/parseFloat(element.usr.value)))/(parseFloat(element.upr.value)/parseFloat(element.usr.value))).toFixed(4) 
+                    } else if(!isNaN(parseFloat(element.upr.value)) && !isNaN(parseFloat(element.usr.value)) && element.usr.value != 0) {
+                        element.ratio_dev.value = (100 * (parseFloat(element.ratio_meas.value) - (parseFloat(element.upr.value)/parseFloat(element.usr.value)))/(parseFloat(element.upr.value)/parseFloat(element.usr.value))).toFixed(4)
                     }
                 }
             })
@@ -266,14 +266,14 @@ export default {
 
         clear() {
             this.testData.table.forEach((element) => {
-                element.name = "",
-                element.upr = '',
-                element.usr = '',
-                element.ratio_meas = '',
-                element.ratio_dev = '',
-                element.polarity = '',
-                element.assessment = '',
-                element.condition_indicator = ''
+                element.name.value = "",
+                element.upr.value = '',
+                element.usr.value = '',
+                element.ratio_meas.value = '',
+                element.ratio_dev.value = '',
+                element.polarity.value = '',
+                element.assessment.value = '',
+                element.condition_indicator.value = ''
             })
         },
         nameColor(data) {

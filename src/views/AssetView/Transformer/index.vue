@@ -67,7 +67,7 @@
 
             <!-- Surge Arrester -->
             <div v-else-if="this.switch == 'Surge Arrester'">
-                <surge-arrester :data="this.transformerDto.surge_arrester" :properties="this.transformerDto.properties"
+                <surge-arrester :data="this.transformerDto.surge_arrester" :properties="this.transformerDto.properties" @update="updateDataSurgeArrester"
                     style="font-size: 12px !important;"></surge-arrester>
             </div>
 
@@ -140,6 +140,9 @@ export default {
         },
         loadMapForView() {
         },
+        updateDataSurgeArrester(data) {
+            this.transformerDto.surge_arrester = data
+        }
     }
 }
 </script>

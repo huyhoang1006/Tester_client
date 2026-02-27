@@ -84,7 +84,7 @@
     },
     {
       "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
-      "code": "c_cal",
+      "code": "delta_c_percent",
       "name": "△C cal",
       "type": "analog",
       "unit": "%"
