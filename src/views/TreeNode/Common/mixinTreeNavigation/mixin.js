@@ -95,6 +95,7 @@ import exportSingleNodeToJSON from '@/views/TreeNode/Common/Export/exportSingleN
 import exportWord from '@/views/TreeNode/Common/Export/exportWord'
 import exportXML from '@/views/TreeNode/Common/Export/exportXML'
 import importCIM from '@/views/TreeNode/Common/Import/importCIM'
+import handleRefreshNode from '@/views/TreeNode/Common/Refresh/handleRefreshNode'
 
 
 
@@ -118,6 +119,6 @@ export default {
         fetchJobsByAssetId, exportTreeToJSON, hideProperties, removeTab,
         pathMap, fmeca, showProperties, showDataServer, checkChildren, showPropertiesData,
         breadCum, showOwnerServerRoot, exportExcel, exportJSONCIM, exportPDF, exportSingleNodeToJSON,
-        exportWord, exportXML, importCIM
+        exportWord, exportXML, importCIM, handleRefreshNode
         ]
 }
