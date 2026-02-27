@@ -34,7 +34,8 @@
                 @export-pdf="handleExportPDFFromContext" @duplicate-node="handleDuplicateFromContext"
                 @move-node="handleMoveFromContext" @import-json="handleImportJSONFromContext"
                 @show-zero-diagram="handleShowZeroDiagram"
-                @import-json-cim="handleImportJSONCIMFromContext" @show-data="showDataClient" />
+                @import-json-cim="handleImportJSONCIMFromContext" @show-data="showDataClient" 
+                @refresh-node="handleRefreshNode" />
 
             <ServerTreePanel ref="serverPanel" v-show="!clientSlide" :ownerServerList="ownerServerList"
                 :selectedNodes.sync="selectedNodes" @showOwnerServerRoot="showOwnerServerRoot"
@@ -46,7 +47,8 @@
                 @export-pdf="handleExportPDFFromContext" @duplicate-node="handleDuplicateFromContext"
                 @move-node="handleMoveFromContext" @import-json="handleImportJSONFromContext"
                 @show-zero-diagram="handleShowZeroDiagram"
-                @import-json-cim="handleImportJSONCIMFromContext" />
+                @import-json-cim="handleImportJSONCIMFromContext" 
+                @refresh-node="handleRefreshNode" />
 
             <div @mousedown="startResizeClient" v-if="clientSlide" ref="resizerClient" class="resizer"></div>
             <div @mousedown="startResizeServer" v-if="!clientSlide" ref="resizerServer" class="resizer"></div>

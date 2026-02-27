@@ -52,6 +52,9 @@
                 <li @click="edit">
                     <i class="fa-solid fa-pen-to-square"></i> Edit
                 </li>
+                <li @click="refresh">
+                    <i class="fa-solid fa-rotate"></i> Refresh
+                </li>
                 <li>
                     <i class="fa-solid fa-file-arrow-down"></i> Download
                 </li>
@@ -346,6 +349,10 @@ export default {
         this.$emit("show-zero-diagram", this.selectedNode)
         this.closeContextMenu()
     },
+        refresh() {
+            this.$emit("refresh-node", this.selectedNode)
+            this.closeContextMenu()
+        }
     }
 };
 </script>

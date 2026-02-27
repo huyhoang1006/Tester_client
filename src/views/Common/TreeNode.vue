@@ -12,7 +12,7 @@
     placement="top-start" 
     :open-delay="600"
 >
-    <span @contextmenu.prevent="openContextMenu($event, node)" :class="{ selected: isSelected(node) }" class="folder" @click="toggle" @dblclick="doubleToggle">
+    <span @contextmenu.prevent="openContextMenu($event, node)" :class="{ selected: isSelected(node), refreshing: node._isRefreshing }" class="folder" @click="toggle" @dblclick="doubleToggle">
         <div v-if="node.mode == 'substation'" class="icon-wrapper">
             <icon size="16px" folderType="location" :transformerType="node.type" badgeColor="146EBE"></icon>
             <span class="node-name">{{ node.name  }}</span>
@@ -287,5 +287,19 @@ ul {
         transform: scale(1);
         opacity: 1;
     }
+}
+
+/* Hiệu ứng nhấp nháy khi refresh */
+@keyframes blink {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.3;
+    }
+}
+
+.refreshing {
+    animation: blink 0.5s ease-in-out infinite;
 }
 </style>

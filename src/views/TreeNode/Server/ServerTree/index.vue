@@ -24,7 +24,8 @@
                 @export-xml="$emit('export-xml', $event)" @export-excel="$emit('export-excel', $event)"
                 @export-word="$emit('export-word', $event)" @export-pdf="$emit('export-pdf', $event)"
                 @duplicate-node="$emit('duplicate-node', $event)" @move-node="$emit('move-node', $event)"
-                @import-json="$emit('import-json', $event)" @import-json-cim="$emit('import-json-cim', $event)">
+                @import-json="$emit('import-json', $event)" @import-json-cim="$emit('import-json-cim', $event)"
+                @refresh-node="$emit('refresh-node', $event)">
             </contextMenu>
         </div>
     </div>
