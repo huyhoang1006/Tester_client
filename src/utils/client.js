@@ -99,6 +99,22 @@ client.interceptors.response.use(
              return Promise.reject(new Error(res.message))
         }
 
+        // Xử lý lỗi token không hợp lệ từ OAuth server (status 200 nhưng có error field)
+        if (res && res.error) {
+            const errorMsg = res.error_description || res.error
+            console.error(errorMsg)
+            // Nếu là lỗi token (invalid hoặc expired)
+            if (res.error === 'invalid_token' || res.error === 'token_expired') {
+                return Promise.reject({ 
+                    response: { 
+                        status: 401, 
+                        data: { message: errorMsg }
+                    } 
+                })
+            }
+            return Promise.reject(new Error(errorMsg))
+        }
+
         // Mặc định trả về toàn bộ data nhận được
         return res
     },
