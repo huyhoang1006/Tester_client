@@ -63,11 +63,12 @@ export default {
         }
     },
     watch: {
-        data: {
-            handler(newVal) {
-                this.surgeArrester = JSON.parse(JSON.stringify(newVal))
-            },
-            deep: true
+        surgeArrester: {
+            deep: true,
+            immediate : true,
+            handler: function (newVal) {
+                this.$emit('update', newVal)
+            }
         }
     },
 
