@@ -112,7 +112,7 @@ async function createWindow() {
     })
 
     win.setMinimumSize(640, 480)
-    adjustWindowSize()
+    win.maximize()
     win.show()
 
     const sendWindowState = () => {
