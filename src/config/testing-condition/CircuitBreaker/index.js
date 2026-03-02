@@ -4,10 +4,10 @@ const context = require.context(
   /\.json$/      // chỉ lấy file .json
 )
 
-const CircuitBreakerTestMap = context.keys().reduce((acc, key) => {
+const circuitBreakerConditionMap = context.keys().reduce((acc, key) => {
   const name = key.replace('./', '').replace('.json', '')
   acc[name] = context(key)
   return acc
 }, {})
 
-export default CircuitBreakerTestMap
+export default circuitBreakerConditionMap;

@@ -4,10 +4,10 @@ const context = require.context(
   /\.json$/      // chỉ lấy file .json
 )
 
-const DisconnectorTestMap = context.keys().reduce((acc, key) => {
+const disconnectorConditionMap = context.keys().reduce((acc, key) => {
   const name = key.replace('./', '').replace('.json', '')
   acc[name] = context(key)
   return acc
 }, {})
 
-export default DisconnectorTestMap
+export default disconnectorConditionMap;

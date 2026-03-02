@@ -34,6 +34,176 @@ export default {
                                 })
                                 newRows.push(...jobsReturn.data)
                             }
+                        } else if (node.asset && node.asset == 'Transformer') {
+                            const jobsReturn = await this.fetchJobsByAssetId(node.mrid)
+                            if (jobsReturn.success) {
+                                jobsReturn.data.forEach((row) => {
+                                    row.parentId = clickedRow.mrid
+                                    row.mode = 'job'
+                                    row.job = 'Transformer'
+                                    let parentName = clickedRow.parentName + '/' + clickedRow.name
+                                    row.parentName = parentName
+                                    row.parentArr = [...(clickedRow.parentArr || [])]
+                                    row.parentArr.push({
+                                        mrid: clickedRow.mrid,
+                                        parent: clickedRow.name
+                                    })
+                                })
+                                newRows.push(...jobsReturn.data)
+                            }
+                        } else if (node.asset && node.asset == 'Voltage transformer') {
+                            const jobsReturn = await this.fetchJobsByAssetId(node.mrid)
+                            if (jobsReturn.success) {
+                                jobsReturn.data.forEach((row) => {
+                                    row.parentId = clickedRow.mrid
+                                    row.mode = 'job'
+                                    row.job = 'Voltage transformer'
+                                    let parentName = clickedRow.parentName + '/' + clickedRow.name
+                                    row.parentName = parentName
+                                    row.parentArr = [...(clickedRow.parentArr || [])]
+                                    row.parentArr.push({
+                                        mrid: clickedRow.mrid,
+                                        parent: clickedRow.name
+                                    })
+                                })
+                                newRows.push(...jobsReturn.data)
+                            }
+                        } else if (node.asset && node.asset == 'Current transformer') {
+                            const jobsReturn = await this.fetchJobsByAssetId(node.mrid)
+                            if (jobsReturn.success) {
+                                jobsReturn.data.forEach((row) => {
+                                    row.parentId = clickedRow.mrid
+                                    row.mode = 'job'
+                                    row.job = 'Current transformer'
+                                    let parentName = clickedRow.parentName + '/' + clickedRow.name
+                                    row.parentName = parentName
+                                    row.parentArr = [...(clickedRow.parentArr || [])]
+                                    row.parentArr.push({
+                                        mrid: clickedRow.mrid,
+                                        parent: clickedRow.name
+                                    })
+                                })
+                                newRows.push(...jobsReturn.data)
+                            }
+                        } else if (node.asset && node.asset == 'Disconnector') {
+                            const jobsReturn = await this.fetchJobsByAssetId(node.mrid)
+                            if (jobsReturn.success) {
+                                jobsReturn.data.forEach((row) => {
+                                    row.parentId = clickedRow.mrid
+                                    row.mode = 'job'
+                                    row.job = 'Disconnector'
+                                    let parentName = clickedRow.parentName + '/' + clickedRow.name
+                                    row.parentName = parentName
+                                    row.parentArr = [...(clickedRow.parentArr || [])]
+                                    row.parentArr.push({
+                                        mrid: clickedRow.mrid,
+                                        parent: clickedRow.name
+                                    })
+                                })
+                                newRows.push(...jobsReturn.data)
+                            }
+                        } else if (node.asset && node.asset == 'Circuit breaker') {
+                            const jobsReturn = await this.fetchJobsByAssetId(node.mrid)
+                            if (jobsReturn.success) {
+                                jobsReturn.data.forEach((row) => {
+                                    row.parentId = clickedRow.mrid
+                                    row.mode = 'job'
+                                    row.job = 'Circuit breaker'
+                                    let parentName = clickedRow.parentName + '/' + clickedRow.name
+                                    row.parentName = parentName
+                                    row.parentArr = [...(clickedRow.parentArr || [])]
+                                    row.parentArr.push({
+                                        mrid: clickedRow.mrid,
+                                        parent: clickedRow.name
+                                    })
+                                })
+                                newRows.push(...jobsReturn.data)
+                            }
+                        } else if (node.asset && node.asset == 'Power cable') {
+                            const jobsReturn = await this.fetchJobsByAssetId(node.mrid)
+                            if (jobsReturn.success) {
+                                jobsReturn.data.forEach((row) => {
+                                    row.parentId = clickedRow.mrid
+                                    row.mode = 'job'
+                                    row.job = 'Power cable'
+                                    let parentName = clickedRow.parentName + '/' + clickedRow.name
+                                    row.parentName = parentName
+                                    row.parentArr = [...(clickedRow.parentArr || [])]
+                                    row.parentArr.push({
+                                        mrid: clickedRow.mrid,
+                                        parent: clickedRow.name
+                                    })
+                                })
+                                newRows.push(...jobsReturn.data)
+                            }
+                        } else if (node.asset && node.asset == 'Rotating machine') {
+                            const jobsReturn = await this.fetchJobsByAssetId(node.mrid)
+                            if (jobsReturn.success) {
+                                jobsReturn.data.forEach((row) => {
+                                    row.parentId = clickedRow.mrid
+                                    row.mode = 'job'
+                                    row.job = 'Rotating machine'
+                                    let parentName = clickedRow.parentName + '/' + clickedRow.name
+                                    row.parentName = parentName
+                                    row.parentArr = [...(clickedRow.parentArr || [])]
+                                    row.parentArr.push({
+                                        mrid: clickedRow.mrid,
+                                        parent: clickedRow.name
+                                    })
+                                })
+                                newRows.push(...jobsReturn.data)
+                            }
+                        } else if (node.asset && node.asset == 'Reactor') {
+                            const jobsReturn = await this.fetchJobsByAssetId(node.mrid)
+                            if (jobsReturn.success) {
+                                jobsReturn.data.forEach((row) => {
+                                    row.parentId = clickedRow.mrid
+                                    row.mode = 'job'
+                                    row.job = 'Reactor'
+                                    let parentName = clickedRow.parentName + '/' + clickedRow.name
+                                    row.parentName = parentName
+                                    row.parentArr = [...(clickedRow.parentArr || [])]
+                                    row.parentArr.push({
+                                        mrid: clickedRow.mrid,
+                                        parent: clickedRow.name
+                                    })
+                                })
+                                newRows.push(...jobsReturn.data)
+                            }
+                        } else if (node.asset && node.asset == 'Capacitor') {
+                            const jobsReturn = await this.fetchJobsByAssetId(node.mrid)
+                            if (jobsReturn.success) {
+                                jobsReturn.data.forEach((row) => {
+                                    row.parentId = clickedRow.mrid
+                                    row.mode = 'job'
+                                    row.job = 'Capacitor'
+                                    let parentName = clickedRow.parentName + '/' + clickedRow.name
+                                    row.parentName = parentName
+                                    row.parentArr = [...(clickedRow.parentArr || [])]
+                                    row.parentArr.push({
+                                        mrid: clickedRow.mrid,
+                                        parent: clickedRow.name
+                                    })
+                                })
+                                newRows.push(...jobsReturn.data)
+                            }
+                        } else if (node.asset && node.asset == 'Bushing') {
+                            const jobsReturn = await this.fetchJobsByAssetId(node.mrid)
+                            if (jobsReturn.success) {
+                                jobsReturn.data.forEach((row) => {
+                                    row.parentId = clickedRow.mrid
+                                    row.mode = 'job'
+                                    row.job = 'Bushing'
+                                    let parentName = clickedRow.parentName + '/' + clickedRow.name
+                                    row.parentName = parentName
+                                    row.parentArr = [...(clickedRow.parentArr || [])]
+                                    row.parentArr.push({
+                                        mrid: clickedRow.mrid,
+                                        parent: clickedRow.name
+                                    })
+                                })
+                                newRows.push(...jobsReturn.data)
+                            }
                         }
                     } else if (node.mode == 'substation') {
                         const clickedRow = node

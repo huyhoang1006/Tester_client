@@ -8,7 +8,7 @@ import { app } from 'electron'
 
 const nameDB = 'database.db'
 // THÊM: Mật khẩu bạn đã đặt ở DB Browser
-const DB_PASSWORD = 'attester' 
+const DB_PASSWORD = 'attester'
 
 // Lấy đường dẫn database ở userData (nơi lưu dữ liệu người dùng)
 const userDataPath = app.getPath('userData')
