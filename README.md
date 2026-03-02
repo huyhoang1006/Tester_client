@@ -30,5 +30,6 @@ npm run electron:build
 FROM sqlite_master 
 WHERE type='table' 
 AND name NOT LIKE 'sqlite_%';
+Nhớ Ctrl + S bên Database structure sau khi chạy các lệnh xóa
 3. PRAGMA foreign_keys = ON;
 ```

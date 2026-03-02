@@ -3,7 +3,7 @@
 import {app, protocol, BrowserWindow, ipcMain, screen} from 'electron'
 import {createProtocol} from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, {VUEJS_DEVTOOLS} from 'electron-devtools-installer'
-import sqlite3 from 'sqlite3'
+import sqlite3 from '@journeyapps/sqlcipher'
 import * as updateModule from './update/index'
 import fs from 'fs'
 import path from 'path'
