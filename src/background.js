@@ -32,18 +32,23 @@ protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: {secure: true,
 function startPythonWorker() {
     const isWin = process.platform === 'win32'
     const exeName = isWin ? 'importer.exe' : 'importer'
+    const platformFolder = isWin ? 'importer_win' : 'importer_mac'
 
     let exePath
     if (app.isPackaged) {
         // Khi build ra file cài đặt
-        exePath = path.join(process.resourcesPath, 'extra_binaries', isWin ? 'importer_win' : 'importer_mac', exeName)
+        exePath = path.join(process.resourcesPath, 'extra_binaries', 'importer', platformFolder, exeName)
     } else {
         // Khi đang code (npm run serve)
         // Thường với vue-cli-electron-builder, __dirname sẽ trỏ vào dist_electron
-        exePath = path.join(process.cwd(), 'extra_binaries', isWin ? 'worker_win' : 'worker_mac', exeName)
+        exePath = path.join(process.cwd(), 'extra_binaries', 'importer', platformFolder, exeName)
     }
 
-    // Nếu bạn chưa tách 2 thư mục win/mac mà chỉ để chung thư mục 'worker' thì sửa path lại cho đúng tên thư mục nhé.
+    if (!fs.existsSync(exePath)) {
+        console.error(`❌ KHÔNG TÌM THẤY FILE TẠI: ${exePath}`);
+        return; // Dừng lại để app không bị crash (văng lỗi Uncaught Exception)
+    }
+    // ------------------------------------
 
     importerProcess = spawn(exePath)
 
@@ -57,7 +62,7 @@ function startPythonWorker() {
             const response = JSON.parse(line)
             if (response.id && pendingRequests.has(response.id)) {
                 const resolve = pendingRequests.get(response.id)
-                resolve(response) // Trả kết quả JSON về cho Frontend
+                resolve(response)
                 pendingRequests.delete(response.id)
             }
         } catch (error) {
