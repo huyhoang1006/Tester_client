@@ -61,7 +61,7 @@ import overview from './components/Overview'
 import testingEquipment from './components/TestingEquipment/index.vue'
 import SelectTest from './components/SelectTest'
 import testInformation from '@/views/Common/testInformation.vue'
-import DcWindingRes from './components/DcWindingRes.vue'
+import DcWindingResistance from './components/DcWindingResistance.vue'
 import InsulationResistance from './components/InsulationResistance.vue'
 import GeneralInspection from './components/GeneralInspection.vue'
 import VTRatio from './components/VTRatio.vue'
@@ -74,7 +74,7 @@ export default {
         overview,
         SelectTest,
         testInformation,
-        DcWindingRes,
+        DcWindingResistance,
         InsulationResistance,
         GeneralInspection,
         VTDfcap,

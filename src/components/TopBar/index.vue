@@ -1020,7 +1020,7 @@ export default {
 
 .dropdown-menu.el-dropdown-menu .el-dropdown-menu__item {
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 400;
     color: #ffffff !important;
     display: flex;
     align-items: center;

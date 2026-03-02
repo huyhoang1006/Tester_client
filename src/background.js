@@ -45,10 +45,9 @@ function startPythonWorker() {
     }
 
     if (!fs.existsSync(exePath)) {
-        console.error(`❌ KHÔNG TÌM THẤY FILE TẠI: ${exePath}`);
-        return; // Dừng lại để app không bị crash (văng lỗi Uncaught Exception)
+        console.error(`❌ KHÔNG TÌM THẤY FILE TẠI: ${exePath}`)
+        return // Dừng lại để app không bị crash (văng lỗi Uncaught Exception)
     }
-    // ------------------------------------
 
     importerProcess = spawn(exePath)
 
@@ -58,6 +57,11 @@ function startPythonWorker() {
     })
 
     rl.on('line', (line) => {
+        if (line === 'PYTHON_READY') {
+            console.log('💚 PYTHON ENGINE ĐÃ KHỞI ĐỘNG XONG VÀ SẴN SÀNG!')
+            return
+        }
+
         try {
             const response = JSON.parse(line)
             if (response.id && pendingRequests.has(response.id)) {
@@ -66,7 +70,8 @@ function startPythonWorker() {
                 pendingRequests.delete(response.id)
             }
         } catch (error) {
-            console.error('Lỗi Parse JSON từ Python:', line)
+            // Log nhưng không tính là lỗi fatal
+            console.log('🐍 Python Log:', line)
         }
     })
 
@@ -470,25 +475,25 @@ app.on('ready', async () => {
                 data: null
             }
         }
-    }),
-        ipcMain.handle('insertOnlineMonitoringData', async function (event, assetId, online_monitoring) {
-            try {
-                await insertOnlineMonitoringData(assetId, online_monitoring)
-                return {
-                    success: true,
-                    message: 'Success'
-                }
-            } catch (error) {
-                return {
-                    success: false,
-                    message: error
-                }
+    })
+    ipcMain.handle('insertOnlineMonitoringData', async function (event, assetId, online_monitoring) {
+        try {
+            await insertOnlineMonitoringData(assetId, online_monitoring)
+            return {
+                success: true,
+                message: 'Success'
             }
-        }),
-        ipcMain.handle('closeApp', () => {
-            db.close()
-            app.quit()
-        })
+        } catch (error) {
+            return {
+                success: false,
+                message: error
+            }
+        }
+    })
+    ipcMain.handle('closeApp', () => {
+        db.close()
+        app.quit()
+    })
 
     ipcMain.handle('minimizeApp', () => {
         win.minimize()
@@ -496,6 +501,24 @@ app.on('ready', async () => {
 
     ipcMain.handle('maximizeApp', () => {
         win.isMaximized() ? win.unmaximize() : win.maximize()
+    })
+    ipcMain.handle('convert-files', async (event, filePaths, fileType) => {
+        const promises = filePaths.map((filePath) => {
+            return new Promise((resolve) => {
+                const reqId = newUuid() // UUID để track request
+                pendingRequests.set(reqId, resolve)
+
+                const payload = {
+                    id: reqId,
+                    type: fileType,
+                    path: filePath
+                }
+
+                // Gửi sang Python (Nhớ có \n)
+                importerProcess.stdin.write(JSON.stringify(payload) + '\n')
+            })
+        })
+        return await Promise.all(promises)
     })
 
     startPythonWorker()
