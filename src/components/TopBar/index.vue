@@ -15,157 +15,143 @@
             </div>
 
             <div class="right-bar">
-                <!-- Notification Bell -->
-                <div 
-                v-if="user" 
-                
-                class="dropdown-trigger-wrapper"
-                style="-webkit-app-region: no-drag;"
-                >
-                    <el-dropdown 
-                    ref="notificationDropdown" 
-                    trigger="click" 
-                    placement="bottom-end"
-                    :hide-on-click="false"
-                    >
-                        <el-tooltip 
-                        content="Notifications" 
-                        placement="bottom"
-                        trigger="hover"
-                        :append-to-body="true">
-
-                            <div 
-                            class="topbar-btn notification-btn" 
-                            @click.stop="handleNotificationDropdown"
-                            >
+                <el-tooltip v-if="user" content="Notifications" placement="bottom" trigger="hover"
+                    :append-to-body="true">
+                    <div class="dropdown-trigger-wrapper" style="-webkit-app-region: no-drag;"
+                        @click.stop="handleNotificationDropdown">
+                        <el-dropdown ref="notificationDropdown" trigger="click" placement="bottom-end"
+                            :hide-on-click="false">
+                            <div class="topbar-btn notification-btn">
                                 <i style="font-size: 15px; color: white;" class="fas fa-bell"></i>
                                 <span v-if="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
                             </div>
-
-                        </el-tooltip>
-                        <el-dropdown-menu slot="dropdown" class="notification-dropdown-menu">
-                            <div class="notification-header">
-                                <span class="notification-title">Notifications</span>
-                                <div class="notification-header-actions">
-                                    <el-button type="text" size="mini" @click.stop="loadNotifications" title="Refresh Notifications">
-                                        <i class="fas fa-sync-alt" :class="{ 'fa-spin': isReloading }"></i>
-                                    </el-button>
-                                </div>
-                            </div>
-                            <div class="notification-list">
-                                <div v-for="notification in displayedNotifications" :key="notification.mrid"
-                                    class="notification-item" :class="{ 'unread': notification.status === 'unread' }">
-                                    <div class="notification-content"
-                                        @click.stop="openNotificationDetail(notification)">
-                                        <div class="notification-icon">
-                                            <i :class="notification.icon"></i>
-                                        </div>
-                                        <div class="notification-text">
-                                            <div class="notification-message">{{ notification.message }}</div>
-                                            <div class="notification-time">{{ notification.name }}</div>
-                                        </div>
+                            <el-dropdown-menu slot="dropdown" class="notification-dropdown-menu">
+                                <div class="notification-header">
+                                    <span class="notification-title">Notifications</span>
+                                    <div class="notification-header-actions">
+                                        <el-button type="text" size="mini" @click.stop="loadNotifications"
+                                            title="Refresh Notifications">
+                                            <i class="fas fa-sync-alt" :class="{ 'fa-spin': isReloading }"></i>
+                                        </el-button>
                                     </div>
-                                    <el-dropdown trigger="click" placement="bottom-end" :append-to-body="false">
-                                        <div class="notification-menu-btn" @click.stop>
-                                            <i class="fas fa-ellipsis-v"></i>
+                                </div>
+                                <div class="notification-list">
+                                    <div v-for="notification in displayedNotifications" :key="notification.mrid"
+                                        class="notification-item"
+                                        :class="{ 'unread': notification.status === 'unread' }">
+                                        <div class="notification-content"
+                                            @click.stop="openNotificationDetail(notification)">
+                                            <div class="notification-icon">
+                                                <i :class="notification.icon"></i>
+                                            </div>
+                                            <div class="notification-text">
+                                                <div class="notification-message">{{ notification.message }}</div>
+                                                <div class="notification-time">{{ notification.name }}</div>
+                                            </div>
                                         </div>
-                                        <el-dropdown-menu slot="dropdown" class="notification-action-menu">
-                                            <el-dropdown-item @click.native.stop="loadMoreNotifications">
-                                                <i class="fas fa-plus-circle"></i>
-                                                Show More Notifications
-                                            </el-dropdown-item>
-                                            <el-dropdown-item @click.native.stop="markAsRead(notification.mrid)">
-                                                <i class="fas fa-check"></i>
-                                                Mark as Read
-                                            </el-dropdown-item>
-                                            <el-dropdown-item
-                                                @click.native.stop="deleteNotification(notification.mrid)">
-                                                <i class="fas fa-trash"></i>
-                                                Delete Notification
-                                            </el-dropdown-item>
-                                        </el-dropdown-menu>
-                                    </el-dropdown>
+                                        <el-dropdown trigger="click" placement="bottom-end" :append-to-body="false">
+                                            <div class="notification-menu-btn" @click.stop>
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </div>
+                                            <el-dropdown-menu slot="dropdown" class="notification-action-menu">
+                                                <el-dropdown-item @click.native.stop="loadMoreNotifications">
+                                                    <i class="fas fa-plus-circle"></i>
+                                                    Show More Notifications
+                                                </el-dropdown-item>
+                                                <el-dropdown-item @click.native.stop="markAsRead(notification.mrid)">
+                                                    <i class="fas fa-check"></i>
+                                                    Mark as Read
+                                                </el-dropdown-item>
+                                                <el-dropdown-item
+                                                    @click.native.stop="deleteNotification(notification.mrid)">
+                                                    <i class="fas fa-trash"></i>
+                                                    Delete Notification
+                                                </el-dropdown-item>
+                                            </el-dropdown-menu>
+                                        </el-dropdown>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="notification-footer">
-                                <span class="notification-pagination">Page {{ currentPage }}/{{ totalPages }}</span>
-                                <div class="notification-footer-actions">
-                                    <el-button v-if="currentPage < totalPages" size="mini" type="text"
-                                        @click.stop="nextPage">
-                                        Next Page
-                                    </el-button>
-                                    <el-button v-if="currentPage > 1" size="mini" type="text" @click.stop="prevPage">
-                                        Previous Page
-                                    </el-button>
+                                <div class="notification-footer">
+                                    <span class="notification-pagination">Page {{ currentPage }}/{{ totalPages }}</span>
+                                    <div class="notification-footer-actions">
+                                        <el-button v-if="currentPage < totalPages" size="mini" type="text"
+                                            @click.stop="nextPage">
+                                            Next Page
+                                        </el-button>
+                                        <el-button v-if="currentPage > 1" size="mini" type="text"
+                                            @click.stop="prevPage">
+                                            Previous Page
+                                        </el-button>
+                                    </div>
                                 </div>
-                            </div>
-                        </el-dropdown-menu>
-                    </el-dropdown>
-                </div>
-            
+                            </el-dropdown-menu>
+                        </el-dropdown>
+                    </div>
+                </el-tooltip>
+
                 <el-tooltip content="Settings" placement="bottom">
-                <div @click.stop="handleDropdown" class="dropdown-trigger-wrapper">
-                    <el-dropdown ref="dropdown" @command="handleCommand" trigger="click" placement="bottom-end">
-                        <div class="topbar-btn">
-                            <i style="font-size: 15px; color: white;" class="fas fa-cog"></i>
-                        </div>
-                        <el-dropdown-menu slot="dropdown" class="dropdown-menu">
-                            <template v-if="user">
-                                <el-dropdown-item command="check_update">
-                                    <i class="fas fa-sync-alt"></i>
-                                    Check for update
-                                </el-dropdown-item>
-                                <el-dropdown-item command="config">
-                                    <i class="fas fa-wrench"></i>
-                                    Config server address
-                                </el-dropdown-item>
-                                <el-divider></el-divider>
-                                <el-dropdown-item command="manage_user">
-                                    <i class="fas fa-user-cog"></i>
-                                    User management
-                                </el-dropdown-item>
-                                <el-dropdown-item command="update_password">
-                                    <i class="fas fa-key"></i>
-                                    Change password
-                                </el-dropdown-item>
-                                <el-divider></el-divider>
-                                <el-dropdown-item command="log_out" class="danger-item">
-                                    <i class="fas fa-sign-out-alt"></i>
-                                    Log out
-                                </el-dropdown-item>
-                            </template>
-                            <template v-else>
-                                <el-dropdown-item command="check_update">
-                                    <i class="fas fa-sync-alt"></i>
-                                    Check for update
-                                </el-dropdown-item>
-                                <el-dropdown-item command="config">
-                                    <i class="fas fa-wrench"></i>
-                                    Config server address
-                                </el-dropdown-item>
-                            </template>
-                        </el-dropdown-menu>
-                    </el-dropdown>
-                </div>
+                    <div @click.stop="handleDropdown" class="dropdown-trigger-wrapper">
+                        <el-dropdown ref="dropdown" @command="handleCommand" trigger="click" placement="bottom-end">
+                            <div class="topbar-btn">
+                                <i style="font-size: 15px; color: white;" class="fas fa-cog"></i>
+                            </div>
+                            <el-dropdown-menu slot="dropdown" class="dropdown-menu">
+                                <template v-if="user">
+                                    <el-dropdown-item command="check_update">
+                                        <i class="fas fa-sync-alt"></i>
+                                        Check for update
+                                    </el-dropdown-item>
+                                    <el-dropdown-item command="config">
+                                        <i class="fas fa-wrench"></i>
+                                        Config server address
+                                    </el-dropdown-item>
+                                    <el-divider></el-divider>
+                                    <el-dropdown-item command="manage_user">
+                                        <i class="fas fa-user-cog"></i>
+                                        User management
+                                    </el-dropdown-item>
+                                    <el-dropdown-item command="update_password">
+                                        <i class="fas fa-key"></i>
+                                        Change password
+                                    </el-dropdown-item>
+                                    <el-divider></el-divider>
+                                    <el-dropdown-item command="log_out" class="danger-item">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                        Log out
+                                    </el-dropdown-item>
+                                </template>
+                                <template v-else>
+                                    <el-dropdown-item command="check_update">
+                                        <i class="fas fa-sync-alt"></i>
+                                        Check for update
+                                    </el-dropdown-item>
+                                    <el-dropdown-item command="config">
+                                        <i class="fas fa-wrench"></i>
+                                        Config server address
+                                    </el-dropdown-item>
+                                </template>
+                            </el-dropdown-menu>
+                        </el-dropdown>
+                    </div>
                 </el-tooltip>
 
                 <el-tooltip content="Minimize" placement="bottom">
-                <div @click="minimizeApp" class="topbar-btn">
-                    <i style="font-size: 15px; color: white;" class="far fa-window-minimize"></i>
-                </div>
+                    <div @click="minimizeApp" class="topbar-btn">
+                        <i style="font-size: 15px; color: white;" class="fas fa-minus"></i>
+                    </div>
                 </el-tooltip>
 
-                <el-tooltip content="Maximize" placement="bottom">                
-                <div @click="maximizeApp" class="topbar-btn">
-                    <i style="font-size: 15px; color: white;" v-if="isMaximized" class="far fa-window-restore"></i>
-                    <i style="font-size: 15px; color: white;" v-else class="far fa-window-maximize"></i>
-                </div>
+                <el-tooltip content="Maximize" placement="bottom">
+                    <div @click="maximizeApp" class="topbar-btn">
+                        <i style="font-size: 15px; color: white;" v-if="isMaximized" class="far fa-window-restore"></i>
+                        <i style="font-size: 15px; color: white;" v-else class="far fa-window-maximize"></i>
+                    </div>
                 </el-tooltip>
 
                 <el-tooltip content="Close" placement="bottom">
-                <div @click="closeApp" class="close-icon">
-                    <i style="font-size: 15px; color: white;" class="fas fa-window-close"></i>
-                </div>
+                    <div @click="closeApp" class="close-icon">
+                        <i style="font-size: 18px; color: white;" class="fas fa-times"></i>
+                    </div>
                 </el-tooltip>
             </div>
         </div>
@@ -439,11 +425,13 @@ export default {
                 }
             })
         },
+        handleNotificationDropdown() {
+            if (this.$refs.notificationDropdown) {
+                this.$refs.notificationDropdown.handleClick();
+            }
+        },
         handleDropdown() {
             this.$refs.dropdown.handleClick();
-        },
-        handleNotificationDropdown() {
-            this.$refs.notificationDropdown.handleClick();
         },
         async loadNotifications() {
             this.isReloading = true
@@ -728,10 +716,6 @@ export default {
 
 .close-icon:hover {
     background-color: red !important;
-}
-
-.notification-btn {
-    position: relative;
 }
 
 .notification-badge {
@@ -1036,7 +1020,7 @@ export default {
 
 .dropdown-menu.el-dropdown-menu .el-dropdown-menu__item {
     font-size: 13px;
-    font-weight: 540;
+    font-weight: 500;
     color: #ffffff !important;
     display: flex;
     align-items: center;
@@ -1459,10 +1443,12 @@ export default {
 .notification-detail-time {
     color: rgba(255, 255, 255, 0.6);
 }
+
 .topbar-btn {
     -webkit-app-region: no-drag;
 }
+
 .right-bar {
-   -webkit-app-region: no-drag;
+    -webkit-app-region: no-drag;
 }
 </style>

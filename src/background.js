@@ -8,11 +8,15 @@ import * as updateModule from './update/index'
 import fs from 'fs'
 import path from 'path'
 import {v4 as newUuid} from 'uuid'
+import {spawn} from 'child_process'
+import readline from 'readline'
 // import {userFunc} from '@/function'
 // import {ipcUploadCustom} from '@/ipcmain'
 import {ipcCim, ipcEntity, ipcAppOption} from '@/ipcmain'
 let win
+let importerProcess = null
 
+const pendingRequests = new Map()
 const nameDB = 'database.db'
 const pathDB = path.join(__dirname, `/../database/${nameDB}`)
 const pathUpload = path.join(__dirname, `/../attachment`)
@@ -25,11 +29,53 @@ const isDevelopment = process.env.NODE_ENV !== 'development'
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: {secure: true, standard: true}}])
 
+function startPythonWorker() {
+    const isWin = process.platform === 'win32'
+    const exeName = isWin ? 'importer.exe' : 'importer'
+
+    let exePath
+    if (app.isPackaged) {
+        // Khi build ra file cài đặt
+        exePath = path.join(process.resourcesPath, 'extra_binaries', isWin ? 'importer_win' : 'importer_mac', exeName)
+    } else {
+        // Khi đang code (npm run serve)
+        // Thường với vue-cli-electron-builder, __dirname sẽ trỏ vào dist_electron
+        exePath = path.join(process.cwd(), 'extra_binaries', isWin ? 'worker_win' : 'worker_mac', exeName)
+    }
+
+    // Nếu bạn chưa tách 2 thư mục win/mac mà chỉ để chung thư mục 'worker' thì sửa path lại cho đúng tên thư mục nhé.
+
+    importerProcess = spawn(exePath)
+
+    const rl = readline.createInterface({
+        input: importerProcess.stdout,
+        terminal: false
+    })
+
+    rl.on('line', (line) => {
+        try {
+            const response = JSON.parse(line)
+            if (response.id && pendingRequests.has(response.id)) {
+                const resolve = pendingRequests.get(response.id)
+                resolve(response) // Trả kết quả JSON về cho Frontend
+                pendingRequests.delete(response.id)
+            }
+        } catch (error) {
+            console.error('Lỗi Parse JSON từ Python:', line)
+        }
+    })
+
+    importerProcess.stderr.on('data', (data) => {
+        console.error(`[Python Log]: ${data.toString()}`)
+    })
+}
+
 function adjustWindowSize() {
     const primaryDisplay = screen.getPrimaryDisplay()
     const {width, height} = primaryDisplay.workAreaSize // Lấy kích thước mà không bao gồm taskbar
-
-    win.setBounds({x: 0, y: 0, width, height}) // Cập nhật kích thước cửa sổ
+    const safeWidth = Math.max(width, 640)
+    const safeHeight = Math.max(height, 480)
+    win.setBounds({x: 0, y: 0, safeWidth, safeHeight}) // Cập nhật kích thước cửa sổ
 }
 
 async function createWindow() {
@@ -38,6 +84,12 @@ async function createWindow() {
         show: false,
         frame: false,
         autoHideMenuBar: true,
+        // titleBarStyle: process.platform === 'darwin' ? 'hidden' : 'default',
+        // trafficLightPosition: {x: 12, y: 16},
+        width: 1200,
+        height: 800,
+        minWidth: 640,
+        minHeight: 480,
         webPreferences: {
             // Use pluginOptions.nodeIntegration, leave this alone
             // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
@@ -49,7 +101,7 @@ async function createWindow() {
         }
     })
 
-    // full screen
+    win.setMinimumSize(640, 480)
     adjustWindowSize()
     win.show()
 
@@ -83,6 +135,13 @@ app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         db.close()
         app.quit()
+    }
+})
+
+app.on('will-quit', () => {
+    if (importerProcess) {
+        importerProcess.stdin.write('EXIT\n')
+        importerProcess.kill()
     }
 })
 
@@ -433,6 +492,8 @@ app.on('ready', async () => {
     ipcMain.handle('maximizeApp', () => {
         win.isMaximized() ? win.unmaximize() : win.maximize()
     })
+
+    startPythonWorker()
 
     await createWindow()
 
