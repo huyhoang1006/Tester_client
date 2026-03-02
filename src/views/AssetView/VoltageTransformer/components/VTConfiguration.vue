@@ -46,7 +46,7 @@
                                     <td>
                                         <el-row :gutter="8">
                                             <el-col :span="12">
-                                                <el-select size="mini" v-model="item.usr_formula.value">
+                                                <el-select size="mini" v-model="item.usr_formula">
                                                     <el-option label="1 / 1" value="1"></el-option>
                                                     <el-option label="1 / √3" value="3sqrt"></el-option>
                                                     <el-option label="1 / 3" value="3"></el-option>
@@ -65,7 +65,7 @@
                                         </el-input>
                                     </td>
                                     <td>
-                                        <el-input size="mini" v-model="item.rated_power_factor.value">
+                                        <el-input size="mini" v-model="item.rated_power_factor">
                                         </el-input>
                                     </td>
                                 </tr>
@@ -110,12 +110,7 @@ export default {
                 for (let i = 0; i < target - lengthData; i++) {
                     this.configsData.dataVT.push({
                         mrid: '',
-                        usr_formula: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            multiplier: ''
-                        },           // default
+                        usr_formula: '',           // default
                         usr_rated_voltage: {
                             mrid: '',
                             value: '',
@@ -128,12 +123,7 @@ export default {
                             unit: '',
                             multiplier: ''
                         },           // default empty
-                        rated_power_factor: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            multiplier: ''
-                        }      // default empty
+                        rated_power_factor: ''
                     });
                 }
             } else if (lengthData > target) {

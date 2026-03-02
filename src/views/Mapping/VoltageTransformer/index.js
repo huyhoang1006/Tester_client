@@ -149,19 +149,9 @@ const mapDataVTRevert = (entity) => {
             mrid: item.mrid || null,
             name: item.name || null,
 
-            usr_formula: {
-                mrid: "",
-                value: item.usr_formula || null,
-                unit: "",
-                multiplier: ""
-            },
+            usr_formula: '',
 
-            rated_power_factor: {
-                mrid: "",
-                value: item.rated_power_factor || null,
-                unit: "",
-                multiplier: ""
-            },
+            rated_power_factor: '',
 
             usr_rated_voltage: voltage
                 ? {
