@@ -12,12 +12,12 @@ export default {
             let data = null
             switch (testTypeCode) {
                 case 'InsulationResistance':
-                    data = this.initInsulationResistance(testTypeCode)
+                    data = this.initInsulationResistance(testTypeCode, assetData)
                     break
                 case 'VTRatio':
                     data = await this.initVTRatio(testTypeCode)
                     break
-                case 'DcWindingRes':
+                case 'DcWindingResistance':
                     data = await this.initDcWindingRes(testTypeCode)
                     break
                 case 'VTDfcap':
@@ -30,165 +30,24 @@ export default {
 
             return data
         },
-        async initInsulationResistance(asset) {
-            const row_data = [
-                {
-                    mrid: '',
-                    name: 'Measurement',
-                    code: 'measurement',
-                    unit: '',
-                    type: 'string',
-
-                },
-                {
-                    mrid: '',
-                    name: 'V test',
-                    code: 'v_test',
-                    unit: 'V',
-                    type: 'analog',
-                }
-                ,
-                {
-                    mrid: '',
-                    name: 'R60s',
-                    code: 'r60s',
-                    unit: 'M|Ω',
-                    type: 'analog',
-                },
-                {
-                    mrid: '',
-                    name: 'Assessment',
-                    code: 'assessment',
-                    type: 'discrete',
-                    pool: {
-                        mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
-                    }
-
-                },
-                {
-                    mrid: '',
-                    name: 'Condition indicator',
-                    code: 'condition_indicator',
-                    type: 'discrete',
-                    pool: {
-                        mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
-                    }
-                }
-            ]
+        async initInsulationResistance(testTypeCode, assetData) {
+            const rowDataExample = common.buildEmptyTestRow(voltageTransformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(voltageTransformerConditionMap[testTypeCode].columns)
+            const row1 = JSON.parse(JSON.stringify(rowDataExample))
+            row1.measurement.value = 'Prim - (Sec + GND)'
             let table = [
-                {
-                    mrid: '',
-                    measurement: {
-                        mrid: '',
-                        value: 'Prim - (Sec + GND)',
-                        unit: '',
-                        type: 'string'
-                    },
-                    v_test: {
-                        mrid: '',
-                        value: '',
-                        unit: 'V',
-                        type: 'analog'
-                    },
-                    r60s: {
-                        mrid: '',
-                        value: '',
-                        unit: 'M|Ω',
-                        type: 'analog'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                },
+                row1
             ]
-            // Try to get config from various possible locations
-            let config = null
-            if (asset) {
-                if (asset.config) {
-                    try {
-                        config = typeof asset.config === 'string' ? JSON.parse(asset.config) : asset.config
-                    } catch (e) {
-                        console.warn('Failed to parse asset.config:', e)
-                    }
-                }
-                if (!config && asset.properties && asset.properties.config) {
-                    try {
-                        config = typeof asset.properties.config === 'string' ? JSON.parse(asset.properties.config) : asset.properties.config
-                    } catch (e) {
-                        console.warn('Failed to parse asset.properties.config:', e)
-                    }
-                }
-                if (!config && asset.asset_info && asset.asset_info.config) {
-                    try {
-                        config = typeof asset.asset_info.config === 'string' ? JSON.parse(asset.asset_info.config) : asset.asset_info.config
-                    } catch (e) {
-                        console.warn('Failed to parse asset.asset_info.config:', e)
-                    }
-                }
-            }
 
-            if (!config || !config.windings) {
-                // Only log warning in development or if config was expected
-                if (process.env.NODE_ENV === 'development') {
-                    console.warn('Asset config or windings is missing, using default value of 2')
-                }
-                config = config || {}
-                config.windings = config.windings || 2
-            }
-
-            let winding = parseInt(config.windings) || 2
+            let winding = parseInt(assetData.OldPotentialTransformerInfo.windings || 0) || 2
             for (let i = 1; i <= parseInt(winding); i++) {
-                table.push({
-                    mrid: '',
-                    measurement: {
-                        mrid: '',
-                        value: "(" + i + "a" + i + "n" + ")" + " - GND",
-                        unit: '',
-                        type: 'string'
-                    },
-                    v_test: {
-                        mrid: '',
-                        value: '',
-                        unit: 'V',
-                        type: 'analog'
-                    },
-                    r60s: {
-                        mrid: '',
-                        value: '',
-                        unit: 'M|Ω',
-                        type: 'analog'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                })
+                const row = JSON.parse(JSON.stringify(rowDataExample))
+                row.measurement.value = "(" + i + "a" + i + "n" + ")" + " - GND",
+                table.push(row)
             }
-            let measurementProcedure = []
             return {
-                table,
-                row_data,
-                measurementProcedure
+                rowDataExampleCondition,
+                table
             }
         },
         async initVTRatio(asset) {

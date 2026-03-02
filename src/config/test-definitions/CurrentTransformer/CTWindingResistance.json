@@ -1,6 +1,6 @@
 {
   "testId": "f1ec4c35-428a-49ce-8d9b-502f1cc7acbd",
-  "testCode": "CTWindingRes",
+  "testCode": "CTWindingResistance",
   "testName": "CT Winding resistance",
   "columns": [
     {

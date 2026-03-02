@@ -1,6 +1,6 @@
 import Attachment from "@/views/Flatten/Attachment";
 
-class SurgeArresterJobDto {
+class CircuitBreakerJobDto {
     constructor() {
         this.properties = {
             mrid: '',
@@ -14,16 +14,16 @@ class SurgeArresterJobDto {
             test_method: '',
             ref_standard: '',
             summary: '',
-            asset_id: '',
+            asset_id : '',
         }
+        this.procedureAsset = []
         this.attachmentData = [];
         this.attachmentId = '';
         this.testList = [];
         this.testingEquipmentData = [];
         this.listHealth = [];
         this.attachment = new Attachment();
-        this.circuitBreakerTestingEquipmentTestType = [];
-    }
+        this.circuitBreakerTestingEquipmentTestType = [];    }
 }
 
-export default SurgeArresterJobDto;
+export default CircuitBreakerJobDto;

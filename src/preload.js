@@ -38,6 +38,15 @@ const surgeArresterAPI = cimPreload.SurgeArresterPreload.surgeArresterPreload()
 const productAssetModelAPI = cimPreload.productAssetModelPreload.productAssetModelPreload()
 const surgeArresterJobAPI = entityPreload.jobEntityPreload.surgeArresterJob.surgeArresterJobPreload()
 const powerCableJobAPI = entityPreload.jobEntityPreload.powerCableJob.powerCableJobPreload()
+const transformerJobAPI = entityPreload.jobEntityPreload.transformerJob.transformerJobPreload()
+const voltageTransformerJobAPI = entityPreload.jobEntityPreload.voltageTransformerJob.voltageTransformerJobPreload()
+const currentTransformerJobAPI = entityPreload.jobEntityPreload.currentTransformerJob.currentTransformerJobPreload()
+const bushingJobAPI = entityPreload.jobEntityPreload.bushingJob.bushingJobPreload()
+const disconnectorJobAPI = entityPreload.jobEntityPreload.disconnectorJob.disconnectorJobPreload()
+const rotatingMachineJobAPI = entityPreload.jobEntityPreload.rotatingMachineJob.rotatingMachineJobPreload()
+const capacitorJobAPI = entityPreload.jobEntityPreload.capacitorJob.capacitorJobPreload()
+const circuitBreakerJobAPI = entityPreload.jobEntityPreload.circuitBreakerJob.circuitBreakerJobPreload()
+const reactorJobAPI = entityPreload.jobEntityPreload.reactorJob.reactorJobPreload()
 const oldWorkAPI = cimPreload.oldWorkPreload.oldWorkPreload()
 const assetAPI = cimPreload.assetPreload.assetPreload()
 const analogAPI = cimPreload.analogPreload.analogPreload()
@@ -90,6 +99,15 @@ const ipcMain = Object.assign(
     productAssetModelAPI,
     surgeArresterJobAPI,
     powerCableJobAPI,
+    transformerJobAPI,
+    voltageTransformerJobAPI,
+    currentTransformerJobAPI,
+    bushingJobAPI,
+    disconnectorJobAPI,
+    rotatingMachineJobAPI,
+    capacitorJobAPI,
+    circuitBreakerJobAPI,
+    reactorJobAPI,
     oldWorkAPI,
     assetAPI,
     transformerEntityAPI,

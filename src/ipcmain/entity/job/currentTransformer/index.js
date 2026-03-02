@@ -1,16 +1,16 @@
 'use strict'
-import { ipcMain } from 'electron'
-import { entityFunc } from "@/function"
+import {ipcMain} from 'electron'
+import {entityFunc} from "@/function"
 
 export const insertCurrentTransformerJob = () => {
-    ipcMain.handle('insertCurrentTransformerJob', async function (event, old_data, data) {
+    ipcMain.handle('insertCurrentTransformerJob', async function (event,old_data, data) {
         try {
             const rs = await entityFunc.jobEntityFunc.currentTransformerJob.insertCurrentTransformerJobEntity(old_data, data)
             if (rs.success == true) {
                 return {
                     success: true,
                     message: "Success",
-                    data: rs.data
+                    data : rs.data
                 }
             }
             else {
@@ -37,7 +37,7 @@ export const getCurrentTransformerJobByMrid = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data: rs.data
+                    data : rs.data
                 }
             }
             else {
@@ -64,7 +64,7 @@ export const deleteCurrentTransformerJobByMrid = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data: data
+                    data : data
                 }
             }
             else {

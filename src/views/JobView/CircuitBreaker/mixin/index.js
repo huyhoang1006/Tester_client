@@ -1,5 +1,5 @@
 import uuid from "@/utils/uuid";
-import * as circuitBreakerJobMapping from "@/views/Mapping/BreakerJob/index"
+import * as circuitBreakerJobMapping from "@/views/Mapping/CircuitBreakerJob/index"
 import CircuitBreakerJobDto from "@/views/Dto/Job/CircuitBreaker/index";
 import mixins from '@/views/JobView/CircuitBreaker/componentCircuits/SelectTest/mixin'
 import MeasurementProcedure from "@/views/Cim/MeasurementProcedure";
