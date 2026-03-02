@@ -1,10 +1,16 @@
-import { userPreload } from '@/preload/index.js'
-import { importPreload } from '@/preload/index.js'
-import { entityPreload, cimPreload, uploadCustomPreload, appOptionPreload } from '@/preload/index.js'
+import {userPreload} from '@/preload/index.js'
+import {importPreload} from '@/preload/index.js'
+import {entityPreload, cimPreload, uploadCustomPreload, appOptionPreload} from '@/preload/index.js'
 
-const { contextBridge, ipcRenderer } = require('electron')
+const {contextBridge, ipcRenderer} = require('electron')
 const windowControlAPI = {
     onWindowStateChange: (callback) => ipcRenderer.on('window-state-change', (_event, value) => callback(value))
+}
+const fileConverterAPI = {
+    convertFiles: (filePaths, fileType) => ipcRenderer.invoke('convert-files', filePaths, fileType)
+}
+const systemInfoAPI = {
+    platform: process.platform
 }
 
 const appOptionAPI = appOptionPreload.appOptionPreload()
@@ -131,6 +137,8 @@ const ipcMain = Object.assign(
     procedureAPI,
     windowControlAPI,
     licenseAPI,
-    notificationEntityAPI
+    notificationEntityAPI,
+    fileConverterAPI,
+    systemInfoAPI
 )
 contextBridge.exposeInMainWorld('electronAPI', ipcMain)

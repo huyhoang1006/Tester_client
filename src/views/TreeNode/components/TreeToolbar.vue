@@ -22,8 +22,7 @@
                     <el-dropdown-item v-if="isCommandAllowed('asset')" command="asset" class="asset-submenu-parent"
                         @mouseenter.native="showAssetSub = true" @mouseleave.native="showAssetSub = false">
                         <icon size="12px" folderType="asset" badgeColor="146EBE"></icon> add Asset
-                        <div class="asset-submenu" v-if="showAssetSub" @click.stop @mouseenter.stop
-                            @mouseleave.stop>
+                        <div class="asset-submenu" v-if="showAssetSub" @click.stop @mouseenter.stop @mouseleave.stop>
                             <div class="submenu-item" @click="handleAssetCommand('Transformer')">
                                 <i class="fa-solid fa-bolt"></i>
                                 <span>Add Transformer</span>
@@ -80,42 +79,13 @@
             <i @click="handleOpenNode" title="Open" style="font-size: 12px" class="fa-regular fa-folder-open"></i>
         </div>
         <div>
-            <i @click="handleDuplicate" title="Duplicate" style="font-size: 12px"
-                class="fa-solid fa-clone"></i>
+            <i @click="handleDuplicate" title="Duplicate" style="font-size: 12px" class="fa-solid fa-clone"></i>
         </div>
         <div>
-            <el-dropdown @command="handleImportCommand" trigger="click">
-                <i title="Import" style="font-size: 12px" class="fa-solid fa-file-import"></i>
-                <el-dropdown-menu slot="dropdown">
-                    <el-dropdown-item class="import-json-parent" @mouseenter.native="showSubImport = 'json'"
-                        @mouseleave.native="showSubImport = null">
-                        <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon>
-                        import from JSON
-                        <div class="import-json-submenu" v-if="showSubImport === 'json'" @click.stop
-                            @mouseenter.stop @mouseleave.stop>
-                            <div class="submenu-item" @click="handleImportCommand('importJSON')">import JSON</div>
-                            <div class="submenu-item" @click="handleImportCommand('importJSONCIM')">import JSON by
-                                CIM</div>
-                        </div>
-                    </el-dropdown-item>
-                    <el-dropdown-item command="importXML">
-                        <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon>
-                        import from XML
-                    </el-dropdown-item>
-                    <el-dropdown-item command="importExcel">
-                        <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon>
-                        import from Excel
-                    </el-dropdown-item>
-                    <el-dropdown-item command="importWord">
-                        <icon size="12px" fileTypeDetail="word" folderType="fileType" badgeColor="146EBE"></icon>
-                        import from Word
-                    </el-dropdown-item>
-                    <el-dropdown-item command="importPDF">
-                        <icon size="12px" fileTypeDetail="pdf" folderType="fileType" badgeColor="146EBE"></icon>
-                        import from PDF
-                    </el-dropdown-item>
-                </el-dropdown-menu>
-            </el-dropdown>
+            <div>
+                <i @click="handleImportClick" title="Import" style="font-size: 12px; cursor: pointer;"
+                    class="fa-solid fa-file-import"></i>
+            </div>
         </div>
         <div>
             <el-dropdown @command="handleExportCommand" trigger="click">
@@ -156,8 +126,7 @@
                 class="fa-solid fa-upload"></i>
         </div>
         <div v-if="!clientSlide">
-            <i @click="handleDownload" title="Download" style="font-size: 12px"
-                class="fa-solid fa-download"></i>
+            <i @click="handleDownload" title="Download" style="font-size: 12px" class="fa-solid fa-download"></i>
         </div>
         <div>
             <i @click="handleDelete" title="Delete" style="font-size: 12px" class="fa-solid fa-trash"></i>
@@ -190,7 +159,6 @@ export default {
         return {
             showAssetSub: false,
             showSub: null,
-            showSubImport: null
         }
     },
     methods: {
@@ -204,15 +172,15 @@ export default {
         handleAssetCommand(assetType) {
             this.$emit('asset-command', assetType)
         },
-        
+
         // Import/Export methods
-        handleImportCommand(command) {
-            this.$emit('import-command', command)
+        handleImportClick() {
+            this.$emit('open-import-dialog')
         },
         handleExportCommand(command) {
             this.$emit('export-command', command)
         },
-        
+
         // Action methods
         handleOpenNode() {
             this.$emit('open-node')
@@ -235,7 +203,7 @@ export default {
         handleMove() {
             this.$emit('move')
         },
-        
+
         // Command validation method
         isCommandAllowed(command) {
             // Emit to parent to check if command is allowed
@@ -262,7 +230,7 @@ export default {
     padding-left: 10px;
 }
 
-.toolbar-setting > div {
+.toolbar-setting>div {
     cursor: pointer;
 }
 
@@ -311,12 +279,10 @@ export default {
 }
 
 /* Import/Export submenu styles */
-.import-json-parent,
 .export-json-parent {
     position: relative;
 }
 
-.import-json-submenu,
 .export-json-submenu {
     position: absolute;
     left: 100%;
@@ -390,6 +356,7 @@ export default {
 .dropdown-menu li:hover {
     background-color: #f0f0f0;
 }
+
 .el-dropdown-menu__item {
     font-size: 12px !important;
     font-family: Arial, sans-serif !important;
