@@ -94,7 +94,7 @@
 
 <script>
 export default {
-    name :"DcWindingRes",
+    name :"DcWindingResistance",
     data() {
         return {
             openAssessmentDialog: false,
