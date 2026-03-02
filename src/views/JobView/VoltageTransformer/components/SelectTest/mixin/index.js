@@ -51,6 +51,8 @@ export default {
             }
         },
         async initVTRatio(asset) {
+            const rowDataExample = common.buildEmptyTestRow(voltageTransformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(voltageTransformerConditionMap[testTypeCode].columns)
             function uprData(uprRatio, upr) {
                 if (uprRatio == ' / √3') {
                     let data = parseFloat(upr) / (Math.sqrt(parseFloat(3)))
