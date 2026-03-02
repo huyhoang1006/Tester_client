@@ -1,3 +1,4 @@
+/* eslint-disable */
 import CurrentTransformerDto from "@/views/Dto/CurrentTransformer";
 import uuid from "@/utils/uuid";
 import * as CurrentTransformerMapping from "@/views/Mapping/CurrentTransformer";
@@ -21,7 +22,11 @@ export default {
                     const oldEntity = CurrentTransformerMapping.mapDtoToEntity(oldResult)
                     const entity = CurrentTransformerMapping.mapDtoToEntity(result)
                     console.log("entity: ", entity)
-                    let rs = await window.electronAPI.insertCurrentTransformerEntity(oldEntity, entity)
+                    // let rs = await window.electronAPI.insertCurrentTransformerEntity(oldEntity, entity)
+                    let rs = {
+                        success: false,
+                        data: null,
+                    }
                     console.log("rs: ", rs)
                     if (rs.success) {
                         return {

@@ -90,6 +90,13 @@
       "unit": "%"
     },
     {
+      "mrid": "dcddcd9a-ff10-40b0-8baa-70962f587cbe",
+      "code": "df_change",
+      "name": "DF change",
+      "type": "analog",
+      "unit": ""
+    },
+    {
       "mrid": "126fc51c-a0b5-470b-9017-47e56131cc56",
       "code": "ratio_meas",
       "name": "Ratio meas",
