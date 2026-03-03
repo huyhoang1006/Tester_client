@@ -1,10 +1,11 @@
 'use strict'
 
-import sqlite3 from 'sqlite3'
+import sqlite3 from '@journeyapps/sqlcipher'
 import path from 'path'
 import fs from 'fs'
 import { app } from 'electron'
 
+const DB_KEY = 'attester'
 const nameDB = 'database.db'
 
 // Lấy đường dẫn database ở userData (nơi lưu dữ liệu người dùng)
@@ -29,9 +30,12 @@ if (!fs.existsSync(userDBPath)) {
 let db
 if (process.env.NODE_ENV === 'development') {
   db = new sqlite3.Database(sourceDBPath)
+  db.run(`PRAGMA key = '${DB_KEY}'`)
 } else {
   db = new sqlite3.Database(userDBPath)
+  db.run(`PRAGMA key = '${DB_KEY}'`)
 }
 db.run('PRAGMA foreign_keys=ON')
+db.run('PRAGMA user_version = 0') // Khởi tạo version_user = 0
 
 export default db

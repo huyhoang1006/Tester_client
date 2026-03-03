@@ -6,6 +6,7 @@ import Layout from '@/layout'
 import LoginView from '@/views/LoginView'
 import OnlineMonitoringDataView from '@/views/OnlineMonitoringDataView'
 import TreeNavigation from '@/views/TreeNode/treeNavigation.vue'
+import VersionManager from '@/components/VersionManager/index.vue'
 Vue.use(VueRouter)
 
 const routes = [
@@ -31,6 +32,12 @@ const routes = [
                 name: 'online-monitoring-data',
                 meta: { title: 'Online Monitoring Data' },
                 component: OnlineMonitoringDataView
+            },
+            {
+                path: '/version-manager',
+                name: 'version-manager',
+                meta: { title: 'Version Manager' },
+                component: VersionManager
             }
         ]
     }
