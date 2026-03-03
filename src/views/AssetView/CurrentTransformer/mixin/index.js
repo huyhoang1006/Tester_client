@@ -22,12 +22,7 @@ export default {
                     const oldEntity = CurrentTransformerMapping.mapDtoToEntity(oldResult)
                     const entity = CurrentTransformerMapping.mapDtoToEntity(result)
                     console.log("entity: ", entity)
-                    // let rs = await window.electronAPI.insertCurrentTransformerEntity(oldEntity, entity)
-                    let rs = {
-                        success: false,
-                        data: null,
-                    }
-                    console.log("rs: ", rs)
+                    let rs = await window.electronAPI.insertCurrentTransformerEntity(oldEntity, entity)
                     if (rs.success) {
                         return {
                             success: true,
