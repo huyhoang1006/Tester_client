@@ -138,12 +138,6 @@
       "code": "GeneralInspection",
       "name": "General inspection",
       "kind": "test"
-    },
-    {
-      "mrid": "bf3284e8-4b18-4be0-beb2-c240456ce0f0",
-      "code": "ControlCabinet",
-      "name": "Control cabinet check",
-      "kind": "test"
     }
   ]
 }

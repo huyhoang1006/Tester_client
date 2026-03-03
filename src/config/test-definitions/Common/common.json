@@ -21,6 +21,13 @@
       "unit": "m|s"
     },
     {
+      "mrid": "cbf48165-6f7a-4716-8258-bb4eae410b3b",
+      "code": "interrupter",
+      "name": "Interrupter",
+      "type": "analog",
+      "unit": ""
+    },
+    {
       "mrid": "c92fh65g-a311-4827-f012-5357a7b8c92e",
       "code": "open_close_time",
       "name": "Open-Close time",
@@ -146,6 +153,13 @@
       "code": "trip_coil_no",
       "name": "Trip Coil No",
       "type": "string"
+    },
+    {
+      "mrid": "b9bae747-59f5-4ecb-b35b-75c5ce84c5fa",
+      "code": "trip_coil",
+      "name": "Trip coil",
+      "type": "analog",
+      "unit": ""
     },
     {
       "mrid": "e58bd21c-69dd-4483-b678-1f13c3d4e58a",
