@@ -51,7 +51,6 @@ export default {
 
                 if (node.asset == 'Surge arrester') {
                     const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Surge arrester")
-                    console.log('dataTestType', dataTestType)
                     const dataSurgeArrester = await window.electronAPI.getSurgeArresterByMrid(node.mrid)
                     if (dataSurgeArrester.success) {
                         this.assetData = dataSurgeArrester.data
@@ -94,6 +93,15 @@ export default {
                     this.signJob = true
                 } else if (node.asset == 'Voltage transformer') {
                     const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Voltage transformer")
+                    const dataVoltageTransformer = await window.electronAPI.getVoltageTransformerEntityByMrid(node.mrid)
+                    if (dataVoltageTransformer.success) {
+                        this.assetData = dataVoltageTransformer.data
+                        this.assetData.kind = this.assetData.asset.kind
+                        this.assetData.type = this.assetData.asset.type
+                        this.assetData.serial_number = this.assetData.asset.serial_number
+                    } else {
+                        this.assetData = {}
+                    }
                     if (dataTestType.success) {
                         this.testTypeListData = dataTestType.data
                     } else {

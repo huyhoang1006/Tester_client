@@ -41,6 +41,7 @@ export default {
                     }
 
                     const { success, data } = result;
+                    console.log('Save result:', result);
 
                     if (success) {
                         saveSuccess = true;

@@ -1,256 +1,184 @@
-import { mapState } from 'vuex'
-
+/* eslint-disable */
+import uuid from "@/utils/uuid";
+import * as voltageTransformerJobMapping from "@/views/Mapping/VoltageTransformerJob/index"
+import VoltageTransformerJobDto from "@/views/Dto/Job/VoltageTransformer/index";
+import mixins from '../components/SelectTest/mixin'
 
 export default {
+    mixins: [mixins],
     data() {
         return {
-            properties: {
-                id: '',
-                name: '',
-                work_order: '',
-                creation_date: '',
-                execution_date: '',
-                tested_by: '',
-                approved_by: '',
-                approval_date: '',
-                summary: '',
-                ambient_condition: '',
-                testing_method: '',
-                standard: ''
-            },
-            location: {
-                id: '',
-                name: '',
-                address: '',
-                city: '',
-                state_province: '',
-                postal_code: '',
-                country: ''
-            },
-            asset: {
-                id: '',
-                asset: '',
-                asset_type: '',
-                serial_number: '',
-                manufacturer: ''
-            },
-            testList: [],
-            listHeal: [],
-            attachmentData: [],
-            testingEquipmentData: [],
-        }
-    },
-    computed: {
-        ...mapState(['selectedAsset', 'selectedJob']),
-    },
-    async beforeMount() {
-        // Only fetch location/asset if we're in route mode (not dialog mode)
-        // In dialog mode, assetData and locationData are passed as props
-        if (this.$route && this.selectedAsset && this.selectedAsset.length > 0 && this.selectedAsset[0].id) {
-            await this.getLocationAssetByIdVoltageTrans()
-        }
-        // Only set mode from route if route exists (dialog mode doesn't have route)
-        if (this.$route && this.$route.query) {
-            this.mode = this.$route.query.mode
-        } else {
-            this.mode = this.$constant.ADD
-        }
-        if (this.mode === this.$constant.EDIT || this.mode === this.$constant.DUP) {
-            if (this.$route && this.$route.query) {
-                this.job_id = this.$route.query.job_id
-            }
-            if (this.job_id) {
-                const rs = await window.electronAPI.getJobVoltageTransById(this.job_id)
-                console.log(rs)
-                if (rs.success) {
-                    const data = rs.data
-                    const { job, testList } = data
-                    if (this.mode === this.$constant.DUP) {
-                        job.id = ''
-                        job.name = ''
-                    }
-                    this.properties = job
-                    testList.forEach(async (element) => {
-                        element.data = JSON.parse(element.data)
-                        let condition = await window.electronAPI.getTestingCondition(element.id)
-                        let attachment = await window.electronAPI.getAllAttachment(element.id, "test")
-                        if (condition.data.length === 0) {
-                            this.testconditionArr.push({
-                                condition: {
-                                    top_oil_temperature: "",
-                                    bottom_oil_temperature: "",
-                                    winding_temperature: "",
-                                    reference_temperature: "",
-                                    ambient_temperature: "",
-                                    humidity: "",
-                                    weather: ""
-                                },
-                                equipment: [{
-                                    model: "",
-                                    serial_no: "",
-                                    calibration_date: ""
-
-                                }],
-                                comment: "",
-                            })
-                        }
-                        else {
-                            condition.data.forEach(async (e) => {
-                                e.condition = await JSON.parse(e.condition)
-                                e.equipment = await JSON.parse(e.equipment)
-                                if (this.mode == this.$constant.DUP) {
-                                    e.id = this.$uuid.EMPTY
-                                }
-                                this.testconditionArr.push(e)
-                            });
-                        }
-                        if (attachment.data.length === 0) {
-                            this.attachmentArr.push([])
-                        }
-                        else {
-                            attachment.data.forEach(async (e) => {
-                                e.name = await JSON.parse(e.name)
-                                if (this.mode == this.$constant.DUP) {
-                                    e.id = this.$uuid.EMPTY
-                                }
-                                this.attachmentArr.push(e.name)
-                            })
-                        }
-                        if (this.mode == this.$constant.DUP) {
-                            element.id = this.$uuid.EMPTY
-                        }
-                    })
-                    this.testList = testList
-                }
-            }
+            voltageTransformerJobDto: new VoltageTransformerJobDto(),
+            voltageTransformerJobDtoOld: new VoltageTransformerJobDto()
         }
     },
     methods: {
-        async getLocationAssetByIdVoltageTrans() {
-            if (!this.selectedAsset || !this.selectedAsset.length || !this.selectedAsset[0] || !this.selectedAsset[0].id) {
-                return
-            }
-            const assetId = this.selectedAsset[0].id
-            const rs = await window.electronAPI.getLocationAssetByIdVoltageTrans(assetId)
-            if (rs.success) {
-                const data = rs.data
-                const { asset, location } = data
-                this.location = location
-                this.asset = Object.assign(asset, (JSON.parse(asset.properties)))
-
-            } else {
-                this.$message.error(rs.message)
-            }
-        },
-        backToManage() {
-            this.$confirm('Do you want to exit?', 'Warning', {
-                confirmButtonText: 'OK',
-                cancelButtonText: 'Cancel',
-                type: 'warning'
-            })
-                .then(async () => {
-                    this.$router.push({ name: 'manage' })
-                })
-                .catch(() => {
-                    return
-                })
-        },
         async saveJob() {
-            if (this.mode === this.$constant.ADD || this.mode === this.$constant.DUP) {
-                await this.insertJobdata()
-            } else {
-                this.updateJobVoltageTrans()
-            }
-        },
-        async insertJobdata() {
-
-            const rs = await window.electronAPI.insertJobVoltageTrans(
-                this.selectedAsset[0].id, this.properties, this.testList, this.testconditionArr, this.attachmentArr)
-
-            if (rs.success) {
-                this.$message({
-                    type: 'success',
-                    message: 'Insert completed'
-                })
-                this.$router.push({ name: 'manage' })
-            } else {
-                this.$message.error(rs.message)
-            }
-        },
-        async updateJobVoltageTrans() {
-
-            const rs = await window.electronAPI.updateJobVoltageTrans(this.properties, this.testList, this.testconditionArr, this.attachmentArr)
-            if (rs.success) {
-                this.$message({
-                    type: 'success',
-                    message: 'Update completed'
-                })
-                const rs = await window.electronAPI.getJobVoltageTransById(this.job_id)
-                if (rs.success) {
-                    const data = rs.data
-                    const { testList } = data
-                    this.testconditionArr = []
-                    testList.forEach(async (element) => {
-                        element.data = JSON.parse(element.data)
-                        let condition = await window.electronAPI.getTestingCondition(element.id)
-                        if (condition.data.length === 0) {
-                            this.testconditionArr.push({
-                                condition: {
-                                    top_oil_temperature: "",
-                                    bottom_oil_temperature: "",
-                                    winding_temperature: "",
-                                    reference_temperature: "",
-                                    ambient_temperature: "",
-                                    humidity: "",
-                                    weather: ""
-                                },
-                                equipment: [{
-                                    model: "",
-                                    serial_no: "",
-                                    calibration_date: ""
-
-                                }],
-                                comment: "",
-                            })
-                            this.attachmentArr.push([])
-                        }
-                        else {
-                            condition.data.forEach(async (e) => {
-                                e.condition = await JSON.parse(e.condition)
-                                e.equipment = await JSON.parse(e.equipment)
-                                this.testconditionArr.push(e)
-                            });
-                        }
-                    })
-                    this.testList = testList
+            try {
+                if (!this.voltageTransformerJobDto.properties.name || this.voltageTransformerJobDto.properties.name === '') {
+                    this.$message.error('Name is required');
                 } else {
-                    this.$message.error(rs.message)
+                    const dto = JSON.parse(JSON.stringify(this.voltageTransformerJobDto));
+                    const resultDto = await this.checkJob(dto);
+                    const entity = voltageTransformerJobMapping.jobDtoToEntity(resultDto);
+                    const old_entity = voltageTransformerJobMapping.jobDtoToEntity(this.voltageTransformerJobDtoOld);
+                    const rs = await window.electronAPI.insertVoltageTransformerJob(old_entity, entity)
+                    if (rs.success) {
+                        return {
+                            success: true,
+                            data: rs.data,
+                            message: 'Job saved successfully'
+                        }
+                    } else {
+                        return {
+                            success: false,
+                            message: 'Failed to save job'
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error saving job:', error);
+                return {
+                    success: false,
+                    data: null,
+                    message: 'Failed to save job'
+                }
+            }
+        },
+
+        async saveCtrS() {
+            const result = await this.saveJob()
+            if (result.success) {
+                const dto = voltageTransformerJobMapping.JobEntityToDto(result.data);
+                this.loadData(dto);
+                this.$message.success(result.message);
+            } else {
+                this.$message.error(result.message);
+            }
+        },
+
+        async resetForm() {
+            this.voltageTransformerJobDto = new VoltageTransformerJobDto();
+        },
+
+        async loadData(data) {
+            this.voltageTransformerJobDto = data
+            this.voltageTransformerJobDtoOld = JSON.parse(JSON.stringify(data));
+        },
+
+        async checkJob(data) {
+            this.checkProperties(data);
+            this.checkAssetId(data);
+            this.checkAttachment(data);
+            this.checkTestingEquipment(data);
+            await this.checkDataMeasurement(data);
+            return data;
+        },
+
+        checkProperties(data) {
+            if (data.properties.mrid === '' || data.properties.mrid === null) {
+                data.properties.mrid = uuid.newUuid();
+            }
+        },
+
+        checkAssetId(data) {
+            if (data.properties.asset_id === '' || data.properties.asset_id === null) {
+                data.properties.asset_id = this.assetData.asset.mrid;
+            }
+        },
+
+        checkAttachment(data) {
+            if (data.attachmentId === null || data.attachmentId === '') {
+                if (data.attachmentData.length > 0) {
+                    data.attachmentId = uuid.newUuid()
+                    data.attachment.id = data.attachmentId
+                    data.attachment.name = null
+                    data.attachment.path = JSON.stringify(data.attachmentData)
+                    data.attachment.type = 'job'
+                    data.attachment.id_foreign = data.properties.mrid
                 }
             } else {
-                this.$message.error(rs.message)
+                data.attachment.path = JSON.stringify(data.attachmentData)
             }
         },
-        async resetForm() {
-            this.properties = {
-                id: '',
-                name: '',
-                work_order: '',
-                creation_date: '',
-                execution_date: '',
-                tested_by: '',
-                approved_by: '',
-                approval_date: '',
-                summary: '',
-                ambient_condition: '',
-                testing_method: '',
-                standard: ''
-            };
-            this.testList = [];
-            this.listHeal = [];
-            this.testconditionArr = [];
-            this.attachmentArr = [];
-            this.attachmentData = [];
-            this.testingEquipmentData = [];
-        }
+
+        checkTestingEquipment(data) {
+            const arr = [];
+            for (const item of data.testingEquipmentData) {
+                if (item.mrid === '' || item.mrid === null || item.mrid === this.$constant.ROOT) {
+                    item.mrid = uuid.newUuid();
+                    item.work_id = data.properties.mrid;
+                }
+                for (const test_type_id of item.test_type_voltage_transformer_id) {
+                    arr.push({
+                        mrid: uuid.newUuid(),
+                        testing_equipment_id: item.mrid,
+                        test_type_id: test_type_id
+                    });
+                }
+            }
+
+            // Thêm các phần tử mới vào data.voltageTransformerTestingEquipmentTestType nếu chưa có
+            for (const current of arr) {
+                const existed = data.voltageTransformerTestingEquipmentTestType.some(
+                    old =>
+                        old.testing_equipment_id === current.testing_equipment_id &&
+                        old.test_type_id === current.test_type_id
+                );
+                if (!existed) {
+                    data.voltageTransformerTestingEquipmentTestType.push(current);
+                }
+            }
+
+            // Xóa các phần tử quá khứ không còn trong hiện tại
+            data.voltageTransformerTestingEquipmentTestType = data.voltageTransformerTestingEquipmentTestType.filter(
+                old => arr.some(
+                    current =>
+                        old.testing_equipment_id === current.testing_equipment_id &&
+                        old.test_type_id === current.test_type_id
+                )
+            );
+        },
+
+        async checkDataMeasurement(data) {
+            for (const test of data.testList) {
+                if (test.testCondition.mrid === null || test.testCondition.mrid === '') {
+                    test.testCondition.mrid = uuid.newUuid();
+                }
+                Object.keys(test.testCondition.condition).forEach(key => {
+                    if(test.testCondition.condition[key] && test.testCondition.condition[key].mrid === '' || test.testCondition.condition[key].mrid === null) {
+                        test.testCondition.condition[key].mrid = uuid.newUuid();
+                    }
+                })
+                if (test.testCondition.attachment.id === null || test.testCondition.attachment.id === '') {
+                    if (test.testCondition.attachmentData.length > 0) {
+                        test.testCondition.attachment.id = uuid.newUuid()
+                        test.testCondition.attachment.name = null
+                        test.testCondition.attachment.path = JSON.stringify(test.testCondition.attachmentData)
+                        test.testCondition.attachment.type = 'test'
+                        test.testCondition.attachment.id_foreign = test.mrid
+                    }
+                } else {
+                    test.testCondition.attachment.path = JSON.stringify(test.testCondition.attachmentData)
+                }
+                for (const row of test.data.table) {
+                    if (row.mrid === '' || row.mrid === null) {
+                        row.mrid = uuid.newUuid();
+                        Object.keys(row).forEach(key => {
+                            if(row[key] && row[key].mrid === '' || row[key].mrid === null) {
+                                row[key].mrid = uuid.newUuid();
+                            }
+                        })
+                    }
+                }
+
+                if(data.procedureAsset.map(x => x.procedure_id).indexOf(test.testTypeId) === -1) {
+                    data.procedureAsset.push({
+                        procedure_id: test.testTypeId,
+                        asset_id: this.assetData.asset.mrid
+                    });
+                }
+            }
+        },
     }
 }

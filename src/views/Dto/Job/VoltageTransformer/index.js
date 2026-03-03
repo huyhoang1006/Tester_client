@@ -5,26 +5,25 @@ class VoltageTransformerJobDto {
         this.properties = {
             mrid: '',
             name: '',
-            work_order: '',
+            type: '',
             creation_date: '',
             execution_date: '',
             tested_by: '',
             approved_by: '',
             approval_date: '',
-            ambient_conditions: '',
             test_method: '',
-            standard: '',
+            ref_standard: '',
             summary: '',
-            asset_id: '',
+            asset_id : '',
         }
+        this.procedureAsset = []
         this.attachmentData = [];
         this.attachmentId = '';
         this.testList = [];
         this.testingEquipmentData = [];
         this.listHealth = [];
         this.attachment = new Attachment();
-        this.voltageTransformerTestType = [];
-    }
+        this.voltageTransformerTestingEquipmentTestType = [];    }
 }
 
 export default VoltageTransformerJobDto;

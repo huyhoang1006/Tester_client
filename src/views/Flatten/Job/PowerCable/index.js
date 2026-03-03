@@ -1,6 +1,5 @@
 import OldWork from "@/views/Cim/OldWork/index";
 import Attachment from "../../Attachment";
-import Procedure from "@/views/Cim/Procedure";
 class PowerCableJobEntity {
     constructor() {
         this.oldWork = new OldWork();
@@ -11,19 +10,10 @@ class PowerCableJobEntity {
         this.analogValues = [];
         this.stringMeasurementValues = [];
         this.discreteValues = [];
-        this.analog = [];
-        this.stringMeasurement = [];
-        this.discrete = [];
         this.attachmentTest = []
-        this.transformerObservation = []
-        this.temperature = []
-        this.percent = []
-        this.transformerObservationProcedureDataSet = []
         this.powerCableTestingEquipmentTestType = []
-        this.measurementProcedure = []
-        this.valueAliasSet = []
-        this.valueToAlias = []
-        this.procedure = new Procedure();
+        this.procedureAsset = []
+        this.procedureDataSetMeasurementValue = []
     }
 }
 

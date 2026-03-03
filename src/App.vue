@@ -1,18 +1,18 @@
 <template>
-  <div id="app">
-      <router-view />
-      <GlobalLoading />
-  </div>
+    <div id="app">
+        <router-view />
+        <GlobalLoading />
+    </div>
 </template>
 
 <script>
 import GlobalLoading from '@/components/GlobalLoading.vue';
 
 export default {
-  name: 'App',
-  components: {
-    GlobalLoading
-  }
+    name: 'App',
+    components: {
+        GlobalLoading
+    }
 };
 </script>
 
@@ -20,11 +20,21 @@ export default {
 @charset "utf-8";
 @import '~ag-grid-community/dist/styles/ag-grid.css';
 @import '~ag-grid-community/dist/styles/ag-theme-alpine.css';
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #ffffff;
+}
+
 #app {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  box-sizing: border-box;
-  border: none;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
+    border: none;
 }
 </style>

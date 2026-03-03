@@ -7,38 +7,38 @@
             </div>
             
             <el-tooltip 
-    effect="dark" 
-    :content="getNodeDisplayName" 
-    placement="top-start" 
-    :open-delay="600"
->
-    <span @contextmenu.prevent="openContextMenu($event, node)" :class="{ selected: isSelected(node), refreshing: node._isRefreshing }" class="folder" @click="toggle" @dblclick="doubleToggle">
-        <div v-if="node.mode == 'substation'" class="icon-wrapper">
-            <icon size="16px" folderType="location" :transformerType="node.type" badgeColor="146EBE"></icon>
-            <span class="node-name">{{ node.name  }}</span>
-        </div>
-        <div v-else-if="node.mode == 'voltageLevel'" class="icon-wrapper">
-            <icon size="16px" folderType="voltageLevel" :transformerType="node.type" badgeColor="146EBE"></icon>
-            <span class="node-name">{{ node.name }}</span>
-        </div>
-        <div v-else-if="node.mode == 'bay'" class="icon-wrapper">
-            <icon size="16px" folderType="bay" :transformerType="node.type" badgeColor="146EBE"></icon>
-            <span class="node-name">{{ node.name }}</span>
-        </div>
-        <div v-else-if="node.mode == 'asset'" class="icon-wrapper">
-            <icon size="16px" folderType="asset" :assetDetail="node.asset" :transformerType="node.type" badgeColor="146EBE"></icon>
-            <span class="node-name">{{ node.apparatus_id || node.serial_number}} </span>
-        </div>
-        <div style="margin-left: 20px;" v-else-if="node.mode == 'job'" class="icon-wrapper">
-            <icon size="16px" folderType="job" :transformerType="node.type" badgeColor="FF0000"></icon>
-            <span class="node-name">{{ node.name }}</span>
-        </div>
-        <div v-else class="icon-wrapper">
-            <icon size="16px" folderType="building" :transformerType="node.type" badgeColor="008001"></icon>
-            <span class="node-name">{{ node.aliasName || node.name }}</span>
-        </div>
-    </span>
-</el-tooltip>
+                effect="dark" 
+                :content="getNodeDisplayName" 
+                placement="top-start" 
+                :open-delay="600"
+            >
+                <span @contextmenu.prevent="openContextMenu($event, node)" :class="{ selected: isSelected(node), refreshing: node._isRefreshing }" class="folder" @click="toggle" @dblclick="doubleToggle">
+                    <div v-if="node.mode == 'substation'" class="icon-wrapper">
+                        <icon size="16px" folderType="location" :transformerType="node.type" badgeColor="146EBE"></icon>
+                        <span class="node-name">{{ node.name  }}</span>
+                    </div>
+                    <div v-else-if="node.mode == 'voltageLevel'" class="icon-wrapper">
+                        <icon size="16px" folderType="voltageLevel" :transformerType="node.type" badgeColor="146EBE"></icon>
+                        <span class="node-name">{{ node.name }}</span>
+                    </div>
+                    <div v-else-if="node.mode == 'bay'" class="icon-wrapper">
+                        <icon size="16px" folderType="bay" :transformerType="node.type" badgeColor="146EBE"></icon>
+                        <span class="node-name">{{ node.name }}</span>
+                    </div>
+                    <div v-else-if="node.mode == 'asset'" class="icon-wrapper">
+                        <icon size="16px" folderType="asset" :assetDetail="node.asset" :transformerType="node.type" badgeColor="146EBE"></icon>
+                        <span class="node-name">{{ node.apparatus_id || node.serial_number}} </span>
+                    </div>
+                    <div style="margin-left: 20px;" v-else-if="node.mode == 'job'" class="icon-wrapper">
+                        <icon size="16px" folderType="job" :transformerType="node.type" badgeColor="FF0000"></icon>
+                        <span class="node-name">{{ node.name }}</span>
+                    </div>
+                    <div v-else class="icon-wrapper">
+                        <icon size="16px" folderType="building" :transformerType="node.type" badgeColor="008001"></icon>
+                        <span class="node-name">{{ node.aliasName || node.name }}</span>
+                    </div>
+                </span>
+            </el-tooltip>
         </div>
         
         <spinner style="margin-left: 20px;" v-if="isLoading"></spinner>

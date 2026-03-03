@@ -52,7 +52,6 @@ export const insertVoltageTransformerEntity = async (old_entity, entity) => {
             for (const voltage of toUpdate) {
                 await insertVoltageTransaction(voltage, db);
             }
-            console.log('voltage')
             //frequency
             const newFrequencyIds = (entity.frequency || []).map(f => f.mrid).filter(id => id);
             const oldFrequencyIds = (old_entity.frequency || []).map(f => f.mrid).filter(id => id);
@@ -65,7 +64,6 @@ export const insertVoltageTransformerEntity = async (old_entity, entity) => {
             for (const frequency of toUpdateFrequency) {
                 await insertFrequencyTransaction(frequency, db);
             }
-            console.log('frequency')
             //apparentPower
             const newApparentPowerIds = (entity.apparentPower || []).map(a => a.mrid).filter(id => id);
             const oldApparentPowerIds = (old_entity.apparentPower || []).map(a => a.mrid).filter(id => id);
@@ -80,11 +78,9 @@ export const insertVoltageTransformerEntity = async (old_entity, entity) => {
             }
 
             //productAssetModel
-            console.log("product assetmodel : ", entity.productAssetModel)
             const productAssetModelResult = await insertProductAssetModelTransaction(entity.productAssetModel, db);
 
             //oldPotentialTransformerInfo
-            console.log("old potential transformer info : ", entity.OldPotentialTransformerInfo)
             await insertOldPotentialTransformerTransaction(entity.OldPotentialTransformerInfo, db);
 
             //lifecycleDate
@@ -131,7 +127,6 @@ export const getVoltageTransformerEntityById = async (id, psrId) => {
             const dataVt = await getAssetById(id);
             if (dataVt.success) {
                 entity.asset = dataVt.data
-                console.log('dataVt:', dataVt)
                 const dataLifecycleDate = await getLifecycleDateById(entity.asset.lifecycle_date);
                 if (dataLifecycleDate.success) {
                     entity.lifecycleDate = dataLifecycleDate.data;
@@ -142,9 +137,6 @@ export const getVoltageTransformerEntityById = async (id, psrId) => {
                 if (dataOldVtInfo.success) {
                     entity.OldPotentialTransformerInfo = dataOldVtInfo.data;
                 }
-
-                console.log('entity.OldPotentialTransformerInfo:', entity.OldPotentialTransformerInfo)
-
                 const productAssetModelId = entity.asset.product_asset_model;
 
                 const dataProductAssetModel = await getProductAssetModelById(productAssetModelId);
@@ -206,12 +198,6 @@ export const getVoltageTransformerEntityById = async (id, psrId) => {
                     }
                 }
 
-                console.log('entity.potentialTransformerTable:', entity.potentialTransformerTable)
-
-                console.log('entity.voltage:', entity.voltage)
-                console.log('entity.apparentPower:', entity.apparentPower)
-                console.log('entity.frequency:', entity.frequency)
-
                 return {
                     success: true,
                     data: entity,
@@ -228,7 +214,6 @@ export const getVoltageTransformerEntityById = async (id, psrId) => {
 }
 
 export const deleteVoltageTransformerEntity = async (data) => {
-    console.log('start deleteVoltageTransformerEntity');
     try {
         if (!data.OldPotentialTransformerInfo || !data.OldPotentialTransformerInfo.mrid) {
             return { success: false, error: new Error('Invalid ID') };
@@ -237,7 +222,6 @@ export const deleteVoltageTransformerEntity = async (data) => {
         try {
             await runAsync('BEGIN TRANSACTION');
 
-            console.log('1');
             // Xóa attachment
             if (data.attachment && data.attachment.id) {
                 const pathData = JSON.parse(data.attachment.path || '[]')
@@ -245,39 +229,32 @@ export const deleteVoltageTransformerEntity = async (data) => {
                     syncFilesWithDeletion(pathData, null, data.mrid);
                 }
             }
-            console.log('2');
             if (data.attachment.id) {
                 await deleteAttachmentByIdTransaction(data.attachment.id, db);
             }
-            console.log('3');
             // Xóa assetPsr
             if (data.assetPsr && data.assetPsr.mrid) {
                 await deleteAssetPsrTransaction(data.assetPsr.mrid, db);
             }
 
-             console.log('8');
             if (data.asset && data.asset.mrid) {
                 await deleteAssetByIdTransaction(data.asset.mrid, db);
             }
 
 
-                console.log('4');
             // Xóa potentialTransformerTable
             await deletePotentialTransformerTableByPotentialTransformerInfoId(data.OldPotentialTransformerInfo.mrid, db);
 
-                console.log('5');
             // Xóa OldPotentialTransformerInfo
             if (data.OldPotentialTransformerInfo && data.OldPotentialTransformerInfo.mrid) {
                await deleteOldPotentialTransformerInfoTransaction(data.OldPotentialTransformerInfo.mrid, db);
             }
 
-            console.log('6');
             // Xóa productAssetModel
             if (data.productAssetModel && data.productAssetModel.mrid) {
                 await deleteProductAssetModelByIdTransaction(data.productAssetModel.mrid, db);
             }
 
-            console.log('7');
             // Xóa lifecycleDate
             if (data.lifecycleDate && data.lifecycleDate.mrid) {
                 await deleteLifecycleDateByIdTransaction(data.lifecycleDate.mrid, db);

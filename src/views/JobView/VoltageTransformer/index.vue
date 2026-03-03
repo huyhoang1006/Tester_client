@@ -5,44 +5,44 @@
                 <!-- Overview -->
                 <el-tab-pane style="width: 100%;">
                     <span slot="label"><i class="fa-solid fa-book"></i> Overview</span>
-                    <overview :data="properties" @update-attachment="updateAttachmentOverView" :attachment.sync="attachmentData" :locationData="locationData" :assetData="assetData" :productAssetModelData="productAssetModelData" :parentOrganization="parentOrganization"></overview>
+                    <overview :data="voltageTransformerJobDto.properties" @update-attachment="updateAttachmentOverView" :attachment.sync="voltageTransformerJobDto.attachmentData" :locationData="locationData" :assetData="assetData" :productAssetModelData="productAssetModelData" :parentOrganization="parentOrganization"></overview>
                 </el-tab-pane>
 
                 <!-- Select test -->
                 <el-tab-pane>
-                    <span slot="label"><i class="fa-solid fa-list-check"></i> Select test</span>
+                    <span slot="label"><i class="fa-solid fa-list-check"></i> Test settings</span>
                     <select-test style="width: 100%;"
-                        :mode="mode" 
-                        :data="testList" 
+                        :data="voltageTransformerJobDto.testList"
+                        :testTypeListData="testTypeListData"
                         :assetData="assetData"
                         :obj-active-name="objActiveName"
-                        :testTypeListData="testTypeListData"
                         ></select-test>
                 </el-tab-pane>
 
                 <el-tab-pane>
                     <span slot="label"><i class="fa-solid fa-list-check"></i> Testing equipment</span>
                     <div>
-                        <testing-equipment :data="testingEquipmentData" :testTypeListData="testTypeListData"></testing-equipment>
+                        <testing-equipment :data="voltageTransformerJobDto.testingEquipmentData" :testTypeListData="testTypeListData"></testing-equipment>
                     </div>
                 </el-tab-pane>
 
+
                 <!-- Tests -->
                 <el-tab-pane>
-                    <span slot="label"><i class="fa-solid fa-calculator"></i> Tests</span>
+                    <span slot="label"><i class="fa-solid fa-calculator"></i> Test data</span>
                     <div id="tests" style="width: 100%;">
                         <el-tabs v-model="objActiveName.activeName" type="card" class="w-100 h-100">
-                            <el-tab-pane v-for="(item, index) in testList" :key="index" :label="item.name" :name="item.tabId">
+                            <el-tab-pane v-for="(item, index) in voltageTransformerJobDto.testList" :key="index" :label="item.name" :name="item.name + index">
                                 <test-information
-                                title="Test"
-                                :testCondition.sync="testconditionArr[index]"
-                                :attachment.sync="attachmentArr[index]"
-                                >
+                                    :title="item.name"
+                                    :data="item.testCondition"
+                                    :assetData="assetData"
+                                    :attachment="item.testCondition.attachmentData">
                                 </test-information>
                                 <component
                                     :is="item.testTypeCode" 
                                     :data="item.data" 
-                                    :asset="asset" 
+                                    :asset="assetData"
                                     >
                                 </component>
                             </el-tab-pane>
@@ -57,12 +57,11 @@
 <script>
 /* eslint-disable */
 import mixin from './mixin'
-import Mixtestcondition from './mixin/Mixtestcondition'
 import overview from './components/Overview'
 import testingEquipment from './components/TestingEquipment/index.vue'
 import SelectTest from './components/SelectTest'
 import testInformation from '@/views/Common/testInformation.vue'
-import DcWindingRes from './components/DcWindingRes.vue'
+import DcWindingResistance from './components/DcWindingResistance.vue'
 import InsulationResistance from './components/InsulationResistance.vue'
 import GeneralInspection from './components/GeneralInspection.vue'
 import VTRatio from './components/VTRatio.vue'
@@ -70,12 +69,12 @@ import VTDfcap from './components/VTDfcap.vue'
 
 
 export default {
-    name: 'JobViewVoltageTrans',
+    name: 'JobViewVoltageTransformer',
     components: {
         overview,
         SelectTest,
         testInformation,
-        DcWindingRes,
+        DcWindingResistance,
         InsulationResistance,
         GeneralInspection,
         VTDfcap,
@@ -104,21 +103,19 @@ export default {
             default: () => []
         }
     },
-    mixins: [mixin, Mixtestcondition],
+    mixins: [mixin],
     data() {
         return {
-            mode: this.$constant.ADD,
-            job_id: null,
-            saved: false,
             objActiveName: {
                 activeName: null
             }
         }
     },
-    mounted() {},
     methods: {
         updateAttachmentOverView(attachment) {
-            this.attachmentData = attachment;
+            this.attachmentData = attachment
+        },
+        loadMapForView() {
         },
     },
 }

@@ -11,7 +11,7 @@
         <!-- Tree Toolbar -->
         <TreeToolbar :clientSlide="clientSlide" @add-command="handleAddCommand"
             @dropdown-visible-change="handleDropdownVisibleChange" @asset-command="handleAssetCommand"
-            @import-command="handleImportCommand" @export-command="handleCommand" @open-node="handleOpenNode"
+            @open-import-dialog="handleOpenImportDialog" @export-command="handleCommand" @open-node="handleOpenNode"
             @duplicate="duplicateSelectedNodes" @upload="handleUploadNode" @download="handleDownloadNode"
             @delete="handleDeleteNode" @fmeca="handleClickFmeca" @move="handleMoveNode" />
         <!-- Thanh điều hướng có thể kéo rộng/kéo hẹp -->
@@ -33,9 +33,8 @@
                 @export-excel="handleExportExcelFromContext" @export-word="handleExportWordFromContext"
                 @export-pdf="handleExportPDFFromContext" @duplicate-node="handleDuplicateFromContext"
                 @move-node="handleMoveFromContext" @import-json="handleImportJSONFromContext"
-                @show-zero-diagram="handleShowZeroDiagram"
-                @import-json-cim="handleImportJSONCIMFromContext" @show-data="showDataClient" 
-                @refresh-node="handleRefreshNode" />
+                @show-zero-diagram="handleShowZeroDiagram" @import-json-cim="handleImportJSONCIMFromContext"
+                @show-data="showDataClient" @refresh-node="handleRefreshNode" />
 
             <ServerTreePanel ref="serverPanel" v-show="!clientSlide" :ownerServerList="ownerServerList"
                 :selectedNodes.sync="selectedNodes" @showOwnerServerRoot="showOwnerServerRoot"
@@ -46,8 +45,7 @@
                 @export-excel="handleExportExcelFromContext" @export-word="handleExportWordFromContext"
                 @export-pdf="handleExportPDFFromContext" @duplicate-node="handleDuplicateFromContext"
                 @move-node="handleMoveFromContext" @import-json="handleImportJSONFromContext"
-                @show-zero-diagram="handleShowZeroDiagram"
-                @import-json-cim="handleImportJSONCIMFromContext" 
+                @show-zero-diagram="handleShowZeroDiagram" @import-json-cim="handleImportJSONCIMFromContext"
                 @refresh-node="handleRefreshNode" />
 
             <div @mousedown="startResizeClient" v-if="clientSlide" ref="resizerClient" class="resizer"></div>
@@ -107,7 +105,7 @@
                                     <div class="content-properties-table-content fixed-box pl10 break-word">{{
                                         properties.state_province }}</div>
                                 </div>
-                                
+
                                 <div class="content-properties-table-flex">
                                     <div class="content-properties-table-header">Country</div>
                                     <div class="content-properties-table-content fixed-box pl10 break-word">{{
@@ -253,8 +251,7 @@
                 :jobPropertiesClient="jobPropertiesClient" :logSignClient.sync="logSignClient"
                 :logDataClient="logDataClient" @update:activeTabClient="activeTabClient = $event"
                 @tab-changed="handleTabSelect" @remove-tab-client="removeTabClient"
-                @update-node-data="handleUpdateNodeData"
-                @refresh-properties="handleRefreshPropertiesClient"
+                @update-node-data="handleUpdateNodeData" @refresh-properties="handleRefreshPropertiesClient"
                 @reload-log-client="reloadLogClient" />
         </div>
 
@@ -352,7 +349,8 @@
             :moveTreeData="moveTreeData" :selectedTargetNodes="selectedTargetNodes"
             :selectedTargetNode="selectedTargetNode" :nodeToMove="nodeToMove" :moveDisplayText="moveDisplayText"
             :moveDisplayData="moveDisplayData" @close="handleMoveCancel" @cancel="handleMoveCancel"
-            @confirm="confirmMoveNode" @fetch-children="fetchChildrenForMove" @update-selection="handleMoveNodeSelection" />
+            @confirm="confirmMoveNode" @fetch-children="fetchChildrenForMove"
+            @update-selection="handleMoveNodeSelection" />
 
         <DownloadDialog :visible="downloadDialogVisible" @update:visible="downloadDialogVisible = $event"
             :moveTreeData="moveTreeData" :moveTreeProps="moveTreeProps" :expandedMoveKeys="expandedMoveKeys"
@@ -360,13 +358,8 @@
             @cancel="() => downloadDialogVisible = false" @confirm="confirmDownloadSelection"
             @node-click="handleDownloadTargetSelection" @node-expand="fetchChildren" />
 
-            <ZeroDiagramDialog 
-             :visible="signZeroDiagram" 
-            @update:visible="signZeroDiagram = $event"
-            :currentNode="nodeForZeroDiagram"
-            :isServer="!clientSlide" 
-            @close="handleZeroDiagramClose"
-            />
+        <ZeroDiagramDialog :visible="signZeroDiagram" @update:visible="signZeroDiagram = $event"
+            :currentNode="nodeForZeroDiagram" :isServer="!clientSlide" @close="handleZeroDiagramClose" />
     </div>
 </template>
 <script>
@@ -413,7 +406,7 @@ import RotatingMachine from '@/views/AssetView/RotatingMachine/index.vue'
 import JobSurgeArrester from '@/views/JobView/SurgeArrester/index.vue'
 import JobPowerCable from '@/views/JobView/PowerCable/index.vue'
 import JobDisconnector from '@/views/JobView/Disconnector/index.vue'
-import JobCurrentTransformer from '@/views/JobView/CurrentTrans/index.vue'
+import JobCurrentTransformer from '@/views/JobView/CurrentTransformer/index.vue'
 import JobVoltageTransformer from '@/views/JobView/VoltageTransformer/index.vue'
 import JobCircuitBreaker from '@/views/JobView/CircuitBreaker/index.vue'
 import JobTransformer from '@/views/JobView/Transformer/index.vue'
@@ -447,7 +440,7 @@ import {
     FmecaDialog,
     MoveDialog,
     DownloadDialog,
-    ZeroDiagramDialog 
+    ZeroDiagramDialog
 } from './dialogs'
 
 
@@ -523,7 +516,7 @@ export default {
         FmecaDialog,
         MoveDialog,
         DownloadDialog,
-        ZeroDiagramDialog 
+        ZeroDiagramDialog
     },
     data() {
         return {
@@ -586,7 +579,7 @@ export default {
             nodeToDownloadData: null, // Lưu dữ liệu DTO từ server về
             selectedDownloadTargetNode: null, // Node cha được chọn thủ công
             selectedDownloadTargetNodes: [], // Lưu valid parent types để dùng trong fetchChildrenForMove
-             signZeroDiagram: false, // Biến điều khiển ẩn hiện dialog
+            signZeroDiagram: false, // Biến điều khiển ẩn hiện dialog
             nodeForZeroDiagram: null, // Biến lưu node đang chọn
             moveTreeProps: {
                 children: 'children',
@@ -818,28 +811,28 @@ export default {
             this.$message.error('Failed to fetch log data.')
         }
     },
-mounted() {
-    window.addEventListener("keydown", this.handleKeyDown);
-    this.$nextTick(async () => {
-        await this.showLocationRoot();   
-        // await this.showOwnerServerRoot(); 
-    });
-},
+    mounted() {
+        window.addEventListener("keydown", this.handleKeyDown);
+        this.$nextTick(async () => {
+            await this.showLocationRoot();
+            // await this.showOwnerServerRoot(); 
+        });
+    },
     methods: {
         handleUpdateNodeData(payload) {
             // ✅ Validation: Đảm bảo payload hợp lệ
             if (!payload || !payload.mrid || !payload.data) {
                 return
             }
-            
+
             const { mrid, data, mode, assetType } = payload
-            
+
             // Tìm node trong tree
             const treeNode = this.findNodeById(mrid, this.organisationClientList)
             if (treeNode) {
                 //console.log('[TREE-NAV] Found node in tree, updating with fresh data')
                 //console.log('[TREE-NAV] Before update - node._cachedEntityData:', treeNode._cachedEntityData)
-                
+
                 if (mode === 'asset') {
                     // Update asset node - Dùng Vue.set để đảm bảo reactivity
                     this.$set(treeNode, 'serial_number', data.properties?.serial_no)
@@ -866,7 +859,7 @@ mounted() {
                     this.$set(treeNode, '_hasFullProperties', true)
                     this.$set(treeNode, '_cachedEntityData', data)
                 }
-                
+
                 //console.log('[TREE-NAV] After update - node._cachedEntityData:', treeNode._cachedEntityData)
                 //console.log('[TREE-NAV] After update - node._hasFullProperties:', treeNode._hasFullProperties)
                 //console.log('[TREE-NAV] Node updated successfully with cache flag set')
@@ -876,7 +869,7 @@ mounted() {
         },
         async handleRefreshPropertiesClient(tab) {
             //console.log('[TREE-NAV] handleRefreshPropertiesClient called for tab:', tab)
-            
+
             // ✅ Tìm node trong tree (node đã được update với _cachedEntityData)
             const treeNode = this.findNodeById(tab.mrid, this.organisationClientList)
             if (treeNode) {
@@ -977,21 +970,82 @@ mounted() {
         async handleMoveCancel() {
             this.moveDialogVisible = false
         },
-         handleShowZeroDiagram(node) {
+        handleShowZeroDiagram(node) {
             this.nodeForZeroDiagram = node;
             this.signZeroDiagram = true;
         },
         handleZeroDiagramClose() {
             this.signZeroDiagram = false;
         },
+        handleOpenImportDialog() {
+            if (!this.selectedNodes || this.selectedNodes.length === 0) {
+                this.$message.warning('Please select a node to import into!');
+                return;
+            }
+            this.openImportDialog = true;
+        },
 
+        async handleImportConfirm(file) {
+            // Đóng dialog (hoặc giữ lại tùy UX)
+            this.openImportDialog = false;
+
+            // Validation cơ bản
+            if (!file) {
+                console.warn("Không có file nào được chọn");
+                return;
+            }
+
+            // Lấy đường dẫn file tuyệt đối (Electron hỗ trợ property .path trên File object)
+            const filePath = file.path;
+            const fileName = file.name;
+
+            if (!filePath) {
+                this.$message.error("Không tìm thấy đường dẫn file (File Path is missing)");
+                return;
+            }
+
+            console.log("📍 Bắt đầu gửi file tới Python:", filePath);
+
+            // Hiển thị Loading
+            const { close } = startLoading(this, {
+                action: 'import',
+                customText: `Đang convert file ${fileName} qua Python...`,
+                type: 'heavy'
+            });
+
+            try {
+                // --- GỌI SANG ELECTRON MAIN PROCESS ĐỂ CHẠY PYTHON ---
+                // Giả sử bạn đã expose hàm 'convertFileToJSON' trong preload.js
+                // Hàm này sẽ spawn process python, ghi filePath vào stdin và đọc JSON từ stdout
+                const jsonResult = await window.electronAPI.convertFileToJSON(filePath);
+
+                // --- KẾT QUẢ TRẢ VỀ ---
+                console.log("✅ KẾT QUẢ JSON TỪ PYTHON:", jsonResult);
+
+                if (jsonResult) {
+                    this.$message.success("Convert thành công! Kiểm tra Console.");
+
+                    // TODO: XỬ LÝ TIẾP JSON TẠI ĐÂY (Mapping, Save DB...)
+                    // Ví dụ: await this.importTreeFromJSON(jsonResult);
+                } else {
+                    this.$message.warning("Python trả về dữ liệu rỗng.");
+                }
+
+            } catch (error) {
+                console.error("❌ Lỗi khi gọi Python Script:", error);
+                this.$message.error(`Lỗi Convert: ${error.message || 'Unknown error'}`);
+            } finally {
+                // Tắt loading
+                await close();
+            }
+        },
     }
 }
 </script>
 <style scoped>
 /* style.css */
 .explorer {
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', sans-serif;
     margin: 0;
     padding: 0;
     background-color: #f5f5f5;
@@ -1309,4 +1363,3 @@ body.duplicating-mode>.v-modal {
     opacity: 0 !important;
 }
 </style>
-

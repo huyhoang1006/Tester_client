@@ -110,8 +110,19 @@ import * as voltageMapper from '@/views/Mapping/VoltageLevel/index'
 import * as surgeMapper from '@/views/Mapping/SurgeArrester/index'
 import * as bushingMapper from '@/views/Mapping/Bushing/index'
 import * as vtMapper from '@/views/Mapping/VoltageTransformer/index'
+
 import * as SurgeArresterJobMapper from '@/views/Mapping/SurgerArresterJob/index'
 import * as TransformerJobMapper from '@/views/Mapping/TransformerJob/index'
+import * as BushingJobMapper from '@/views/Mapping/BushingJob/index'
+import * as CircuitBreakerJobMapper from '@/views/Mapping/CircuitBreakerJob/index'
+import * as PowerCableJobMapper from '@/views/Mapping/PowerCableJob/index'
+import * as CurrentTransformerJobMapper from '@/views/Mapping/CurrentTransformerJob/index'
+import * as CapacitorJobMapper from '@/views/Mapping/CapacitorJob/index'
+import * as ReactorJobMapper from '@/views/Mapping/ReactorJob/index'
+import * as DisconnectorJobMapper from '@/views/Mapping/DisconnectorJob/index'
+import * as RotatingMachineJobMapper from '@/views/Mapping/RotatingMachineJob/index'
+import * as VoltageTransformerJobMapper from '@/views/Mapping/VoltageTransformerJob/index'
+
 import * as disconnectorMapper from '@/views/Mapping/Disconnector/index'
 import * as PowerCableMapper from '@/views/Mapping/PowerCable'
 import * as RotatingMachineMapper from '@/views/Mapping/RotatingMachine'
@@ -129,8 +140,19 @@ import VoltageLevel from '@/views/VoltageLevel/index.vue'
 import Bay from '@/views/Bay/index.vue'
 import SurgeArrester from '@/views/AssetView/SurgeArrester/index.vue'
 import Bushing from '@/views/AssetView/Bushing/index.vue'
+
 import SurgeArresterJob from '@/views/JobView/SurgeArrester/index.vue'
 import TransformerJob from '@/views/JobView/Transformer/index.vue'
+import BushingJob from '@/views/JobView/Bushing/index.vue'
+import CircuitBreakerJob from '@/views/JobView/CircuitBreaker/index.vue'
+import PowerCableJob from '@/views/JobView/PowerCable/index.vue'
+import CurrentTransformerJob from '@/views/JobView/CurrentTransformer/index.vue'
+import CapacitorJob from '@/views/JobView/Capacitor/index.vue'
+import ReactorJob from '@/views/JobView/Reactor/index.vue'
+import DisconnectorJob from '@/views/JobView/Disconnector/index.vue'
+import RotatingMachineJob from '@/views/JobView/RotatingMachine/index.vue'
+import VoltageTransformerJob from '@/views/JobView/VoltageTransformer/index.vue'
+
 import VoltageTransformer from '@/views/AssetView/VoltageTransformer/index.vue'
 import Disconnector from '@/views/AssetView/Disconnector/index.vue'
 import PowerCable from '@/views/AssetView/PowerCable/index.vue'
@@ -153,8 +175,19 @@ export default {
         SurgeArrester,
         Bushing,
         VoltageTransformer,
+
         SurgeArresterJob,
         TransformerJob,
+        BushingJob,
+        CircuitBreakerJob,
+        PowerCableJob,
+        CurrentTransformerJob,
+        CapacitorJob,
+        ReactorJob,
+        VoltageTransformerJob,
+        DisconnectorJob,
+        RotatingMachineJob,
+
         Disconnector,
         PowerCable,
         RotatingMachine,
@@ -794,8 +827,7 @@ export default {
                         } else {
                             this.$message.error("Failed to load surge arrester job data");
                         }
-                    }
-                    else if( tab.job === 'Power cable') {
+                    } else if( tab.job === 'Power cable') {
                         const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Power cable")
                         if (dataTestType.success) {
                             this.testTypeListData = dataTestType.data
@@ -812,7 +844,7 @@ export default {
                         this.signJob = true;
                         const data = await window.electronAPI.getPowerCableJobByMrid(tab.mrid)
                         if (data.success) {
-                            const powerCableJobDto = PowerCableMapper.JobEntityToDto(data.data)
+                            const powerCableJobDto = PowerCableJobMapper.JobEntityToDto(data.data)
                             for (const test of powerCableJobDto.testList) {
                                 for (const type of this.testTypeListData) {
                                     if (test.testTypeCode === type.code) {
@@ -826,15 +858,14 @@ export default {
                         } else {
                             this.$message.error("Failed to load power cable job data");
                         }
-                    }
-                    else if( tab.job === 'Transformer') {
+                    } else if( tab.job === 'Transformer') {
                         const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Transformer")
                         if (dataTestType.success) {
                             this.testTypeListData = dataTestType.data
                         } else {
                             this.testTypeListData = []
                         }
-                        const dataTransformer = await window.electronAPI.getAssetByMrid(tab.parentId)
+                        const dataTransformer = await window.electronAPI.getTransformerByMrid(tab.parentId)
                         if (dataTransformer.success) {
                             this.assetData = dataTransformer.data
                         } else {
@@ -857,6 +888,255 @@ export default {
                             this.$refs.componentLoadData[index].loadData(transformerJobDto)
                         } else {
                             this.$message.error("Failed to load transformer job data");
+                        }
+                    } else if (tab.job === 'Voltage transformer') {
+                        const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Voltage transformer")
+                        if (dataTestType.success) {
+                            this.testTypeListData = dataTestType.data
+                        } else {
+                            this.testTypeListData = []
+                        }
+                        const dataVoltageTransformer = await window.electronAPI.getVoltageTransformerEntityByMrid(tab.parentId)
+                        if (dataVoltageTransformer.success) {
+                            this.assetData = dataVoltageTransformer.data
+                        } else {
+                            this.assetData = {}
+                        }
+                        this.checkJobType = 'JobVoltageTransformer'
+                        this.signJob = true;
+                        const data = await window.electronAPI.getVoltageTransformerJobByMrid(tab.mrid)
+                        if (data.success) {
+                            const voltageTransformerJobDto = VoltageTransformerJobMapper.JobEntityToDto(data.data)
+                            for (const test of voltageTransformerJobDto.testList) {
+                                for (const type of this.testTypeListData) {
+                                    if (test.testTypeCode === type.code) {
+                                        test.testTypeName = type.name
+                                        test.testTypeId = type.mrid
+                                        break
+                                    }
+                                }
+                            }
+                            this.$refs.componentLoadData[index].loadData(voltageTransformerJobDto)
+                        } else {
+                            this.$message.error("Failed to load voltage transformer job data");
+                        }
+                    } else if (tab.job === 'Current transformer') {
+                        const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Current transformer")
+                        if (dataTestType.success) {
+                            this.testTypeListData = dataTestType.data
+                        } else {
+                            this.testTypeListData = []
+                        }
+                        const dataCurrentTransformer = await window.electronAPI.getCurrentTransformerByMrid(tab.parentId)
+                        if (dataCurrentTransformer.success) {
+                            this.assetData = dataCurrentTransformer.data
+                        } else {
+                            this.assetData = {}
+                        }
+                        this.checkJobType = 'JobCurrentTransformer'
+                        this.signJob = true;
+                        const data = await window.electronAPI.getCurrentTransformerJobByMrid(tab.mrid)
+                        if (data.success) {
+                            const currentTransformerJobDto = CurrentTransformerJobMapper.JobEntityToDto(data.data)
+                            for (const test of currentTransformerJobDto.testList) {
+                                for (const type of this.testTypeListData) {
+                                    if (test.testTypeCode === type.code) {
+                                        test.testTypeName = type.name
+                                        test.testTypeId = type.mrid
+                                        break
+                                    }
+                                }
+                            }
+                            this.$refs.componentLoadData[index].loadData(currentTransformerJobDto)
+                        } else {
+                            this.$message.error("Failed to load current transformer job data");
+                        }
+                    } else if (tab.job === 'Disconnector') {
+                        const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Disconnector")
+                        if (dataTestType.success) {
+                            this.testTypeListData = dataTestType.data
+                        } else {
+                            this.testTypeListData = []
+                        }
+                        const dataDisconnector = await window.electronAPI.getDisconnectorByMrid(tab.parentId)
+                        if (dataDisconnector.success) {
+                            this.assetData = dataDisconnector.data
+                        } else {
+                            this.assetData = {}
+                        }
+                        this.checkJobType = 'JobDisconnector'
+                        this.signJob = true;
+                        const data = await window.electronAPI.getDisconnectorJobByMrid(tab.mrid)
+                        if (data.success) {
+                            const disconnectorJobDto = DisconnectorJobMapper.JobEntityToDto(data.data)
+                            for (const test of disconnectorJobDto.testList) {
+                                for (const type of this.testTypeListData) {
+                                    if (test.testTypeCode === type.code) {
+                                        test.testTypeName = type.name
+                                        test.testTypeId = type.mrid
+                                        break
+                                    }
+                                }
+                            }
+                            this.$refs.componentLoadData[index].loadData(disconnectorJobDto)
+                        } else {
+                            this.$message.error("Failed to load disconnector job data");
+                        }
+                    } else if (tab.job === 'Rotating machine') {
+                        const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Rotating machine")
+                        if (dataTestType.success) {
+                            this.testTypeListData = dataTestType.data
+                        } else {
+                            this.testTypeListData = []
+                        }
+                        const dataRotatingMachine = await window.electronAPI.getRotatingMachineByMrid(tab.parentId)
+                        if (dataRotatingMachine.success) {
+                            this.assetData = dataRotatingMachine.data
+                        } else {
+                            this.assetData = {}
+                        }
+                        this.checkJobType = 'JobRotatingMachine'
+                        this.signJob = true;
+                        const data = await window.electronAPI.getRotatingMachineJobByMrid(tab.mrid)
+                        if (data.success) {
+                            const rotatingMachineJobDto = RotatingMachineJobMapper.JobEntityToDto(data.data)
+                            for (const test of rotatingMachineJobDto.testList) {
+                                for (const type of this.testTypeListData) {
+                                    if (test.testTypeCode === type.code) {
+                                        test.testTypeName = type.name
+                                        test.testTypeId = type.mrid
+                                        break
+                                    }
+                                }
+                            }
+                            this.$refs.componentLoadData[index].loadData(rotatingMachineJobDto)
+                        } else {
+                            this.$message.error("Failed to load rotating machine job data");
+                        }
+                    } else if (tab.job === 'Reactor') {
+                        const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Reactor")
+                        if (dataTestType.success) {
+                            this.testTypeListData = dataTestType.data
+                        } else {
+                            this.testTypeListData = []
+                        }
+                        const dataReactor = await window.electronAPI.getReactorByMrid(tab.parentId)
+                        if (dataReactor.success) {
+                            this.assetData = dataReactor.data
+                        } else {
+                            this.assetData = {}
+                        }
+                        this.checkJobType = 'JobReactor'
+                        this.signJob = true;
+                        const data = await window.electronAPI.getReactorJobByMrid(tab.mrid)
+                        if (data.success) {
+                            const reactorJobDto = ReactorJobMapper.JobEntityToDto(data.data)
+                            for (const test of reactorJobDto.testList) {
+                                for (const type of this.testTypeListData) {
+                                    if (test.testTypeCode === type.code) {
+                                        test.testTypeName = type.name
+                                        test.testTypeId = type.mrid
+                                        break
+                                    }
+                                }
+                            }
+                            this.$refs.componentLoadData[index].loadData(reactorJobDto)
+                        } else {
+                            this.$message.error("Failed to load reactor job data");
+                        }
+                    } else if (tab.job === 'Capacitor') {
+                        const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Capacitor")
+                        if (dataTestType.success) {
+                            this.testTypeListData = dataTestType.data
+                        } else {
+                            this.testTypeListData = []
+                        }
+                        const dataCapacitor = await window.electronAPI.getCapacitorByMrid(tab.parentId)
+                        if (dataCapacitor.success) {
+                            this.assetData = dataCapacitor.data
+                        } else {
+                            this.assetData = {}
+                        }
+                        this.checkJobType = 'JobCapacitor'
+                        this.signJob = true;
+                        const data = await window.electronAPI.getCapacitorJobByMrid(tab.mrid)
+                        if (data.success) {
+                            const capacitorJobDto = CapacitorJobMapper.JobEntityToDto(data.data)
+                            for (const test of capacitorJobDto.testList) {
+                                for (const type of this.testTypeListData) {
+                                    if (test.testTypeCode === type.code) {
+                                        test.testTypeName = type.name
+                                        test.testTypeId = type.mrid
+                                        break
+                                    }
+                                }
+                            }
+                            this.$refs.componentLoadData[index].loadData(capacitorJobDto)
+                        } else {
+                            this.$message.error("Failed to load capacitor job data");
+                        }
+                    } else if (tab.job === 'Bushing') {
+                        const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Bushing")
+                        if (dataTestType.success) {
+                            this.testTypeListData = dataTestType.data
+                        } else {
+                            this.testTypeListData = []
+                        }
+                        const dataBushing = await window.electronAPI.getBushingByMrid(tab.parentId)
+                        if (dataBushing.success) {
+                            this.assetData = dataBushing.data
+                        } else {
+                            this.assetData = {}
+                        }
+                        this.checkJobType = 'JobBushing'
+                        this.signJob = true;
+                        const data = await window.electronAPI.getBushingJobByMrid(tab.mrid)
+                        if (data.success) {
+                            const bushingJobDto = BushingJobMapper.JobEntityToDto(data.data)
+                            for (const test of bushingJobDto.testList) {
+                                for (const type of this.testTypeListData) {
+                                    if (test.testTypeCode === type.code) {
+                                        test.testTypeName = type.name
+                                        test.testTypeId = type.mrid
+                                        break
+                                    }
+                                }
+                            }
+                            this.$refs.componentLoadData[index].loadData(bushingJobDto)
+                        } else {
+                            this.$message.error("Failed to load bushing job data");
+                        }
+                    } else if (tab.job === 'Circuit breaker') {
+                        const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Circuit breaker")
+                        if (dataTestType.success) {
+                            this.testTypeListData = dataTestType.data
+                        } else {
+                            this.testTypeListData = []
+                        }
+                        const dataCircuitBreaker = await window.electronAPI.getBreakerEntityByMrid(tab.parentId)
+                        console.log('dataCircuitBreaker', dataCircuitBreaker);
+                        if (dataCircuitBreaker.success) {
+                            this.assetData = BreakerMapper.mapEntityToDto(dataCircuitBreaker.data)
+                        } else {
+                            this.assetData = {}
+                        }
+                        this.checkJobType = 'JobCircuitBreaker'
+                        this.signJob = true;
+                        const data = await window.electronAPI.getCircuitBreakerJobByMrid(tab.mrid)
+                        if (data.success) {
+                            const circuitBreakerJobDto = CircuitBreakerJobMapper.JobEntityToDto(data.data)
+                            for (const test of circuitBreakerJobDto.testList) {
+                                for (const type of this.testTypeListData) {
+                                    if (test.testTypeCode === type.code) {
+                                        test.testTypeName = type.name
+                                        test.testTypeId = type.mrid
+                                        break
+                                    }
+                                }
+                            }
+                            this.$refs.componentLoadData[index].loadData(circuitBreakerJobDto)
+                        } else {
+                            this.$message.error("Failed to load circuit breaker job data");
                         }
                     }
                 } else {
@@ -1021,6 +1301,22 @@ export default {
                     return 'SurgeArresterJob'
                 } else if (tab.job === 'Transformer') {
                     return 'TransformerJob'
+                } else if (tab.job === 'Voltage transformer') {
+                    return 'VoltageTransformerJob'
+                } else if (tab.job === 'Current transformer') {
+                    return 'CurrentTransformerJob'
+                } else if (tab.job === 'Disconnector') {
+                    return 'DisconnectorJob'
+                } else if (tab.job === 'Rotating machine') {
+                    return 'RotatingMachineJob'
+                } else if (tab.job === 'Reactor') {
+                    return 'ReactorJob'
+                } else if (tab.job === 'Capacitor') {
+                    return 'CapacitorJob'
+                } else if (tab.job === 'Bushing') {
+                    return 'BushingJob'
+                } else if (tab.job === 'Circuit breaker') {
+                    return 'CircuitBreakerJob'
                 }
             }
         },
