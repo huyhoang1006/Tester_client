@@ -1,27 +1,22 @@
 import db from '../../../datacontext/index.js'
 import * as attachmentContext from '../../../attachmentcontext/index'
 import path from 'path'
-import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, deleteDirectory } from '@/function/entity/attachment'
-import { insertOldWorkTransaction, getOldWorkById } from "@/function/cim/oldWork/index"
-import { insertTestingEquipmentTransaction, getTestingEquipmentById, getTestingEquipmentByWorkId, deleteTestingEquipmentByIdTransaction } from '../../testingEquipment/index.js'
+import { uploadAttachmentTransaction, deleteAttachmentByIdTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType } from '@/function/entity/attachment'
+import {insertOldWorkTransaction, getOldWorkById, deleteOldWorkByIdTransaction} from "@/function/cim/oldWork/index"
+import { insertTestingEquipmentTransaction, getTestingEquipmentByWorkId, deleteTestingEquipmentByIdTransaction } from '../../testingEquipment/index.js'
 import CurrentTransformerJobEntity from '@/views/Flatten/Job/CurrentTransformer/index.js'
 import { insertWorkTaskTransaction, getWorkTaskByWork, deleteWorkTaskByIdTransaction } from '@/function/cim/workTask/index.js'
-import { insertOldTransformerObservationTransaction, getOldTransformerObservationById, deleteOldTransformerObservationByIdTransaction, getOldTransformerObservationByWorkTaskId } from '@/function/cim/oldTransformerObservation/index.js'
-import { insertPercentTransaction, deletePercentByIdTransaction, getPercentById } from '@/function/cim/percent/index.js'
-import { insertTemperatureTransaction, deleteTemperatureByIdTransaction, getTemperatureById } from '@/function/cim/temperature/index.js'
 import { insertCurrentTransformerTestingEquipmentTestTypeTransaction, getCurrentTransformerTestingEquipmentTestingEqId, deleteCurrentTransformerTestingEquipmentTestTypeByIdTransaction } from '../../currentTranformerTestingEquipmentTestType/index.js'
 import { insertTestDataSetTransaction, getTestDataSetByWorkTaskId, deleteTestDataSetByIdTransaction } from '@/function/cim/testDataSet'
-import { insertAnalogTransaction } from '@/function/cim/analog'
-import { insertStringMeasurementTransaction } from '@/function/cim/stringMeasurement/index.js'
-import { insertDiscreteTransaction } from '@/function/cim/discrete'
-import { insertValueAliasSetTransaction } from '@/function/cim/valueAliasSet/index.js'
-import { insertValueToAliasTransaction } from '@/function/cim/valueToAlias'
-import { insertProcedureTransaction } from '@/function/cim/procedure'
-import { insertMeasurementProcedureTransaction } from '@/function/cim/measurementProcedure/index.js'
+import { insertAnalogValueTransaction, getAnalogValueByTestDataSetMrids, deleteAnalogValueByIdTransaction } from '@/function/cim/analogValue/index.js'
+import { insertStringMeasurementValueTransaction, getStringMeasurementValueByTestDataSetMrids, deleteStringMeasurementValueByIdTransaction } from '@/function/cim/stringMeasurementValue/index.js'
+import { insertDiscreteValueTransaction, getDiscreteValueByTestDataSetMrids, deleteDiscreteValueByIdTransaction } from '@/function/cim/discreteValue/index.js'
+import { insertProcedureDataSetMeasurementValueTransaction } from '@/function/cim/procedureDataSetMeasurementValue/index.js'
+import { insertProcedureAssetTransaction } from '@/function/cim/procedureAsset/index.js'
 
-export const insertCurrentTransformerJobEntity = async (old_entity, entity) => {
+export const insertCurrentTransformerJobEntity = async (old_entity,entity) => {
     try {
-        if (entity.oldWork.mrid === null || entity.oldWork.mrid === '') {
+        if(entity.oldWork.mrid === null || entity.oldWork.mrid === '') {
             const result = {
                 success: false,
                 error: new Error("MRID is required for Current Transformer Job Entity"),
@@ -36,24 +31,26 @@ export const insertCurrentTransformerJobEntity = async (old_entity, entity) => {
                 deleteBackupFiles(null, entity.oldWork.mrid);
                 const result = {
                     success: false,
-                    error: new Error("MRID is required for Surge Arrester Job Entity"),
+                    error: new Error("MRID is required for Current Transformer Job Entity"),
                     message: '',
                 }
                 return result;
             }
 
-            for (const attachment of entity.attachmentTest) {
-                backupAllFilesInDir(null, null, attachment.id_foreign);
-                const syncResult = syncFilesWithDeletion(JSON.parse(attachment.path), null, attachment.id_foreign);
-                if (!syncResult.success) {
-                    restoreFiles(null, null, attachment.id_foreign);
-                    deleteBackupFiles(null, attachment.id_foreign);
-                    const result = {
-                        success: false,
-                        error: new Error("MRID is required for Surge Arrester Job Entity"),
-                        message: '',
+            for(const attachment of entity.attachmentTest) {
+                if(attachment.id && Array.isArray(JSON.parse(attachment.path))) {
+                    backupAllFilesInDir(null, null, attachment.id_foreign);
+                    const syncResult = syncFilesWithDeletion(JSON.parse(attachment.path), null, attachment.id_foreign);
+                    if (!syncResult.success) {
+                        restoreFiles(null, null, attachment.id_foreign);
+                        deleteBackupFiles(null, attachment.id_foreign);
+                        const result = {
+                            success: false,
+                            error: new Error("MRID is required for Current Transformer Job Entity"),
+                            message: '',
+                        }
+                        return result;
                     }
-                    return result;
                 }
             }
 
@@ -62,13 +59,17 @@ export const insertCurrentTransformerJobEntity = async (old_entity, entity) => {
             if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
                 const pathData = JSON.parse(entity.attachment.path);
                 const newPath = []
-                for (let i = 0; i < pathData.length; i++) {
+                for(let i = 0; i < pathData.length; i++) {
                     const namefile = path.basename(pathData[i].path);
                     pathData[i].path = path.join(attachmentContext.getAttachmentDir(), namefile);
                     newPath.push(pathData[i]);
                 }
                 entity.attachment.path = JSON.stringify(newPath);
                 await uploadAttachmentTransaction(entity.attachment, db);
+            }
+
+            for(const procedureAsset of entity.procedureAsset) {
+                await insertProcedureAssetTransaction(procedureAsset, db);
             }
 
             //testing equipment
@@ -85,14 +86,14 @@ export const insertCurrentTransformerJobEntity = async (old_entity, entity) => {
                 await insertTestingEquipmentTransaction(equipment, db);
             }
 
-            //surgeArresterTestingEquipmentTestType
+            //currentTransformerTestingEquipmentTestType
             const newIdsSet = entity.currentTransformerTestingEquipmentTestType.map(v => v.mrid).filter(id => id); // bỏ null/empty
             const oldIdsSet = old_entity.currentTransformerTestingEquipmentTestType.map(v => v.mrid).filter(id => id);
 
             const toAddSet = entity.currentTransformerTestingEquipmentTestType.filter(v => v.mrid && !oldIdsSet.includes(v.mrid));
             const toDeleteSet = old_entity.currentTransformerTestingEquipmentTestType.filter(v => v.mrid && !newIdsSet.includes(v.mrid));
             const toUpdateSet = entity.currentTransformerTestingEquipmentTestType.filter(v => v.mrid && oldIdsSet.includes(v.mrid));
-
+            
             for (const equipmentTestType of toAddSet) {
                 await insertCurrentTransformerTestingEquipmentTestTypeTransaction(equipmentTestType, db);
             }
@@ -117,58 +118,11 @@ export const insertCurrentTransformerJobEntity = async (old_entity, entity) => {
                 await insertWorkTaskTransaction(workTask, db);
             }
 
-            //percentage
-            const newIdsPercentage = entity.percent.map(v => v.mrid).filter(id => id); // bỏ null/empty
-            const oldIdsPercentage = old_entity.percent.map(v => v.mrid).filter(id => id);
-
-            const toAddPercentage = entity.percent.filter(v => v.mrid && !oldIdsPercentage.includes(v.mrid));
-            const toDeletePercentage = old_entity.percent.filter(v => v.mrid && !newIdsPercentage.includes(v.mrid));
-            const toUpdatePercentage = entity.percent.filter(v => v.mrid && oldIdsPercentage.includes(v.mrid));
-
-            for (const percentage of toAddPercentage) {
-                await insertPercentTransaction(percentage, db);
-            }
-
-            for (const percentage of toUpdatePercentage) {
-                await insertPercentTransaction(percentage, db);
-            }
-
-            //temperature
-            const newIdsTemperature = entity.temperature.map(v => v.mrid).filter(id => id); // bỏ null/empty
-            const oldIdsTemperature = old_entity.temperature.map(v => v.mrid).filter(id => id);
-
-            const toAddTemperature = entity.temperature.filter(v => v.mrid && !oldIdsTemperature.includes(v.mrid));
-            const toDeleteTemperature = old_entity.temperature.filter(v => v.mrid && !newIdsTemperature.includes(v.mrid));
-            const toUpdateTemperature = entity.temperature.filter(v => v.mrid && oldIdsTemperature.includes(v.mrid));
-            for (const temperature of toAddTemperature) {
-                await insertTemperatureTransaction(temperature, db);
-            }
-
-            for (const temperature of toUpdateTemperature) {
-                await insertTemperatureTransaction(temperature, db);
-            }
-
-            //transformer observation
-            const newIdsTransformerObservation = entity.transformerObservation.map(v => v.mrid).filter(id => id); // bỏ null/empty
-            const oldIdsTransformerObservation = old_entity.transformerObservation.map(v => v.mrid).filter(id => id);
-
-            const toAddTransformerObservation = entity.transformerObservation.filter(v => v.mrid && !oldIdsTransformerObservation.includes(v.mrid));
-            const toUpdateTransformerObservation = entity.transformerObservation.filter(v => v.mrid && oldIdsTransformerObservation.includes(v.mrid));
-            const toDeleteTransformerObservation = old_entity.transformerObservation.filter(v => v.mrid && !newIdsTransformerObservation.includes(v.mrid));
-
-            for (const observation of toAddTransformerObservation) {
-                await insertOldTransformerObservationTransaction(observation, db);
-            }
-
-            for (const observation of toUpdateTransformerObservation) {
-                await insertOldTransformerObservationTransaction(observation, db);
-            }
-
             //attachemt
             if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
                 const pathData = JSON.parse(entity.attachment.path);
                 const newPath = []
-                for (let i = 0; i < pathData.length; i++) {
+                for(let i = 0; i < pathData.length; i++) {
                     const namefile = path.basename(pathData[i].path);
                     pathData[i].path = path.join(attachmentContext.getAttachmentDir(), entity.attachment.id_foreign, namefile);
                     newPath.push(pathData[i]);
@@ -178,11 +132,11 @@ export const insertCurrentTransformerJobEntity = async (old_entity, entity) => {
             }
 
             //attachment test
-            for (const attachment of entity.attachmentTest) {
+            for(const attachment of entity.attachmentTest) {
                 if (attachment.id && Array.isArray(JSON.parse(attachment.path))) {
                     const pathData = JSON.parse(attachment.path);
                     const newPath = []
-                    for (let i = 0; i < pathData.length; i++) {
+                    for(let i = 0; i < pathData.length; i++) {
                         const namefile = path.basename(pathData[i].path);
                         pathData[i].path = path.join(attachmentContext.getAttachmentDir(), attachment.id_foreign, namefile);
                         newPath.push(pathData[i]);
@@ -208,135 +162,136 @@ export const insertCurrentTransformerJobEntity = async (old_entity, entity) => {
                 await insertTestDataSetTransaction(testData, db);
             }
 
-            //insert string measurement value
-            const newIdsAnalog = entity.analog.map(v => v.mrid).filter(id => id); // bỏ null/empty
-            const oldIdsAnalog = old_entity.analog.map(v => v.mrid).filter(id => id);
+            //analog value
+            const newIdsAnalogValue = entity.analogValues.map(v => v.mrid).filter(id => id); // bỏ null/empty
+            const oldIdsAnalogValue = old_entity.analogValues.map(v => v.mrid).filter(id => id);
 
-            const toAddAnalog = entity.analog.filter(v => v.mrid && !oldIdsAnalog.includes(v.mrid));
-            const toUpdateAnalog = entity.analog.filter(v => v.mrid && oldIdsAnalog.includes(v.mrid));
-            const toDeleteAnalog = old_entity.analog.filter(v => v.mrid && !newIdsAnalog.includes(v.mrid));
-
-            for (const analog of toAddAnalog) {
-                await insertAnalogTransaction(analog, db);
+            const toAddAnalogValue = entity.analogValues.filter(v => v.mrid && !oldIdsAnalogValue.includes(v.mrid));
+            const toUpdateAnalogValue = entity.analogValues.filter(v => v.mrid && oldIdsAnalogValue.includes(v.mrid));
+            const toDeleteAnalogValue = old_entity.analogValues.filter(v => v.mrid && !newIdsAnalogValue.includes(v.mrid));
+            for (const analogValue of toAddAnalogValue) {
+                await insertAnalogValueTransaction(analogValue, db);
             }
 
-            for (const analog of toUpdateAnalog) {
-                await insertAnalogTransaction(analog, db);
+            for (const analogValue of toUpdateAnalogValue) {
+                await insertAnalogValueTransaction(analogValue, db);
             }
 
-            //insert string measurement value
-            const newIdsStringMeasurement = entity.stringMeasurement.map(v => v.mrid).filter(id => id);
-            const oldIdsStringMeasurement = old_entity.stringMeasurement.map(v => v.mrid).filter(id => id);
+            //string measurement value
+            const newIdsStringMeasurementValue = entity.stringMeasurementValues.map(v => v.mrid).filter(id => id); // bỏ null/empty
+            const oldIdsStringMeasurementValue = old_entity.stringMeasurementValues.map(v => v.mrid).filter(id => id);
 
-            const toAddStringMeasurement = entity.stringMeasurement.filter(v => v.mrid && !oldIdsStringMeasurement.includes(v.mrid));
-            const toUpdateStringMeasurement = entity.stringMeasurement.filter(v => v.mrid && oldIdsStringMeasurement.includes(v.mrid));
-            const toDeleteStringMeasurement = old_entity.stringMeasurement.filter(v => v.mrid && !newIdsStringMeasurement.includes(v.mrid));
-
-            for (const stringMeasurement of toAddStringMeasurement) {
-                await insertStringMeasurementTransaction(stringMeasurement, db);
+            const toAddStringMeasurementValue = entity.stringMeasurementValues.filter(v => v.mrid && !oldIdsStringMeasurementValue.includes(v.mrid));
+            const toUpdateStringMeasurementValue = entity.stringMeasurementValues.filter(v => v.mrid && oldIdsStringMeasurementValue.includes(v.mrid));
+            const toDeleteStringMeasurementValue = old_entity.stringMeasurementValues.filter(v => v.mrid && !newIdsStringMeasurementValue.includes(v.mrid));
+            for (const stringMeasurementValue of toAddStringMeasurementValue) {
+                await insertStringMeasurementValueTransaction(stringMeasurementValue, db);
             }
 
-            for (const stringMeasurement of toUpdateStringMeasurement) {
-                await insertStringMeasurementTransaction(stringMeasurement, db);
+            for (const stringMeasurementValue of toUpdateStringMeasurementValue) {
+                await insertStringMeasurementValueTransaction(stringMeasurementValue, db);
             }
 
-            //insert discrete value
-            const newIdsDiscrete = entity.discrete.map(v => v.mrid).filter(id => id);
-            const oldIdsDiscrete = old_entity.discrete.map(v => v.mrid).filter(id => id);
+            //discrete value
+            const newIdsDiscreteValue = entity.discreteValues.map(v => v.mrid).filter(id => id);
+            const oldIdsDiscreteValue = old_entity.discreteValues.map(v => v.mrid).filter(id => id);
 
-            const toAddDiscrete = entity.discrete.filter(v => v.mrid && !oldIdsDiscrete.includes(v.mrid));
-            const toUpdateDiscrete = entity.discrete.filter(v => v.mrid && oldIdsDiscrete.includes(v.mrid));
-            const toDeleteDiscrete = old_entity.discrete.filter(v => v.mrid && !newIdsDiscrete.includes(v.mrid));
-
-            for (const discrete of toAddDiscrete) {
-                await insertDiscreteTransaction(discrete, db);
+            const toAddDiscreteValue = entity.discreteValues.filter(v => v.mrid && !oldIdsDiscreteValue.includes(v.mrid));
+            const toUpdateDiscreteValue = entity.discreteValues.filter(v => v.mrid && oldIdsDiscreteValue.includes(v.mrid));
+            const toDeleteDiscreteValue = old_entity.discreteValues.filter(v => v.mrid && !newIdsDiscreteValue.includes(v.mrid));
+            for (const discreteValue of toAddDiscreteValue) {
+                await insertDiscreteValueTransaction(discreteValue, db);
+            }
+            for (const discreteValue of toUpdateDiscreteValue) {
+                await insertDiscreteValueTransaction(discreteValue, db);
             }
 
-            for (const discrete of toUpdateDiscrete) {
-                await insertDiscreteTransaction(discrete, db);
+            //procedure dataset measurement value
+            for(const procedureDataSetMeasurementValue of entity.procedureDataSetMeasurementValue) {
+                await insertProcedureDataSetMeasurementValueTransaction(procedureDataSetMeasurementValue, db);
             }
 
-            //delete testing equipment that are not in the new list
-            for (const equipmentTestType of toDeleteSet) {
-                await deleteCurrentTransformerTestingEquipmentTestTypeByIdTransaction(equipmentTestType.mrid, db);
+
+            //delete section
+            for(const analogValue of toDeleteAnalogValue) {
+                await deleteAnalogValueByIdTransaction(analogValue.mrid, db);
+            }
+            for(const stringMeasurementValue of toDeleteStringMeasurementValue) {
+                await deleteStringMeasurementValueByIdTransaction(stringMeasurementValue.mrid, db);
+            }
+
+            for(const discreteValue of toDeleteDiscreteValue) {
+                await deleteDiscreteValueByIdTransaction(discreteValue.mrid, db);
             }
 
             for (const testData of toDeleteTestDataSet) {
                 await deleteTestDataSetByIdTransaction(testData.mrid, db);
             }
 
-            for (const equipment of toDelete) {
-                await deleteTestingEquipmentByIdTransaction(equipment.mrid, db);
+            for(const equipmentTestType of toDeleteSet) {
+                await deleteCurrentTransformerTestingEquipmentTestTypeByIdTransaction(equipmentTestType.mrid, db);
             }
 
-            for (const observation of toDeleteTransformerObservation) {
-                await deleteOldTransformerObservationByIdTransaction(observation.mrid, db);
+            for (const equipment of toDelete) {
+                await deleteTestingEquipmentByIdTransaction(equipment.mrid, db);
             }
 
             for (const workTask of toDeleteWorkTask) {
                 await deleteWorkTaskByIdTransaction(workTask.mrid, db);
             }
 
-            for (const percentage of toDeletePercentage) {
-                await deletePercentByIdTransaction(percentage.mrid, db);
-            }
-
-            for (const temperature of toDeleteTemperature) {
-                await deleteTemperatureByIdTransaction(temperature.mrid, db);
-            }
-
             await runAsync('COMMIT');
             deleteBackupFiles(null, entity.oldWork.mrid);
-            for (const attachment of entity.attachmentTest) {
+            for(const attachment of entity.attachmentTest) {
                 deleteBackupFiles(null, attachment.id_foreign);
             }
-            return { success: true, data: entity, message: 'Surge Arrester Job entity inserted successfully' };
+            return { success: true, data: entity, message: 'Current Transformer Job entity inserted successfully' };
 
         }
     } catch (error) {
+        await runAsync('ROLLBACK');
+        console.error('Error retrieving Current Transformer entity:', error);
         restoreFiles(null, null, entity.oldWork.mrid);
         deleteBackupFiles(null, entity.oldWork.mrid);
-        for (const attachment of entity.attachmentTest) {
+        for(const attachment of entity.attachmentTest) {
             restoreFiles(null, null, attachment.id_foreign);
             deleteBackupFiles(null, attachment.id_foreign);
         }
-        console.error('Error retrieving surge arrester entity:', error);
-        await runAsync('ROLLBACK');
-        return { success: false, error, message: 'Error retrieving surge arrester entity' };
+        return { success: false, error, message: 'Error retrieving Current Transformer entity' };
     }
 }
 
 export const getCurrentTransformerJobEntity = async (id) => {
     try {
-        if (id == null || id === '') {
+        if(id == null || id === '') {
             return { success: false, error: new Error('Invalid ID') };
         } else {
             const entity = new CurrentTransformerJobEntity()
             const dataOldWork = await getOldWorkById(id);
-            if (dataOldWork.success) {
+            if(dataOldWork.success) {
                 entity.oldWork = dataOldWork.data;
 
                 const dataAttachment = await getAttachmentByForeignIdAndType(entity.oldWork.mrid, 'job');
-                if (dataAttachment.success) {
+                if(dataAttachment.success) {
                     entity.attachment = dataAttachment.data;
                 }
 
                 const dataTestingEquipment = await getTestingEquipmentByWorkId(entity.oldWork.mrid);
-                if (dataTestingEquipment.success) {
+                if(dataTestingEquipment.success) {
                     entity.testingEquipment = dataTestingEquipment.data;
                 } else {
                     entity.testingEquipment = [];
                 }
 
-                for (const equipment of entity.testingEquipment) {
+                for(const equipment of entity.testingEquipment) {
                     const dataEquipmentTestType = await getCurrentTransformerTestingEquipmentTestingEqId(equipment.mrid);
-                    if (dataEquipmentTestType.success) {
+                    if(dataEquipmentTestType.success) {
                         entity.currentTransformerTestingEquipmentTestType = entity.currentTransformerTestingEquipmentTestType.concat(dataEquipmentTestType.data);
                     }
                 }
 
                 const dataWorkTask = await getWorkTaskByWork(entity.oldWork.mrid, db);
-                if (dataWorkTask.success) {
+                if(dataWorkTask.success) {
                     entity.workTasks = dataWorkTask.data;
                 } else {
                     entity.workTasks = [];
@@ -344,91 +299,146 @@ export const getCurrentTransformerJobEntity = async (id) => {
 
                 for (let i = 0; i < entity.workTasks.length; i++) {
                     const workTask = entity.workTasks[i];
-                    const dataTransformerObservation = await getOldTransformerObservationByWorkTaskId(workTask.mrid);
-                    if (dataTransformerObservation.success) {
-                        entity.transformerObservation.push(dataTransformerObservation.data);
-                    }
 
                     const dataAttachmentTest = await getAttachmentByForeignIdAndType(workTask.mrid, 'test');
-                    if (dataAttachmentTest.success) {
+                    if(dataAttachmentTest.success) {
                         entity.attachmentTest.push(dataAttachmentTest.data);
                     }
 
                     const dataTestDataSet = await getTestDataSetByWorkTaskId(workTask.mrid)
-                    if (dataTestDataSet.success) {
+                    if(dataTestDataSet.success) {
                         entity.testDataSet = entity.testDataSet.concat(dataTestDataSet.data)
                     }
                 }
 
-                for (const observation of entity.transformerObservation) {
-                    if (observation.humidity) {
-                        const dataPercent = await getPercentById(observation.humidity);
-                        if (dataPercent.success) {
-                            entity.percent.push(dataPercent.data);
-                        }
-                    }
-
+                const mrids = entity.testDataSet.map(x => x.mrid);
+                const analogValue = await getAnalogValueByTestDataSetMrids(mrids);
+                if(analogValue.success) {
+                    entity.analogValues = analogValue.data;
                 }
 
-                for (const observation of entity.transformerObservation) {
-                    if (observation.ambient_temp) {
-                        const dataTemp = await getTemperatureById(observation.ambient_temp);
-                        if (dataTemp.success) {
-                            entity.temperature.push(dataTemp.data);
-                        }
-                    }
+                const stringMeasurementValue = await getStringMeasurementValueByTestDataSetMrids(mrids);
+                if(stringMeasurementValue.success) {
+                    entity.stringMeasurementValues = stringMeasurementValue.data;
                 }
 
-                for (const observation of entity.transformerObservation) {
-                    if (observation.reference_temp) {
-                        const dataTemp = await getTemperatureById(observation.reference_temp);
-                        if (dataTemp.success) {
-                            entity.temperature.push(dataTemp.data);
-                        }
-                    }
-                }
-
-                for (const observation of entity.transformerObservation) {
-                    if (observation.winding_temp) {
-                        const dataTemp = await getTemperatureById(observation.winding_temp);
-                        if (dataTemp.success) {
-                            entity.temperature.push(dataTemp.data);
-                        }
-                    }
-                }
-
-                for (const observation of entity.transformerObservation) {
-                    if (observation.top_oil_temp) {
-                        const dataTemp = await getTemperatureById(observation.top_oil_temp);
-                        if (dataTemp.success) {
-                            entity.temperature.push(dataTemp.data);
-                        }
-                    }
-                    if (observation.bottom_oil_temp) {
-                        const dataTemp = await getTemperatureById(observation.bottom_oil_temp);
-                        if (dataTemp.success) {
-                            entity.temperature.push(dataTemp.data);
-                        }
-                    }
+                const discreteValue = await getDiscreteValueByTestDataSetMrids(mrids);
+                if(discreteValue.success) {
+                    entity.discreteValues = discreteValue.data;
                 }
 
                 return {
                     success: true,
                     data: entity,
-                    message: 'Surge Arrester job entity retrieved successfully'
+                    message: 'Current Transformer job entity retrieved successfully'
                 }
             } else {
                 return { success: false, error: dataOldWork.error, message: 'Error retrieving old work data' };
             }
         }
     } catch (error) {
-        console.error('Error retrieving surge arrester job entity:', error);
-        return { success: false, error, message: 'Error retrieving surge arrester job entity' };
+        console.error('Error retrieving Current Transformer job entity:', error);
+        return { success: false, error, message: 'Error retrieving Current Transformer job entity' };
     }
 }
 
-export const deleteCurrentTransformerJobEntity = async (id) => {
+export const deleteCurrentTransformerJobEntity = async (entity) => {
+    try {
+        await runAsync('BEGIN TRANSACTION');
 
+        // 1. Xóa các giá trị đo lường chi tiết (Measurement Values)
+        if (entity.analogValues && entity.analogValues.length > 0) {
+            for (const item of entity.analogValues) {
+                await deleteAnalogValueByIdTransaction(item.mrid, db);
+            }
+        }
+        if (entity.stringMeasurementValues && entity.stringMeasurementValues.length > 0) {
+            for (const item of entity.stringMeasurementValues) {
+                await deleteStringMeasurementValueByIdTransaction(item.mrid, db);
+            }
+        }
+        if (entity.discreteValues && entity.discreteValues.length > 0) {
+            for (const item of entity.discreteValues) {
+                await deleteDiscreteValueByIdTransaction(item.mrid, db);
+            }
+        }
+
+        // 2. Xóa Test Data Sets
+        if (entity.testDataSet && entity.testDataSet.length > 0) {
+            for (const item of entity.testDataSet) {
+                await deleteTestDataSetByIdTransaction(item.mrid, db);
+            }
+        }
+
+        // 3. Xóa Quan hệ thiết bị kiểm tra (Test Type relation)
+        if (entity.currentTransformerTestingEquipmentTestType && entity.currentTransformerTestingEquipmentTestType.length > 0) {
+            for (const item of entity.currentTransformerTestingEquipmentTestType) {
+                await deleteCurrentTransformerTestingEquipmentTestTypeByIdTransaction(item.mrid, db);
+            }
+        }
+
+        // 4. Xóa Thiết bị kiểm tra (Testing Equipment)
+        if (entity.testingEquipment && entity.testingEquipment.length > 0) {
+            for (const item of entity.testingEquipment) {
+                await deleteTestingEquipmentByIdTransaction(item.mrid, db);
+            }
+        }
+
+        // 5. Xóa Work Tasks
+        if (entity.workTasks && entity.workTasks.length > 0) {
+            for (const item of entity.workTasks) {
+                await deleteWorkTaskByIdTransaction(item.mrid, db);
+            }
+        }
+
+        // 6. Xóa bản ghi Attachment trong Database
+        // Xóa Main Attachment
+        if (entity.attachment && entity.attachment.id) {
+            await deleteAttachmentByIdTransaction(entity.attachment.id, db);
+        }
+        // Xóa Attachment của từng WorkTask (Test Attachments)
+        if (entity.attachmentTest && entity.attachmentTest.length > 0) {
+            for (const attachment of entity.attachmentTest) {
+                if (attachment.id) {
+                    await deleteAttachmentByIdTransaction(attachment.id, db)
+                }
+            }
+        }
+
+        // 7. Xóa Job chính (OldWork)
+        if (entity.oldWork && entity.oldWork.mrid) {
+            await deleteOldWorkByIdTransaction(entity.oldWork.mrid, db);
+        }
+
+        await runAsync('COMMIT');
+
+        // 8. Xóa file vật lý sau khi Commit DB thành công (Tránh mất file nếu DB rollback)
+        // Xóa file Main Attachment
+        if (entity.attachment && entity.attachment.path) {
+            const pathData = JSON.parse(entity.attachment.path || '[]');
+            if (Array.isArray(pathData) && pathData.length > 0) {
+                syncFilesWithDeletion(pathData, null, entity.oldWork.mrid);
+            }
+        }
+        // Xóa file Test Attachments
+        if (entity.attachmentTest && entity.attachmentTest.length > 0) {
+            for (const attachment of entity.attachmentTest) {
+                if (attachment.path) {
+                    const pathData = JSON.parse(attachment.path || '[]');
+                    if (Array.isArray(pathData) && pathData.length > 0) {
+                        syncFilesWithDeletion(pathData, null, attachment.id_foreign);
+                    }
+                }
+            }
+        }
+
+        return { success: true, message: 'Current Transformer Job entity deleted successfully' };
+
+    } catch (error) {
+        await runAsync('ROLLBACK');
+        console.error('Delete Current Transformer Job Error:', error);
+        return { success: false, error, message: 'Error deleting Current Transformer Job entity' };
+    }
 }
 
 const runAsync = (sql, params = []) => {

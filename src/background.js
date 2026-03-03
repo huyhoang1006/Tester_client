@@ -3,16 +3,20 @@
 import {app, protocol, BrowserWindow, ipcMain, screen} from 'electron'
 import {createProtocol} from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, {VUEJS_DEVTOOLS} from 'electron-devtools-installer'
-import sqlite3 from 'sqlite3'
+import sqlite3 from '@journeyapps/sqlcipher'
 import * as updateModule from './update/index'
 import fs from 'fs'
 import path from 'path'
 import {v4 as newUuid} from 'uuid'
+import {spawn} from 'child_process'
+import readline from 'readline'
 // import {userFunc} from '@/function'
 // import {ipcUploadCustom} from '@/ipcmain'
 import {ipcCim, ipcEntity, ipcAppOption} from '@/ipcmain'
 let win
+let importerProcess = null
 
+const pendingRequests = new Map()
 const nameDB = 'database.db'
 const pathDB = path.join(__dirname, `/../database/${nameDB}`)
 const pathUpload = path.join(__dirname, `/../attachment`)
@@ -25,11 +29,63 @@ const isDevelopment = process.env.NODE_ENV !== 'development'
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: {secure: true, standard: true}}])
 
+function startPythonWorker() {
+    const isWin = process.platform === 'win32'
+    const exeName = isWin ? 'importer.exe' : 'importer'
+    const platformFolder = isWin ? 'importer_win' : 'importer_mac'
+
+    let exePath
+    if (app.isPackaged) {
+        // Khi build ra file cài đặt
+        exePath = path.join(process.resourcesPath, 'extra_binaries', 'importer', platformFolder, exeName)
+    } else {
+        // Khi đang code (npm run serve)
+        // Thường với vue-cli-electron-builder, __dirname sẽ trỏ vào dist_electron
+        exePath = path.join(process.cwd(), 'extra_binaries', 'importer', platformFolder, exeName)
+    }
+
+    if (!fs.existsSync(exePath)) {
+        console.error(`❌ KHÔNG TÌM THẤY FILE TẠI: ${exePath}`)
+        return // Dừng lại để app không bị crash (văng lỗi Uncaught Exception)
+    }
+
+    importerProcess = spawn(exePath)
+
+    const rl = readline.createInterface({
+        input: importerProcess.stdout,
+        terminal: false
+    })
+
+    rl.on('line', (line) => {
+        if (line === 'PYTHON_READY') {
+            console.log('💚 PYTHON ENGINE ĐÃ KHỞI ĐỘNG XONG VÀ SẴN SÀNG!')
+            return
+        }
+
+        try {
+            const response = JSON.parse(line)
+            if (response.id && pendingRequests.has(response.id)) {
+                const resolve = pendingRequests.get(response.id)
+                resolve(response)
+                pendingRequests.delete(response.id)
+            }
+        } catch (error) {
+            // Log nhưng không tính là lỗi fatal
+            console.log('🐍 Python Log:', line)
+        }
+    })
+
+    importerProcess.stderr.on('data', (data) => {
+        console.error(`[Python Log]: ${data.toString()}`)
+    })
+}
+
 function adjustWindowSize() {
     const primaryDisplay = screen.getPrimaryDisplay()
     const {width, height} = primaryDisplay.workAreaSize // Lấy kích thước mà không bao gồm taskbar
-
-    win.setBounds({x: 0, y: 0, width, height}) // Cập nhật kích thước cửa sổ
+    const safeWidth = Math.max(width, 640)
+    const safeHeight = Math.max(height, 480)
+    win.setBounds({x: 0, y: 0, safeWidth, safeHeight}) // Cập nhật kích thước cửa sổ
 }
 
 async function createWindow() {
@@ -38,6 +94,12 @@ async function createWindow() {
         show: false,
         frame: false,
         autoHideMenuBar: true,
+        // titleBarStyle: process.platform === 'darwin' ? 'hidden' : 'default',
+        // trafficLightPosition: {x: 12, y: 16},
+        width: 1200,
+        height: 800,
+        minWidth: 640,
+        minHeight: 480,
         webPreferences: {
             // Use pluginOptions.nodeIntegration, leave this alone
             // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
@@ -49,8 +111,8 @@ async function createWindow() {
         }
     })
 
-    // full screen
-    adjustWindowSize()
+    win.setMinimumSize(640, 480)
+    win.maximize()
     win.show()
 
     const sendWindowState = () => {
@@ -83,6 +145,13 @@ app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         db.close()
         app.quit()
+    }
+})
+
+app.on('will-quit', () => {
+    if (importerProcess) {
+        importerProcess.stdin.write('EXIT\n')
+        importerProcess.kill()
     }
 })
 
@@ -406,25 +475,25 @@ app.on('ready', async () => {
                 data: null
             }
         }
-    }),
-        ipcMain.handle('insertOnlineMonitoringData', async function (event, assetId, online_monitoring) {
-            try {
-                await insertOnlineMonitoringData(assetId, online_monitoring)
-                return {
-                    success: true,
-                    message: 'Success'
-                }
-            } catch (error) {
-                return {
-                    success: false,
-                    message: error
-                }
+    })
+    ipcMain.handle('insertOnlineMonitoringData', async function (event, assetId, online_monitoring) {
+        try {
+            await insertOnlineMonitoringData(assetId, online_monitoring)
+            return {
+                success: true,
+                message: 'Success'
             }
-        }),
-        ipcMain.handle('closeApp', () => {
-            db.close()
-            app.quit()
-        })
+        } catch (error) {
+            return {
+                success: false,
+                message: error
+            }
+        }
+    })
+    ipcMain.handle('closeApp', () => {
+        db.close()
+        app.quit()
+    })
 
     ipcMain.handle('minimizeApp', () => {
         win.minimize()
@@ -433,6 +502,26 @@ app.on('ready', async () => {
     ipcMain.handle('maximizeApp', () => {
         win.isMaximized() ? win.unmaximize() : win.maximize()
     })
+    ipcMain.handle('convert-files', async (event, filePaths, fileType) => {
+        const promises = filePaths.map((filePath) => {
+            return new Promise((resolve) => {
+                const reqId = newUuid() // UUID để track request
+                pendingRequests.set(reqId, resolve)
+
+                const payload = {
+                    id: reqId,
+                    type: fileType,
+                    path: filePath
+                }
+
+                // Gửi sang Python (Nhớ có \n)
+                importerProcess.stdin.write(JSON.stringify(payload) + '\n')
+            })
+        })
+        return await Promise.all(promises)
+    })
+
+    startPythonWorker()
 
     await createWindow()
 

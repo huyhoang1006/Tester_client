@@ -1,10 +1,16 @@
-import { userPreload } from '@/preload/index.js'
-import { importPreload } from '@/preload/index.js'
-import { entityPreload, cimPreload, uploadCustomPreload, appOptionPreload } from '@/preload/index.js'
+import {userPreload} from '@/preload/index.js'
+import {importPreload} from '@/preload/index.js'
+import {entityPreload, cimPreload, uploadCustomPreload, appOptionPreload} from '@/preload/index.js'
 
-const { contextBridge, ipcRenderer } = require('electron')
+const {contextBridge, ipcRenderer} = require('electron')
 const windowControlAPI = {
     onWindowStateChange: (callback) => ipcRenderer.on('window-state-change', (_event, value) => callback(value))
+}
+const fileConverterAPI = {
+    convertFiles: (filePaths, fileType) => ipcRenderer.invoke('convert-files', filePaths, fileType)
+}
+const systemInfoAPI = {
+    platform: process.platform
 }
 
 const appOptionAPI = appOptionPreload.appOptionPreload()
@@ -38,6 +44,15 @@ const surgeArresterAPI = cimPreload.SurgeArresterPreload.surgeArresterPreload()
 const productAssetModelAPI = cimPreload.productAssetModelPreload.productAssetModelPreload()
 const surgeArresterJobAPI = entityPreload.jobEntityPreload.surgeArresterJob.surgeArresterJobPreload()
 const powerCableJobAPI = entityPreload.jobEntityPreload.powerCableJob.powerCableJobPreload()
+const transformerJobAPI = entityPreload.jobEntityPreload.transformerJob.transformerJobPreload()
+const voltageTransformerJobAPI = entityPreload.jobEntityPreload.voltageTransformerJob.voltageTransformerJobPreload()
+const currentTransformerJobAPI = entityPreload.jobEntityPreload.currentTransformerJob.currentTransformerJobPreload()
+const bushingJobAPI = entityPreload.jobEntityPreload.bushingJob.bushingJobPreload()
+const disconnectorJobAPI = entityPreload.jobEntityPreload.disconnectorJob.disconnectorJobPreload()
+const rotatingMachineJobAPI = entityPreload.jobEntityPreload.rotatingMachineJob.rotatingMachineJobPreload()
+const capacitorJobAPI = entityPreload.jobEntityPreload.capacitorJob.capacitorJobPreload()
+const circuitBreakerJobAPI = entityPreload.jobEntityPreload.circuitBreakerJob.circuitBreakerJobPreload()
+const reactorJobAPI = entityPreload.jobEntityPreload.reactorJob.reactorJobPreload()
 const oldWorkAPI = cimPreload.oldWorkPreload.oldWorkPreload()
 const assetAPI = cimPreload.assetPreload.assetPreload()
 const analogAPI = cimPreload.analogPreload.analogPreload()
@@ -59,6 +74,15 @@ const assetPsrAPI = entityPreload.assetPsrPreload.assetPsrPreload()
 const procedureAPI = cimPreload.procedurePreload.procedurePreload()
 const licenseAPI = cimPreload.licensePreload.licensePreload()
 const notificationEntityAPI = entityPreload.notificationEntityPreload.notificationEntityPreload()
+
+// Version management API (Enterprise)
+const versionAPI = {
+    checkVersionUpdate: () => ipcRenderer.invoke('check-version-update'),
+    getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+    getSchemaVersion: () => ipcRenderer.invoke('get-schema-version'),
+    updateAppVersion: (version) => ipcRenderer.invoke('update-app-version', version),
+    onUpdateAvailable: (callback) => ipcRenderer.on('update-available', (_event, data) => callback(data))
+}
 
 const ipcMain = Object.assign(
     userAPI,
@@ -90,6 +114,15 @@ const ipcMain = Object.assign(
     productAssetModelAPI,
     surgeArresterJobAPI,
     powerCableJobAPI,
+    transformerJobAPI,
+    voltageTransformerJobAPI,
+    currentTransformerJobAPI,
+    bushingJobAPI,
+    disconnectorJobAPI,
+    rotatingMachineJobAPI,
+    capacitorJobAPI,
+    circuitBreakerJobAPI,
+    reactorJobAPI,
     oldWorkAPI,
     assetAPI,
     transformerEntityAPI,
@@ -113,6 +146,9 @@ const ipcMain = Object.assign(
     procedureAPI,
     windowControlAPI,
     licenseAPI,
-    notificationEntityAPI
+    notificationEntityAPI,
+    versionAPI,
+    fileConverterAPI,
+    systemInfoAPI
 )
 contextBridge.exposeInMainWorld('electronAPI', ipcMain)

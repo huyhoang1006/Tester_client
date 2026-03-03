@@ -1,7 +1,7 @@
 import db from "@/function/datacontext/index";
 import { backupAllFilesInDir, syncFilesWithDeletion, restoreFiles, deleteBackupFiles } from "@/function/entity/attachment";
 import { insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction } from "@/function/cim/productAssetModel";
-import { insertOldCurrentTransformerInfoTransaction, getOldCurrentTransformerInfoById, deleteOldCurrentTransformerInfoByIdTransaction } from "@/function/cim/oldCurrentTransformerInfo";
+import { insertOldCurrentTransformerInfoTransaction, getOldCurrentTransformerInfoById } from "@/function/cim/oldCurrentTransformerInfo";
 import { insertVoltageTransaction, getVoltageById, deleteVoltageByIdTransaction } from "@/function/cim/voltage";
 import { insertCurrentFlowTransaction, getCurrentFlowById, deleteCurrentFlowByIdTransaction } from "@/function/cim/currentFlow";
 import { insertSecondsTransaction, getSecondById, deleteSecondsByIdTransaction } from "@/function/cim/seconds";
@@ -13,7 +13,7 @@ import { insertTemperatureTransaction, getTemperatureById, deleteTemperatureById
 import { insertCtCoreInfoTransaction, deleteCtCoreInfoByCurrentTransformerInfoIdTransaction, getCtCoreInfoByCurrentTransformerInfoId } from "@/function/cim/ctCoreInfo";
 import { insertCtTapInfoTransaction, deleteCtTapInfoByCtCoreInfoIdTransaction, getCtTapInfoByCtCoreInfoId } from "@/function/cim/ctTapInfo";
 import { insertAssetTransaction, getAssetById, deleteAssetByIdTransaction } from "@/function/cim/asset";
-import { insertAssetPsrTransaction, getAssetPsrById, deleteAssetPsrByIdTransaction, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from "@/function/entity/assetPsr";
+import { insertAssetPsrTransaction, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from "@/function/entity/assetPsr";
 import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction } from "@/function/cim/lifecycleDate";
 import CurrentTransformerEntity from "@/views/Flatten/CurrentTransformer";
 import { getAssetInfoById, insertAssetInfoTransaction, deleteAssetInfoByIdTransaction } from "@/function/cim/assetInfo";
@@ -57,7 +57,6 @@ export const insertCurrentTransformerEntity = async (old_entity, entity) => {
         for (const voltage of toUpdateVoltage) {
             await insertVoltageTransaction(voltage, db);
         }
-        console.log('voltage')
         //currentFlow
         const newCurrentFlowIds = (entity.currentFlow || []).map(c => c.mrid).filter(id => id);
         const oldCurrentFlowIds = (old_entity.currentFlow || []).map(c => c.mrid).filter(id => id);
@@ -70,7 +69,6 @@ export const insertCurrentTransformerEntity = async (old_entity, entity) => {
         for (const currentFlow of toUpdateCurrentFlow) {
             await insertCurrentFlowTransaction(currentFlow, db);
         }
-        console.log('currentFlow')
         //seconds
         const newSecondsIds = (entity.seconds || []).map(s => s.mrid).filter(id => id);
         const oldSecondsIds = (old_entity.seconds || []).map(s => s.mrid).filter(id => id);
@@ -83,7 +81,6 @@ export const insertCurrentTransformerEntity = async (old_entity, entity) => {
         for (const seconds of toUpdateSeconds) {
             await insertSecondsTransaction(seconds, db);
         }
-        console.log('seconds')
         //frequency
         const newFrequencyIds = (entity.frequency || []).map(f => f.mrid).filter(id => id);
         const oldFrequencyIds = (old_entity.frequency || []).map(f => f.mrid).filter(id => id);
@@ -96,7 +93,6 @@ export const insertCurrentTransformerEntity = async (old_entity, entity) => {
         for (const frequency of toUpdateFrequency) {
             await insertFrequencyTransaction(frequency, db);
         }
-        console.log('frequency')
         //resistance
         const newResistanceIds = (entity.resistance || []).map(r => r.mrid).filter(id => id);
         const oldResistanceIds = (old_entity.resistance || []).map(r => r.mrid).filter(id => id);
@@ -109,7 +105,6 @@ export const insertCurrentTransformerEntity = async (old_entity, entity) => {
         for (const resistance of toUpdateResistance) {
             await insertResistanceTransaction(resistance, db);
         }
-        console.log('resistance')
         //percent
         const newPercentIds = (entity.percent || []).map(p => p.mrid).filter(id => id);
         const oldPercentIds = (old_entity.percent || []).map(p => p.mrid).filter(id => id);
@@ -122,7 +117,6 @@ export const insertCurrentTransformerEntity = async (old_entity, entity) => {
         for (const percent of toUpdatePercent) {
             await insertPercentTransaction(percent, db);
         }
-        console.log('percent')
         //apparentPower 
         const newApparentPowerIds = (entity.apparentPower || []).map(a => a.mrid).filter(id => id);
         const oldApparentPowerIds = (old_entity.apparentPower || []).map(a => a.mrid).filter(id => id);
@@ -135,7 +129,6 @@ export const insertCurrentTransformerEntity = async (old_entity, entity) => {
         for (const apparentPower of toUpdateApparentPower) {
             await insertApparentPowerTransaction(apparentPower, db);
         }
-        console.log('apparentPower')
         //temperature
         const newTemperatureIds = (entity.temperature || []).map(t => t.mrid).filter(id => id);
         const oldTemperatureIds = (old_entity.temperature || []).map(t => t.mrid).filter(id => id);
@@ -148,19 +141,14 @@ export const insertCurrentTransformerEntity = async (old_entity, entity) => {
         for (const temperature of toUpdateTemperature) {
             await insertTemperatureTransaction(temperature, db);
         }
-        console.log('temperature')
-
         //productAssetModel
         const productAssetModelResult = await insertProductAssetModelTransaction(entity.productAssetModel, db);
-        console.log("product assetmodel inserted successfully")
 
         //assetInfo
         await insertAssetInfoTransaction(entity.assetInfo, db);
-        console.log("asset info inserted successfully")
 
         //oldCurrentTransformerInfo
         await insertOldCurrentTransformerInfoTransaction(entity.oldCurrentTransformerInfo, db);
-        console.log("old current transformer info inserted successfully")
 
         // Sửa lỗi logic xóa
         if (old_entity.CtCoreInfo && old_entity.CtCoreInfo.length > 0) {
@@ -177,17 +165,13 @@ export const insertCurrentTransformerEntity = async (old_entity, entity) => {
                 await deleteCtCoreInfoByCurrentTransformerInfoIdTransaction(currentTransformerInfoId, db);
             }
         }
-        console.log("old ct core info deleted successfully")
 
         //CtCoreInfo
-        console.log("ct core info : ", entity.CtCoreInfo)
         for (const ctCoreInfo of entity.CtCoreInfo) {
             await insertCtCoreInfoTransaction(ctCoreInfo, db);
         }
-        console.log("ct core info inserted successfully")
 
         //CtTapInfo
-        console.log("ct tap info : ", entity.CtTapInfo)
         for (const ctTapInfo of entity.CtTapInfo) {
             await insertCtTapInfoTransaction(ctTapInfo, db);
         }
@@ -365,13 +349,11 @@ export const getCurrentTransformerEntityById = async (id, psrId) => {
 
 export const deleteCurrentTransformerEntity = async (data) => {
     try {
-        console.log('Delete current transformer entity in function')
         if (data.oldCurrentTransformerInfo == null || data.oldCurrentTransformerInfo.mrid == null || data.oldCurrentTransformerInfo.mrid === '') {
             return { success: false, error: new Error('Invalid ID') };
         } else {
             try {
                 await runAsync('BEGIN TRANSACTION');
-                console.log('1')
                 if (data.attachment && data.attachment.id) {
                     const pathData = JSON.parse(data.attachment.path || '[]')
                     if (Array.isArray(pathData) && pathData.length > 0) {
@@ -400,74 +382,61 @@ export const deleteCurrentTransformerEntity = async (data) => {
 
                 // 5. Xóa Asset. Hàm này sẽ xóa IdentifiedObject, và CSDL sẽ tự động xóa bản ghi trong bảng 'asset' do có ràng buộc khóa ngoại.
                 await deleteAssetByIdTransaction(data.asset.mrid, db);
-                console.log('5')
                 // 6. Xóa AssetInfo. Thao tác này sẽ tự động xóa (cascade) các bản ghi trong 'current_transformer_info' và 'old_current_transformer_info'
                 // do đã thiết lập 'ON DELETE CASCADE' trong schema CSDL.
                 if (data.assetInfo && data.assetInfo.mrid) {
                     await deleteAssetInfoByIdTransaction(data.assetInfo.mrid, db);
                 }
-                console.log('6')
                 // 7. Xóa các đối tượng CIM liên quan khác
                 if (data.productAssetModel && data.productAssetModel.mrid) {
                     await deleteProductAssetModelByIdTransaction(data.productAssetModel.mrid, db);
                 }
-                console.log('7')
                 if (data.lifecycleDate && data.lifecycleDate.mrid) {
                     await deleteLifecycleDateByIdTransaction(data.lifecycleDate.mrid, db);
                 }
-                console.log('8')
                 for (const voltage of data.voltage) {
                     if (voltage.mrid) {
                         await deleteVoltageByIdTransaction(voltage.mrid, db);
                     }
                 }
-                console.log('9')
                 for (const currentFlow of data.currentFlow) {
                     if (currentFlow.mrid) {
                         await deleteCurrentFlowByIdTransaction(currentFlow.mrid, db);
                     }
                 }
-                console.log('10')
                 for (const seconds of data.seconds) {
                     if (seconds.mrid) {
                         await deleteSecondsByIdTransaction(seconds.mrid, db);
                     }
                 }
-                console.log('11')
                 for (const frequency of data.frequency) {
                     if (frequency.mrid) {
                         await deleteFrequencyByIdTransaction(frequency.mrid, db);
                     }
                 }
-                console.log('12')
                 for (const resistance of data.resistance) {
                     if (resistance.mrid) {
                         await deleteResistanceByIdTransaction(resistance.mrid, db);
                     }
                 }
-                console.log('13')
                 for (const percent of data.percent) {
                     if (percent.mrid) {
                         await deletePercentByIdTransaction(percent.mrid, db);
                     }
                 }
-                console.log('14')
                 for (const apparentPower of data.apparentPower) {
                     if (apparentPower.mrid) {
                         await deleteApparentPowerByIdTransaction(apparentPower.mrid, db);
                     }
                 }
-                console.log('15')
                 for (const temperature of data.temperature) {
                     if (temperature.mrid) {
                         await deleteTemperatureByIdTransaction(temperature.mrid, db);
                     }
                 }
-                console.log('16')
 
                 // 8. Commit transaction để lưu tất cả thay đổi
                 await runAsync('COMMIT');
-                console.log('17')
                 return { success: true, message: 'Current Transformer entity deleted successfully' };
 
             } catch (error) {

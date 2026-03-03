@@ -7,6 +7,7 @@
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "electron:build": "vue-cli-service electron:build",
+    "electron:build-mac": "vue-cli-service electron:build --mac",
     "electron:serve": "vue-cli-service electron:serve",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps"
@@ -30,6 +31,7 @@
     "puppeteer": "^14.0.0",
     "qs": "^6.14.0",
     "require-context": "^1.1.0",
+    "semver": "^7.7.4",
     "sqlite3": "^5.0.8",
     "uuid": "^8.3.2",
     "vue": "^2.6.14",
@@ -52,6 +54,7 @@
     "electron": "^13.0.0",
     "electron-builder": "^23.0.3",
     "electron-devtools-installer": "^3.1.0",
+    "electron-rebuild": "^3.2.9",
     "eslint": "^7.32.0",
     "eslint-plugin-vue": "^8.0.3",
     "node-sass": "^7.0.1",

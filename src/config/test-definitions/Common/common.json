@@ -21,6 +21,13 @@
       "unit": "m|s"
     },
     {
+      "mrid": "c92fh65g-a311-4827-f012-5357a7b8c92e",
+      "code": "open_close_time",
+      "name": "Open-Close time",
+      "type": "analog",
+      "unit": "m|s"
+    },
+    {
       "mrid": "7213c077-fd8a-4f12-888c-1263570aa8d6",
       "code": "r_meas",
       "name": "R meas",
@@ -88,6 +95,13 @@
       "name": "△C cal",
       "type": "analog",
       "unit": "%"
+    },
+    {
+      "mrid": "dcddcd9a-ff10-40b0-8baa-70962f587cbe",
+      "code": "df_change",
+      "name": "DF change",
+      "type": "analog",
+      "unit": ""
     },
     {
       "mrid": "126fc51c-a0b5-470b-9017-47e56131cc56",

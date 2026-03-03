@@ -10,6 +10,9 @@ import ValueAliasSet from '@/views/Cim/ValueAliasSet'
 import Procedure from '@/views/Cim/Procedure'
 import MeasurementProcedure from '@/views/Cim/MeasurementProcedure'
 import * as surgeArresterProcedureFunc from './surgeArrester/index'
+import * as voltageTransformerProcedureFunc from './voltageTransformer/index'
+import * as circuitBreakerProcedureFunc from './circuitBreaker/index'
+import * as currentTransformerProcedureFunc from './currentTransformer/index'
 
 export const updateProcedure = async (dbsql) => {
     console.log(procedureDataMap['Capacitor'])
@@ -19,6 +22,12 @@ export const createProcedure = async (dbsql) => {
     try {
         await runAsync('BEGIN TRANSACTION', dbsql);
         await surgeArresterProcedureFunc.createProcedureSurgeArrester(dbsql, procedureDataMap, testDataMap, testConditionMap,
+            getProcedureInfo, getTestDefinitionInfo, getTestConditionInfo)
+        await voltageTransformerProcedureFunc.createProcedureVoltageTransformer(dbsql, procedureDataMap, testDataMap, testConditionMap,
+            getProcedureInfo, getTestDefinitionInfo, getTestConditionInfo)
+        await circuitBreakerProcedureFunc.createProcedureCircuitBreaker(dbsql, procedureDataMap, testDataMap, testConditionMap,
+            getProcedureInfo, getTestDefinitionInfo, getTestConditionInfo)
+        await currentTransformerProcedureFunc.createProcedureCurrentTransformer(dbsql, procedureDataMap, testDataMap, testConditionMap,
             getProcedureInfo, getTestDefinitionInfo, getTestConditionInfo)
         await runAsync('COMMIT', dbsql);
     } catch (err) {

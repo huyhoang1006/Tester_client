@@ -207,18 +207,18 @@ methods: {
         const assetTypes = ['Circuit breaker', 'Current transformer', 'Voltage transformer', 'Power cable', 'Disconnector', 'Transformer', 'Surge Arrester', 'Reactor', 'Bushing', 'Rotating machine', 'Capacitor', 'Breaker'];
         
         const promises = [
-             window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Circuit breaker'),
-             window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Current transformer'),
-             window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Voltage transformer'),
-             window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Power cable'),
-             window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Disconnector'),
-             window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Transformer'),
-             window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Surge Arrester'), 
-             window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Reactor'),
-             window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Bushing'),
-              window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Rotating machine'),
-              window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Capacitor'),
-              window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Breaker')
+            window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Circuit breaker'),
+            window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Current transformer'),
+            window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Voltage transformer'),
+            window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Power cable'),
+            window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Disconnector'),
+            window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Transformer'),
+            window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Surge Arrester'), 
+            window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Reactor'),
+            window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Bushing'),
+            window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Rotating machine'),
+            window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Capacitor'),
+            window.electronAPI.getAssetByPsrIdAndKind(bayId, 'Breaker')
         ];
 
         const results = await Promise.all(promises);

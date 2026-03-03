@@ -19,11 +19,9 @@ export default {
                 if (this.voltageTransformer.properties.serial_no !== null && this.voltageTransformer.properties.serial_no !== '') {
                     const data = JSON.parse(JSON.stringify(this.voltageTransformer))
                     const result = await this.checkVoltageTransformerData(data)
-                    console.log('result: ', result)
                     const oldResult = JSON.parse(JSON.stringify(this.old_data))
                     const oldEntity = voltageTransformerMapping.mapDtoToEntity(oldResult)
                     const entity = voltageTransformerMapping.mapDtoToEntity(result)
-                    console.log('entity: ', entity)
                     let rs = await window.electronAPI.insertVoltageTransformerEntity(oldEntity, entity)
                     if (rs.success) {
                         return {
@@ -38,7 +36,6 @@ export default {
                         };
                     }
                 } else {
-                    console.log('Serial number is required')
                     this.$message.error("Serial number is required");
                     return {
                         success: false,
@@ -54,15 +51,10 @@ export default {
             }
         },
         async saveCtrS() {
-            console.log('[VOLTAGE_TRANSFORMER] saveCtrS called')
             const data = await this.saveAsset()
-            console.log('[VOLTAGE_TRANSFORMER] saveAsset result:', data)
             if (data.success) {
                 this.$message.success("Asset saved successfully")
-                
-                console.log('[VOLTAGE_TRANSFORMER] Emitting reload event with saved data')
                 this.$emit('reload', { savedData: this.voltageTransformer })
-                console.log('[VOLTAGE_TRANSFORMER] Reload event emitted')
             } else {
                 this.$message.error("Failed to save asset")
             }
@@ -72,7 +64,7 @@ export default {
             this.old_data = JSON.parse(JSON.stringify(data));
             const cloned = JSON.parse(JSON.stringify(data));
             if (cloned.vt_Configuration) {
-                console.log('cloned.vt_Configuration: ', cloned.vt_Configuration)
+                console.log('cloned: ', cloned)
             }
             this.voltageTransformer = cloned;
             if (data.attachment && data.attachment.path) {

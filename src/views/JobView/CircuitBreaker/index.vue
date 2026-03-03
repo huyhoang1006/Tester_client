@@ -1,7 +1,7 @@
 <template>
     <div id="job">
         <el-row :gutter="20" style="padding: 0">
-            <el-tabs type="card" >
+            <el-tabs type="card">
                 <!-- Overview -->
                 <el-tab-pane style="width: 100%;">
                     <span slot="label"><i class="fa-solid fa-book"></i> Overview</span>
@@ -10,40 +10,38 @@
 
                 <!-- Select test -->
                 <el-tab-pane>
-                    <span slot="label"><i class="fa-solid fa-list-check"></i> Select test</span>
+                    <span slot="label"><i class="fa-solid fa-list-check"></i> Test settings</span>
                     <select-test style="width: 100%;"
-                        :data="circuitBreakerJobDto.testList" 
-                        :assetData="assetData" 
+                        :data="circuitBreakerJobDto.testList"
                         :testTypeListData="testTypeListData"
+                        :assetData="assetData"
                         :obj-active-name="objActiveName"
-                        :attachmentArr.sync="attachmentArr"
-                        :testconditionArr.sync="testconditionArr"
                         ></select-test>
                 </el-tab-pane>
 
                 <el-tab-pane>
                     <span slot="label"><i class="fa-solid fa-list-check"></i> Testing equipment</span>
                     <div>
-                        <testingequipment :data="circuitBreakerJobDto.testingEquipmentData" :testTypeListData="testTypeListData"></testingequipment>
+                        <testing-equipment :data="circuitBreakerJobDto.testingEquipmentData" :testTypeListData="testTypeListData"></testing-equipment>
                     </div>
                 </el-tab-pane>
 
                 <!-- Tests -->
                 <el-tab-pane>
-                    <span slot="label"><i class="fa-solid fa-calculator"></i> Tests</span>
+                    <span slot="label"><i class="fa-solid fa-calculator"></i> Test data</span>
                     <div id="tests" style="width: 100%;">
                         <el-tabs v-model="objActiveName.activeName" type="card" class="w-100 h-100">
-                            <el-tab-pane v-for="(item, index) in circuitBreakerJobDto.testList" :key="index" :label="item.name" :name="item.tabId">
+                            <el-tab-pane v-for="(item, index) in circuitBreakerJobDto.testList" :key="index" :label="item.name" :name="item.name + index">
                                 <test-information
-                                title="Test"
-                                :testCondition.sync="testconditionArr[index]"
-                                :attachment.sync="attachmentArr[index]"
-                                >
+                                    :title="item.name"
+                                    :data="item.testCondition"
+                                    :assetData="assetData"
+                                    :attachment="item.testCondition.attachmentData">
                                 </test-information>
                                 <component
                                     :is="item.testTypeCode" 
                                     :data="item.data" 
-                                    :asset="assetData" 
+                                    :asset="assetData"
                                     >
                                 </component>
                             </el-tab-pane>
@@ -57,43 +55,42 @@
 
 <script>
 /* eslint-disable */
-import SelectTest from './componentCircuits/SelectTest'
-import Overview from './componentCircuits/Overview'
+import mixin from './mixin'
+import overview from './components/Overview/index.vue'
+import SelectTest from './components/SelectTest'
+import testInformation from '@/views/Common/testInformation.vue'
+import testingEquipment from './components/TestingEquipment/index.vue'
 
 //circuit breaker
-import motorCurrent from './componentCircuits/MotorCurrent.vue'
-import oTiming from './componentCircuits/OTiming.vue'
-import cTiming from './componentCircuits/CTiming.vue'
-import ocTiming from './componentCircuits/OCTiming.vue'
-import coTiming from './componentCircuits/COTiming.vue'
-import ocoTiming from './componentCircuits/O-COTiming.vue'
-import cocoTiming from './componentCircuits/CO-COTiming.vue'
-import ococoTiming from './componentCircuits/O-CO-COTiming.vue'
-import contactResistance from './componentCircuits/ContactResistance.vue'
-import minimumPickup from './componentCircuits/MinimumPickup.vue'
-import dcWindingTripCoil from './componentCircuits/DCWindingTrip.vue'
-import dcWindingCloseCoil from './componentCircuits/DCWindingClose.vue'
-import dcWindingMotor from './componentCircuits/DCWindingMotor.vue'
-import insulationResistanceCircuit from './componentCircuits/InsulationResistanceCircuit.vue'
-import insulationResistanceTripCoil from './componentCircuits/InsulationResistanceTripCoil.vue'
-import insulationResistanceCloseCoil from './componentCircuits/InsulationResistanceCloseCoil.vue'
-import insulationResistanceMotor from './componentCircuits/InsulationResistanceMotor.vue'
-import sf6MoiturePurity from './componentCircuits/SF6MoiturePurity.vue'
-import sf6GasAnalysis from './componentCircuits/SF6GasAnalysis.vue'
-import pressureGauge from './componentCircuits/PressureGauge.vue'
-import mixin from './mixin'
-import Mixtestcondition from './mixin/Mixtestcondition'
-import testInformation from '@/views/Common/testInformation.vue'
-import OverCurrentRelease from './componentCircuits/OverCurrentRelease.vue'
-import underVoltageRelease from './componentCircuits/UnderVolRelease.vue'
-import inspection from './componentCircuits/Inspection.vue'
-import testingequipment from './componentCircuits/TestingEquipment/index.vue'
+import motorCurrent from './components/MotorCurrent.vue'
+import oTiming from './components/OTiming.vue'
+import cTiming from './components/CTiming.vue'
+import ocTiming from './components/OCTiming.vue'
+import coTiming from './components/COTiming.vue'
+import ocoTiming from './components/O-COTiming.vue'
+import cocoTiming from './components/CO-COTiming.vue'
+import ococoTiming from './components/O-CO-COTiming.vue'
+import ContactResistance from './components/ContactResistance.vue'
+import minimumPickup from './components/MinimumPickup.vue'
+import dcWindingTripCoil from './components/DCWindingTrip.vue'
+import dcWindingCloseCoil from './components/DCWindingClose.vue'
+import dcWindingMotor from './components/DCWindingMotor.vue'
+import insulationResistanceCircuit from './components/InsulationResistanceCircuit.vue'
+import insulationResistanceTripCoil from './components/InsulationResistanceTripCoil.vue'
+import insulationResistanceCloseCoil from './components/InsulationResistanceCloseCoil.vue'
+import insulationResistanceMotor from './components/InsulationResistanceMotor.vue'
+import sf6MoiturePurity from './components/SF6MoiturePurity.vue'
+import sf6GasAnalysis from './components/SF6GasAnalysis.vue'
+import pressureGauge from './components/PressureGauge.vue'
+import OverCurrentRelease from './components/OverCurrentRelease.vue'
+import underVoltageRelease from './components/UnderVolRelease.vue'
+import inspection from './components/Inspection.vue'
 
 export default {
     name: 'JobViewCircuitBreaker',
     components: {
         SelectTest,
-        Overview,
+        overview,
         motorCurrent,
         cTiming,
         oTiming,
@@ -102,7 +99,7 @@ export default {
         ocoTiming,
         cocoTiming,
         ococoTiming,
-        contactResistance,
+        ContactResistance,
         minimumPickup,
         dcWindingTripCoil,
         dcWindingCloseCoil,
@@ -118,7 +115,7 @@ export default {
         OverCurrentRelease,
         underVoltageRelease,
         inspection,
-        testingequipment
+        testingEquipment
     },
     props: {
         locationData: {
@@ -142,7 +139,7 @@ export default {
             default: () => []
         }
     },
-    mixins: [mixin, Mixtestcondition],
+    mixins: [mixin],
     data() {
         return {
             objActiveName: {
