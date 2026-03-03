@@ -1,7 +1,7 @@
 import uuid from "@/utils/uuid";
 import * as circuitBreakerJobMapping from "@/views/Mapping/CircuitBreakerJob/index"
 import CircuitBreakerJobDto from "@/views/Dto/Job/CircuitBreaker/index";
-import mixins from '@/views/JobView/CircuitBreaker/componentCircuits/SelectTest/mixin'
+import mixins from '@/views/JobView/CircuitBreaker/components/SelectTest/mixin'
 import MeasurementProcedure from "@/views/Cim/MeasurementProcedure";
 
 export default {
@@ -15,10 +15,10 @@ export default {
     methods: {
         async saveJob() {
             try {
-                if (!this.surgeArresterJobDto.properties.name || this.surgeArresterJobDto.properties.name === '') {
+                if (!this.circuitBreakerJobDto.properties.name || this.circuitBreakerJobDto.properties.name === '') {
                     this.$message.error('Name is required');
                 } else {
-                    const dto = JSON.parse(JSON.stringify(this.surgeArresterJobDto));
+                    const dto = JSON.parse(JSON.stringify(this.circuitBreakerJobDto));
                     const resultDto = await this.checkJob(dto);
                     const entity = circuitBreakerJobMapping.jobDtoToEntity(resultDto);
                     console.log('Entity to save:', entity);
@@ -70,8 +70,8 @@ export default {
                     test.data.row_data = initTest.row_data;
                 }
             }
-            this.surgeArresterJobDto = data
-            this.surgeArresterJobDtoOld = JSON.parse(JSON.stringify(data));
+            this.circuitBreakerJobDto = data
+            this.circuitBreakerJobDtoOld = JSON.parse(JSON.stringify(data));
         },
 
         async checkJob(data) {
@@ -115,7 +115,7 @@ export default {
                     item.mrid = uuid.newUuid();
                     item.work_id = data.properties.mrid;
                 }
-                for (const test_type_id of item.test_type_surge_arrester_id) {
+                for (const test_type_id of item.test_circuit_breaker_id) {
                     arr.push({
                         mrid: uuid.newUuid(),
                         testing_equipment_id: item.mrid,
@@ -124,20 +124,18 @@ export default {
                 }
             }
 
-            // Thêm các phần tử mới vào data.surgeArresterTestingEquipmentTestType nếu chưa có
             for (const current of arr) {
-                const existed = data.surgeArresterTestingEquipmentTestType.some(
+                const existed = data.circuitBreakerTestingEquipmentTestType.some(
                     old =>
                         old.testing_equipment_id === current.testing_equipment_id &&
                         old.test_type_id === current.test_type_id
                 );
                 if (!existed) {
-                    data.surgeArresterTestingEquipmentTestType.push(current);
+                    data.circuitBreakerTestingEquipmentTestType.push(current);
                 }
             }
 
-            // Xóa các phần tử quá khứ không còn trong hiện tại
-            data.surgeArresterTestingEquipmentTestType = data.surgeArresterTestingEquipmentTestType.filter(
+            data.circuitBreakerTestingEquipmentTestType = data.circuitBreakerTestingEquipmentTestType.filter(
                 old => arr.some(
                     current =>
                         old.testing_equipment_id === current.testing_equipment_id &&
