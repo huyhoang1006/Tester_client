@@ -1,7 +1,5 @@
 'use strict'
 
-'use strict'
-
 // 1. ĐỔI IMPORT: Dùng thư viện sqlcipher thay vì sqlite3
 import sqlite3 from '@journeyapps/sqlcipher'
 import path from 'path'
@@ -52,7 +50,5 @@ db.serialize(() => {
   // Sau khi giải mã thành công, thiết lập các PRAGMA khác như bình thường
   db.run('PRAGMA foreign_keys=ON');
 })
-
-export default db
 
 export default db
