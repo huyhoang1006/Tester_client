@@ -28,8 +28,8 @@
                 <tr>
                     <th>No.</th>
                     <th>Measurement</th>
-                    <th>Test voltage (V)</th>
-                    <th>R<sub>60s</sub> (MΩ)</th>
+                    <th>Test voltage (kV)</th>
+                    <th>R<sub>60s</sub> (mΩ)</th>
                     <th class="assessment-col">Assessment</th>
                     <th class="condition-indicator-col">Condition indicator</th>
                     <th @click="add()" class="action-col"><i class="fa-solid fa-plus pointer"></i></th>
@@ -37,8 +37,7 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testData.table">
-                    <tr :key="index">
+                <tr v-for="(item, index) in testData.table" :key="index">
                         <td>
                            {{ index + 1 }}
                         </td>
@@ -49,7 +48,7 @@
                             </div>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.v_test.value"></el-input>
+                            <el-input size="mini" type="text" v-model="item.test_voltage.value"></el-input>
                         </td>
                         <td>
                             <el-input size="mini" type="text" v-model="item.r60s.value"></el-input>
@@ -76,8 +75,7 @@
                                 <i class="fas fa-trash"></i>
                             </el-button>
                         </td>
-                    </tr>
-                </template>
+                </tr>
             </tbody>
         </table>
 
@@ -92,6 +90,9 @@
 </template>
 
 <script>
+import currentTransformerTestMap from '@/config/test-definitions/CurrentTransformer'
+import * as common from '../../Common/index'
+
 export default {
     name :"InsulationResistance",
     data() {
@@ -117,44 +118,17 @@ export default {
         assetData() {
             return this.asset
         },
+        rowData() {
+            return common.buildEmptyTestRow(currentTransformerTestMap['InsulationResistance'].columns)
+        }
     },
     watch: {
     },
     methods: {
         add() {
-            this.testData.table.push({
-                mrid : "",
-                measurement : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                v_test : {
-                    mrid : "",
-                    value : "",
-                    unit : "V",
-                    type : "analog"
-                },
-                r60s : {
-                    mrid : "",
-                    value : "",
-                    unit : "M|Ω",
-                    type : "analog"
-                },
-                assessment : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                },
-                condition_indicator : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                }
-            })
+            this.testData.table.push(
+                JSON.parse(JSON.stringify(this.rowData))
+            )
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
@@ -171,39 +145,7 @@ export default {
             this.testData.table.splice(index, 1)
         },
         addTest(index) {
-            const data = {
-                mrid : "",
-                measurement : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                v_test : {
-                    mrid : "",
-                    value : "",
-                    unit : "V",
-                    type : "analog"
-                },
-                r60s : {
-                    mrid : "",
-                    value : "",
-                    unit : "M|Ω",
-                    type : "analog"
-                },
-                assessment : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                },
-                condition_indicator : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                }
-            }
+            const data = JSON.parse(JSON.stringify(this.rowData))
             this.testData.table.splice(index+1, 0, data)
         },
         calculator() {
@@ -211,12 +153,13 @@ export default {
         },
 
         clear() {
-            this.testData.table.forEach((element) => {
-                element.measurement = "",
-                element.test_voltage = '',
-                element.r60s = '',
-                element.assessment = '',
-                element.condition_indicator = ''
+            this.testData.table.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (key === "mrid") return;
+                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                        row[key].value = ""
+                    }
+                })
             })
         },
         nameColor(data) {

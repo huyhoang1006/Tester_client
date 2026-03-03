@@ -1,9 +1,8 @@
+/* eslint-disable */
 import uuid from "@/utils/uuid";
 import * as currentTransformerJobMapping from "@/views/Mapping/CurrentTransformerJob/index"
 import CurrentTransformerJobDto from "@/views/Dto/Job/CurrentTransformer/index";
 import mixins from '../components/SelectTest/mixin'
-import MeasurementProcedure from "@/views/Cim/MeasurementProcedure";
-
 
 export default {
     mixins: [mixins],
@@ -13,49 +12,53 @@ export default {
             currentTransformerJobDtoOld: new CurrentTransformerJobDto()
         }
     },
-
     methods: {
         async saveJob() {
-            try {
+            try { 
                 if (!this.currentTransformerJobDto.properties.name || this.currentTransformerJobDto.properties.name === '') {
+                    
                     this.$message.error('Name is required');
+                    return {
+                        success: false,
+                        message: 'Name is required'
+                    };
                 } else {
-                    const dto = JSON.parse(JSON.stringify(this.currentTransformerJobDto));
+                    const dto = JSON.parse(JSON.stringify(this.currentTransformerJobDto));      
                     const resultDto = await this.checkJob(dto);
                     const entity = currentTransformerJobMapping.jobDtoToEntity(resultDto);
-                    console.log('Entity to save:', entity);
                     const old_entity = currentTransformerJobMapping.jobDtoToEntity(this.currentTransformerJobDtoOld);
-                    const rs = await window.electronAPI.insertCurrentTransformerJob(old_entity, entity)
+                    const rs = await window.electronAPI.insertCurrentTransformerJob(old_entity, entity);
+            
                     if (rs.success) {
+                        
                         return {
                             success: true,
                             data: rs.data,
                             message: 'Job saved successfully'
                         }
                     } else {
+                       
                         return {
                             success: false,
-                            data: rs.data,
-                            message: 'Failed to save job'
+                            message: rs.message || 'Failed to save job'
                         }
                     }
                 }
             } catch (error) {
-                console.error('Error saving job:', error);
+                
                 return {
                     success: false,
                     data: null,
-                    message: 'Failed to save job'
+                    message: 'Failed to save job: ' + error.message
                 }
             }
         },
 
         async saveCtrS() {
-            const result = await this.saveJob()
+            const result = await this.saveJob()        
             if (result.success) {
-                const dto = currentTransformerJobMapping.JobEntityToDto(result.data);
-                this.loadData(dto);
-                this.$message.success(result.message);
+            const dto = currentTransformerJobMapping.JobEntityToDto(result.data);
+            this.loadData(dto);
             } else {
                 this.$message.error(result.message);
             }
@@ -66,14 +69,15 @@ export default {
         },
 
         async loadData(data) {
-            for (const test of data.testList) {
-                if (test.data.row_data.length == 0) {
-                    const initTest = await this.initTest(test.testTypeCode, this.assetData);
-                    test.data.row_data = initTest.row_data;
-                }
-            }
             this.currentTransformerJobDto = data
             this.currentTransformerJobDtoOld = JSON.parse(JSON.stringify(data));
+        },
+
+        async loadParameter(testTypeListData, assetData, productAssetModelData, locationData) {
+            this.testTypeListData = testTypeListData
+            this.assetData = assetData
+            this.productAssetModelData = productAssetModelData
+            this.locationData = locationData
         },
 
         async checkJob(data) {
@@ -81,14 +85,18 @@ export default {
             this.checkAssetId(data);
             this.checkAttachment(data);
             this.checkTestingEquipment(data);
-            await this.checkTestList(data);
+            await this.checkDataMeasurement(data);
             return data;
         },
 
         checkProperties(data) {
+            
             if (data.properties.mrid === '' || data.properties.mrid === null) {
-                data.properties.mrid = uuid.newUuid();
+                const newMrid = uuid.newUuid();
+                
+                data.properties.mrid = newMrid;
             }
+            
         },
 
         checkAssetId(data) {
@@ -100,13 +108,19 @@ export default {
         checkAttachment(data) {
             if (data.attachmentId === null || data.attachmentId === '') {
                 if (data.attachmentData.length > 0) {
-                    data.attachmentId = uuid.newUuid()
-                    data.attachment.id = data.attachmentId
-                    data.attachment.name = null
-                    data.attachment.path = JSON.stringify(data.attachmentData)
-                    data.attachment.type = 'job'
-                    data.attachment.id_foreign = data.properties.mrid
+                    const newAttachmentId = uuid.newUuid();
+                    
+                    data.attachmentId = newAttachmentId;
+                    data.attachment.id = data.attachmentId;
+                    data.attachment.name = null;
+                    data.attachment.path = JSON.stringify(data.attachmentData);
+                    data.attachment.type = 'job';
+                    data.attachment.id_foreign = data.properties.mrid;
+                   
                 }
+            } else {
+                data.attachment.path = JSON.stringify(data.attachmentData);
+                
             }
         },
 
@@ -117,7 +131,7 @@ export default {
                     item.mrid = uuid.newUuid();
                     item.work_id = data.properties.mrid;
                 }
-                for (const test_type_id of item.test_type_surge_arrester_id) {
+                for (const test_type_id of item.test_type_currentTransformer_id) {
                     arr.push({
                         mrid: uuid.newUuid(),
                         testing_equipment_id: item.mrid,
@@ -126,7 +140,7 @@ export default {
                 }
             }
 
-            // Thêm các phần tử mới vào data.surgeArresterTestingEquipmentTestType nếu chưa có
+            // Thêm các phần tử mới vào data.currentTransformerTestingEquipmentTestType nếu chưa có
             for (const current of arr) {
                 const existed = data.currentTransformerTestingEquipmentTestType.some(
                     old =>
@@ -148,204 +162,43 @@ export default {
             );
         },
 
-        async checkTestList(data) {
-            for (const item of data.testList) {
-                if (item.mrid === '' || item.mrid === null || item.mrid === this.$constant.ROOT) {
-                    item.mrid = uuid.newUuid();
+        async checkDataMeasurement(data) {
+            for (const test of data.testList) {
+                if (test.testCondition.mrid === null || test.testCondition.mrid === '') {
+                    test.testCondition.mrid = uuid.newUuid();
                 }
-                if (item.testCondition.mrid === '' || item.testCondition.mrid === null) {
-                    item.testCondition.mrid = uuid.newUuid();
-                }
-
-                if (item.testCondition.condition) {
-                    if (item.testCondition.condition.top_oil_temperature.mrid === null || item.testCondition.condition.top_oil_temperature.mrid === '') {
-                        item.testCondition.condition.top_oil_temperature.mrid = uuid.newUuid();
+                Object.keys(test.testCondition.condition).forEach(key => {
+                    if(test.testCondition.condition[key] && test.testCondition.condition[key].mrid === '' || test.testCondition.condition[key].mrid === null) {
+                        test.testCondition.condition[key].mrid = uuid.newUuid();
                     }
-                    if (item.testCondition.condition.bottom_oil_temperature.mrid === null || item.testCondition.condition.bottom_oil_temperature.mrid === '') {
-                        item.testCondition.condition.bottom_oil_temperature.mrid = uuid.newUuid();
-                    }
-                    if (item.testCondition.condition.winding_temperature.mrid === null || item.testCondition.condition.winding_temperature.mrid === '') {
-                        item.testCondition.condition.winding_temperature.mrid = uuid.newUuid();
-                    }
-                    if (item.testCondition.condition.reference_temperature.mrid === null || item.testCondition.condition.reference_temperature.mrid === '') {
-                        item.testCondition.condition.reference_temperature.mrid = uuid.newUuid();
-                    }
-                    if (item.testCondition.condition.ambient_temperature.mrid === null || item.testCondition.condition.ambient_temperature.mrid === '') {
-                        item.testCondition.condition.ambient_temperature.mrid = uuid.newUuid();
-                    }
-                    if (item.testCondition.condition.humidity.mrid === null || item.testCondition.condition.humidity.mrid === '') {
-                        item.testCondition.condition.humidity.mrid = uuid.newUuid();
-                    }
-                }
-
-                if (item.testCondition.attachment.id === null || item.testCondition.attachment.id === '') {
-                    if (item.testCondition.attachmentData.length > 0) {
-                        item.testCondition.attachment.id = uuid.newUuid()
-                        item.testCondition.attachment.name = null
-                        item.testCondition.attachment.path = JSON.stringify(item.testCondition.attachmentData)
-                        item.testCondition.attachment.type = 'test'
-                        item.testCondition.attachment.id_foreign = item.mrid
-                    }
-                }
-
-                const dataStringMeasurement = item.data.row_data.filter(i => i.type === 'string')
-                const dataStringMeasurementSet = await window.electronAPI.getAllStringMeasurementByProcedure(item.testTypeId)
-                if (dataStringMeasurementSet.success) {
-                    for (const stringMeasurement of dataStringMeasurement) {
-                        let matched = false;
-                        for (const data of dataStringMeasurementSet.data) {
-                            if (stringMeasurement.code === data.alias_name) {
-                                stringMeasurement.mrid = data.mrid;
-                                matched = true;
-                                break;
-                            }
-                        }
-                        if (!matched) {
-                            stringMeasurement.mrid = uuid.newUuid();
-                            const measurementProcedure = new MeasurementProcedure();
-                            measurementProcedure.mrid = uuid.newUuid();
-                            measurementProcedure.procedure_id = item.testTypeId;
-                            measurementProcedure.measurement_id = stringMeasurement.mrid;
-                            item.data.measurementProcedure.push(measurementProcedure);
-                        }
+                })
+                if (test.testCondition.attachment.id === null || test.testCondition.attachment.id === '') {
+                    if (test.testCondition.attachmentData.length > 0) {
+                        test.testCondition.attachment.id = uuid.newUuid()
+                        test.testCondition.attachment.name = null
+                        test.testCondition.attachment.path = JSON.stringify(test.testCondition.attachmentData)
+                        test.testCondition.attachment.type = 'test'
+                        test.testCondition.attachment.id_foreign = test.mrid
                     }
                 } else {
-                    if (dataStringMeasurementSet.data && dataStringMeasurementSet.data.length == 0) {
-                        for (const stringMeasurement of dataStringMeasurement) {
-                            stringMeasurement.mrid = uuid.newUuid();
-                            const measurementProcedure = new MeasurementProcedure();
-                            measurementProcedure.mrid = uuid.newUuid();
-                            measurementProcedure.procedure_id = item.testTypeId;
-                            measurementProcedure.measurement_id = stringMeasurement.mrid;
-                            item.data.measurementProcedure.push(measurementProcedure);
-                        }
+                    test.testCondition.attachment.path = JSON.stringify(test.testCondition.attachmentData)
+                }
+                for (const row of test.data.table) {
+                    if (row.mrid === '' || row.mrid === null) {
+                        row.mrid = uuid.newUuid();
+                        Object.keys(row).forEach(key => {
+                            if(row[key] && row[key].mrid === '' || row[key].mrid === null) {
+                                row[key].mrid = uuid.newUuid();
+                            }
+                        })
                     }
                 }
 
-                const dataAnalog = item.data.row_data.filter(i => i.type === 'analog')
-                const dataAnalogSet = await window.electronAPI.getAllAnalogByProcedure(item.testTypeId);
-                if (dataAnalogSet.success) {
-                    for (const analog of dataAnalog) {
-                        let matched = false;
-                        for (const data of dataAnalogSet.data) {
-                            if (analog.code === data.alias_name) {
-                                analog.mrid = data.mrid;
-                                matched = true;
-                                break;
-                            }
-                        }
-                        if (!matched) {
-                            analog.mrid = uuid.newUuid();
-                            const measurementProcedure = new MeasurementProcedure();
-                            measurementProcedure.mrid = uuid.newUuid();
-                            measurementProcedure.procedure_id = item.testTypeId;
-                            measurementProcedure.measurement_id = analog.mrid;
-                            item.data.measurementProcedure.push(measurementProcedure);
-                        }
-                    }
-                } else {
-                    if (dataAnalogSet.data && dataAnalogSet.data.length == 0) {
-                        for (const analog of dataAnalog) {
-                            analog.mrid = uuid.newUuid();
-                            const measurementProcedure = new MeasurementProcedure();
-                            measurementProcedure.mrid = uuid.newUuid();
-                            measurementProcedure.procedure_id = item.testTypeId;
-                            measurementProcedure.measurement_id = analog.mrid;
-                            item.data.measurementProcedure.push(measurementProcedure);
-                        }
-                    }
-                }
-
-                const dataDiscrete = item.data.row_data.filter(i => i.type === 'discrete');
-                //lấy tất cả discrete của procedure
-                const dataDiscreteSet = await window.electronAPI.getAllDiscreteByProcedure(item.testTypeId);
-                //nếu thành công
-                if (dataDiscreteSet.success) {
-                    //vòng lặp for để duyệt từng discrete trong dataDiscrete
-                    // để kiểm tra xem dataDiscreteSet và dataDiscrete có trùng nhau không
-                    for (const discrete of dataDiscrete) {
-                        let matched = false;
-                        for (const data of dataDiscreteSet.data) {
-                            //những discrete có code trùng với alias_name trong dataDiscreteSet
-                            if (discrete.code === data.alias_name) {
-                                discrete.mrid = data.mrid;
-                                matched = true;
-                                //nếu trùng thì lấy kiểm tra xem value_alias_set đã tồn tại hay chưa
-                                if (data.value_alias_set === null || data.value_alias_set === '') {
-                                    discrete.pool.mrid = uuid.newUuid();
-                                    for (const item of discrete.pool.valueToAlias) {
-                                        item.mrid = uuid.newUuid();
-                                    }
-                                } else {
-                                    discrete.pool.mrid = data.value_alias_set
-                                    const dataDiscreteSetAndAlias = await window.electronAPI.getValueAliasSetAndValueToAliasByMrid(discrete.pool.mrid);
-                                    if (dataDiscreteSetAndAlias.success) {
-                                        for (const item of discrete.pool.valueToAlias) {
-                                            let matchedAlias = false;
-                                            for (const old of dataDiscreteSetAndAlias.data.value_to_aliases) {
-                                                if (item.alias_name === old.alias_name) {
-                                                    item.mrid = old.mrid;
-                                                    matchedAlias = true;
-                                                    break;
-                                                }
-                                            }
-                                            if (!matchedAlias) {
-                                                item.mrid = uuid.newUuid();
-                                            }
-                                        }
-                                    } else {
-                                        for (const item of discrete.pool.valueToAlias) {
-                                            item.mrid = uuid.newUuid();
-                                        }
-                                    }
-
-                                }
-                                break;
-                            }
-                        }
-                        if (!matched) {
-                            discrete.mrid = uuid.newUuid();
-                            const measurementProcedure = new MeasurementProcedure();
-                            measurementProcedure.mrid = uuid.newUuid();
-                            measurementProcedure.procedure_id = item.testTypeId;
-                            measurementProcedure.measurement_id = discrete.mrid;
-                            item.data.measurementProcedure.push(measurementProcedure);
-                            discrete.pool.mrid = uuid.newUuid();
-                            for (const item of discrete.pool.valueToAlias) {
-                                item.mrid = uuid.newUuid();
-                            }
-                        }
-                    }
-                } else {
-                    if (dataDiscreteSet.data && dataDiscreteSet.data.length == 0) {
-                        for (const discrete of dataDiscrete) {
-                            discrete.mrid = uuid.newUuid();
-                            const measurementProcedure = new MeasurementProcedure();
-                            measurementProcedure.mrid = uuid.newUuid();
-                            measurementProcedure.procedure_id = item.testTypeId;
-                            measurementProcedure.measurement_id = discrete.mrid;
-                            item.data.measurementProcedure.push(measurementProcedure);
-                            discrete.pool.mrid = uuid.newUuid();
-                            for (const item of discrete.pool.valueToAlias) {
-                                item.mrid = uuid.newUuid();
-                            }
-                        }
-                    }
-                }
-                if (item.data.table && item.data.table.length > 0) {
-                    for (const data of item.data.table) {
-                        if (data.mrid === '' || data.mrid === null || data.mrid === this.$constant.ROOT) {
-                            data.mrid = uuid.newUuid();
-                        }
-
-                        for (const value of Object.values(data)) {
-                            if (value && typeof value === 'object') {
-                                if (value.mrid === '' || value.mrid === null) {
-                                    value.mrid = uuid.newUuid();
-                                }
-                            }
-                        }
-                    }
+                if(data.procedureAsset.map(x => x.procedure_id).indexOf(test.testTypeId) === -1) {
+                    data.procedureAsset.push({
+                        procedure_id: test.testTypeId,
+                        asset_id: this.assetData.mrid
+                    });
                 }
             }
         },

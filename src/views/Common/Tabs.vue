@@ -854,6 +854,7 @@ export default {
                                     }
                                 }
                             }
+                            this.$refs.componentLoadData[index].loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
                             this.$refs.componentLoadData[index].loadData(powerCableJobDto)
                         } else {
                             this.$message.error("Failed to load power cable job data");
@@ -885,6 +886,7 @@ export default {
                                     }
                                 }
                             }
+                            this.$refs.componentLoadData[index].loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
                             this.$refs.componentLoadData[index].loadData(transformerJobDto)
                         } else {
                             this.$message.error("Failed to load transformer job data");
@@ -916,6 +918,7 @@ export default {
                                     }
                                 }
                             }
+                            this.$refs.componentLoadData[index].loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
                             this.$refs.componentLoadData[index].loadData(voltageTransformerJobDto)
                         } else {
                             this.$message.error("Failed to load voltage transformer job data");
@@ -979,6 +982,7 @@ export default {
                                     }
                                 }
                             }
+                            this.$refs.componentLoadData[index].loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
                             this.$refs.componentLoadData[index].loadData(disconnectorJobDto)
                         } else {
                             this.$message.error("Failed to load disconnector job data");
@@ -1010,6 +1014,7 @@ export default {
                                     }
                                 }
                             }
+                            this.$refs.componentLoadData[index].loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
                             this.$refs.componentLoadData[index].loadData(rotatingMachineJobDto)
                         } else {
                             this.$message.error("Failed to load rotating machine job data");
@@ -1041,6 +1046,7 @@ export default {
                                     }
                                 }
                             }
+                            this.$refs.componentLoadData[index].loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
                             this.$refs.componentLoadData[index].loadData(reactorJobDto)
                         } else {
                             this.$message.error("Failed to load reactor job data");
@@ -1072,6 +1078,7 @@ export default {
                                     }
                                 }
                             }
+                            this.$refs.componentLoadData[index].loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
                             this.$refs.componentLoadData[index].loadData(capacitorJobDto)
                         } else {
                             this.$message.error("Failed to load capacitor job data");
@@ -1103,6 +1110,7 @@ export default {
                                     }
                                 }
                             }
+                            this.$refs.componentLoadData[index].loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
                             this.$refs.componentLoadData[index].loadData(bushingJobDto)
                         } else {
                             this.$message.error("Failed to load bushing job data");
