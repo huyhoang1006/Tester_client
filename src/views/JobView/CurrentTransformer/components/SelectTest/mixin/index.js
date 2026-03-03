@@ -1,3 +1,7 @@
+import CurrentTransformerTestMap from '@/config/test-definitions/CurrentTransformer'
+import CurrentTransformerConditionMap from '@/config/testing-condition/CurrentTransformer'
+import * as common from '../../../../Common/index.js'
+
 export default {
     data() {
         return {}
@@ -20,7 +24,7 @@ export default {
                     data = await this.initCTWindingRes()
                     break
                 case 'CTDfcap':
-                    data = await this.initCTDfcap()
+                    data = await this.initCTDfcap(testTypeCode)
                     break
                 case 'GeneralInspection':
                     data = await this.initGeneralInspection()
@@ -36,23 +40,21 @@ export default {
                     name: 'Measurement',
                     code: 'measurement',
                     unit: '',
-                    type: 'string',
-
+                    type: 'string'
                 },
                 {
                     mrid: '',
                     name: 'V test',
                     code: 'v_test',
                     unit: 'V',
-                    type: 'analog',
-                }
-                ,
+                    type: 'analog'
+                },
                 {
                     mrid: '',
                     name: 'R60s',
                     code: 'r60s',
                     unit: 'M|Ω',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
@@ -61,9 +63,11 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Fail'},
+                            {mrid: '', value: 1, alias_name: 'Pass'}
+                        ]
                     }
-
                 },
                 {
                     mrid: '',
@@ -72,8 +76,12 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Bad'},
+                            {mrid: '', value: 1, alias_name: 'Poor'},
+                            {mrid: '', value: 2, alias_name: 'Fair'},
+                            {mrid: '', value: 3, alias_name: 'Good'}
+                        ]
                     }
                 }
             ]
@@ -126,43 +134,41 @@ export default {
                     name: 'Name',
                     code: 'name',
                     unit: '',
-                    type: 'string',
-
+                    type: 'string'
                 },
                 {
                     mrid: '',
                     name: 'IPR',
                     code: 'ipr',
                     unit: 'A',
-                    type: 'analog',
-                }
-                ,
+                    type: 'analog'
+                },
                 {
                     mrid: '',
                     name: 'ISR',
                     code: 'isr',
                     unit: 'A',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
                     name: 'Ratio meas',
                     code: 'ratio_meas',
                     unit: '',
-                    type: 'string',
+                    type: 'string'
                 },
                 {
                     mrid: '',
                     name: 'Ratio dev',
                     code: 'ratio_dev',
                     unit: '',
-                    type: 'string',
+                    type: 'string'
                 },
                 {
                     mrid: '',
                     name: 'Polarity',
                     code: 'polarity',
-                    type: 'string',
+                    type: 'string'
                 },
                 {
                     mrid: '',
@@ -171,9 +177,11 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Fail'},
+                            {mrid: '', value: 1, alias_name: 'Pass'}
+                        ]
                     }
-
                 },
                 {
                     mrid: '',
@@ -182,8 +190,12 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Bad'},
+                            {mrid: '', value: 1, alias_name: 'Poor'},
+                            {mrid: '', value: 2, alias_name: 'Fair'},
+                            {mrid: '', value: 3, alias_name: 'Good'}
+                        ]
                     }
                 }
             ]
@@ -202,23 +214,21 @@ export default {
                     name: 'Name',
                     code: 'name',
                     unit: '',
-                    type: 'string',
-
+                    type: 'string'
                 },
                 {
                     mrid: '',
                     name: 'I knee',
                     code: 'iknee',
                     unit: 'A',
-                    type: 'analog',
-                }
-                ,
+                    type: 'analog'
+                },
                 {
                     mrid: '',
                     name: 'V knee',
                     code: 'vknee',
                     unit: 'V',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
@@ -227,9 +237,11 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Fail'},
+                            {mrid: '', value: 1, alias_name: 'Pass'}
+                        ]
                     }
-
                 },
                 {
                     mrid: '',
@@ -238,8 +250,12 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Bad'},
+                            {mrid: '', value: 1, alias_name: 'Poor'},
+                            {mrid: '', value: 2, alias_name: 'Fair'},
+                            {mrid: '', value: 3, alias_name: 'Good'}
+                        ]
                     }
                 }
             ]
@@ -258,37 +274,35 @@ export default {
                     name: 'Name',
                     code: 'name',
                     unit: '',
-                    type: 'string',
-
+                    type: 'string'
                 },
                 {
                     mrid: '',
                     name: 'R meas',
                     code: 'rmeas',
                     unit: 'Ω',
-                    type: 'analog',
-                }
-                ,
+                    type: 'analog'
+                },
                 {
                     mrid: '',
                     name: 'R ref',
                     code: 'rref',
                     unit: 'Ω',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
                     name: 'R corr',
                     code: 'rcorr',
                     unit: 'Ω',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
                     name: 'R dev',
                     code: 'rdev',
                     unit: '%',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
@@ -297,9 +311,11 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Fail'},
+                            {mrid: '', value: 1, alias_name: 'Pass'}
+                        ]
                     }
-
                 },
                 {
                     mrid: '',
@@ -308,8 +324,12 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Bad'},
+                            {mrid: '', value: 1, alias_name: 'Poor'},
+                            {mrid: '', value: 2, alias_name: 'Fair'},
+                            {mrid: '', value: 3, alias_name: 'Good'}
+                        ]
                     }
                 }
             ]
@@ -321,159 +341,34 @@ export default {
                 measurementProcedure
             }
         },
-        async initCTDfcap() {
-            const row_data = [
-                {
-                    mrid: '',
-                    name: 'Measurement',
-                    code: 'measurement',
-                    unit: '',
-                    type: 'string',
+        async initCTDfcap(testTypeCode) {
+            const rowDataExample = common.buildEmptyTestRow(CurrentTransformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(CurrentTransformerConditionMap[testTypeCode].columns)
+            
+            let table = []
 
-                },
-                {
-                    mrid: '',
-                    name: 'Test mode',
-                    code: 'testMode',
-                    unit: '',
-                    type: 'string',
-                }
-                ,
-                {
-                    mrid: '',
-                    name: 'Test voltage',
-                    code: 'test_voltage',
-                    unit: 'kV',
-                    type: 'analog',
-                },
-                {
-                    mrid: '',
-                    name: 'DF ref',
-                    code: 'dfref',
-                    unit: '%',
-                    type: 'analog',
-                },
-                {
-                    mrid: '',
-                    name: 'C ref',
-                    code: 'cref',
-                    unit: 'pF',
-                    type: 'analog',
-                },
-                {
-                    mrid: '',
-                    name: 'DF meas',
-                    code: 'dfmeas',
-                    unit: '%',
-                    type: 'analog',
-                },
-                {
-                    mrid: '',
-                    name: 'C meas',
-                    code: 'cmeas',
-                    unit: 'pF',
-                    type: 'analog',
-                },
-                {
-                    mrid: '',
-                    name: '△C cal',
-                    code: 'ccal',
-                    unit: '%',
-                    type: 'analog',
-                },
-                {
-                    mrid: '',
-                    name: 'Assessment',
-                    code: 'assessment',
-                    type: 'discrete',
-                    pool: {
-                        mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
-                    }
+            // 2. Clone dòng đầu tiên từ template
+            const row = JSON.parse(JSON.stringify(rowDataExample))
 
-                },
-                {
-                    mrid: '',
-                    name: 'Condition indicator',
-                    code: 'condition_indicator',
-                    type: 'discrete',
-                    pool: {
-                        mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
-                    }
-                }
-            ]
-            let table = [
-                {
-                    mrid: '',
-                    measurement: {
-                        mrid: '',
-                        value: 'C H-G',
-                        unit: '',
-                        type: 'string'
-                    },
-                    testMode: {
-                        mrid: '',
-                        value: 'GST',
-                        unit: '',
-                        type: 'string'
-                    },
-                    test_voltage: {
-                        mrid: '',
-                        value: '',
-                        unit: 'kV',
-                        type: 'analog'
-                    },
-                    dfref: {
-                        mrid: '',
-                        value: '',
-                        unit: '%',
-                        type: 'analog'
-                    },
-                    cref: {
-                        mrid: '',
-                        value: '',
-                        unit: 'pF',
-                        type: 'analog'
-                    },
-                    dfmeas: {
-                        mrid: '',
-                        value: '',
-                        unit: '%',
-                        type: 'analog'
-                    },
-                    cmeas: {
-                        mrid: '',
-                        value: '',
-                        unit: 'pF',
-                        type: 'analog'
-                    },
-                    ccal: {
-                        mrid: '',
-                        value: '',
-                        unit: '%',
-                        type: 'analog'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                },
-            ]
-            let measurementProcedure = []
+            // 3. Gán giá trị mặc định cho cột Measurement (hoặc Name tuỳ vào file map)
+            if (row.measurement) {
+                row.measurement.value = 'C H-G'
+            } else if (row.name) {
+                row.name.value = 'C H-G'
+            }
+
+            // Gán giá trị mặc định cho cột Test Mode
+            if (row.testMode) {
+                row.testMode.value = 'GST'
+            }
+
+            // Đẩy dòng dữ liệu vào table
+            table.push(row)
+
+            // 4. Trả về đúng format chuẩn hệ thống
             return {
-                table,
-                row_data,
-                measurementProcedure
+                rowDataExampleCondition,
+                table
             }
         },
         async initGeneralInspection() {
@@ -483,8 +378,7 @@ export default {
                     name: 'Items',
                     code: 'items',
                     unit: '',
-                    type: 'string',
-
+                    type: 'string'
                 },
                 {
                     mrid: '',
@@ -493,9 +387,11 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Fail'},
+                            {mrid: '', value: 1, alias_name: 'Pass'}
+                        ]
                     }
-
                 },
                 {
                     mrid: '',
@@ -504,8 +400,12 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Bad'},
+                            {mrid: '', value: 1, alias_name: 'Poor'},
+                            {mrid: '', value: 2, alias_name: 'Fair'},
+                            {mrid: '', value: 3, alias_name: 'Good'}
+                        ]
                     }
                 }
             ]
