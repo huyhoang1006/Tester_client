@@ -1,6 +1,6 @@
 {
   "testId": "be1bba32-76a3-48c9-be6b-095085aaf8aa",
-  "testCode": "motorCurrent",
+  "testCode": "MotorCurrent",
   "testName": "Motor current",
   "columns": [
     {

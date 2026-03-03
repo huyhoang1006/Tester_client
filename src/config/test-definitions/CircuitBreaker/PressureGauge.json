@@ -1,6 +1,6 @@
 {
   "testId": "9e6cbf39-6586-479a-b79a-3e16e8400930",
-  "testCode": "pressureGauge",
+  "testCode": "PressureGauge",
   "testName": "Pressure gauge",
   "columns": [
     {

@@ -91,7 +91,7 @@ export const insertCircuitBreakerJobEntity = async (old_entity,entity) => {
             const oldIdsSet = old_entity.circuitBreakerTestingEquipmentTestType.map(v => v.mrid).filter(id => id);
 
             const toAddSet = entity.circuitBreakerTestingEquipmentTestType.filter(v => v.mrid && !oldIdsSet.includes(v.mrid));
-            const toDeleteSet = old_entity.circuitBreakerTestingEquipmentTestTypeircuitBreakerTestingEquipmentTestType.filter(v => v.mrid && !newIdsSet.includes(v.mrid));
+            const toDeleteSet = old_entity.circuitBreakerTestingEquipmentTestType.filter(v => v.mrid && !newIdsSet.includes(v.mrid));
             const toUpdateSet = entity.circuitBreakerTestingEquipmentTestType.filter(v => v.mrid && oldIdsSet.includes(v.mrid));
             
             for (const equipmentTestType of toAddSet) {
@@ -101,7 +101,6 @@ export const insertCircuitBreakerJobEntity = async (old_entity,entity) => {
             for (const equipmentTestType of toUpdateSet) {
                 await insertCircuitBreakerTestingEquipmentTestTypeTransaction(equipmentTestType, db);
             }
-
             //insert work tasks
             const newIdsWorkTask = entity.workTasks.map(v => v.mrid).filter(id => id); // bỏ null/empty
             const oldIdsWorkTask = old_entity.workTasks.map(v => v.mrid).filter(id => id);

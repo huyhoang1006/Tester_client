@@ -1,6 +1,6 @@
 {
   "testId": "26b32b45-af6d-4ae4-807c-8ed6fc09c55c",
-  "testCode": "overCurrentRelease",
+  "testCode": "OverCurrentRelease",
   "testName": "Overcurrent release",
   "columns": [
     {

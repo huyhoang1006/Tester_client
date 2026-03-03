@@ -1,14 +1,35 @@
 {
-  "testId": "0a8e9951-bc75-4baf-b792-fd265219d450",
-  "testCode": "DCWindingMotor",
-  "testName": "DC winding resistance of motor",
+  "testId": "3866135c-317a-4ae3-ad73-2b458d421706",
+  "testCode": "OCOTiming",
+  "testName": "O-CO Timing",
   "columns": [
     {
-      "mrid": "7213c077-fd8a-4f12-888c-1263570aa8d6",
-      "code": "r_meas",
-      "name": "R meas",
+      "mrid": "84179542-1111-4222-3333-444444444441",
+      "code": "inrush_current",
+      "name": "Inrush current",
       "type": "analog",
-      "unit": "Ω"
+      "unit": "A"
+    },
+    {
+      "mrid": "95280653-2222-4333-4444-555555555552",
+      "code": "charging",
+      "name": "Charging",
+      "type": "analog",
+      "unit": "s"
+    },
+    {
+      "mrid": "06391764-3333-4444-5555-666666666663",
+      "code": "charging_current",
+      "name": "Charging current",
+      "type": "analog",
+      "unit": "A"
+    },
+    {
+      "mrid": "17402875-4444-4555-6666-777777777774",
+      "code": "mini_voltage",
+      "name": "Minimum voltage",
+      "type": "analog",
+      "unit": "V"
     },
     {
       "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",
@@ -34,8 +55,5 @@
         { "value": 3, "alias": "Good", "mrid": "e9969675-f549-4145-a384-141020274004" }
       ]
     }
-  ],
-  "defaultRows": [
-    { "r_meas": "" }
   ]
 }

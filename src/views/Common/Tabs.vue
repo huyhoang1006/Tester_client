@@ -1113,7 +1113,7 @@ export default {
                         } else {
                             this.testTypeListData = []
                         }
-                        const dataCircuitBreaker = await window.electronAPI.getCircuitBreakerByMrid(tab.parentId)
+                        const dataCircuitBreaker = await window.electronAPI.getBreakerEntityByMrid(tab.parentId)
                         if (dataCircuitBreaker.success) {
                             this.assetData = dataCircuitBreaker.data
                         } else {

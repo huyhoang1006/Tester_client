@@ -1,6 +1,6 @@
 {
   "testId": "8163aa31-37bb-4905-adfa-d31c68d9f0cc",
-  "testCode": "insulationResistanceCircuit",
+  "testCode": "InsulationResistanceCircuit",
   "testName": "Insulation resistance of circuit breaker",
   "columns": [
     {

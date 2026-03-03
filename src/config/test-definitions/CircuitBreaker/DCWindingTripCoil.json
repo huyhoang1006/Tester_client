@@ -1,6 +1,6 @@
 {
   "testId": "802bca64-119c-4d4b-b965-b54a152557e3",
-  "testCode": "dcWindingTripCoil",
+  "testCode": "DCWindingTripCoil",
   "testName": "DC winding resistance of trip coil",
   "columns": [
     {

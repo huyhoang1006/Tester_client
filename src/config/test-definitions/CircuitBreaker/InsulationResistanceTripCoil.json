@@ -1,6 +1,6 @@
 {
   "testId": "73a69f63-cef6-4f22-a773-b721509506cb",
-  "testCode": "insulationResistanceTripCoil",
+  "testCode": "InsulationResistanceTripCoil",
   "testName": "Insulation resistance of trip coil",
   "columns": [
     {
