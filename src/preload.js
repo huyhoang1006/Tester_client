@@ -75,6 +75,15 @@ const procedureAPI = cimPreload.procedurePreload.procedurePreload()
 const licenseAPI = cimPreload.licensePreload.licensePreload()
 const notificationEntityAPI = entityPreload.notificationEntityPreload.notificationEntityPreload()
 
+// Version management API (Enterprise)
+const versionAPI = {
+    checkVersionUpdate: () => ipcRenderer.invoke('check-version-update'),
+    getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+    getSchemaVersion: () => ipcRenderer.invoke('get-schema-version'),
+    updateAppVersion: (version) => ipcRenderer.invoke('update-app-version', version),
+    onUpdateAvailable: (callback) => ipcRenderer.on('update-available', (_event, data) => callback(data))
+}
+
 const ipcMain = Object.assign(
     userAPI,
     attachmentAPI,
@@ -138,6 +147,7 @@ const ipcMain = Object.assign(
     windowControlAPI,
     licenseAPI,
     notificationEntityAPI,
+    versionAPI,
     fileConverterAPI,
     systemInfoAPI
 )

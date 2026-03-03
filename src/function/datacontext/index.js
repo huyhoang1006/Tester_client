@@ -1,11 +1,14 @@
 'use strict'
 
+'use strict'
+
 // 1. ĐỔI IMPORT: Dùng thư viện sqlcipher thay vì sqlite3
 import sqlite3 from '@journeyapps/sqlcipher'
 import path from 'path'
 import fs from 'fs'
 import { app } from 'electron'
 
+const DB_KEY = 'attester'
 const nameDB = 'database.db'
 // THÊM: Mật khẩu bạn đã đặt ở DB Browser
 const DB_PASSWORD = 'attester'
@@ -49,5 +52,7 @@ db.serialize(() => {
   // Sau khi giải mã thành công, thiết lập các PRAGMA khác như bình thường
   db.run('PRAGMA foreign_keys=ON');
 })
+
+export default db
 
 export default db

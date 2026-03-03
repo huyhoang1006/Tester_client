@@ -202,7 +202,7 @@
         </el-dialog>
 
         <!-- Notification Detail Dialog -->
-        <el-dialog custom-class="app-dialog" title="Chi tiết thông báo" :visible.sync="dialogNotificationDetail"
+        <el-dialog custom-class="app-dialog" title="Notifications Details" :visible.sync="dialogNotificationDetail"
             :modal="true" append-to-body width="500px">
             <div v-if="selectedNotification" class="notification-detail">
                 <div class="notification-detail-header">
@@ -211,9 +211,9 @@
                     </div>
                     <div class="notification-detail-title">
                         <h3>{{ selectedNotification.name }}</h3>
-                        <span class="notification-detail-status" :class="selectedNotification.status">
-                            {{ selectedNotification.status === 'read' ? 'Đã đọc' : 'Chưa đọc' }}
-                        </span>
+                        <!-- <span class="notification-detail-status" :class="selectedNotification.status">
+                            {{ selectedNotification.status === 'read' ? 'Read' : 'Unread' }}
+                        </span> -->
                     </div>
                 </div>
                 <div class="notification-detail-body">
@@ -221,19 +221,19 @@
                 </div>
                 <div class="notification-detail-meta">
                     <div class="notification-detail-type">
-                        <strong>Loại:</strong> {{ selectedNotification.type }}
+                        <strong>Type:</strong> {{ selectedNotification.type }}
                     </div>
-                    <div class="notification-detail-time" v-if="selectedNotification.created_at">
-                        <strong>Thời gian:</strong> {{ formatDateTime(selectedNotification.created_at) }}
-                    </div>
+                    <!-- <div class="notification-detail-time" v-if="selectedNotification.created_at">
+                        <strong>Time:</strong> {{ formatDateTime(selectedNotification.created_at) }}
+                    </div> -->
                 </div>
             </div>
             <span slot="footer" class="dialog-footer custom-footer">
                 <el-button class="footer-btn" size="small" @click="dialogNotificationDetail = false">
-                    Đóng
+                    Close
                 </el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="loadNotifications">
-                    <i class="fas fa-sync-alt"></i> Tải lại
+                <el-button class="footer-btn" size="small" type="danger" @click="deleteNotification(selectedNotification.mrid)">
+                    <i class="fas fa-trash"></i> Delete
                 </el-button>
             </span>
         </el-dialog>
@@ -447,7 +447,7 @@ export default {
                         created_at: n.created_at,
                         icon: this.getIconByType(n.type)
                     }))
-                    this.$message.success('Loaded notifications successfully')
+                    // this.$message.success('Loaded notifications successfully')
                 }
             } catch (error) {
                 console.error('Error loading notifications:', error)
@@ -515,11 +515,11 @@ export default {
                     if (notification) {
                         notification.status = 'hidden'
                     }
-                    this.$message.success('Đã ẩn thông báo')
+                    this.$message.success('Notifications have been hidden.')
                 }
             } catch (error) {
                 console.error('Error hiding notification:', error)
-                this.$message.error('Không thể ẩn thông báo')
+                this.$message.error('Notifications cannot be hidden.')
             }
         },
         async deleteNotification(notificationId) {
@@ -530,11 +530,11 @@ export default {
                     if (index !== -1) {
                         this.notifications.splice(index, 1)
                     }
-                    this.$message.success('Đã xóa thông báo')
+                    this.$message.success('Notification has been deleted.')
                 }
             } catch (error) {
                 console.error('Error deleting notification:', error)
-                this.$message.error('Không thể xóa thông báo')
+                this.$message.error('Unable to delete notification')
             }
         },
         handleNotificationAction(command) {
@@ -549,13 +549,13 @@ export default {
                     break
                 case 'hide':
                     notification.status = 'hidden'
-                    this.$message.success('Đã ẩn thông báo')
+                    this.$message.success('Notifications have been hidden.')
                     break
                 case 'delete':
                     const index = this.notifications.findIndex(n => n.mrid === mrid)
                     if (index !== -1) {
                         this.notifications.splice(index, 1)
-                        this.$message.success('Đã xóa thông báo')
+                        this.$message.success('Notification has been deleted.')
                     }
                     break
             }
@@ -716,6 +716,10 @@ export default {
 
 .close-icon:hover {
     background-color: red !important;
+}
+
+.notification-btn {
+    position: relative;
 }
 
 .notification-badge {
@@ -1399,13 +1403,14 @@ export default {
 
 .notification-detail-status {
     font-size: 12px;
+    font-weight: bold;
     padding: 2px 8px;
     border-radius: 4px;
 }
 
 .notification-detail-status.read {
-    background: rgba(76, 175, 80, 0.2);
-    color: #81c784;
+    background: rgba(31, 168, 65, 0.582);
+    color: #ffffff;
 }
 
 .notification-detail-status.unread {
