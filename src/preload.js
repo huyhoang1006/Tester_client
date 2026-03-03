@@ -1,8 +1,8 @@
-import {userPreload} from '@/preload/index.js'
-import {importPreload} from '@/preload/index.js'
-import {entityPreload, cimPreload, uploadCustomPreload, appOptionPreload} from '@/preload/index.js'
+import { userPreload } from '@/preload/index.js'
+import { importPreload } from '@/preload/index.js'
+import { entityPreload, cimPreload, uploadCustomPreload, appOptionPreload } from '@/preload/index.js'
 
-const {contextBridge, ipcRenderer} = require('electron')
+const { contextBridge, ipcRenderer } = require('electron')
 const windowControlAPI = {
     onWindowStateChange: (callback) => ipcRenderer.on('window-state-change', (_event, value) => callback(value))
 }
