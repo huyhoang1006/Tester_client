@@ -39,9 +39,8 @@
             <div v-show="activeTab.mrid === item.mrid" class="mgr-20 mgt-20 mgb-20 mgl-20" v-for="(item, index) in tabs" :key="item.mrid">
                 <component mode="update" @reload="handleReload(item, index, $event)"
                     ref="componentLoadData" :sideData="sideSign" :is="checkTab(item)" :organisationId="item.parentId"
-                    :testTypeListData="testTypeListData" :assetData="assetData"
-                    :productAssetModelData="productAssetModelData" :parent="parentOrganization"
-                    :locationData="locationData" style="min-height: calc(100vh - 250px);">
+                    :parent="parentOrganization"
+                    style="min-height: calc(100vh - 250px);">
                 </component>
                 <span class="tab-actions">
                     <el-button size="small" type="danger" @click="closeTab(index)">Close</el-button>
@@ -823,6 +822,7 @@ export default {
                                     }
                                 }
                             }
+                            this.$refs.componentLoadData[index].loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
                             this.$refs.componentLoadData[index].loadData(surgeArresterJobDto)
                         } else {
                             this.$message.error("Failed to load surge arrester job data");
@@ -927,7 +927,7 @@ export default {
                         } else {
                             this.testTypeListData = []
                         }
-                        const dataCurrentTransformer = await window.electronAPI.getCurrentTransformerByMrid(tab.parentId)
+                        const dataCurrentTransformer = await window.electronAPI.getCurrentTransformerEntityByMrid(tab.parentId)
                         if (dataCurrentTransformer.success) {
                             this.assetData = dataCurrentTransformer.data
                         } else {
@@ -947,6 +947,7 @@ export default {
                                     }
                                 }
                             }
+                            this.$refs.componentLoadData[index].loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
                             this.$refs.componentLoadData[index].loadData(currentTransformerJobDto)
                         } else {
                             this.$message.error("Failed to load current transformer job data");
@@ -1114,9 +1115,8 @@ export default {
                             this.testTypeListData = []
                         }
                         const dataCircuitBreaker = await window.electronAPI.getBreakerEntityByMrid(tab.parentId)
-                        console.log('dataCircuitBreaker', dataCircuitBreaker);
                         if (dataCircuitBreaker.success) {
-                            this.assetData = BreakerMapper.mapEntityToDto(dataCircuitBreaker.data)
+                            this.assetData = dataCircuitBreaker.data
                         } else {
                             this.assetData = {}
                         }
@@ -1134,6 +1134,7 @@ export default {
                                     }
                                 }
                             }
+                            this.$refs.componentLoadData[index].loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
                             this.$refs.componentLoadData[index].loadData(circuitBreakerJobDto)
                         } else {
                             this.$message.error("Failed to load circuit breaker job data");

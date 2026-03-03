@@ -66,6 +66,13 @@ export default {
             this.circuitBreakerJobDtoOld = JSON.parse(JSON.stringify(data));
         },
 
+        async loadParameter(testTypeListData, assetData, productAssetModelData, locationData) {
+            this.testTypeListData = testTypeListData
+            this.assetData = assetData
+            this.productAssetModelData = productAssetModelData
+            this.locationData = locationData
+        },
+
         async checkJob(data) {
             this.checkProperties(data);
             this.checkAssetId(data);
