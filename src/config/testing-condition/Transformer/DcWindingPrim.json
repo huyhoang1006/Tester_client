@@ -1,6 +1,6 @@
 {
   "testId": "7eefc1db-4ceb-4ddd-92ff-5a9e662afc8e",
-  "testCode": "DcWindingPrim",
+  "testCode": "DCWindingPrim",
   "testName": "DC Winding resistance Prim",
   "columns": [
     {

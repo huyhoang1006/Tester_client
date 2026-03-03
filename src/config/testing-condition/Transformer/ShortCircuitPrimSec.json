@@ -1,6 +1,6 @@
 {
   "testId": "bfcc1ac2-6918-40fc-97bf-fa4fe345d0ea",
-  "testCode": "ShortPrimSec",
+  "testCode": "ShortCircuitPrimSec",
   "testName": "Short-circuit prim-sec test",
   "columns": [
     {

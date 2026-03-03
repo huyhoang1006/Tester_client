@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-// 1. Đường dẫn đích: Tạo thư mục Disconnector
-const targetDir = path.join(__dirname, 'src', 'config', 'testing-condition', 'Disconnector');
+// 1. Đường dẫn đích: Tạo thư mục Transformer
+const targetDir = path.join(__dirname, 'src', 'config', 'testing-condition', 'Transformer');
 
 // Tạo thư mục nếu chưa tồn tại
 if (!fs.existsSync(targetDir)) {
@@ -61,15 +61,40 @@ const defaultColumns =[
   }
 ];
 
-// 3. Danh sách 7 bài test cho Disconnector
+// 3. Danh sách 32 bài test cho Transformer (Đã cập nhật tên code mới nhất)
 const testList =[
-  { "mrid": "636c2aa0-b919-4e0a-baca-7103c569a62f", "code": "InsulationResistance", "name": "Insulation resistance" },
-  { "mrid": "2456d847-c65f-4b0b-bb34-3f90b8f971ef", "code": "ContactResistance", "name": "Contact resistance" },
-  { "mrid": "a6a3b5d1-dd96-428a-a824-1c7ed5c2fea0", "code": "InsulationResMotor", "name": "Insulation resistance of motor" },
-  { "mrid": "ede47d51-0630-4f85-82af-3733474a9681", "code": "DcWindingMotor", "name": "DC winding resistance of motor" },
-  { "mrid": "94914852-02f6-4bf2-8e19-cf9d66ba4a1e", "code": "OperatingTest", "name": "Operating test" },
-  { "mrid": "9b6edb37-df64-4e28-971b-819965d15d46", "code": "ControlCheck", "name": "Control cabinet check" },
-  { "mrid": "8093b329-1054-496c-9a69-baf71d5c1d24", "code": "GeneralInspection", "name": "General inspection" }
+  { "mrid": "b228dac3-e200-49d2-a75a-03f59f7f83c4", "code": "InsulationResistance", "name": "Insulation resistance of winding" },
+  { "mrid": "a28ecf87-7906-41c2-899b-ca8550571ae7", "code": "GeneralInspection", "name": "General inspection" },
+  { "mrid": "811cb1cd-57d1-4572-ba18-fdb0eff907a3", "code": "RatioPrimSec", "name": "Ratio Prim/Sec" },
+  { "mrid": "7eefc1db-4ceb-4ddd-92ff-5a9e662afc8e", "code": "DcWindingPrim", "name": "DC Winding resistance Prim" },
+  { "mrid": "c4a3176d-c2d2-4903-932b-3fe6c6438c5b", "code": "DcWindingSec", "name": "DC Winding resistance Sec" },
+  { "mrid": "512b8d7c-9d11-419c-ae1c-ac7c4b2d08e6", "code": "DcWindingTert", "name": "DC Winding resistance Tert" },
+  { "mrid": "2df1cd08-5347-4776-8319-a1987918932c", "code": "MeasurementOfNoLoad", "name": "No-load Test" },
+  { "mrid": "1a3f6c14-265b-486c-89ec-dcb8426ce06e", "code": "MeasurementOfShortCircuit", "name": "Short-circuit Test" },
+  { "mrid": "e4863274-ac59-405a-9aeb-fc09490fe17e", "code": "EnergyEfficiency", "name": "Energy Efficiency" },
+  { "mrid": "4cd34382-16cd-493a-ad1c-ed2985d1e977", "code": "InducedAcVoltageTests", "name": "Induced AC Voltage Test" },
+  { "mrid": "d04ecee3-831a-47dc-8ec5-8eb3bc594cef", "code": "MeasurementOfOil", "name": "Oil breakdown voltage" },
+  { "mrid": "84b45a72-5aeb-49fb-9000-5e8e6c7ab03c", "code": "DimensionWeight", "name": "Dimension Weight" },
+  { "mrid": "0e78e50b-ce66-4329-9201-d795a827f962", "code": "TestingInstruments", "name": "Testing Instruments" },
+  { "mrid": "ba2d3ec4-dbe6-4cf7-8542-b40299e1450f", "code": "ExcitingCurrent", "name": "Exciting current" },
+  { "mrid": "4523fb4a-6733-4b08-9675-278a4c8ac7cf", "code": "SeparateSourceAc", "name": "Separate Source AC Voltage Test" },
+  { "mrid": "0fa4d989-3c20-49d0-a4ce-3dc00aebc45d", "code": "WindingDfCap", "name": "Winding DF & CAP" },
+  { "mrid": "f701fc13-c721-4734-9361-0da527ff8995", "code": "BushingPrimC1", "name": "Bushing Prim DF & CAP C1" },
+  { "mrid": "a63922b2-9011-48b4-9760-9aebf9b5e2f7", "code": "BushingPrimC2", "name": "Bushing Prim DF & CAP C2" },
+  { "mrid": "2955d8fb-251a-43cf-ae90-a1cce9ff7d68", "code": "BushingSecC1", "name": "Bushing Sec DF & CAP C1" },
+  { "mrid": "c8c64f37-009e-4cab-9603-796b3be54ec6", "code": "BushingSecC2", "name": "Bushing Sec DF & CAP C2" },
+  { "mrid": "8947ffa6-6abf-49a5-a35a-12f78536218c", "code": "BushingTertC1", "name": "Bushing Tert DF & CAP C1" },
+  { "mrid": "5e4521e4-97d1-4c79-a55d-2f81d02e9ac6", "code": "BushingTertC2", "name": "Bushing Tert DF & CAP C2" },
+  { "mrid": "bfcc1ac2-6918-40fc-97bf-fa4fe345d0ea", "code": "ShortCircuitPrimSec", "name": "Short-circuit prim-sec test" },
+  { "mrid": "8edc2faa-fbb3-4012-9e36-eb87de6e162c", "code": "ShortCircuitSecTert", "name": "Short-circuit sec-tert test" },
+  { "mrid": "fc1a5eab-9169-4c1a-83eb-de45cd9e9c5e", "code": "ShortCircuitPrimTert", "name": "Short-circuit prim-tert test" },
+  { "mrid": "7c80ee02-9315-449b-8808-4aca4bd7b59e", "code": "Dga", "name": "DGA" },
+  { "mrid": "a157af35-e965-4374-96bb-84e4b938091e", "code": "DielectricResponseAnalysis", "name": "Dielectric Respone Analysis" },
+  { "mrid": "7b05583f-530e-4547-8668-93961dca99d6", "code": "InsulationResistanceYokeCore", "name": "Insulation resistance of yoke and core" },
+  { "mrid": "6f418b8c-0217-4f7b-ab4d-2ab500691e3e", "code": "ShortCircuitImpedancePrim", "name": "Short-circuit impedance prim" },
+  { "mrid": "2c4ce2d4-df72-40d7-b505-b51744a5b42b", "code": "ShortCircuitImpedanceSec", "name": "Short-circuit impedance sec" },
+  { "mrid": "66c08a40-e4ac-4538-8f0d-808d39e2b205", "code": "ShortCircuitImpedanceTert", "name": "Short-circuit impedance tert" },
+  { "mrid": "50dfbdf2-80d2-4840-bc39-e1d63c5825d2", "code": "GasChromatography", "name": "Gas Chromatography" }
 ];
 
 // 4. Lặp qua danh sách và tạo file JSON
@@ -96,15 +121,15 @@ const indexContent = `const context = require.context(
   /\\.json$/      // chỉ lấy file .json
 )
 
-const disconnectorConditionMap = context.keys().reduce((acc, key) => {
+const transformerConditionMap = context.keys().reduce((acc, key) => {
   const name = key.replace('./', '').replace('.json', '')
   acc[name] = context(key)
   return acc
 }, {})
 
-export default disconnectorConditionMap;
+export default transformerConditionMap;
 `;
 
 fs.writeFileSync(path.join(targetDir, 'index.js'), indexContent, 'utf-8');
 console.log(`[+] Đã tạo file: index.js`);
-console.log(`\n🎉 HOÀN TẤT! Đã sinh 7 file cấu hình cho Disconnector!`);
+console.log(`\n🎉 HOÀN TẤT! Đã cập nhật 32 file cấu hình Transformer mới nhất!`);
