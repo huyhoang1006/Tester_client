@@ -83,7 +83,7 @@ export default {
 
         checkAssetId(data) {
             if (data.properties.asset_id === '' || data.properties.asset_id === null) {
-                data.properties.asset_id = this.assetData.mrid;
+                data.properties.asset_id = this.assetData.properties.mrid
             }
         },
 
@@ -173,7 +173,6 @@ export default {
                 }
 
                 if(data.procedureAsset.map(x => x.procedure_id).indexOf(test.testTypeId) === -1) {
-                    console.log('this.assetData', this.assetData);
                     data.procedureAsset.push({
                         procedure_id: test.testTypeId,
                         asset_id: this.assetData.properties.mrid

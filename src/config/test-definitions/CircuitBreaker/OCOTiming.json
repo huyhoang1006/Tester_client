@@ -4,32 +4,45 @@
   "testName": "O-CO Timing",
   "columns": [
     {
-      "mrid": "84179542-1111-4222-3333-444444444441",
-      "code": "inrush_current",
-      "name": "Inrush current",
-      "type": "analog",
-      "unit": "A"
+      "mrid": "a2b3c4d5-e6f7-4890-a1b2-c3d4e5f67890",
+      "code": "phase",
+      "name": "Phase",
+      "type": "string"
     },
     {
-      "mrid": "95280653-2222-4333-4444-555555555552",
-      "code": "charging",
-      "name": "Charging",
+      "mrid": "e58bd21c-69dd-4483-b678-1f13c3d4e58a",
+      "code": "opening_time",
+      "name": "Opening time",
       "type": "analog",
-      "unit": "s"
+      "unit": "m|s"
     },
     {
-      "mrid": "06391764-3333-4444-5555-666666666663",
-      "code": "charging_current",
-      "name": "Charging current",
+      "mrid": "0db2ebdc-19eb-45f9-b748-43ff95d4e700",
+      "code": "opening_sync_between_phase",
+      "name": "Opening sync. between phase (ms)",
       "type": "analog",
-      "unit": "A"
+      "unit": "m|s"
     },
     {
-      "mrid": "17402875-4444-4555-6666-777777777774",
-      "code": "mini_voltage",
-      "name": "Minimum voltage",
+      "mrid": "509a7f7d-357b-4e6e-9e99-547f4eabfcb8",
+      "code": "closing_time",
+      "name": "Closing time",
       "type": "analog",
-      "unit": "V"
+      "unit": "m|s"
+    },
+    {
+      "mrid": "ed668284-e6da-468e-99e7-e0901fb19edf",
+      "code": "closing_sync_between_phase",
+      "name": "Closing sync. between phase (ms)",
+      "type": "analog",
+      "unit": "m|s"
+    },
+    {
+      "mrid": "c92fh65g-a311-4827-f012-5357a7b8c92e",
+      "code": "open_close_time",
+      "name": "Open-Close time",
+      "type": "analog",
+      "unit": "m|s"
     },
     {
       "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",
