@@ -67,15 +67,15 @@ export default {
             }
         },
         async saveCtrS() {
-            console.log('[CURRENT_TRANSFORMER] saveCtrS called')
+            
             const data = await this.saveAsset()
-            console.log('[CURRENT_TRANSFORMER] saveAsset result:', data)
+            
             if (data.success) {
                 this.$message.success("Asset saved successfully")
                 
-                console.log('[CURRENT_TRANSFORMER] Emitting reload event with saved data')
+                
                 this.$emit('reload', { savedData: this.currentTransformer })
-                console.log('[CURRENT_TRANSFORMER] Reload event emitted')
+                
             } else {
                 this.$message.error("Failed to save asset")
             }
@@ -85,6 +85,7 @@ export default {
 
         async checkCurrentTransformerData(data) {
             try {
+                this.checkRatedFrequency(data)
                 this.checkProperty(data)
                 this.checkLifecycleDate(data)
                 this.checkPsrId(data)
@@ -186,6 +187,12 @@ export default {
             }
             return obj;
         },
+
+        checkRatedFrequency(data) {
+            if (data.ratings.rated_frequency.value === 'Custom') {
+                data.ratings.rated_frequency.value = data.ratings.rated_frequency_custom
+            }
+        }
 
     }
 

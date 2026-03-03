@@ -245,7 +245,18 @@ export const mapEntityToDto = (entity) => {
     const findUnitValue = (collection, mrid) => (collection.find(item => item && item.mrid === mrid) || {}).value;
 
     dto.ratings.rated_frequency.mrid = entity.oldCurrentTransformerInfo.rated_frequency || '';
-    dto.ratings.rated_frequency.value = findUnitValue(entity.frequency, dto.ratings.rated_frequency.mrid);
+    const frequencyValue = findUnitValue(entity.frequency, dto.ratings.rated_frequency.mrid);
+    
+    // Xử lý rated_frequency_custom
+    if (frequencyValue && !['60', '50', '16.7'].includes(frequencyValue.toString())) {
+        // Nếu không phải preset value thì là custom
+        dto.ratings.rated_frequency.value = 'Custom';
+        dto.ratings.rated_frequency_custom = frequencyValue.toString();
+    } else {
+        // Nếu là preset value
+        dto.ratings.rated_frequency.value = frequencyValue || '';
+        dto.ratings.rated_frequency_custom = '';
+    }
 
     dto.ratings.primary_winding_count = entity.oldCurrentTransformerInfo.primary_winding_count || '';
 
@@ -317,7 +328,7 @@ export const mapEntityToDto = (entity) => {
                 table: {
                     mrid: tapInfo.mrid,
                     name: tapInfo.tap_name,
-                    inUse: tapInfo.in_use,
+                    inUse: tapInfo.in_use === 1 || tapInfo.in_use === "1" || tapInfo.in_use === true,
                     type: tapInfo.type,
                     isShow: false,
                     ipn: findAndMapUnit(tapInfo.ipn, entity.currentFlow),
@@ -327,7 +338,7 @@ export const mapEntityToDto = (entity) => {
                     rated_burden: findAndMapUnit(tapInfo.rated_burden, entity.apparentPower),
                     burden: findAndMapUnit(tapInfo.burden, entity.apparentPower),
                     operatingBurden: findAndMapUnit(tapInfo.operating_burden, entity.apparentPower),
-                    extended_burden: tapInfo.extended_burden,
+                    extended_burden: tapInfo.extended_burden === 1 || tapInfo.extended_burden === "1" || tapInfo.extended_burden === true,
                     burdenCos: tapInfo.burden_power_factor,
                     operatingBurdenCos: tapInfo.operating_burden_power_factor,
                 }
