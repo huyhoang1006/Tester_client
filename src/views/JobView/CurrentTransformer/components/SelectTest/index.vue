@@ -11,13 +11,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-if="testTypeList.length === 0">
-                            <td colspan="3" style="text-align: center; padding: 20px;">
-                                <span v-if="testTypeListData.length === 0">No test types available. Please add test types to the database.</span>
-                                <span v-else>Loading test types...</span>
-                            </td>
-                        </tr>
-                        <tr v-for="(item, index) in testTypeList" :key="index">
+                        <tr v-for="(item, index) in testTypeListData" :key="index">
                             <td style="font-weight: bold;">{{ index + 1 }}</td>
                             <td class="ellipsis-cell" style="font-weight: bold;">
                                 {{ item.name }}
@@ -69,7 +63,7 @@ import Attachment from '@/views/Flatten/Attachment'
 import { UnitMultiplier } from '@/views/Enum/UnitMultiplier'
 import { UnitSymbol } from '@/views/Enum/UnitSymbol'
 import mixin from './mixin'
-import { mapState } from 'vuex'
+import uuid from "@/utils/uuid";
 
 export default {
     mixins: [mixin],
@@ -88,28 +82,23 @@ export default {
         },
         testTypeListData: {
             type: Array,
+            required: true,
             default: () => []
         }
     },
     data() {
         return {
-            testTypeListDefault: [],
             unitMultiplier: UnitMultiplier,
             unitSymbol: UnitSymbol,
         }
     },
-    mounted() {},
     computed: {
-        ...mapState(['selectedLocation', 'selectedAsset']),
         testListData: function () {
             return this.data
         },
         objActiveNameData: function () {
             return this.objActiveName
         },
-        testTypeList: function () {
-            return this.testTypeListData && this.testTypeListData.length > 0 ? this.testTypeListData : this.testTypeListDefault
-        }
     },
     methods: {
         async countTest(testTypeId) {
@@ -121,50 +110,21 @@ export default {
         },
         async addTest(testType) {
             const count = await this.countTest(testType.mrid)
-            const initData = await this.initTest(testType.code, this.assetData)
+            const initTest = await this.initTest(testType.alias_name, this.assetData)
+            const initData = initTest.table
+            const initCondition = initTest.rowDataExampleCondition
             const name = count == 0 ? testType.name : `${testType.name} (${count})`
+            const mrid = uuid.newUuid()
             this.testListData.push({
-                mrid: this.$uuid.EMPTY,
+                mrid: mrid,
                 testTypeId: testType.mrid,
-                testTypeCode: testType.code,
+                testTypeCode: testType.alias_name,
                 testTypeName: testType.name,
                 name,
-                data: initData,
+                data: {table: initData},
                 testCondition : {
                     mrid : '',
-                    condition: {
-                        top_oil_temperature: {
-                            mrid: '',
-                            value: "",
-                            unit: this.unitSymbol.degC
-                        },
-                        bottom_oil_temperature: {
-                            mrid: '',
-                            value: "",
-                            unit: this.unitSymbol.degC
-                        },
-                        winding_temperature: {
-                            mrid: '',
-                            value: "",
-                            unit: this.unitSymbol.degC
-                        },
-                        reference_temperature: {
-                            mrid: '',
-                            value: "",
-                            unit: this.unitSymbol.degC
-                        },
-                        ambient_temperature: {
-                            mrid: '',
-                            value: "",
-                            unit: this.unitSymbol.degC
-                        },
-                        humidity: {
-                            mrid: '',
-                            value: "",
-                            unit: this.unitSymbol.percent
-                        },
-                        weather: ""
-                    },
+                    condition: initCondition,
                     comment: "",
                     attachment : new Attachment(),
                     attachmentData : []

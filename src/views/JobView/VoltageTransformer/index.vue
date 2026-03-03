@@ -82,25 +82,10 @@ export default {
         VTRatio
     },
     props: {
-        locationData: {
-            type: Object,
-            default: () => ({})
-        },
-        assetData: {
-            type: Object,
-            default: () => ({})
-        },
-        productAssetModelData: {
-            type: Object,
-            default: () => ({})
-        },
+       
         parentOrganization: {
             type: Object,
             default: () => ({})
-        },
-        testTypeListData: {
-            type: Array,
-            default: () => []
         }
     },
     mixins: [mixin],
@@ -108,7 +93,11 @@ export default {
         return {
             objActiveName: {
                 activeName: null
-            }
+            },
+            testTypeListData: [],
+            assetData : {},
+            locationData : {},
+            productAssetModelData: {},
         }
     },
     methods: {
