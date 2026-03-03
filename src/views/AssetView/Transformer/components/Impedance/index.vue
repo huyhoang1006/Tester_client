@@ -86,8 +86,8 @@
                                         <el-input size="mini" v-model="item.base_power.data.value">
                                             <el-select size="mini" class="select-in-input"
                                                 v-model="item.base_power.data.unit" slot="append">
-                                                <el-option :label="unitMultiplier.m + unitSymbol.VA"
-                                                    :value="unitMultiplier.m + '|' + unitSymbol.VA"></el-option>
+                                                <el-option :label="unitMultiplier.M + unitSymbol.VA"
+                                                    :value="unitMultiplier.M + '|' + unitSymbol.VA"></el-option>
                                                 <el-option :label="unitMultiplier.k + unitSymbol.VA"
                                                     :value="unitMultiplier.k + '|' + unitSymbol.VA"></el-option>
                                             </el-select>
@@ -203,8 +203,8 @@
                                         <el-input size="mini" v-model="item.base_power.data.value">
                                             <el-select size="mini" class="select-in-input"
                                                 v-model="item.base_power.data.unit" slot="append">
-                                                <el-option :label="unitMultiplier.m + unitSymbol.VA"
-                                                    :value="unitMultiplier.m + '|' + unitSymbol.VA"></el-option>
+                                                <el-option :label="unitMultiplier.M + unitSymbol.VA"
+                                                    :value="unitMultiplier.M + '|' + unitSymbol.VA"></el-option>
                                                 <el-option :label="unitMultiplier.k + unitSymbol.VA"
                                                     :value="unitMultiplier.k + '|' + unitSymbol.VA"></el-option>
                                             </el-select>
@@ -319,8 +319,8 @@
                                         <el-input size="mini" v-model="item.base_power.data.value">
                                             <el-select size="mini" class="select-in-input"
                                                 v-model="item.base_power.data.unit" slot="append">
-                                                <el-option :label="unitMultiplier.m + unitSymbol.VA"
-                                                    :value="unitMultiplier.m + '|' + unitSymbol.VA"></el-option>
+                                                <el-option :label="unitMultiplier.M + unitSymbol.VA"
+                                                    :value="unitMultiplier.M + '|' + unitSymbol.VA"></el-option>
                                                 <el-option :label="unitMultiplier.k + unitSymbol.VA"
                                                     :value="unitMultiplier.k + '|' + unitSymbol.VA"></el-option>
                                             </el-select>
@@ -385,8 +385,8 @@
                                 class="ref-temp-input">
                                 <el-select size="mini" class="select-in-input"
                                     v-model="impedancesData.zero_sequence_impedance.base_power.data.unit" slot="append">
-                                    <el-option :label="unitMultiplier.m + unitSymbol.VA"
-                                        :value="unitMultiplier.m + '|' + unitSymbol.VA"></el-option>
+                                    <el-option :label="unitMultiplier.M + unitSymbol.VA"
+                                        :value="unitMultiplier.M + '|' + unitSymbol.VA"></el-option>
                                     <el-option :label="unitMultiplier.k + unitSymbol.VA"
                                         :value="unitMultiplier.k + '|' + unitSymbol.VA"></el-option>
                                 </el-select>
