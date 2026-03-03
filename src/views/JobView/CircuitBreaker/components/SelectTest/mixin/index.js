@@ -1,11 +1,15 @@
-import { mapState } from 'vuex'
+/* eslint-disable */
+import circuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
+import circuitBreakerConditionMap from '@/config/testing-condition/CircuitBreaker'
+import * as common from '../../../../Common/index.js'
+import {mapState} from 'vuex'
 
 export default {
     data() {
         return {}
     },
     computed: mapState(['selectedAsset', 'selectedJob']),
-    async beforeMount() { },
+    async beforeMount() {},
     methods: {
         getAssetData(assetData = null) {
             // Extract circuitBreaker and operating from assetData
@@ -16,24 +20,20 @@ export default {
             if (assetData) {
                 // Handle case where circuitBreaker might be a string that needs parsing
                 if (assetData.circuitBreaker) {
-                    circuitBreaker = typeof assetData.circuitBreaker === 'string'
-                        ? JSON.parse(assetData.circuitBreaker)
-                        : assetData.circuitBreaker
+                    circuitBreaker = typeof assetData.circuitBreaker === 'string' ? JSON.parse(assetData.circuitBreaker) : assetData.circuitBreaker
                 } else if (assetData.oldBreakerInfo && assetData.oldBreakerInfo.circuitBreaker) {
-                    circuitBreaker = typeof assetData.oldBreakerInfo.circuitBreaker === 'string'
-                        ? JSON.parse(assetData.oldBreakerInfo.circuitBreaker)
-                        : assetData.oldBreakerInfo.circuitBreaker
+                    circuitBreaker =
+                        typeof assetData.oldBreakerInfo.circuitBreaker === 'string'
+                            ? JSON.parse(assetData.oldBreakerInfo.circuitBreaker)
+                            : assetData.oldBreakerInfo.circuitBreaker
                 }
 
                 // Handle case where operating might be a string that needs parsing
                 if (assetData.operating) {
-                    operating = typeof assetData.operating === 'string'
-                        ? JSON.parse(assetData.operating)
-                        : assetData.operating
+                    operating = typeof assetData.operating === 'string' ? JSON.parse(assetData.operating) : assetData.operating
                 } else if (assetData.oldOperatingMechanism) {
-                    operating = typeof assetData.oldOperatingMechanism === 'string'
-                        ? JSON.parse(assetData.oldOperatingMechanism)
-                        : assetData.oldOperatingMechanism
+                    operating =
+                        typeof assetData.oldOperatingMechanism === 'string' ? JSON.parse(assetData.oldOperatingMechanism) : assetData.oldOperatingMechanism
                 }
             }
 
@@ -47,9 +47,10 @@ export default {
                 numberCloseCoil: 1
             }
 
-            return { circuitBreaker, operating }
+            return {circuitBreaker, operating}
         },
         async initTest(testTypeCode, assetData) {
+            console.log(testTypeCode)
             let data = null
             switch (testTypeCode) {
                 case 'motorCurrent':
@@ -76,8 +77,8 @@ export default {
                 case 'ococoTiming':
                     data = await this.initococoTiming(assetData)
                     break
-                case 'contactResistance':
-                    data = await this.initcontactResistance(assetData)
+                case 'ContactResistance':
+                    data = await this.initcontactResistance(testTypeCode, assetData)
                     break
                 case 'minimumPickup':
                     data = await this.initminimumPickup()
@@ -132,30 +133,28 @@ export default {
                     name: 'Inrush current',
                     code: 'inrushCurrent',
                     unit: 'A',
-                    type: 'string',
-
+                    type: 'string'
                 },
                 {
                     mrid: '',
                     name: 'Charging',
                     code: 'charging',
                     unit: 's',
-                    type: 'analog',
-                }
-                ,
+                    type: 'analog'
+                },
                 {
                     mrid: '',
                     name: 'Charging current',
                     code: 'chargingCurrent',
                     unit: 'A',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
                     name: 'Minimum voltage',
                     code: 'miniVoltage',
                     unit: 'V',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
@@ -164,9 +163,11 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Fail'},
+                            {mrid: '', value: 1, alias_name: 'Pass'}
+                        ]
                     }
-
                 },
                 {
                     mrid: '',
@@ -175,15 +176,19 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Bad'},
+                            {mrid: '', value: 1, alias_name: 'Poor'},
+                            {mrid: '', value: 2, alias_name: 'Fair'},
+                            {mrid: '', value: 3, alias_name: 'Good'}
+                        ]
                     }
                 }
             ]
             const motorChar = {
-                limits: "Absolute",
+                limits: 'Absolute',
                 abs: [{}, {}, {}, {}],
-                rel: [{}, {}, {}, {}],
+                rel: [{}, {}, {}, {}]
             }
             // const table = [
             //     {
@@ -245,14 +250,14 @@ export default {
             }
         },
         async initcTiming(assetData = null) {
-            const { circuitBreaker, operating } = this.getAssetData(assetData)
+            const {circuitBreaker, operating} = this.getAssetData(assetData)
             let table = []
-            let phase = ["A", "B", "C"]
+            let phase = ['A', 'B', 'C']
             for (let i = 0; i < operating.numberCloseCoil; i++) {
                 table.push([])
             }
 
-            table.forEach(element => {
+            table.forEach((element) => {
                 for (let i = 0; i < circuitBreaker.numberOfPhase; i++) {
                     for (let j = 0; j < circuitBreaker.numberOfInterruptPhase; j++) {
                         element.push({
@@ -263,7 +268,7 @@ export default {
                 }
             })
             return {
-                limits: "Absolute",
+                limits: 'Absolute',
                 openTime: {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}, {}],
                     rel: [{}, {}, {}, {}, {}, {}, {}, {}, {}]
@@ -271,33 +276,33 @@ export default {
                 auxContact: {
                     abs: {
                         trip: [{}, {}, {}, {}, {}, {}],
-                        close: [{}, {}, {}, {}, {}, {}],
+                        close: [{}, {}, {}, {}, {}, {}]
                     },
                     rel: {
                         trip: [{}, {}, {}, {}, {}, {}],
-                        close: [{}, {}, {}, {}, {}, {}],
+                        close: [{}, {}, {}, {}, {}, {}]
                     }
                 },
                 miscell: {
                     abs: [{}, {}, {}, {}],
-                    rel: [{}, {}, {}, {}],
+                    rel: [{}, {}, {}, {}]
                 },
                 coilCharacter: {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}],
-                    rel: [{}, {}, {}, {}, {}, {}, {}, {}],
+                    rel: [{}, {}, {}, {}, {}, {}, {}, {}]
                 },
                 table: table
             }
         },
         async initoTiming(assetData = null) {
-            const { circuitBreaker, operating } = this.getAssetData(assetData)
+            const {circuitBreaker, operating} = this.getAssetData(assetData)
             let table = []
-            let phase = ["A", "B", "C"]
+            let phase = ['A', 'B', 'C']
             for (let i = 0; i < operating.numberTripCoil; i++) {
                 table.push([])
             }
 
-            table.forEach(element => {
+            table.forEach((element) => {
                 for (let i = 0; i < circuitBreaker.numberOfPhase; i++) {
                     for (let j = 0; j < circuitBreaker.numberOfInterruptPhase; j++) {
                         element.push({
@@ -308,7 +313,7 @@ export default {
                 }
             })
             return {
-                limits: "Absolute",
+                limits: 'Absolute',
                 openTime: {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}, {}],
                     rel: [{}, {}, {}, {}, {}, {}, {}, {}, {}]
@@ -316,37 +321,37 @@ export default {
                 auxContact: {
                     abs: {
                         trip: [{}, {}, {}, {}, {}, {}],
-                        close: [{}, {}, {}, {}, {}, {}],
+                        close: [{}, {}, {}, {}, {}, {}]
                     },
                     rel: {
                         trip: [{}, {}, {}, {}, {}, {}],
-                        close: [{}, {}, {}, {}, {}, {}],
+                        close: [{}, {}, {}, {}, {}, {}]
                     }
                 },
                 miscell: {
                     abs: [{}, {}, {}, {}],
-                    rel: [{}, {}, {}, {}],
+                    rel: [{}, {}, {}, {}]
                 },
                 coilCharacter: {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}],
-                    rel: [{}, {}, {}, {}, {}, {}, {}, {}],
+                    rel: [{}, {}, {}, {}, {}, {}, {}, {}]
                 },
                 table: table
             }
         },
         async initocTiming(assetData = null) {
-            const { circuitBreaker, operating } = this.getAssetData(assetData)
+            const {circuitBreaker, operating} = this.getAssetData(assetData)
             async function getTable(table) {
-                let phase = ["A", "B", "C"]
+                let phase = ['A', 'B', 'C']
                 for (let i = 0; i < operating.numberTripCoil; i++) {
                     table.push([])
                 }
-                table.forEach(element => {
+                table.forEach((element) => {
                     for (let i = 0; i < circuitBreaker.numberOfPhase; i++) {
                         for (let j = 0; j < circuitBreaker.numberOfInterruptPhase; j++) {
                             element.push({
                                 phase: phase[i],
-                                assessment: '',
+                                assessment: ''
                             })
                         }
                     }
@@ -356,7 +361,7 @@ export default {
             let table = []
             table = await getTable(table)
             return {
-                limits: "Absolute",
+                limits: 'Absolute',
                 openTime: {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}, {}],
                     rel: [{}, {}, {}, {}, {}, {}, {}, {}, {}]
@@ -364,32 +369,32 @@ export default {
                 auxContact: {
                     abs: {
                         trip: [{}, {}, {}, {}, {}, {}],
-                        close: [{}, {}, {}, {}, {}, {}],
+                        close: [{}, {}, {}, {}, {}, {}]
                     },
                     rel: {
                         trip: [{}, {}, {}, {}, {}, {}],
-                        close: [{}, {}, {}, {}, {}, {}],
+                        close: [{}, {}, {}, {}, {}, {}]
                     }
                 },
                 miscell: {
                     abs: [{}, {}, {}, {}],
-                    rel: [{}, {}, {}, {}],
+                    rel: [{}, {}, {}, {}]
                 },
                 coilCharacter: {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}],
-                    rel: [{}, {}, {}, {}, {}, {}, {}, {}],
+                    rel: [{}, {}, {}, {}, {}, {}, {}, {}]
                 },
                 table: table
             }
         },
         async initcoTiming(assetData = null) {
-            const { circuitBreaker, operating } = this.getAssetData(assetData)
-            let phase = ["A", "B", "C"]
+            const {circuitBreaker, operating} = this.getAssetData(assetData)
+            let phase = ['A', 'B', 'C']
             let table = []
             for (let i = 0; i < operating.numberCloseCoil; i++) {
                 table.push([])
             }
-            table.forEach(element => {
+            table.forEach((element) => {
                 for (let i = 0; i < circuitBreaker.numberOfPhase; i++) {
                     for (let j = 0; j < circuitBreaker.numberOfInterruptPhase; j++) {
                         element.push({
@@ -400,7 +405,7 @@ export default {
                 }
             })
             return {
-                limits: "Absolute",
+                limits: 'Absolute',
                 openTime: {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}, {}],
                     rel: [{}, {}, {}, {}, {}, {}, {}, {}, {}]
@@ -408,32 +413,32 @@ export default {
                 auxContact: {
                     abs: {
                         trip: [{}, {}, {}, {}, {}, {}],
-                        close: [{}, {}, {}, {}, {}, {}],
+                        close: [{}, {}, {}, {}, {}, {}]
                     },
                     rel: {
                         trip: [{}, {}, {}, {}, {}, {}],
-                        close: [{}, {}, {}, {}, {}, {}],
+                        close: [{}, {}, {}, {}, {}, {}]
                     }
                 },
                 miscell: {
                     abs: [{}, {}, {}, {}],
-                    rel: [{}, {}, {}, {}],
+                    rel: [{}, {}, {}, {}]
                 },
                 coilCharacter: {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}],
-                    rel: [{}, {}, {}, {}, {}, {}, {}, {}],
+                    rel: [{}, {}, {}, {}, {}, {}, {}, {}]
                 },
                 table: table
             }
         },
         async initocoTiming(assetData = null) {
-            const { circuitBreaker, operating } = this.getAssetData(assetData)
+            const {circuitBreaker, operating} = this.getAssetData(assetData)
             async function getTable(table) {
-                let phase = ["A", "B", "C"]
+                let phase = ['A', 'B', 'C']
                 for (let i = 0; i < operating.numberTripCoil; i++) {
                     table.push([])
                 }
-                table.forEach(element => {
+                table.forEach((element) => {
                     for (let i = 0; i < circuitBreaker.numberOfPhase; i++) {
                         for (let j = 0; j < circuitBreaker.numberOfInterruptPhase; j++) {
                             element.push({
@@ -448,7 +453,7 @@ export default {
             let table = []
             table = await getTable(table)
             return {
-                limits: "Absolute",
+                limits: 'Absolute',
                 openTime: {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}, {}],
                     rel: [{}, {}, {}, {}, {}, {}, {}, {}, {}]
@@ -456,36 +461,36 @@ export default {
                 auxContact: {
                     abs: {
                         trip: [{}, {}, {}, {}, {}, {}],
-                        close: [{}, {}, {}, {}, {}, {}],
+                        close: [{}, {}, {}, {}, {}, {}]
                     },
                     rel: {
                         trip: [{}, {}, {}, {}, {}, {}],
-                        close: [{}, {}, {}, {}, {}, {}],
+                        close: [{}, {}, {}, {}, {}, {}]
                     }
                 },
                 miscell: {
                     abs: [{}, {}, {}, {}],
-                    rel: [{}, {}, {}, {}],
+                    rel: [{}, {}, {}, {}]
                 },
                 coilCharacter: {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}],
-                    rel: [{}, {}, {}, {}, {}, {}, {}, {}],
+                    rel: [{}, {}, {}, {}, {}, {}, {}, {}]
                 },
                 table: table
             }
         },
         async initcocoTiming(assetData = null) {
-            const { circuitBreaker } = this.getAssetData(assetData)
+            const {circuitBreaker} = this.getAssetData(assetData)
             let table = []
-            let phase = ["A", "B", "C"]
+            let phase = ['A', 'B', 'C']
             for (let i = 0; i < circuitBreaker.numberOfPhase; i++) {
                 table.push({
                     phase: phase[i],
-                    assessment: ""
+                    assessment: ''
                 })
             }
             return {
-                limits: "Absolute",
+                limits: 'Absolute',
                 openTime: {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}, {}],
                     rel: [{}, {}, {}, {}, {}, {}, {}, {}, {}]
@@ -493,36 +498,36 @@ export default {
                 auxContact: {
                     abs: {
                         trip: [{}, {}, {}, {}, {}, {}],
-                        close: [{}, {}, {}, {}, {}, {}],
+                        close: [{}, {}, {}, {}, {}, {}]
                     },
                     rel: {
                         trip: [{}, {}, {}, {}, {}, {}],
-                        close: [{}, {}, {}, {}, {}, {}],
+                        close: [{}, {}, {}, {}, {}, {}]
                     }
                 },
                 miscell: {
                     abs: [{}, {}, {}, {}],
-                    rel: [{}, {}, {}, {}],
+                    rel: [{}, {}, {}, {}]
                 },
                 coilCharacter: {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}],
-                    rel: [{}, {}, {}, {}, {}, {}, {}, {}],
+                    rel: [{}, {}, {}, {}, {}, {}, {}, {}]
                 },
                 table: table
             }
         },
         async initococoTiming(assetData = null) {
-            const { circuitBreaker } = this.getAssetData(assetData)
+            const {circuitBreaker} = this.getAssetData(assetData)
             let table = []
-            let phase = ["A", "B", "C"]
+            let phase = ['A', 'B', 'C']
             for (let i = 0; i < circuitBreaker.numberOfPhase; i++) {
                 table.push({
-                    assessment: "",
+                    assessment: '',
                     phase: phase[i]
                 })
             }
             return {
-                limits: "Absolute",
+                limits: 'Absolute',
                 openTime: {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}, {}],
                     rel: [{}, {}, {}, {}, {}, {}, {}, {}, {}]
@@ -530,38 +535,55 @@ export default {
                 auxContact: {
                     abs: {
                         trip: [{}, {}, {}, {}, {}, {}],
-                        close: [{}, {}, {}, {}, {}, {}],
+                        close: [{}, {}, {}, {}, {}, {}]
                     },
                     rel: {
                         trip: [{}, {}, {}, {}, {}, {}],
-                        close: [{}, {}, {}, {}, {}, {}],
+                        close: [{}, {}, {}, {}, {}, {}]
                     }
                 },
                 miscell: {
                     abs: [{}, {}, {}, {}],
-                    rel: [{}, {}, {}, {}],
+                    rel: [{}, {}, {}, {}]
                 },
                 coilCharacter: {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}],
-                    rel: [{}, {}, {}, {}, {}, {}, {}, {}],
+                    rel: [{}, {}, {}, {}, {}, {}, {}, {}]
                 },
                 table: table
             }
         },
-        async initcontactResistance(assetData = null) {
-            const { circuitBreaker } = this.getAssetData(assetData)
+        async initcontactResistance(testTypeCode, assetData) {
+            const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
+            const {circuitBreaker} = this.getAssetData(assetData)
+
             let table = []
-            let phase = ["A", "B", "C"]
+            let phase = ['A', 'B', 'C']
+
             for (let i = 0; i < circuitBreaker.numberOfPhase; i++) {
                 for (let j = 0; j < circuitBreaker.numberOfInterruptPhase; j++) {
-                    table.push({
-                        assessment: "",
-                        phase: phase[i]
-                    })
+                    const row = JSON.parse(JSON.stringify(rowDataExample))
+
+                    console.log(row.phase)
+
+                    // Gán tên pha. Dự phòng các trường hợp key trong file map là 'phase', 'name' hoặc 'measurement'
+                    if (row.phase) {
+                        row.phase.value = phase[i] || `Phase ${i + 1}`
+                    } else if (row.name) {
+                        row.name.value = phase[i] || `Phase ${i + 1}`
+                    } else if (row.measurement) {
+                        row.measurement.value = phase[i] || `Phase ${i + 1}`
+                    }
+
+                    table.push(row)
                 }
             }
+
+            // 4. Trả về đúng format chuẩn
             return {
-                table: table
+                rowDataExampleCondition,
+                table
             }
         },
         async initminimumPickup() {
@@ -571,30 +593,28 @@ export default {
                     name: 'Operation',
                     code: 'operation',
                     unit: '',
-                    type: 'string',
-
+                    type: 'string'
                 },
                 {
                     mrid: '',
                     name: 'Trip Coil No',
                     code: 'tripCoilNo',
                     unit: '',
-                    type: 'string',
-                }
-                ,
+                    type: 'string'
+                },
                 {
                     mrid: '',
                     name: 'Close Coil No',
                     code: 'closeCoilNo',
                     unit: '',
-                    type: 'string',
+                    type: 'string'
                 },
                 {
                     mrid: '',
                     name: 'V pickup',
                     code: 'vPickup',
                     unit: 'V',
-                    type: 'string',
+                    type: 'string'
                 },
                 {
                     mrid: '',
@@ -603,9 +623,11 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Fail'},
+                            {mrid: '', value: 1, alias_name: 'Pass'}
+                        ]
                     }
-
                 },
                 {
                     mrid: '',
@@ -614,50 +636,54 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Bad'},
+                            {mrid: '', value: 1, alias_name: 'Poor'},
+                            {mrid: '', value: 2, alias_name: 'Fair'},
+                            {mrid: '', value: 3, alias_name: 'Good'}
+                        ]
                     }
                 }
             ]
             let table = [
                 {
                     operation: {
-                        mrid: "",
-                        value: "Trip",
-                        unit: "",
-                        type: "string"
+                        mrid: '',
+                        value: 'Trip',
+                        unit: '',
+                        type: 'string'
                     },
                     tripCoilNo: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "string"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'string'
                     },
                     closeCoilNo: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "string"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'string'
                     },
                     vPickup: {
-                        mrid: "",
-                        value: "",
-                        unit: "V",
-                        type: "string"
+                        mrid: '',
+                        value: '',
+                        unit: 'V',
+                        type: 'string'
                     },
                     assessment: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "discrete"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
                     },
                     condition_indicator: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "discrete"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
                     }
-                },
+                }
             ]
             return {
                 table,
@@ -672,14 +698,14 @@ export default {
                     name: 'Trip Coil No',
                     code: 'tripCoilNo',
                     unit: '',
-                    type: 'string',
+                    type: 'string'
                 },
                 {
                     mrid: '',
                     name: 'R meas',
                     code: 'rmeas',
                     unit: 'Ω',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
@@ -688,7 +714,10 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Fail'},
+                            {mrid: '', value: 1, alias_name: 'Pass'}
+                        ]
                     }
                 },
                 {
@@ -698,38 +727,42 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Bad'},
+                            {mrid: '', value: 1, alias_name: 'Poor'},
+                            {mrid: '', value: 2, alias_name: 'Fair'},
+                            {mrid: '', value: 3, alias_name: 'Good'}
+                        ]
                     }
                 }
             ]
             let table = [
                 {
                     tripCoilNo: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "string"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'string'
                     },
                     rmeas: {
-                        mrid: "",
-                        value: "",
-                        unit: "Ω",
-                        type: "analog"
+                        mrid: '',
+                        value: '',
+                        unit: 'Ω',
+                        type: 'analog'
                     },
                     assessment: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "discrete"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
                     },
                     condition_indicator: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "discrete"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
                     }
-                },
+                }
             ]
             return {
                 limits: 'Absolute',
@@ -745,14 +778,14 @@ export default {
                     name: 'Close Coil No',
                     code: 'closeCoilNo',
                     unit: '',
-                    type: 'string',
+                    type: 'string'
                 },
                 {
                     mrid: '',
                     name: 'R meas',
                     code: 'rmeas',
                     unit: 'Ω',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
@@ -761,7 +794,10 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Fail'},
+                            {mrid: '', value: 1, alias_name: 'Pass'}
+                        ]
                     }
                 },
                 {
@@ -771,38 +807,42 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Bad'},
+                            {mrid: '', value: 1, alias_name: 'Poor'},
+                            {mrid: '', value: 2, alias_name: 'Fair'},
+                            {mrid: '', value: 3, alias_name: 'Good'}
+                        ]
                     }
                 }
             ]
             let table = [
                 {
                     closeCoilNo: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "string"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'string'
                     },
                     rmeas: {
-                        mrid: "",
-                        value: "",
-                        unit: "Ω",
-                        type: "analog"
+                        mrid: '',
+                        value: '',
+                        unit: 'Ω',
+                        type: 'analog'
                     },
                     assessment: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "discrete"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
                     },
                     condition_indicator: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "discrete"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
                     }
-                },
+                }
             ]
             return {
                 limits: 'Absolute',
@@ -818,7 +858,7 @@ export default {
                     name: 'R meas',
                     code: 'rmeas',
                     unit: 'Ω',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
@@ -827,7 +867,10 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Fail'},
+                            {mrid: '', value: 1, alias_name: 'Pass'}
+                        ]
                     }
                 },
                 {
@@ -837,30 +880,34 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Bad'},
+                            {mrid: '', value: 1, alias_name: 'Poor'},
+                            {mrid: '', value: 2, alias_name: 'Fair'},
+                            {mrid: '', value: 3, alias_name: 'Good'}
+                        ]
                     }
                 }
             ]
             let table = [
                 {
                     rmeas: {
-                        mrid: "",
-                        value: "",
-                        unit: "Ω",
-                        type: "analog"
+                        mrid: '',
+                        value: '',
+                        unit: 'Ω',
+                        type: 'analog'
                     },
                     assessment: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "discrete"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
                     },
                     condition_indicator: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "discrete"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
                     }
                 }
             ]
@@ -871,20 +918,20 @@ export default {
             }
         },
         async initinsulationResistanceCircuit(assetData = null) {
-            const { circuitBreaker } = this.getAssetData(assetData)
+            const {circuitBreaker} = this.getAssetData(assetData)
             let table = []
             for (let i = 0; i < circuitBreaker.numberOfPhase; i++) {
                 if (i % circuitBreaker.numberOfPhase === 0) {
                     table.push({
-                        measure: "Phase A - (B+C+GND)"
+                        measure: 'Phase A - (B+C+GND)'
                     })
                 } else if (i % circuitBreaker.numberOfPhase === 1) {
                     table.push({
-                        measure: "Phase B - (A+C+GND)"
+                        measure: 'Phase B - (A+C+GND)'
                     })
                 } else {
                     table.push({
-                        measure: "Phase C - (A+B+GND)"
+                        measure: 'Phase C - (A+B+GND)'
                     })
                 }
             }
@@ -904,21 +951,21 @@ export default {
                     name: 'Trip coil no.',
                     code: 'tripCoilNo',
                     unit: '',
-                    type: 'string',
+                    type: 'string'
                 },
                 {
                     mrid: '',
                     name: 'Test voltage',
                     code: 'testVoltage',
                     unit: 'V',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
                     name: 'R60s',
                     code: 'r60s',
                     unit: 'MΩ',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
@@ -927,7 +974,10 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Fail'},
+                            {mrid: '', value: 1, alias_name: 'Pass'}
+                        ]
                     }
                 },
                 {
@@ -937,44 +987,48 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Bad'},
+                            {mrid: '', value: 1, alias_name: 'Poor'},
+                            {mrid: '', value: 2, alias_name: 'Fair'},
+                            {mrid: '', value: 3, alias_name: 'Good'}
+                        ]
                     }
                 }
             ]
             let table = [
                 {
                     tripCoilNo: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "string"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'string'
                     },
                     testVoltage: {
-                        mrid: "",
-                        value: "",
-                        unit: "V",
-                        type: "analog"
+                        mrid: '',
+                        value: '',
+                        unit: 'V',
+                        type: 'analog'
                     },
                     r60s: {
-                        mrid: "",
-                        value: "",
-                        unit: "MΩ",
-                        type: "analog"
+                        mrid: '',
+                        value: '',
+                        unit: 'MΩ',
+                        type: 'analog'
                     },
                     assessment: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "discrete"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
                     },
                     condition_indicator: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "discrete"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
                     }
-                },
+                }
             ]
             return {
                 assessment: {
@@ -993,21 +1047,21 @@ export default {
                     name: 'Close coil no.',
                     code: 'closeCoilNo',
                     unit: '',
-                    type: 'string',
+                    type: 'string'
                 },
                 {
                     mrid: '',
                     name: 'Test voltage',
                     code: 'testVoltage',
                     unit: 'V',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
                     name: 'R60s',
                     code: 'r60s',
                     unit: 'MΩ',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
@@ -1016,7 +1070,10 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Fail'},
+                            {mrid: '', value: 1, alias_name: 'Pass'}
+                        ]
                     }
                 },
                 {
@@ -1026,44 +1083,48 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Bad'},
+                            {mrid: '', value: 1, alias_name: 'Poor'},
+                            {mrid: '', value: 2, alias_name: 'Fair'},
+                            {mrid: '', value: 3, alias_name: 'Good'}
+                        ]
                     }
                 }
             ]
             let table = [
                 {
                     closeCoilNo: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "string"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'string'
                     },
                     testVoltage: {
-                        mrid: "",
-                        value: "",
-                        unit: "V",
-                        type: "analog"
+                        mrid: '',
+                        value: '',
+                        unit: 'V',
+                        type: 'analog'
                     },
                     r60s: {
-                        mrid: "",
-                        value: "",
-                        unit: "MΩ",
-                        type: "analog"
+                        mrid: '',
+                        value: '',
+                        unit: 'MΩ',
+                        type: 'analog'
                     },
                     assessment: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "discrete"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
                     },
                     condition_indicator: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "discrete"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
                     }
-                },
+                }
             ]
             return {
                 assessment: {
@@ -1082,14 +1143,14 @@ export default {
                     name: 'Test voltage',
                     code: 'testVoltage',
                     unit: 'V',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
                     name: 'R60s',
                     code: 'r60s',
                     unit: 'MΩ',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
@@ -1098,7 +1159,10 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Fail'},
+                            {mrid: '', value: 1, alias_name: 'Pass'}
+                        ]
                     }
                 },
                 {
@@ -1108,38 +1172,42 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Bad'},
+                            {mrid: '', value: 1, alias_name: 'Poor'},
+                            {mrid: '', value: 2, alias_name: 'Fair'},
+                            {mrid: '', value: 3, alias_name: 'Good'}
+                        ]
                     }
                 }
             ]
             let table = [
                 {
                     testVoltage: {
-                        mrid: "",
-                        value: "",
-                        unit: "V",
-                        type: "analog"
+                        mrid: '',
+                        value: '',
+                        unit: 'V',
+                        type: 'analog'
                     },
                     r60s: {
-                        mrid: "",
-                        value: "",
-                        unit: "MΩ",
-                        type: "analog"
+                        mrid: '',
+                        value: '',
+                        unit: 'MΩ',
+                        type: 'analog'
                     },
                     assessment: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "discrete"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
                     },
                     condition_indicator: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "discrete"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
                     }
-                },
+                }
             ]
             return {
                 assessment: {
@@ -1152,14 +1220,14 @@ export default {
             }
         },
         async initsf6MoiturePurity() {
-            let data = ["moitureTable", "purityTable"]
+            let data = ['moitureTable', 'purityTable']
             const moitureRow_data = [
                 {
                     mrid: '',
                     name: 'Moiture',
                     code: 'moiture',
                     unit: 'ppm',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
@@ -1168,7 +1236,10 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Fail'},
+                            {mrid: '', value: 1, alias_name: 'Pass'}
+                        ]
                     }
                 },
                 {
@@ -1178,8 +1249,12 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Bad'},
+                            {mrid: '', value: 1, alias_name: 'Poor'},
+                            {mrid: '', value: 2, alias_name: 'Fair'},
+                            {mrid: '', value: 3, alias_name: 'Good'}
+                        ]
                     }
                 }
             ]
@@ -1189,7 +1264,7 @@ export default {
                     name: 'Purity',
                     code: 'purity',
                     unit: '%',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
@@ -1198,7 +1273,10 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Fail'},
+                            {mrid: '', value: 1, alias_name: 'Pass'}
+                        ]
                     }
                 },
                 {
@@ -1208,55 +1286,58 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Bad'},
+                            {mrid: '', value: 1, alias_name: 'Poor'},
+                            {mrid: '', value: 2, alias_name: 'Fair'},
+                            {mrid: '', value: 3, alias_name: 'Good'}
+                        ]
                     }
                 }
             ]
             let moitureTable = []
             let purityTable = []
-            data.forEach(element => {
-                if (element === "moitureTable") {
+            data.forEach((element) => {
+                if (element === 'moitureTable') {
                     moitureTable.push({
                         moiture: {
-                            mrid: "",
-                            value: "",
-                            unit: "ppm",
-                            type: "analog"
+                            mrid: '',
+                            value: '',
+                            unit: 'ppm',
+                            type: 'analog'
                         },
                         assessment: {
-                            mrid: "",
-                            value: "",
-                            unit: "",
-                            type: "discrete"
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
                         },
                         condition_indicator: {
-                            mrid: "",
-                            value: "",
-                            unit: "",
-                            type: "discrete"
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
                         }
                     })
-                }
-                else if (element === "purityTable") {
+                } else if (element === 'purityTable') {
                     purityTable.push({
                         purity: {
-                            mrid: "",
-                            value: "",
-                            unit: "%",
-                            type: "analog"
+                            mrid: '',
+                            value: '',
+                            unit: '%',
+                            type: 'analog'
                         },
                         assessment: {
-                            mrid: "",
-                            value: "",
-                            unit: "",
-                            type: "discrete"
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
                         },
                         condition_indicator: {
-                            mrid: "",
-                            value: "",
-                            unit: "",
-                            type: "discrete"
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
                         }
                     })
                 }
@@ -1278,15 +1359,14 @@ export default {
             }
         },
         async initsf6GasAnalysis() {
-
-            let data = ["decomSf6Table", "so2Sof2Table", "hfTable"]
+            let data = ['decomSf6Table', 'so2Sof2Table', 'hfTable']
             const decomSf6Row_data = [
                 {
                     mrid: '',
                     name: 'Decomposition of SF6',
                     code: 'decomSf6',
                     unit: 'ppm',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
@@ -1295,7 +1375,10 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Fail'},
+                            {mrid: '', value: 1, alias_name: 'Pass'}
+                        ]
                     }
                 },
                 {
@@ -1305,8 +1388,12 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Bad'},
+                            {mrid: '', value: 1, alias_name: 'Poor'},
+                            {mrid: '', value: 2, alias_name: 'Fair'},
+                            {mrid: '', value: 3, alias_name: 'Good'}
+                        ]
                     }
                 }
             ]
@@ -1316,7 +1403,7 @@ export default {
                     name: 'SO2 + SOF2',
                     code: 'so2Sof2',
                     unit: 'ppm',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
@@ -1325,7 +1412,10 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Fail'},
+                            {mrid: '', value: 1, alias_name: 'Pass'}
+                        ]
                     }
                 },
                 {
@@ -1335,8 +1425,12 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Bad'},
+                            {mrid: '', value: 1, alias_name: 'Poor'},
+                            {mrid: '', value: 2, alias_name: 'Fair'},
+                            {mrid: '', value: 3, alias_name: 'Good'}
+                        ]
                     }
                 }
             ]
@@ -1346,7 +1440,7 @@ export default {
                     name: 'HF',
                     code: 'hf',
                     unit: 'ppm',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
@@ -1355,7 +1449,10 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Fail'},
+                            {mrid: '', value: 1, alias_name: 'Pass'}
+                        ]
                     }
                 },
                 {
@@ -1365,78 +1462,80 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Bad'},
+                            {mrid: '', value: 1, alias_name: 'Poor'},
+                            {mrid: '', value: 2, alias_name: 'Fair'},
+                            {mrid: '', value: 3, alias_name: 'Good'}
+                        ]
                     }
                 }
             ]
             let decomSf6Table = []
             let so2Sof2Table = []
             let hfTable = []
-            data.forEach(element => {
-                if (element === "decomSf6Table") {
+            data.forEach((element) => {
+                if (element === 'decomSf6Table') {
                     decomSf6Table.push({
                         decomSf6: {
-                            mrid: "",
-                            value: "123",
-                            unit: "ppm",
-                            type: "analog"
+                            mrid: '',
+                            value: '123',
+                            unit: 'ppm',
+                            type: 'analog'
                         },
                         assessment: {
-                            mrid: "",
-                            value: "333",
-                            unit: "",
-                            type: "discrete"
+                            mrid: '',
+                            value: '333',
+                            unit: '',
+                            type: 'discrete'
                         },
                         condition_indicator: {
-                            mrid: "",
-                            value: "2323",
-                            unit: "",
-                            type: "discrete"
+                            mrid: '',
+                            value: '2323',
+                            unit: '',
+                            type: 'discrete'
                         }
                     })
-                }
-                else if (element === "so2Sof2Table") {
+                } else if (element === 'so2Sof2Table') {
                     so2Sof2Table.push({
                         so2Sof2: {
-                            mrid: "",
-                            value: "",
-                            unit: "ppm",
-                            type: "analog"
+                            mrid: '',
+                            value: '',
+                            unit: 'ppm',
+                            type: 'analog'
                         },
                         assessment: {
-                            mrid: "",
-                            value: "",
-                            unit: "",
-                            type: "discrete"
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
                         },
                         condition_indicator: {
-                            mrid: "",
-                            value: "",
-                            unit: "",
-                            type: "discrete"
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
                         }
                     })
-                }
-                else if (element === "hfTable") {
+                } else if (element === 'hfTable') {
                     hfTable.push({
                         hf: {
-                            mrid: "",
-                            value: "",
-                            unit: "ppm",
-                            type: "analog"
+                            mrid: '',
+                            value: '',
+                            unit: 'ppm',
+                            type: 'analog'
                         },
                         assessment: {
-                            mrid: "",
-                            value: "",
-                            unit: "",
-                            type: "discrete"
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
                         },
                         condition_indicator: {
-                            mrid: "",
-                            value: "",
-                            unit: "",
-                            type: "discrete"
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
                         }
                     })
                 }
@@ -1466,21 +1565,21 @@ export default {
                     name: 'SF6 pressure',
                     code: 'sf6Pressure',
                     unit: 'MPa',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
                     name: 'Alarm',
                     code: 'alarm',
                     unit: 'MPa',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
                     name: 'Lockout',
                     code: 'lockout',
                     unit: 'MPa',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
@@ -1489,7 +1588,10 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Fail'},
+                            {mrid: '', value: 1, alias_name: 'Pass'}
+                        ]
                     }
                 },
                 {
@@ -1499,43 +1601,49 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Bad'},
+                            {mrid: '', value: 1, alias_name: 'Poor'},
+                            {mrid: '', value: 2, alias_name: 'Fair'},
+                            {mrid: '', value: 3, alias_name: 'Good'}
+                        ]
                     }
                 }
             ]
-            let pressureGaugeTable = [{
-                sf6Pressure: {
-                    mrid: "",
-                    value: "",
-                    unit: "MPa",
-                    type: "analog"
-                },
-                alarm: {
-                    mrid: "",
-                    value: "",
-                    unit: "MPa",
-                    type: "analog"
-                },
-                lockout: {
-                    mrid: "",
-                    value: "",
-                    unit: "MPa",
-                    type: "analog"
-                },
-                assessment: {
-                    mrid: "",
-                    value: "",
-                    unit: "",
-                    type: "discrete"
-                },
-                condition_indicator: {
-                    mrid: "",
-                    value: "",
-                    unit: "",
-                    type: "discrete"
+            let pressureGaugeTable = [
+                {
+                    sf6Pressure: {
+                        mrid: '',
+                        value: '',
+                        unit: 'MPa',
+                        type: 'analog'
+                    },
+                    alarm: {
+                        mrid: '',
+                        value: '',
+                        unit: 'MPa',
+                        type: 'analog'
+                    },
+                    lockout: {
+                        mrid: '',
+                        value: '',
+                        unit: 'MPa',
+                        type: 'analog'
+                    },
+                    assessment: {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
+                    },
+                    condition_indicator: {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
+                    }
                 }
-            }]
+            ]
             return {
                 row_data: row_data,
                 limits: 'Absolute',
@@ -1551,14 +1659,14 @@ export default {
                     name: 'Trip coil no.',
                     code: 'tripCoilNo',
                     unit: '',
-                    type: 'string',
+                    type: 'string'
                 },
                 {
                     mrid: '',
                     name: 'Trip current',
                     code: 'tripCurrent',
                     unit: 'mA',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
@@ -1567,7 +1675,10 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Fail'},
+                            {mrid: '', value: 1, alias_name: 'Pass'}
+                        ]
                     }
                 },
                 {
@@ -1577,38 +1688,42 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Bad'},
+                            {mrid: '', value: 1, alias_name: 'Poor'},
+                            {mrid: '', value: 2, alias_name: 'Fair'},
+                            {mrid: '', value: 3, alias_name: 'Good'}
+                        ]
                     }
                 }
             ]
             let table = [
                 {
                     tripCoilNo: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "string"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'string'
                     },
                     tripCurrent: {
-                        mrid: "",
-                        value: "",
-                        unit: "mA",
-                        type: "analog"
+                        mrid: '',
+                        value: '',
+                        unit: 'mA',
+                        type: 'analog'
                     },
                     assessment: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "discrete"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
                     },
                     condition_indicator: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "discrete"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
                     }
-                },
+                }
             ]
             return {
                 row_data: row_data,
@@ -1622,14 +1737,14 @@ export default {
                     name: 'Trip coil no.',
                     code: 'tripCoilNo',
                     unit: '',
-                    type: 'string',
+                    type: 'string'
                 },
                 {
                     mrid: '',
                     name: 'Trip voltage',
                     code: 'tripVoltage',
                     unit: 'V',
-                    type: 'analog',
+                    type: 'analog'
                 },
                 {
                     mrid: '',
@@ -1638,7 +1753,10 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Fail'},
+                            {mrid: '', value: 1, alias_name: 'Pass'}
+                        ]
                     }
                 },
                 {
@@ -1648,36 +1766,40 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Bad'},
+                            {mrid: '', value: 1, alias_name: 'Poor'},
+                            {mrid: '', value: 2, alias_name: 'Fair'},
+                            {mrid: '', value: 3, alias_name: 'Good'}
+                        ]
                     }
                 }
             ]
             let table = [
                 {
                     tripCoilNo: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "string"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'string'
                     },
                     tripVoltage: {
-                        mrid: "",
-                        value: "",
-                        unit: "V",
-                        type: "analog"
+                        mrid: '',
+                        value: '',
+                        unit: 'V',
+                        type: 'analog'
                     },
                     assessment: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "discrete"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
                     },
                     condition_indicator: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "discrete"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
                     }
                 }
             ]
@@ -1693,7 +1815,7 @@ export default {
                     name: 'Items',
                     code: 'items',
                     unit: '',
-                    type: 'string',
+                    type: 'string'
                 },
                 {
                     mrid: '',
@@ -1702,7 +1824,10 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Fail' }, { mrid: '', value: 1, alias_name: 'Pass' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Fail'},
+                            {mrid: '', value: 1, alias_name: 'Pass'}
+                        ]
                     }
                 },
                 {
@@ -1712,34 +1837,49 @@ export default {
                     type: 'discrete',
                     pool: {
                         mrid: '',
-                        valueToAlias: [{ mrid: '', value: 0, alias_name: 'Bad' }, { mrid: '', value: 1, alias_name: 'Poor' },
-                        { mrid: '', value: 2, alias_name: 'Fair' }, { mrid: '', value: 3, alias_name: 'Good' }]
+                        valueToAlias: [
+                            {mrid: '', value: 0, alias_name: 'Bad'},
+                            {mrid: '', value: 1, alias_name: 'Poor'},
+                            {mrid: '', value: 2, alias_name: 'Fair'},
+                            {mrid: '', value: 3, alias_name: 'Good'}
+                        ]
                     }
                 }
             ]
             let table = []
-            const data = ['Nameplate', 'Installation check', 'Grounding check', 'SF6 pressure check', 'Mechanical operating', 'Close at 75% control voltage',
-                'Ground frame', 'Open at 70% control voltage', 'Checking local control', 'Checking remote control', 'Check interlocking circuit by SF6 gas pressure',
-                'Check contact resistance of auxiliary contacts']
-            data.forEach(element => {
+            const data = [
+                'Nameplate',
+                'Installation check',
+                'Grounding check',
+                'SF6 pressure check',
+                'Mechanical operating',
+                'Close at 75% control voltage',
+                'Ground frame',
+                'Open at 70% control voltage',
+                'Checking local control',
+                'Checking remote control',
+                'Check interlocking circuit by SF6 gas pressure',
+                'Check contact resistance of auxiliary contacts'
+            ]
+            data.forEach((element) => {
                 table.push({
                     items: {
-                        mrid: "",
+                        mrid: '',
                         value: element,
-                        unit: "",
-                        type: "string"
+                        unit: '',
+                        type: 'string'
                     },
                     assessment: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "discrete"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
                     },
                     condition_indicator: {
-                        mrid: "",
-                        value: "",
-                        unit: "",
-                        type: "discrete"
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
                     }
                 })
             })
