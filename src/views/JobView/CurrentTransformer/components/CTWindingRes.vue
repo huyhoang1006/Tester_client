@@ -92,7 +92,7 @@
 
 <script>
 export default {
-    name :"CTWindingRes",
+    name :"CTWindingResistance",
     data() {
         return {
             openAssessmentDialog: false,

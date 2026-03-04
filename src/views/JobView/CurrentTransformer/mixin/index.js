@@ -15,13 +15,8 @@ export default {
     methods: {
         async saveJob() {
             try { 
-                if (!this.currentTransformerJobDto.properties.name || this.currentTransformerJobDto.properties.name === '') {
-                    
+                if (!this.currentTransformerJobDto.properties.name || this.currentTransformerJobDto.properties.name === '') {              
                     this.$message.error('Name is required');
-                    return {
-                        success: false,
-                        message: 'Name is required'
-                    };
                 } else {
                     const dto = JSON.parse(JSON.stringify(this.currentTransformerJobDto));      
                     const resultDto = await this.checkJob(dto);
@@ -29,15 +24,13 @@ export default {
                     const old_entity = currentTransformerJobMapping.jobDtoToEntity(this.currentTransformerJobDtoOld);
                     const rs = await window.electronAPI.insertCurrentTransformerJob(old_entity, entity);
             
-                    if (rs.success) {
-                        
+                    if (rs.success) {                        
                         return {
                             success: true,
                             data: rs.data,
                             message: 'Job saved successfully'
                         }
-                    } else {
-                       
+                    } else {                      
                         return {
                             success: false,
                             message: rs.message || 'Failed to save job'
@@ -59,6 +52,7 @@ export default {
             if (result.success) {
             const dto = currentTransformerJobMapping.JobEntityToDto(result.data);
             this.loadData(dto);
+            this.$message.success(result.message);
             } else {
                 this.$message.error(result.message);
             }
@@ -197,7 +191,7 @@ export default {
                 if(data.procedureAsset.map(x => x.procedure_id).indexOf(test.testTypeId) === -1) {
                     data.procedureAsset.push({
                         procedure_id: test.testTypeId,
-                        asset_id: this.assetData.mrid
+                        asset_id: this.assetData.asset.mrid
                     });
                 }
             }
