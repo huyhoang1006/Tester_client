@@ -29,6 +29,7 @@ class OrganisationDto {
         this.userId = ''
         this.userName = ''
         this.organisationId = ''
+        this.aliasName = ''
         this.electronicAddressId = ''
         this.townDetailId = ''
         this.configurationEvent = []

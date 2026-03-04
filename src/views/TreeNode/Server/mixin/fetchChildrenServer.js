@@ -11,6 +11,7 @@ export default {
                         if (newRowsOwner && newRowsOwner.length > 0) {
                             newRowsOwner.forEach((row) => {
                                 row.id = row.mrid || row.id || ''
+                                row.mrid = row.mrid || row.id || ''
                                 row.name = row.name || ''
                                 row.aliasName = row.shortName || row.name || ''
                                 row.parentId = node.mrid
@@ -18,6 +19,7 @@ export default {
                                 row.parentName = node.parentName + '/' + node.name
                                 row.parentArr = [...node.parentArr]
                                 row.parentArr.push({
+                                    mrid: node.mrid,
                                     id: node.id,
                                     parent: node.aliasName || node.name
                                 })
@@ -28,6 +30,7 @@ export default {
                         if (newRowsSubstation && newRowsSubstation.length > 0) {
                             newRowsSubstation.forEach((row) => {
                                 row.id = row.mrid || row.id || ''
+                                row.mrid = row.mrid || row.id || ''
                                 row.name = row.name || ''
                                 row.aliasName = row.shortName || row.name || ''
                                 row.parentId = node.mrid
@@ -35,6 +38,7 @@ export default {
                                 row.parentName = node.parentName + '/' + node.name
                                 row.parentArr = [...node.parentArr]
                                 row.parentArr.push({
+                                    mrid: node.mrid,
                                     id: node.id,
                                     parent: node.aliasName || node.name
                                 })
@@ -47,6 +51,7 @@ export default {
                             if (newRowsBay && newRowsBay.length > 0) {
                                 newRowsBay.forEach((row) => {
                                     row.id = row.mrid || row.id || ''
+                                    row.mrid = row.mrid || row.id || ''
                                     row.name = row.name || ''
                                     row.aliasName = row.shortName || row.name || ''
                                     row.parentId = node.mrid
@@ -54,6 +59,7 @@ export default {
                                     row.parentName = node.parentName + '/' + node.name
                                     row.parentArr = [...node.parentArr]
                                     row.parentArr.push({
+                                        mrid: node.mrid,
                                         id: node.id,
                                         parent: node.aliasName || node.name
                                     })
@@ -68,6 +74,7 @@ export default {
                             if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
                                 newRowsVoltageLevel.forEach((row) => {
                                     row.id = row.mrid || row.id || ''
+                                    row.mrid = row.mrid || row.id || ''
                                     row.name = row.name || ''
                                     row.aliasName = row.shortName || row.name || ''
                                     row.parentId = node.mrid
@@ -75,6 +82,7 @@ export default {
                                     row.parentName = node.parentName + '/' + node.name
                                     row.parentArr = [...node.parentArr]
                                     row.parentArr.push({
+                                        mrid: node.mrid,
                                         id: node.id,
                                         parent: node.aliasName || node.name
                                     })
@@ -90,6 +98,7 @@ export default {
                             if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
                                 newRowsVoltageLevel.forEach((row) => {
                                     row.id = row.mrid || row.id || ''
+                                    row.mrid = row.mrid || row.id || ''
                                     row.name = row.name || ''
                                     row.aliasName = row.shortName || row.name || ''
                                     row.parentId = node.mrid
@@ -97,6 +106,7 @@ export default {
                                     row.parentName = node.parentName + '/' + node.name
                                     row.parentArr = [...node.parentArr]
                                     row.parentArr.push({
+                                        mrid: node.mrid,
                                         id: node.id,
                                         parent: node.aliasName || node.name
                                     })
@@ -112,6 +122,7 @@ export default {
                             if (newRowsBay && newRowsBay.length > 0) {
                                 newRowsBay.forEach((row) => {
                                     row.id = row.mrid || row.id || ''
+                                    row.mrid = row.mrid || row.id || ''
                                     row.name = row.name || ''
                                     row.aliasName = row.shortName || row.name || ''
                                     row.parentId = node.mrid
@@ -119,6 +130,7 @@ export default {
                                     row.parentName = node.parentName + '/' + node.name
                                     row.parentArr = [...node.parentArr]
                                     row.parentArr.push({
+                                        mrid: node.mrid,
                                         id: node.id,
                                         parent: node.aliasName || node.name
                                     })
@@ -134,6 +146,7 @@ export default {
                             if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
                                 newRowsVoltageLevel.forEach((row) => {
                                     row.id = row.mrid || row.id || ''
+                                    row.mrid = row.mrid || row.id || ''
                                     row.name = row.name || ''
                                     row.aliasName = row.shortName || row.name || ''
                                     row.parentId = node.mrid
@@ -142,6 +155,7 @@ export default {
                                     row.parentName = node.parentName + '/' + node.name
                                     row.parentArr = [...node.parentArr]
                                     row.parentArr.push({
+                                        mrid: node.mrid,
                                         id: node.id,
                                         parent: node.aliasName || node.name
                                     })

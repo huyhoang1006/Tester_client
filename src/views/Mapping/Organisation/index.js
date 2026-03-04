@@ -7,6 +7,7 @@ export const OrgDtoToOrgEntity = (orgDto) => {
     // Organisation
     orgEntity.organisation.mrid = orgDto.organisationId || null;
     orgEntity.organisation.name = orgDto.name || null;
+    orgEntity.organisation.alias_name = orgDto.aliasName || null;
     orgEntity.organisation.tax_code = orgDto.tax_code || null;
     orgEntity.organisation.description = orgDto.comment || null;
     orgEntity.organisation.street_address = orgDto.streetAddressId || null;
