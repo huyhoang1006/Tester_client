@@ -24,7 +24,6 @@ export const insertCurrentTransformerJobEntity = async (old_entity,entity) => {
             }
             return result;
         } else {
-            backupAllFilesInDir(null, null, entity.oldWork.mrid);
             const syncResult = syncFilesWithDeletion(JSON.parse(entity.attachment.path), null, entity.oldWork.mrid);
             if (!syncResult.success) {
                 restoreFiles(null, null, entity.oldWork.mrid);
@@ -39,7 +38,6 @@ export const insertCurrentTransformerJobEntity = async (old_entity,entity) => {
 
             for(const attachment of entity.attachmentTest) {
                 if(attachment.id && Array.isArray(JSON.parse(attachment.path))) {
-                    backupAllFilesInDir(null, null, attachment.id_foreign);
                     const syncResult = syncFilesWithDeletion(JSON.parse(attachment.path), null, attachment.id_foreign);
                     if (!syncResult.success) {
                         restoreFiles(null, null, attachment.id_foreign);
@@ -241,22 +239,12 @@ export const insertCurrentTransformerJobEntity = async (old_entity,entity) => {
             }
 
             await runAsync('COMMIT');
-            deleteBackupFiles(null, entity.oldWork.mrid);
-            for(const attachment of entity.attachmentTest) {
-                deleteBackupFiles(null, attachment.id_foreign);
-            }
             return { success: true, data: entity, message: 'Current Transformer Job entity inserted successfully' };
 
         }
     } catch (error) {
         await runAsync('ROLLBACK');
         console.error('Error retrieving Current Transformer entity:', error);
-        restoreFiles(null, null, entity.oldWork.mrid);
-        deleteBackupFiles(null, entity.oldWork.mrid);
-        for(const attachment of entity.attachmentTest) {
-            restoreFiles(null, null, attachment.id_foreign);
-            deleteBackupFiles(null, attachment.id_foreign);
-        }
         return { success: false, error, message: 'Error retrieving Current Transformer entity' };
     }
 }
