@@ -12,11 +12,7 @@
         <component 
             ref="jobData" 
             :is="checkJobType" 
-            :locationData="locationData" 
-            :assetData="assetData"
-            :productAssetModelData="productAssetModelData" 
             :parent="parentOrganization"
-            :testTypeListData="testTypeListData"
         />
         <span slot="footer" class="dialog-footer custom-footer">
             <el-button class="footer-btn" size="small" type="danger" @click="handleCancel">Cancel</el-button>

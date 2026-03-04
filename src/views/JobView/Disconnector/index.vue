@@ -1,37 +1,29 @@
 <template>
     <div id="job">
-        <el-row :gutter="20"  style="padding: 0">
-            <el-tabs  type="card">
+        <el-row :gutter="20" style="padding: 0">
+            <el-tabs type="card">
                 <!-- Overview -->
                 <el-tab-pane style="width: 100%;">
                     <span slot="label"><i class="fa-solid fa-book"></i> Overview</span>
-                <overview 
-                :data="disconnectorJobDto.properties" 
-                @update-attachment="updateAttachmentOverView" 
-                :attachmentData.sync="disconnectorJobDto.attachmentData" 
-                :locationData="locationData" 
-                :assetData="assetData" 
-                :productAssetModelData="productAssetModelData" 
-                :parentOrganization="parentOrganization">
-                </overview>
+                    <overview :data="disconnectorJobDto.properties" @update-attachment="updateAttachmentOverView"
+                        :attachmentData.sync="disconnectorJobDto.attachmentData" :locationData="locationData"
+                        :assetData="assetData" :productAssetModelData="productAssetModelData"
+                        :parentOrganization="parentOrganization">
+                    </overview>
                 </el-tab-pane>
 
                 <!-- Select test -->
                 <el-tab-pane>
                     <span slot="label"><i class="fa-solid fa-list-check"></i> Select test</span>
-                    <select-test style="width: 100%;"
-                        :data="disconnectorJobDto.testList" 
-                        :testTypeListData="testTypeListData"
-                        :assetData="assetData"
-                        :obj-active-name="objActiveName"
-                        :attachmentArr.sync="attachmentArr"
-                        :testconditionArr.sync="testconditionArr"
-                        ></select-test>
+                    <select-test style="width: 100%;" :data="disconnectorJobDto.testList"
+                        :testTypeListData="testTypeListData" :assetData="assetData" :obj-active-name="objActiveName"
+                        :attachmentArr.sync="attachmentArr" :testconditionArr.sync="testconditionArr"></select-test>
                 </el-tab-pane>
                 <el-tab-pane>
                     <span slot="label"><i class="fa-solid fa-list-check"></i> Testing equipment</span>
                     <div>
-                        <testing-equipment :data="disconnectorJobDto.testingEquipmentData" :testTypeListData="testTypeListData"></testing-equipment>
+                        <testing-equipment :data="disconnectorJobDto.testingEquipmentData"
+                            :testTypeListData="testTypeListData"></testing-equipment>
                     </div>
                 </el-tab-pane>
                 <!-- Tests -->
@@ -39,19 +31,12 @@
                     <span slot="label"><i class="fa-solid fa-calculator"></i> Tests</span>
                     <div id="tests" style="width: 100%;">
                         <el-tabs v-model="objActiveName.activeName" type="card" class="w-100 h-100">
-                            <el-tab-pane v-for="(item, index) in disconnectorJobDto.testList" :key="item.tabId" :label="item.name" :name="item.tabId">
-                                <test-information
-                                title="Test"
-                                :data="testconditionArr[index]"
-                                :assetData="assetData"
-                                :attachment.sync="attachmentArr[index]"
-                                >
+                            <el-tab-pane v-for="(item, index) in disconnectorJobDto.testList" :key="item.tabId"
+                                :label="item.name" :name="item.tabId">
+                                <test-information title="Test" :data="testconditionArr[index]" :assetData="assetData"
+                                    :attachment.sync="attachmentArr[index]">
                                 </test-information>
-                                <component
-                                    :is="item.testTypeCode" 
-                                    :data="item.data" 
-                                    :asset="assetData" 
-                                    >
+                                <component :is="item.testTypeCode" :data="item.data" :asset="assetData">
                                 </component>
                             </el-tab-pane>
                         </el-tabs>
@@ -99,36 +84,25 @@ export default {
         PowerFrequency
     },
     props: {
-        locationData: {
-            type: Object,
-            default: () => ({})
-        },
-        assetData: {
-            type: Object,
-            default: () => ({})
-        },
-        productAssetModelData: {
-            type: Object,
-            default: () => ({})
-        },
         parentOrganization: {
             type: Object,
             default: () => ({})
         },
-        testTypeListData: {
-            type: Array,
-            default: () => []
-        }
     },
+
     mixins: [mixin],
     data() {
         return {
             objActiveName: {
                 activeName: null
-            }
+            },
+            testTypeListData: [],
+            assetData: {},
+            locationData: {},
+            productAssetModelData: {},
         }
     },
-    mounted() {},
+    mounted() { },
     methods: {
         updateAttachmentOverView(attachment) {
             this.disconnectorJobDto.attachmentData = attachment
@@ -145,15 +119,15 @@ export default {
 }
 
 ::v-deep(.el-tabs__item) {
-  font-size: 12px !important;
-  font-weight: bold !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
 }
 
 ::v-deep(.el-tabs__item.is-active) {
-  color: #fff !important;
-  background-color: var(--el-color-primary, #012596) !important;
-  border-radius: 4px 4px 0 0;
-  font-size: 12px !important;
+    color: #fff !important;
+    background-color: var(--el-color-primary, #012596) !important;
+    border-radius: 4px 4px 0 0;
+    font-size: 12px !important;
 }
 
 #tests,

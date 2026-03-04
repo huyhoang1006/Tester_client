@@ -1,7 +1,7 @@
 {
-  "testId": "bf3284e8-4b18-4be0-beb2-c240456ce0f0",
-  "testCode": "ControlCabinet",
-  "testName": "Control cabinet check",
+  "testId": "bfcc1ac2-6918-40fc-97bf-fa4fe345d0ea",
+  "testCode": "ShortCircuitPrimSec",
+  "testName": "Short-circuit prim-sec test",
   "columns": [
     {
       "mrid": "8d2fdece-b599-4270-a3bf-d0ce2c516d02",

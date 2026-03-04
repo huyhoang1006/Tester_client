@@ -21,19 +21,19 @@
     },
     {
       "mrid": "7eefc1db-4ceb-4ddd-92ff-5a9e662afc8e",
-      "code": "DcWindingPrim",
+      "code": "DCWindingPrim",
       "name": "DC Winding resistance Prim",
       "kind": "test"
     },
     {
       "mrid": "c4a3176d-c2d2-4903-932b-3fe6c6438c5b",
-      "code": "DcWindingSec",
+      "code": "DCWindingSec",
       "name": "DC Winding resistance Sec",
       "kind": "test"
     },
     {
       "mrid": "512b8d7c-9d11-419c-ae1c-ac7c4b2d08e6",
-      "code": "DcWindingTert",
+      "code": "DCWindingTert",
       "name": "DC Winding resistance Tert",
       "kind": "test"
     },
@@ -135,19 +135,19 @@
     },
     {
       "mrid": "bfcc1ac2-6918-40fc-97bf-fa4fe345d0ea",
-      "code": "ShortPrimSec",
+      "code": "ShortCircuitPrimSec",
       "name": "Short-circuit prim-sec test",
       "kind": "test"
     },
     {
       "mrid": "8edc2faa-fbb3-4012-9e36-eb87de6e162c",
-      "code": "ShortSecTert",
+      "code": "ShortCircuitSecTert",
       "name": "Short-circuit sec-tert test",
       "kind": "test"
     },
     {
       "mrid": "fc1a5eab-9169-4c1a-83eb-de45cd9e9c5e",
-      "code": "ShortPrimTert",
+      "code": "ShortCircuitPrimTert",
       "name": "Short-circuit prim-tert test",
       "kind": "test"
     },

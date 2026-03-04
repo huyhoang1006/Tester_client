@@ -7,7 +7,7 @@
                         <div style="font-size: 12px;" class="bolder">Testing conditions</div>
                         <el-divider></el-divider>
                         <table style="width: 100%;">
-                            <tr v-if="assetData.kind !=='Circuit breaker'">
+                            <tr v-if="assetData.kind !=='Circuit breaker' && conditions.top_oil_temp">
                                 <td class="condition-head">Top oil temperature</td>
                                 <td>
                                     <el-input size="mini" v-model="conditions.top_oil_temp.value">
@@ -15,7 +15,7 @@
                                     </el-input>
                                 </td>
                             </tr>
-                            <tr v-if="assetData.kind !=='Circuit breaker'">
+                            <tr v-if="assetData.kind !=='Circuit breaker' && conditions.bottom_oil_temp">
                                 <td class="condition-head">Bottom oil temperature</td>
                                 <td>
                                     <el-input size="mini" v-model="conditions.bottom_oil_temp.value">
@@ -23,7 +23,7 @@
                                     </el-input>
                                 </td>
                             </tr>
-                            <tr>
+                            <tr v-if="conditions.winding_temp">
                                 <td class="condition-head">Winding temperature</td>
                                 <td>
                                     <el-input size="mini" v-model="conditions.winding_temp.value">
@@ -31,7 +31,7 @@
                                     </el-input>
                                 </td>
                             </tr>
-                            <tr>
+                            <tr v-if="conditions.reference_temp">
                                 <td class="condition-head">Reference temperature</td>
                                 <td>
                                     <el-input size="mini" v-model="conditions.reference_temp.value">
@@ -39,7 +39,7 @@
                                     </el-input>
                                 </td>
                             </tr>
-                            <tr>
+                            <tr v-if="conditions.ambient_temp">
                                 <td class="condition-head">Ambient temperature</td>
                                 <td>
                                     <el-input size="mini" v-model="conditions.ambient_temp.value">
@@ -47,7 +47,7 @@
                                     </el-input>
                                 </td>
                             </tr>
-                            <tr>
+                            <tr v-if="conditions.humidity">
                                 <td class="condition-head">Humidity</td>
                                 <td>
                                     <el-input size="mini" v-model="conditions.humidity.value">
@@ -55,7 +55,7 @@
                                     </el-input>
                                 </td>
                             </tr>
-                            <tr>
+                            <tr v-if="conditions.weather">
                                 <td class="condition-head">Weather</td>
                                 <td>
                                     <el-input size="mini" v-model="conditions.weather.value">
@@ -114,7 +114,7 @@ export default {
     },
     computed: {
         conditions : function() {
-            return this.data.condition
+            return this.data.condition || {}
         },
         testConditions : function() {
             return this.data

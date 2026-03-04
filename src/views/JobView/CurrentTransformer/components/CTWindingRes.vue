@@ -38,22 +38,21 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testData.table">
-                    <tr :key="index">
+                <tr v-for="(item, index) in testData.table" :key="index">
                         <td>
                             <el-input size="mini" type="text" v-model="item.name.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.rmeas.value"></el-input>
+                            <el-input size="mini" type="text" v-model="item.r_meas.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.rref.value"></el-input>
+                            <el-input size="mini" type="text" v-model="item.r_ref.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.rcorr.value"></el-input>
+                            <el-input size="mini" type="text" v-model="item.r_corr.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.rdev.value"></el-input>
+                            <el-input size="mini" type="text" v-model="item.r_dev.value"></el-input>
                         </td>
                         <td>
                             <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -77,8 +76,7 @@
                                 <i class="fas fa-trash"></i>
                             </el-button>
                         </td>
-                    </tr>
-                </template>
+                </tr>
             </tbody>
         </table>
 
@@ -138,25 +136,25 @@ export default {
                     unit : "",
                     type : "string"
                 },
-                rmeas : {
+                r_meas : {
                     mrid : "",
                     value : "",
                     unit : "Ω",
                     type : "analog"
                 },
-                rref : {
+                r_ref : {
                     mrid : "",
                     value : "",
                     unit : "Ω",
                     type : "analog"
                 },
-                rcorr : {
+                r_corr : {
                     mrid : "",
                     value : "",
                     unit : "Ω",
                     type : "analog"
                 },
-                rdev : {
+                r_dev : {
                     mrid : "",
                     value : "",
                     unit : "%",
@@ -199,25 +197,25 @@ export default {
                     unit : "",
                     type : "string"
                 },
-                rmeas : {
+                r_meas : {
                     mrid : "",
                     value : "",
                     unit : "Ω",
                     type : "analog"
                 },
-                rref : {
+                r_ref : {
                     mrid : "",
                     value : "",
                     unit : "Ω",
                     type : "analog"
                 },
-                rcorr : {
+                r_corr : {
                     mrid : "",
                     value : "",
                     unit : "Ω",
                     type : "analog"
                 },
-                rdev : {
+                r_dev : {
                     mrid : "",
                     value : "",
                     unit : "%",
@@ -246,32 +244,32 @@ export default {
 
         calcRcorr() {
             this.testData.table.forEach((item) => {
-                if(!isNaN(parseFloat(item.rmeas))) {
-                    if(!isNaN(parseFloat(this.testConditionData.condition.winding_temperature)) && !isNaN(parseFloat(this.testConditionData.condition.reference_temperature))) {
-                        item.rcorr = parseFloat(parseFloat(item.rmeas) * (235+parseFloat(this.testConditionData.condition.reference_temperature))/(235+parseFloat(this.testConditionData.condition.winding_temperature))).toFixed(4)
+                if(!isNaN(parseFloat(item.r_meas.value))) {
+                    if(!isNaN(parseFloat(this.testConditionData.condition.winding_temperature.value)) && !isNaN(parseFloat(this.testConditionData.condition.reference_temperature.value))) {
+                        item.r_corr.value = parseFloat(parseFloat(item.r_meas.value) * (235+parseFloat(this.testConditionData.condition.reference_temperature.value))/(235+parseFloat(this.testConditionData.condition.winding_temperature.value))).toFixed(4)
                     }
                     else {
-                        item.rcorr = item.rmeas
+                        item.r_corr.value = item.r_meas.value
                     }
                 }
             })
         },
         calcRdev() {
             this.testData.table.forEach((item) => {
-                if(!isNaN(parseFloat(item.rmeas)) && !isNaN(parseFloat(item.rref)) && item.rref != 0) {
-                    item.rdev = (100 * (parseFloat(item.rmeas) - parseFloat(item.rref))/ parseFloat(item.rref)).toFixed(4)
+                if(!isNaN(parseFloat(item.r_meas.value)) && !isNaN(parseFloat(item.r_ref.value)) && item.r_ref.value != 0) {
+                    item.r_dev.value = (100 * (parseFloat(item.r_meas.value) - parseFloat(item.r_ref.value))/ parseFloat(item.r_ref.value)).toFixed(4)
                 }
             })
         },
         clear() {
             this.testData.table.forEach((element) => {
-                element.name = "",
-                element.rmeas = '',
-                element.rref = '',
-                element.rcorr = '',
-                element.rdev = '',
-                element.assessment = '',
-                element.condition_indicator = ''
+                element.name.value = "",
+                element.r_meas.value = '',
+                element.r_ref.value = '',
+                element.r_corr.value = '',
+                element.r_dev.value = '',
+                element.assessment.value = '',
+                element.condition_indicator.value = ''
             })
         },
         nameColor(data) {
