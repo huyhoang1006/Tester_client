@@ -10,6 +10,10 @@ export const getChildOrganisation = (organisationId) => {
     return client.get(`http://222.252.22.158:8087/api/organisation/get-child-organisation/${organisationId}`)
 }
 
+export const getOrganisationById = (organisationId) => {
+    return client.get(`http://222.252.22.158:8087/api/organisation/cim/${organisationId}`)
+}
+
 export const getChildSubstation = (organisationId) => {
     return client.get(`http://222.252.22.158:8087/api/substation/get-by-organisation/${organisationId}`)
 }

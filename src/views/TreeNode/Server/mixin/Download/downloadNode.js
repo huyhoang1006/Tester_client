@@ -199,17 +199,32 @@ export default {
                     }
                     // ===== HẾT SỬA =====
                     
-                    // Fetch từ API nếu chưa có data
+                    // Fetch từ API - LUÔN dùng API, không dùng cache
                     let ancestorData = null
-                    if (ancestor._serverData) {
-                        ancestorData = ancestor._serverData
-                    } else {
-                        try {
-                            const response = await demoAPI.getOrganisationById(ancestorId)
-                            ancestorData = response.data || response
-                        } catch (e) {
-                            console.warn('[STAGE 2.1] Could not fetch ancestor:', ancestorId, e.message)
+                    try {
+                        const response = await demoAPI.getOrganisationById(ancestorId)
+                        ancestorData = response.data || response
+                        
+                        // FIX: Nếu mRID null, dùng ancestorId làm mRID
+                        if (!ancestorData.mRID) {
+                            ancestorData.mRID = ancestorId
                         }
+                        if (!ancestorData.organisation) {
+                            ancestorData.organisation = {}
+                        }
+                        if (!ancestorData.organisation.mRID) {
+                            ancestorData.organisation.mRID = ancestorId
+                        }
+                        if (!ancestorData.organisation.parentOrganisation) {
+                            ancestorData.organisation.parentOrganisation = assignedParentId
+                        }
+                        
+                        console.log('[STAGE 2.1] API response for', ancestorId, ':', ancestorData)
+                        
+                    } catch (e) {
+                        // NẾU FAIL THÌ BÁO FAIL LUÔN
+                        console.error('[STAGE 2.1] ❌ API call FAILED for ancestor:', ancestorId, '- Error:', e.message)
+                        throw new Error(`Failed to fetch organisation ${ancestorId}: ${e.message}`)
                     }
                     
                     // Build ancestor object
@@ -229,20 +244,40 @@ export default {
             // 2. Thêm selected organisation vào cuối chain
             const selectedOrgId = node.mrid || node.id
             
-            // Fetch selected org data
+            // Fetch selected org data - LUÔN gọi API để lấy full details (bao gồm aliasName)
             let orgData = null
-            if (node._serverData) {
-                orgData = node._serverData
-            } else {
-                try {
-                    const response = await demoAPI.getChildOrganisation(selectedOrgId)
-                    if (response.data && Array.isArray(response.data)) {
-                        orgData = response.data.find(org => org.id == selectedOrgId || org.mrid == selectedOrgId)
-                    }
-                } catch (e) {
-                    console.warn('[STAGE 2.1] Could not fetch selected org:', selectedOrgId, e.message)
+            console.log('[STAGE 2.1] DEBUG: Fetching full org data for selected node:', selectedOrgId)
+            try {
+                // LUÔN gọi getOrganisationById để lấy chi tiết đầy đủ (bao gồm aliasName)
+                const response = await demoAPI.getOrganisationById(selectedOrgId)
+                console.log('[STAGE 2.1] DEBUG: Full API response:', response)
+                
+                // API trả về data trực tiếp (không có .data wrapper)
+                // Check if response IS the data (direct) or wrapped
+                if (response && typeof response === 'object' && response.aliasName) {
+                    // Direct response - use it directly
+                    orgData = response
+                    console.log('[STAGE 2.1] DEBUG: Using direct response')
+                } else if (response?.data?.data) {
+                    // Double nested: response.data.data
+                    orgData = response.data.data
+                    console.log('[STAGE 2.1] DEBUG: Using nested response.data.data')
+                } else if (response?.data) {
+                    // Single wrapped: response.data
+                    orgData = response.data
+                    console.log('[STAGE 2.1] DEBUG: Using response.data')
+                } else {
+                    console.log('[STAGE 2.1] DEBUG: No valid data in response, using fallback')
+                }
+            } catch (e) {
+                console.warn('[STAGE 2.1] Could not fetch selected org:', selectedOrgId, e.message)
+                // Fallback về node._serverData nếu API fail
+                if (node._serverData) {
+                    orgData = node._serverData
                 }
             }
+            
+            console.log('[STAGE 2.1] DEBUG: orgData to be stored:', orgData)
             
             chain.push({
                 id: selectedOrgId,
@@ -466,17 +501,37 @@ export default {
                     // === CHECKPOINT 1: Map Server → DTO ===
                     console.log('[STAGE 3] Step 1: Mapping server to DTO...')
                     
-                    // Merge server data với chain data để đảm bảo đầy đủ thông tin
+                    // FIX: Clear positionPoints nếu all null để tránh FK constraint error
+                    const rawPositionPoints = org._serverData?.positionPoints || []
+                    const hasValidPositionData = rawPositionPoints.some(p => 
+                        p.xposition !== null || p.yposition !== null || p.zposition !== null
+                    )
+                    console.log('[STAGE 3] Raw positionPoints:', rawPositionPoints)
+                    console.log('[STAGE 3] Has valid position data:', hasValidPositionData)
+                    console.log('[STAGE 3] DEBUG: org._serverData:', org._serverData)
+                    
+                    // Transform data để match với mapper expectations
                     const serverData = {
-                        ...(org._serverData || {}),
-                        name: org.name,
+                        name: org._serverData?.name || org.name,
+                        aliasName: org._serverData?.shortName || org._serverData?.aliasName || org.name,
                         mRID: org.mrid,
-                        parentOrganisation: org.parentId
+                        parentOrganisation: org.parentId,
+                        organisation: {
+                            mRID: org.mrid,
+                            parentOrganisation: org.parentId,
+                            taxCode: org._serverData?.organisation?.taxCode || '',
+                            electronicAddress: org._serverData?.organisation?.electronicAddress || {},
+                            phone: org._serverData?.organisation?.phone || {}
+                        },
+                        // Chỉ set positionPoints nếu có data thực, không thì empty array
+                        positionPoints: hasValidPositionData ? rawPositionPoints : []
                     }
+                    
+                    console.log('[STAGE 3] Transformed serverData:', serverData)
                     
                     const dto = OrganisationServerMapper.mapServerToDto(serverData)
                     
-                    // FIX: Preserve parentId và organisationId từ chain
+                    // FIX: Preserve parentId và organisationId từ chain (override mapper result)
                     dto.parentId = org.parentId
                     dto.organisationId = org.mrid
                     
