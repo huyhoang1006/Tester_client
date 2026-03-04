@@ -177,8 +177,11 @@
             <div class="update-wrapper">
                 <div class="update-top-section">
                     <div class="version-info">
-                        <div class="info-label">Latest version: </div>
+                        <div class="info-label">New version: </div>
                         <div class="version-number">v{{ updateInfo.version }}</div>
+                        <div v-if="updateInfo.releasedAt" class="release-date">
+                            Released: {{ formatReleaseDate(updateInfo.releasedAt) }}
+                        </div>
                     </div>
                     <div class="app-logo-mini">
                         <img src="@/assets/images/atenergy_key_light.png" alt="" />
@@ -186,8 +189,7 @@
                 </div>
                 <div class="changelog">
                     <div class="changelog-title">What's new:</div>
-                    <div class="changelog-body">
-                        {{ updateInfo.releaseNotes }}
+                    <div class="changelog-body" v-html="formatReleaseNotes(updateInfo.releaseNotes)">
                     </div>
                 </div>
             </div>
@@ -196,7 +198,8 @@
                     Not now
                 </el-button>
                 <el-button class="footer-btn" size="small" type="primary" @click="handleUpdate">
-                    Update
+                    <i class="fas fa-download"></i>
+                    Download Update
                 </el-button>
             </span>
         </el-dialog>
@@ -276,7 +279,8 @@ export default {
             dialogUpdate: false,
             updateInfo: {
                 version: '',
-                releaseNotes: ''
+                releaseNotes: '',
+                releasedAt: null
             },
             notificationLimit: 10,
             currentPage: 1,
@@ -372,29 +376,76 @@ export default {
             }
         },
         checkForUpdate() {
-            // TODO: Implement real update check logic
-            const duration = 3000
-
-            this.$message({
+            const loadingMessage = this.$message({
                 type: 'info',
                 message: "Checking for new version...",
-                duration
+                duration: 0,
+                showClose: false
             })
 
-            setTimeout(() => {
-                this.updateInfo = {
-                    version: '1.2.3',
-                    releaseNotes: '• Fix bug\n• Improve performance\n• Add new feature'
-                }
-                this.dialogUpdate = true
-            }, duration)
+            window.electronAPI.checkForUpdate()
+                .then((result) => {
+                    loadingMessage.close()
+                    
+                    if (!result.success) {
+                        this.$message.error('Failed to check for updates: ' + result.error)
+                        return
+                    }
+
+                    if (result.needsUpdate) {
+                        this.updateInfo = {
+                            version: result.latestVersion,
+                            releaseNotes: result.releaseNotes || 'No release notes available',
+                            releasedAt: result.releasedAt
+                        }
+                        this.dialogUpdate = true
+                    } else {
+                        this.$message.success('You are using the latest version: v' + result.currentVersion)
+                    }
+                })
+                .catch((error) => {
+                    loadingMessage.close()
+                    console.error('Check for update error:', error)
+                    this.$message.error('Failed to check for updates')
+                })
         },
         handleUpdate() {
             this.dialogUpdate = false
-            this.$message({
-                type: 'success',
-                message: 'Starting update...'
+            
+            const loadingMessage = this.$message({
+                type: 'info',
+                message: 'Opening download page...',
+                duration: 0,
+                showClose: false
             })
+
+            window.electronAPI.performUpdate()
+                .then((result) => {
+                    loadingMessage.close()
+                    
+                    if (result.success) {
+                        if (result.manual) {
+                            this.$message({
+                                type: 'info',
+                                message: 'Please download and install the latest version from the opened page.',
+                                duration: 5000
+                            })
+                        } else {
+                            this.$message({
+                                type: 'success',
+                                message: 'Download started! Please install the new version after download completes.',
+                                duration: 5000
+                            })
+                        }
+                    } else {
+                        this.$message.error('Update failed: ' + result.message)
+                    }
+                })
+                .catch((error) => {
+                    loadingMessage.close()
+                    console.error('Update error:', error)
+                    this.$message.error('Update failed')
+                })
         },
         async changePass() {
             this.loading = true
@@ -574,6 +625,35 @@ export default {
                 this.currentPage--
                 // Không reset notificationLimit
             }
+        },
+        formatReleaseDate(dateStr) {
+            if (!dateStr) return ''
+            const date = new Date(dateStr)
+            if (isNaN(date.getTime())) return dateStr
+            return date.toLocaleDateString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            })
+        },
+        formatReleaseNotes(notes) {
+            if (!notes) return 'No release notes available'
+            
+            // Convert markdown-style lists to HTML
+            let formatted = notes
+                .replace(/^- (.+)$/gm, '<li>$1</li>')
+                .replace(/^\* (.+)$/gm, '<li>$1</li>')
+                .replace(/^• (.+)$/gm, '<li>$1</li>')
+            
+            // Wrap lists in ul tags
+            if (formatted.includes('<li>')) {
+                formatted = '<ul>' + formatted + '</ul>'
+            }
+            
+            // Convert line breaks to <br>
+            formatted = formatted.replace(/\n/g, '<br>')
+            
+            return formatted
         }
     }
 }
@@ -939,10 +1019,15 @@ export default {
     padding: 0 10px;
 }
 
+.version-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
 .info-label {
     font-size: 13px;
     color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 4px;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
@@ -951,6 +1036,12 @@ export default {
     font-weight: 800;
     color: #ffffff;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.release-date {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .app-logo-mini img {
@@ -988,6 +1079,23 @@ export default {
     color: rgba(255, 255, 255, 0.8);
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     white-space: pre-line;
+}
+
+.changelog-body::v-deep ul {
+    margin: 0;
+    padding-left: 20px;
+    list-style-type: disc;
+}
+
+.changelog-body::v-deep li {
+    margin: 6px 0;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.changelog-body::v-deep br {
+    display: block;
+    content: "";
+    margin: 4px 0;
 }
 
 .changelog-body::-webkit-scrollbar {
