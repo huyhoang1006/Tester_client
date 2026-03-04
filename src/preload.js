@@ -84,6 +84,12 @@ const versionAPI = {
     onUpdateAvailable: (callback) => ipcRenderer.on('update-available', (_event, data) => callback(data))
 }
 
+// Git Update API
+const gitUpdateAPI = {
+    checkForUpdate: () => ipcRenderer.invoke('checkForUpdate'),
+    performUpdate: () => ipcRenderer.invoke('performUpdate')
+}
+
 const ipcMain = Object.assign(
     userAPI,
     attachmentAPI,
@@ -148,6 +154,7 @@ const ipcMain = Object.assign(
     licenseAPI,
     notificationEntityAPI,
     versionAPI,
+    gitUpdateAPI,
     fileConverterAPI,
     systemInfoAPI
 )
