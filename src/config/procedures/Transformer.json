@@ -158,12 +158,6 @@
       "kind": "test"
     },
     {
-      "mrid": "a157af35-e965-4374-96bb-84e4b938091e",
-      "code": "DielectricResponseAnalysis",
-      "name": "Dielectric Respone Analysis",
-      "kind": "test"
-    },
-    {
       "mrid": "7b05583f-530e-4547-8668-93961dca99d6",
       "code": "InsulationResistanceYokeCore",
       "name": "Insulation resistance of yoke and core",

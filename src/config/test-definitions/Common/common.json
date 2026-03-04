@@ -214,6 +214,26 @@
       "type": "analog"
     },
     {
+      "mrid": "a679697d-18b2-4e7d-a49c-3d29afdff1e4",
+      "code": "tap",
+      "name": "Tap",
+      "type": "analog"
+    },
+    {
+      "mrid": "32d5115d-c712-408f-8392-0b1641474cc7",
+      "code": "dev_r_ref",
+      "name": "Dev with R ref (%)",
+      "type": "analog",
+      "unit": "%"
+    },
+    {
+      "mrid": "59459bfe-10d4-4cda-b6fc-ad67a18e172a",
+      "code": "dev_phase",
+      "name": "Dev within phases (%)",
+      "type": "analog",
+      "unit": "%"
+    },
+    {
       "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",
       "code": "assessment",
       "name": "Assessment",

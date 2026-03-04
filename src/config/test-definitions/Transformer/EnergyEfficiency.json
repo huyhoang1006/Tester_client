@@ -1,5 +1,38 @@
 {
-    "testId": "cd37afa1-0357-4fe3-b52e-cd960c39a1cf",
-    "testCode": "GeneralInspection",
-    "testName": "General inspection"
+    "testId": "e4863274-ac59-405a-9aeb-fc09490fe17e",
+    "testCode": "EnergyEfficiency",
+    "testName": "Energy Efficiency",
+    "columns": [
+        {
+            "mrid": "f02b9353-bb57-40a6-a08b-0340346e2057",
+            "code": "name",
+            "name": "Name",
+            "type": "string"
+        },
+        {
+            "mrid": "a83db125-7954-48a4-aef4-43fbed2c9daf",
+            "code": "e50",
+            "name": "E50",
+            "type": "analog",
+            "unit": "%"
+        },
+        {
+            "mrid": "8a1aa78d-ab31-4903-bb14-fefd108d022c",
+            "code": "standard",
+            "name": "Standard",
+            "type": "analog",
+            "unit": ""
+        },
+        {
+            "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",
+            "code": "assessment",
+            "name": "Assessment",
+            "type": "discrete",
+            "valueAliasSetId": "40c60468-232a-4643-851f-50616900f601",
+            "options": [
+                { "value": 0, "alias": "Fail", "mrid": "d8858564-e438-4034-9273-030919163001" },
+                { "value": 1, "alias": "Pass", "mrid": "d8858564-e438-4034-9273-030919163002" }
+            ]
+        }
+    ]
 }
