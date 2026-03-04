@@ -1,6 +1,6 @@
 {
   "testId": "512b8d7c-9d11-419c-ae1c-ac7c4b2d08e6",
-  "testCode": "DcWindingTert",
+  "testCode": "DCWindingTert",
   "testName": "DC Winding resistance Tert",
   "columns": [
     {

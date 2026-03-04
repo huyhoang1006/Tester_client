@@ -1,6 +1,6 @@
 {
   "testId": "b0b0293d-1573-45c5-b87f-e8d9f1f32525",
-  "testCode": "DcWindingCloseCoil",
+  "testCode": "DCWindingCloseCoil",
   "testName": "DC winding resistance of close coil",
   "columns": [
     {

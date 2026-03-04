@@ -1,6 +1,6 @@
 {
   "testId": "d0947596-64c5-4fdd-9f30-78076e658ffd",
-  "testCode": "minimumPickup",
+  "testCode": "MinimumPickup",
   "testName": "Minimum pick up",
   "columns": [
     {

@@ -2,14 +2,8 @@
 import circuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
 import circuitBreakerConditionMap from '@/config/testing-condition/CircuitBreaker'
 import * as common from '../../../../Common/index.js'
-import {mapState} from 'vuex'
 
 export default {
-    data() {
-        return {}
-    },
-    computed: mapState(['selectedAsset', 'selectedJob']),
-    async beforeMount() {},
     methods: {
         getAssetData(assetData = null) {
             // Extract circuitBreaker and operating from assetData

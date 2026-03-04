@@ -1,6 +1,6 @@
 {
   "testId": "017cf8b6-e026-4455-ba54-ed40b7e4efe1",
-  "testCode": "underVoltageRelease",
+  "testCode": "UnderVoltageRelease",
   "testName": "Under-voltage release",
   "columns": [
     {

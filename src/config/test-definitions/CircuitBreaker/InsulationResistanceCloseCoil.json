@@ -1,6 +1,6 @@
 {
   "testId": "927e27c9-55a2-4eaa-8d9e-717423fad2f7",
-  "testCode": "insulationResistanceCloseCoil",
+  "testCode": "InsulationResistanceCloseCoil",
   "testName": "Insulation resistance of close coil",
   "columns": [
     {

@@ -1,6 +1,6 @@
 {
   "testId": "c7ef382e-af74-4d31-9644-c5429d8bf2fc",
-  "testCode": "insulationResistanceMotor",
+  "testCode": "InsulationResistanceMotor",
   "testName": "Insulation resistance of motor",
   "columns": [
     {

@@ -43,62 +43,60 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testData.table" >
-                    <tr :key="index">
-                        <td>{{ index + 1 }}</td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.test_mode.value"></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.test_voltage.value"></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.df_ref.value"></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.c_ref.value"></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.df_meas.value"></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.c_meas.value"></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.df_change.value"></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.tri_c_meas.value"></el-input>
-                        </td>
-                        <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
-                                <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
-                                <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
-                            </el-select>
-                            <span v-if="item.assessment.value==='Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment.value==='Fail'" class="fa-solid fa-xmark fail icon-status"></span>
-                        </td>
-                        <td>
-                            <el-input :class="nameColor(item.condition_indicator_df.value)" size="mini" type="text" v-model="item.condition_indicator_df.value"></el-input>
-                        </td>
-                        <td>
-                            <el-input :class="nameColor(item.condition_indicator_c.value)" size="mini" type="text" v-model="item.condition_indicator_c.value"></el-input>
-                        </td>
-                        <td>
-                            <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
-                                <i class="fa-solid fa-plus"></i>
-                            </el-button>
-                        </td>
-                        <td>
-                            <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
-                                <i class="fas fa-trash"></i>
-                            </el-button>
-                        </td>
-                    </tr>
-                </template>
+                <tr v-for="(item, index) in testData.table" :key="index">
+                    <td>{{ index + 1 }}</td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.test_mode.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.test_voltage.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.df_ref.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.c_ref.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.df_meas.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.c_meas.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.df_change.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.tri_c_meas.value"></el-input>
+                    </td>
+                    <td>
+                        <el-select class="assessment" size="mini" v-model="item.assessment.value">
+                            <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
+                        </el-select>
+                        <span v-if="item.assessment.value==='Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment.value==='Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                    </td>
+                    <td>
+                        <el-input :class="nameColor(item.condition_indicator_df.value)" size="mini" type="text" v-model="item.condition_indicator_df.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input :class="nameColor(item.condition_indicator_c.value)" size="mini" type="text" v-model="item.condition_indicator_c.value"></el-input>
+                    </td>
+                    <td>
+                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
+                            <i class="fa-solid fa-plus"></i>
+                        </el-button>
+                    </td>
+                    <td>
+                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
+                            <i class="fas fa-trash"></i>
+                        </el-button>
+                    </td>
+                </tr>
             </tbody>
         </table>
 

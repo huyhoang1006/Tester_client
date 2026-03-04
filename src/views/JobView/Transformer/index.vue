@@ -169,30 +169,19 @@ export default {
         return {
             objActiveName: {
                 activeName: null
-            }
+            },
+            testTypeListData: [],
+            assetData : {},
+            locationData : {},
+            productAssetModelData: {},
         }
     },
     props: {
-        locationData: {
-            type: Object,
-            default: () => ({})
-        },
-        assetData: {
-            type: Object,
-            default: () => ({})
-        },
-        productAssetModelData: {
-            type: Object,
-            default: () => ({})
-        },
+        
         parentOrganization: {
             type: Object,
             default: () => ({})
         },
-        testTypeListData: {
-            type: Array,
-            default: () => []
-        }
     },
     mounted() {},
     methods: {

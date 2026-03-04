@@ -158,7 +158,7 @@ export default {
                     unit : "",
                     type : "string"
                 },
-                testMode : {
+                test_mode : {
                     mrid : "",
                     value : "",
                     unit : "",
@@ -237,7 +237,7 @@ export default {
                     unit : "",
                     type : "string"
                 },
-                testMode : {
+                test_mode : {
                     mrid : "",
                     value : "",
                     unit : "",
@@ -308,7 +308,7 @@ export default {
         clear() {
             this.testData.table.forEach((element) => {
                 element.measurement = "",
-                element.testMode = '',
+                element.test_mode = '',
                 element.test_voltage = '',
                 element.dfref = '',
                 element.cref = '',

@@ -1,6 +1,6 @@
 {
   "testId": "69abf10d-7943-43b8-9b08-b8a468f9b8c2",
-  "testCode": "contactResistance",
+  "testCode": "ContactResistance",
   "testName": "Contact Resistance",
   "columns": [
     {

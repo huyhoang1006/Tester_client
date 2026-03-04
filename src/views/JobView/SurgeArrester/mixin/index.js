@@ -66,7 +66,14 @@ export default {
             this.surgeArresterJobDtoOld = JSON.parse(JSON.stringify(data));
         },
 
-        async checkJob(data) {
+        async loadParameter(testTypeListData, assetData, productAssetModelData, locationData) {
+            this.testTypeListData = testTypeListData
+            this.assetData = assetData
+            this.productAssetModelData = productAssetModelData
+            this.locationData = locationData
+        },
+
+        async checkJob(data) { 
             this.checkProperties(data);
             this.checkAssetId(data);
             this.checkAttachment(data);

@@ -99,7 +99,7 @@ export function mapDtoToEntity(dto) {
 
 export function mapEntityToDto(entity) {
     const dto = new ReactorDTO();
-    console.log('Mapping Entity to DTO:', entity);
+
 
     /** ---------- Properties ---------- */
     dto.properties.mrid = entity.asset.mrid || null;

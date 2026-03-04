@@ -111,7 +111,7 @@
                 <el-row style="width: inherit;">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item class="asset-item" label="Asset">
-                            <span class="asset-name">{{ assetData.properties?.kind || assetData.kind || '' }}</span>
+                            <span class="asset-name">{{ assetData.properties?.kind || assetData.kind || assetData.asset?.kind || '' }}</span>
                         </el-form-item>
                         <el-form-item class="asset-item" label="Asset type">
                             <span class="asset-name">{{ assetData.properties?.type || assetData.type || '' }}</span>

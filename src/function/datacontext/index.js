@@ -6,6 +6,7 @@ import path from 'path'
 import fs from 'fs'
 import { app } from 'electron'
 
+const DB_KEY = 'attester'
 const nameDB = 'database.db'
 // THÊM: Mật khẩu bạn đã đặt ở DB Browser
 const DB_PASSWORD = 'attester'

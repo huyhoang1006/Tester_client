@@ -1,7 +1,7 @@
 {
-  "testId": "8edc2faa-fbb3-4012-9e36-eb87de6e162c",
-  "testCode": "ShortSecTert",
-  "testName": "Short-circuit sec-tert test",
+  "testId": "f024a870-c244-45bd-a3dd-f5c32a37c494",
+  "testCode": "GeneralInspection",
+  "testName": "General inspection",
   "columns": [
     {
       "mrid": "8d2fdece-b599-4270-a3bf-d0ce2c516d02",

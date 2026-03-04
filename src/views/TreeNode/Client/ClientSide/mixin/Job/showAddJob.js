@@ -64,6 +64,9 @@ export default {
                     }
                     this.checkJobType = 'JobSurgeArrester'
                     this.signJob = true
+                    this.$nextTick(() => {
+                        this.$refs.jobDialog.$refs.jobData.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
+                    })
                 } else if (node.asset == 'Power cable') {
                     const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Power cable")
                     if (dataTestType.success) {
@@ -73,6 +76,9 @@ export default {
                     }
                     this.checkJobType = 'JobPowerCable'
                     this.signJob = true
+                    this.$nextTick(() => {
+                        this.$refs.jobDialog.$refs.jobData.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
+                    })
                 } else if (node.asset == 'Disconnector') {
                     const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Disconnector")
                     if (dataTestType.success) {
@@ -82,6 +88,9 @@ export default {
                     }
                     this.checkJobType = 'JobDisconnector'
                     this.signJob = true
+                    this.$nextTick(() => {
+                        this.$refs.jobDialog.$refs.jobData.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
+                    })
                 } else if (node.asset == 'Current transformer') {
                     const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Current transformer")
                     if (dataTestType.success) {
@@ -91,6 +100,9 @@ export default {
                     }
                     this.checkJobType = 'JobCurrentTransformer'
                     this.signJob = true
+                    this.$nextTick(() => {
+                        this.$refs.jobDialog.$refs.jobData.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
+                    })
                 } else if (node.asset == 'Voltage transformer') {
                     const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Voltage transformer")
                     const dataVoltageTransformer = await window.electronAPI.getVoltageTransformerEntityByMrid(node.mrid)
@@ -109,6 +121,9 @@ export default {
                     }
                     this.checkJobType = 'JobVoltageTransformer'
                     this.signJob = true
+                    this.$nextTick(() => {
+                        this.$refs.jobDialog.$refs.jobData.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
+                    })
                 } else if (node.asset == 'Circuit breaker') {
                     const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Circuit breaker")
                     const dataBreakerEntity = await window.electronAPI.getBreakerEntityByMrid(node.mrid)
@@ -125,6 +140,9 @@ export default {
                     }
                     this.checkJobType = 'JobCircuitBreaker'
                     this.signJob = true
+                    this.$nextTick(() => {
+                        this.$refs.jobDialog.$refs.jobData.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
+                    })
                 } else if (node.asset == 'Transformer') {
                     const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Transformer")
                     const dataTransformerEntity = await window.electronAPI.getTransformerEntityByMrid(node.mrid)
@@ -141,6 +159,9 @@ export default {
                     }
                     this.checkJobType = 'JobTransformer'
                     this.signJob = true
+                    this.$nextTick(() => {
+                        this.$refs.jobDialog.$refs.jobData.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
+                    })
                 } else {
                     this.$message.error('This asset type not support for job')
                 }

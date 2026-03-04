@@ -1,8 +1,8 @@
-import {userPreload} from '@/preload/index.js'
-import {importPreload} from '@/preload/index.js'
-import {entityPreload, cimPreload, uploadCustomPreload, appOptionPreload} from '@/preload/index.js'
+import { userPreload } from '@/preload/index.js'
+import { importPreload } from '@/preload/index.js'
+import { entityPreload, cimPreload, uploadCustomPreload, appOptionPreload } from '@/preload/index.js'
 
-const {contextBridge, ipcRenderer} = require('electron')
+const { contextBridge, ipcRenderer } = require('electron')
 const windowControlAPI = {
     onWindowStateChange: (callback) => ipcRenderer.on('window-state-change', (_event, value) => callback(value))
 }
@@ -75,6 +75,21 @@ const procedureAPI = cimPreload.procedurePreload.procedurePreload()
 const licenseAPI = cimPreload.licensePreload.licensePreload()
 const notificationEntityAPI = entityPreload.notificationEntityPreload.notificationEntityPreload()
 
+// Version management API (Enterprise)
+const versionAPI = {
+    checkVersionUpdate: () => ipcRenderer.invoke('check-version-update'),
+    getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+    getSchemaVersion: () => ipcRenderer.invoke('get-schema-version'),
+    updateAppVersion: (version) => ipcRenderer.invoke('update-app-version', version),
+    onUpdateAvailable: (callback) => ipcRenderer.on('update-available', (_event, data) => callback(data))
+}
+
+// Git Update API
+const gitUpdateAPI = {
+    checkForUpdate: () => ipcRenderer.invoke('checkForUpdate'),
+    performUpdate: () => ipcRenderer.invoke('performUpdate')
+}
+
 const ipcMain = Object.assign(
     userAPI,
     attachmentAPI,
@@ -138,6 +153,8 @@ const ipcMain = Object.assign(
     windowControlAPI,
     licenseAPI,
     notificationEntityAPI,
+    versionAPI,
+    gitUpdateAPI,
     fileConverterAPI,
     systemInfoAPI
 )

@@ -1,39 +1,31 @@
 <template>
     <div id="job">
-        <el-row :gutter="20"  style="padding: 0">
-            <el-tabs  type="card">
+        <el-row :gutter="20" style="padding: 0">
+            <el-tabs type="card">
                 <!-- Overview -->
                 <el-tab-pane style="width: 100%;">
                     <span slot="label"><i class="fa-solid fa-book"></i> Overview</span>
-<overview 
-    :data="powerCableJobDto.properties" 
-    @update-attachment="updateAttachmentOverView" 
-    :attachmentData.sync="powerCableJobDto.attachmentData" 
-    :locationData="locationData" 
-    :assetData="assetData" 
-    :productAssetModelData="productAssetModelData" 
-    :parentOrganization="parentOrganization">
-</overview>
+                    <overview :data="powerCableJobDto.properties" @update-attachment="updateAttachmentOverView"
+                        :attachmentData.sync="powerCableJobDto.attachmentData" :locationData="locationData"
+                        :assetData="assetData" :productAssetModelData="productAssetModelData"
+                        :parentOrganization="parentOrganization">
+                    </overview>
 
                 </el-tab-pane>
 
                 <!-- Select test -->
                 <el-tab-pane>
                     <span slot="label"><i class="fa-solid fa-list-check"></i> Test settings</span>
-                    <select-test style="width: 100%;"
-                        :data="powerCableJobDto.testList"
-                        :testTypeListData="testTypeListData"
-                        :assetData="assetData"
-                        :obj-active-name="objActiveName"
-                        :attachment-arr="attachmentArr"
-                        :testcondition-arr="testconditionArr"
-                        ></select-test>
+                    <select-test style="width: 100%;" :data="powerCableJobDto.testList"
+                        :testTypeListData="testTypeListData" :assetData="assetData" :obj-active-name="objActiveName"
+                        :attachment-arr="attachmentArr" :testcondition-arr="testconditionArr"></select-test>
                 </el-tab-pane>
 
                 <el-tab-pane>
                     <span slot="label"><i class="fa-solid fa-list-check"></i> Testing equipment</span>
                     <div>
-                        <testing-equipment :data="powerCableJobDto.testingEquipmentData" :testTypeListData="testTypeListData"></testing-equipment>
+                        <testing-equipment :data="powerCableJobDto.testingEquipmentData"
+                            :testTypeListData="testTypeListData"></testing-equipment>
                     </div>
                 </el-tab-pane>
 
@@ -42,18 +34,12 @@
                     <span slot="label"><i class="fa-solid fa-calculator"></i> Tests</span>
                     <div id="tests" style="width: 100%;">
                         <el-tabs v-model="objActiveName.activeName" type="card" class="w-100 h-100">
-                            <el-tab-pane v-for="(item, index) in powerCableJobDto.testList" :key="index" :label="item.name" :name="item.name + index">
-                                <test-information
-                                    :title="item.name"
-                                    :data="item.testCondition"
-                                    :assetData="assetData"
+                            <el-tab-pane v-for="(item, index) in powerCableJobDto.testList" :key="index"
+                                :label="item.name" :name="item.name + index">
+                                <test-information :title="item.name" :data="item.testCondition" :assetData="assetData"
                                     :attachment="item.testCondition.attachmentData">
                                 </test-information>
-                                <component
-                                    :is="item.testTypeCode" 
-                                    :data="item.data" 
-                                    :asset="assetData"
-                                    >
+                                <component :is="item.testTypeCode" :data="item.data" :asset="assetData">
                                 </component>
                             </el-tab-pane>
                         </el-tabs>
@@ -99,36 +85,25 @@ export default {
         GeneralInspection
     },
     props: {
-        locationData: {
-            type: Object,
-            default: () => ({})
-        },
-        assetData: {
-            type: Object,
-            default: () => ({})
-        },
-        productAssetModelData: {
-            type: Object,
-            default: () => ({})
-        },
+        
         parentOrganization: {
             type: Object,
             default: () => ({})
         },
-        testTypeListData: {
-            type: Array,
-            default: () => []
-        }
     },
     mixins: [mixin],
     data() {
         return {
             objActiveName: {
                 activeName: null
-            }
+            },
+            testTypeListData: [],
+            assetData : {},
+            locationData : {},
+            productAssetModelData: {},
         }
     },
-    mounted() {},
+    mounted() { },
     methods: {
         updateAttachmentOverView(attachment) {
             this.powerCableJobDto.attachmentData = attachment
@@ -144,15 +119,15 @@ export default {
 }
 
 ::v-deep(.el-tabs__item) {
-  font-size: 12px !important;
-  font-weight: bold !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
 }
 
 ::v-deep(.el-tabs__item.is-active) {
-  color: #fff !important;
-  background-color: var(--el-color-primary, #012596) !important;
-  border-radius: 4px 4px 0 0;
-  font-size: 12px !important;
+    color: #fff !important;
+    background-color: var(--el-color-primary, #012596) !important;
+    border-radius: 4px 4px 0 0;
+    font-size: 12px !important;
 }
 
 #tests,

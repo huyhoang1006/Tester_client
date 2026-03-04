@@ -36,16 +36,15 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testData.table">
-                    <tr :key="index">
+                <tr v-for="(item, index) in testData.table" :key="index">
                         <td>
                             <el-input size="mini" type="text" v-model="item.name.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.iknee.value"></el-input>
+                            <el-input size="mini" type="text" v-model="item.i_knee.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.vknee.value"></el-input>
+                            <el-input size="mini" type="text" v-model="item.v_knee.value"></el-input>
                         </td>
                         <td>
                             <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -69,8 +68,7 @@
                                 <i class="fas fa-trash"></i>
                             </el-button>
                         </td>
-                    </tr>
-                </template>
+                </tr>
             </tbody>
         </table>
 
@@ -123,13 +121,13 @@ export default {
                     unit : "",
                     type : "string"
                 },
-                iknee : {
+                i_knee : {
                     mrid : "",
                     value : "",
                     unit : "A",
                     type : "analog"
                 },
-                vknee : {
+                v_knee : {
                     mrid : "",
                     value : "",
                     unit : "V",
@@ -172,13 +170,13 @@ export default {
                     unit : "",
                     type : "string"
                 },
-                iknee : {
+                i_knee : {
                     mrid : "",
                     value : "",
                     unit : "A",
                     type : "analog"
                 },
-                vknee : {
+                v_knee : {
                     mrid : "",
                     value : "",
                     unit : "V",
@@ -205,11 +203,11 @@ export default {
 
         clear() {
             this.testData.table.forEach((element) => {
-                element.name = "",
-                element.iknee = '',
-                element.vknee = '',
-                element.assessment = '',
-                element.condition_indicator = ''
+                element.name.value = "",
+                element.i_knee.value = '',
+                element.v_knee.value = '',
+                element.assessment.value = '',
+                element.condition_indicator.value = ''
             })
         },
         nameColor(data) {

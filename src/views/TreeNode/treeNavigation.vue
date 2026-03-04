@@ -886,6 +886,9 @@ export default {
         serverSwap(serverSign) {
             if (serverSign == true) {
                 this.clientSlide = false
+                if (this.ownerServerList.length === 0) {
+                    this.showOwnerServerRoot()
+                }
             } else {
                 this.clientSlide = true
             }

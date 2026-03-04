@@ -26,6 +26,7 @@
         <table class="table-strip-input-data" style="width: 100% ; font-size: 12px;">
             <thead>
                 <tr>
+                    <th>No.</th>
                     <th>Name</th>
                     <th>Ipr (A)</th>
                     <th>Isr (A)</th>
@@ -41,6 +42,9 @@
             <tbody>
                 <template v-for="(item, index) in testData.table">
                     <tr :key="index">
+                        <td>
+                            {{ index + 1 }}
+                        </td>
                         <td>
                             <el-input size="mini" type="text" v-model="item.name.value"></el-input>
                         </td>
@@ -100,6 +104,9 @@
 </template>
 
 <script>
+import CurrentTransformerTestMap from '@/config/test-definitions/CurrentTransformer'
+import * as common from '../../Common/index'
+
 export default {
     name :"CTRatio",
     data() {
@@ -125,62 +132,17 @@ export default {
         assetData() {
             return this.asset
         },
+        rowData() {
+            return common.buildEmptyTestRow(CurrentTransformerTestMap['CTRatio'].columns)
+        }
     },
     watch: {
     },
     methods: {
         add() {
-            this.testData.table.push({
-                mrid : "",  
-                name : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                ipr : {
-                    mrid : "",
-                    value : "",
-                    unit : "A",
-                    type : "analog"
-                },
-                isr : {
-                    mrid : "",
-                    value : "",
-                    unit : "A",
-                    type : "analog"
-                },
-                ratio_meas : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                ratio_dev : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                polarity : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                assessment : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                },
-                condition_indicator : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                }
-            })
+            this.testData.table.push(
+                JSON.parse(JSON.stringify(this.rowData))
+            )
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
@@ -197,57 +159,7 @@ export default {
             this.testData.table.splice(index, 1)
         },
         addTest(index) {
-            const data = {
-                mrid : "",
-                name : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                ipr : {
-                    mrid : "",
-                    value : "",
-                    unit : "A",
-                    type : "analog"
-                },
-                isr : {
-                    mrid : "",
-                    value : "",
-                    unit : "A",
-                    type : "analog"
-                },
-                ratio_meas : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                ratio_dev : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                polarity : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                assessment : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                },
-                condition_indicator : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                }
-            }
+            const data = JSON.parse(JSON.stringify(this.rowData))
             this.testData.table.splice(index+1, 0, data)
         },
         calculator() {
@@ -256,22 +168,20 @@ export default {
         },
 
         clear() {
-            this.testData.table.forEach((element) => {
-                element.name = "",
-                element.ipr = '',
-                element.isr = '',
-                element.ratio_meas = '',
-                element.ratio_dev = '',
-                element.polarity = '',
-                element.assessment = '',
-                element.condition_indicator = ''
+            this.testData.table.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (key === "mrid") return;
+                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                        row[key].value = ""
+                    }
+                })
             })
         },
         calcRdev() {
             this.testData.table.forEach((element) => {
-                if(!isNaN(parseFloat(element.ratio_meas)) && element.ratio_meas != 0) {
-                    if(!isNaN(parseFloat(element.ipr)) && !isNaN(parseFloat(element.isr)) && element.isr != 0) {
-                        element.ratio_dev = (100 * (parseFloat(element.ratio_meas) - (parseFloat(element.ipr)/parseFloat(element.isr)))/(parseFloat(element.ipr)/parseFloat(element.isr))).toFixed(4)
+                if(!isNaN(parseFloat(element.ratio_meas.value)) && element.ratio_meas.value != 0) {
+                    if(!isNaN(parseFloat(element.ipr.value)) && !isNaN(parseFloat(element.isr.value)) && element.isr.value != 0) {
+                        element.ratio_dev.value = (100 * (parseFloat(element.ratio_meas.value) - (parseFloat(element.ipr.value)/parseFloat(element.isr.value)))/(parseFloat(element.ipr.value)/parseFloat(element.isr.value))).toFixed(4)
                     }
                 }
             })

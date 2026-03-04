@@ -1,6 +1,6 @@
 {
   "testId": "c4a3176d-c2d2-4903-932b-3fe6c6438c5b",
-  "testCode": "DcWindingSec",
+  "testCode": "DCWindingSec",
   "testName": "DC Winding resistance Sec",
   "columns": [
     {

@@ -85,7 +85,7 @@
   "defaultRows": [
     {
         "measurement": "C H-G",
-        "testMode": "GST"
+        "test_mode": "GST"
     }
   ]
 }

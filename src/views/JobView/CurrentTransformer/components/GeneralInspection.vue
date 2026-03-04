@@ -2,28 +2,28 @@
     <div id="dc-winding-resistance-prim">
 
         <!-- Cấu hình -->
-        <div style="position: sticky; left: 0; display: inline-block;">
-        <el-row class="mgb-10">
-            <el-col>
-                <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
-                    <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
-                </el-button>
-                <el-button class="btn-action" size="mini" type="success" @click="openConditionIndicatorDialog = true">
-                    <i class="fa-solid fa-hammer"></i> Condition indicatior settings
-                </el-button>
-            </el-col>
-        </el-row>
+        <div style="position: sticky; left: 0; display: inline-block; margin-top: 20px;">
+            <el-row class="mgb-10">
+                <el-col>
+                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
+                        <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
+                    </el-button>
+                    <el-button class="btn-action" size="mini" type="success" @click="openConditionIndicatorDialog = true">
+                        <i class="fa-solid fa-hammer"></i> Condition indicatior settings
+                    </el-button>
+                </el-col>
+            </el-row>
 
-        <!-- Tương tác với bảng -->
-        <el-row class="mgb-10">
-            <el-col>
-                <el-button size="mini" type="primary" class="btn-action" @click="calculator" > <i class="fas fa-circle-play"></i> Assess results </el-button>
-                <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i class="fas fa-xmark"></i> Clear all</el-button>
-            </el-col>
-        </el-row>
+            <!-- Tương tác với bảng -->
+            <el-row class="mgb-10">
+                <el-col>
+                    <el-button size="mini" type="primary" class="btn-action" @click="calculator" > <i class="fas fa-circle-play"></i> Assess results </el-button>
+                    <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i class="fas fa-xmark"></i> Clear all</el-button>
+                </el-col>
+            </el-row>
         </div>
 
-        <table class="table-strip-input-data" style="width: 70% ; font-size: 12px;">
+        <table class="table-strip-input-data" style="width: 100%;">
             <thead>
                 <tr>
                     <th>No.</th>
@@ -35,52 +35,52 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testData.table">
-                    <tr :key="index">
-                        <td>
-                           {{ index + 1 }}
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.items.value"></el-input>
-                        </td>
-                        <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
-                                <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
-                                <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
-                            </el-select>
-                            <span v-if="item.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
-                        </td>
-                        <td>
-                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
-                            </el-input>
-                        </td>
-                        <td>
-                            <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
-                                <i class="fa-solid fa-plus"></i>
-                            </el-button>
-                        </td>
-                        <td>
-                            <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
-                                <i class="fas fa-trash"></i>
-                            </el-button>
-                        </td>
-                    </tr>
-                </template>
+                <tr v-for="(item, index) in testData.table" :key="index">
+                    <td style="font-weight: bold;">
+                        {{ index + 1 }}
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.item.value"></el-input>
+                    </td>
+                    <td>
+                        <el-select class="assessment" size="mini" v-model="item.assessment.value">
+                            <el-option value="Pass" label="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Fail" label="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
+                        </el-select>
+                        <span v-if="item.assessment.value === 'Pass' " class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                    </td>
+                    <td>
+                        <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
+                        </el-input>
+                    </td>
+                    <td>
+                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
+                            <i class="fa-solid fa-plus"></i>
+                        </el-button>
+                    </td>
+                    <td>
+                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
+                            <i class="fas fa-trash"></i>
+                        </el-button>
+                    </td>
+                </tr>
             </tbody>
         </table>
 
         <!-- Assessment settings -->
-        <el-dialog title="Assessment settings" :visible.sync="openAssessmentDialog" width="860px">
+        <el-dialog :modal="false" title="Assessment settings" :visible.sync="openAssessmentDialog" width="860px">
         </el-dialog>
 
         <!-- Condition indicator settings -->
-        <el-dialog title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="860px">
+        <el-dialog :modal="false" title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="860px">
         </el-dialog>
     </div>
 </template>
 
 <script>
+import currentTransformerTestMap from '@/config/test-definitions/CurrentTransformer'
+import * as common from '../../Common/index'
 export default {
     name :"GeneralInspection",
     data() {
@@ -106,32 +106,15 @@ export default {
         assetData() {
             return this.asset
         },
+        rowData() {
+            return common.buildEmptyTestRow(currentTransformerTestMap['GeneralInspection'].columns)
+        }
     },
     watch: {
     },
     methods: {
         add() {
-            this.testData.table.push({
-                mrid : "",
-                items : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                assessment : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                },
-                condition_indicator : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                }
-            })
+            this.testData.table.push(JSON.parse(JSON.stringify(this.rowData)))
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
@@ -148,27 +131,7 @@ export default {
             this.testData.table.splice(index, 1)
         },
         addTest(index) {
-            const data = {
-                mrid : "",
-                items : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                assessment : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                },
-                condition_indicator : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                }
-            }
+            const data = JSON.parse(JSON.stringify(this.rowData))
             this.testData.table.splice(index+1, 0, data)
         },
         calculator() {
@@ -176,10 +139,13 @@ export default {
         },
 
         clear() {
-            this.testData.table.forEach((element) => {
-                element.items = '',
-                element.assessment = '',
-                element.condition_indicator = ''
+            this.testData.table.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (key === "mrid") return;
+                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                    row[key].value = ""
+                    }
+                })
             })
         },
         nameColor(data) {
@@ -229,5 +195,9 @@ table, th, td, tr {
 
 .Bad input {
     background: #ff3300;
+}
+
+td, th {
+    font-size: 12px;
 }
 </style>

@@ -502,6 +502,66 @@ app.on('ready', async () => {
     ipcMain.handle('maximizeApp', () => {
         win.isMaximized() ? win.unmaximize() : win.maximize()
     })
+
+    // Git Update handlers
+    ipcMain.handle('checkForUpdate', async () => {
+        try {
+            const { GitUpdateService } = await import('./update/GitUpdateService.js')
+            const { AppVersionManager } = await import('./update/VersionService.js')
+            
+            const gitService = new GitUpdateService()
+            const versionManager = new AppVersionManager()
+            
+            // Get current and latest version
+            const currentVersion = versionManager.getCurrentAppVersion()
+            const latestVersion = await versionManager.getLatestAppVersion()
+            
+            // Get release info from GitLab
+            const releaseInfo = await gitService.getLatestReleaseInfo()
+            
+            return {
+                success: true,
+                currentVersion,
+                latestVersion: releaseInfo.version,
+                releaseNotes: releaseInfo.releaseNotes,
+                releasedAt: releaseInfo.releasedAt,
+                needsUpdate: latestVersion !== currentVersion
+            }
+        } catch (error) {
+            console.error('[IPC] Check for update failed:', error)
+            return {
+                success: false,
+                error: error.message
+            }
+        }
+    })
+
+    ipcMain.handle('performUpdate', async () => {
+        try {
+            const { GitUpdateService } = await import('./update/GitUpdateService.js')
+            const gitService = new GitUpdateService()
+            
+            const result = await gitService.performUpdate()
+            
+            if (result.success && !result.manual) {
+                // Nếu download thành công, hiển thị thông báo
+                // Không tự động restart vì user cần install file mới
+                return {
+                    ...result,
+                    message: 'Download started. Please install the new version after download completes.'
+                }
+            }
+            
+            return result
+        } catch (error) {
+            console.error('[IPC] Perform update failed:', error)
+            return {
+                success: false,
+                error: error.message
+            }
+        }
+    })
+
     ipcMain.handle('convert-files', async (event, filePaths, fileType) => {
         const promises = filePaths.map((filePath) => {
             return new Promise((resolve) => {

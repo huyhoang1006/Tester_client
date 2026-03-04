@@ -63,19 +63,19 @@
     },
     {
       "mrid": "802bca64-119c-4d4b-b965-b54a152557e3",
-      "code": "DcWindingTripCoil",
+      "code": "DCWindingTripCoil",
       "name": "DC winding resistance of trip coil",
       "kind": "test"
     },
     {
       "mrid": "b0b0293d-1573-45c5-b87f-e8d9f1f32525",
-      "code": "DcWindingCloseCoil",
+      "code": "DCWindingCloseCoil",
       "name": "DC winding resistance of close coil",
       "kind": "test"
     },
     {
       "mrid": "0a8e9951-bc75-4baf-b792-fd265219d450",
-      "code": "DcWindingMotor",
+      "code": "DCWindingMotor",
       "name": "DC winding resistance of motor",
       "kind": "test"
     },
@@ -105,13 +105,13 @@
     },
     {
       "mrid": "336dc0c4-81d9-419b-8cbe-5767c51d518f",
-      "code": "Sf6MoiturePurity",
+      "code": "SF6MoiturePurity",
       "name": "SF6 gas moiture and purity",
       "kind": "test"
     },
     {
       "mrid": "82692530-e65b-41f0-98dc-afa0382e8c37",
-      "code": "Sf6GasAnalysis",
+      "code": "SF6GasAnalysis",
       "name": "SF6 gas analysis",
       "kind": "test"
     },
@@ -137,12 +137,6 @@
       "mrid": "f024a870-c244-45bd-a3dd-f5c32a37c494",
       "code": "GeneralInspection",
       "name": "General inspection",
-      "kind": "test"
-    },
-    {
-      "mrid": "bf3284e8-4b18-4be0-beb2-c240456ce0f0",
-      "code": "ControlCabinet",
-      "name": "Control cabinet check",
       "kind": "test"
     }
   ]

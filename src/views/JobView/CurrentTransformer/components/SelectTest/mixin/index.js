@@ -3,208 +3,67 @@ import CurrentTransformerConditionMap from '@/config/testing-condition/CurrentTr
 import * as common from '../../../../Common/index.js'
 
 export default {
-    data() {
-        return {}
-    },
     methods: {
         // eslint-disable-next-line no-unused-vars
-        async initTest(testTypeCode, _assetData) {
+        async initTest(testTypeCode, assetData) {
             let data = null
             switch (testTypeCode) {
                 case 'InsulationResistance':
-                    data = this.initInsulationResistance()
+                    data = this.initInsulationResistance(testTypeCode)
                     break
                 case 'CTRatio':
-                    data = await this.initCTRatio()
+                    data = await this.initCTRatio(testTypeCode)
                     break
                 case 'CTExcitation':
-                    data = await this.initCTExcitation()
+                    data = await this.initCTExcitation(testTypeCode)
                     break
                 case 'CTWindingRes':
-                    data = await this.initCTWindingRes()
+                    data = await this.initCTWindingRes(testTypeCode)
                     break
                 case 'CTDfcap':
                     data = await this.initCTDfcap(testTypeCode)
                     break
                 case 'GeneralInspection':
-                    data = await this.initGeneralInspection()
+                    data = await this.initGeneralInspection(testTypeCode)
                     break
             }
 
             return data
         },
-        async initInsulationResistance() {
-            const row_data = [
-                {
-                    mrid: '',
-                    name: 'Measurement',
-                    code: 'measurement',
-                    unit: '',
-                    type: 'string'
-                },
-                {
-                    mrid: '',
-                    name: 'V test',
-                    code: 'v_test',
-                    unit: 'V',
-                    type: 'analog'
-                },
-                {
-                    mrid: '',
-                    name: 'R60s',
-                    code: 'r60s',
-                    unit: 'M|Ω',
-                    type: 'analog'
-                },
-                {
-                    mrid: '',
-                    name: 'Assessment',
-                    code: 'assessment',
-                    type: 'discrete',
-                    pool: {
-                        mrid: '',
-                        valueToAlias: [
-                            {mrid: '', value: 0, alias_name: 'Fail'},
-                            {mrid: '', value: 1, alias_name: 'Pass'}
-                        ]
-                    }
-                },
-                {
-                    mrid: '',
-                    name: 'Condition indicator',
-                    code: 'condition_indicator',
-                    type: 'discrete',
-                    pool: {
-                        mrid: '',
-                        valueToAlias: [
-                            {mrid: '', value: 0, alias_name: 'Bad'},
-                            {mrid: '', value: 1, alias_name: 'Poor'},
-                            {mrid: '', value: 2, alias_name: 'Fair'},
-                            {mrid: '', value: 3, alias_name: 'Good'}
-                        ]
-                    }
-                }
-            ]
+        async initInsulationResistance(testTypeCode) {
+            const rowDataExample = common.buildEmptyTestRow(CurrentTransformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(CurrentTransformerConditionMap[testTypeCode].columns)
+            const row1 = JSON.parse(JSON.stringify(rowDataExample))
+            row1.measurement.value = 'Phase A - B'
+            const row2 = JSON.parse(JSON.stringify(rowDataExample))
+            row2.measurement.value = 'Phase B - C'
+            const row3 = JSON.parse(JSON.stringify(rowDataExample))
+            row3.measurement.value = 'Phase C - A'
+            const row4 = JSON.parse(JSON.stringify(rowDataExample))
+            row4.measurement.value = 'Phase - GND'
             let table = [
-                {
-                    mrid: '',
-                    measurement: {
-                        mrid: '',
-                        value: 'Prim - (Sec + GND)',
-                        unit: '',
-                        type: 'string'
-                    },
-                    v_test: {
-                        mrid: '',
-                        value: '',
-                        unit: 'V',
-                        type: 'analog'
-                    },
-                    r60s: {
-                        mrid: '',
-                        value: '',
-                        unit: 'M|Ω',
-                        type: 'analog'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                }
+                row1,
+                row2,
+                row3,
+                row4
             ]
-            let measurementProcedure = []
             return {
+                rowDataExampleCondition,
                 table,
-                row_data,
-                measurementProcedure
             }
         },
-        async initCTRatio() {
-            const row_data = [
-                {
-                    mrid: '',
-                    name: 'Name',
-                    code: 'name',
-                    unit: '',
-                    type: 'string'
-                },
-                {
-                    mrid: '',
-                    name: 'IPR',
-                    code: 'ipr',
-                    unit: 'A',
-                    type: 'analog'
-                },
-                {
-                    mrid: '',
-                    name: 'ISR',
-                    code: 'isr',
-                    unit: 'A',
-                    type: 'analog'
-                },
-                {
-                    mrid: '',
-                    name: 'Ratio meas',
-                    code: 'ratio_meas',
-                    unit: '',
-                    type: 'string'
-                },
-                {
-                    mrid: '',
-                    name: 'Ratio dev',
-                    code: 'ratio_dev',
-                    unit: '',
-                    type: 'string'
-                },
-                {
-                    mrid: '',
-                    name: 'Polarity',
-                    code: 'polarity',
-                    type: 'string'
-                },
-                {
-                    mrid: '',
-                    name: 'Assessment',
-                    code: 'assessment',
-                    type: 'discrete',
-                    pool: {
-                        mrid: '',
-                        valueToAlias: [
-                            {mrid: '', value: 0, alias_name: 'Fail'},
-                            {mrid: '', value: 1, alias_name: 'Pass'}
-                        ]
-                    }
-                },
-                {
-                    mrid: '',
-                    name: 'Condition indicator',
-                    code: 'condition_indicator',
-                    type: 'discrete',
-                    pool: {
-                        mrid: '',
-                        valueToAlias: [
-                            {mrid: '', value: 0, alias_name: 'Bad'},
-                            {mrid: '', value: 1, alias_name: 'Poor'},
-                            {mrid: '', value: 2, alias_name: 'Fair'},
-                            {mrid: '', value: 3, alias_name: 'Good'}
-                        ]
-                    }
-                }
-            ]
+        async initCTRatio(testTypeCode) {
             let table = []
-            let measurementProcedure = []
+            const rowDataExample = common.buildEmptyTestRow(CurrentTransformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(CurrentTransformerConditionMap[testTypeCode].columns)
+            
+            // Tạo một row mặc định với tất cả field trống
+            const row = JSON.parse(JSON.stringify(rowDataExample))
+            table.push(row)
+            
             return {
-                table,
-                row_data,
-                measurementProcedure
+                rowDataExampleCondition,
+                table
             }
         },
         async initCTExcitation() {
@@ -279,28 +138,28 @@ export default {
                 {
                     mrid: '',
                     name: 'R meas',
-                    code: 'rmeas',
+                    code: 'r_meas',
                     unit: 'Ω',
                     type: 'analog'
                 },
                 {
                     mrid: '',
                     name: 'R ref',
-                    code: 'rref',
+                    code: 'r_ref',
                     unit: 'Ω',
                     type: 'analog'
                 },
                 {
                     mrid: '',
                     name: 'R corr',
-                    code: 'rcorr',
+                    code: 'r_corr',
                     unit: 'Ω',
                     type: 'analog'
                 },
                 {
                     mrid: '',
                     name: 'R dev',
-                    code: 'rdev',
+                    code: 'r_dev',
                     unit: '%',
                     type: 'analog'
                 },
@@ -357,9 +216,9 @@ export default {
                 row.name.value = 'C H-G'
             }
 
-            // Gán giá trị mặc định cho cột Test Mode
-            if (row.testMode) {
-                row.testMode.value = 'GST'
+            // Gán giá trị mặc định cho cột Test Mode (theo config là test_mode)
+            if (row.test_mode) {
+                row.test_mode.value = 'GST'
             }
 
             // Đẩy dòng dữ liệu vào table
@@ -371,198 +230,25 @@ export default {
                 table
             }
         },
-        async initGeneralInspection() {
-            const row_data = [
-                {
-                    mrid: '',
-                    name: 'Items',
-                    code: 'items',
-                    unit: '',
-                    type: 'string'
-                },
-                {
-                    mrid: '',
-                    name: 'Assessment',
-                    code: 'assessment',
-                    type: 'discrete',
-                    pool: {
-                        mrid: '',
-                        valueToAlias: [
-                            {mrid: '', value: 0, alias_name: 'Fail'},
-                            {mrid: '', value: 1, alias_name: 'Pass'}
-                        ]
-                    }
-                },
-                {
-                    mrid: '',
-                    name: 'Condition indicator',
-                    code: 'condition_indicator',
-                    type: 'discrete',
-                    pool: {
-                        mrid: '',
-                        valueToAlias: [
-                            {mrid: '', value: 0, alias_name: 'Bad'},
-                            {mrid: '', value: 1, alias_name: 'Poor'},
-                            {mrid: '', value: 2, alias_name: 'Fair'},
-                            {mrid: '', value: 3, alias_name: 'Good'}
-                        ]
-                    }
-                }
-            ]
-            let table = [
-                {
-                    mrid: '',
-                    items: {
-                        mrid: '',
-                        value: 'Nameplate',
-                        unit: '',
-                        type: 'string'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                },
-                {
-                    mrid: '',
-                    items: {
-                        mrid: '',
-                        value: 'Installation check',
-                        unit: '',
-                        type: 'string'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                },
-                {
-                    mrid: '',
-                    items: {
-                        mrid: '',
-                        value: 'Insulation surface',
-                        unit: '',
-                        type: 'string'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                },
-                {
-                    mrid: '',
-                    items: {
-                        mrid: '',
-                        value: 'Ground frame',
-                        unit: '',
-                        type: 'string'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                },
-                {
-                    mrid: '',
-                    items: {
-                        mrid: '',
-                        value: 'Terminal box',
-                        unit: '',
-                        type: 'string'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                },
-                {
-                    mrid: '',
-                    items: {
-                        mrid: '',
-                        value: 'Marking of terminals',
-                        unit: '',
-                        type: 'string'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                },
-                {
-                    mrid: '',
-                    items: {
-                        mrid: '',
-                        value: 'Oil check',
-                        unit: '',
-                        type: 'string'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                }
-            ]
-            let measurementProcedure = []
+        async initGeneralInspection(testTypeCode) {
+            let table = []
+            const rowDataExample = common.buildEmptyTestRow(CurrentTransformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(CurrentTransformerConditionMap[testTypeCode].columns)
+            
+            // Sử dụng defaultRows từ JSON definition nếu có, nếu không thì dùng hardcode
+            const testDefinition = CurrentTransformerTestMap[testTypeCode]
+            const defaultItems = testDefinition.defaultRows 
+                ? testDefinition.defaultRows.map(row => row.items)
+                : ['Nameplate', 'Installation check', 'Grounding check', 'Discharge counter check']
+            
+            defaultItems.forEach(element => {
+                const rowData = JSON.parse(JSON.stringify(rowDataExample))
+                rowData.item.value = element
+                table.push(rowData)
+            })
             return {
-                table,
-                row_data,
-                measurementProcedure
+                rowDataExampleCondition,
+                table
             }
         }
     }

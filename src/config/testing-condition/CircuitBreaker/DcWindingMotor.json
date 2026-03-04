@@ -1,6 +1,6 @@
 {
   "testId": "0a8e9951-bc75-4baf-b792-fd265219d450",
-  "testCode": "DcWindingMotor",
+  "testCode": "DCWindingMotor",
   "testName": "DC winding resistance of motor",
   "columns": [
     {

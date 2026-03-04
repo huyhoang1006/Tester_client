@@ -1,7 +1,7 @@
 <template>
     <div id="job">
         <el-row :gutter="20" style="padding: 0">
-            <el-tabs type="card" >
+            <el-tabs type="card">
                 <!-- Overview -->
                 <el-tab-pane style="width: 100%;">
                     <span slot="label"><i class="fa-solid fa-book"></i> Overview</span>
@@ -10,12 +10,12 @@
 
                 <!-- Select test -->
                 <el-tab-pane>
-                    <span slot="label"><i class="fa-solid fa-list-check"></i> Select test</span>
+                    <span slot="label"><i class="fa-solid fa-list-check"></i> Test settings</span>
                     <select-test style="width: 100%;"
-                        :data="currentTransformerJobDto.testList" 
+                        :data="currentTransformerJobDto.testList"
+                        :testTypeListData="testTypeListData"
                         :assetData="assetData"
                         :obj-active-name="objActiveName"
-                        :testTypeListData="testTypeListData"
                         ></select-test>
                 </el-tab-pane>
 
@@ -28,16 +28,15 @@
 
                 <!-- Tests -->
                 <el-tab-pane>
-                    <span slot="label"><i class="fa-solid fa-calculator"></i> Tests</span>
+                    <span slot="label"><i class="fa-solid fa-calculator"></i> Test data</span>
                     <div id="tests" style="width: 100%;">
                         <el-tabs v-model="objActiveName.activeName" type="card" class="w-100 h-100">
-                            <el-tab-pane v-for="(item, index) in currentTransformerJobDto.testList" :key="index" :label="item.name" :name="item.tabId || item.name + index">
+                            <el-tab-pane v-for="(item, index) in currentTransformerJobDto.testList" :key="index" :label="item.name" :name="item.name + index">
                                 <test-information
-                                :title="item.name"
-                                :data="item.testCondition"
-                                :assetData="assetData"
-                                :attachment="item.testCondition && item.testCondition.attachmentData ? item.testCondition.attachmentData : attachmentArr[index]"
-                                >
+                                    :title="item.name"
+                                    :data="item.testCondition"
+                                    :assetData="assetData"
+                                    :attachment="item.testCondition.attachmentData">
                                 </test-information>
                                 <component
                                     :is="item.testTypeCode" 
@@ -57,7 +56,6 @@
 <script>
 /* eslint-disable */
 import mixin from './mixin'
-import Mixtestcondition from './mixin/Mixtestcondition'
 import overview from './components/Overview'
 import SelectTest from './components/SelectTest'
 import testInformation from '@/views/Common/testInformation.vue'
@@ -86,46 +84,33 @@ export default {
         testingEquipment
     },
     props: {
-        locationData: {
-            type: Object,
-            default: () => ({})
-        },
-        assetData: {
-            type: Object,
-            default: () => ({})
-        },
-        productAssetModelData: {
-            type: Object,
-            default: () => ({})
-        },
+        
         parentOrganization: {
             type: Object,
             default: () => ({})
         },
-        testTypeListData: {
-            type: Array,
-            default: () => []
-        }
     },
-    mixins: [mixin, Mixtestcondition],
+    mixins: [mixin],
     data() {
         return {
             objActiveName: {
                 activeName: null
-            }
+            },
+            testTypeListData: [],
+            assetData : {},
+            locationData : {},
+            productAssetModelData: {},
         }
     },
-    mounted() {},
     methods: {
         updateAttachmentOverView(attachment) {
-            this.currentTransformerJobDto.attachmentData = attachment
+            this.attachmentData = attachment
         },
         loadMapForView() {
         },
     },
 }
 </script>
-
 
 <style lang="scss" scoped>
 #job {
