@@ -1,5 +1,3 @@
-
-
 export default {
     methods: {
         async processDuplicateAsset(node, apiGetEntity, mappingFunction, mixinObject, dataPropName) {
@@ -294,6 +292,119 @@ export default {
                 if (dto.reactorRating) generateMridForNestedObject(dto.reactorRating)
                 if (dto.reactorOther) generateMridForNestedObject(dto.reactorOther)
                 if (dto.bushing) generateMridForNestedObject(dto.bushing)
+
+                // -----------------------------------------------------------
+                // SURGE ARRESTER SPECIFIC LOGIC (Fix Duplicate Error)
+                // -----------------------------------------------------------
+                if (dto.ratings && dto.ratings.tableRating && Array.isArray(dto.ratings.tableRating)) {
+                    dto.ratings.tableRating.forEach(item => {
+                        // Tạo ID mới cho dòng rating (Asset Unit)
+                        if (!item.mrid) item.mrid = this.generateUuid();
+
+                        // QUAN TRỌNG: Tạo ID mới cho Info (Asset Info Unit) để không trùng với bản gốc
+                        item.assetInfoId = this.generateUuid();
+
+                        // Tạo ID mới cho các object con bên trong (Voltage, Current, etc.)
+                        const nestedFields = [
+                            'ratedVoltage', 'maximumVoltage', 'continousVoltage',
+                            'shortCurrent', 'ratedCircuit', 'polesVoltage', 'isoVoltage'
+                        ];
+
+                        nestedFields.forEach(field => {
+                            if (item[field]) {
+                                item[field].mrid = this.generateUuid();
+                            }
+                        });
+                    });
+                }
+
+
+                // -----------------------------------------------------------
+                // TRANSFORMER SPECIFIC LOGIC
+                // -----------------------------------------------------------
+                if (dto.impedances && dto.shortCircuitTestTransformerEndInfo) {
+                    const impedanceArrays = ['prim_sec', 'prim_tert', 'sec_tert'];
+                    impedanceArrays.forEach(key => {
+                        if (Array.isArray(dto.impedances[key])) {
+                            dto.impedances[key].forEach(item => {
+                                const oldMrid = item.mrid;
+                                const newMrid = this.generateUuid();
+                                item.mrid = newMrid;
+
+                                // Cập nhật khóa ngoại trong bảng liên kết
+                                dto.shortCircuitTestTransformerEndInfo.forEach(info => {
+                                    if (info.short_circuit_test_id === oldMrid) {
+                                        info.short_circuit_test_id = newMrid;
+                                    }
+                                });
+
+                                // Tạo mới ID cho các object con trong impedance
+                                if (item.base_power) {
+                                    item.base_power.mrid = this.generateUuid();
+                                    if (item.base_power.data) item.base_power.data.mrid = this.generateUuid();
+                                }
+                                if (item.base_voltage) {
+                                    item.base_voltage.mrid = this.generateUuid();
+                                    if (item.base_voltage.data) item.base_voltage.data.mrid = this.generateUuid();
+                                }
+                                if (item.short_circuit_impedances_uk) item.short_circuit_impedances_uk.mrid = this.generateUuid();
+                                if (item.load_losses_pk) item.load_losses_pk.mrid = this.generateUuid();
+                            });
+                        }
+                    });
+
+                    // Tạo mới ID cho zero sequence impedance
+                    if (dto.impedances.zero_sequence_impedance) {
+                        const zsi = dto.impedances.zero_sequence_impedance;
+                        zsi.mrid = this.generateUuid();
+                        if (zsi.base_power) {
+                            zsi.base_power.mrid = this.generateUuid();
+                            if (zsi.base_power.data) zsi.base_power.data.mrid = this.generateUuid();
+                        }
+                        if (zsi.base_voltage) {
+                            zsi.base_voltage.mrid = this.generateUuid();
+                            if (zsi.base_voltage.data) zsi.base_voltage.data.mrid = this.generateUuid();
+                        }
+                        if (zsi.zero_percent) {
+                            Object.values(zsi.zero_percent).forEach(zp => {
+                                if (zp) {
+                                    zp.mrid = this.generateUuid();
+                                    if (zp.data) zp.data.mrid = this.generateUuid();
+                                }
+                            });
+                        }
+                    }
+                    if (dto.impedances.ref_temp) dto.impedances.ref_temp.mrid = this.generateUuid();
+                }
+
+                // Sau khi đã update link, giờ mới cấp ID mới cho chính các row trong bảng liên kết
+                if (dto.shortCircuitTestTransformerEndInfo) {
+                    dto.shortCircuitTestTransformerEndInfo.forEach(info => info.mrid = this.generateUuid());
+                }
+
+                if (dto.others) generateMridForNestedObject(dto.others)
+
+                // Xử lý Tap Changer: Cấp ID cho voltage_table (field .id)
+                if (dto.tap_changers) {
+                    generateMridForNestedObject(dto.tap_changers);
+                    if (dto.tap_changers.voltage_table && Array.isArray(dto.tap_changers.voltage_table)) {
+                        dto.tap_changers.voltage_table.forEach(row => {
+                            // Cấp ID mới cho dòng (Mapper dùng .id để gán vào TapChangerTablePoint.mrid)
+                            row.id = this.generateUuid();
+                            // Cấp ID mới cho object voltage bên trong
+                            if (row.voltage) {
+                                row.voltage.mrid = this.generateUuid();
+                            }
+                        });
+                    }
+                }
+
+                if (dto.bushing_data) generateMridForNestedObject(dto.bushing_data)
+                if (dto.surge_arrester) generateMridForNestedObject(dto.surge_arrester)
+                if (dto.oldTransformerEndInfo) generateMridForNestedObject(dto.oldTransformerEndInfo)
+                if (dto.winding_configuration) generateMridForNestedObject(dto.winding_configuration)
+                // -----------------------------------------------------------
+
                 // Xóa children để tránh duplicate con đệ quy (nếu không cần thiết)
                 if (dto.children) dto.children = []
                 if (dto.voltageLevels) dto.voltageLevels = []

@@ -29,6 +29,7 @@ import OldSurgeArresterInfo from "@/views/Cim/OldSurgeArresterInfo"
 import SurgeArrester from "@/views/Cim/SurgeArrester"
 
 export const transformerDtoToEntity = (dto) => {
+    console.log('DTO nhận được để chuyển đổi thành Entity:', dto);
     const entity = new TransformerEntity();
 
     //properties
@@ -730,6 +731,7 @@ export const transformerDtoToEntity = (dto) => {
 }
 
 export const transformerEntityToDto = (entity) => {
+    console.log('transformerEntityToDto', entity)
     const dto = new TransformerDto();
     dto.properties.mrid = entity.asset.mrid || ''
     dto.properties.kind = entity.asset.kind || ''
@@ -1038,12 +1040,14 @@ export const transformerEntityToDto = (entity) => {
                     const found = entity.shortCircuitTestTransformerEndInfo.find(
                         x => x.short_circuit_test_id === shortCircuitTest.mrid
                     );
-                    for (const transformerEndInfo2 of entity.oldTransformerEndInfo) {
-                        if (transformerEndInfo2.mrid == found.transformer_end_info_id) {
-                            if (transformerEndInfo2.end_number == 2) {
-                                dto.impedances.prim_sec.push(dataCircuitTest);
-                            } else if (transformerEndInfo2.end_number == 3) {
-                                dto.impedances.prim_tert.push(dataCircuitTest);
+                    if (found) {
+                        for (const transformerEndInfo2 of entity.oldTransformerEndInfo) {
+                            if (transformerEndInfo2.mrid == found.transformer_end_info_id) {
+                                if (transformerEndInfo2.end_number == 2) {
+                                    dto.impedances.prim_sec.push(dataCircuitTest);
+                                } else if (transformerEndInfo2.end_number == 3) {
+                                    dto.impedances.prim_tert.push(dataCircuitTest);
+                                }
                             }
                         }
                     }
@@ -1051,10 +1055,12 @@ export const transformerEntityToDto = (entity) => {
                     const found = entity.shortCircuitTestTransformerEndInfo.find(
                         x => x.short_circuit_test_id === shortCircuitTest.mrid
                     );
-                    for (const transformerEndInfo2 of entity.oldTransformerEndInfo) {
-                        if (transformerEndInfo2.mrid == found.transformer_end_info_id) {
-                            if (transformerEndInfo2.end_number == 3) {
-                                dto.impedances.sec_tert.push(dataCircuitTest);
+                    if (found) {
+                        for (const transformerEndInfo2 of entity.oldTransformerEndInfo) {
+                            if (transformerEndInfo2.mrid == found.transformer_end_info_id) {
+                                if (transformerEndInfo2.end_number == 3) {
+                                    dto.impedances.sec_tert.push(dataCircuitTest);
+                                }
                             }
                         }
                     }
@@ -1185,18 +1191,18 @@ export const transformerEntityToDto = (entity) => {
             id: '',
             tap: '',
             voltage: {
-                mrid : '',
-                value : '',
-                unit : 'V'
+                mrid: '',
+                value: '',
+                unit: 'V'
             }
         }
         point.id = t.mrid
         point.tap = t.step
-        for(const voltage of entity.tapChanger.voltage) {
-            if(voltage.mrid == t.voltage) {
+        for (const voltage of entity.tapChanger.voltage) {
+            if (voltage.mrid == t.voltage) {
                 point.voltage.mrid = voltage.mrid
                 point.voltage.value = voltage.value
-                if(voltage.multiplier === '' || voltage.multiplier === null) {
+                if (voltage.multiplier === '' || voltage.multiplier === null) {
                     point.voltage.unit = voltage.unit
                 } else {
                     point.voltage.unit = voltage.multiplier + '|' + voltage.unit
@@ -1358,24 +1364,24 @@ export const transformerEntityToDto = (entity) => {
     }
 
     for (const transformer_end_info of entity.oldTransformerEndInfo) {
-        for(const surgeArresterData of entity.surgeArrester) {
-            if(surgeArresterData.oldSurgeArresterInfo.transformer_end_info === transformer_end_info.mrid) {
+        for (const surgeArresterData of entity.surgeArrester) {
+            if (surgeArresterData.oldSurgeArresterInfo.transformer_end_info === transformer_end_info.mrid) {
                 const surgeTemplate = {
                     sign: true,
-                    properties : {
-                        assetInfoId : '',
-                        asset_system_code : '',
-                        lifecycleDateId : '',
-                        manufacturer : '',
-                        manufacturer_year : '',
-                        mrid : '',
-                        productAssetModelId : '',
-                        serial_no : ''
+                    properties: {
+                        assetInfoId: '',
+                        asset_system_code: '',
+                        lifecycleDateId: '',
+                        manufacturer: '',
+                        manufacturer_year: '',
+                        mrid: '',
+                        productAssetModelId: '',
+                        serial_no: ''
                     },
-                    ratings : {
-                        pos : '',
-                        unit : '',
-                        table : []
+                    ratings: {
+                        pos: '',
+                        unit: '',
+                        table: []
                     }
                 }
                 surgeTemplate.properties.mrid = surgeArresterData.surgeArrester.mrid || ''
@@ -1390,11 +1396,11 @@ export const transformerEntityToDto = (entity) => {
                 surgeTemplate.ratings.pos = surgeArresterData.oldSurgeArresterInfo.phase || ''
                 surgeTemplate.ratings.unit = surgeArresterData.surgeArrester.unit_count || ''
 
-                for(const assetUnit of surgeArresterData.assetUnit) {
+                for (const assetUnit of surgeArresterData.assetUnit) {
                     const assetUnitInfo = surgeArresterData.assetInfoUnit.find(x => x.mrid === assetUnit.asset_info)
                     const tableUnit = {
-                        mrid : '',
-                        assetInfoId : '',
+                        mrid: '',
+                        assetInfoId: '',
                         serial: '',
                         voltageLl: {
                             mrid: '',
@@ -1417,29 +1423,29 @@ export const transformerEntityToDto = (entity) => {
                     tableUnit.serial = assetUnit.serial_number || ''
 
                     tableUnit.voltageLl.mrid = assetUnitInfo.voltage_ll || ''
-                    for(const voltage of surgeArresterData.voltage) {
-                        if(voltage.mrid === tableUnit.voltageLl.mrid) {
+                    for (const voltage of surgeArresterData.voltage) {
+                        if (voltage.mrid === tableUnit.voltageLl.mrid) {
                             tableUnit.voltageLl.value = voltage.value
                             tableUnit.voltageLl.unit = voltage.multiplier ? voltage.multiplier + '|' + voltage.unit : voltage.unit
                         }
                     }
 
                     tableUnit.voltageLn.mrid = assetUnitInfo.voltage_ln || ''
-                    for(const voltage of surgeArresterData.voltage) {
-                        if(voltage.mrid === tableUnit.voltageLn.mrid) {
+                    for (const voltage of surgeArresterData.voltage) {
+                        if (voltage.mrid === tableUnit.voltageLn.mrid) {
                             tableUnit.voltageLn.value = voltage.value
                             tableUnit.voltageLn.unit = voltage.multiplier ? voltage.multiplier + '|' + voltage.unit : voltage.unit
                         }
                     }
 
                     tableUnit.mcovRating.mrid = assetUnitInfo.continuous_operating_voltage || ''
-                    for(const voltage of surgeArresterData.voltage) {
-                        if(voltage.mrid === tableUnit.mcovRating.mrid) {
+                    for (const voltage of surgeArresterData.voltage) {
+                        if (voltage.mrid === tableUnit.mcovRating.mrid) {
                             tableUnit.mcovRating.value = voltage.value
                             tableUnit.mcovRating.unit = voltage.multiplier ? voltage.multiplier + '|' + voltage.unit : voltage.unit
                         }
                     }
-                    
+
                     surgeTemplate.ratings.table.push(tableUnit)
                 }
 

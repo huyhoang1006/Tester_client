@@ -222,7 +222,9 @@
                                         </el-select>
                                     </td>
                                     <td>
-                                        <el-input size="mini" v-model="item.temp_rise_wind.value"> </el-input>
+                                        <el-input size="mini" v-model="item.temp_rise_wind.value">
+                                            <template slot="append">{{ unitSymbol.degC }}</template>
+                                        </el-input>
                                     </td>
                                     <td>
                                         <el-button size="mini" type="danger" class="w-100"
