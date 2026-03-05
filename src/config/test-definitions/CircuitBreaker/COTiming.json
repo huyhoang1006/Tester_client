@@ -17,9 +17,23 @@
       "unit": "m|s"
     },
     {
-      "mrid": "ff66aaaa-7373-4b84-ab17-7afa4cf94fbc",
-      "code": "closing_sync",
-      "name": "Closing sync",
+      "mrid": "cbf48165-6f7a-4716-8258-bb4eae410b3b",
+      "code": "interrupter",
+      "name": "Interrupter",
+      "type": "analog",
+      "unit": ""
+    },
+    {
+      "mrid": "ed668284-e6da-468e-99e7-e0901fb19edf",
+      "code": "closing_sync_between_phase",
+      "name": "Closing sync. between phase (ms)",
+      "type": "analog",
+      "unit": "m|s"
+    },
+    {
+      "mrid": "8387cbb8-43c9-4730-b2d4-3fe6d0e5a202",
+      "code": "closing_sync_between_interrupter",
+      "name": "Closing sync. between interrupter (ms)",
       "type": "analog",
       "unit": "m|s"
     },

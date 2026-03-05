@@ -17,9 +17,23 @@
       "unit": "m|s"
     },
     {
-      "mrid": "a70df43e-81ff-4605-d890-3135e5f6a70c",
-      "code": "opening_sync",
-      "name": "Opening sync",
+      "mrid": "cbf48165-6f7a-4716-8258-bb4eae410b3b",
+      "code": "interrupter",
+      "name": "Interrupter",
+      "type": "analog",
+      "unit": ""
+    },
+    {
+      "mrid": "6976f705-74ee-4988-9886-a7750ec28925",
+      "code": "opening_sync_between_interrupter",
+      "name": "Opening sync. between interrupter (ms)",
+      "type": "analog",
+      "unit": "m|s"
+    },
+    {
+      "mrid": "0db2ebdc-19eb-45f9-b748-43ff95d4e700",
+      "code": "opening_sync_between_phase",
+      "name": "Opening sync. between phase (ms)",
       "type": "analog",
       "unit": "m|s"
     },

@@ -31,9 +31,9 @@
       "unit": "m|s"
     },
     {
-      "mrid": "a70df43e-81ff-4605-d890-3135e5f6a70c",
-      "code": "opening_sync",
-      "name": "Opening sync",
+      "mrid": "0db2ebdc-19eb-45f9-b748-43ff95d4e700",
+      "code": "opening_sync_between_phase",
+      "name": "Opening sync. between phase (ms)",
       "type": "analog",
       "unit": "m|s"
     },
