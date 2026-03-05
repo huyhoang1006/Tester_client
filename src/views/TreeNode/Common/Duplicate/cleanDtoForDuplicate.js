@@ -13,6 +13,26 @@ export default {
             dto.attachmentId = null
             dto.productAssetModelId = null // Tạo ProductAssetModel mới
 
+            if (dto.properties && (dto.properties.kind === 'Circuit breaker' || dto.asset === 'Circuit breaker')) {
+                dto.breakerRatingInfoId = null
+                dto.breakerContactSystemInfoId = null
+                dto.breakerOtherInfoId = null
+                dto.operatingMechanismId = null
+                dto.operatingMechanismInfoId = null
+                dto.operatingMechanismLifecycleDateId = null
+                dto.operatingMechanismProductAssetModelId = null
+                dto.assessmentLimitBreakerInfoId = null
+
+                // Xóa mrid trong các mảng linh kiện của bộ truyền động (Trip/Close Coils)
+                if (dto.operating) {
+                    if (Array.isArray(dto.operating.trip_coil_component)) {
+                        dto.operating.trip_coil_component.forEach(item => { item.mrid = null });
+                    }
+                    if (Array.isArray(dto.operating.close_coil_component)) {
+                        dto.operating.close_coil_component.forEach(item => { item.mrid = null });
+                    }
+                }
+            }
             // Old info IDs
             if (dto.oldSurgeArresterInfoId) dto.oldSurgeArresterInfoId = null
             if (dto.oldPowerTransformerInfoId) dto.oldPowerTransformerInfoId = null
@@ -27,6 +47,7 @@ export default {
             if (dto.operatingMechanismLifecycleDateId) dto.operatingMechanismLifecycleDateId = null
             if (dto.operatingMechanismProductAssetModelId) dto.operatingMechanismProductAssetModelId = null
             if (dto.assessmentLimitBreakerInfoId) dto.assessmentLimitBreakerInfoId = null
+
             // Xóa mrid trong ratings (giữ value và unit)
             if (dto.ratings) {
                 const ratingFields = [
@@ -47,16 +68,14 @@ export default {
 
             // Xóa mrid/id trong nested objects (giữ dữ liệu)
             const clearRecursive = (obj, depth = 0) => {
-                if (depth > 5) return
+                if (depth > 12 || !obj) return
                 if (Array.isArray(obj)) {
                     obj.forEach((item) => clearRecursive(item, depth + 1))
                 } else if (obj && typeof obj === 'object') {
-                    if ('mrid' in obj && obj.mrid !== null) obj.mrid = null
-                    if ('id' in obj && obj.id !== null) obj.id = null
+                    if ('mrid' in obj) obj.mrid = null
+                    if ('id' in obj) obj.id = null
                     Object.values(obj).forEach((val) => {
-                        if (val !== null && typeof val === 'object') {
-                            clearRecursive(val, depth + 1)
-                        }
+                        if (val && typeof val === 'object') clearRecursive(val, depth + 1)
                     })
                 }
             }
@@ -68,14 +87,20 @@ export default {
             if (dto.operating) clearRecursive(dto.operating)
             if (dto.assessmentLimits) clearRecursive(dto.assessmentLimits)
             if (dto.winding_configuration) clearRecursive(dto.winding_configuration)
-            if (dto.impedances) clearRecursive(dto.impedances)
+
+            // LƯU Ý: Không clear impedances ở đây để giữ ID cũ cho việc mapping bên duplicateAsset
+            // if (dto.impedances) clearRecursive(dto.impedances)
+
             if (dto.others) clearRecursive(dto.others)
-            if (dto.tap_changers) clearRecursive(dto.tap_changers)
+
+            // Tap changer xử lý riêng bên dưới
+            // if (dto.tap_changers) clearRecursive(dto.tap_changers)
+
             if (dto.voltage) clearRecursive(dto.voltage)
             if (dto.frequency) clearRecursive(dto.frequency)
             if (dto.currentFlow) clearRecursive(dto.currentFlow)
             if (dto.seconds) clearRecursive(dto.seconds)
-            // Power Cable specific: temperature, area, length, datasData, othersData, ratingsData
+            // Power Cable specific
             if (dto.temperature) clearRecursive(dto.temperature)
             if (dto.area) clearRecursive(dto.area)
             if (dto.length) clearRecursive(dto.length)
@@ -86,11 +111,62 @@ export default {
             if (dto.ctConfiguration) clearRecursive(dto.ctConfiguration)
             if (dto.vt_Configuration) clearRecursive(dto.vt_Configuration)
             if (dto.capacitance) clearRecursive(dto.capacitance)
-            if (dto.percent) clearRecursive(dto.percent) // Bushing specific: DF C1, DF C2
+            if (dto.percent) clearRecursive(dto.percent)
             if (dto.dissipationFactor) clearRecursive(dto.dissipationFactor)
-            // Reactor specific: reactorRating (includes inductance), reactorOther
             if (dto.reactorRating) clearRecursive(dto.reactorRating)
             if (dto.reactorOther) clearRecursive(dto.reactorOther)
+
+            // Transformer specific
+            if (dto.bushing_data) {
+                clearRecursive(dto.bushing_data);
+                ['prim', 'sec', 'tert'].forEach(w => {
+                    if (dto.bushing_data[w]) {
+                        dto.bushing_data[w].forEach(b => {
+                            b.assetInfoId = null
+                            b.productAssetModelId = null
+                            b.lifecycleDateId = null
+                        })
+                    }
+                })
+            }
+            if (dto.surge_arrester) {
+                clearRecursive(dto.surge_arrester);
+                ['prim', 'sec', 'tert'].forEach(w => {
+                    if (dto.surge_arrester[w]) {
+                        dto.surge_arrester[w].forEach(s => {
+                            if (s.properties) {
+                                s.properties.assetInfoId = null
+                                s.properties.productAssetModelId = null
+                                s.properties.lifecycleDateId = null
+                            }
+                            if (s.ratings && s.ratings.table) {
+                                s.ratings.table.forEach(t => t.assetInfoId = null)
+                            }
+                        })
+                    }
+                })
+            }
+            if (dto.oldTransformerEndInfo) clearRecursive(dto.oldTransformerEndInfo)
+
+            // LƯU Ý: Không clear shortCircuitTestTransformerEndInfo ở đây để giữ liên kết với impedances
+            // if (dto.shortCircuitTestTransformerEndInfo) clearRecursive(dto.shortCircuitTestTransformerEndInfo)
+
+            // Xử lý Tap Changer
+            if (dto.tap_changers) {
+                if (dto.tap_changers.mrid) dto.tap_changers.mrid = null;
+                if (dto.tap_changers.productAssetModelId) dto.tap_changers.productAssetModelId = null
+                if (dto.tap_changers.assetInfoId) dto.tap_changers.assetInfoId = null
+
+                // Xóa ID của các dòng trong bảng Voltage Table
+                if (dto.tap_changers.voltage_table && Array.isArray(dto.tap_changers.voltage_table)) {
+                    dto.tap_changers.voltage_table.forEach(row => {
+                        row.id = null; // Quan trọng: Mapper dùng field này làm mrid
+                        if (row.voltage) {
+                            row.voltage.mrid = null;
+                        }
+                    });
+                }
+            }
         },
     }
 }

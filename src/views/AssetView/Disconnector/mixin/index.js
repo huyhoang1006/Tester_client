@@ -126,7 +126,7 @@ export default {
                     this.loadData(dto)
                 }
                 this.$message.success("Asset saved successfully")
-                
+
                 console.log('[DISCONNECTOR] Emitting reload event with saved data')
                 this.$emit('reload', { savedData: this.disconnector })
                 console.log('[DISCONNECTOR] Reload event emitted')
@@ -212,6 +212,9 @@ export default {
                 }
             } else {
                 data.attachment.path = JSON.stringify(this.attachmentData)
+                if (!data.attachment) data.attachment = {};
+                data.attachment.id_foreign = data.properties.mrid;
+                data.attachment.type = 'asset';
             }
         },
 

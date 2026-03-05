@@ -2,19 +2,19 @@ import db from '../../datacontext/index'
 import path from 'path'
 import * as attachmentContext from '../../attachmentcontext/index'
 import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, deleteDirectory } from '@/function/entity/attachment'
-import {insertSurgeArresterTransaction, getSurgeArresterById, getSurgeArresterByAssetId, deleteSurgeArresterTransaction} from '@/function/cim/surgeArrester';
-import {insertVoltageTransaction, getVoltageById, deleteVoltageByIdTransaction} from '@/function/cim/voltage';
+import { insertSurgeArresterTransaction, getSurgeArresterById, getSurgeArresterByAssetId, deleteSurgeArresterTransaction } from '@/function/cim/surgeArrester';
+import { insertVoltageTransaction, getVoltageById, deleteVoltageByIdTransaction } from '@/function/cim/voltage';
 import { insertSecondsTransaction, getSecondById, deleteSecondsByIdTransaction } from '@/function/cim/seconds';
-import {insertCurrentFlowTransaction, getCurrentFlowById, deleteCurrentFlowByIdTransaction} from '@/function/cim/currentFlow';
-import {insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction} from '@/function/cim/lifecycleDate';
-import {insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction} from '@/function/cim/productAssetModel';
-import {insertAssetPsrTransaction, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction} from '@/function/entity/assetPsr'
+import { insertCurrentFlowTransaction, getCurrentFlowById, deleteCurrentFlowByIdTransaction } from '@/function/cim/currentFlow';
+import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction } from '@/function/cim/lifecycleDate';
+import { insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction } from '@/function/cim/productAssetModel';
+import { insertAssetPsrTransaction, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
 import { insertOldSurgeArresterInfoTransaction, getOldSurgeArresterInfoBySurgeArresterId, deleteOldSurgeArresterInfoByIdTransaction } from '@/function/cim/oldSurgeArresterInfo';
 import SurgeArresterEntity from '@/views/Flatten/SurgeArrester';
 
-export const insertSurgeArresterEntity = async (old_entity,entity) => {
+export const insertSurgeArresterEntity = async (old_entity, entity) => {
     try {
-        if(entity.surgeArrester.mrid === null || entity.surgeArrester.mrid === '') {
+        if (entity.surgeArrester.mrid === null || entity.surgeArrester.mrid === '') {
             const result = {
                 success: false,
                 error: new Error("MRID is required for Surge Arrester Entity"),
@@ -120,7 +120,7 @@ export const insertSurgeArresterEntity = async (old_entity,entity) => {
             if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
                 const pathData = JSON.parse(entity.attachment.path);
                 const newPath = []
-                for(let i = 0; i < pathData.length; i++) {
+                for (let i = 0; i < pathData.length; i++) {
                     const namefile = path.basename(pathData[i].path);
                     pathData[i].path = path.join(attachmentContext.getAttachmentDir(), entity.surgeArrester.mrid, namefile);
                     newPath.push(pathData[i]);
@@ -161,9 +161,9 @@ export const insertSurgeArresterEntity = async (old_entity,entity) => {
     }
 }
 
-export const insertSurgeArresterLiteEntity = async (entity,old_entity, dbsql) => {
+export const insertSurgeArresterLiteEntity = async (entity, old_entity, dbsql) => {
     try {
-        if(entity.surgeArrester.mrid === null || entity.surgeArrester.mrid === '') {
+        if (entity.surgeArrester.mrid === null || entity.surgeArrester.mrid === '') {
             const result = {
                 success: false,
                 error: new Error("MRID is required for Surge Arrester Entity"),
@@ -280,65 +280,65 @@ export const insertSurgeArresterLiteEntity = async (entity,old_entity, dbsql) =>
 
 export const getSurgeArresterEntityById = async (id, psrId) => {
     try {
-        if(id == null || id === '') {
+        if (id == null || id === '') {
             return { success: false, error: new Error('Invalid ID') };
         } else {
             const entity = new SurgeArresterEntity()
             const dataSurgeArrester = await getSurgeArresterById(id);
-            if(dataSurgeArrester.success) {
+            if (dataSurgeArrester.success) {
                 entity.surgeArrester = dataSurgeArrester.data
                 const dataLifecycleDate = await getLifecycleDateById(entity.surgeArrester.lifecycle_date);
-                if(dataLifecycleDate.success) {
+                if (dataLifecycleDate.success) {
                     entity.lifecycleDate = dataLifecycleDate.data;
                 }
                 const dataOldSurgeArresterInfo = await getOldSurgeArresterInfoBySurgeArresterId(entity.surgeArrester.mrid);
-                if(dataOldSurgeArresterInfo.success) {
+                if (dataOldSurgeArresterInfo.success) {
                     entity.oldSurgeArresterInfo = dataOldSurgeArresterInfo.data;
                 }
 
                 const productAssetModelId = entity.oldSurgeArresterInfo.product_asset_model;
                 const dataProductAssetModel = await getProductAssetModelById(productAssetModelId);
-                if(dataProductAssetModel.success) {
+                if (dataProductAssetModel.success) {
                     entity.productAssetModel = dataProductAssetModel.data;
                 }
-                
+
                 const dataAssetPsr = await getAssetPsrByAssetIdAndPsrId(entity.surgeArrester.mrid, psrId);
-                if(dataAssetPsr.success) {
+                if (dataAssetPsr.success) {
                     entity.assetPsr = dataAssetPsr.data;
                 }
 
                 const dataAssetUnit = await getSurgeArresterByAssetId(entity.surgeArrester.mrid)
-                if(dataAssetUnit.success) {
+                if (dataAssetUnit.success) {
                     entity.assetUnit = dataAssetUnit.data
                 }
 
-                for(const assetUnit of entity.assetUnit) {
+                for (const assetUnit of entity.assetUnit) {
                     const dataAssetInfoUnit = await getOldSurgeArresterInfoBySurgeArresterId(assetUnit.mrid)
-                    if(dataAssetInfoUnit.success) {
+                    if (dataAssetInfoUnit.success) {
                         entity.assetInfoUnit.push(dataAssetInfoUnit.data)
                     }
                 }
 
-                if(entity.assetInfoUnit.length > 0) {
+                if (entity.assetInfoUnit.length > 0) {
                     const voltageArr = ['continuous_operating_voltage', 'rated_voltage', 'maximum_system_voltage', 'pf_with_stand_voltage_isolated_distance', 'pf_with_stand_voltage_earth_between_pole']
                     const currentFlowArr = ['short_time_with_stand_current']
                     const secondsArr = ['rated_duration_of_short_circuit']
-                    for(let i = 0; i < entity.assetInfoUnit.length; i++) {
-                        for(let j = 0; j < voltageArr.length; j++) {
+                    for (let i = 0; i < entity.assetInfoUnit.length; i++) {
+                        for (let j = 0; j < voltageArr.length; j++) {
                             const voltage = await getVoltageById(entity.assetInfoUnit[i][voltageArr[j]]);
-                            if(voltage.success) {
+                            if (voltage.success) {
                                 entity.voltage.push(voltage.data);
                             }
                         }
-                        for(let j = 0; j < currentFlowArr.length; j++) {
+                        for (let j = 0; j < currentFlowArr.length; j++) {
                             const currentFlow = await getCurrentFlowById(entity.assetInfoUnit[i][currentFlowArr[j]]);
-                            if(currentFlow.success) {
+                            if (currentFlow.success) {
                                 entity.currentFlow.push(currentFlow.data);
                             }
                         }
-                        for(let j = 0; j < secondsArr.length; j++) {
+                        for (let j = 0; j < secondsArr.length; j++) {
                             const seconds = await getSecondById(entity.assetInfoUnit[i][secondsArr[j]]);
-                            if(seconds.success) {
+                            if (seconds.success) {
                                 entity.seconds.push(seconds.data);
                             }
                         }
@@ -346,7 +346,7 @@ export const getSurgeArresterEntityById = async (id, psrId) => {
                 }
 
                 const dataAttachment = await getAttachmentByForeignIdAndType(entity.surgeArrester.mrid, 'asset');
-                if(dataAttachment.success) {
+                if (dataAttachment.success) {
                     entity.attachment = dataAttachment.data;
                 }
 
@@ -365,62 +365,62 @@ export const getSurgeArresterEntityById = async (id, psrId) => {
     }
 }
 
-export const getSurgeArresterLiteEntityById = async(id) => {
+export const getSurgeArresterLiteEntityById = async (id) => {
     try {
-        if(id == null || id === '') {
+        if (id == null || id === '') {
             return { success: false, error: new Error('Invalid ID') };
         } else {
             const entity = new SurgeArresterEntity()
             const dataSurgeArrester = await getSurgeArresterById(id);
-            if(dataSurgeArrester.success) {
+            if (dataSurgeArrester.success) {
                 entity.surgeArrester = dataSurgeArrester.data
                 const dataLifecycleDate = await getLifecycleDateById(entity.surgeArrester.lifecycle_date);
-                if(dataLifecycleDate.success) {
+                if (dataLifecycleDate.success) {
                     entity.lifecycleDate = dataLifecycleDate.data;
                 }
                 const dataOldSurgeArresterInfo = await getOldSurgeArresterInfoBySurgeArresterId(entity.surgeArrester.mrid);
-                if(dataOldSurgeArresterInfo.success) {
+                if (dataOldSurgeArresterInfo.success) {
                     entity.oldSurgeArresterInfo = dataOldSurgeArresterInfo.data;
                 }
 
                 const productAssetModelId = entity.oldSurgeArresterInfo.product_asset_model;
                 const dataProductAssetModel = await getProductAssetModelById(productAssetModelId);
-                if(dataProductAssetModel.success) {
+                if (dataProductAssetModel.success) {
                     entity.productAssetModel = dataProductAssetModel.data;
                 }
-                
+
                 const dataAssetUnit = await getSurgeArresterByAssetId(entity.surgeArrester.mrid)
-                if(dataAssetUnit.success) {
+                if (dataAssetUnit.success) {
                     entity.assetUnit = dataAssetUnit.data
                 }
 
-                for(const assetUnit of entity.assetUnit) {
+                for (const assetUnit of entity.assetUnit) {
                     const dataAssetInfoUnit = await getOldSurgeArresterInfoBySurgeArresterId(assetUnit.mrid)
-                    if(dataAssetInfoUnit.success) {
+                    if (dataAssetInfoUnit.success) {
                         entity.assetInfoUnit.push(dataAssetInfoUnit.data)
                     }
                 }
 
-                if(entity.assetInfoUnit.length > 0) {
+                if (entity.assetInfoUnit.length > 0) {
                     const voltageArr = ['continuous_operating_voltage', 'rated_voltage', 'maximum_system_voltage', 'pf_with_stand_voltage_isolated_distance', 'pf_with_stand_voltage_earth_between_pole', 'voltage_ll', 'voltage_ln']
                     const currentFlowArr = ['short_time_with_stand_current']
                     const secondsArr = ['rated_duration_of_short_circuit']
-                    for(let i = 0; i < entity.assetInfoUnit.length; i++) {
-                        for(let j = 0; j < voltageArr.length; j++) {
+                    for (let i = 0; i < entity.assetInfoUnit.length; i++) {
+                        for (let j = 0; j < voltageArr.length; j++) {
                             const voltage = await getVoltageById(entity.assetInfoUnit[i][voltageArr[j]]);
-                            if(voltage.success) {
+                            if (voltage.success) {
                                 entity.voltage.push(voltage.data);
                             }
                         }
-                        for(let j = 0; j < currentFlowArr.length; j++) {
+                        for (let j = 0; j < currentFlowArr.length; j++) {
                             const currentFlow = await getCurrentFlowById(entity.assetInfoUnit[i][currentFlowArr[j]]);
-                            if(currentFlow.success) {
+                            if (currentFlow.success) {
                                 entity.currentFlow.push(currentFlow.data);
                             }
                         }
-                        for(let j = 0; j < secondsArr.length; j++) {
+                        for (let j = 0; j < secondsArr.length; j++) {
                             const seconds = await getSecondById(entity.assetInfoUnit[i][secondsArr[j]]);
-                            if(seconds.success) {
+                            if (seconds.success) {
                                 entity.seconds.push(seconds.data);
                             }
                         }
@@ -444,43 +444,43 @@ export const getSurgeArresterLiteEntityById = async(id) => {
 
 export const deleteSurgeArresterEntity = async (data) => {
     try {
-        if(data.surgeArrester == null || data.surgeArrester.mrid == null || data.surgeArrester.mrid === '') {
+        if (data.surgeArrester == null || data.surgeArrester.mrid == null || data.surgeArrester.mrid === '') {
             return { success: false, error: new Error('Invalid ID') };
         } else {
             try {
                 await runAsync('BEGIN TRANSACTION');
-                if(data.attachment && data.attachment.id) {
+                if (data.attachment && data.attachment.id) {
                     const pathData = JSON.parse(data.attachment.path || '[]')
                     if (Array.isArray(pathData) && pathData.length > 0) {
                         syncFilesWithDeletion(pathData, null, data.mrid);
                     }
                 }
-                if( data.attachment.id) {
+                if (data.attachment.id) {
                     await deleteAttachmentByIdTransaction(data.attachment.id, db);
                 }
-                if(data.assetPsr && data.assetPsr.mrid) {
+                if (data.assetPsr && data.assetPsr.mrid) {
                     await deleteAssetPsrTransaction(data.assetPsr.mrid, db);
                 }
-                for(const assetUnit of data.assetUnit) {
-                    if(assetUnit.mrid) {
+                for (const assetUnit of data.assetUnit) {
+                    if (assetUnit.mrid) {
                         await deleteSurgeArresterTransaction(assetUnit.mrid, db)
                     }
                 }
-                for(const assetInfoUnit of data.assetInfoUnit) {
-                    if(assetInfoUnit.mrid) {
+                for (const assetInfoUnit of data.assetInfoUnit) {
+                    if (assetInfoUnit.mrid) {
                         await deleteOldSurgeArresterInfoByIdTransaction(assetInfoUnit.mrid, db)
                     }
                 }
-                if(data.surgeArrester.mrid) {
+                if (data.surgeArrester.mrid) {
                     await deleteSurgeArresterTransaction(data.surgeArrester.mrid, db);
                 }
-                if(data.oldSurgeArresterInfo.mrid) {
+                if (data.oldSurgeArresterInfo.mrid) {
                     await deleteOldSurgeArresterInfoByIdTransaction(data.oldSurgeArresterInfo.mrid, db);
                 }
-                if(data.lifecycleDate && data.lifecycleDate.mrid) {
+                if (data.lifecycleDate && data.lifecycleDate.mrid) {
                     await deleteLifecycleDateByIdTransaction(data.lifecycleDate.mrid, db);
                 }
-                if(data.productAssetModel && data.productAssetModel.mrid) {
+                if (data.productAssetModel && data.productAssetModel.mrid) {
                     await deleteProductAssetModelByIdTransaction(data.productAssetModel.mrid, db);
                 }
                 for (const voltage of data.voltage) {
@@ -499,7 +499,7 @@ export const deleteSurgeArresterEntity = async (data) => {
                     }
                 }
                 await runAsync('COMMIT');
-                if(data.attachment && data.attachment.id) {
+                if (data.attachment && data.attachment.id) {
                     deleteDirectory(null, data.surgeArrester.mrid);
                 }
                 return { success: true, message: 'Surge Arrester entity deleted successfully' };
@@ -517,29 +517,29 @@ export const deleteSurgeArresterEntity = async (data) => {
 
 export const deleteSurgeArresterLiteEntity = async (data, dbsql) => {
     try {
-        if(data.surgeArrester == null || data.surgeArrester.mrid == null || data.surgeArrester.mrid === '') {
+        if (data.surgeArrester == null || data.surgeArrester.mrid == null || data.surgeArrester.mrid === '') {
             return { success: false, error: new Error('Invalid ID') };
         } else {
-            for(const assetUnit of data.assetUnit) {
-                if(assetUnit.mrid) {
+            for (const assetUnit of data.assetUnit) {
+                if (assetUnit.mrid) {
                     await deleteSurgeArresterTransaction(assetUnit.mrid, dbsql)
                 }
             }
-            for(const assetInfoUnit of data.assetInfoUnit) {
-                if(assetInfoUnit.mrid) {
+            for (const assetInfoUnit of data.assetInfoUnit) {
+                if (assetInfoUnit.mrid) {
                     await deleteOldSurgeArresterInfoByIdTransaction(assetInfoUnit.mrid, dbsql)
                 }
             }
-            if(data.surgeArrester.mrid) {
+            if (data.surgeArrester.mrid) {
                 await deleteSurgeArresterTransaction(data.surgeArrester.mrid, dbsql);
             }
-            if(data.oldSurgeArresterInfo.mrid) {
+            if (data.oldSurgeArresterInfo.mrid) {
                 await deleteOldSurgeArresterInfoByIdTransaction(data.oldSurgeArresterInfo.mrid, dbsql);
             }
-            if(data.lifecycleDate && data.lifecycleDate.mrid) {
+            if (data.lifecycleDate && data.lifecycleDate.mrid) {
                 await deleteLifecycleDateByIdTransaction(data.lifecycleDate.mrid, dbsql);
             }
-            if(data.productAssetModel && data.productAssetModel.mrid) {
+            if (data.productAssetModel && data.productAssetModel.mrid) {
                 await deleteProductAssetModelByIdTransaction(data.productAssetModel.mrid, dbsql);
             }
             for (const voltage of data.voltage) {

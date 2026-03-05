@@ -1,6 +1,6 @@
 import db from '../../datacontext/index'
 // Import các hàm của lớp cha (TapChangerInfo) đã viết ở bước trước
-import * as TapChangerInfoFunc from '../tapChangerInfo/index.js' 
+import * as TapChangerInfoFunc from '../tapChangerInfo/index.js'
 
 // Lấy OldTapChangerInfo theo mrid
 export const getOldTapChangerInfoById = async (mrid) => {
@@ -20,7 +20,7 @@ export const getOldTapChangerInfoById = async (mrid) => {
                     if (err) return reject({ success: false, err, message: 'Get oldTapChangerInfo by id failed' })
                     // Nếu không có row con thì vẫn trả về data cha (tuỳ logic, ở đây giả sử là phải có)
                     if (!row) return resolve({ success: false, data: null, message: 'OldTapChangerInfo specific data not found' })
-                    
+
                     // Merge dữ liệu cha và con
                     return resolve({ success: true, data: { ...parentResult.data, ...row }, message: 'Get oldTapChangerInfo by id completed' })
                 }
@@ -43,7 +43,7 @@ export const getOldTapChangerInfoByPowerTransformerInfoId = async (powerTransfor
                 [powerTransformerInfoId],
                 async (err, row) => {
                     if (err) return reject({ success: false, err, message: 'Find OldTapChangerInfo mrid failed' })
-                    
+
                     // Nếu không tìm thấy
                     if (!row) return resolve({ success: false, data: null, message: 'OldTapChangerInfo not found for this transformer' })
 
@@ -146,21 +146,24 @@ export const updateOldTapChangerInfoTransaction = async (mrid, info, dbsql) => {
 export const deleteOldTapChangerInfoTransaction = async (mrid, dbsql) => {
     return new Promise(async (resolve, reject) => {
         try {
-            // 1. Gọi transaction delete của lớp cha (Nó sẽ xoá ở AssetInfo và TapChangerInfo)
-            const parentResult = await TapChangerInfoFunc.deleteTapChangerInfoTransaction(mrid, dbsql)
+            // 1. Xoá ở bảng old_tap_changer_info TRƯỚC (Bảng con)
+            await new Promise((res, rej) => {
+                dbsql.run("DELETE FROM old_tap_changer_info WHERE mrid=?", [mrid], function (err) {
+                    if (err) return rej({ success: false, err, message: 'Delete oldTapChangerInfo table failed' });
+                    res();
+                });
+            });
+
+            // 2. Sau đó mới gọi transaction delete của lớp cha (TapChangerInfo -> AssetInfo)
+            const parentResult = await TapChangerInfoFunc.deleteTapChangerInfoTransaction(mrid, dbsql);
+
             if (!parentResult.success) {
-                return reject({ success: false, message: 'Delete TapChangerInfo failed', err: parentResult.err })
+                return reject({ success: false, message: 'Delete TapChangerInfo parent failed', err: parentResult.err });
             }
 
-            // 2. Xoá ở bảng old_tap_changer_info
-            dbsql.run("DELETE FROM old_tap_changer_info WHERE mrid=?", [mrid], function (err) {
-                if (err) {
-                    return reject({ success: false, err, message: 'Delete oldTapChangerInfo failed' })
-                }
-                return resolve({ success: true, data: mrid, message: 'Delete oldTapChangerInfo completed' })
-            })
+            return resolve({ success: true, data: mrid, message: 'Delete oldTapChangerInfo completed' });
         } catch (err) {
-            return reject({ success: false, err, message: 'Delete oldTapChangerInfo transaction failed' })
+            return reject({ success: false, err, message: 'Delete oldTapChangerInfo transaction failed' });
         }
     })
 }
