@@ -18,6 +18,11 @@ export const getChildSubstation = (organisationId) => {
     return client.get(`http://222.252.22.158:8087/api/substation/get-by-organisation/${organisationId}`)
 }
 
+export const getSubstationById = (substationId) => {
+    // API endpoint để lấy chi tiết substation đầy đủ
+    return client.get(`http://222.252.22.158:8087/api/substation/cim/${substationId}`)
+}
+
 export const getChildBay = (substationId) => {
     return client.get(`http://222.252.22.158:8087/api/bay/get-by-substation/${substationId}`)
 }

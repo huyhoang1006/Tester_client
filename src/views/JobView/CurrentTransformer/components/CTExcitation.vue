@@ -41,7 +41,12 @@
                             <el-input size="mini" type="text" v-model="item.name.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.i_knee.value"></el-input>
+                            <el-input 
+                                size="mini" 
+                                type="text" 
+                                v-model="item.i_knee.value"
+                                @blur="validateIKnee(item, index)">
+                            </el-input>
                         </td>
                         <td>
                             <el-input size="mini" type="text" v-model="item.v_knee.value"></el-input>
@@ -55,9 +60,14 @@
                             <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
-                            </el-input>
-                        </td>
+                        <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                            size="mini" v-model="item.condition_indicator.value">
+                            <el-option value="Good">Good</el-option>
+                            <el-option value="Fair">Fair</el-option>
+                            <el-option value="Poor">Poor</el-option>
+                            <el-option value="Bad">Bad</el-option>
+                        </el-select>
+                    </td>
                         <td>
                             <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
                                 <i class="fa-solid fa-plus"></i>
@@ -226,6 +236,80 @@ export default {
             else {
                 return;
             }
+        },
+        validateIKnee(item, index) {
+            const iKneeValue = parseFloat(item.i_knee.value)
+            
+            // Check if value is empty
+            if (!item.i_knee.value || item.i_knee.value.trim() === '') {
+                return
+            }
+            
+            // Check if value is a valid number
+            if (isNaN(iKneeValue)) {
+                this.$message.error(`Row ${index + 1}: I knee must be a valid number`)
+                item.i_knee.value = ''
+                return
+            }
+            
+            // Check if value is positive
+            if (iKneeValue <= 0) {
+                this.$message.error(`Row ${index + 1}: I knee must be a positive number`)
+                item.i_knee.value = ''
+                return
+            }
+            
+            // Get Isn value for this row from assetData
+            const isnValue = this.getIsnForRow(item.name.value)
+            
+            if (isnValue && !isNaN(parseFloat(isnValue))) {
+                const isn = parseFloat(isnValue)
+                
+                // Check if I knee is greater than Isn
+                if (iKneeValue > isn) {
+                    this.$message.error(`Row ${index + 1}: I knee (${iKneeValue} A) cannot be greater than Isn (${isn} A)`)
+                    item.i_knee.value = ''
+                    return
+                }
+            }
+        },
+        getIsnForRow(rowName) {
+            // Try to get Isn from Entity (CtTapInfo)
+            if (this.assetData && this.assetData.CtTapInfo && this.assetData.currentFlow) {
+                const tap = this.assetData.CtTapInfo.find(t => t.tap_name === rowName)
+                if (tap && tap.isn) {
+                    const isnObj = this.assetData.currentFlow.find(cf => cf.mrid === tap.isn)
+                    return isnObj ? isnObj.value : null
+                }
+            }
+            
+            // Try to get Isn from DTO (ctConfiguration.dataCT)
+            if (this.assetData && this.assetData.ctConfiguration && this.assetData.ctConfiguration.dataCT) {
+                for (const core of this.assetData.ctConfiguration.dataCT) {
+                    // Check Full tap
+                    if (core.fullTap && core.fullTap.table && core.fullTap.table.name === rowName) {
+                        return core.fullTap.table.isn.value
+                    }
+                    
+                    // Check Main taps
+                    if (core.mainTap && core.mainTap.data) {
+                        const mainTap = core.mainTap.data.find(t => t.table && t.table.name === rowName)
+                        if (mainTap) {
+                            return mainTap.table.isn.value
+                        }
+                    }
+                    
+                    // Check Inter taps
+                    if (core.interTap && core.interTap.data) {
+                        const interTap = core.interTap.data.find(t => t.table && t.table.name === rowName)
+                        if (interTap) {
+                            return interTap.table.isn.value
+                        }
+                    }
+                }
+            }
+            
+            return null
         }
     }
 }

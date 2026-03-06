@@ -21,6 +21,9 @@ export default {
             const data = await this.saveBay()
             if(data.success) {
                 this.$message.success("Bay saved successfully")
+                
+                // ✅ Emit reload event với data đã save - KHÔNG cần gọi API!
+                this.$emit('reload', { savedData: this.properties })
             } else {
                 this.$message.error("Failed to save Bay")
             }

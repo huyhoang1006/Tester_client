@@ -95,7 +95,8 @@ export default {
 
         checkAssetId(data) {
             if (data.properties.asset_id === '' || data.properties.asset_id === null) {
-                data.properties.asset_id = this.assetData.mrid;
+                // Xử lý cả Entity (asset.mrid), DTO (properties.mrid), và flat object (mrid)
+                data.properties.asset_id = this.assetData.properties?.mrid || this.assetData.asset?.mrid || this.assetData.mrid;
             }
         },
 
@@ -125,7 +126,7 @@ export default {
                     item.mrid = uuid.newUuid();
                     item.work_id = data.properties.mrid;
                 }
-                for (const test_type_id of item.test_type_currentTransformer_id) {
+                for (const test_type_id of item.test_type_current_transformer_id) {
                     arr.push({
                         mrid: uuid.newUuid(),
                         testing_equipment_id: item.mrid,
@@ -191,7 +192,7 @@ export default {
                 if(data.procedureAsset.map(x => x.procedure_id).indexOf(test.testTypeId) === -1) {
                     data.procedureAsset.push({
                         procedure_id: test.testTypeId,
-                        asset_id: this.assetData.asset.mrid
+                        asset_id: this.assetData.properties?.mrid || this.assetData.asset?.mrid || this.assetData.mrid
                     });
                 }
             }
