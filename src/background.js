@@ -10,6 +10,7 @@ import path from 'path'
 import {v4 as newUuid} from 'uuid'
 import {spawn} from 'child_process'
 import readline from 'readline'
+import {autoUpdater} from 'electron-updater'
 // import {userFunc} from '@/function'
 // import {ipcUploadCustom} from '@/ipcmain'
 import {ipcCim, ipcEntity, ipcAppOption} from '@/ipcmain'
@@ -305,8 +306,18 @@ app.on('ready', async () => {
         console.error('🔥 UNHANDLED PROMISE:', reason)
     })
 
-    await updateModule.active()
+    // await updateModule.active()
+    // autoUpdater.forceDevUpdateConfig = true
+    // autoUpdater.setFeedURL({
+    //     provider: "generic",
+    //     url: "http://103.163.118.212:30151/api/v4/projects/21/repository/files/release%2F?/raw?ref=master",
+    //     requestHeaders: {
+    //         "PRIVATE-TOKEN": "glpat-HUjXTi4QQ_KbSH0vmcMiWW86MQp1OnQH.01.0w1lew3ho"
+    //     }
+    // })
 
+    // const a = await autoUpdater.checkForUpdates()
+    // window.alert(JSON.stringify(a))
     // ipcMain.handle('login', async function (event, user) {
     //     const _user = await userFunc.getUser(user)
     //     if (_user === undefined) return false

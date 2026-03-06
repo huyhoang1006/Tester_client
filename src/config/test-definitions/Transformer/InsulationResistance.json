@@ -20,27 +20,33 @@
             "code": "r15s",
             "name": "R15s",
             "type": "analog",
-            "unit": "M|Ω"
+            "unit": "m|Ω"
         },
         {
-            "mrid": "b2bff5f5-288f-444c-b67c-4bbb10bb4b74",
-            "code": "lv_tested_voltage",
-            "name": "LV Tested Voltage",
+            "mrid": "6c9d0e1f-2a3b-4c13-9009-000000000017",
+            "code": "r60s",
+            "name": "R60s",
             "type": "analog",
-            "unit": "V"
+            "unit": "m|Ω"
         },
         {
-            "mrid": "72e6d1ab-d09c-4805-acca-7df2a03c520d",
-            "code": "hv_terminal",
-            "name": "HV Terminal",
-            "type": "string"
-        },
-        {
-            "mrid": "eea61783-774a-452e-97c6-5d6384181a2c",
-            "code": "hv_tested_voltage",
-            "name": "HV Tested Voltage",
+            "mrid": "d1e54b8f-b4ae-4f92-9101-18738d182ea3",
+            "code": "r_10m",
+            "name": "R10m",
             "type": "analog",
-            "unit": "V"
+            "unit": "m|Ω"
+        },
+        {
+            "mrid": "c9b6fa93-acf0-46e4-8a12-e76fd50af09a",
+            "code": "dar",
+            "name": "DAR",
+            "type": "analog"
+        },
+        {
+            "mrid": "5d5e16de-07b1-4e5d-a69d-9b1b2bbce4fc",
+            "code": "pi",
+            "name": "PI",
+            "type": "analog"
         },
         {
         "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",
