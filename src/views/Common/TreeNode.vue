@@ -45,7 +45,7 @@
         
         <ul v-if="node.expanded">
             <TreeNode 
-                v-for="child in node.children" 
+                v-for="child in sortedChildren" 
                 :key="child.id" :node="child" 
                 :selectedNodes="selectedNodes"
                 @double-click-node="(n) => $emit('double-click-node', n)" 
@@ -94,6 +94,36 @@ export default {
             }
 
             return this.node.aliasName || this.node.name || 'Unknown';
+        },
+        sortedChildren() {
+            if (!this.node || !Array.isArray(this.node.children) || this.node.children.length === 0) {
+                return []
+            }
+
+            // Tạo bản sao để không mutate data gốc
+            const children = [...this.node.children]
+            
+            return children.sort((a, b) => {
+                // Lấy tên để so sánh
+                const getDisplayName = (node) => {
+                    if (node.mode === 'asset') {
+                        // Asset: ưu tiên apparatus_id, sau đó serial_number, cuối cùng name
+                        return (node.apparatus_id || node.serial_number || node.name || '').toLowerCase()
+                    } else if (node.mode === 'job') {
+                        // Job: dùng name
+                        return (node.name || '').toLowerCase()
+                    } else {
+                        // Organisation, Substation, VoltageLevel, Bay: dùng name hoặc aliasName
+                        return (node.name || node.aliasName || '').toLowerCase()
+                    }
+                }
+
+                const nameA = getDisplayName(a)
+                const nameB = getDisplayName(b)
+
+                // So sánh theo bảng chữ cái
+                return nameA.localeCompare(nameB, 'en', { numeric: true, sensitivity: 'base' })
+            })
         }
     },
     components: {
