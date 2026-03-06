@@ -74,3 +74,11 @@ export const createPowerCableCim = (data, ownerId, ownerType) => {
         }
     });
 }
+
+export const createOrganisation = (data, ownerId) => {
+    return client.post(`http://222.252.22.158:8087/api/organisation/cim/create`, data, {
+        params: {
+            ownerId: ownerId
+        }
+    });
+}

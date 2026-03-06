@@ -40,10 +40,10 @@ export default {
             }
 
             const node = this.selectedNodes[this.selectedNodes.length - 1]
-            let nodeName = node.serial_no || node.serial_number
+            let nodeName = node.apparatus_id || node.serial_number || node.serial_no || node.name
 
-            // Logic cũ: ưu tiên serial_no nếu name rỗng
-            if (!nodeName || nodeName.trim() === '') {
+            // Logic: ưu tiên apparatus_id nếu có
+            if (!nodeName || nodeName.toString().trim() === '') {
                 nodeName = node.name
             }
 
@@ -53,16 +53,19 @@ export default {
                     let entityRes = null
                     const getNameFromEntity = (assetData) => {
                         if (!assetData) return 'Unknown'
-                        // Ưu tiên Serial Number
+                        // Ưu tiên Apparatus ID
+                        if (assetData.apparatus_id && assetData.apparatus_id.toString().trim() !== '') {
+                            return assetData.apparatus_id
+                        }
+                        // Sau đó đến Serial Number
                         if (assetData.serial_number && assetData.serial_number.toString().trim() !== '') {
                             return assetData.serial_number
                         }
-                        // Sau đó đến Name
+                        // Cuối cùng là Name
                         if (assetData.name && assetData.name.toString().trim() !== '') {
                             return assetData.name
                         }
-                        // Cuối cùng là Apparatus ID (nếu có)
-                        return assetData.apparatus_id || 'Unknown'
+                        return 'Unknown'
                     }
                     // --- SURGE ARRESTER ---
                     if (node.asset === 'Surge arrester') {

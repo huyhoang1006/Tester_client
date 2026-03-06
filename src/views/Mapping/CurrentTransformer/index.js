@@ -11,6 +11,7 @@ import CtTapInfo from "@/views/Cim/CtTapInfo";
 import ApparentPower from "@/views/Cim/ApparentPower";
 import CoreDto from "@/views/Dto/CurrentTransformer/CTConfiguration/CoreDto";
 import Percent from "@/views/Cim/Percent";
+import { UnitSymbol } from "@/views/Enum/UnitSymbol";
 
 const mappingUnit = (map, unitDto) => {
     if (!map || !unitDto) return;
@@ -22,6 +23,7 @@ const mappingUnit = (map, unitDto) => {
     map.multiplier = unitParts.length > 1 ? unitParts[0] : null;
     map.unit = unitParts.length > 1 ? unitParts[1] : unitParts[0] || null;
 };
+
 export const mapDtoToEntity = (dto) => {
     const entity = new CurrentTransformerEntity();
 
@@ -159,8 +161,17 @@ export const mapDtoToEntity = (dto) => {
         entity.CtCoreInfo.push(coreInfo);
 
         const createTapInfo = (tapTableData, tapClassRatingData, type) => {
-            // Chỉ tạo tap info nếu có dữ liệu ipn hoặc isn
-            if (!tapTableData.ipn.value && !tapTableData.isn.value) return;
+            // Kiểm tra xem có bất kỳ dữ liệu nào được điền không
+            // Cho phép lưu cả khi chỉ điền các trường phụ (Burden, Class...) mà không điền Ipn/Isn
+            const hasData = tapTableData.ipn.value ||
+                tapTableData.isn.value ||
+                tapClassRatingData.rated_burden.value ||
+                tapClassRatingData.burden.value ||
+                tapClassRatingData.operatingBurden.value ||
+                (tapClassRatingData.class && tapClassRatingData.class !== '') ||
+                tapTableData.inUse;
+
+            if (!hasData) return;
 
             const tapInfo = new CtTapInfo();
             tapInfo.mrid = tapTableData.mrid || '';
@@ -246,7 +257,7 @@ export const mapEntityToDto = (entity) => {
 
     dto.ratings.rated_frequency.mrid = entity.oldCurrentTransformerInfo.rated_frequency || '';
     const frequencyValue = findUnitValue(entity.frequency, dto.ratings.rated_frequency.mrid);
-    
+
     // Xử lý rated_frequency_custom
     if (frequencyValue && !['60', '50', '16.7'].includes(frequencyValue.toString())) {
         // Nếu không phải preset value thì là custom
@@ -305,11 +316,9 @@ export const mapEntityToDto = (entity) => {
         core.taps = (coreInfo.tap_count || '2').toString();
         core.commonTap = (coreInfo.common_tap || '1').toString();
 
-        // === FIX START ===
-        // Xóa dữ liệu giữ chỗ được tạo bởi constructor
+        // Xóa dữ liệu giữ chỗ
         core.mainTap.data = [];
         core.interTap.data = [];
-        // === FIX END ===
 
         const tapsForThisCore = (entity.CtTapInfo || []).filter(t => t.ct_core_info_id === coreInfo.mrid);
 
@@ -377,6 +386,90 @@ export const mapEntityToDto = (entity) => {
                 core.interTap.data.push(tapObject);
             }
         });
+
+        // --- FIX START: Tự động điền (Fill gaps) và SINH TÊN cho Main/Inter Taps ---
+        const tapsCount = parseInt(core.taps);
+        const coreIndex = coreInfo.core_index;
+
+        // 1. Tạo lại logic sinh tên cho Full Tap nếu bị thiếu (dù thường ít khi thiếu)
+        if (!core.fullTap.table.name) {
+            // Logic: 1S1 - 1S[Taps]
+            core.fullTap.table.name = `${coreIndex}S1 - ${coreIndex}S${tapsCount}`;
+        }
+
+        // 2. Logic sinh tên Main Tap (giả sử Common Tap = 1 như UI mặc định)
+        const expectedMainNames = [];
+        for (let i = 0; i < tapsCount - 2; i++) {
+            // Logic: 1S1 - 1S2, 1S1 - 1S3...
+            // i=0 -> S2, i=1 -> S3...
+            expectedMainNames.push(`${coreIndex}S1 - ${coreIndex}S${i + 2}`);
+        }
+
+        const requiredMainTaps = tapsCount > 2 ? tapsCount - 2 : 0;
+        while (core.mainTap.data.length < requiredMainTaps) {
+            const idx = core.mainTap.data.length;
+            core.mainTap.data.push({
+                table: {
+                    mrid: '',
+                    name: expectedMainNames[idx] || '', // Gán tên tự động
+                    isShow: false,
+                    ipn: { mrid: '', value: '', unit: UnitSymbol.A },
+                    isn: { mrid: '', value: '', unit: UnitSymbol.A },
+                    inUse: false, type: 'maintap'
+                },
+                classRating: {
+                    mrid: '',
+                    rated_burden: { mrid: '', value: '', unit: UnitSymbol.VA },
+                    extended_burden: false,
+                    burden: { mrid: '', value: '', unit: UnitSymbol.VA },
+                    burdenCos: '',
+                    operatingBurden: { mrid: '', value: '', unit: UnitSymbol.VA },
+                    operatingBurdenCos: '',
+                    core_index: coreInfo.core_index
+                }
+            });
+        }
+
+        // 3. Logic sinh tên Inter Tap
+        const expectedInterNames = [];
+        // Logic loop giống hệt UI: chosenCommonTap
+        for (let i = 2; i <= tapsCount; i++) {
+            for (let j = i + 1; j <= tapsCount; j++) {
+                // Name: 1S2 - 1S3, 1S2 - 1S4 ...
+                expectedInterNames.push(`${coreIndex}S${i} - ${coreIndex}S${j}`);
+            }
+        }
+
+        let requiredInterTaps = 0;
+        if (tapsCount > 2) {
+            const totalCombinations = (tapsCount * (tapsCount - 1)) / 2;
+            requiredInterTaps = totalCombinations - 1 - (tapsCount - 2);
+        }
+
+        while (core.interTap.data.length < requiredInterTaps) {
+            const idx = core.interTap.data.length;
+            core.interTap.data.push({
+                table: {
+                    mrid: '',
+                    name: expectedInterNames[idx] || '', // Gán tên tự động
+                    isShow: false,
+                    ipn: { mrid: '', value: '', unit: UnitSymbol.A },
+                    isn: { mrid: '', value: '', unit: UnitSymbol.A },
+                    inUse: false, type: 'intertap'
+                },
+                classRating: {
+                    mrid: '',
+                    rated_burden: { mrid: '', value: '', unit: UnitSymbol.VA },
+                    extended_burden: false,
+                    burden: { mrid: '', value: '', unit: UnitSymbol.VA },
+                    burdenCos: '',
+                    operatingBurden: { mrid: '', value: '', unit: UnitSymbol.VA },
+                    operatingBurdenCos: '',
+                    core_index: coreInfo.core_index
+                }
+            });
+        }
+        // --- FIX END ---
 
         dto.ctConfiguration.dataCT.push(core);
     });

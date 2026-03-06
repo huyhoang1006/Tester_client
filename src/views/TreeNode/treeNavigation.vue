@@ -715,20 +715,20 @@ export default {
             }
 
             // Lấy tên đầy đủ của source
-            // Với asset node: ưu tiên serial_number/serial_no trước name (vì name có thể là Apparatus ID)
+            // Với asset node: ưu tiên apparatus_id trước serial_number/serial_no
             let sourceFull
             if (nodeToMove.mode === 'asset') {
-                sourceFull = nodeToMove.serial_number || nodeToMove.serial_no || nodeToMove.name
+                sourceFull = nodeToMove.apparatus_id || nodeToMove.serial_number || nodeToMove.serial_no
             } else {
                 sourceFull = nodeToMove.name || nodeToMove.serial_number || nodeToMove.serial_no
             }
             sourceFull = sourceFull || 'Unknown'
 
             // Lấy tên đầy đủ của target
-            // Với asset node: ưu tiên serial_number/serial_no trước name (vì name có thể là Apparatus ID)
+            // Với asset node: ưu tiên apparatus_id trước serial_number/serial_no
             let targetFull
             if (targetNode.mode === 'asset') {
-                targetFull = targetNode.serial_number || targetNode.serial_no || targetNode.name
+                targetFull = targetNode.apparatus_id || targetNode.serial_number || targetNode.serial_no
             } else {
                 targetFull = targetNode.name || targetNode.serial_number || targetNode.serial_no
             }

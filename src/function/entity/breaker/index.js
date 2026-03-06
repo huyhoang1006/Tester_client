@@ -421,8 +421,52 @@ export const getBreakerEntity = async (id, psrId) => {
                 }
 
                 const dataOldOperatingMechanism = await getOldOperatingMechanismByAssetIdTransaction(entity.asset.mrid);
-                if (dataOldOperatingMechanism.success) {
+                if (dataOldOperatingMechanism.success && dataOldOperatingMechanism.data) {
                     entity.oldOperatingMechanism = dataOldOperatingMechanism.data;
+                    if (entity.oldOperatingMechanism.asset_info) {
+                        const infoRes = await getOldOperatingMechanismInfoById(entity.oldOperatingMechanism.asset_info);
+                        if (infoRes.success) entity.oldOperatingMechanismInfo = infoRes.data;
+                    }
+
+                    // Load Units từ oldOperatingMechanismInfo (Auxiliary circuits & Motor)
+                    if (entity.oldOperatingMechanismInfo) {
+                        if (entity.oldOperatingMechanismInfo.rated_auxiliary_circuit_voltage) {
+                            voltageIds.push(entity.oldOperatingMechanismInfo.rated_auxiliary_circuit_voltage);
+                        }
+                        if (entity.oldOperatingMechanismInfo.rated_auxiliary_circuit_current) {
+                            currentFlowIds.push(entity.oldOperatingMechanismInfo.rated_auxiliary_circuit_current);
+                        }
+                        if (entity.oldOperatingMechanismInfo.rated_auxiliary_circuit_frequency) {
+                            frequencyIds.push(entity.oldOperatingMechanismInfo.rated_auxiliary_circuit_frequency);
+                        }
+                        if (entity.oldOperatingMechanismInfo.rated_motor_voltage) {
+                            voltageIds.push(entity.oldOperatingMechanismInfo.rated_motor_voltage);
+                        }
+                        if (entity.oldOperatingMechanismInfo.rated_motor_current) {
+                            currentFlowIds.push(entity.oldOperatingMechanismInfo.rated_motor_current);
+                        }
+                        if (entity.oldOperatingMechanismInfo.rated_motor_frequency) {
+                            frequencyIds.push(entity.oldOperatingMechanismInfo.rated_motor_frequency);
+                        }
+                        if (entity.oldOperatingMechanismInfo.rated_operating_pressure) {
+                            pressureIds.push(entity.oldOperatingMechanismInfo.rated_operating_pressure);
+                        }
+                        if (entity.oldOperatingMechanismInfo.rated_operating_pressure_temperature) {
+                            temperatureIds.push(entity.oldOperatingMechanismInfo.rated_operating_pressure_temperature);
+                        }
+                    }
+
+                    // 2. Lấy Product Asset Model (Chứa Manufacturer)
+                    if (entity.oldOperatingMechanism.product_asset_model) {
+                        const modelRes = await getProductAssetModelById(entity.oldOperatingMechanism.product_asset_model);
+                        if (modelRes.success) entity.operatingProductAssetModel = modelRes.data;
+                    }
+
+                    // 3. Lấy Lifecycle Date (Chứa Manufacturing Year)
+                    if (entity.oldOperatingMechanism.lifecycle_date) {
+                        const dateRes = await getLifecycleDateById(entity.oldOperatingMechanism.lifecycle_date);
+                        if (dateRes.success) entity.operatingLifecycleDate = dateRes.data;
+                    }
                     const dataOperatingComponent = await getOperatingMechanismComponentByOperatingMechanismId(entity.oldOperatingMechanism.mrid);
                     if (dataOperatingComponent.success) {
                         entity.operatingMechanismComponent = dataOperatingComponent.data;

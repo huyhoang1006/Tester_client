@@ -21,6 +21,7 @@ const mappingUnit = (map, unitDto) => {
 
 export function mapDtoToEntity(dto) {
     const entity = new PowerCableEntity();
+    console.log('Mapping DTO to Entity with DTO:', dto);
 
     /** ================== properties ================== */
     entity.asset.mrid = dto.properties.mrid || null;
@@ -34,6 +35,7 @@ export function mapDtoToEntity(dto) {
     entity.asset.name = dto.properties.apparatus_id || null;
     entity.asset.description = dto.properties.comment || null;
     entity.productAssetModel.mrid = dto.productAssetModelId || null;
+    entity.asset.product_asset_model = dto.productAssetModelId || null;
     entity.asset.location = dto.locationId || null;
     entity.concentricNeutral.product_asset_model = dto.productAssetModelId || null;
     entity.concentricNeutral.mrid = dto.assetInfoId || null;
