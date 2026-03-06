@@ -401,67 +401,89 @@ export default {
                     // ✅ Emit event để update Object Properties (sẽ dùng cache, không gọi API)
                     this.$emit('refresh-properties', tab)
                 } else if (tab.mode === 'voltageLevel') {
-                    const data = await window.electronAPI.getVoltageLevelEntityByMrid(tab.mrid)
-                    if (data.success) {
-                        const voltageLevelDto = voltageMapper.volEntityToVolDto(data.data)
-                        // Đảm bảo name được set từ tab nếu entity không có name
-                        if (!voltageLevelDto.name || voltageLevelDto.name === '') {
+                    
+                    let voltageLevelDto
+                    
+                    // ✅ Nếu có savedData từ save, dùng luôn - KHÔNG gọi API!
+                    if (savedData) {
+                        voltageLevelDto = savedData
+                    } else {
+                        // Chỉ gọi API khi không có savedData (ví dụ: reload thủ công)
+                        const data = await window.electronAPI.getVoltageLevelEntityByMrid(tab.mrid)
+                        if (data.success) {
+                            voltageLevelDto = voltageMapper.volEntityToVolDto(data.data)
+                            // Đảm bảo name được set từ tab nếu entity không có name
+                            if (!voltageLevelDto.name || voltageLevelDto.name === '') {
+                                voltageLevelDto.name = tab.name || ''
+                            }
+                        } else {
+                            // Nếu entity chưa tồn tại, tạo DTO mới từ tab data
+                            const VoltageLevelDto = require('@/views/Dto/VoltageLevel').default
+                            voltageLevelDto = new VoltageLevelDto()
                             voltageLevelDto.name = tab.name || ''
-                        }
-                        
-                        // ✅ Check component exists before calling loadData
-                        if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
-                            this.$refs.componentLoadData[index].loadData(voltageLevelDto)
-                        }
-                        
-                        // ✅ Update tab với data mới
-                        Object.assign(tab, {
-                            name: voltageLevelDto.name
-                        })
-                    } else {
-                        // Nếu entity chưa tồn tại, tạo DTO mới từ tab data
-                        const VoltageLevelDto = require('@/views/Dto/VoltageLevel').default
-                        const volDto = new VoltageLevelDto()
-                        volDto.name = tab.name || ''
-                        volDto.voltageLevelId = tab.mrid || ''
-                        volDto.substationId = tab.parentId || ''
-                        
-                        // ✅ Check component exists before calling loadData
-                        if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
-                            this.$refs.componentLoadData[index].loadData(volDto)
+                            voltageLevelDto.voltageLevelId = tab.mrid || ''
+                            voltageLevelDto.substationId = tab.parentId || ''
                         }
                     }
+                    
+                    // ✅ Check component exists before calling loadData
+                    if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                        this.$refs.componentLoadData[index].loadData(voltageLevelDto)
+                    }
+                    
+                    // ✅ Update tab với data mới
+                    Object.assign(tab, {
+                        name: voltageLevelDto.name
+                    })
+                    
+                    // ✅ Update tree node
+                    this.$emit('update-node-data', {
+                        mrid: tab.mrid,
+                        mode: 'voltageLevel',
+                        data: voltageLevelDto
+                    })
                 } else if (tab.mode === 'bay') {
-                    const data = await window.electronAPI.getBayEntityByMrid(tab.mrid)
-                    if (data.success) {
-                        const bayData = data.data
-                        // Đảm bảo name được set từ tab nếu entity không có name
-                        if (!bayData.name || bayData.name === '') {
-                            bayData.name = tab.name || ''
-                        }
-                        
-                        // ✅ Check component exists before calling loadData
-                        if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
-                            this.$refs.componentLoadData[index].loadData(bayData)
-                        }
-                        
-                        // ✅ Update tab với data mới
-                        Object.assign(tab, {
-                            name: bayData.name
-                        })
+                    
+                    let bayData
+                    
+                    // ✅ Nếu có savedData từ save, dùng luôn - KHÔNG gọi API!
+                    if (savedData) {
+                        bayData = savedData
                     } else {
-                        // Nếu entity chưa tồn tại, tạo object mới từ tab data
-                        const bayData = {
-                            name: tab.name || '',
-                            mrid: tab.mrid || '',
-                            voltageLevel: tab.parentId || ''
-                        }
-                        
-                        // ✅ Check component exists before calling loadData
-                        if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
-                            this.$refs.componentLoadData[index].loadData(bayData)
+                        // Chỉ gọi API khi không có savedData (ví dụ: reload thủ công)
+                        const data = await window.electronAPI.getBayEntityByMrid(tab.mrid)
+                        if (data.success) {
+                            bayData = data.data
+                            // Đảm bảo name được set từ tab nếu entity không có name
+                            if (!bayData.name || bayData.name === '') {
+                                bayData.name = tab.name || ''
+                            }
+                        } else {
+                            // Nếu entity chưa tồn tại, tạo object mới từ tab data
+                            bayData = {
+                                name: tab.name || '',
+                                mrid: tab.mrid || '',
+                                voltageLevel: tab.parentId || ''
+                            }
                         }
                     }
+                    
+                    // ✅ Check component exists before calling loadData
+                    if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                        this.$refs.componentLoadData[index].loadData(bayData)
+                    }
+                    
+                    // ✅ Update tab với data mới
+                    Object.assign(tab, {
+                        name: bayData.name
+                    })
+                    
+                    // ✅ Update tree node
+                    this.$emit('update-node-data', {
+                        mrid: tab.mrid,
+                        mode: 'bay',
+                        data: bayData
+                    })
                 } else if (tab.mode === 'asset') {
                     // ✅ Nếu có savedData từ save, dùng luôn - KHÔNG gọi API!
                     if (savedData) {
@@ -932,7 +954,20 @@ export default {
                         }
                         const dataCurrentTransformer = await window.electronAPI.getCurrentTransformerEntityByMrid(tab.parentId)
                         if (dataCurrentTransformer.success) {
-                            this.assetData = dataCurrentTransformer.data
+                            // Keep full entity but add flat properties for Overview compatibility
+                            const entity = dataCurrentTransformer.data
+                            this.assetData = {
+                                ...entity,
+                                // Add flat properties for Overview component
+                                kind: entity.asset.kind,
+                                type: entity.asset.type,
+                                serial_number: entity.asset.serial_number,
+                                mrid: entity.asset.mrid
+                            }
+                            // Update productAssetModelData if available
+                            if (entity.productAssetModel) {
+                                this.productAssetModelData = entity.productAssetModel
+                            }
                         } else {
                             this.assetData = {}
                         }

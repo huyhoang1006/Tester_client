@@ -20,6 +20,9 @@ export default {
             const data = await this.saveVoltageLevel()
             if(data.success) {
                 this.$message.success("Voltage Level saved successfully")
+                
+                // ✅ Emit reload event với data đã save - KHÔNG cần gọi API!
+                this.$emit('reload', { savedData: this.properties })
             } else {
                 this.$message.error("Failed to save Voltage Level")
             }
