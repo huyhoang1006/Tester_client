@@ -285,7 +285,7 @@ export default {
                   }
                 } catch (err) { console.warn(err); }
               }
-              if (!displayName) displayName = item.serial_number || item.serial_no || item.name || typeStr;
+              if (!displayName) displayName = item.apparatus_id || item.serial_number || item.serial_no || typeStr;
               return { name: displayName, type: mappedType };
             });
             const mappedAssets = await Promise.all(mappedAssetsPromises);

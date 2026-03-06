@@ -52,9 +52,11 @@ export default {
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
                             const assetData = data.asset || data
+                            const apparatusId = assetData.name || assetData.apparatus_id
                             const newRow = {
                                 mrid: assetData.mrid,
-                                name: assetData.name || assetData.serial_number || 'Unnamed Current Transformer',
+                                apparatus_id: apparatusId,
+                                name: apparatusId || assetData.serial_number || 'Unnamed Current Transformer',
                                 serial_number: assetData.serial_number,
                                 parentId: this.parentOrganization.mrid,
                                 parentName: this.parentOrganization.name,

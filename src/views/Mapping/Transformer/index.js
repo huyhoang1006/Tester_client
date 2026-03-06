@@ -782,6 +782,7 @@ export const transformerEntityToDto = (entity) => {
             if (['50', '60', '16.7'].includes(data.value)) {
                 dto.ratings.rated_frequency.value = data.value
             } else {
+                dto.ratings.rated_frequency.value = 'Custom'
                 dto.ratings.rated_frequency.custom_value = data.value
             }
             break
@@ -1136,7 +1137,7 @@ export const transformerEntityToDto = (entity) => {
     dto.others.insulation.key = entity.other.insulation_key
     dto.others.insulation.volume.mrid = entity.other.insulation_volume
     for (const volume of entity.volume) {
-        if (volume.mrid == entity.other.insulation_medium) {
+        if (volume.mrid == entity.other.insulation_volume) {
             dto.others.insulation.volume.value = volume.value || ''
         }
     }
