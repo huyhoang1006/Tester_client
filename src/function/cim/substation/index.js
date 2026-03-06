@@ -67,10 +67,11 @@ export const insertSubstationTransaction = async (substation, dbsql) => {
 }
 
 export const getSubstationsInOrganisationForUser = async (organisationId, userId) => {
+    console.log('[DEBUG getSubstationsInOrganisationForUser] FUNCTION CALLED with:', { organisationId, userId })
     try {
         return new Promise((resolve, reject) => {
             const query = `
-                SELECT 
+                SELECT DISTINCT
                     s.*, 
                     io.name AS name,
                     io.alias_name AS alias_name
@@ -79,15 +80,21 @@ export const getSubstationsInOrganisationForUser = async (organisationId, userId
                 JOIN organisation_psr opsr ON psr.mrid = opsr.psr_id
                 JOIN user_identified_object uio ON s.mrid = uio.identified_object_id
                 JOIN identified_object io ON s.mrid = io.mrid
-                WHERE opsr.organisation_id = ?
-                AND uio.user_id = ?
+                WHERE CAST(opsr.organisation_id AS TEXT) = CAST(? AS TEXT)
+                AND CAST(uio.user_id AS TEXT) = CAST(? AS TEXT)
             `;
 
             db.all(query, [organisationId, userId], (err, rows) => {
+                console.log('[DEBUG getSubstationsInOrganisationForUser] Query params:', { organisationId: organisationId, userId: userId })
+                console.log('[DEBUG getSubstationsInOrganisationForUser] Query:', query)
+                console.log('[DEBUG getSubstationsInOrganisationForUser] Rows:', rows)
+                console.log('[DEBUG getSubstationsInOrganisationForUser] Rows count:', rows ? rows.length : 0)
                 if (err) {
-                    return reject({ success: false, data: null, message: 'Query failed', err });
+                    console.error('[DEBUG getSubstationsInOrganisationForUser] Error:', err)
+                    return reject({ success: false, data: null, message: 'Query failed', err: err });
                 }
                 if (!rows || rows.length === 0) {
+                    console.log('[DEBUG getSubstationsInOrganisationForUser] No rows found, returning fail')
                     return resolve({ success: false, data: [], message: 'No substations found for this user in organisation' });
                 }
 

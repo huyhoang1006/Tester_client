@@ -1,4 +1,5 @@
 import * as demoAPI from '@/api/demo'
+import Vue from 'vue'
 export default {
     methods: {
         // 4. Handler cho việc chọn node trong tree dialog (tương tự move node)
@@ -58,8 +59,124 @@ export default {
                 }
                 return
             } else if (node.mode === 'substation') {
-                console.log('[STAGE 1] Substation mode - NOT IMPLEMENTED')
-                this.$message.warning('Substation download not implemented yet')
+                // ================================================================
+                // STAGE 1: SUBSTATION DOWNLOAD
+                // ================================================================
+                console.log('[STAGE 1] Substation mode - START')
+                
+                // ================================================================
+                // STAGE 1.1: Validate Selected Node
+                // ================================================================
+                console.log('[STAGE 1.1] Validating selected node...')
+                
+                const substationId = node.mrid || node.id
+                const parentOrgId = node.parentId
+                
+                // Validate: mrid exists
+                if (!substationId) {
+                    console.log('[STAGE 1.1] ERROR: No mrid found in node')
+                    this.$message.error('Substation ID not found')
+                    return
+                }
+                
+                // Validate: parentId exists (need parent organisation)
+                if (!parentOrgId) {
+                    console.log('[STAGE 1.1] ERROR: No parentId found')
+                    this.$message.error('Parent organisation not found. Please select a substation under an organisation.')
+                    return
+                }
+                
+                console.log('[STAGE 1.1] Selected substation:', {
+                    mrid: substationId,
+                    name: node.name,
+                    aliasName: node.aliasName,
+                    parentId: parentOrgId
+                })
+                
+                // ================================================================
+                // STAGE 1.2: Check & Auto-Download parent Organisation
+                // ================================================================
+                console.log('[STAGE 1.2] Checking parent organisation in Client DB...')
+                console.log('[STAGE 1.2] Parent org ID:', parentOrgId)
+                
+                try {
+                    const parentCheck = await window.electronAPI.getOrganisationEntityByMrid(parentOrgId)
+                    console.log('[STAGE 1.2] Parent check result:', parentCheck)
+                    
+                    if (!parentCheck.success || !parentCheck.data) {
+                        console.log('[STAGE 1.2] Parent organisation NOT exists in Client DB')
+                        console.log('[STAGE 1.2] Option B: Auto-downloading parent organisation first...')
+                        
+                        // === Auto-download parent organisation ===
+                        // Tìm node parent trong Server Tree
+                        const parentNode = this.findNodeById(parentOrgId, this.ownerServerList)
+                        
+                        if (!parentNode) {
+                            console.log('[STAGE 1.2] ERROR: Parent node not found in Server Tree')
+                            this.$message.error('Parent organisation not found in Server Tree. Please download from root.')
+                            return
+                        }
+                        
+                        console.log('[STAGE 1.2] Found parent node in Server Tree:', {
+                            mrid: parentNode.mrid,
+                            name: parentNode.name,
+                            aliasName: parentNode.aliasName
+                        })
+                        
+                        // Gọi download organisation chain cho parent
+                        console.log('[STAGE 1.2] Calling downloadOrganisationChainForParent...')
+                        await this.downloadOrganisationChainForParent(parentNode)
+                        console.log('[STAGE 1.2] Parent organisation downloaded successfully')
+                        
+                        // Verify parent now exists
+                        const parentCheck2 = await window.electronAPI.getOrganisationEntityByMrid(parentOrgId)
+                        if (!parentCheck2.success || !parentCheck2.data) {
+                            console.log('[STAGE 1.2] ERROR: Parent still not exists after download')
+                            this.$message.error('Failed to download parent organisation.')
+                            return
+                        }
+                        
+                        console.log('[STAGE 1.2] Parent organisation now exists in DB')
+                    }
+                    
+                    console.log('[STAGE 1.2] Parent organisation ready:', {
+                        mrid: parentCheck.data?.organisation?.mrid,
+                        name: parentCheck.data?.organisation?.name,
+                        alias_name: parentCheck.data?.organisation?.alias_name
+                    })
+                    
+                } catch (error) {
+                    console.error('[STAGE 1.2] ERROR checking parent:', error)
+                    this.$message.error('Error checking parent organisation: ' + error.message)
+                    return
+                }
+                
+                // ================================================================
+                // STAGE 1.3: Proceed to prepareSubstationDownloadData (STAGE 2)
+                // ================================================================
+                console.log('[STAGE 1] All validations passed')
+                console.log('[STAGE 1] Calling STAGE 2: prepareSubstationDownloadData')
+                
+                try {
+                    // Gọi Stage 2: Prepare data
+                    const { substation, parentOrgId } = await this.prepareSubstationDownloadData(node)
+                    
+                    console.log('[STAGE 1] Stage 2 completed, calling STAGE 3...')
+                    
+                    // Gọi Stage 3: Download to DB
+                    const result = await this.downloadSubstationToDb(substation, parentOrgId)
+                    
+                    if (result.success) {
+                        this.$message.success('Substation downloaded successfully!')
+                    } else {
+                        this.$message.error('Download failed: ' + result.message)
+                    }
+                    
+                } catch (error) {
+                    console.error('[STAGE 1] Error in substation download:', error)
+                    this.$message.error('Substation download failed: ' + error.message)
+                }
+                
                 return
             }
 
@@ -111,6 +228,357 @@ export default {
                 this.$message.error('Download failed: ' + error.message)
             }
             console.log('[STAGE 1] handleDownloadNode - END')
+        },
+
+        // ================================================================
+        // HELPER: Download Organisation Chain for Parent
+        // ================================================================
+        async downloadOrganisationChainForParent(parentNode) {
+            console.log('[downloadOrganisationChainForParent] START')
+            console.log('[downloadOrganisationChainForParent] Parent node:', parentNode)
+            
+            try {
+                // Gọi hàm prepareOrganisationDownloadData đã có sẵn
+                const { chain } = await this.prepareOrganisationDownloadData(parentNode)
+                
+                console.log('[downloadOrganisationChainForParent] Chain prepared:', chain)
+                console.log('[downloadOrganisationChainForParent] Chain length:', chain.length)
+                
+                // Gọi download
+                await this.downloadOrganisationChain(chain)
+                
+                console.log('[downloadOrganisationChainForParent] SUCCESS')
+                
+            } catch (error) {
+                console.error('[downloadOrganisationChainForParent] ERROR:', error)
+                throw error
+            }
+        },
+
+        // ================================================================
+        // STAGE 2: Prepare Substation Download Data
+        // ================================================================
+        async prepareSubstationDownloadData(node) {
+            // [STAGE 2.0] START
+            console.log('[STAGE 2] prepareSubstationDownloadData - START')
+            console.log('[STAGE 2] Input node:', {
+                mrid: node.mrid,
+                name: node.name,
+                parentId: node.parentId
+            })
+            console.log('[STAGE 2] Function started')
+            
+            // ============================================================
+            // STAGE 2.1: Extract thông tin từ node
+            // ============================================================
+            console.log('[STAGE 2.1] Extracting node information...')
+            
+            const substationId = node.mrid || node.id
+            const parentOrgId = node.parentId
+            
+            console.log('[STAGE 2.1] substationId from node.mrid:', node.mrid)
+            console.log('[STAGE 2.1] substationId from node.id:', node.id)
+            console.log('[STAGE 2.1] Final substationId:', substationId)
+            console.log('[STAGE 2.1] parentOrgId:', parentOrgId)
+            console.log('[STAGE 2.1] node.name:', node.name)
+            console.log('[STAGE 2.1] node.aliasName:', node.aliasName)
+            
+            // Validate
+            if (!substationId) {
+                console.error('[STAGE 2.1] ERROR: Substation ID not found')
+                throw new Error('Substation ID not found')
+            }
+            console.log('[STAGE 2.1] Validation: substationId required - PASS')
+            
+            if (!parentOrgId) {
+                console.error('[STAGE 2.1] ERROR: Parent organisation ID not found')
+                throw new Error('Parent organisation ID not found')
+            }
+            console.log('[STAGE 2.1] Validation: parentOrgId required - PASS')
+            
+            // ============================================================
+            // STAGE 2.2: Gọi API lấy chi tiết substation
+            // ============================================================
+            console.log('[STAGE 2.2] Fetching substation from API...')
+            console.log('[STAGE 2.2] API endpoint: /api/substation/cim/' + substationId)
+            
+            let substationData = null
+            
+            try {
+                console.log('[STAGE 2.2] API call initiated')
+                const response = await demoAPI.getSubstationById(substationId)
+                console.log('[STAGE 2.2] API call completed')
+                
+                // DEBUG: Log full response để xem structure
+                console.log('[STAGE 2.2] Full response:', response)
+                console.log('[STAGE 2.2] Response type:', typeof response)
+                
+                // Axios interceptor unwrap: response = { status, success, data }
+                // Nên: response.status, response.success, response.data
+                console.log('[STAGE 2.2] Response.status:', response?.status)
+                console.log('[STAGE 2.2] Response.success:', response?.success)
+                console.log('[STAGE 2.2] Response.data:', response?.data)
+                
+                // ============================================================
+                // STAGE 2.3: Xử lý Response + FALLBACK
+                // ============================================================
+                console.log('[STAGE 2.3] Processing API response...')
+                
+                // Axios interceptor đã unwrap response rồi!
+                // Response = trực tiếp là data object {name, aliasName, mRID, ...}
+                // Không cần .data hay .success nữa
+                
+                // Check response có dữ liệu (có name field)
+                if (response && response.name) {
+                    substationData = response
+                    console.log('[STAGE 2.3] Response is unwrapped data object: true')
+                    console.log('[STAGE 2.3] Response has name: true')
+                    
+                    console.log('[STAGE 2.3] Original aliasName:', substationData.aliasName)
+                    console.log('[STAGE 2.3] Original name:', substationData.name)
+                    
+                    // === FALLBACK LOGIC ===
+                    console.log('[STAGE 2.3] Checking aliasName...')
+                    if (!substationData.aliasName || substationData.aliasName === null) {
+                        console.log('[STAGE 2.3] ⚠️ ALIASNAME IS NULL - Applying fallback')
+                        substationData.aliasName = substationData.name
+                        console.log('[STAGE 2.3] Fallback: aliasName = name')
+                    }
+                    
+                    console.log('[STAGE 2.3] New aliasName:', substationData.aliasName)
+                    
+                    console.log('[STAGE 2.3] Final values:')
+                    console.log('[STAGE 2.3]   - name:', substationData.name)
+                    console.log('[STAGE 2.3]   - aliasName:', substationData.aliasName, '(from fallback)')
+                    console.log('[STAGE 2.3]   - mRID:', substationData.mRID)
+                    
+                    console.log('[STAGE 2.3] Response processed successfully')
+                    
+                } else {
+                    console.log('[STAGE 2.3] WARNING: No valid data in response, using fallback')
+                    console.log('[STAGE 2.3] Response structure:', {
+                        exists: !!response,
+                        hasName: !!response?.name,
+                        hasAliasName: !!response?.aliasName
+                    })
+                    substationData = null
+                }
+                
+            } catch (error) {
+                console.error('[STAGE 2.2] ERROR fetching substation:', error)
+                throw new Error('Failed to fetch substation: ' + error.message)
+            }
+            
+            // ============================================================
+            // STAGE 2.4: Chuẩn bị substation object
+            // ============================================================
+            console.log('[STAGE 2.4] Preparing substation object...')
+            
+            const substationObj = {
+                id: substationId,
+                mrid: String(substationId),
+                name: substationData?.name || node.name || '',
+                aliasName: substationData?.aliasName || node.aliasName || node.name || '',
+                parentId: String(parentOrgId),
+                _type: 'substation',
+                _serverData: substationData || {
+                    id: substationId,
+                    name: node.name,
+                    mRID: substationId,
+                    organisation_id: parentOrgId
+                }
+            }
+            
+            console.log('[STAGE 2.4] Setting id:', substationObj.id)
+            console.log('[STAGE 2.4] Setting mrid:', substationObj.mrid)
+            console.log('[STAGE 2.4] Setting name:', substationObj.name)
+            console.log('[STAGE 2.4] Setting aliasName:', substationObj.aliasName)
+            console.log('[STAGE 2.4] Setting parentId:', substationObj.parentId)
+            console.log('[STAGE 2.4] Setting _type:', substationObj._type)
+            console.log('[STAGE 2.4] Substation object prepared')
+            
+            // ============================================================
+            // STAGE 2.5: Kết thúc
+            // ============================================================
+            console.log('[STAGE 2] Substation prepared successfully')
+            console.log('[STAGE 2] Output:', {
+                substation: substationObj,
+                parentOrgId: String(parentOrgId)
+            })
+            console.log('[STAGE 2] prepareSubstationDownloadData - END')
+            
+            return {
+                substation: substationObj,
+                parentOrgId: String(parentOrgId)
+            }
+        },
+
+        // ================================================================
+        // STAGE 3: Download Substation to DB
+        // ================================================================
+        async downloadSubstationToDb(substation, parentOrgId) {
+            console.log('[STAGE 3] downloadSubstationToDb - START')
+            console.log('[STAGE 3] Substation:', substation.name, substation.mrid)
+            console.log('[STAGE 3] Parent Org ID:', parentOrgId)
+            
+            // [3.1] IMPORT MAPPERS & ENTITY
+            console.log('[STAGE 3.1] Importing mappers and entity...')
+            const SubstationServerMapper = require('@/views/Mapping/ServerToDTO/Substation/index.js')
+            const SubstationMapper = require('@/views/Mapping/Substation/index.js')
+            // eslint-disable-next-line no-unused-vars
+            const SubstationEntity = require('@/views/Flatten/Substation/index.js').default
+            console.log('[STAGE 3.1] Import completed')
+            
+            // [3.2] TRANSFORM SERVER DATA
+            console.log('[STAGE 3.2] Transforming server data...')
+            const serverData = {
+                ...substation._serverData,
+                mRID: substation.mrid,
+            }
+            console.log('[STAGE 3.2] Server data transformed:')
+            console.log('[STAGE 3.2]   - mRID:', serverData.mRID)
+            console.log('[STAGE 3.2]   - name:', serverData.name)
+            console.log('[STAGE 3.2]   - aliasName:', serverData.aliasName)
+            
+            // [3.3] MAP SERVER → DTO
+            console.log('[STAGE 3.3] Mapping server to DTO...')
+            const dto = SubstationServerMapper.mapServerToDto(serverData)
+            
+            // QUAN TRỌNG: Gán organisationId (parentOrgId)
+            dto.organisationId = parentOrgId
+            
+            // FIX: Gán userId để query getSubstationsInOrganisationForUser hoạt động khi reload app
+            dto.userId = this.$store.state.user.user_id
+            
+            // FIX: Generate userIdentifiedObjectId để insert vào table user_identified_object
+            dto.userIdentifiedObjectId = this.generateUuid()
+            
+            // FIX: Generate organisationPsrId để insert vào table organisation_psr
+            dto.organisationPsrId = this.generateUuid()
+            
+            console.log('[STAGE 3.3] DTO mapped:')
+            console.log('[STAGE 3.3]   - dto.subsId:', dto.subsId)
+            console.log('[STAGE 3.3]   - dto.name:', dto.name)
+            console.log('[STAGE 3.3]   - dto.organisationId:', dto.organisationId)
+            console.log('[STAGE 3.3]   - dto.userId:', dto.userId)
+            console.log('[STAGE 3.3]   - dto.userIdentifiedObjectId:', dto.userIdentifiedObjectId)
+            console.log('[STAGE 3.3]   - dto.organisationPsrId:', dto.organisationPsrId)
+            console.log('[STAGE 3.3]   - dto.locationId:', dto.locationId)
+            
+            // [3.4] MAP DTO → ENTITY
+            console.log('[STAGE 3.4] Mapping DTO to Entity...')
+            const entity = SubstationMapper.mapDtoToEntity(dto)
+            console.log('[STAGE 3.4] Entity mapped:')
+            console.log('[STAGE 3.4]   - entity.substation.mrid:', entity.substation.mrid)
+            console.log('[STAGE 3.4]   - entity.substation.name:', entity.substation.name)
+            console.log('[STAGE 3.4]   - entity.organisationLocation.organisation_id:', entity.organisationLocation.organisation_id)
+            
+            // [3.5] CHECK EXISTS IN DB
+            console.log('[STAGE 3.5] Checking if entity exists in DB...')
+            let exists = false
+            try {
+                const existingResult = await window.electronAPI.getSubstationEntityByMrid(substation.mrid)
+                exists = existingResult.success && existingResult.data
+                console.log('[STAGE 3.5] Existing check result:')
+                console.log('[STAGE 3.5]   - success:', existingResult.success)
+                console.log('[STAGE 3.5]   - data:', existingResult.data ? 'exists' : 'null')
+            } catch (e) {
+                console.error('[STAGE 3.5] ERROR checking exists:', e.message)
+            }
+            
+            // [3.6] DELETE - Skip vì INSERT có ON CONFLICT DO UPDATE
+            // Insert sẽ tự động update nếu đã tồn tại
+            if (exists) {
+                console.log('[STAGE 3.6] Entity exists - skipping delete (insert will upsert)')
+            } else {
+                console.log('[STAGE 3.6] No existing entity, ready to insert')
+            }
+            
+            // [3.7] INSERT TO DB
+            console.log('[STAGE 3.7] Inserting entity to DB...')
+            let insertSuccess = false
+            try {
+                const insertResult = await window.electronAPI.insertSubstationEntity(entity)
+                console.log('[STAGE 3.7] Insert result:')
+                console.log('[STAGE 3.7]   - success:', insertResult.success)
+                console.log('[STAGE 3.7]   - message:', insertResult.message)
+                insertSuccess = insertResult.success
+            } catch (e) {
+                console.error('[STAGE 3.7] ERROR inserting:', e.message)
+            }
+            
+            // [3.8] RESULT SUMMARY
+            console.log('[STAGE 3.8] Result summary:')
+            console.log('[STAGE 3.8]   - Insert success:', insertSuccess)
+            
+            if (insertSuccess) {
+                console.log('[STAGE 3] ✅ Substation downloaded successfully:', substation.name)
+                
+                // [3.9] REFRESH CLIENT TREE - Add substation directly to tree
+                console.log('[STAGE 3.9] Adding substation to client tree...')
+                
+                // [3.9] DEBUG: Log structure of organisationClientList
+                console.log('[STAGE 3.9] DEBUG - parentOrgId type:', typeof parentOrgId, 'value:', parentOrgId)
+                console.log('[STAGE 3.9] DEBUG - organisationClientList length:', this.organisationClientList?.length)
+                if (this.organisationClientList && this.organisationClientList.length > 0) {
+                    console.log('[STAGE 3.9] DEBUG - First org in list:', {
+                        mrid: this.organisationClientList[0].mrid,
+                        name: this.organisationClientList[0].name,
+                        mode: this.organisationClientList[0].mode,
+                        parentId: this.organisationClientList[0].parentId,
+                        children: this.organisationClientList[0].children?.length
+                    })
+                }
+                
+                console.log('[STAGE 3.9] Finding parent org in client tree, parentOrgId:', parentOrgId)
+                
+                const parentOrgNode = this.findNodeById(parentOrgId, this.organisationClientList)
+                console.log('[STAGE 3.9] Parent org node found:', parentOrgNode ? 'yes' : 'no')
+                
+                if (parentOrgNode) {
+                    // Create new node for substation
+                    const newSubstationNode = {
+                        mrid: substation.mrid,
+                        name: substation.name,
+                        aliasName: substation.aliasName,
+                        parentId: parentOrgId,
+                        mode: 'substation'
+                    }
+                    
+                    console.log('[STAGE 3.9] Adding substation node to parent org children')
+                    console.log('[STAGE 3.9] New node:', newSubstationNode)
+                    
+                    // Add to children of parent org
+                    const children = Array.isArray(parentOrgNode.children) ? [...parentOrgNode.children] : []
+                    
+                    // Check if already exists
+                    const existingIndex = children.findIndex(c => c.mrid === substation.mrid)
+                    if (existingIndex >= 0) {
+                        console.log('[STAGE 3.9] Substation already exists in children, updating...')
+                        children[existingIndex] = newSubstationNode
+                    } else {
+                        console.log('[STAGE 3.9] Pushing new substation to children')
+                        children.push(newSubstationNode)
+                    }
+                    
+                    Vue.set(parentOrgNode, 'children', children)
+                    
+                    // Expand parent org to show
+                    this.$set(parentOrgNode, 'expanded', true)
+                    
+                    console.log('[STAGE 3.9] ✅ Substation added to client tree successfully')
+                } else {
+                    // Fallback: call showLocationRoot
+                    console.log('[STAGE 3.9] Parent org not in tree, calling showLocationRoot()...')
+                    await this.showLocationRoot()
+                    console.log('[STAGE 3.9] Client tree refreshed (full reload)')
+                }
+                
+                return { success: true, message: 'Download successful' }
+            } else {
+                console.error('[STAGE 3] ❌ Failed to download substation:', substation.name)
+                return { success: false, message: 'Download failed' }
+            }
         },
 
         // 2. Hàm thực hiện lưu vào DB (Xử lý ghi đè nếu đã tồn tại)
@@ -538,11 +1006,20 @@ export default {
                     console.log('[STAGE 3] DTO mapped')
                     console.log('[STAGE 3] DTO parentId:', dto.parentId)
                     console.log('[STAGE 3] DTO organisationId:', dto.organisationId)
+                    console.log('[STAGE 3] DTO name:', dto.name)
+                    console.log('[STAGE 3] DTO aliasName:', dto.aliasName)
                     
                     // === CHECKPOINT 2: Map DTO → Entity ===
                     console.log('[STAGE 3] Step 2: Mapping DTO to Entity...')
                     const entity = OrganisationMapper.OrgDtoToOrgEntity(dto)
-                    console.log('[STAGE 3] Entity mapped')
+                    
+                    // DEBUG: Log entity details
+                    console.log('[STAGE 3] Entity mapped - DEBUG:')
+                    console.log('[STAGE 3]   entity.organisation.mrid:', entity.organisation.mrid)
+                    console.log('[STAGE 3]   entity.organisation.name:', entity.organisation.name)
+                    console.log('[STAGE 3]   entity.organisation.alias_name:', entity.organisation.alias_name)
+                    console.log('[STAGE 3]   entity.organisation.parent_organisation:', entity.organisation.parent_organisation)
+                    console.log('[STAGE 3]   Full entity:', entity)
                     
                     // === CHECKPOINT 3: Verify parent exists (skip for ROOT) ===
                     console.log('[STAGE 3] Step 3: Verifying parent exists...')
