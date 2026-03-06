@@ -94,60 +94,37 @@ export default {
                 })
                 
                 // ================================================================
-                // STAGE 1.2: Check & Auto-Download parent Organisation
+                // STAGE 1.2: Always Download FULL Organisation Chain
+                // (Not just parent - download all ancestors to ensure complete chain)
                 // ================================================================
-                console.log('[STAGE 1.2] Checking parent organisation in Client DB...')
+                console.log('[STAGE 1.2] Starting FULL Organisation Chain download...')
                 console.log('[STAGE 1.2] Parent org ID:', parentOrgId)
-                
+
                 try {
-                    const parentCheck = await window.electronAPI.getOrganisationEntityByMrid(parentOrgId)
-                    console.log('[STAGE 1.2] Parent check result:', parentCheck)
-                    
-                    if (!parentCheck.success || !parentCheck.data) {
-                        console.log('[STAGE 1.2] Parent organisation NOT exists in Client DB')
-                        console.log('[STAGE 1.2] Option B: Auto-downloading parent organisation first...')
-                        
-                        // === Auto-download parent organisation ===
-                        // Tìm node parent trong Server Tree
-                        const parentNode = this.findNodeById(parentOrgId, this.ownerServerList)
-                        
-                        if (!parentNode) {
-                            console.log('[STAGE 1.2] ERROR: Parent node not found in Server Tree')
-                            this.$message.error('Parent organisation not found in Server Tree. Please download from root.')
-                            return
-                        }
-                        
-                        console.log('[STAGE 1.2] Found parent node in Server Tree:', {
-                            mrid: parentNode.mrid,
-                            name: parentNode.name,
-                            aliasName: parentNode.aliasName
-                        })
-                        
-                        // Gọi download organisation chain cho parent
-                        console.log('[STAGE 1.2] Calling downloadOrganisationChainForParent...')
-                        await this.downloadOrganisationChainForParent(parentNode)
-                        console.log('[STAGE 1.2] Parent organisation downloaded successfully')
-                        
-                        // Verify parent now exists
-                        const parentCheck2 = await window.electronAPI.getOrganisationEntityByMrid(parentOrgId)
-                        if (!parentCheck2.success || !parentCheck2.data) {
-                            console.log('[STAGE 1.2] ERROR: Parent still not exists after download')
-                            this.$message.error('Failed to download parent organisation.')
-                            return
-                        }
-                        
-                        console.log('[STAGE 1.2] Parent organisation now exists in DB')
+                    // Tìm node parent trong Server Tree
+                    const parentNode = this.findNodeById(parentOrgId, this.ownerServerList)
+
+                    if (!parentNode) {
+                        console.log('[STAGE 1.2] ERROR: Parent node not found in Server Tree')
+                        this.$message.error('Parent organisation not found in Server Tree. Please download from root.')
+                        return
                     }
-                    
-                    console.log('[STAGE 1.2] Parent organisation ready:', {
-                        mrid: parentCheck.data?.organisation?.mrid,
-                        name: parentCheck.data?.organisation?.name,
-                        alias_name: parentCheck.data?.organisation?.alias_name
+
+                    console.log('[STAGE 1.2] Found parent node in Server Tree:', {
+                        mrid: parentNode.mrid,
+                        name: parentNode.name,
+                        aliasName: parentNode.aliasName,
+                        parentArr: parentNode.parentArr
                     })
-                    
+
+                    // Gọi download full organisation chain (bao gồm tất cả ancestors)
+                    console.log('[STAGE 1.2] Calling downloadOrganisationChainForParent (FULL CHAIN)...')
+                    await this.downloadOrganisationChainForParent(parentNode)
+                    console.log('[STAGE 1.2] Full organisation chain downloaded successfully')
+
                 } catch (error) {
                     console.error('[STAGE 1.2] ERROR checking parent:', error)
-                    this.$message.error('Error checking parent organisation: ' + error.message)
+                    this.$message.error('Error downloading organisation chain: ' + error.message)
                     return
                 }
                 
