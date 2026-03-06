@@ -849,6 +849,16 @@ export default {
                     this.$set(treeNode, 'industry', data.industry || '')
                     this.$set(treeNode, '_hasFullProperties', true)
                     this.$set(treeNode, '_cachedEntityData', data)
+                } else if (mode === 'voltageLevel') {
+                    // Update voltage level node - Dùng Vue.set để đảm bảo reactivity
+                    this.$set(treeNode, 'name', data.name || '')
+                    this.$set(treeNode, '_hasFullProperties', true)
+                    this.$set(treeNode, '_cachedEntityData', data)
+                } else if (mode === 'bay') {
+                    // Update bay node - Dùng Vue.set để đảm bảo reactivity
+                    this.$set(treeNode, 'name', data.name || '')
+                    this.$set(treeNode, '_hasFullProperties', true)
+                    this.$set(treeNode, '_cachedEntityData', data)
                 } else {
                     // Update organisation node - Dùng Vue.set để đảm bảo reactivity
                     this.$set(treeNode, 'name', data.name || '')
@@ -886,9 +896,9 @@ export default {
         serverSwap(serverSign) {
             if (serverSign == true) {
                 this.clientSlide = false
-                if (this.ownerServerList.length === 0) {
-                    this.showOwnerServerRoot()
-                }
+                // if (this.ownerServerList.length === 0) {
+                //     this.showOwnerServerRoot()
+                // }
             } else {
                 this.clientSlide = true
             }

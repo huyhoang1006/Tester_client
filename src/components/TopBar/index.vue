@@ -10,7 +10,7 @@
             <div class="center-bar">
                 <div v-if="user" class="search-wrapper" :class="{ collapsed: isSearchCollapsed }">
                     <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                    <input v-if="!isSearchCollapsed" class="topbar-search" type="text" placeholder="Search...">
+                    <input v-if="!isSearchCollapsed" class="topbar-search" type="text" placeholder="Searching...">
                 </div>
             </div>
 

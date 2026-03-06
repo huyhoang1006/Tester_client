@@ -46,8 +46,13 @@ export const disconnectorDtoToEntity = (dto) => {
     entity.asset.asset_info = dto.assetInfoId
 
     /** ================== attachment ================== */
-    entity.attachment.id = dto.attachmentId || null
-    entity.attachment.data = dto.attachment || null // giữ object raw nếu cần
+    // entity.attachment.id = dto.attachmentId || null
+    // entity.attachment.data = dto.attachment || null // giữ object raw nếu cần
+    if (dto.attachment) {
+        entity.attachment = dto.attachment;
+    }
+    entity.attachment.id = dto.attachmentId || null;
+    entity.attachment.id_foreign = dto.properties.mrid || null; 
     if (dto.attachment && dto.attachment.path) {
         // nếu path là object array thì stringify, nếu đã là string thì giữ nguyên
         entity.attachment.path = typeof dto.attachment.path === 'string'

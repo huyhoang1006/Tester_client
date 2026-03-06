@@ -30,43 +30,41 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testData.table">
-                    <tr :key="index">
-                        <td>{{ item.tap.value }}</td>
-                        <td>
-                            <div class="col-phase">
-                                <div class="phase">
-                                    <el-input size="mini" type="text" v-model="item.phase.value"></el-input>
-                                </div>
-                                <div class="rectangle" :class="{red: item._phase.value == 'A', yellow: item._phase.value == 'B', blue: item._phase.value == 'C'}"></div>
+                <tr v-for="(item, index) in testData.table" :key="index">
+                    <td>{{ item.tap.value }}</td>
+                    <td>
+                        <div class="col-phase">
+                            <div class="phase">
+                                <el-input size="mini" type="text" v-model="item.phase.value"></el-input>
                             </div>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.i_out.value"><template slot="append">mA</template> </el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.watt_losses.value"><template slot="append">W</template> </el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.i_ref.value"></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.dev_per.value"></el-input>
-                        </td>
-                        <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
-                                <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
-                                <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
-                            </el-select>
-                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
-                        </td>
-                        <td>
-                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
-                            </el-input>
-                        </td>
-                    </tr>
-                </template>
+                            <div class="rectangle" :class="{red: item._phase.value == 'A', yellow: item._phase.value == 'B', blue: item._phase.value == 'C'}"></div>
+                        </div>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.i_out.value"><template slot="append">mA</template> </el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.watt_losses.value"><template slot="append">W</template> </el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.i_ref.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.dev_per.value"></el-input>
+                    </td>
+                    <td>
+                        <el-select class="assessment" size="mini" v-model="item.assessment.value">
+                            <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
+                        </el-select>
+                        <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                    </td>
+                    <td>
+                        <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
+                        </el-input>
+                    </td>
+                </tr>
             </tbody>
         </table>
 

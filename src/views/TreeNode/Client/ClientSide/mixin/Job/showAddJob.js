@@ -93,6 +93,12 @@ export default {
                     })
                 } else if (node.asset == 'Current transformer') {
                     const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Current transformer")
+                    const dataCurrentTransformer = await window.electronAPI.getCurrentTransformerEntityByMrid(node.mrid)
+                    if (dataCurrentTransformer.success) {
+                        this.assetData = dataCurrentTransformer.data
+                    } else {
+                        this.assetData = {}
+                    }
                     if (dataTestType.success) {
                         this.testTypeListData = dataTestType.data
                     } else {

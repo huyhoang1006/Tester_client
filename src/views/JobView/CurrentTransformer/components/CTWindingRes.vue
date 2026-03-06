@@ -63,8 +63,13 @@
                             <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
-                            </el-input>
+                            <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                                size="mini" v-model="item.condition_indicator.value">
+                                <el-option value="Good">Good</el-option>
+                                <el-option value="Fair">Fair</el-option>
+                                <el-option value="Poor">Poor</el-option>
+                                <el-option value="Bad">Bad</el-option>
+                            </el-select>
                         </td>
                         <td>
                             <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
@@ -92,7 +97,7 @@
 
 <script>
 export default {
-    name :"CTWindingRes",
+    name :"CTWindingResistance",
     data() {
         return {
             openAssessmentDialog: false,
@@ -245,8 +250,13 @@ export default {
         calcRcorr() {
             this.testData.table.forEach((item) => {
                 if(!isNaN(parseFloat(item.r_meas.value))) {
-                    if(!isNaN(parseFloat(this.testConditionData.condition.winding_temperature.value)) && !isNaN(parseFloat(this.testConditionData.condition.reference_temperature.value))) {
-                        item.r_corr.value = parseFloat(parseFloat(item.r_meas.value) * (235+parseFloat(this.testConditionData.condition.reference_temperature.value))/(235+parseFloat(this.testConditionData.condition.winding_temperature.value))).toFixed(4)
+                    // Check if testCondition and condition exist
+                    if(this.testConditionData && this.testConditionData.condition && 
+                       this.testConditionData.condition.winding_temp && 
+                       this.testConditionData.condition.reference_temp &&
+                       !isNaN(parseFloat(this.testConditionData.condition.winding_temp.value)) && 
+                       !isNaN(parseFloat(this.testConditionData.condition.reference_temp.value))) {
+                        item.r_corr.value = parseFloat(parseFloat(item.r_meas.value) * (235+parseFloat(this.testConditionData.condition.reference_temp.value))/(235+parseFloat(this.testConditionData.condition.winding_temp.value))).toFixed(4)
                     }
                     else {
                         item.r_corr.value = item.r_meas.value

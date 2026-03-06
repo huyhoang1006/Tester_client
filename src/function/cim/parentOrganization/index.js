@@ -71,6 +71,7 @@ export const insertParentOrganizationTransaction = async (parentOrganization, db
 export const getParentOrganizationById = async (mrid) => {
     try {
         return new Promise((resolve, reject) => {
+            // FIX: Use CAST to handle both string and number mrid
             const query = `
                 SELECT 
                     o.*, 
@@ -92,16 +93,31 @@ export const getParentOrganizationById = async (mrid) => {
                 LEFT JOIN town_detail td ON sa.town_detail = td.mrid
                 LEFT JOIN electronic_address ea ON o.electronic_address = ea.mrid
                 LEFT JOIN telephone_number tn ON o.phone = tn.mrid
-                WHERE o.mrid = ?
+                WHERE CAST(o.mrid AS TEXT) = CAST(? AS TEXT)
             `
             
-            db.get(query, [mrid], (err, row) => {
+            console.log('[DEBUG getParentOrganizationById] Querying for mrid:', mrid)
+            
+            // Convert mrid to string for comparison
+            const mridStr = String(mrid)
+            
+            db.get(query, [mridStr], (err, row) => {
                 if (err) {
+                    console.log('[DEBUG getParentOrganizationById] Query error:', err)
                     return reject({ success: false, err, message: 'Get parent organization failed' })
                 }
                 if (!row) {
+                    console.log('[DEBUG getParentOrganizationById] No row found for mrid:', mrid)
                     return resolve({ success: false, data: null, message: 'Parent organization not found' })
                 }
+                
+                // DEBUG: Log all keys in row to identify duplicate columns
+                console.log('[DEBUG getParentOrganizationById] Row keys:', Object.keys(row))
+                console.log('[DEBUG getParentOrganizationById] Row mrid:', row.mrid)
+                console.log('[DEBUG getParentOrganizationById] Row name:', row.name)
+                console.log('[DEBUG getParentOrganizationById] Row alias_name:', row.alias_name)
+                console.log('[DEBUG getParentOrganizationById] Full row:', row)
+                
                 return resolve({ success: true, data: row, message: 'Get parent organization completed' })
             })
         })
@@ -114,6 +130,7 @@ export const getParentOrganizationById = async (mrid) => {
 // Lấy danh sách parent organizations theo parentId (bao gồm address và city)
 export const getParentOrganizationByParentId = async (parentId) => {
     return new Promise((resolve, reject) => {
+        // FIX: Use CAST to handle both string and number parentId
         db.all(
             `SELECT 
                 o.*, 
@@ -135,8 +152,8 @@ export const getParentOrganizationByParentId = async (parentId) => {
              LEFT JOIN town_detail td ON sa.town_detail = td.mrid
              LEFT JOIN electronic_address ea ON o.electronic_address = ea.mrid
              LEFT JOIN telephone_number tn ON o.phone = tn.mrid
-             WHERE o.parent_organisation = ?`,
-            [parentId],
+             WHERE CAST(o.parent_organisation AS TEXT) = CAST(? AS TEXT)`,
+            [String(parentId)],
             (err, rows) => {
                 if (err) {
                     return reject({ success: false, err, message: 'Get parent organizations by parentId failed' })

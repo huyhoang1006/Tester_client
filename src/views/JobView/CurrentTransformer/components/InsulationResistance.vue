@@ -28,8 +28,8 @@
                 <tr>
                     <th>No.</th>
                     <th>Measurement</th>
-                    <th>Test voltage (kV)</th>
-                    <th>R<sub>60s</sub> (mΩ)</th>
+                    <th>Test voltage (V)</th>
+                    <th>R<sub>60s</sub> (MΩ)</th>
                     <th class="assessment-col">Assessment</th>
                     <th class="condition-indicator-col">Condition indicator</th>
                     <th @click="add()" class="action-col"><i class="fa-solid fa-plus pointer"></i></th>
@@ -62,9 +62,14 @@
                             <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
-                            </el-input>
-                        </td>
+                        <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                            size="mini" v-model="item.condition_indicator.value">
+                            <el-option value="Good">Good</el-option>
+                            <el-option value="Fair">Fair</el-option>
+                            <el-option value="Poor">Poor</el-option>
+                            <el-option value="Bad">Bad</el-option>
+                        </el-select>
+                    </td>
                         <td>
                             <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
                                 <i class="fa-solid fa-plus"></i>

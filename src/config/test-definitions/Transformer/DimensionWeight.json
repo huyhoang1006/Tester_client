@@ -1,5 +1,56 @@
 {
-    "testId": "cd37afa1-0357-4fe3-b52e-cd960c39a1cf",
-    "testCode": "GeneralInspection",
-    "testName": "General inspection"
+    "testId": "84b45a72-5aeb-49fb-9000-5e8e6c7ab03c",
+    "testCode": "DimensionWeight",
+    "testName": "Dimension Weight",
+    "columns": [
+        {
+            "mrid": "a17957f1-047d-4310-adeb-2edf4934977f",
+            "code": "a",
+            "name": "A",
+            "type": "analog",
+            "unit": ""
+        },
+        {
+            "mrid": "21ae14e3-e088-4dd1-9abc-1855991daf7e",
+            "code": "b",
+            "name": "B",
+            "type": "analog",
+            "unit": ""
+        },
+        {
+            "mrid": "64b16945-c8c4-4ca7-8415-d74fb478df9a",
+            "code": "c",
+            "name": "C",
+            "type": "analog",
+            "unit": ""
+        },
+        {
+            "mrid": "93d2b820-b14d-4411-9b14-59f064093307",
+            "code": "n",
+            "name": "N",
+            "type": "analog",
+            "unit": ""
+        },
+        {
+            "mrid": "1e9f95fd-dcb8-4d5a-9316-23c5a3e1ca9a",
+            "code": "oil",
+            "name": "Oil",
+            "type": "analog",
+            "unit": ""
+        },
+        {
+            "mrid": "6e33bfe7-2197-432d-81f9-b43dd6b9b763",
+            "code": "active_part",
+            "name": "Active part",
+            "type": "analog",
+            "unit": ""
+        },
+        {
+            "mrid": "c52295a1-b184-4c6a-959a-0babfa664663",
+            "code": "total",
+            "name": "Total",
+            "type": "analog",
+            "unit": ""
+        }
+    ]
 }

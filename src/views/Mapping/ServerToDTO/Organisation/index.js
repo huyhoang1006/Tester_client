@@ -7,25 +7,29 @@ export const mapServerToDto = (serverData) => {
     // Ưu tiên lấy từ object lồng 'organisation' nếu có, nếu không lấy root
     const orgData = serverData.organisation || {};
 
+    // FIX: aliasName riêng biệt với name
     dto.name = orgData.name || serverData.name || '';
+    dto.aliasName = orgData.aliasName || serverData.aliasName || '';
     dto.organisationId = orgData.mRID || serverData.mRID || '';
     dto.comment = orgData.description || serverData.description || '';
-    dto.tax_code = orgData.taxCode || '';
-    dto.parentId = orgData.parentOrganisation || '';
+    // FIX: Thêm serverData fallback cho taxCode và parentId
+    dto.tax_code = orgData.taxCode || serverData.taxCode || '';
+    dto.parentId = orgData.parentOrganisation || serverData.parentOrganisation || '';
 
     // 2. Contact Info (ElectronicAddress & Phone)
-    const eAddr = orgData.electronicAddress || {};
-    const phone = orgData.phone || {};
+    // FIX: Thêm serverData fallback
+    const eAddr = orgData.electronicAddress || serverData.electronicAddress || {};
+    const phone = orgData.phone || serverData.phone || {};
 
     dto.email = eAddr.email || '';
     dto.fax = eAddr.fax || '';
-    // Ghép số điện thoại nếu cần, hoặc lấy ituPhone
     dto.phoneNumber = phone.ituPhone || phone.localNumber || '';
     dto.electronicAddressId = eAddr.mRID || '';
     dto.telephoneNumberId = phone.mRID || '';
 
     // 3. Address Info (StreetAddress -> StreetDetail & TownDetail)
-    const addr = orgData.streetAddress || {};
+    // FIX: Thêm serverData fallback
+    const addr = orgData.streetAddress || serverData.streetAddress || {};
     const street = addr.streetDetail || {};
     const town = addr.townDetail || {};
 
@@ -45,17 +49,20 @@ export const mapServerToDto = (serverData) => {
     // Nếu server trả về object attachment đơn lẻ
     if (serverData.attachment) {
         dto.attachmentId = serverData.attachment.id || '';
-        // Map các thuộc tính khác của attachment vào dto.attachment nếu cần
         dto.attachment.name = serverData.attachment.name || '';
         dto.attachment.path = serverData.attachment.path || '';
     }
 
-    // 5. Position Points
+    // 5. Position Points - FIX: Map đúng field từ API và kiểm tra null
+    // API trả về: xposition, yposition, zposition, mrid
     if (Array.isArray(serverData.positionPoints)) {
         serverData.positionPoints.forEach(p => {
-            dto.positionPoints.x.push(p.x);
-            dto.positionPoints.y.push(p.y);
-            dto.positionPoints.z.push(p.z);
+            // Chỉ add vào DTO nếu có ít nhất 1 giá trị không null
+            if (p.xposition !== null || p.yposition !== null || p.zposition !== null) {
+                dto.positionPoints.x.push({ id: p.mrid, coor: p.xposition });
+                dto.positionPoints.y.push({ id: p.mrid, coor: p.yposition });
+                dto.positionPoints.z.push({ id: p.mrid, coor: p.zposition });
+            }
         });
     }
 

@@ -26,8 +26,8 @@ import { insertBreakerContactSystemInfoTransaction, deleteBreakerContactSystemIn
 import { insertBreakerRatingInfoTransaction, deleteBreakerRatingInfoTransaction, getBreakerRatingInfoByBreakerInfoId } from '@/function/cim/breakerRatingInfo'
 import { insertBreakerOtherInfoTransaction, deleteBreakerOtherInfoTransaction, getBreakerOtherInfoByBreakerInfoId } from '@/function/cim/breakerOtherInfo'
 import { insertOldOperatingMechanismTransaction, getOldOperatingMechanismByAssetIdTransaction, deleteOldOperatingMechanismTransaction } from '@/function/cim/oldOperatingMechanism'
-import { insertOldOperatingMechanismInfoTransaction, deleteOldOperatingMechanismInfoTransaction } from '@/function/cim/oldOperatingMechanismInfo'
-import { insertOperatingMechanismComponentTransaction, deleteOperatingMechanismComponentTransaction } from '@/function/cim/operatingMechanismComponent'
+import { insertOldOperatingMechanismInfoTransaction, deleteOldOperatingMechanismInfoTransaction, getOldOperatingMechanismInfoById } from '@/function/cim/oldOperatingMechanismInfo'
+import { insertOperatingMechanismComponentTransaction, deleteOperatingMechanismComponentTransaction, getOperatingMechanismComponentByOperatingMechanismId } from '@/function/cim/operatingMechanismComponent'
 import { insertAssessmentLimitBreakerInfoTransaction, getAssessmentLimitBreakerInfoByBreakerInfoId, deleteAssessmentLimitBreakerInfoTransaction } from '@/function/cim/assessmentLimitBreakerInfo'
 import { insertAuxiliaryContactsBreakerInfoTransaction, getAuxiliaryContactsBreakerInfoByAssessmentLimitId, deleteAuxiliaryContactsBreakerInfoTransaction } from '@/function/cim/auxiliaryContactsBreakerInfo'
 import { insertTripOperationTransaction, getTripOperationByAuxiliaryContactsId, deleteTripOperationTransaction } from '@/function/cim/tripOperation'
@@ -99,29 +99,29 @@ export const insertBreakerEntity = async (old_entity, entity) => {
             try {
                 // Thử insert lần đầu
                 let assetResult = await insertAssetTransaction(entity.asset, db);
-                
+
                 // Nếu thất bại do FK, thử retry với location = null
                 if (!assetResult.success && assetResult.err && assetResult.err.code === 'SQLITE_CONSTRAINT') {
-                    
+
                     // Backup location cũ để log
                     const oldLocation = entity.asset.location;
                     entity.asset.location = null;
-                    
+
                     // Retry
                     assetResult = await insertAssetTransaction(entity.asset, db);
-                    
+
                     if (assetResult.success) {
                     } else {
-                         console.error('[DEBUG] Retry Insert Asset also FAILED:', assetResult.err);
-                         // Có thể throw error ở đây nếu muốn dừng hẳn, hoặc để nó trôi qua (nhưng sẽ mất asset)
-                         throw new Error(`Critical: Failed to insert Asset even with NULL location. Error: ${assetResult.err.message}`);
+                        console.error('[DEBUG] Retry Insert Asset also FAILED:', assetResult.err);
+                        // Có thể throw error ở đây nếu muốn dừng hẳn, hoặc để nó trôi qua (nhưng sẽ mất asset)
+                        throw new Error(`Critical: Failed to insert Asset even with NULL location. Error: ${assetResult.err.message}`);
                     }
                 } else if (!assetResult.success) {
                     throw new Error(`Insert Asset failed: ${assetResult.message}`);
                 }
             } catch (err) {
-                 console.error('[DEBUG] Critical Exception during Asset Insert:', err);
-                 throw err; // Ném lỗi để Rollback toàn bộ transaction vì mất Asset là mất tất cả
+                console.error('[DEBUG] Critical Exception during Asset Insert:', err);
+                throw err; // Ném lỗi để Rollback toàn bộ transaction vì mất Asset là mất tất cả
             }
 
             //assetPsr
@@ -270,12 +270,12 @@ export const getBreakerEntity = async (id, psrId) => {
 
                 // Push IDs to arrays...
                 if (entity.oldBreakerInfo) {
-                    if(entity.oldBreakerInfo.pir_value) resistanceIds.push(entity.oldBreakerInfo.pir_value)
-                    if(entity.oldBreakerInfo.capacitor_value) capacitanceIds.push(entity.oldBreakerInfo.capacitor_value)
-                    if(entity.oldBreakerInfo.rated_frequency) frequencyIds.push(entity.oldBreakerInfo.rated_frequency)
-                    if(entity.oldBreakerInfo.rated_voltage) voltageIds.push(entity.oldBreakerInfo.rated_voltage)
-                    if(entity.oldBreakerInfo.rated_current) currentFlowIds.push(entity.oldBreakerInfo.rated_current)
-                }                
+                    if (entity.oldBreakerInfo.pir_value) resistanceIds.push(entity.oldBreakerInfo.pir_value)
+                    if (entity.oldBreakerInfo.capacitor_value) capacitanceIds.push(entity.oldBreakerInfo.capacitor_value)
+                    if (entity.oldBreakerInfo.rated_frequency) frequencyIds.push(entity.oldBreakerInfo.rated_frequency)
+                    if (entity.oldBreakerInfo.rated_voltage) voltageIds.push(entity.oldBreakerInfo.rated_voltage)
+                    if (entity.oldBreakerInfo.rated_current) currentFlowIds.push(entity.oldBreakerInfo.rated_current)
+                }
 
                 if (entity.oldBreakerInfo && entity.oldBreakerInfo.mrid) {
                     const dataBreakerRatingInfo = await getBreakerRatingInfoByBreakerInfoId(entity.oldBreakerInfo.mrid);
@@ -289,13 +289,13 @@ export const getBreakerEntity = async (id, psrId) => {
                         activePowerIds.push(entity.breakerRatingInfo.rated_power_motor_charge)
                         voltageIds.push(entity.breakerRatingInfo.rated_insulation_level)
                     }
-                     // Push oldBreakerInfo time
+                    // Push oldBreakerInfo time
                     secondIds.push(entity.oldBreakerInfo.rated_interrupting_time)
 
                     const dataBreakerContactSystemInfo = await getBreakerContactSystemInfoByBreakerInfoId(entity.oldBreakerInfo.mrid);
                     if (dataBreakerContactSystemInfo.success) {
                         entity.breakerContactSystemInfo = dataBreakerContactSystemInfo.data;
-                         // Push contact system IDs
+                        // Push contact system IDs
                         secondIds.push(entity.breakerContactSystemInfo.damping_time)
                         lengthIds.push(entity.breakerContactSystemInfo.nominal_total_travel)
                         lengthIds.push(entity.breakerContactSystemInfo.nozzle_length)
@@ -304,29 +304,29 @@ export const getBreakerEntity = async (id, psrId) => {
                     const dataBreakerOtherInfo = await getBreakerOtherInfoByBreakerInfoId(entity.oldBreakerInfo.mrid);
                     if (dataBreakerOtherInfo.success) {
                         entity.breakerOtherInfo = dataBreakerOtherInfo.data;
-                         // Push other info IDs
+                        // Push other info IDs
                         pressureIds.push(entity.breakerOtherInfo.rated_gas_pressure)
                         massIds.push(entity.breakerOtherInfo.weight_of_gas)
                         massIds.push(entity.breakerOtherInfo.total_weight_with_gas)
                         volumeIds.push(entity.breakerOtherInfo.volume_of_gas)
                         temperatureIds.push(entity.breakerOtherInfo.rated_gas_temperature)
                     }
-                    
-                     // ... Assessment & Sub-tables ...
+
+                    // ... Assessment & Sub-tables ...
                     const dataAssessmentLimitBreakerInfo = await getAssessmentLimitBreakerInfoByBreakerInfoId(entity.oldBreakerInfo.mrid);
                     if (dataAssessmentLimitBreakerInfo.success) {
                         entity.assessmentLimitBreakerInfo = dataAssessmentLimitBreakerInfo.data;
-                        
+
                         // Auxiliary Contacts
                         const dataAuxiliaryContactsBreakerInfo = await getAuxiliaryContactsBreakerInfoByAssessmentLimitId(entity.assessmentLimitBreakerInfo.mrid);
                         if (dataAuxiliaryContactsBreakerInfo.success && dataAuxiliaryContactsBreakerInfo.data) {
                             // Fix: Handle array return from db.all
-                            entity.auxiliaryContactsBreakerInfo = Array.isArray(dataAuxiliaryContactsBreakerInfo.data) 
-                                ? dataAuxiliaryContactsBreakerInfo.data[0] 
+                            entity.auxiliaryContactsBreakerInfo = Array.isArray(dataAuxiliaryContactsBreakerInfo.data)
+                                ? dataAuxiliaryContactsBreakerInfo.data[0]
                                 : dataAuxiliaryContactsBreakerInfo.data;
-                            
+
                             if (entity.auxiliaryContactsBreakerInfo) {
-                                 // Trip & Close Ops
+                                // Trip & Close Ops
                                 const dataTripOperation = await getTripOperationByAuxiliaryContactsId(entity.auxiliaryContactsBreakerInfo.mrid);
                                 if (dataTripOperation.success) {
                                     entity.tripOperation = dataTripOperation.data;
@@ -346,7 +346,7 @@ export const getBreakerEntity = async (id, psrId) => {
                         }
 
                         // ... Contact Resistance, Time, Travel ...
-                         const dataContactResistance = await getContactResistanceBreakerInfoByAssessmentLimitBreakerInfoId(entity.assessmentLimitBreakerInfo.mrid);
+                        const dataContactResistance = await getContactResistanceBreakerInfoByAssessmentLimitBreakerInfoId(entity.assessmentLimitBreakerInfo.mrid);
                         if (dataContactResistance.success) {
                             entity.contactResistanceBreakerInfo = dataContactResistance.data;
                             for (const resistance of entity.contactResistanceBreakerInfo) {
@@ -423,6 +423,16 @@ export const getBreakerEntity = async (id, psrId) => {
                 const dataOldOperatingMechanism = await getOldOperatingMechanismByAssetIdTransaction(entity.asset.mrid);
                 if (dataOldOperatingMechanism.success) {
                     entity.oldOperatingMechanism = dataOldOperatingMechanism.data;
+                    const dataOperatingComponent = await getOperatingMechanismComponentByOperatingMechanismId(entity.oldOperatingMechanism.mrid);
+                    if (dataOperatingComponent.success) {
+                        entity.operatingMechanismComponent = dataOperatingComponent.data;
+                        // Push Unit IDs của Component vào danh sách để lấy thông tin Unit
+                        for (const component of entity.operatingMechanismComponent) {
+                            if (component.rated_current) currentFlowIds.push(component.rated_current);
+                            if (component.rated_voltage) voltageIds.push(component.rated_voltage);
+                            if (component.rated_frequency) frequencyIds.push(component.rated_frequency);
+                        }
+                    }
                 }
 
                 // Filter out null/undefined IDs before fetching
@@ -478,7 +488,7 @@ export const getBreakerEntity = async (id, psrId) => {
 
                 const dataResistance = await getResistanceByIds(resistanceIds);
                 if (dataResistance.success) entity.resistance = dataResistance.data;
-                
+
                 return {
                     success: true,
                     data: entity,
@@ -488,10 +498,10 @@ export const getBreakerEntity = async (id, psrId) => {
                 console.warn('[DEBUG] getAssetById FAILED for ID:', id, dataBreaker.error || 'No data returned');
                 // FIX: Thử kiểm tra lại nếu Asset đã được import nhưng chưa commit xong (rất hiếm, nhưng phòng hờ)
                 // Hoặc trả về lỗi rõ ràng hơn
-                return { 
-                    success: false, 
-                    error: dataBreaker.error || new Error('Asset not found in DB'), 
-                    message: `Asset with ID ${id} could not be retrieved. It might be deleted or not properly imported.` 
+                return {
+                    success: false,
+                    error: dataBreaker.error || new Error('Asset not found in DB'),
+                    message: `Asset with ID ${id} could not be retrieved. It might be deleted or not properly imported.`
                 };
             }
         }
@@ -599,7 +609,7 @@ export const deleteBreakerEntity = async (entity) => {
             const auxData = await getAuxiliaryContactsBreakerInfoByAssessmentLimitId(limitId);
             if (auxData.success && auxData.data) {
                 const auxList = Array.isArray(auxData.data) ? auxData.data : [auxData.data];
-                
+
                 for (const auxItem of auxList) {
                     const auxId = auxItem.mrid;
                     // Trip Operation
@@ -626,8 +636,8 @@ export const deleteBreakerEntity = async (entity) => {
             try {
                 await deleteAssessmentLimitBreakerInfoTransaction(limitId, db);
             } catch (err) {
-                 console.error('[DEBUG] FAILED to delete assessmentLimitBreakerInfo:', err);
-                 throw new Error('Delete assessmentLimitBreakerInfo failed');
+                console.error('[DEBUG] FAILED to delete assessmentLimitBreakerInfo:', err);
+                throw new Error('Delete assessmentLimitBreakerInfo failed');
             }
         }
 
@@ -727,7 +737,7 @@ export const deleteBreakerEntity = async (entity) => {
                 // Handle deeply nested error objects from Promise rejections
                 // Structure might be: err -> err -> err -> code
                 const code = (err && err.err && err.err.err && err.err.err.code) || (err && err.err && err.err.code) || (err && err.code);
-                
+
                 if (code === 'SQLITE_CONSTRAINT') {
                     console.warn(`[DEBUG] Skipped deleting oldBreakerInfo ${entity.oldBreakerInfo.mrid} due to foreign key constraint (likely shared).`);
                 } else {

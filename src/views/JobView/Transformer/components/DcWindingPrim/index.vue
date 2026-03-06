@@ -38,61 +38,59 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testData.table">
-                    <tr :key="index">
-                        <td v-if="tapChangers.winding === $constant.PRIM">{{ item.tap.value }}</td>
-                        <td style="width: 10%">
-                            <div class="col-phase">
-                                <div class="phase">
-                                    <el-input size="mini" type="text" v-model="item.phase.value"></el-input>
-                                </div>
-                                <div class="rectangle" :class="{red: item._phase.value == 'A', yellow: item._phase.value == 'B', blue: item._phase.value == 'C'}"></div>
+                <tr v-for="(item, index) in testData.table" :key="index">
+                    <td v-if="tapChangers.winding === $constant.PRIM">{{ item.tap.value }}</td>
+                    <td style="width: 10%">
+                        <div class="col-phase">
+                            <div class="phase">
+                                <el-input size="mini" type="text" v-model="item.phase.value"></el-input>
                             </div>
+                            <div class="rectangle" :class="{red: item._phase.value == 'A', yellow: item._phase.value == 'B', blue: item._phase.value == 'C'}"></div>
+                        </div>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="number" v-model="item.r_meas.value"><template slot="append">Ω</template></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="number" v-model="item.r_ref.value"><template slot="append">Ω</template></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="number" v-model="item.r_corr.value"><template slot="append">Ω</template></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="number" v-model="item.error_r_ref.value"></el-input>
+                    </td>
+                    <template v-if="index % 3 == 0 && tapChangers.winding === $constant.PRIM">
+                        <td rowspan="3">
+                            <el-input size="mini" type="number" v-model="item.error_between_phase.value"></el-input>
                         </td>
-                        <td>
-                            <el-input size="mini" type="number" v-model="item.r_meas.value"><template slot="append">Ω</template></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="number" v-model="item.r_ref.value"><template slot="append">Ω</template></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="number" v-model="item.r_corr.value"><template slot="append">Ω</template></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="number" v-model="item.error_r_ref.value"></el-input>
-                        </td>
-                        <template v-if="index % 3 == 0 && tapChangers.winding === $constant.PRIM">
-                            <td rowspan="3">
-                                <el-input size="mini" type="number" v-model="item.error_between_phase.value"></el-input>
-                            </td>
 
-                            <!-- <td rowspan="3">
-                                <el-input size="mini" type="number" v-model="item.mean_value"><template slot="append">Ω</template></el-input>
-                            </td> -->
-                        </template>
-                        <template v-else-if="index % 3 == 0 && tapChangers.winding !== $constant.PRIM">
-                            <td rowspan="3">
-                                <el-input size="mini" type="number" v-model="item.error_between_phase.value"></el-input>
-                            </td>
+                        <!-- <td rowspan="3">
+                            <el-input size="mini" type="number" v-model="item.mean_value"><template slot="append">Ω</template></el-input>
+                        </td> -->
+                    </template>
+                    <template v-else-if="index % 3 == 0 && tapChangers.winding !== $constant.PRIM">
+                        <td rowspan="3">
+                            <el-input size="mini" type="number" v-model="item.error_between_phase.value"></el-input>
+                        </td>
 
-                            <!-- <td rowspan="3">
-                                <el-input size="mini" type="number" v-model="item.mean_value"><template slot="append">Ω</template></el-input>
-                            </td> -->
-                        </template>
-                        <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
-                                <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
-                                <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
-                            </el-select>
-                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
-                        </td>
-                        <td>
-                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
-                            </el-input>
-                        </td>
-                    </tr>
-                </template>
+                        <!-- <td rowspan="3">
+                            <el-input size="mini" type="number" v-model="item.mean_value"><template slot="append">Ω</template></el-input>
+                        </td> -->
+                    </template>
+                    <td>
+                        <el-select class="assessment" size="mini" v-model="item.assessment.value">
+                            <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
+                        </el-select>
+                        <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                    </td>
+                    <td>
+                        <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
+                        </el-input>
+                    </td>
+                </tr>
             </tbody>
         </table>
 

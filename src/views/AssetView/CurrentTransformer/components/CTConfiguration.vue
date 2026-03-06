@@ -83,13 +83,13 @@
                                                     </td>
                                                     <td style="width : 60px;">{{ item.fullTap.table.name }}</td>
                                                     <td style="width : 250px;">
-                                                        <el-input size="mini" v-model="item.fullTap.table.ipn.value">
+                                                        <el-input size="mini" v-model="item.fullTap.table.ipn.value" @input="updateMainInterTapValues(index)">
                                                             <template slot="append">A</template>
                                                         </el-input>
                                                     </td>
                                                     <td style="width : 10px;">:</td>
                                                     <td style="width : 250px;">
-                                                        <el-input size="mini" v-model="item.fullTap.table.isn.value">
+                                                        <el-input size="mini" v-model="item.fullTap.table.isn.value" @input="updateMainInterTapValues(index)">
                                                             <template slot="append">A</template>
                                                         </el-input>
                                                     </td>
@@ -1087,20 +1087,32 @@ export default {
                 if (taps > commonTap) {
                     this.configsData.dataCT[index].mainTap.data.forEach((element, i) => {
                         element.table.name = "S1 - S" + `${i + 2}`
+                        // Map ipn và isn từ full tap
+                        element.table.ipn.value = this.configsData.dataCT[index].fullTap.table.ipn.value
+                        element.table.isn.value = this.configsData.dataCT[index].fullTap.table.isn.value
                     });
                 } else {
                     this.configsData.dataCT[index].mainTap.data.forEach((element, i) => {
                         element.table.name = "S" + `${i + 2}` + " - " + "S" + `${commonTap}`
+                        // Map ipn và isn từ full tap
+                        element.table.ipn.value = this.configsData.dataCT[index].fullTap.table.ipn.value
+                        element.table.isn.value = this.configsData.dataCT[index].fullTap.table.isn.value
                     });
                 }
             } else {
                 if (taps > commonTap) {
                     this.configsData.dataCT[index].mainTap.data.forEach((element, i) => {
                         element.table.name = `${index + 1}` + "S1 - " + `${index + 1}` + "S" + `${i + 2}`
+                        // Map ipn và isn từ full tap
+                        element.table.ipn.value = this.configsData.dataCT[index].fullTap.table.ipn.value
+                        element.table.isn.value = this.configsData.dataCT[index].fullTap.table.isn.value
                     });
                 } else {
                     this.configsData.dataCT[index].mainTap.data.forEach((element, i) => {
                         element.table.name = `${index + 1}` + "S" + `${i + 2}` + " - " + `${index + 1}` + "S" + `${commonTap}`
+                        // Map ipn và isn từ full tap
+                        element.table.ipn.value = this.configsData.dataCT[index].fullTap.table.ipn.value
+                        element.table.isn.value = this.configsData.dataCT[index].fullTap.table.isn.value
                     });
                 }
             }
@@ -1115,6 +1127,9 @@ export default {
                             for (let j = i + 1; j <= taps; j++) {
                                 if (count == eIndex) {
                                     element.table.name = "S" + `${i}` + " - " + "S" + `${j}`
+                                    // Map ipn và isn từ full tap
+                                    element.table.ipn.value = this.configsData.dataCT[index].fullTap.table.ipn.value
+                                    element.table.isn.value = this.configsData.dataCT[index].fullTap.table.isn.value
                                 }
                                 count = count + 1
                             }
@@ -1127,6 +1142,9 @@ export default {
                             for (let j = i - 1; j >= 1; j--) {
                                 if (count == eIndex) {
                                     element.table.name = "S" + `${j}` + " - " + "S" + `${i}`
+                                    // Map ipn và isn từ full tap
+                                    element.table.ipn.value = this.configsData.dataCT[index].fullTap.table.ipn.value
+                                    element.table.isn.value = this.configsData.dataCT[index].fullTap.table.isn.value
                                 }
                                 count = count + 1
                             }
@@ -1142,6 +1160,9 @@ export default {
                             for (let j = i + 1; j <= taps; j++) {
                                 if (count == eIndex) {
                                     element.table.name = `${index + 1}` + "S" + `${i}` + " - " + `${index + 1}` + "S" + `${j}`
+                                    // Map ipn và isn từ full tap
+                                    element.table.ipn.value = this.configsData.dataCT[index].fullTap.table.ipn.value
+                                    element.table.isn.value = this.configsData.dataCT[index].fullTap.table.isn.value
                                 }
                                 count = count + 1
                             }
@@ -1154,6 +1175,9 @@ export default {
                             for (let j = i - 1; j >= 1; j--) {
                                 if (count == eIndex) {
                                     element.table.name = `${index + 1}` + "S" + `${j}` + " - " + `${index + 1}` + "S" + `${i}`
+                                    // Map ipn và isn từ full tap
+                                    element.table.ipn.value = this.configsData.dataCT[index].fullTap.table.ipn.value
+                                    element.table.isn.value = this.configsData.dataCT[index].fullTap.table.isn.value
                                 }
                                 count = count + 1
                             }
@@ -1285,6 +1309,19 @@ export default {
                 }
                 this.configsData.dataCT[index].interTap.data[elementIndex].table.inUse = true
             }
+        },
+        updateMainInterTapValues(index) {
+            // Cập nhật ipn và isn cho tất cả main taps
+            this.configsData.dataCT[index].mainTap.data.forEach((element) => {
+                element.table.ipn.value = this.configsData.dataCT[index].fullTap.table.ipn.value
+                element.table.isn.value = this.configsData.dataCT[index].fullTap.table.isn.value
+            })
+            
+            // Cập nhật ipn và isn cho tất cả inter taps
+            this.configsData.dataCT[index].interTap.data.forEach((element) => {
+                element.table.ipn.value = this.configsData.dataCT[index].fullTap.table.ipn.value
+                element.table.isn.value = this.configsData.dataCT[index].fullTap.table.isn.value
+            })
         }
     }
 }

@@ -42,6 +42,7 @@
                                     :is="item.testTypeCode" 
                                     :data="item.data" 
                                     :asset="assetData"
+                                    :testCondition="item.testCondition"
                                     >
                                 </component>
                             </el-tab-pane>
@@ -62,7 +63,7 @@ import testInformation from '@/views/Common/testInformation.vue'
 import InsulationResistance from './components/InsulationResistance.vue'
 import CTRatio from './components/CTRatio.vue'
 import CTExcitation from './components/CTExcitation.vue'
-import CTWindingResistance from './components/CTWindingRes.vue'
+import CTWindingRes from './components/CTWindingRes.vue'
 import CTDfcap from './components/CTDfcap.vue'
 import GeneralInspection from './components/GeneralInspection.vue'
 import testingEquipment from './components/TestingEquipment/index.vue'
@@ -79,7 +80,7 @@ export default {
         CTDfcap,
         CTRatio,
         CTExcitation,
-        CTWindingResistance,
+        CTWindingRes,
         GeneralInspection,
         testingEquipment
     },

@@ -1,22 +1,10 @@
 {
-  "testId": "a157af35-e965-4374-96bb-84e4b938091e",
-  "testCode": "DielectricResponseAnalysis",
-  "testName": "Dielectric Respone Analysis",
+  "testId": "f1ec4c35-428a-49ce-8d9b-502f1cc7acbd",
+  "testCode": "CTWindingRes",
+  "testName": "CT Winding resistance",
   "columns": [
-    {
-      "mrid": "8d2fdece-b599-4270-a3bf-d0ce2c516d02",
-      "code": "top_oil_temp",
-      "name": "Top oil temperature",
-      "type": "analog",
-      "unit": "°C"
-    },
-    {
-      "mrid": "125850fc-5c9c-4a42-b7fd-afbca2ff2e98",
-      "code": "bottom_oil_temp",
-      "name": "Bottom oil temperature",
-      "type": "analog",
-      "unit": "°C"
-    },
+    
+    
     {
       "mrid": "98c7ab64-dd7c-4af4-9010-08d482054574",
       "code": "winding_temp",

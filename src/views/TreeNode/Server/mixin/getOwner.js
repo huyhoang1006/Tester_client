@@ -15,7 +15,8 @@ export default {
                             parentArr: [],
                             //mode: item.mode || '',
                             parentId: '',
-                            mode: 'organisation'
+                            mode: 'organisation',
+                            mrid: item.mrid || item.id || ''
                         }
                     })
                 } else {
