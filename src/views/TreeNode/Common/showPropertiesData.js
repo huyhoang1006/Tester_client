@@ -10,7 +10,7 @@ export default {
                 await this.loadPathMap(node)
                 this.pathMapServer.push({
                     id: node.id,
-                    parent: node.serial_no
+                    parent: node.apparatus_id || node.serial_number || node.serial_no
                 })
             } else if (node.type == 'test') {
                 this.assetPropertySign = true

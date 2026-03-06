@@ -9,7 +9,7 @@ export default {
             }
 
             const node = this.selectedNodes[this.selectedNodes.length - 1];
-            let nodeName = node.serial_no || node.serial_number || node.name || 'Unknown';
+            let nodeName = node.apparatus_id || node.serial_number || node.serial_no || node.name || 'Unknown';
             
             this.$confirm(`Delete "${nodeName}"?`, 'Warning', {
                 confirmButtonText: 'Delete',

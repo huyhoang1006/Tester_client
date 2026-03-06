@@ -1,5 +1,34 @@
 {
-  "enabledPlugins": {
-    "playwright@claude-plugins-official": true
-  }
+  "env": {
+    "ANTHROPIC_AUTH_TOKEN": "sk-cp-fyZ0jMbyFea552QDGUP5g067jTz1jPRrfyciOZVBYm1Q5-gD8-59AJkRGqp6nBL1g-M4NItpPARV38Fp75fvKMzmXxGfF1Vfud30eUs3q8FX-cHwnJ_HLc4",
+    "ANTHROPIC_BASE_URL": "https://api.minimax.io/anthropic",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "MiniMax-M2",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "MiniMax-M2.5",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "MiniMax-M2.1",
+    "ANTHROPIC_MODEL": "MiniMax-M2.5",
+    "ANTHROPIC_SMALL_FAST_MODEL": "MiniMax-M2.1",
+    "API_TIMEOUT_MS": "3000000",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "permissions": {
+    "allow": [
+      "Bash",
+      "Read",
+      "Edit",
+      "Write",
+      "WebFetch",
+      "Grep",
+      "Glob",
+      "LS",
+      "MultiEdit",
+      "NotebookRead",
+      "NotebookEdit",
+      "TodoRead",
+      "TodoWrite",
+      "WebSearch"
+    ]
+  },
+  "language": "Việt Nam",
+  "skipDangerousModePermissionPrompt": true
 }

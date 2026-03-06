@@ -4,6 +4,7 @@ import * as attachmentContext from '../../attachmentcontext/index'
 import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, deleteDirectory } from '@/function/entity/attachment'
 import { insertOldPowerTransformerInfoTransaction, getOldPowerTransformerInfoById, deleteOldPowerTransformerInfoTransaction } from '@/function/cim/oldPowerTransformerInfo'
 import { insertOldTransformerEndInfoTransaction, deleteOldTransformerEndInfoTransaction, getOldTransformerEndInfoByPowerTransformerInfoId } from '@/function/cim/oldTransformerEndInfo'
+import { insertOtherTransaction, getOtherByPowerTransformerInfoId, deleteOtherByIdTransaction } from '@/function/cim/other'
 import { insertAssetPsrTransaction, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
 import { insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction } from '@/function/cim/productAssetModel';
 import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction } from '@/function/cim/lifecycleDate';
@@ -14,8 +15,8 @@ import { insertPercentTransaction, getPercentByIds, deletePercentByIdTransaction
 import { insertActivePowerTransaction, getActivePowerByIds, deleteActivePowerByIdTransaction } from '@/function/cim/activePower';
 import { insertApparentPowerTransaction, getApparentPowerByIds, deleteApparentPowerByIdTransaction } from '@/function/cim/apparentPower';
 import { insertFrequencyTransaction, deleteFrequencyByIdTransaction, getFrequencyByIds } from '@/function/cim/frequency';
-import { insertMassTransaction, deleteMassByIdTransaction } from '@/function/cim/mass'
-import { insertVolumeTransaction, deleteVolumeByIdTransaction } from '@/function/cim/volume'
+import { insertMassTransaction, deleteMassByIdTransaction, getMassByIds } from '@/function/cim/mass'
+import { insertVolumeTransaction, deleteVolumeByIdTransaction, getVolumeByIds } from '@/function/cim/volume'
 import { insertTemperatureTransaction, deleteTemperatureByIdTransaction, getTemperatureByIds } from '@/function/cim/temperature'
 import { insertAssetTransaction, getAssetByAssetInfoId, deleteAssetByIdTransaction, getAssetById } from '@/function/cim/asset'
 import { insertZeroSequenceImpedanceTransaction, deleteZeroSequenceImpedanceTransaction, getZeroSequenceImpedanceByTransformerInfoId } from '@/function/cim/zeroSequenceImpedance'
@@ -106,6 +107,7 @@ export const insertTransformerEntity = async (old_entity, entity) => {
                 }
             }
             await insertOldPowerTransformerInfoTransaction(entity.oldPowerTransformerInfo, db);
+            await insertOtherTransaction(entity.other, db);
             await insertLifecycleDateTransaction(entity.lifecycleDate, db);
             await insertProductAssetModelTransaction(entity.productAssetModel, db);
 
@@ -305,6 +307,30 @@ export const getTransformerEntityById = async (id, psrId) => {
                 const dataOldTransformerEndInfo = await getOldTransformerEndInfoByPowerTransformerInfoId(entity.asset.asset_info);
                 if (dataOldTransformerEndInfo.success) {
                     entity.oldTransformerEndInfo = dataOldTransformerEndInfo.data;
+                }
+
+                // Load Other
+                const dataOther = await getOtherByPowerTransformerInfoId(entity.oldPowerTransformerInfo.mrid);
+                if (dataOther.success) {
+                    entity.other = dataOther.data;
+                    if (entity.other.insulation_weight) {
+                        const dataMassWeight = await getMassByIds([entity.other.insulation_weight]);
+                        if (dataMassWeight.success && dataMassWeight.data.length > 0) {
+                            entity.mass.push(dataMassWeight.data[0]);
+                        }
+                    }
+                    if (entity.other.insulation_volume) {
+                        const dataVolumeInsulation = await getVolumeByIds([entity.other.insulation_volume]);
+                        if (dataVolumeInsulation.success && dataVolumeInsulation.data.length > 0) {
+                            entity.volume.push(dataVolumeInsulation.data[0]);
+                        }
+                    }
+                    if (entity.productAssetModel.weight_total) {
+                        const dataMassTotal = await getMassByIds([entity.productAssetModel.weight_total]);
+                        if (dataMassTotal.success && dataMassTotal.data.length > 0) {
+                            entity.mass.push(dataMassTotal.data[0]);
+                        }
+                    }
                 }
 
                 for (const dataEndInfo of entity.oldTransformerEndInfo) {
@@ -633,6 +659,10 @@ export const deleteTransformerEntity = async (data) => {
                 }
 
                 // SAFE DELETE: Only delete Info, Model, Lifecycle if NOT used by other assets
+                if (data.other && data.other.mrid) {
+                    await tryDelete(deleteOtherByIdTransaction, data.other.mrid, db, 'Other');
+                }
+
                 if (data.oldPowerTransformerInfo && data.oldPowerTransformerInfo.mrid) {
                     const isUsed = await isUsedInTable('Asset', 'asset_info', data.oldPowerTransformerInfo.mrid, db);
                     if (!isUsed) {

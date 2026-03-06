@@ -43,15 +43,9 @@ export default {
                 this.$message.warning('Node is already in this location')
                 return
             }
-            let sourceName = nodeToMove.name
-            // Nếu name rỗng hoặc null, thử lấy serial_number hoặc serial_no
-            if (!sourceName || sourceName.toString().trim() === '') {
-                sourceName = nodeToMove.serial_number || nodeToMove.serial_no
-            }
-            // Nếu vẫn không có, hiển thị giá trị mặc định
-            sourceName = sourceName || 'Unknown Item'
+            let sourceName = nodeToMove.apparatus_id || nodeToMove.serial_number || nodeToMove.serial_no || nodeToMove.name || 'Unknown Item'
 
-            let targetName = newParent.name || 'Unknown Location'
+            let targetName = newParent.apparatus_id || newParent.name || 'Unknown Location'
             this.$confirm(`Move "${sourceName}" to "${targetName}"?`, 'Confirm Move', {
                 confirmButtonText: 'Confirm',
                 cancelButtonText: 'Cancel',

@@ -1,6 +1,7 @@
 import * as demoAPI from '@/api/demo/index.js'
 import * as PowerCableMapping from '@/views/Mapping/PowerCable/index'
 import * as PowerCableServerMapper from '@/views/Mapping/ServerToDTO/PowerCable/index.js'
+import { mapOrganisationEntityToServer } from '@/utils/MapperClient/mapOrganisationToServer.js'
 
 export default {
     methods: {
@@ -11,7 +12,15 @@ export default {
             }
             const node = this.selectedNodes[this.selectedNodes.length - 1];
 
-            if (node.asset === 'Power cable') {
+            if (node.mode === 'organisation') {
+                this.$confirm(`Upload Organisation "${node.name}" to Server?`, 'Confirm Upload', {
+                    confirmButtonText: 'Upload',
+                    cancelButtonText: 'Cancel',
+                    type: 'info'
+                }).then(async () => {
+                    await this.processUploadOrganisation(node);
+                }).catch(() => { });
+            } else if (node.asset === 'Power cable') {
                 this.$confirm(`Upload Power Cable "${node.serial_number || node.name}" to Server?`, 'Confirm Upload', {
                     confirmButtonText: 'Upload',
                     cancelButtonText: 'Cancel',
@@ -20,7 +29,92 @@ export default {
                     await this.processUploadPowerCable(node);
                 }).catch(() => { });
             } else {
-                this.$message.warning('Currently only "Power cable" upload is supported.');
+                this.$message.warning('Currently only "Organisation" and "Power cable" upload are supported.');
+            }
+        },
+
+        async processUploadOrganisation(node) {
+            const loading = this.$loading({
+                lock: true,
+                text: 'Uploading Organisation to Server...',
+                spinner: 'el-icon-loading',
+                background: 'rgba(0, 0, 0, 0.7)'
+            });
+
+            try {
+                // 1. Lấy entity từ local database
+                const entityRes = await window.electronAPI.getOrganisationEntityByMrid(node.mrid);
+                if (!entityRes.success || !entityRes.data) {
+                    throw new Error("Local organisation data not found.");
+                }
+
+                const entity = entityRes.data;
+                console.log('[Upload Organisation] Local entity:', entity);
+
+                // 2. Xác định Parent Node
+                // - node.parentId là mrid của parent organisation trong local DB
+                let parentNode = null;
+                if (node.parentId) {
+                    parentNode = this.findNodeById(node.parentId, this.organisationClientList);
+                }
+
+                // 3. Map entity sang format server
+                // - parentOrganisation sẽ là mrid (UUID) của parent từ local DB
+                const serverPayload = mapOrganisationEntityToServer(entity, parentNode);
+
+                console.log('[Upload Organisation] Server payload:', serverPayload);
+
+                // 4. Xác định ownerId cho API
+                // - Nếu có parent, ownerId = id của parent trên server (cần resolve)
+                // - Nếu là root org, ownerId = id của owner organisation trên server
+                let ownerId = null;
+
+                if (parentNode && parentNode.serverId) {
+                    // Parent đã có server ID
+                    ownerId = parentNode.serverId;
+                } else if (parentNode) {
+                    // Parent chưa có server ID, cần tìm trên server
+                    // Tìm parent trên server bằng mrid
+                    const parentRes = await demoAPI.getOrganisationById(parentNode.mrid);
+                    if (parentRes && parentRes.id) {
+                        ownerId = parentRes.id;
+                    }
+                } else {
+                    // Root organisation - lấy owner từ server
+                    const ownerOrgRes = await demoAPI.getOwnerOrganisation();
+                    if (ownerOrgRes && ownerOrgRes.id) {
+                        ownerId = ownerOrgRes.id;
+                    }
+                }
+
+                if (!ownerId) {
+                    throw new Error("Cannot determine ownerId for organisation.");
+                }
+
+                console.log('[Upload Organisation] ownerId:', ownerId);
+
+                // 5. Gọi API tạo organisation
+                const response = await demoAPI.createOrganisation(serverPayload, ownerId);
+
+                if (response) {
+                    this.$message.success(`Upload Organisation "${node.name}" successfully!`);
+
+                    // Refresh tree
+                    if (this.clientSlide) {
+                        await this.showLocationRoot();
+                    }
+                }
+
+            } catch (error) {
+                console.error("[Upload Organisation] Error:", error);
+                if (error.response && error.response.data) {
+                    const msg = error.response.data.message || error.response.data.error || JSON.stringify(error.response.data);
+                    this.$message.error(`Server Error: ${msg}`);
+                } else {
+                    this.$message.error(error.message || 'Error during organisation upload');
+                }
+            } finally {
+                loading.close();
             }
         },
 

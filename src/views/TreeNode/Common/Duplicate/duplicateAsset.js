@@ -6,7 +6,7 @@ export default {
                 const getDisplayLabel = (n) => {
                     if (!n) return ''
                     if (n.mode === 'asset') {
-                        return (n.serial_number || n.serial_no || n.name || '').toString()
+                        return (n.apparatus_id || n.serial_number || n.serial_no || n.name || '').toString()
                     }
                     return (n.name || '').toString()
                 }
@@ -417,9 +417,10 @@ export default {
                 const nextLabel = getNextDuplicateLabel(node, parentNode)
 
                 if (isAssetNode) {
-                    // Asset: dùng serial_no làm label chính trên cây
+                    // Asset: dùng apparatus_id làm label chính trên cây, giữ serial_no nguyên
                     if (!dto.properties) dto.properties = {}
-                    dto.properties.serial_no = nextLabel
+                    dto.properties.apparatus_id = nextLabel
+                    // serial_no giữ nguyên từ bản gốc, không thay đổi
                 } else {
                     // Location / Job / Test: dùng name
                     dto.name = nextLabel
@@ -509,7 +510,8 @@ export default {
                 if (saveResult && saveResult.success) {
                     let newNodeData = {
                         mrid: '',
-                        name: dto.name || (dto.properties ? dto.properties.apparatus_id : `${node.name} - Copy`),
+                        name: node.mode === 'asset' ? (dto.properties?.apparatus_id || nextLabel) : (dto.name || nextLabel),
+                        apparatus_id: node.mode === 'asset' ? dto.properties?.apparatus_id : undefined,
                         serial_number: dto.properties ? dto.properties.serial_no : '',
                         parentId: parentNode.mrid,
                         parentName: parentNode.name,
@@ -560,11 +562,23 @@ export default {
                         if (mainObj) {
                             newNodeData.mrid = mainObj.mrid
                             newNodeData.id = mainObj.mrid
-                            if (mainObj.name && mainObj.name !== mainObj.mrid) newNodeData.name = mainObj.name
+                            // Ưu tiên apparatus_id cho asset nodes - luôn dùng từ DTO đã set
+                            if (node.mode === 'asset') {
+                                newNodeData.name = dto.properties?.apparatus_id || mainObj.apparatus_id || mainObj.name || nextLabel
+                                newNodeData.apparatus_id = dto.properties?.apparatus_id || mainObj.apparatus_id
+                            } else {
+                                if (mainObj.name && mainObj.name !== mainObj.mrid) newNodeData.name = mainObj.name
+                            }
                         } else if (resData.mrid) {
                             newNodeData.mrid = resData.mrid
                             newNodeData.id = resData.mrid
-                            if (resData.name) newNodeData.name = resData.name
+                            // Ưu tiên apparatus_id cho asset nodes - luôn dùng từ DTO đã set
+                            if (node.mode === 'asset') {
+                                newNodeData.name = dto.properties?.apparatus_id || resData.apparatus_id || resData.name || nextLabel
+                                newNodeData.apparatus_id = dto.properties?.apparatus_id || resData.apparatus_id
+                            } else {
+                                if (resData.name) newNodeData.name = resData.name
+                            }
                         }
                     }
                     return {

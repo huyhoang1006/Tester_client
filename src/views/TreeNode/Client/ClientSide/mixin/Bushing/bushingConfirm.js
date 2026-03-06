@@ -52,9 +52,11 @@ export default {
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
                             const bushingData = data.bushing
+                            const apparatusId = bushingData.name || bushingData.apparatus_id
                             const newRow = {
                                 mrid: bushingData.mrid,
-                                name: bushingData.name || bushingData.serial_number || 'Unnamed Bushing',
+                                apparatus_id: apparatusId,
+                                name: apparatusId || bushingData.serial_number || 'Unnamed Bushing',
                                 serial_number: bushingData.serial_number,
                                 parentId: this.parentOrganization.mrid,
                                 parentName: this.parentOrganization.name,

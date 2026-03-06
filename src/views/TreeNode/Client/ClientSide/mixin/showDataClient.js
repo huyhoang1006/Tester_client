@@ -163,8 +163,8 @@ export default {
                     await this.mappingPropertiesClient(parentDetailData)
                 }
                 await this.loadPathMapClient(node)
-                // Với asset: ưu tiên serial_number/serial_no, nếu không có thì dùng name
-                const assetName = node.serial_number || node.serial_no || node.name || 'Unknown'
+                // Với asset: ưu tiên apparatus_id trước serial_number/serial_no, nếu không có thì dùng name
+                const assetName = node.apparatus_id || node.serial_number || node.serial_no || node.name || 'Unknown'
                 this.pathMapClient.push({
                     id: node.id || node.mrid,
                     mrid: node.mrid,
