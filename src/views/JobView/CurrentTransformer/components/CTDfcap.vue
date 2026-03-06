@@ -91,8 +91,13 @@
                             <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
-                            </el-input>
+                            <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                                size="mini" v-model="item.condition_indicator.value">
+                                <el-option value="Good">Good</el-option>
+                                <el-option value="Fair">Fair</el-option>
+                                <el-option value="Poor">Poor</el-option>
+                                <el-option value="Bad">Bad</el-option>
+                            </el-select>
                         </td>
                         <td>
                             <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
@@ -170,31 +175,31 @@ export default {
                     unit : "kV",
                     type : "analog"
                 },
-                dfref : {
+                df_ref : {
                     mrid : "",
                     value : "",
                     unit : "%",
                     type : "analog"
                 },
-                cref : {
+                c_ref : {
                     mrid : "",
                     value : "",
                     unit : "pF",
                     type : "analog"
                 },
-                dfmeas : {
+                df_meas : {
                     mrid : "",
                     value : "",
                     unit : "%",
                     type : "analog"
                 },
-                cmeas : {
+                c_meas : {
                     mrid : "",
                     value : "",
                     unit : "pF",
                     type : "analog"
                 },
-                ccal : {
+                delta_c_percent : {
                     mrid : "",
                     value : "",
                     unit : "%",
@@ -249,31 +254,31 @@ export default {
                     unit : "kV",
                     type : "analog"
                 },
-                dfref : {
+                df_ref : {
                     mrid : "",
                     value : "",
                     unit : "%",
                     type : "analog"
                 },
-                cref : {
+                c_ref : {
                     mrid : "",
                     value : "",
                     unit : "pF",
                     type : "analog"
                 },
-                dfmeas : {
+                df_meas : {
                     mrid : "",
                     value : "",
                     unit : "%",
                     type : "analog"
                 },
-                cmeas : {
+                c_meas : {
                     mrid : "",
                     value : "",
                     unit : "pF",
                     type : "analog"
                 },
-                ccal : {
+                delta_c_percent : {
                     mrid : "",
                     value : "",
                     unit : "%",
@@ -300,23 +305,23 @@ export default {
         },
         calcDeltaC() {
             this.testData.table.forEach(item => {
-                if(!isNaN(parseFloat(item.cref)) && !isNaN(parseFloat(item.cmeas)) && item.cref != 0) {
-                    item.ccal = (100 * (parseFloat(item.cmeas) - parseFloat(item.cref)) / parseFloat(item.cref)).toFixed(4)
+                if(!isNaN(parseFloat(item.c_ref.value)) && !isNaN(parseFloat(item.c_meas.value)) && item.c_ref.value != 0) {
+                    item.delta_c_percent.value = (100 * (parseFloat(item.c_meas.value) - parseFloat(item.c_ref.value)) / parseFloat(item.c_ref.value)).toFixed(4)
                 }
             })
         },
         clear() {
             this.testData.table.forEach((element) => {
-                element.measurement = "",
-                element.test_mode = '',
-                element.test_voltage = '',
-                element.dfref = '',
-                element.cref = '',
-                element.dfmeas = '',
-                element.cmeas = '',
-                element.ccal = '',
-                element.assessment = '',
-                element.condition_indicator = ''
+                element.measurement.value = "",
+                element.test_mode.value = '',
+                element.test_voltage.value = '',
+                element.df_ref.value = '',
+                element.c_ref.value = '',
+                element.df_meas.value = '',
+                element.c_meas.value = '',
+                element.delta_c_percent.value = '',
+                element.assessment.value = '',
+                element.condition_indicator.value = ''
             })
         },
         nameColor(data) {
