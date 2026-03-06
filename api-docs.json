@@ -6,7 +6,7 @@
     },
     "servers": [
         {
-            "url": "http://103.163.118.212:30830/api",
+            "url": "http://222.252.22.158:8087/api",
             "description": "Generated server url"
         }
     ],
@@ -207,11 +207,78 @@
                     "voltage-transformer-controller"
                 ],
                 "operationId": "importVoltageTransformerFromDto",
+                "parameters": [
+                    {
+                        "name": "ownerId",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "ownerType",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "Organisation",
+                                "Substation",
+                                "Voltage level",
+                                "Bay",
+                                "Circuit Breaker"
+                            ]
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/VoltageTransformerRequestDTO"
+                                "$ref": "#/components/schemas/VoltageTransformerJsonReaderDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/voltage-level/cim/create": {
+            "post": {
+                "tags": [
+                    "voltage-level-controller"
+                ],
+                "operationId": "createVoltageLevel",
+                "parameters": [
+                    {
+                        "name": "ownerId",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/VoltageLevelRequestDTOCIM"
                             }
                         }
                     },
@@ -582,12 +649,99 @@
                 }
             }
         },
-        "/transformer/import-excel": {
+        "/transformer/import-excel3": {
+            "post": {
+                "tags": [
+                    "transformer-controller"
+                ],
+                "operationId": "importExcel3",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "required": [
+                                    "file"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/transformer/import-excel2": {
             "post": {
                 "tags": [
                     "transformer-controller"
                 ],
                 "operationId": "importExcel2",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "required": [
+                                    "file"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/transformer/import-csv": {
+            "post": {
+                "tags": [
+                    "transformer-controller"
+                ],
+                "operationId": "importCSV",
+                "parameters": [
+                    {
+                        "name": "ownerId",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -943,6 +1097,47 @@
                 }
             }
         },
+        "/substation/cim/create": {
+            "post": {
+                "tags": [
+                    "substation-controller"
+                ],
+                "operationId": "createSubstation",
+                "parameters": [
+                    {
+                        "name": "ownerId",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SubstationRequestDTOCIM"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/power-cable/create": {
             "post": {
                 "tags": [
@@ -1034,6 +1229,47 @@
                             }
                         }
                     }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/organisation/cim/create": {
+            "post": {
+                "tags": [
+                    "organisation-controller"
+                ],
+                "operationId": "createOrganisation",
+                "parameters": [
+                    {
+                        "name": "ownerId",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/OrganisationRequestCIMDTO"
+                            }
+                        }
+                    },
+                    "required": true
                 },
                 "responses": {
                     "200": {
@@ -1415,17 +1651,43 @@
                 }
             }
         },
-        "/current-transformer/create": {
+        "/current-transformer/cim/create": {
             "post": {
                 "tags": [
                     "current-transformer-controller"
                 ],
                 "operationId": "importCurrentTransformerFromDto",
+                "parameters": [
+                    {
+                        "name": "ownerId",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "ownerType",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "Organisation",
+                                "Substation",
+                                "Voltage level",
+                                "Bay",
+                                "Circuit Breaker"
+                            ]
+                        }
+                    }
+                ],
                 "requestBody": {
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/CurrentTransformerRequestDTO"
+                                "$ref": "#/components/schemas/CurrentTransformerJsonReaderDTO"
                             }
                         }
                     },
@@ -1938,60 +2200,12 @@
                 }
             }
         },
-        "/cim/voltage-transformer/create": {
-            "post": {
-                "tags": [
-                    "cim-asset-controller"
-                ],
-                "operationId": "createVoltageTransformer",
-                "parameters": [
-                    {
-                        "name": "ownerId",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "ownerType",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/VoltageTransformerRequestDTOCIM"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/cim/voltage-level/create": {
             "post": {
                 "tags": [
                     "cim-asset-controller"
                 ],
-                "operationId": "createVoltageLevel",
+                "operationId": "createVoltageLevel_1",
                 "parameters": [
                     {
                         "name": "ownerId",
@@ -2039,7 +2253,7 @@
                 "tags": [
                     "cim-asset-controller"
                 ],
-                "operationId": "createSubstation",
+                "operationId": "createSubstation_1",
                 "parameters": [
                     {
                         "name": "ownerId",
@@ -2135,60 +2349,12 @@
                 "tags": [
                     "cim-asset-controller"
                 ],
-                "operationId": "createOrganisation",
+                "operationId": "createOrganisation_1",
                 "requestBody": {
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/OrganisationRequestDTOCIM"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/cim/current-transformer/create": {
-            "post": {
-                "tags": [
-                    "cim-asset-controller"
-                ],
-                "operationId": "createCurrentTransformer",
-                "parameters": [
-                    {
-                        "name": "ownerId",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "ownerType",
-                        "in": "query",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/CurrentTransformerRequestDTOCIM"
+                                "$ref": "#/components/schemas/OrganisationRequestCIMDTO"
                             }
                         }
                     },
@@ -2480,6 +2646,62 @@
                 }
             }
         },
+        "/bay/cim/create": {
+            "post": {
+                "tags": [
+                    "bay-controller"
+                ],
+                "operationId": "createBay_1",
+                "parameters": [
+                    {
+                        "name": "ownerId",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "ownerType",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "Organisation",
+                                "Substation",
+                                "Voltage level",
+                                "Bay",
+                                "Circuit Breaker"
+                            ]
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BayRequestDTOCIM"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/voltage-transformer/{id}": {
             "get": {
                 "tags": [
@@ -2520,6 +2742,37 @@
                 "parameters": [
                     {
                         "name": "substationId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/voltage-level/cim/{id}": {
+            "get": {
+                "tags": [
+                    "voltage-level-controller"
+                ],
+                "operationId": "getVoltageLevel",
+                "parameters": [
+                    {
+                        "name": "id",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -2635,6 +2888,37 @@
                 }
             }
         },
+        "/substation/cim/{id}": {
+            "get": {
+                "tags": [
+                    "substation-controller"
+                ],
+                "operationId": "getSubstation",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/organisation/get-owner-organisation": {
             "get": {
                 "tags": [
@@ -2664,6 +2948,37 @@
                 "parameters": [
                     {
                         "name": "organisationId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/organisation/cim/{id}": {
+            "get": {
+                "tags": [
+                    "organisation-controller"
+                ],
+                "operationId": "getOrganisation",
+                "parameters": [
+                    {
+                        "name": "id",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -2717,7 +3032,7 @@
                 }
             }
         },
-        "/current-transformer/{id}": {
+        "/current-transformer/cim/{id}": {
             "get": {
                 "tags": [
                     "current-transformer-controller"
@@ -2810,42 +3125,12 @@
                 }
             }
         },
-        "/cim/voltage-transformer/{mRID}": {
-            "get": {
-                "tags": [
-                    "cim-asset-controller"
-                ],
-                "operationId": "getVoltageTransformer",
-                "parameters": [
-                    {
-                        "name": "mRID",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/cim/voltage-level/{mRID}": {
             "get": {
                 "tags": [
                     "cim-asset-controller"
                 ],
-                "operationId": "getVoltageLevel",
+                "operationId": "getVoltageLevel_1",
                 "parameters": [
                     {
                         "name": "mRID",
@@ -2875,7 +3160,7 @@
                 "tags": [
                     "cim-asset-controller"
                 ],
-                "operationId": "getSubstation",
+                "operationId": "getSubstation_1",
                 "parameters": [
                     {
                         "name": "mRID",
@@ -2935,37 +3220,7 @@
                 "tags": [
                     "cim-asset-controller"
                 ],
-                "operationId": "getOrganisation",
-                "parameters": [
-                    {
-                        "name": "mRID",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/cim/current-transformer/{mRID}": {
-            "get": {
-                "tags": [
-                    "cim-asset-controller"
-                ],
-                "operationId": "getCurrentTransformer",
+                "operationId": "getOrganisation_1",
                 "parameters": [
                     {
                         "name": "mRID",
@@ -3121,6 +3376,37 @@
                 "parameters": [
                     {
                         "name": "substationId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/bay/cim/{id}": {
+            "get": {
+                "tags": [
+                    "bay-controller"
+                ],
+                "operationId": "getVoltageLevel_2",
+                "parameters": [
+                    {
+                        "name": "id",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -3352,20 +3638,686 @@
                     }
                 }
             },
-            "VoltageTransformerRequestDTO": {
+            "C1": {
                 "type": "object",
                 "properties": {
-                    "assetInfo": {
-                        "$ref": "#/components/schemas/AssetInfoRequestDTO"
+                    "mrid": {
+                        "type": "string"
                     },
-                    "voltageTransformerCore": {
-                        "$ref": "#/components/schemas/VoltageTransformerCoreRequestDTO"
+                    "value": {
+                        "type": "number",
+                        "format": "float"
                     },
-                    "voltageTransformersConfigs": {
+                    "unit": {
+                        "type": "string"
+                    }
+                }
+            },
+            "C2": {
+                "type": "object",
+                "properties": {
+                    "mrid": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "unit": {
+                        "type": "string"
+                    }
+                }
+            },
+            "DataVT": {
+                "type": "object",
+                "properties": {
+                    "mrid": {
+                        "type": "string"
+                    },
+                    "usr_formula": {
+                        "$ref": "#/components/schemas/UsrFormula"
+                    },
+                    "usr_rated_voltage": {
+                        "$ref": "#/components/schemas/UsrRatedVoltage"
+                    },
+                    "rated_burden": {
+                        "$ref": "#/components/schemas/RatedBurden"
+                    },
+                    "rated_power_factor": {
+                        "$ref": "#/components/schemas/RatedPowerFactor"
+                    }
+                }
+            },
+            "Properties": {
+                "type": "object",
+                "properties": {
+                    "mrid": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "kind": {
+                        "type": "string"
+                    },
+                    "serial_no": {
+                        "type": "string"
+                    },
+                    "manufacturer": {
+                        "type": "string"
+                    },
+                    "manufacturer_type": {
+                        "type": "string"
+                    },
+                    "manufacturer_year": {
+                        "type": "string"
+                    },
+                    "country_of_origin": {
+                        "type": "string"
+                    },
+                    "apparatus_id": {
+                        "type": "string"
+                    },
+                    "comment": {
+                        "type": "string"
+                    }
+                }
+            },
+            "RatedBurden": {
+                "type": "object",
+                "properties": {
+                    "mrid": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "unit": {
+                        "type": "string"
+                    },
+                    "multiplier": {
+                        "type": "string"
+                    }
+                }
+            },
+            "RatedFrequency": {
+                "type": "object",
+                "properties": {
+                    "mrid": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "unit": {
+                        "type": "string"
+                    }
+                }
+            },
+            "RatedPowerFactor": {
+                "type": "object",
+                "properties": {
+                    "mrid": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "unit": {
+                        "type": "string"
+                    },
+                    "multiplier": {
+                        "type": "string"
+                    }
+                }
+            },
+            "RatedVoltage": {
+                "type": "object",
+                "properties": {
+                    "mrid": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "unit": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Ratings": {
+                "type": "object",
+                "properties": {
+                    "standard": {
+                        "$ref": "#/components/schemas/Standard"
+                    },
+                    "rated_frequency_custom": {
+                        "type": "string"
+                    },
+                    "rated_frequency": {
+                        "$ref": "#/components/schemas/RatedFrequency"
+                    },
+                    "uprRatio": {
+                        "$ref": "#/components/schemas/UprRatio"
+                    },
+                    "upr": {
+                        "type": "string"
+                    },
+                    "c1": {
+                        "$ref": "#/components/schemas/C1"
+                    },
+                    "c2": {
+                        "$ref": "#/components/schemas/C2"
+                    },
+                    "rated_voltage": {
+                        "$ref": "#/components/schemas/RatedVoltage"
+                    }
+                }
+            },
+            "Standard": {
+                "type": "object",
+                "properties": {
+                    "mrid": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    },
+                    "unit": {
+                        "type": "string"
+                    }
+                }
+            },
+            "UprRatio": {
+                "type": "object",
+                "properties": {
+                    "mrid": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    },
+                    "unit": {
+                        "type": "string"
+                    }
+                }
+            },
+            "UsrFormula": {
+                "type": "object",
+                "properties": {
+                    "mrid": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    },
+                    "unit": {
+                        "type": "string"
+                    },
+                    "multiplier": {
+                        "type": "string"
+                    }
+                }
+            },
+            "UsrRatedVoltage": {
+                "type": "object",
+                "properties": {
+                    "mrid": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "unit": {
+                        "type": "string"
+                    },
+                    "multiplier": {
+                        "type": "string"
+                    }
+                }
+            },
+            "VTConfiguration": {
+                "type": "object",
+                "properties": {
+                    "windings": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "dataVT": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/VoltageTransformerConfigRequestDTO"
+                            "$ref": "#/components/schemas/DataVT"
                         }
+                    }
+                }
+            },
+            "VoltageTransformer": {
+                "type": "object",
+                "properties": {
+                    "mrid": {
+                        "type": "string"
+                    },
+                    "properties": {
+                        "$ref": "#/components/schemas/Properties"
+                    },
+                    "ratings": {
+                        "$ref": "#/components/schemas/Ratings"
+                    },
+                    "locationId": {
+                        "type": "string"
+                    },
+                    "psrId": {
+                        "type": "string"
+                    },
+                    "assetPsrId": {
+                        "type": "string"
+                    },
+                    "assetInfoId": {
+                        "type": "string"
+                    },
+                    "productAssetModelId": {
+                        "type": "string"
+                    },
+                    "lifecycleDateId": {
+                        "type": "string"
+                    },
+                    "attachmentId": {
+                        "type": "string"
+                    },
+                    "vt_Configuration": {
+                        "$ref": "#/components/schemas/VTConfiguration"
+                    }
+                }
+            },
+            "VoltageTransformerJsonReaderDTO": {
+                "type": "object",
+                "properties": {
+                    "VoltageTransformer": {
+                        "$ref": "#/components/schemas/VoltageTransformer"
+                    }
+                }
+            },
+            "AssetInfoCIM": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "aliasName": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "productAssetModel": {
+                        "type": "string"
+                    },
+                    "manufacturerType": {
+                        "type": "string"
+                    },
+                    "mRID": {
+                        "type": "string"
+                    }
+                }
+            },
+            "BaseVoltageCIM": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "aliasName": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "nominalVoltage": {
+                        "$ref": "#/components/schemas/VoltageCIM"
+                    },
+                    "mRID": {
+                        "type": "string"
+                    }
+                }
+            },
+            "ElectronicAddressCIM": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string"
+                    },
+                    "lan": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    },
+                    "mac": {
+                        "type": "string"
+                    },
+                    "radio": {
+                        "type": "string"
+                    },
+                    "userId": {
+                        "type": "string"
+                    },
+                    "web": {
+                        "type": "string"
+                    },
+                    "fax": {
+                        "type": "string"
+                    },
+                    "mrid": {
+                        "type": "string"
+                    }
+                }
+            },
+            "LocationCIM": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "aliasName": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "direction": {
+                        "type": "string"
+                    },
+                    "electronicAddress": {
+                        "$ref": "#/components/schemas/ElectronicAddressCIM"
+                    },
+                    "geoInfoReference": {
+                        "type": "string"
+                    },
+                    "mainAddress": {
+                        "$ref": "#/components/schemas/StreetAddressCIM"
+                    },
+                    "phone": {
+                        "$ref": "#/components/schemas/TelephoneNumberCIM"
+                    },
+                    "secondaryAddress": {
+                        "$ref": "#/components/schemas/StreetAddressCIM"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/StatusCIM"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "persons": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PersonCIM"
+                        }
+                    },
+                    "mRID": {
+                        "type": "string"
+                    }
+                }
+            },
+            "PSRTypeCIM": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "aliasName": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "mRID": {
+                        "type": "string"
+                    }
+                }
+            },
+            "PersonCIM": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "aliasName": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "prefix": {
+                        "type": "string"
+                    },
+                    "firstName": {
+                        "type": "string"
+                    },
+                    "middleName": {
+                        "type": "string"
+                    },
+                    "lastName": {
+                        "type": "string"
+                    },
+                    "suffix": {
+                        "type": "string"
+                    },
+                    "specialNeed": {
+                        "type": "string"
+                    },
+                    "electronicAddress": {
+                        "$ref": "#/components/schemas/ElectronicAddressCIM"
+                    },
+                    "mobilePhone": {
+                        "$ref": "#/components/schemas/TelephoneNumberCIM"
+                    },
+                    "landLinePhone": {
+                        "$ref": "#/components/schemas/TelephoneNumberCIM"
+                    },
+                    "mRID": {
+                        "type": "string"
+                    }
+                }
+            },
+            "StatusCIM": {
+                "type": "object",
+                "properties": {
+                    "dateTime": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "reason": {
+                        "type": "string"
+                    },
+                    "remark": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    },
+                    "mrid": {
+                        "type": "string"
+                    }
+                }
+            },
+            "StreetAddressCIM": {
+                "type": "object",
+                "properties": {
+                    "language": {
+                        "type": "string"
+                    },
+                    "poBox": {
+                        "type": "string"
+                    },
+                    "postalCode": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/StatusCIM"
+                    },
+                    "streetDetail": {
+                        "$ref": "#/components/schemas/StreetDetailCIM"
+                    },
+                    "townDetail": {
+                        "$ref": "#/components/schemas/TownDetailCIM"
+                    },
+                    "mrid": {
+                        "type": "string"
+                    }
+                }
+            },
+            "StreetDetailCIM": {
+                "type": "object",
+                "properties": {
+                    "addressGeneral": {
+                        "type": "string"
+                    },
+                    "buildingName": {
+                        "type": "string"
+                    },
+                    "code": {
+                        "type": "string"
+                    },
+                    "number": {
+                        "type": "string"
+                    },
+                    "prefix": {
+                        "type": "string"
+                    },
+                    "suiteNumber": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "floorIdentification": {
+                        "type": "string"
+                    },
+                    "withinTownLimits": {
+                        "type": "boolean"
+                    },
+                    "mrid": {
+                        "type": "string"
+                    }
+                }
+            },
+            "TelephoneNumberCIM": {
+                "type": "object",
+                "properties": {
+                    "areaCode": {
+                        "type": "string"
+                    },
+                    "cityCode": {
+                        "type": "string"
+                    },
+                    "countryCode": {
+                        "type": "string"
+                    },
+                    "dialOut": {
+                        "type": "string"
+                    },
+                    "extension": {
+                        "type": "string"
+                    },
+                    "internationalPrefix": {
+                        "type": "string"
+                    },
+                    "ituPhone": {
+                        "type": "string"
+                    },
+                    "localNumber": {
+                        "type": "string"
+                    },
+                    "mrid": {
+                        "type": "string"
+                    }
+                }
+            },
+            "TownDetailCIM": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "city": {
+                        "type": "string"
+                    },
+                    "country": {
+                        "type": "string"
+                    },
+                    "section": {
+                        "type": "string"
+                    },
+                    "stateOrProvince": {
+                        "type": "string"
+                    },
+                    "districtOrTown": {
+                        "type": "string"
+                    },
+                    "wardOrCommune": {
+                        "type": "string"
+                    },
+                    "mrid": {
+                        "type": "string"
+                    }
+                }
+            },
+            "VoltageCIM": {
+                "type": "object",
+                "properties": {
+                    "value": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "unit": {
+                        "type": "string"
+                    },
+                    "multiplier": {
+                        "type": "string"
+                    },
+                    "mRID": {
+                        "type": "string"
+                    }
+                }
+            },
+            "VoltageLevelRequestDTOCIM": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "aliasName": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "psrType": {
+                        "$ref": "#/components/schemas/PSRTypeCIM"
+                    },
+                    "assetDatasheet": {
+                        "$ref": "#/components/schemas/AssetInfoCIM"
+                    },
+                    "location": {
+                        "$ref": "#/components/schemas/LocationCIM"
+                    },
+                    "highVoltageLimit": {
+                        "$ref": "#/components/schemas/VoltageCIM"
+                    },
+                    "lowVoltageLimit": {
+                        "$ref": "#/components/schemas/VoltageCIM"
+                    },
+                    "baseVoltage": {
+                        "$ref": "#/components/schemas/BaseVoltageCIM"
+                    },
+                    "mRID": {
+                        "type": "string"
                     }
                 }
             },
@@ -3431,6 +4383,10 @@
                     "manufacturerId": {
                         "type": "integer",
                         "format": "int64"
+                    },
+                    "noTaps": {
+                        "type": "integer",
+                        "format": "int32"
                     },
                     "winding": {
                         "type": "string"
@@ -3756,6 +4712,38 @@
                         "items": {
                             "$ref": "#/components/schemas/SurgeArresterRatingRequestDTO"
                         }
+                    }
+                }
+            },
+            "SubstationRequestDTOCIM": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "aliasName": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "generation": {
+                        "type": "string"
+                    },
+                    "industry": {
+                        "type": "string"
+                    },
+                    "psrType": {
+                        "$ref": "#/components/schemas/PSRTypeCIM"
+                    },
+                    "assetDatasheet": {
+                        "$ref": "#/components/schemas/AssetInfoCIM"
+                    },
+                    "location": {
+                        "$ref": "#/components/schemas/LocationCIM"
+                    },
+                    "mRID": {
+                        "type": "string"
                     }
                 }
             },
@@ -4207,6 +5195,118 @@
                     }
                 }
             },
+            "AttachmentCIM": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "path": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "idForeign": {
+                        "type": "string"
+                    },
+                    "mRID": {
+                        "type": "string"
+                    }
+                }
+            },
+            "OrganisationCIM": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "aliasName": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "electronicAddress": {
+                        "$ref": "#/components/schemas/ElectronicAddressCIM"
+                    },
+                    "phone": {
+                        "$ref": "#/components/schemas/TelephoneNumberCIM"
+                    },
+                    "postalAddress": {
+                        "$ref": "#/components/schemas/StreetAddressCIM"
+                    },
+                    "streetAddress": {
+                        "$ref": "#/components/schemas/StreetAddressCIM"
+                    },
+                    "parentOrganisation": {
+                        "type": "string"
+                    },
+                    "taxCode": {
+                        "type": "string"
+                    },
+                    "mRID": {
+                        "type": "string"
+                    }
+                }
+            },
+            "OrganisationRequestCIMDTO": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "aliasName": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "organisation": {
+                        "$ref": "#/components/schemas/OrganisationCIM"
+                    },
+                    "attachment": {
+                        "$ref": "#/components/schemas/AttachmentCIM"
+                    },
+                    "positionPoints": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PositionPointCIM"
+                        }
+                    },
+                    "mRID": {
+                        "type": "string"
+                    }
+                }
+            },
+            "PositionPointCIM": {
+                "type": "object",
+                "properties": {
+                    "ownerId": {
+                        "type": "string"
+                    },
+                    "groupNumber": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "sequenceNumber": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "mrid": {
+                        "type": "string"
+                    },
+                    "xposition": {
+                        "type": "string"
+                    },
+                    "yposition": {
+                        "type": "string"
+                    },
+                    "zposition": {
+                        "type": "string"
+                    }
+                }
+            },
             "DisconnectorCoreRequestDTO": {
                 "type": "object",
                 "properties": {
@@ -4520,20 +5620,294 @@
                     }
                 }
             },
-            "CurrentTransformerRequestDTO": {
+            "CTConfiguration": {
                 "type": "object",
                 "properties": {
-                    "assetInfo": {
-                        "$ref": "#/components/schemas/AssetInfoRequestDTO"
+                    "cores": {
+                        "type": "string"
                     },
-                    "currentTransformerCoreRequest": {
-                        "$ref": "#/components/schemas/CurrentTransformerCoreRequestDTO"
-                    },
-                    "currentTransformerTapRequestList": {
+                    "dataCT": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/CurrentTransformerTapRequestDTO"
+                            "$ref": "#/components/schemas/DataCT"
                         }
+                    }
+                }
+            },
+            "ClassRating": {
+                "type": "object",
+                "properties": {
+                    "mrid": {
+                        "type": "string"
+                    },
+                    "app": {
+                        "type": "string"
+                    },
+                    "wr": {
+                        "$ref": "#/components/schemas/ValueWithUnit"
+                    },
+                    "kx": {
+                        "type": "string"
+                    },
+                    "k": {
+                        "type": "string"
+                    },
+                    "fs": {
+                        "type": "string"
+                    },
+                    "kssc": {
+                        "type": "string"
+                    },
+                    "ktd": {
+                        "type": "string"
+                    },
+                    "duty": {
+                        "type": "string"
+                    },
+                    "vb": {
+                        "$ref": "#/components/schemas/ValueWithUnit"
+                    },
+                    "alf": {
+                        "type": "string"
+                    },
+                    "ts": {
+                        "type": "string"
+                    },
+                    "ek": {
+                        "type": "string"
+                    },
+                    "le": {
+                        "type": "string"
+                    },
+                    "e1": {
+                        "type": "string"
+                    },
+                    "le1": {
+                        "type": "string"
+                    },
+                    "val": {
+                        "type": "string"
+                    },
+                    "lal": {
+                        "type": "string"
+                    },
+                    "t1": {
+                        "type": "string"
+                    },
+                    "tal1": {
+                        "type": "string"
+                    },
+                    "tp": {
+                        "type": "string"
+                    },
+                    "tpts": {
+                        "type": "string"
+                    },
+                    "vk": {
+                        "type": "string"
+                    },
+                    "lk": {
+                        "type": "string"
+                    },
+                    "vk1": {
+                        "type": "string"
+                    },
+                    "lk1": {
+                        "type": "string"
+                    },
+                    "rated_burden": {
+                        "$ref": "#/components/schemas/ValueWithUnit"
+                    },
+                    "extended_burden": {
+                        "type": "boolean"
+                    },
+                    "burden": {
+                        "$ref": "#/components/schemas/ValueWithUnit"
+                    },
+                    "burdenCos": {
+                        "type": "string"
+                    },
+                    "operatingBurden": {
+                        "$ref": "#/components/schemas/ValueWithUnit"
+                    },
+                    "operatingBurdenCos": {
+                        "type": "string"
+                    },
+                    "core_index": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "ratio_error": {
+                        "$ref": "#/components/schemas/ValueWithUnit"
+                    },
+                    "class": {
+                        "type": "string"
+                    }
+                }
+            },
+            "CurrentTransformer": {
+                "type": "object",
+                "properties": {
+                    "properties": {
+                        "$ref": "#/components/schemas/Properties"
+                    },
+                    "ratings": {
+                        "$ref": "#/components/schemas/Ratings"
+                    },
+                    "ctConfiguration": {
+                        "$ref": "#/components/schemas/CTConfiguration"
+                    },
+                    "locationId": {
+                        "type": "string"
+                    },
+                    "psrId": {
+                        "type": "string"
+                    },
+                    "assetPsrId": {
+                        "type": "string"
+                    },
+                    "assetInfoId": {
+                        "type": "string"
+                    },
+                    "productAssetModelId": {
+                        "type": "string"
+                    },
+                    "lifecycleDateId": {
+                        "type": "string"
+                    },
+                    "attachmentId": {
+                        "type": "string"
+                    }
+                }
+            },
+            "CurrentTransformerJsonReaderDTO": {
+                "type": "object",
+                "properties": {
+                    "CurrentTransformer": {
+                        "$ref": "#/components/schemas/CurrentTransformer"
+                    }
+                }
+            },
+            "DataCT": {
+                "type": "object",
+                "properties": {
+                    "mrid": {
+                        "type": "string"
+                    },
+                    "taps": {
+                        "type": "string"
+                    },
+                    "commonTap": {
+                        "type": "string"
+                    },
+                    "fullTap": {
+                        "$ref": "#/components/schemas/FullTap"
+                    },
+                    "mainTap": {
+                        "$ref": "#/components/schemas/TapGroup"
+                    },
+                    "interTap": {
+                        "$ref": "#/components/schemas/TapGroup"
+                    }
+                }
+            },
+            "FullTap": {
+                "type": "object",
+                "properties": {
+                    "table": {
+                        "$ref": "#/components/schemas/TapTable"
+                    },
+                    "classRating": {
+                        "$ref": "#/components/schemas/ClassRating"
+                    }
+                }
+            },
+            "TapClassRating": {
+                "type": "object",
+                "properties": {
+                    "mrid": {
+                        "type": "string"
+                    },
+                    "rated_burden": {
+                        "$ref": "#/components/schemas/ValueWithUnit"
+                    },
+                    "extended_burden": {
+                        "type": "boolean"
+                    },
+                    "burden": {
+                        "$ref": "#/components/schemas/ValueWithUnit"
+                    },
+                    "burdenCos": {
+                        "type": "string"
+                    },
+                    "operatingBurden": {
+                        "$ref": "#/components/schemas/ValueWithUnit"
+                    },
+                    "operatingBurdenCos": {
+                        "type": "string"
+                    }
+                }
+            },
+            "TapData": {
+                "type": "object",
+                "properties": {
+                    "table": {
+                        "$ref": "#/components/schemas/TapTable"
+                    },
+                    "classRating": {
+                        "$ref": "#/components/schemas/TapClassRating"
+                    }
+                }
+            },
+            "TapGroup": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TapData"
+                        }
+                    }
+                }
+            },
+            "TapTable": {
+                "type": "object",
+                "properties": {
+                    "isShow": {
+                        "type": "boolean"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "ipn": {
+                        "$ref": "#/components/schemas/ValueWithUnit"
+                    },
+                    "isn": {
+                        "$ref": "#/components/schemas/ValueWithUnit"
+                    },
+                    "inUse": {
+                        "type": "boolean"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "mrid": {
+                        "type": "string"
+                    }
+                }
+            },
+            "ValueWithUnit": {
+                "type": "object",
+                "properties": {
+                    "mrid": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "unit": {
+                        "type": "string"
                     }
                 }
             },
@@ -4885,596 +6259,6 @@
                     }
                 }
             },
-            "AssetInfoCIM": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "aliasName": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "productAssetModel": {
-                        "type": "string"
-                    },
-                    "manufacturerType": {
-                        "type": "string"
-                    },
-                    "mRID": {
-                        "type": "string"
-                    }
-                }
-            },
-            "ElectronicAddressCIM": {
-                "type": "object",
-                "properties": {
-                    "email": {
-                        "type": "string"
-                    },
-                    "lan": {
-                        "type": "string"
-                    },
-                    "password": {
-                        "type": "string"
-                    },
-                    "mac": {
-                        "type": "string"
-                    },
-                    "radio": {
-                        "type": "string"
-                    },
-                    "userId": {
-                        "type": "string"
-                    },
-                    "web": {
-                        "type": "string"
-                    },
-                    "fax": {
-                        "type": "string"
-                    },
-                    "mrid": {
-                        "type": "string"
-                    }
-                }
-            },
-            "InUseDateCIM": {
-                "type": "object",
-                "properties": {
-                    "inUseDate": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "notReadyForUseDate": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "readyForUseDate": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "mrid": {
-                        "type": "string"
-                    }
-                }
-            },
-            "LifecycleDateCIM": {
-                "type": "object",
-                "properties": {
-                    "installationDate": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "manufacturedDate": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "purchaseDate": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "receivedDate": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "removalDate": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "retiredDate": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "mrid": {
-                        "type": "string"
-                    }
-                }
-            },
-            "LocationCIM": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "aliasName": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "direction": {
-                        "type": "string"
-                    },
-                    "electronicAddress": {
-                        "$ref": "#/components/schemas/ElectronicAddressCIM"
-                    },
-                    "geoInfoReference": {
-                        "type": "string"
-                    },
-                    "mainAddress": {
-                        "$ref": "#/components/schemas/StreetAddressCIM"
-                    },
-                    "phone": {
-                        "$ref": "#/components/schemas/TelephoneNumberCIM"
-                    },
-                    "secondaryAddress": {
-                        "$ref": "#/components/schemas/StreetAddressCIM"
-                    },
-                    "status": {
-                        "$ref": "#/components/schemas/StatusCIM"
-                    },
-                    "type": {
-                        "type": "string"
-                    },
-                    "persons": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/PersonCIM"
-                        }
-                    },
-                    "mRID": {
-                        "type": "string"
-                    }
-                }
-            },
-            "PercentCIM": {
-                "type": "object",
-                "properties": {
-                    "value": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "multiplier": {
-                        "type": "string"
-                    },
-                    "unit": {
-                        "type": "string"
-                    },
-                    "mrid": {
-                        "type": "string"
-                    }
-                }
-            },
-            "PersonCIM": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "aliasName": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "prefix": {
-                        "type": "string"
-                    },
-                    "firstName": {
-                        "type": "string"
-                    },
-                    "middleName": {
-                        "type": "string"
-                    },
-                    "lastName": {
-                        "type": "string"
-                    },
-                    "suffix": {
-                        "type": "string"
-                    },
-                    "specialNeed": {
-                        "type": "string"
-                    },
-                    "electronicAddress": {
-                        "$ref": "#/components/schemas/ElectronicAddressCIM"
-                    },
-                    "mobilePhone": {
-                        "$ref": "#/components/schemas/TelephoneNumberCIM"
-                    },
-                    "landLinePhone": {
-                        "$ref": "#/components/schemas/TelephoneNumberCIM"
-                    },
-                    "mRID": {
-                        "type": "string"
-                    }
-                }
-            },
-            "PotentialTransformerTableDTOCIM": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "usrFormula": {
-                        "type": "string"
-                    },
-                    "ratedBurden": {
-                        "$ref": "#/components/schemas/VoltageCIM"
-                    },
-                    "ratedPowerFactor": {
-                        "type": "string"
-                    },
-                    "usrRatedVoltage": {
-                        "$ref": "#/components/schemas/VoltageCIM"
-                    },
-                    "potentialTransformerInfoId": {
-                        "type": "string"
-                    },
-                    "mRID": {
-                        "type": "string"
-                    }
-                }
-            },
-            "StatusCIM": {
-                "type": "object",
-                "properties": {
-                    "dateTime": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "reason": {
-                        "type": "string"
-                    },
-                    "remark": {
-                        "type": "string"
-                    },
-                    "value": {
-                        "type": "string"
-                    },
-                    "mrid": {
-                        "type": "string"
-                    }
-                }
-            },
-            "StreetAddressCIM": {
-                "type": "object",
-                "properties": {
-                    "language": {
-                        "type": "string"
-                    },
-                    "poBox": {
-                        "type": "string"
-                    },
-                    "postalCode": {
-                        "type": "string"
-                    },
-                    "status": {
-                        "$ref": "#/components/schemas/StatusCIM"
-                    },
-                    "streetDetail": {
-                        "$ref": "#/components/schemas/StreetDetailCIM"
-                    },
-                    "townDetail": {
-                        "$ref": "#/components/schemas/TownDetailCIM"
-                    },
-                    "mrid": {
-                        "type": "string"
-                    }
-                }
-            },
-            "StreetDetailCIM": {
-                "type": "object",
-                "properties": {
-                    "addressGeneral": {
-                        "type": "string"
-                    },
-                    "buildingName": {
-                        "type": "string"
-                    },
-                    "code": {
-                        "type": "string"
-                    },
-                    "number": {
-                        "type": "string"
-                    },
-                    "prefix": {
-                        "type": "string"
-                    },
-                    "suiteNumber": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string"
-                    },
-                    "floorIdentification": {
-                        "type": "string"
-                    },
-                    "withinTownLimits": {
-                        "type": "boolean"
-                    },
-                    "mrid": {
-                        "type": "string"
-                    }
-                }
-            },
-            "TelephoneNumberCIM": {
-                "type": "object",
-                "properties": {
-                    "areaCode": {
-                        "type": "string"
-                    },
-                    "cityCode": {
-                        "type": "string"
-                    },
-                    "countryCode": {
-                        "type": "string"
-                    },
-                    "dialOut": {
-                        "type": "string"
-                    },
-                    "extension": {
-                        "type": "string"
-                    },
-                    "internationalPrefix": {
-                        "type": "string"
-                    },
-                    "ituPhone": {
-                        "type": "string"
-                    },
-                    "localNumber": {
-                        "type": "string"
-                    },
-                    "mrid": {
-                        "type": "string"
-                    }
-                }
-            },
-            "TownDetailCIM": {
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "type": "string"
-                    },
-                    "city": {
-                        "type": "string"
-                    },
-                    "country": {
-                        "type": "string"
-                    },
-                    "section": {
-                        "type": "string"
-                    },
-                    "stateOrProvince": {
-                        "type": "string"
-                    },
-                    "districtOrTown": {
-                        "type": "string"
-                    },
-                    "wardOrCommune": {
-                        "type": "string"
-                    },
-                    "mrid": {
-                        "type": "string"
-                    }
-                }
-            },
-            "VoltageCIM": {
-                "type": "object",
-                "properties": {
-                    "value": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "unit": {
-                        "type": "string"
-                    },
-                    "multiplier": {
-                        "type": "string"
-                    },
-                    "mRID": {
-                        "type": "string"
-                    }
-                }
-            },
-            "VoltageTransformerRequestDTOCIM": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "aliasName": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "acceptanceTest": {
-                        "$ref": "#/components/schemas/AcceptanceTestCIM"
-                    },
-                    "critical": {
-                        "type": "string"
-                    },
-                    "electronicAddress": {
-                        "$ref": "#/components/schemas/ElectronicAddressCIM"
-                    },
-                    "initialCondition": {
-                        "type": "string"
-                    },
-                    "initialLossOfLife": {
-                        "$ref": "#/components/schemas/PercentCIM"
-                    },
-                    "inUseDate": {
-                        "$ref": "#/components/schemas/InUseDateCIM"
-                    },
-                    "inUseState": {
-                        "type": "string"
-                    },
-                    "kind": {
-                        "type": "string"
-                    },
-                    "lifecycleDate": {
-                        "$ref": "#/components/schemas/LifecycleDateCIM"
-                    },
-                    "lifecycleState": {
-                        "type": "string"
-                    },
-                    "lotNumber": {
-                        "type": "string"
-                    },
-                    "position": {
-                        "type": "string"
-                    },
-                    "retiredReason": {
-                        "type": "string"
-                    },
-                    "serialNumber": {
-                        "type": "string"
-                    },
-                    "status": {
-                        "$ref": "#/components/schemas/StatusCIM"
-                    },
-                    "type": {
-                        "type": "string"
-                    },
-                    "utcNumber": {
-                        "type": "string"
-                    },
-                    "location": {
-                        "$ref": "#/components/schemas/LocationCIM"
-                    },
-                    "countryOfOrigin": {
-                        "type": "string"
-                    },
-                    "assetInfo": {
-                        "$ref": "#/components/schemas/AssetInfoCIM"
-                    },
-                    "potentialTransformerTableList": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/PotentialTransformerTableDTOCIM"
-                        }
-                    },
-                    "mRID": {
-                        "type": "string"
-                    }
-                }
-            },
-            "BaseVoltageCIM": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "aliasName": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "nominalVoltage": {
-                        "$ref": "#/components/schemas/VoltageCIM"
-                    },
-                    "mRID": {
-                        "type": "string"
-                    }
-                }
-            },
-            "PSRTypeCIM": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "aliasName": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "mRID": {
-                        "type": "string"
-                    }
-                }
-            },
-            "VoltageLevelRequestDTOCIM": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "aliasName": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "psrType": {
-                        "$ref": "#/components/schemas/PSRTypeCIM"
-                    },
-                    "assetDatasheet": {
-                        "$ref": "#/components/schemas/AssetInfoCIM"
-                    },
-                    "location": {
-                        "$ref": "#/components/schemas/LocationCIM"
-                    },
-                    "highVoltageLimit": {
-                        "$ref": "#/components/schemas/VoltageCIM"
-                    },
-                    "lowVoltageLimit": {
-                        "$ref": "#/components/schemas/VoltageCIM"
-                    },
-                    "baseVoltage": {
-                        "$ref": "#/components/schemas/BaseVoltageCIM"
-                    },
-                    "mRID": {
-                        "type": "string"
-                    }
-                }
-            },
-            "SubstationRequestDTOCIM": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "aliasName": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "generation": {
-                        "type": "string"
-                    },
-                    "industry": {
-                        "type": "string"
-                    },
-                    "psrType": {
-                        "$ref": "#/components/schemas/PSRTypeCIM"
-                    },
-                    "assetDatasheet": {
-                        "$ref": "#/components/schemas/AssetInfoCIM"
-                    },
-                    "location": {
-                        "$ref": "#/components/schemas/LocationCIM"
-                    },
-                    "mRID": {
-                        "type": "string"
-                    }
-                }
-            },
             "AccessoriesDTOCIM": {
                 "type": "object",
                 "properties": {
@@ -5707,10 +6491,10 @@
                     "insulationMaterial": {
                         "type": "string"
                     },
-                    "rac": {
+                    "rdc": {
                         "$ref": "#/components/schemas/LengthCIM"
                     },
-                    "rdc": {
+                    "rac": {
                         "$ref": "#/components/schemas/LengthCIM"
                     },
                     "mRID": {
@@ -5816,26 +6600,6 @@
                     }
                 }
             },
-            "AttachmentCIM": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "path": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string"
-                    },
-                    "idForeign": {
-                        "type": "string"
-                    },
-                    "mRID": {
-                        "type": "string"
-                    }
-                }
-            },
             "ConcentricNeutralCableInfoCIM": {
                 "type": "object",
                 "properties": {
@@ -5934,10 +6698,10 @@
                     "neutralStrandRdc": {
                         "$ref": "#/components/schemas/ResistancePerLengthCIM"
                     },
-                    "rac": {
+                    "rdc": {
                         "$ref": "#/components/schemas/LengthCIM"
                     },
-                    "rdc": {
+                    "rac": {
                         "$ref": "#/components/schemas/LengthCIM"
                     },
                     "mRID": {
@@ -5977,6 +6741,26 @@
                         "type": "string"
                     },
                     "mRID": {
+                        "type": "string"
+                    }
+                }
+            },
+            "InUseDateCIM": {
+                "type": "object",
+                "properties": {
+                    "inUseDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "notReadyForUseDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "readyForUseDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "mrid": {
                         "type": "string"
                     }
                 }
@@ -6028,6 +6812,38 @@
                     }
                 }
             },
+            "LifecycleDateCIM": {
+                "type": "object",
+                "properties": {
+                    "installationDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "manufacturedDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "purchaseDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "receivedDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "removalDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "retiredDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "mrid": {
+                        "type": "string"
+                    }
+                }
+            },
             "ManufacturerCIM": {
                 "type": "object",
                 "properties": {
@@ -6066,37 +6882,20 @@
                     }
                 }
             },
-            "OrganisationCIM": {
+            "PercentCIM": {
                 "type": "object",
                 "properties": {
-                    "name": {
+                    "value": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "multiplier": {
                         "type": "string"
                     },
-                    "aliasName": {
+                    "unit": {
                         "type": "string"
                     },
-                    "description": {
-                        "type": "string"
-                    },
-                    "electronicAddress": {
-                        "$ref": "#/components/schemas/ElectronicAddressCIM"
-                    },
-                    "phone": {
-                        "$ref": "#/components/schemas/TelephoneNumberCIM"
-                    },
-                    "postalAddress": {
-                        "$ref": "#/components/schemas/StreetAddressCIM"
-                    },
-                    "streetAddress": {
-                        "$ref": "#/components/schemas/StreetAddressCIM"
-                    },
-                    "parentOrganisation": {
-                        "type": "string"
-                    },
-                    "taxCode": {
-                        "type": "string"
-                    },
-                    "mRID": {
+                    "mrid": {
                         "type": "string"
                     }
                 }
@@ -6303,307 +7102,6 @@
                         "type": "string"
                     },
                     "class": {
-                        "type": "string"
-                    }
-                }
-            },
-            "OrganisationRequestDTOCIM": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "aliasName": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "organisation": {
-                        "$ref": "#/components/schemas/OrganisationCIM"
-                    },
-                    "attachment": {
-                        "$ref": "#/components/schemas/AttachmentCIM"
-                    },
-                    "positionPoints": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/PositionPointCIM"
-                        }
-                    },
-                    "mRID": {
-                        "type": "string"
-                    }
-                }
-            },
-            "PositionPointCIM": {
-                "type": "object",
-                "properties": {
-                    "ownerId": {
-                        "type": "string"
-                    },
-                    "groupNumber": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "sequenceNumber": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "xposition": {
-                        "type": "string"
-                    },
-                    "yposition": {
-                        "type": "string"
-                    },
-                    "zposition": {
-                        "type": "string"
-                    },
-                    "mrid": {
-                        "type": "string"
-                    }
-                }
-            },
-            "CtCoreInfoDTOCIM": {
-                "type": "object",
-                "properties": {
-                    "tapCount": {
-                        "type": "string"
-                    },
-                    "commonTap": {
-                        "type": "string"
-                    },
-                    "coreIndex": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "coreApplication": {
-                        "type": "string"
-                    },
-                    "coreClass": {
-                        "type": "string"
-                    },
-                    "fs": {
-                        "type": "string"
-                    },
-                    "alf": {
-                        "type": "string"
-                    },
-                    "windingResistance": {
-                        "$ref": "#/components/schemas/CurrentCIM"
-                    },
-                    "kx": {
-                        "type": "string"
-                    },
-                    "k": {
-                        "type": "string"
-                    },
-                    "kssc": {
-                        "type": "string"
-                    },
-                    "ktd": {
-                        "type": "string"
-                    },
-                    "duty": {
-                        "type": "string"
-                    },
-                    "ts": {
-                        "type": "string"
-                    },
-                    "ek": {
-                        "type": "string"
-                    },
-                    "ie": {
-                        "type": "string"
-                    },
-                    "e1": {
-                        "type": "string"
-                    },
-                    "ie1": {
-                        "type": "string"
-                    },
-                    "val": {
-                        "type": "string"
-                    },
-                    "iai": {
-                        "type": "string"
-                    },
-                    "tp": {
-                        "type": "string"
-                    },
-                    "vk": {
-                        "type": "string"
-                    },
-                    "ik": {
-                        "type": "string"
-                    },
-                    "vk1": {
-                        "type": "string"
-                    },
-                    "ik1": {
-                        "type": "string"
-                    },
-                    "vb": {
-                        "$ref": "#/components/schemas/VoltageCIM"
-                    },
-                    "ratioError": {
-                        "$ref": "#/components/schemas/PercentCIM"
-                    },
-                    "currentTransformerInfoId": {
-                        "type": "string"
-                    },
-                    "mRID": {
-                        "type": "string"
-                    }
-                }
-            },
-            "CtTapInfoDTOCIM": {
-                "type": "object",
-                "properties": {
-                    "tapName": {
-                        "type": "string"
-                    },
-                    "inUse": {
-                        "type": "boolean"
-                    },
-                    "type": {
-                        "type": "string"
-                    },
-                    "ipn": {
-                        "$ref": "#/components/schemas/VoltageCIM"
-                    },
-                    "isn": {
-                        "$ref": "#/components/schemas/VoltageCIM"
-                    },
-                    "ratedBurden": {
-                        "$ref": "#/components/schemas/CurrentCIM"
-                    },
-                    "burden": {
-                        "$ref": "#/components/schemas/CurrentCIM"
-                    },
-                    "operatingBurden": {
-                        "$ref": "#/components/schemas/CurrentCIM"
-                    },
-                    "extendedBurden": {
-                        "type": "boolean"
-                    },
-                    "burdenPowerFactor": {
-                        "type": "string"
-                    },
-                    "operatingBurdenPowerFactor": {
-                        "type": "string"
-                    },
-                    "ctCoreInfoId": {
-                        "type": "string"
-                    },
-                    "mRID": {
-                        "type": "string"
-                    }
-                }
-            },
-            "CurrentCIM": {
-                "type": "object",
-                "properties": {
-                    "value": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "unit": {
-                        "type": "string"
-                    },
-                    "multiplier": {
-                        "type": "string"
-                    },
-                    "mRID": {
-                        "type": "string"
-                    }
-                }
-            },
-            "CurrentTransformerRequestDTOCIM": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "aliasName": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "acceptanceTest": {
-                        "$ref": "#/components/schemas/AcceptanceTestCIM"
-                    },
-                    "critical": {
-                        "type": "string"
-                    },
-                    "electronicAddress": {
-                        "$ref": "#/components/schemas/ElectronicAddressCIM"
-                    },
-                    "initialCondition": {
-                        "type": "string"
-                    },
-                    "initialLossOfLife": {
-                        "$ref": "#/components/schemas/PercentCIM"
-                    },
-                    "inUseDate": {
-                        "$ref": "#/components/schemas/InUseDateCIM"
-                    },
-                    "inUseState": {
-                        "type": "string"
-                    },
-                    "kind": {
-                        "type": "string"
-                    },
-                    "lifecycleDate": {
-                        "$ref": "#/components/schemas/LifecycleDateCIM"
-                    },
-                    "lifecycleState": {
-                        "type": "string"
-                    },
-                    "lotNumber": {
-                        "type": "string"
-                    },
-                    "position": {
-                        "type": "string"
-                    },
-                    "retiredReason": {
-                        "type": "string"
-                    },
-                    "serialNumber": {
-                        "type": "string"
-                    },
-                    "status": {
-                        "$ref": "#/components/schemas/StatusCIM"
-                    },
-                    "type": {
-                        "type": "string"
-                    },
-                    "utcNumber": {
-                        "type": "string"
-                    },
-                    "location": {
-                        "$ref": "#/components/schemas/LocationCIM"
-                    },
-                    "countryOfOrigin": {
-                        "type": "string"
-                    },
-                    "assetInfo": {
-                        "$ref": "#/components/schemas/AssetInfoCIM"
-                    },
-                    "ctCoreInfoList": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/CtCoreInfoDTOCIM"
-                        }
-                    },
-                    "ctTapInfoList": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/CtTapInfoDTOCIM"
-                        }
-                    },
-                    "mRID": {
                         "type": "string"
                     }
                 }
