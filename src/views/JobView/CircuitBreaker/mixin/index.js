@@ -76,7 +76,7 @@ export default {
         async checkJob(data) {
             this.checkProperties(data);
             this.checkAssetId(data);
-            this.checkAttachment(data);
+            this.checkAttachment(data);``
             this.checkTestingEquipment(data);
             await this.checkDataMeasurement(data);
             return data;

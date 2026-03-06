@@ -39,8 +39,9 @@
             <div v-show="activeTab.mrid === item.mrid" class="mgr-20 mgt-20 mgb-20 mgl-20" v-for="(item, index) in tabs" :key="item.mrid">
                 <component mode="update" @reload="handleReload(item, index, $event)"
                     ref="componentLoadData" :sideData="sideSign" :is="checkTab(item)" :organisationId="item.parentId"
-                    :parent="parentOrganization"
-                    style="min-height: calc(100vh - 250px);">
+                    :testTypeListData="testTypeListData" :assetData="assetData"
+                    :productAssetModelData="productAssetModelData" :parent="parentOrganization"
+                    :locationData="locationData" style="min-height: calc(100vh - 250px);">
                 </component>
                 <span class="tab-actions">
                     <el-button size="small" type="danger" @click="closeTab(index)">Close</el-button>
@@ -1159,7 +1160,7 @@ export default {
                         }
                         const dataCircuitBreaker = await window.electronAPI.getBreakerEntityByMrid(tab.parentId)
                         if (dataCircuitBreaker.success) {
-                            this.assetData = dataCircuitBreaker.data
+                            this.assetData = BreakerMapper.mapEntityToDto(dataCircuitBreaker.data)
                         } else {
                             this.assetData = {}
                         }

@@ -2,24 +2,27 @@
     <div id="dc-winding-resistance-prim">
         <!-- Cấu hình -->
         <div style="position: sticky; left: 0; display: inline-block;">
-        <el-row class="mgb-10">
-            <el-col>
-                <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
-                    <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
-                </el-button>
-                <el-button class="btn-action" size="mini" type="success" @click="openConditionIndicatorDialog = true">
-                    <i class="fa-solid fa-hammer"></i> Condition indicatior settings
-                </el-button>
-            </el-col>
-        </el-row>
+            <el-row class="mgb-10">
+                <el-col>
+                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
+                        <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
+                    </el-button>
+                    <el-button class="btn-action" size="mini" type="success"
+                        @click="openConditionIndicatorDialog = true">
+                        <i class="fa-solid fa-hammer"></i> Condition indicatior settings
+                    </el-button>
+                </el-col>
+            </el-row>
 
-        <!-- Tương tác với bảng -->
-        <el-row class="mgb-10">
-            <el-col>
-                <el-button size="mini" type="primary" class="btn-action" @click="calculator"> <i class="fas fa-circle-play"></i> Assess results </el-button>
-                <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i class="fas fa-xmark"></i> Clear all</el-button>
-            </el-col>
-        </el-row>
+            <!-- Tương tác với bảng -->
+            <el-row class="mgb-10">
+                <el-col>
+                    <el-button size="mini" type="primary" class="btn-action" @click="calculator"> <i
+                            class="fas fa-circle-play"></i> Assess results </el-button>
+                    <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i
+                            class="fas fa-xmark"></i> Clear all</el-button>
+                </el-col>
+            </el-row>
         </div>
 
         <table class="table-strip-input-data" style="width: 80% ; font-size: 12px;">
@@ -36,57 +39,63 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testData.table">
-                    <tr :key="index">
-                        <td>
-                            {{ index + 1 }}
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.measure"></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.testVoltage"></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.r60s"></el-input>
-                        </td>
-                        <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment">
-                                <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
-                                <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
-                            </el-select>
-                            <span v-if="item.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
-                        </td>
-                        <td>
-                            <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini" v-model="item.condition_indicator">
-                            </el-input>
-                        </td>
-                        <td>
-                            <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
-                                <i class="fa-solid fa-plus"></i>
-                            </el-button>
-                        </td>
-                        <td>
-                            <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
-                                <i class="fas fa-trash"></i>
-                            </el-button>
-                        </td>
-                    </tr>
-                </template>
+                <tr v-for="(item, index) in testData.table" :key="index">
+                    <td>
+                        {{ index + 1 }}
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.test_voltage.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.r60s.value"></el-input>
+                    </td>
+                    <td>
+                        <el-select class="assessment" size="mini" v-model="item.assessment.value">
+                            <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
+                        </el-select>
+                        <span v-if="item.assessment.value === 'Pass'"
+                            class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment.value === 'Fail'"
+                            class="fa-solid fa-xmark fail icon-status"></span>
+                    </td>
+                    <td>
+                        <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                            size="mini" v-model="item.condition_indicator.value">
+                            <el-option value="Good">Good</el-option>
+                            <el-option value="Fair">Fair</el-option>
+                            <el-option value="Poor">Poor</el-option>
+                            <el-option value="Bad">Bad</el-option>
+                        </el-select>
+                    </td>
+                    <td>
+                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
+                            <i class="fa-solid fa-plus"></i>
+                        </el-button>
+                    </td>
+                    <td>
+                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
+                            <i class="fas fa-trash"></i>
+                        </el-button>
+                    </td>
+                </tr>
             </tbody>
         </table>
 
         <!-- Assessment settings -->
-        <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog" width="50%">
-            <el-radio-group v-model="testData.limits">
+        <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog"
+            width="50%">
+            <el-radio-group v-model="assetData.assessmentLimits.limits">
                 <el-radio label="Absolute" value="Absolute"></el-radio>
                 <el-radio label="Relative" value="Relative"></el-radio>
             </el-radio-group>
-            <br/><br/><br/>
+            <br /><br /><br />
 
-            <transition>
-                <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
+            <!-- <transition>
+                <table class="table-strip-input-data" v-if="assetData.assessmentLimits.limits === 'Absolute'">
                     <thead>
                         <tr>
                             <th>V min</th>
@@ -122,11 +131,12 @@
                         </tr>
                     </tbody>
                 </table>
-            </transition>
+            </transition> -->
 
             <br />
             <template #footer>
-                <span style="margin-top: 20px; width: 100%; position: absolute; right: 10px; bottom: 10px" class="dialog-footer">
+                <span style="margin-top: 20px; width: 100%; position: absolute; right: 10px; bottom: 10px"
+                    class="dialog-footer">
                     <el-button @click="resetAssessment">Cancel</el-button>
                     <el-button type="primary" @click="updateAssessment"> Confirm </el-button>
                 </span>
@@ -137,12 +147,12 @@
 
 <script>
 export default {
-    name: 'insulationResistanceCircuit',
+    name: 'InsulationResistanceCircuit',
     data() {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
-            asset_ : {},
+            asset_: {},
         }
     },
     props: {
@@ -150,7 +160,7 @@ export default {
             type: Object,
             require: true
         },
-        asset : {
+        asset: {
             type: Object,
             require: true
         }
@@ -160,27 +170,14 @@ export default {
             return this.data
         },
         assetData() {
-            if (!this.asset || !this.asset.assessmentLimits) {
-                return {}
-            }
-            try {
-                if (typeof this.asset.assessmentLimits === 'string') {
-                    return JSON.parse(this.asset.assessmentLimits)
-                } else if (typeof this.asset.assessmentLimits === 'object') {
-                    return this.asset.assessmentLimits
-                }
-                return {}
-            } catch (error) {
-                console.error('Error parsing assessmentLimits:', error)
-                return {}
-            }
+            return this.asset
         }
     },
-    watch : {
-        assetData : {
-            deep : true,
-            immediate : true,
-            handler : function(newVal) {
+    watch: {
+        assetData: {
+            deep: true,
+            immediate: true,
+            handler: function (newVal) {
                 this.asset_ = newVal
                 // Sync limits to testData if asset_ has limits
                 if (this.asset_ && this.asset_.limits && this.testData) {
@@ -189,7 +186,7 @@ export default {
             }
         },
         openAssessmentDialog: {
-            handler: function(newVal) {
+            handler: function (newVal) {
                 // When opening dialog, sync limits from asset_ to testData if available
                 if (newVal && this.asset_ && this.asset_.limits && this.testData) {
                     this.$set(this.testData, 'limits', this.asset_.limits)
@@ -210,11 +207,11 @@ export default {
                 this.asset_.limits = this.testData.limits
             }
             const asset = {
-                id : this.asset.id,
-                assessmentLimits : this.asset_
+                id: this.asset.id,
+                assessmentLimits: this.asset_
             }
             const data = await window.electronAPI.updateCircuitAssessmentLimits(asset)
-            if(data.success) {
+            if (data.success) {
                 this.$message.success('Update successfully')
                 this.openAssessmentDialog = false
             } else {
@@ -306,9 +303,13 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-table, th, tr, td {
+table,
+th,
+tr,
+td {
     white-space: nowrap;
 }
+
 .flex-container {
     display: flex;
     flex-direction: column;
@@ -317,6 +318,7 @@ table, th, tr, td {
         padding: 1px;
     }
 }
+
 .Good input {
     background: #00cc00;
 }

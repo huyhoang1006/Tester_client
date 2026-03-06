@@ -3,28 +3,31 @@
 
         <!-- Cấu hình -->
         <div style="position: sticky; left: 0; display: inline-block;">
-        <el-row class="mgb-10">
-            <el-col>
-                <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
-                    <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
-                </el-button>
-                <el-button class="btn-action" size="mini" type="success" @click="openConditionIndicatorDialog = true">
-                    <i class="fa-solid fa-hammer"></i> Condition indicatior settings
-                </el-button>
-            </el-col>
-        </el-row>
+            <el-row class="mgb-10">
+                <el-col>
+                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
+                        <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
+                    </el-button>
+                    <el-button class="btn-action" size="mini" type="success"
+                        @click="openConditionIndicatorDialog = true">
+                        <i class="fa-solid fa-hammer"></i> Condition indicatior settings
+                    </el-button>
+                </el-col>
+            </el-row>
 
-        <!-- Tương tác với bảng -->
-        <el-row class="mgb-10">
-            <el-col>
-                <el-button size="mini" type="primary" class="btn-action" @click="calculator" > <i class="fas fa-circle-play"></i> Assess results </el-button>
-                <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i class="fas fa-xmark"></i> Clear all</el-button>
-            </el-col>
-        </el-row>
+            <!-- Tương tác với bảng -->
+            <el-row class="mgb-10">
+                <el-col>
+                    <el-button size="mini" type="primary" class="btn-action" @click="calculator"> <i
+                            class="fas fa-circle-play"></i> Assess results </el-button>
+                    <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i
+                            class="fas fa-xmark"></i> Clear all</el-button>
+                </el-col>
+            </el-row>
         </div>
 
         <table class="table-strip-input-data" style="width: 100%; font-size: 12px;">
-            <thead>
+            <thead class="test">
                 <tr>
                     <th>Phase</th>
                     <th>Trip coil</th>
@@ -38,62 +41,66 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testData.table">
-                    <tr :key="index">
-                        <td>
-                            <div style="display: flex;width: 100%;">   
-                                <el-input size="mini" type="text" v-model="item.phase"></el-input>
-                                <div :class="{colorTableRed : index%3==0, colorTableYellow : index%3==1, colorTableBlue : index%3==2}"></div>
+                <tr v-for="(item, index) in testData.table" :key="index">
+                    <td>
+                        <div style="display: flex;width: 100%;">
+                            <el-input size="mini" type="text" v-model="item.phase.value"></el-input>
+                            <div
+                                :class="{ colorTableRed: index % 3 == 0, colorTableYellow: index % 3 == 1, colorTableBlue: index % 3 == 2 }">
                             </div>
-                        </td>
-                        <td>    
-                            <el-input size="mini" type="text" v-model="item.tripCoil"></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.interrupter"></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.openingTime"></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.openingSync"></el-input>
-                        </td>
-                        <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment">
-                                <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
-                                <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
-                            </el-select>
-                            <span v-if="item.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
-                        </td>
-                        <td>
-                            <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini" v-model="item.condition_indicator">
-                            </el-input>
-                        </td>
-                        <td>
-                            <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
-                                <i class="fa-solid fa-plus"></i>
-                            </el-button>
-                        </td>
-                        <td>
-                            <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
-                                <i class="fas fa-trash"></i>
-                            </el-button>
-                        </td>
-                    </tr>
-                </template>
+                        </div>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.trip_coil.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.interrupter.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.opening_time.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.opening_sync_between_phase.value"></el-input>
+                    </td>
+                    <td>
+                        <el-select class="assessment" size="mini" v-model="item.assessment.value">
+                            <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
+                        </el-select>
+                        <span v-if="item.assessment.value === 'Pass'"
+                            class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment.value === 'Fail'"
+                            class="fa-solid fa-xmark fail icon-status"></span>
+                    </td>
+                    <td>
+                        <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                            size="mini" v-model="item.condition_indicator.value">
+                        </el-input>
+                    </td>
+                    <td>
+                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
+                            <i class="fa-solid fa-plus"></i>
+                        </el-button>
+                    </td>
+                    <td>
+                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
+                            <i class="fas fa-trash"></i>
+                        </el-button>
+                    </td>
+                </tr>
             </tbody>
         </table>
 
         <!-- Assessment settings -->
-        <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog" width="75%">
+        <!-- <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog"
+            width="75%">
             <el-radio-group v-model="testData.limits" style="margin-bottom: 20px">
                 <el-radio label="Absolute" value="Absolute"></el-radio>
                 <el-radio label="Relative" value="Relative"></el-radio>
-            </el-radio-group>
+            </el-radio-group> -->
 
-            <!-- opening_times -->
-            <transition>
+        <!-- opening_times -->
+        <!-- <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
                         <tr>
@@ -108,50 +115,50 @@
                             <td>
                                 <el-input size="mini" v-model="asset_.openTime.abs[index].tmin">
                                     <template slot="append">ms</template>
-                                </el-input>
-                            </td>
-                            <td>
-                                <el-input size="mini" v-model="asset_.openTime.abs[index].tmax">
-                                    <template slot="append">ms</template>
-                                </el-input>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <table class="table-strip-input-data" v-if="testData.limits === 'Relative'">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>t ref</th>
-                            <th>- t dev</th>
-                            <th>+ t dev</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(item, index) in opening_times" :key="index">
-                            <td>{{ item }}</td>
-                            <td>
-                                <el-input size="mini" v-model="asset_.openTime.rel[index].rref">
-                                    <template slot="append">ms</template>
-                                </el-input>
-                            </td>
-                            <td>
-                                <el-input size="mini" v-model="asset_.openTime.rel[index].tdevZ">
-                                    <template slot="append">ms</template>
-                                </el-input>
-                            </td>
-                            <td>
-                                <el-input size="mini" v-model="asset_.openTime.rel[index].tdevN">
-                                    <template slot="append">ms</template>
-                                </el-input>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </transition>
+</el-input>
+</td>
+<td>
+    <el-input size="mini" v-model="asset_.openTime.abs[index].tmax">
+        <template slot="append">ms</template>
+    </el-input>
+</td>
+</tr>
+</tbody>
+</table>
+<table class="table-strip-input-data" v-if="testData.limits === 'Relative'">
+    <thead>
+        <tr>
+            <th></th>
+            <th>t ref</th>
+            <th>- t dev</th>
+            <th>+ t dev</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr v-for="(item, index) in opening_times" :key="index">
+            <td>{{ item }}</td>
+            <td>
+                <el-input size="mini" v-model="asset_.openTime.rel[index].rref">
+                    <template slot="append">ms</template>
+                </el-input>
+            </td>
+            <td>
+                <el-input size="mini" v-model="asset_.openTime.rel[index].tdevZ">
+                    <template slot="append">ms</template>
+                </el-input>
+            </td>
+            <td>
+                <el-input size="mini" v-model="asset_.openTime.rel[index].tdevN">
+                    <template slot="append">ms</template>
+                </el-input>
+            </td>
+        </tr>
+    </tbody>
+</table>
+</transition> -->
 
-            <!-- Auxiliary_contact -->
-            <transition>
+        <!-- Auxiliary_contact -->
+        <!-- <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
                         <tr>
@@ -216,10 +223,10 @@
                         </tr>
                     </tbody>
                 </table>
-            </transition>
+            </transition> -->
 
-            <!-- //miscellaneous -->
-            <transition>
+        <!-- //miscellaneous -->
+        <!-- <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
                         <tr>
@@ -232,13 +239,15 @@
                         <tr v-for="(item, index) in miscellaneous" :key="index">
                             <td>{{ item }}</td>
                             <td>
-                                <el-input v-if="index === 1" size="mini" v-model="asset_.miscell.abs[index].min"> </el-input>
+                                <el-input v-if="index === 1" size="mini" v-model="asset_.miscell.abs[index].min">
+                                </el-input>
                                 <el-input v-else size="mini" v-model="asset_.miscell.abs[index].min">
                                     <template slot="append">ms</template>
                                 </el-input>
                             </td>
                             <td>
-                                <el-input v-if="index === 1" size="mini" v-model="asset_.miscell.abs[index].max"> </el-input>
+                                <el-input v-if="index === 1" size="mini" v-model="asset_.miscell.abs[index].max">
+                                </el-input>
                                 <el-input v-else size="mini" v-model="asset_.miscell.abs[index].max">
                                     <template slot="append">ms</template>
                                 </el-input>
@@ -258,13 +267,15 @@
                         <tr v-for="(item, index) in miscellaneous" :key="index">
                             <td>{{ item }}</td>
                             <td>
-                                <el-input v-if="index === 1" size="mini" v-model="asset_.miscell.rel[index].ref"> </el-input>
+                                <el-input v-if="index === 1" size="mini" v-model="asset_.miscell.rel[index].ref">
+                                </el-input>
                                 <el-input v-else size="mini" v-model="asset_.miscell.rel[index].ref">
                                     <template v-if="item !== 1" slot="append">ms</template>
                                 </el-input>
                             </td>
                             <td>
-                                <el-input v-if="index === 1" size="mini" v-model="asset_.miscell.rel[index].dev"> </el-input>
+                                <el-input v-if="index === 1" size="mini" v-model="asset_.miscell.rel[index].dev">
+                                </el-input>
                                 <el-input v-else size="mini" v-model="asset_.miscell.rel[index].dev">
                                     <template v-if="item !== 1" slot="append">ms</template>
                                 </el-input>
@@ -272,10 +283,10 @@
                         </tr>
                     </tbody>
                 </table>
-            </transition>
+            </transition> -->
 
-            <!-- //coilCharacteristics -->
-            <transition>
+        <!-- //coilCharacteristics -->
+        <!-- <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
                         <tr>
@@ -341,18 +352,19 @@
             </transition>
             <br />
             <template #footer>
-                <span style="margin-top: 20px; width: 100%; position: absolute; right: 10px; bottom: 10px" class="dialog-footer">
+                <span style="margin-top: 20px; width: 100%; position: absolute; right: 10px; bottom: 10px"
+                    class="dialog-footer">
                     <el-button @click="resetAssessment">Cancel</el-button>
                     <el-button type="primary" @click="updateAssessment"> Confirm </el-button>
                 </span>
             </template>
-        </el-dialog>
+        </el-dialog> -->
     </div>
 </template>
 
 <script>
 export default {
-    name :"cocoTiming",
+    name: "OCOCOTiming",
     data() {
         return {
             openAssessmentDialog: false,
@@ -430,67 +442,7 @@ export default {
             return this.data
         },
         assetData() {
-            let circuitBreaker = {
-                numberOfInterruptPhase: 1,
-                numberOfPhase: 3
-            }
-            let operating = {
-                numberCloseCoil: 1,
-                numberTripCoil: 1
-            }
-            
-            if (this.asset && this.asset.circuitBreaker) {
-                if (typeof this.asset.circuitBreaker === 'string') {
-                    try {
-                        const parsed = JSON.parse(this.asset.circuitBreaker)
-                        circuitBreaker = { ...circuitBreaker, ...parsed }
-                    } catch (e) {
-                        console.warn('Failed to parse circuitBreaker:', e)
-                    }
-                } else {
-                    circuitBreaker = { ...circuitBreaker, ...this.asset.circuitBreaker }
-                }
-            }
-            
-            if (this.asset && this.asset.operating) {
-                if (typeof this.asset.operating === 'string') {
-                    try {
-                        const parsed = JSON.parse(this.asset.operating)
-                        operating = { ...operating, ...parsed }
-                    } catch (e) {
-                        console.warn('Failed to parse operating:', e)
-                    }
-                } else {
-                    operating = { ...operating, ...this.asset.operating }
-                }
-            }
-            
-            return {
-                circuitBreaker,
-                operating
-            }
-        },
-        assessLimitsData() {
-            if (!this.asset || !this.asset.assessmentLimits) {
-                return {}
-            }
-            
-            // If it's already an object, return it directly
-            if (typeof this.asset.assessmentLimits === 'object') {
-                return this.asset.assessmentLimits
-            }
-            
-            // If it's a string, try to parse it
-            if (typeof this.asset.assessmentLimits === 'string') {
-                try {
-                    return JSON.parse(this.asset.assessmentLimits)
-                } catch (error) {
-                    console.warn('Error parsing assessmentLimits:', error)
-                    return {}
-                }
-            }
-            
-            return {}
+            return this.asset
         }
     },
     beforeMount() {
@@ -517,7 +469,7 @@ export default {
         },
         'asset_.limits': {
             immediate: true,
-            handler: function(newVal) {
+            handler: function (newVal) {
                 // Sync asset_.limits to testData.limits
                 if (newVal && this.testData) {
                     this.$set(this.testData, 'limits', newVal)
@@ -525,7 +477,7 @@ export default {
             }
         },
         openAssessmentDialog: {
-            handler: function(newVal) {
+            handler: function (newVal) {
                 // When opening dialog, sync limits from asset_ to testData
                 if (newVal && this.asset_ && this.asset_.limits && this.testData) {
                     this.$set(this.testData, 'limits', this.asset_.limits)
@@ -538,14 +490,14 @@ export default {
             if (!data || typeof data !== 'object') {
                 data = {}
             }
-            
+
             let normalized = {}
             try {
                 normalized = JSON.parse(JSON.stringify(data))
             } catch (e) {
                 normalized = {}
             }
-            
+
             // Always initialize openTime structure
             if (!normalized.openTime) {
                 normalized.openTime = {
@@ -553,7 +505,7 @@ export default {
                     rel: Array(9).fill(null).map(() => ({ rref: '', tdevZ: '', tdevN: '', mrid: '' }))
                 }
             }
-            
+
             // Helper function to extract value safely
             const getValue = (obj) => {
                 if (!obj) return ''
@@ -561,7 +513,7 @@ export default {
                 if (typeof obj === 'object' && obj.value !== undefined) return String(obj.value || '')
                 return ''
             }
-            
+
             // Normalize from operating_time structure if exists
             if (data.operating_time) {
                 const operatingTime = data.operating_time
@@ -575,7 +527,7 @@ export default {
                     'closing_time', 'closing_sync_within_phase', 'closing_sync_breaker_phase',
                     'reclosing_time', 'open_close_time', 'close_open_time'
                 ]
-                
+
                 if (operatingTime.abs) {
                     absMapping.forEach((key, index) => {
                         const item = operatingTime.abs[key]
@@ -588,7 +540,7 @@ export default {
                         }
                     })
                 }
-                
+
                 if (operatingTime.rel) {
                     relMapping.forEach((key, index) => {
                         const item = operatingTime.rel[key]
@@ -603,23 +555,23 @@ export default {
                     })
                 }
             }
-            
+
             // Ensure openTime has proper structure
             if (!normalized.openTime.abs || normalized.openTime.abs.length < 9) {
-                normalized.openTime.abs = Array(9).fill(null).map((_, index) => 
-                    normalized.openTime.abs && normalized.openTime.abs[index] 
-                        ? normalized.openTime.abs[index] 
+                normalized.openTime.abs = Array(9).fill(null).map((_, index) =>
+                    normalized.openTime.abs && normalized.openTime.abs[index]
+                        ? normalized.openTime.abs[index]
                         : { tmin: '', tmax: '', mrid: '' }
                 )
             }
             if (!normalized.openTime.rel || normalized.openTime.rel.length < 9) {
-                normalized.openTime.rel = Array(9).fill(null).map((_, index) => 
-                    normalized.openTime.rel && normalized.openTime.rel[index] 
-                        ? normalized.openTime.rel[index] 
+                normalized.openTime.rel = Array(9).fill(null).map((_, index) =>
+                    normalized.openTime.rel && normalized.openTime.rel[index]
+                        ? normalized.openTime.rel[index]
                         : { rref: '', tdevZ: '', tdevN: '', mrid: '' }
                 )
             }
-            
+
             // Normalize auxContact from auxiliary_contacts structure
             if (data.auxiliary_contacts) {
                 const auxContacts = data.auxiliary_contacts
@@ -701,7 +653,7 @@ export default {
                     }
                 }
             }
-            
+
             // Normalize miscell from miscellaneous structure
             if (data.miscellaneous) {
                 const misc = data.miscellaneous
@@ -744,7 +696,7 @@ export default {
                     rel: Array(4).fill(null).map(() => ({ ref: '', dev: '', mrid: '' }))
                 }
             }
-            
+
             // Normalize coilCharacter from coil_characteristics structure
             if (data.coil_characteristics) {
                 const coilChar = data.coil_characteristics
@@ -792,11 +744,11 @@ export default {
                     rel: Array(8).fill(null).map(() => ({ ref: '', devZ: '', devN: '', mrid: '' }))
                 }
             }
-            
+
             if (!normalized.limits) {
                 normalized.limits = data.limits || 'Absolute'
             }
-            
+
             // Final pass: ensure all values are strings/numbers, not objects
             const ensureStringValue = (obj, key) => {
                 if (obj && obj[key] !== undefined) {
@@ -808,7 +760,7 @@ export default {
                     }
                 }
             }
-            
+
             if (normalized.openTime) {
                 normalized.openTime.abs.forEach(item => {
                     if (item) {
@@ -887,7 +839,7 @@ export default {
                     }
                 })
             }
-            
+
             return normalized
         },
         resetAssessment() {
@@ -918,25 +870,25 @@ export default {
         },
         add() {
             this.testData.table.push({
-                phase : "",
-                tripCoil : "",
-                interrupter : '',
-                openingTime : '',
-                openingSync : '',
-                assessment : '',
-                condition_indicator : ''
+                phase: "",
+                tripCoil: "",
+                interrupter: '',
+                openingTime: '',
+                openingSync: '',
+                assessment: '',
+                condition_indicator: ''
             })
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
-                    confirmButtonText: 'OK',
-                    cancelButtonText: 'Cancel',
-                    type: 'warning'
-                })
-                .then( () => {
+                confirmButtonText: 'OK',
+                cancelButtonText: 'Cancel',
+                type: 'warning'
+            })
+                .then(() => {
                     this.testData.table = []
                 })
-                .catch( () => {
+                .catch(() => {
                     // User cancelled, do nothing
                 })
         },
@@ -945,15 +897,15 @@ export default {
         },
         addTest(index) {
             const data = {
-                phase : "",
-                tripCoil : "",
-                interrupter : '',
-                openingTime : '',
-                openingSync : '',
-                assessment : '',
-                condition_indicator : ''
+                phase: "",
+                tripCoil: "",
+                interrupter: '',
+                openingTime: '',
+                openingSync: '',
+                assessment: '',
+                condition_indicator: ''
             }
-            this.testData.table.splice(index+1, 0, data)
+            this.testData.table.splice(index + 1, 0, data)
         },
         calculator() {
             this.$message.success('Calculating successfully')
@@ -962,25 +914,25 @@ export default {
         clear() {
             this.testData.table.forEach((element) => {
                 element.phase = "",
-                element.tripCoil = "",
-                element.interrupter = '',
-                element.openingTime = '',
-                element.openingSync = '',
-                element.assessment = '',
-                element.condition_indicator = ''
+                    element.tripCoil = "",
+                    element.interrupter = '',
+                    element.openingTime = '',
+                    element.openingSync = '',
+                    element.assessment = '',
+                    element.condition_indicator = ''
             })
         },
         nameColor(data) {
-            if(data === this.$constant.GOOD) {
+            if (data === this.$constant.GOOD) {
                 return 'Good'
             }
-            else if(data === this.$constant.FAIR) {
+            else if (data === this.$constant.FAIR) {
                 return 'Fair'
             }
-            else if(data === this.$constant.POOR) {
+            else if (data === this.$constant.POOR) {
                 return 'Poor'
             }
-            else if(data === this.$constant.BAD) {
+            else if (data === this.$constant.BAD) {
                 return 'Bad'
             }
             else {
@@ -996,18 +948,24 @@ export default {
     th:not(:nth-child(1)) {
         white-space: nowrap;
     }
+
     th:nth-child(1) {
         min-width: 50px;
     }
-} 
+}
+
 .table-strip-input-data {
-    th, td {
+
+    th,
+    td {
         border-right: 1px solid #fff;
+
         &:last-child {
             border-right: none;
         }
     }
 }
+
 .flex-container {
     display: flex;
     flex-direction: column;
@@ -1016,6 +974,7 @@ export default {
         padding: 1px;
     }
 }
+
 .Good input {
     background: #00CC00;
 }

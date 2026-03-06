@@ -1,26 +1,28 @@
 <template>
     <div id="dc-winding-resistance-prim">
-
         <div style="position: sticky; left: 0; display: inline-block;">
-        <!-- Cấu hình -->
-        <el-row class="mgb-10">
-            <el-col>
-                <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
-                    <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
-                </el-button>
-                <el-button class="btn-action" size="mini" type="success" @click="openConditionIndicatorDialog = true">
-                    <i class="fa-solid fa-hammer"></i> Condition indicatior settings
-                </el-button>
-            </el-col>
-        </el-row>
+            <!-- Cấu hình -->
+            <el-row class="mgb-10">
+                <el-col>
+                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
+                        <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
+                    </el-button>
+                    <el-button class="btn-action" size="mini" type="success"
+                        @click="openConditionIndicatorDialog = true">
+                        <i class="fa-solid fa-hammer"></i> Condition indicatior settings
+                    </el-button>
+                </el-col>
+            </el-row>
 
-        <!-- Tương tác với bảng -->
-        <el-row class="mgb-10">
-            <el-col>
-                <el-button size="mini" type="primary" class="btn-action" @click="calculator" > <i class="fas fa-circle-play"></i> Assess results </el-button>
-                <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i class="fas fa-xmark"></i> Clear all</el-button>
-            </el-col>
-        </el-row>
+            <!-- Tương tác với bảng -->
+            <el-row class="mgb-10">
+                <el-col>
+                    <el-button size="mini" type="primary" class="btn-action" @click="calculator"> <i
+                            class="fas fa-circle-play"></i> Assess results </el-button>
+                    <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i
+                            class="fas fa-xmark"></i> Clear all</el-button>
+                </el-col>
+            </el-row>
         </div>
 
         <div style="font-weight: bold; margin-top: 5%;"> Decomposition of SF<sub>6</sub> (ppm)</div>
@@ -33,44 +35,51 @@
                     <th class="assessment-col">Assessment</th>
                     <th class="condition-indicator-col">Condition indicator</th>
                     <th @click="add('decomSf6Table')" class="action-col"><i class="fa-solid fa-plus pointer"></i></th>
-                    <th @click="removeAll('decomSf6Table')" class="action-col"><i class="fa-solid fa-trash pointer"></i></th>
+                    <th @click="removeAll('decomSf6Table')" class="action-col"><i class="fa-solid fa-trash pointer"></i>
+                    </th>
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testData.table.decomSf6Table">
-                    <tr :key="index">
-                        <td>
-                            {{index + 1}}
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.decomSf6.value"></el-input>
-                        </td>
-                        <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
-                                <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
-                                <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
-                            </el-select>
-                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
-                        </td>
-                        <td>
-                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
-                            </el-input>
-                        </td>
-                        <td>
-                            <el-button size="mini" type="primary" class="w-100" @click="addTest(index, 'decomSf6Table')">
-                                <i class="fa-solid fa-plus"></i>
-                            </el-button>
-                        </td>
-                        <td>
-                            <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index, 'decomSf6Table')">
-                                <i class="fas fa-trash"></i>
-                            </el-button>
-                        </td>
-                    </tr>
-                </template>
+                <tr v-for="(item, index) in testData.table.decomSf6Table" :key="index">
+                    <td>
+                        {{ index + 1 }}
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.decom_sf6.value"></el-input>
+                    </td>
+                    <td>
+                        <el-select class="assessment" size="mini" v-model="item.assessment.value">
+                            <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
+                        </el-select>
+                        <span v-if="item.assessment.value === 'Pass'"
+                            class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment.value === 'Fail'"
+                            class="fa-solid fa-xmark fail icon-status"></span>
+                    </td>
+                    <td>
+                        <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                            size="mini" v-model="item.condition_indicator.value">
+                            <el-option value="Good">Good</el-option>
+                            <el-option value="Fair">Fair</el-option>
+                            <el-option value="Poor">Poor</el-option>
+                            <el-option value="Bad">Bad</el-option>
+                        </el-select>
+                    </td>
+                    <td>
+                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index, 'decomSf6Table')">
+                            <i class="fa-solid fa-plus"></i>
+                        </el-button>
+                    </td>
+                    <td>
+                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index, 'decomSf6Table')">
+                            <i class="fas fa-trash"></i>
+                        </el-button>
+                    </td>
+                </tr>
             </tbody>
         </table>
+
         <div style="font-weight: bold; margin-top: 5%;"> SO<sub>2</sub> + SOF<sub>2</sub> (ppm)</div>
         <br />
         <table class="table-strip-input-data" style="width: 80%; font-size: 12px;">
@@ -81,44 +90,51 @@
                     <th class="assessment-col">Assessment</th>
                     <th class="condition-indicator-col">Condition indicator</th>
                     <th @click="add('so2Sof2Table')" class="action-col"><i class="fa-solid fa-plus pointer"></i></th>
-                    <th @click="removeAll('so2Sof2Table')" class="action-col"><i class="fa-solid fa-trash pointer"></i></th>
+                    <th @click="removeAll('so2Sof2Table')" class="action-col"><i class="fa-solid fa-trash pointer"></i>
+                    </th>
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testData.table.so2Sof2Table">
-                    <tr :key="index">
-                        <td>
-                            {{index + 1}}
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.so2Sof2.value"></el-input>
-                        </td>
-                        <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
-                                <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
-                                <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
-                            </el-select>
-                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
-                        </td>
-                        <td>
-                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
-                            </el-input>
-                        </td>
-                        <td>
-                            <el-button size="mini" type="primary" class="w-100" @click="addTest(index, 'so2Sof2Table')">
-                                <i class="fa-solid fa-plus"></i>
-                            </el-button>
-                        </td>
-                        <td>
-                            <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index, 'so2Sof2Table')">
-                                <i class="fas fa-trash"></i>
-                            </el-button>
-                        </td>
-                    </tr>
-                </template>
+                <tr v-for="(item, index) in testData.table.so2Sof2Table" :key="index">
+                    <td>
+                        {{ index + 1 }}
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.so2_sof2.value"></el-input>
+                    </td>
+                    <td>
+                        <el-select class="assessment" size="mini" v-model="item.assessment.value">
+                            <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
+                        </el-select>
+                        <span v-if="item.assessment.value === 'Pass'"
+                            class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment.value === 'Fail'"
+                            class="fa-solid fa-xmark fail icon-status"></span>
+                    </td>
+                    <td>
+                        <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                            size="mini" v-model="item.condition_indicator.value">
+                            <el-option value="Good">Good</el-option>
+                            <el-option value="Fair">Fair</el-option>
+                            <el-option value="Poor">Poor</el-option>
+                            <el-option value="Bad">Bad</el-option>
+                        </el-select>
+                    </td>
+                    <td>
+                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index, 'so2Sof2Table')">
+                            <i class="fa-solid fa-plus"></i>
+                        </el-button>
+                    </td>
+                    <td>
+                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index, 'so2Sof2Table')">
+                            <i class="fas fa-trash"></i>
+                        </el-button>
+                    </td>
+                </tr>
             </tbody>
         </table>
+
         <div style="font-weight: bold; margin-top: 5%;"> HF (ppm)</div>
         <br />
         <table class="table-strip-input-data" style="width: 80%; font-size: 12px;">
@@ -133,40 +149,46 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testData.table.hfTable">
-                    <tr :key="index">
-                        <td>
-                            {{index + 1}}
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.hf.value"></el-input>
-                        </td>
-                        <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
-                                <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
-                                <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
-                            </el-select>
-                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
-                        </td>
-                        <td>
-                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
-                            </el-input>
-                        </td>
-                        <td>
-                            <el-button size="mini" type="primary" class="w-100" @click="addTest(index, 'hfTable')">
-                                <i class="fa-solid fa-plus"></i>
-                            </el-button>
-                        </td>
-                        <td>
-                            <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index, 'hfTable')">
-                                <i class="fas fa-trash"></i>
-                            </el-button>
-                        </td>
-                    </tr>
-                </template>
+                <tr v-for="(item, index) in testData.table.hfTable" :key="index">
+                    <td>
+                        {{ index + 1 }}
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.hf.value"></el-input>
+                    </td>
+                    <td>
+                        <el-select class="assessment" size="mini" v-model="item.assessment.value">
+                            <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
+                        </el-select>
+                        <span v-if="item.assessment.value === 'Pass'"
+                            class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment.value === 'Fail'"
+                            class="fa-solid fa-xmark fail icon-status"></span>
+                    </td>
+                    <td>
+                        <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                            size="mini" v-model="item.condition_indicator.value">
+                            <el-option value="Good">Good</el-option>
+                            <el-option value="Fair">Fair</el-option>
+                            <el-option value="Poor">Poor</el-option>
+                            <el-option value="Bad">Bad</el-option>
+                        </el-select>
+                    </td>
+                    <td>
+                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index, 'hfTable')">
+                            <i class="fa-solid fa-plus"></i>
+                        </el-button>
+                    </td>
+                    <td>
+                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index, 'hfTable')">
+                            <i class="fas fa-trash"></i>
+                        </el-button>
+                    </td>
+                </tr>
             </tbody>
         </table>
+
         <!-- Assessment settings -->
         <el-dialog append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px">
         </el-dialog>
@@ -175,12 +197,12 @@
 
 <script>
 export default {
-    name :"sf6GasAnalysis",
+    name: "SF6GasAnalysis",
     data() {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
-            asset_ : {}
+            asset_: {}
         }
     },
     props: {
@@ -188,7 +210,7 @@ export default {
             type: Object,
             require: true
         },
-        asset : {
+        asset: {
             type: Object,
             require: true
         }
@@ -198,73 +220,36 @@ export default {
             return this.data
         },
         assetData() {
-            if (!this.asset || !this.asset.assessmentLimits) {
-                return {}
-            }
-            try {
-                if (typeof this.asset.assessmentLimits === 'string') {
-                    return JSON.parse(this.asset.assessmentLimits)
-                } else if (typeof this.asset.assessmentLimits === 'object') {
-                    return this.asset.assessmentLimits
-                }
-                return {}
-            } catch (error) {
-                console.error('Error parsing assessmentLimits:', error)
-                return {}
-            }
+            return this.asset
         }
     },
-    watch : {
-        assetData : {
-            deep : true,
-            immediate : true,
-            handler : function(newVal) {
+    watch: {
+        assetData: {
+            deep: true,
+            immediate: true,
+            handler: function (newVal) {
                 this.asset_ = newVal
             }
         }
     },
     methods: {
         add(label) {
-            if(label === 'decomSf6Table') {
-                let data = {
-                    mrid: '',   
-                    decomSf6 : {
-                        mrid: '',
-                        value: '',
-                        unit: 'ppm',
-                        type: 'analog'
-                    },
-                    assessment : {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator : {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                }
-                this.testData.table[label].push(data)
-           }
-           else if(label === 'so2Sof2Table') {
+            if (label === 'decomSf6Table') {
                 let data = {
                     mrid: '',
-                    so2Sof2 : {
+                    decom_sf6: {
                         mrid: '',
                         value: '',
                         unit: 'ppm',
                         type: 'analog'
                     },
-                    assessment : {
+                    assessment: {
                         mrid: '',
                         value: '',
                         unit: '',
                         type: 'discrete'
                     },
-                    condition_indicator : {
+                    condition_indicator: {
                         mrid: '',
                         value: '',
                         unit: '',
@@ -272,22 +257,23 @@ export default {
                     }
                 }
                 this.testData.table[label].push(data)
-           } else {
+            }
+            else if (label === 'so2Sof2Table') {
                 let data = {
                     mrid: '',
-                    hf : {
+                    so2_sof2: {
                         mrid: '',
                         value: '',
                         unit: 'ppm',
                         type: 'analog'
                     },
-                    assessment : {
+                    assessment: {
                         mrid: '',
                         value: '',
                         unit: '',
                         type: 'discrete'
                     },
-                    condition_indicator : {
+                    condition_indicator: {
                         mrid: '',
                         value: '',
                         unit: '',
@@ -295,18 +281,41 @@ export default {
                     }
                 }
                 this.testData.table[label].push(data)
-           }
+            } else {
+                let data = {
+                    mrid: '',
+                    hf: {
+                        mrid: '',
+                        value: '',
+                        unit: 'ppm',
+                        type: 'analog'
+                    },
+                    assessment: {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
+                    },
+                    condition_indicator: {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
+                    }
+                }
+                this.testData.table[label].push(data)
+            }
         },
         removeAll(label) {
             this.$confirm('This will delete the content. Continue?', 'Warning', {
-                    confirmButtonText: 'OK',
-                    cancelButtonText: 'Cancel',
-                    type: 'warning'
-                })
-                .then( () => {
+                confirmButtonText: 'OK',
+                cancelButtonText: 'Cancel',
+                type: 'warning'
+            })
+                .then(() => {
                     this.testData.table[label] = []
                 })
-                .catch( () => {
+                .catch(() => {
                     // User cancelled, do nothing
                 })
         },
@@ -314,77 +323,77 @@ export default {
             this.testData.table[label].splice(index, 1)
         },
         addTest(index, label) {
-           if(label === 'decomSf6Table') {
+            if (label === 'decomSf6Table') {
                 let data = {
                     mrid: '',
-                    decomSf6 : {
+                    decom_sf6: {
                         mrid: '',
                         value: '',
                         unit: 'ppm',
                         type: 'analog'
                     },
-                    assessment : {
+                    assessment: {
                         mrid: '',
                         value: '',
                         unit: '',
                         type: 'discrete'
                     },
-                    condition_indicator : {
+                    condition_indicator: {
                         mrid: '',
                         value: '',
                         unit: '',
                         type: 'discrete'
                     }
                 }
-                this.testData.table[label].splice(index+1, 0, data)
-           }
-           else if(label === 'so2Sof2Table') {
+                this.testData.table[label].splice(index + 1, 0, data)
+            }
+            else if (label === 'so2Sof2Table') {
                 let data = {
                     mrid: '',
-                    so2Sof2 : {
+                    so2_sof2: {
                         mrid: '',
                         value: '',
                         unit: 'ppm',
                         type: 'analog'
                     },
-                    assessment : {
+                    assessment: {
                         mrid: '',
                         value: '',
                         unit: '',
                         type: 'discrete'
                     },
-                    condition_indicator : {
+                    condition_indicator: {
                         mrid: '',
                         value: '',
                         unit: '',
                         type: 'discrete'
                     }
                 }
-                this.testData.table[label].splice(index+1, 0, data)
-           } else {
-            let data = {
+                this.testData.table[label].splice(index + 1, 0, data)
+            } else {
+                let data = {
                     mrid: '',
-                    hf : {
+                    hf: {
                         mrid: '',
                         value: '',
                         unit: 'ppm',
                         type: 'analog'
                     },
-                    assessment : {
+                    assessment: {
                         mrid: '',
                         value: '',
                         unit: '',
                         type: 'discrete'
                     },
-                    condition_indicator : {
+                    condition_indicator: {
                         mrid: '',
                         value: '',
                         unit: '',
                         type: 'discrete'
                     }
                 }
-                this.testData.table[label].splice(index+1, 0, data)
-           }
+                this.testData.table[label].splice(index + 1, 0, data)
+            }
         },
         calculator() {
             this.$message.success('Calculating successfully')
@@ -398,16 +407,16 @@ export default {
             })
         },
         nameColor(data) {
-            if(data === this.$constant.GOOD) {
+            if (data === this.$constant.GOOD) {
                 return 'Good'
             }
-            else if(data === this.$constant.FAIR) {
+            else if (data === this.$constant.FAIR) {
                 return 'Fair'
             }
-            else if(data === this.$constant.POOR) {
+            else if (data === this.$constant.POOR) {
                 return 'Poor'
             }
-            else if(data === this.$constant.BAD) {
+            else if (data === this.$constant.BAD) {
                 return 'Bad'
             }
             else {
@@ -419,9 +428,13 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-table, th, tr, td {
+table,
+th,
+tr,
+td {
     white-space: nowrap;
 }
+
 .flex-container {
     display: flex;
     flex-direction: column;
@@ -430,6 +443,7 @@ table, th, tr, td {
         padding: 1px;
     }
 }
+
 .Good input {
     background: #00CC00;
 }

@@ -1,6 +1,5 @@
 <template>
     <div id="dc-winding-resistance-prim">
-
         <!-- Cấu hình -->
         <div style="position: sticky; left: 0; display: inline-block;">
             <el-row class="mgb-10">
@@ -26,7 +25,8 @@
             </el-row>
         </div>
 
-        <div v-if="assetData && assetData.circuitBreaker && assetData.circuitBreaker.numberOfInterruptPhase === 1">
+        <div
+            v-if="assetData.circuitBreaker.interruptersPerPhase === 1 || assetData.circuitBreaker.interruptersPerPhase === ''">
             <br />
             <table class="table-strip-input-data" style="width: 100%; font-size: 12px;">
                 <thead class="test">
@@ -42,31 +42,35 @@
                     <tr v-for="(item, index) in testData.table" :key="index">
                         <td>
                             <div style="display: flex; width: 100%;">
-                                <el-input size="mini" v-model="item.phase"></el-input>
+                                <el-input size="mini" v-model="item.phase.value"></el-input>
                                 <div
-                                    :class="{ colorTableRed: item.phase == 'A', colorTableYellow: item.phase == 'B', colorTableBlue: item.phase == 'C' }">
+                                    :class="{ colorTableRed: item.phase.value == 'A', colorTableYellow: item.phase.value == 'B', colorTableBlue: item.phase.value == 'C' }">
                                 </div>
                             </div>
                         </td>
                         <td>
-                            <el-input size="mini" v-model="item.i_test"></el-input>
+                            <el-input size="mini" v-model="item.i_test.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" v-model="item.contact_resistance"></el-input>
+                            <el-input size="mini" v-model="item.contact_resistance.value"></el-input>
                         </td>
                         <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment">
+                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
                                 <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                                 <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
-                            <span v-if="item.assessment === 'Pass'"
+                            <span v-if="item.assessment.value === 'Pass'"
                                 class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment === 'Fail'"
+                            <span v-else-if="item.assessment.value === 'Fail'"
                                 class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
-                        <td>
-                            <el-input size="mini" v-model="item.condition_indicator"></el-input>
-                        </td>
+                        <el-select :class="nameColor(item.condition_indicator.value)" size="mini"
+                            v-model="item.condition_indicator.value">
+                            <el-option value="Good">Good</el-option>
+                            <el-option value="Fair">Fair</el-option>
+                            <el-option value="Poor">Poor</el-option>
+                            <el-option value="Bad">Bad</el-option>
+                        </el-select>
                         <td>
                             <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
                                 <i class="fa-solid fa-plus"></i>
@@ -82,7 +86,7 @@
             </table>
         </div>
 
-        <div v-if="assetData && assetData.circuitBreaker && assetData.circuitBreaker.numberOfInterruptPhase > 1">
+        <div v-if="assetData.circuitBreaker.interruptersPerPhase > 1">
             <br />
             <table class="table-strip-input-data" style="width: 100%; font-size: 12px;">
                 <thead class="test">
@@ -97,36 +101,42 @@
                 </thead>
                 <tbody>
                     <tr v-for="(item, index) in testData.table" :key="index">
-                        <td v-if="index % assetData.circuitBreaker.numberOfInterruptPhase === 0"
-                            :rowspan="assetData.circuitBreaker.numberOfInterruptPhase">
+                        <td v-if="index % assetData.circuitBreaker.interruptersPerPhase === 0"
+                            :rowspan="assetData.circuitBreaker.interruptersPerPhase">
                             <div style="display: flex; width: 100%;">
-                                <el-input size="mini" v-model="item.phase"></el-input>
+                                <el-input size="mini" v-model="item.phase.value"></el-input>
                                 <div
-                                    :class="{ colorTableRed: item.phase == 'A', colorTableYellow: item.phase == 'B', colorTableBlue: item.phase == 'C' }">
+                                    :class="{ colorTableRed: item.phase.value == 'A', colorTableYellow: item.phase.value == 'B', colorTableBlue: item.phase.value == 'C' }">
                                 </div>
                             </div>
                         </td>
                         <td>
-                            <el-input size="mini" v-model="item.interrupt_no"></el-input>
+                            <el-input size="mini" v-model="item.interrupt_no.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" v-model="item.i_test"></el-input>
+                            <el-input size="mini" v-model="item.i_test.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" v-model="item.contact_resistance"></el-input>
+                            <el-input size="mini" v-model="item.contact_resistance.value"></el-input>
                         </td>
                         <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment">
+                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
                                 <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                                 <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
-                            <span v-if="item.assessment === 'Pass'"
+                            <span v-if="item.assessment.value === 'Pass'"
                                 class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment === 'Fail'"
+                            <span v-else-if="item.assessment.value === 'Fail'"
                                 class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input size="mini" v-model="item.condition_indicator"></el-input>
+                            <el-select :class="nameColor(item.condition_indicator.value)" size="mini"
+                                v-model="item.condition_indicator.value">
+                                <el-option value="Good">Good</el-option>
+                                <el-option value="Fair">Fair</el-option>
+                                <el-option value="Poor">Poor</el-option>
+                                <el-option value="Bad">Bad</el-option>
+                            </el-select>
                         </td>
                         <td>
                             <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
@@ -146,12 +156,12 @@
         <!-- Assessment settings -->
         <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog"
             width="75%">
-            <el-radio-group v-model="testData.limits" style="margin-bottom: 20px">
+            <el-radio-group v-model="assetData.assessmentLimits.limits" style="margin-bottom: 20px">
                 <el-radio label="Absolute" value="Absolute"></el-radio>
                 <el-radio label="Relative" value="Relative"></el-radio>
             </el-radio-group>
             <transition>
-                <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
+                <table class="table-strip-input-data" v-if="assetData.assessmentLimits.limits === 'Absolute'">
                     <thead>
                         <tr>
                             <th></th>
@@ -163,19 +173,21 @@
                         <tr>
                             <td>Contact resistance</td>
                             <td>
-                                <el-input size="mini" v-model="asset_.contactSys.abs.rmin">
+                                <el-input size="mini"
+                                    v-model="assetData.assessmentLimits.contact_resistance.abs.r_min.value">
                                     <template slot="append">&#181;&#8486;</template>
                                 </el-input>
                             </td>
                             <td>
-                                <el-input size="mini" v-model="asset_.contactSys.abs.rmax">
+                                <el-input size="mini"
+                                    v-model="assetData.assessmentLimits.contact_resistance.abs.r_max.value">
                                     <template slot="append">&#181;&#8486;</template>
                                 </el-input>
                             </td>
                         </tr>
                     </tbody>
                 </table>
-                <table class="table-strip-input-data" v-if="testData.limits === 'Relative'">
+                <table class="table-strip-input-data" v-if="assetData.assessmentLimits.limits === 'Relative'">
                     <thead>
                         <tr>
                             <th></th>
@@ -187,12 +199,14 @@
                         <tr>
                             <td>Contact resistance</td>
                             <td>
-                                <el-input size="mini" v-model="asset_.contactSys.rel.rref">
+                                <el-input size="mini"
+                                    v-model="assetData.assessmentLimits.contact_resistance.rel.r_ref.value">
                                     <template slot="append">&#181;&#8486;</template>
                                 </el-input>
                             </td>
                             <td>
-                                <el-input size="mini" v-model="asset_.contactSys.rel.rdev">
+                                <el-input size="mini"
+                                    v-model="assetData.assessmentLimits.contact_resistance.rel.r_dev.value">
                                     <template slot="append">&#181;&#8486;</template>
                                 </el-input>
                             </td>
@@ -205,7 +219,7 @@
                 <span style="margin-top: 20px; width: 100%; position: absolute; right: 10px; bottom: 10px"
                     class="dialog-footer">
                     <el-button @click="resetAssessment">Cancel</el-button>
-                    <el-button type="primary" @click="updateAssessment"> Confirm </el-button>
+                    <el-button type="primary" @click="updateAssessment" disabled> Confirm </el-button>
                 </span>
             </template>
         </el-dialog>
@@ -260,67 +274,7 @@ export default {
             return this.data
         },
         assetData() {
-            let circuitBreaker = {
-                numberOfInterruptPhase: 1,
-                numberOfPhase: 3
-            }
-            let operating = {
-                numberCloseCoil: 1,
-                numberTripCoil: 1
-            }
-
-            if (this.asset && this.asset.circuitBreaker) {
-                if (typeof this.asset.circuitBreaker === 'string') {
-                    try {
-                        const parsed = JSON.parse(this.asset.circuitBreaker)
-                        circuitBreaker = { ...circuitBreaker, ...parsed }
-                    } catch (e) {
-                        console.warn('Failed to parse circuitBreaker:', e)
-                    }
-                } else {
-                    circuitBreaker = { ...circuitBreaker, ...this.asset.circuitBreaker }
-                }
-            }
-
-            if (this.asset && this.asset.operating) {
-                if (typeof this.asset.operating === 'string') {
-                    try {
-                        const parsed = JSON.parse(this.asset.operating)
-                        operating = { ...operating, ...parsed }
-                    } catch (e) {
-                        console.warn('Failed to parse operating:', e)
-                    }
-                } else {
-                    operating = { ...operating, ...this.asset.operating }
-                }
-            }
-
-            return {
-                circuitBreaker,
-                operating
-            }
-        },
-        assessLimitsData() {
-            if (!this.asset || !this.asset.assessmentLimits) {
-                return {}
-            }
-
-            // If it's already an object, return it directly
-            if (typeof this.asset.assessmentLimits === 'object') {
-                return this.asset.assessmentLimits
-            }
-
-            // If it's a string, try to parse it
-            if (typeof this.asset.assessmentLimits === 'string') {
-                try {
-                    return JSON.parse(this.asset.assessmentLimits)
-                } catch (error) {
-                    console.warn('Error parsing assessmentLimits:', error)
-                    return {}
-                }
-            }
-
-            return {}
+            return this.asset
         }
     },
     watch: {
@@ -496,7 +450,9 @@ export default {
         clear() {
             this.testData.table.forEach((element) => {
                 Object.keys(element).forEach((key) => {
-                    element[key] = ''
+                    if (key !== "mrid" && key !== "phase" && key !== "interrupt_no") {
+                        element[key].value = ''
+                    }
                 })
             })
         },
@@ -512,7 +468,11 @@ export default {
             } else {
                 return
             }
-        }
+        },
+        add() { },
+        addTest() { },
+        deleteTest() { },
+        removeAll() { }
     }
 }
 </script>
