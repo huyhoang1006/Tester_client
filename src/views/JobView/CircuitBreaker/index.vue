@@ -57,63 +57,63 @@ import testInformation from '@/views/Common/testInformation.vue'
 import testingEquipment from './components/TestingEquipment/index.vue'
 
 //circuit breaker
-import motorCurrent from './components/MotorCurrent.vue'
-import oTiming from './components/OTiming.vue'
-import cTiming from './components/CTiming.vue'
-import ocTiming from './components/OCTiming.vue'
-import coTiming from './components/COTiming.vue'
-import ocoTiming from './components/O-COTiming.vue'
-import cocoTiming from './components/CO-COTiming.vue'
-import ococoTiming from './components/O-CO-COTiming.vue'
+import MotorCurrent from './components/MotorCurrent.vue'
+import OTiming from './components/OTiming.vue'
+import CTiming from './components/CTiming.vue'
+import OCTiming from './components/OCTiming.vue'
+import COTiming from './components/COTiming.vue'
+import OCOTiming from './components/OCOTiming.vue'
+import COCOTiming from './components/COCOTiming.vue'
+import OCOCOTiming from './components/OCOCOTiming.vue'
 import ContactResistance from './components/ContactResistance.vue'
-import minimumPickup from './components/MinimumPickup.vue'
-import dcWindingTripCoil from './components/DCWindingTrip.vue'
-import dcWindingCloseCoil from './components/DCWindingClose.vue'
-import dcWindingMotor from './components/DCWindingMotor.vue'
-import insulationResistanceCircuit from './components/InsulationResistanceCircuit.vue'
-import insulationResistanceTripCoil from './components/InsulationResistanceTripCoil.vue'
-import insulationResistanceCloseCoil from './components/InsulationResistanceCloseCoil.vue'
-import insulationResistanceMotor from './components/InsulationResistanceMotor.vue'
-import sf6MoiturePurity from './components/SF6MoiturePurity.vue'
-import sf6GasAnalysis from './components/SF6GasAnalysis.vue'
-import pressureGauge from './components/PressureGauge.vue'
+import MinimumPickup from './components/MinimumPickup.vue'
+import DCWindingTripCoil from './components/DCWindingTripCoil.vue'
+import DCWindingCloseCoil from './components/DCWindingCloseCoil.vue'
+import DCWindingMotor from './components/DCWindingMotor.vue'
+import InsulationResistanceCircuit from './components/InsulationResistanceCircuit.vue'
+import InsulationResistanceTripCoil from './components/InsulationResistanceTripCoil.vue'
+import InsulationResistanceCloseCoil from './components/InsulationResistanceCloseCoil.vue'
+import InsulationResistanceMotor from './components/InsulationResistanceMotor.vue'
+import SF6MoiturePurity from './components/SF6MoiturePurity.vue'
+import SF6GasAnalysis from './components/SF6GasAnalysis.vue'
+import PressureGauge from './components/PressureGauge.vue'
 import OverCurrentRelease from './components/OverCurrentRelease.vue'
-import underVoltageRelease from './components/UnderVolRelease.vue'
-import inspection from './components/Inspection.vue'
+import UnderVoltageRelease from './components/UnderVoltageRelease.vue'
+import GeneralInspection from './components/GeneralInspection.vue'
 
 export default {
     name: 'JobViewCircuitBreaker',
     components: {
         SelectTest,
         overview,
-        motorCurrent,
-        cTiming,
-        oTiming,
-        ocTiming,
-        coTiming,
-        ocoTiming,
-        cocoTiming,
-        ococoTiming,
+        MotorCurrent,
+        CTiming,
+        OTiming,
+        OCTiming,
+        COTiming,
+        OCOTiming,
+        COCOTiming,
+        OCOCOTiming,
         ContactResistance,
-        minimumPickup,
-        dcWindingTripCoil,
-        dcWindingCloseCoil,
-        dcWindingMotor,
-        insulationResistanceCircuit,
-        insulationResistanceTripCoil,
-        insulationResistanceCloseCoil,
-        insulationResistanceMotor,
-        sf6MoiturePurity,
-        sf6GasAnalysis,
-        pressureGauge,
+        MinimumPickup,
+        DCWindingTripCoil,
+        DCWindingCloseCoil,
+        DCWindingMotor,
+        InsulationResistanceCircuit,
+        InsulationResistanceTripCoil,
+        InsulationResistanceCloseCoil,
+        InsulationResistanceMotor,
+        SF6MoiturePurity,
+        SF6GasAnalysis,
+        PressureGauge,
         testInformation,
         OverCurrentRelease,
-        underVoltageRelease,
-        inspection,
+        UnderVoltageRelease,
+        GeneralInspection,
         testingEquipment
     },
     props: {
-       
+
         parentOrganization: {
             type: Object,
             default: () => ({})
@@ -127,8 +127,8 @@ export default {
                 activeName: null
             },
             testTypeListData: [],
-            assetData : {},
-            locationData : {},
+            assetData: {},
+            locationData: {},
             productAssetModelData: {},
         }
     },

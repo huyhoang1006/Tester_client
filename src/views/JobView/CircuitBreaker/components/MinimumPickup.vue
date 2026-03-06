@@ -1,26 +1,28 @@
 <template>
     <div id="dc-winding-resistance-prim">
-
         <div style="position: sticky; left: 0; display: inline-block;">
-        <!-- Cấu hình -->
-        <el-row class="mgb-10">
-            <el-col>
-                <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
-                    <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
-                </el-button>
-                <el-button class="btn-action" size="mini" type="success" @click="openConditionIndicatorDialog = true">
-                    <i class="fa-solid fa-hammer"></i> Condition indicatior settings
-                </el-button>
-            </el-col>
-        </el-row>
+            <!-- Cấu hình -->
+            <el-row class="mgb-10">
+                <el-col>
+                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
+                        <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
+                    </el-button>
+                    <el-button class="btn-action" size="mini" type="success"
+                        @click="openConditionIndicatorDialog = true">
+                        <i class="fa-solid fa-hammer"></i> Condition indicatior settings
+                    </el-button>
+                </el-col>
+            </el-row>
 
-        <!-- Tương tác với bảng -->
-        <el-row class="mgb-10">
-            <el-col>
-                <el-button size="mini" type="primary" class="btn-action" @click="calculator" > <i class="fas fa-circle-play"></i> Assess results </el-button>
-                <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i class="fas fa-xmark"></i> Clear all</el-button>
-            </el-col>
-        </el-row>
+            <!-- Tương tác với bảng -->
+            <el-row class="mgb-10">
+                <el-col>
+                    <el-button size="mini" type="primary" class="btn-action" @click="calculator"> <i
+                            class="fas fa-circle-play"></i> Assess results </el-button>
+                    <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i
+                            class="fas fa-xmark"></i> Clear all</el-button>
+                </el-col>
+            </el-row>
         </div>
 
         <table class="table-strip-input-data" style="width: 100%; font-size: 12px;">
@@ -38,133 +40,136 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testData.table">
-                    <tr :key="index">
-                        <td>
-                            {{ index + 1 }}
-                        </td>
-                        <td>
-                            <el-select size="mini" v-model="item.operation.value">
-                                <el-option value="Trip">Trip</el-option>
-                                <el-option value="Close">Close</el-option>
-                            </el-select>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.tripCoilNo.value"></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.closeCoilNo.value"></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.vPickup.value"></el-input>
-                        </td>
-                        <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
-                                <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
-                                <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
-                            </el-select>
-                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
-                        </td>
-                        <td>
-                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
-                            </el-input>
-                        </td>
-                        <td>
-                            <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
-                                <i class="fa-solid fa-plus"></i>
-                            </el-button>
-                        </td>
-                        <td>
-                            <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
-                                <i class="fas fa-trash"></i>
-                            </el-button>
-                        </td>
-                    </tr>
-                </template>
+                <tr v-for="(item, index) in testData.table" :key="index">
+                    <td>
+                        {{ index + 1 }}
+                    </td>
+                    <td>
+                        <el-select size="mini" v-model="item.operation.value">
+                            <el-option value="Trip">Trip</el-option>
+                            <el-option value="Close">Close</el-option>
+                        </el-select>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.trip_coil_no.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.close_coil_no.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.v_pickup.value"></el-input>
+                    </td>
+                    <td>
+                        <el-select class="assessment" size="mini" v-model="item.assessment.value">
+                            <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
+                        </el-select>
+                        <span v-if="item.assessment.value === 'Pass'"
+                            class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment.value === 'Fail'"
+                            class="fa-solid fa-xmark fail icon-status"></span>
+                    </td>
+                    <td>
+                        <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                            size="mini" v-model="item.condition_indicator.value">
+                        </el-input>
+                    </td>
+                    <td>
+                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
+                            <i class="fa-solid fa-plus"></i>
+                        </el-button>
+                    </td>
+                    <td>
+                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
+                            <i class="fas fa-trash"></i>
+                        </el-button>
+                    </td>
+                </tr>
             </tbody>
         </table>
 
         <!-- Assessment settings -->
-        <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px">
+        <!-- <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog"
+            width="600px">
 
-                <el-radio-group v-model="testData.limits">
-                    <el-radio label="Absolute" value="Absolute"></el-radio>
-                    <el-radio label="Relative" value="Relative"></el-radio>
-                </el-radio-group>
+            <el-radio-group v-model="testData.limits">
+                <el-radio label="Absolute" value="Absolute"></el-radio>
+                <el-radio label="Relative" value="Relative"></el-radio>
+            </el-radio-group>
 
-                <transition>
-                    <table v-if="testData.limits === 'Absolute'" class="table-strip-input-data">
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th>V min</th>
-                                <th>V max</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(item, index) in pickupVoltage" :key="index">
-                                <td>{{item}}</td>
-                                <td>
-                                    <el-input size="mini" v-model="asset_.pickupVol.abs[index].vmin">
-                                        <template slot="append">V</template>
-                                    </el-input>
-                                </td>
-                                <td>
-                                    <el-input size="mini" v-model="asset_.pickupVol.abs[index].vmax" >
-                                        <template slot="append">V</template>
-                                    </el-input>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <table v-if="testData.limits === 'Relative'" class="table-strip-input-data">
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th>V ref</th>
-                                <th>V dev</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(item, index) in pickupVoltage" :key="index">
-                                <td>{{item}}</td>
-                                <td>
-                                    <el-input size="mini" v-model="asset_.pickupVol.rel[index].vref">
-                                        <template slot="append">V</template>
-                                    </el-input>
-                                </td>
-                                <td>
-                                    <el-input size="mini" v-model="asset_.pickupVol.rel[index].vdev">
-                                        <template slot="append">V</template>
-                                    </el-input>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </transition>
+            <transition>
+                <table v-if="testData.limits === 'Absolute'" class="table-strip-input-data">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>V min</th>
+                            <th>V max</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(item, index) in pickupVoltage" :key="index">
+                            <td>{{ item }}</td>
+                            <td>
+                                <el-input size="mini" v-model="asset_.pickupVol.abs[index].vmin">
+                                    <template slot="append">V</template>
+</el-input>
+</td>
+<td>
+    <el-input size="mini" v-model="asset_.pickupVol.abs[index].vmax">
+        <template slot="append">V</template>
+    </el-input>
+</td>
+</tr>
+</tbody>
+</table>
+<table v-if="testData.limits === 'Relative'" class="table-strip-input-data">
+    <thead>
+        <tr>
+            <th></th>
+            <th>V ref</th>
+            <th>V dev</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr v-for="(item, index) in pickupVoltage" :key="index">
+            <td>{{ item }}</td>
+            <td>
+                <el-input size="mini" v-model="asset_.pickupVol.rel[index].vref">
+                    <template slot="append">V</template>
+                </el-input>
+            </td>
+            <td>
+                <el-input size="mini" v-model="asset_.pickupVol.rel[index].vdev">
+                    <template slot="append">V</template>
+                </el-input>
+            </td>
+        </tr>
+    </tbody>
+</table>
+</transition>
 
-                <br>
-                <template #footer>
-                <span style=" margin-top: 20px; width:100%; position: absolute; right: 10px; bottom: 10px;" class="dialog-footer">
+<br>
+<template #footer>
+                <span style=" margin-top: 20px; width:100%; position: absolute; right: 10px; bottom: 10px;"
+                    class="dialog-footer">
                     <el-button @click="resetAssessment">Cancel</el-button>
                     <el-button type="primary" @click="updateAssessment">
-                    Confirm
+                        Confirm
                     </el-button>
                 </span>
-                </template>
-        </el-dialog>
+            </template>
+</el-dialog> -->
     </div>
 </template>
 
 <script>
 export default {
-    name :"minimumPickup",
+    name: "MinimumPickup",
     data() {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
-            asset_ : {
+            asset_: {
                 pickupVol: {
                     abs: [
                         { vmin: '', vmax: '' },
@@ -177,7 +182,7 @@ export default {
                 }
             },
             back_asset: {},
-            pickupVoltage : [
+            pickupVoltage: [
                 "Minimum pickup voltage (close)",
                 "Minimum pickup voltage (trip)"
             ],
@@ -188,7 +193,7 @@ export default {
             type: Object,
             require: true
         },
-        asset : {
+        asset: {
             type: Object,
             require: true
         }
@@ -215,12 +220,12 @@ export default {
                     }
                 }
             }
-            
+
             // If it's already an object, return it directly
             if (typeof this.asset.assessmentLimits === 'object') {
                 return this.asset.assessmentLimits
             }
-            
+
             // If it's a string, try to parse it
             if (typeof this.asset.assessmentLimits === 'string') {
                 try {
@@ -241,7 +246,7 @@ export default {
                     }
                 }
             }
-            
+
             return {
                 pickupVol: {
                     abs: [
@@ -256,10 +261,10 @@ export default {
             }
         }
     },
-    beforeMount(){
+    beforeMount() {
         const asset = {
-            id : this.asset.id,
-            assessmentLimits : this.asset_
+            id: this.asset.id,
+            assessmentLimits: this.asset_
         }
         const dataTemp = JSON.parse(JSON.stringify(asset))
         this.back_asset = dataTemp.assessmentLimits
@@ -269,14 +274,14 @@ export default {
             if (!data || typeof data !== 'object') {
                 data = {}
             }
-            
+
             let normalized = {}
             try {
                 normalized = JSON.parse(JSON.stringify(data))
             } catch (e) {
                 normalized = {}
             }
-            
+
             // Helper function to extract value safely
             const getValue = (obj) => {
                 if (!obj) return ''
@@ -284,7 +289,7 @@ export default {
                 if (typeof obj === 'object' && obj.value !== undefined) return String(obj.value || '')
                 return ''
             }
-            
+
             // Always initialize pickupVol structure first
             normalized.pickupVol = {
                 abs: [
@@ -296,11 +301,11 @@ export default {
                     { vref: '', vdev: '' }
                 ]
             }
-            
+
             // Normalize from pickup_voltage structure (from backend DTO)
             if (data.pickup_voltage) {
                 const pickupVol = data.pickup_voltage
-                
+
                 if (pickupVol.abs) {
                     // Handle min_pickup_voltage_close (index 0)
                     if (pickupVol.abs.min_pickup_voltage_close) {
@@ -332,7 +337,7 @@ export default {
                         }
                     }
                 }
-                
+
                 if (pickupVol.rel) {
                     // Handle min_pickup_voltage_close (index 0)
                     if (pickupVol.rel.min_pickup_voltage_close) {
@@ -389,11 +394,11 @@ export default {
                     ]
                 }
             }
-            
+
             if (!normalized.limits) {
                 normalized.limits = data.limits || 'Absolute'
             }
-            
+
             // Final pass: ensure all values are strings/numbers, not objects
             const ensureStringValue = (obj, key) => {
                 if (obj && obj[key] !== undefined) {
@@ -405,7 +410,7 @@ export default {
                     }
                 }
             }
-            
+
             // Normalize pickupVol values
             if (normalized.pickupVol) {
                 if (normalized.pickupVol.abs) {
@@ -425,7 +430,7 @@ export default {
                     })
                 }
             }
-            
+
             return normalized
         },
         async updateAssessment() {
@@ -434,13 +439,13 @@ export default {
                 this.asset_.limits = this.testData.limits
             }
             const asset = {
-                id : this.asset.id,
-                assessmentLimits : this.asset_
+                id: this.asset.id,
+                assessmentLimits: this.asset_
             }
             const data = await window.electronAPI.updateCircuitAssessmentLimits(asset)
             const dataTemp = JSON.parse(JSON.stringify(asset))
             this.back_asset = dataTemp.assessmentLimits
-            if(data.success) {
+            if (data.success) {
                 this.$message.success('Update successfully')
                 this.openAssessmentDialog = false
             } else {
@@ -499,14 +504,14 @@ export default {
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
-                    confirmButtonText: 'OK',
-                    cancelButtonText: 'Cancel',
-                    type: 'warning'
-                })
-                .then( () => {
+                confirmButtonText: 'OK',
+                cancelButtonText: 'Cancel',
+                type: 'warning'
+            })
+                .then(() => {
                     this.testData.table = []
                 })
-                .catch( () => {
+                .catch(() => {
                     // User cancelled, do nothing
                 })
         },
@@ -553,7 +558,7 @@ export default {
                     type: 'discrete'
                 }
             }
-            this.testData.table.splice(index+1, 0, data)
+            this.testData.table.splice(index + 1, 0, data)
         },
         calculator() {
             if (!this.asset_ || !this.asset_.pickupVol) {
@@ -565,35 +570,35 @@ export default {
                 console.log(this.testData.limits)
                 console.log(item.operation)
                 console.log(item.vPickup)
-                if (this.testData.limits === 'Absolute'){
-                    if (item.operation === 'Trip'){
-                        if (this.asset_.pickupVol.abs && this.asset_.pickupVol.abs[1] && 
-                            parseFloat(item.vPickup) >= parseFloat(this.asset_.pickupVol.abs[1].vmin) && 
-                            parseFloat(item.vPickup) <= parseFloat(this.asset_.pickupVol.abs[1].vmax)){
+                if (this.testData.limits === 'Absolute') {
+                    if (item.operation === 'Trip') {
+                        if (this.asset_.pickupVol.abs && this.asset_.pickupVol.abs[1] &&
+                            parseFloat(item.vPickup) >= parseFloat(this.asset_.pickupVol.abs[1].vmin) &&
+                            parseFloat(item.vPickup) <= parseFloat(this.asset_.pickupVol.abs[1].vmax)) {
                             item.assessment = 'Pass';
                         }
                         else item.assessment = 'Fail';
                     }
-                    if (item.operation === 'Close'){
+                    if (item.operation === 'Close') {
                         if (this.asset_.pickupVol.abs && this.asset_.pickupVol.abs[0] &&
-                            parseFloat(item.vPickup) >= parseFloat(this.asset_.pickupVol.abs[0].vmin) && 
-                            parseFloat(item.vPickup) <= parseFloat(this.asset_.pickupVol.abs[0].vmax)){
+                            parseFloat(item.vPickup) >= parseFloat(this.asset_.pickupVol.abs[0].vmin) &&
+                            parseFloat(item.vPickup) <= parseFloat(this.asset_.pickupVol.abs[0].vmax)) {
                             item.assessment = 'Pass';
                         }
                         else item.assessment = 'Fail';
                     }
                 }
-                if(this.testData.limits === 'Relative'){
-                    if (item.operation === 'Trip'){
+                if (this.testData.limits === 'Relative') {
+                    if (item.operation === 'Trip') {
                         if (this.asset_.pickupVol.rel && this.asset_.pickupVol.rel[1] &&
-                            Math.abs(parseFloat(this.asset_.pickupVol.rel[1].vref) - parseFloat(item.vPickup)) <= parseFloat(this.asset_.pickupVol.rel[1].vdev)){
+                            Math.abs(parseFloat(this.asset_.pickupVol.rel[1].vref) - parseFloat(item.vPickup)) <= parseFloat(this.asset_.pickupVol.rel[1].vdev)) {
                             item.assessment = 'Pass';
                         }
                         else item.assessment = 'Fail';
                     }
-                    if (item.operation === 'Close'){
+                    if (item.operation === 'Close') {
                         if (this.asset_.pickupVol.rel && this.asset_.pickupVol.rel[0] &&
-                            Math.abs(parseFloat(this.asset_.pickupVol.rel[0].vref) - parseFloat(item.vPickup)) <= parseFloat(this.asset_.pickupVol.rel[0].vdev)){
+                            Math.abs(parseFloat(this.asset_.pickupVol.rel[0].vref) - parseFloat(item.vPickup)) <= parseFloat(this.asset_.pickupVol.rel[0].vdev)) {
                             item.assessment = 'Pass';
                         }
                         else item.assessment = 'Fail';
@@ -610,16 +615,16 @@ export default {
             })
         },
         nameColor(data) {
-            if(data === this.$constant.GOOD) {
+            if (data === this.$constant.GOOD) {
                 return 'Good'
             }
-            else if(data === this.$constant.FAIR) {
+            else if (data === this.$constant.FAIR) {
                 return 'Fair'
             }
-            else if(data === this.$constant.POOR) {
+            else if (data === this.$constant.POOR) {
                 return 'Poor'
             }
-            else if(data === this.$constant.BAD) {
+            else if (data === this.$constant.BAD) {
                 return 'Bad'
             }
             else {
@@ -627,11 +632,11 @@ export default {
             }
         }
     },
-    watch : {
-        assessLimitsData : {
-            deep : true,
-            immediate : true,
-            handler : function(newVal) {
+    watch: {
+        assessLimitsData: {
+            deep: true,
+            immediate: true,
+            handler: function (newVal) {
                 if (newVal && Object.keys(newVal).length > 0) {
                     this.asset_ = this.normalizeAssessmentLimits(newVal)
                     // Update backup for reset
@@ -646,7 +651,7 @@ export default {
         },
         'asset_.limits': {
             immediate: true,
-            handler: function(newVal) {
+            handler: function (newVal) {
                 // Sync asset_.limits to testData.limits
                 if (newVal && this.testData) {
                     this.$set(this.testData, 'limits', newVal)
@@ -654,7 +659,7 @@ export default {
             }
         },
         openAssessmentDialog: {
-            handler: function(newVal) {
+            handler: function (newVal) {
                 // When opening dialog, sync limits from asset_ to testData
                 if (newVal && this.asset_ && this.asset_.limits && this.testData) {
                     this.$set(this.testData, 'limits', this.asset_.limits)
@@ -666,9 +671,13 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-table, th, tr, td {
+table,
+th,
+tr,
+td {
     white-space: nowrap;
 }
+
 .flex-container {
     display: flex;
     flex-direction: column;
@@ -677,6 +686,7 @@ table, th, tr, td {
         padding: 1px;
     }
 }
+
 .Good input {
     background: #00CC00;
 }
@@ -692,7 +702,11 @@ table, th, tr, td {
 .Bad input {
     background: #ff3300;
 }
-table, th, tr, td {
+
+table,
+th,
+tr,
+td {
     white-space: nowrap;
 }
 </style>
