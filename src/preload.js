@@ -74,6 +74,8 @@ const assetPsrAPI = entityPreload.assetPsrPreload.assetPsrPreload()
 const procedureAPI = cimPreload.procedurePreload.procedurePreload()
 const licenseAPI = cimPreload.licensePreload.licensePreload()
 const notificationEntityAPI = entityPreload.notificationEntityPreload.notificationEntityPreload()
+const updateEntityAPI = entityPreload.updateEntityPreload.updateEntityPreload()
+
 
 // Version management API (Enterprise)
 const versionAPI = {
@@ -87,7 +89,18 @@ const versionAPI = {
 // Git Update API
 const gitUpdateAPI = {
     checkForUpdate: () => ipcRenderer.invoke('checkForUpdate'),
-    performUpdate: () => ipcRenderer.invoke('performUpdate')
+   downloadUpdate: () => ipcRenderer.invoke('downloadUpdate'),
+    installUpdate: () => ipcRenderer.invoke('installUpdate'),
+    onUpdateAvailable: (callback) => ipcRenderer.on('update-available', (_event, data) => callback(data)),
+    onUpdateNotAvailable: (callback) => ipcRenderer.on('update-not-available', (_event, data) => callback(data)),
+    onUpdateError: (callback) => ipcRenderer.on('update-error', (_event, data) => callback(data)),
+    onDownloadProgress: (callback) => ipcRenderer.on('download-progress', (_event, data) => callback(data)),
+    onUpdateDownloaded: (callback) => ipcRenderer.on('update-downloaded', (_event, data) => callback(data))
+}
+
+// Event listeners for update progress - exposed directly
+const updateProgressListener = (callback) => {
+    ipcRenderer.on('update-progress', (_event, data) => callback(data))
 }
 
 const ipcMain = Object.assign(
@@ -155,7 +168,9 @@ const ipcMain = Object.assign(
     notificationEntityAPI,
     versionAPI,
     gitUpdateAPI,
+    updateProgressListener,
     fileConverterAPI,
-    systemInfoAPI
+    systemInfoAPI,
+    updateEntityAPI
 )
 contextBridge.exposeInMainWorld('electronAPI', ipcMain)
