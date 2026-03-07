@@ -81,57 +81,60 @@ export const jobDtoToEntity = (dto) => {
         //attachment
         entity.attachmentTest.push(item.testCondition.attachment);
 
-        for (const data of item.data.table) {
-            const testData = new TestDataSet();
-            testData.mrid = data.mrid || null;
-            testData.work_task = item.mrid || null;
-            testData.procedure = item.testTypeId || null;
-            testData.type = 'test'
-            entity.testDataSet.push(testData);
+        for (const key in item.data.table) {
+            for (const data of item.data.table[key]) {
+                const testData = new TestDataSet();
+                testData.mrid = data.mrid || null;
+                testData.work_task = item.mrid || null;
+                testData.procedure = item.testTypeId || null;
+                testData.type = 'test'
+                testData.title = key || null;
+                entity.testDataSet.push(testData);
 
-            for (const [key, value] of Object.entries(data)) {
-                if (typeof value === 'object') {
-                    if (value.type === 'analog') {
-                        const analogValue = new AnalogValue();
-                        analogValue.mrid = value.mrid || null;
-                        analogValue.value = value.value || null;
-                        analogValue.alias_name = key || null;
-                        analogValue.analog = value['measurement_id'] ? value['measurement_id'] : null;
-                        analogValue.procedure_dataset_id = data.mrid
-                        entity.analogValues.push(analogValue);
-                        const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue();
-                        procedureDataSetMeasurementValue.procedure_dataset_id = data.mrid || null;
-                        procedureDataSetMeasurementValue.measurement_value_id = value.mrid || null;
-                        entity.procedureDataSetMeasurementValue.push(procedureDataSetMeasurementValue);
-                    } else if (value.type === 'string') {
-                        const stringValue = new StringMeaurementValue();
-                        stringValue.mrid = value.mrid || null;
-                        stringValue.value = value.value || null;
-                        stringValue.alias_name = key || null;
-                        stringValue.procedure_dataset_id = data.mrid
-                        stringValue.string_measurement = value['measurement_id'] ? value['measurement_id'] : null;
-                        entity.stringMeasurementValues.push(stringValue);
-                        const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue();
-                        procedureDataSetMeasurementValue.procedure_dataset_id = data.mrid || null;
-                        procedureDataSetMeasurementValue.measurement_value_id = value.mrid || null;
-                        entity.procedureDataSetMeasurementValue.push(procedureDataSetMeasurementValue);
-                    } else if (value.type === 'discrete') {
-                        const discreteValue = new DiscreteValue();
-                        discreteValue.mrid = value.mrid || null;
-                        if(key == 'assessment') {
-                            discreteValue.value = commonFunc.assessmentToValue(value.value) ?? null;
-                        } else if(key == 'condition_indicator') {
-                            discreteValue.value = commonFunc.conditionIndicatorToValue(value.value) ?? null;
+                for (const [key, value] of Object.entries(data)) {
+                    if (typeof value === 'object') {
+                        if (value.type === 'analog') {
+                            const analogValue = new AnalogValue();
+                            analogValue.mrid = value.mrid || null;
+                            analogValue.value = value.value || null;
+                            analogValue.alias_name = key || null;
+                            analogValue.analog = value['measurement_id'] ? value['measurement_id'] : null;
+                            analogValue.procedure_dataset_id = data.mrid
+                            entity.analogValues.push(analogValue);
+                            const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue();
+                            procedureDataSetMeasurementValue.procedure_dataset_id = data.mrid || null;
+                            procedureDataSetMeasurementValue.measurement_value_id = value.mrid || null;
+                            entity.procedureDataSetMeasurementValue.push(procedureDataSetMeasurementValue);
+                        } else if (value.type === 'string') {
+                            const stringValue = new StringMeaurementValue();
+                            stringValue.mrid = value.mrid || null;
+                            stringValue.value = value.value || null;
+                            stringValue.alias_name = key || null;
+                            stringValue.procedure_dataset_id = data.mrid
+                            stringValue.string_measurement = value['measurement_id'] ? value['measurement_id'] : null;
+                            entity.stringMeasurementValues.push(stringValue);
+                            const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue();
+                            procedureDataSetMeasurementValue.procedure_dataset_id = data.mrid || null;
+                            procedureDataSetMeasurementValue.measurement_value_id = value.mrid || null;
+                            entity.procedureDataSetMeasurementValue.push(procedureDataSetMeasurementValue);
+                        } else if (value.type === 'discrete') {
+                            const discreteValue = new DiscreteValue();
+                            discreteValue.mrid = value.mrid || null;
+                            if(key == 'assessment') {
+                                discreteValue.value = commonFunc.assessmentToValue(value.value) ?? null;
+                            } else if(key == 'condition_indicator') {
+                                discreteValue.value = commonFunc.conditionIndicatorToValue(value.value) ?? null;
+                            }
+                            discreteValue.vta_alias_name = value.value
+                            discreteValue.alias_name = key || null;
+                            discreteValue.procedure_dataset_id = data.mrid
+                            discreteValue.discrete = value['measurement_id'] ? value['measurement_id'] : null;
+                            entity.discreteValues.push(discreteValue);
+                            const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue();
+                            procedureDataSetMeasurementValue.procedure_dataset_id = data.mrid || null;
+                            procedureDataSetMeasurementValue.measurement_value_id = value.mrid || null;
+                            entity.procedureDataSetMeasurementValue.push(procedureDataSetMeasurementValue);
                         }
-                        discreteValue.vta_alias_name = value.value
-                        discreteValue.alias_name = key || null;
-                        discreteValue.procedure_dataset_id = data.mrid
-                        discreteValue.discrete = value['measurement_id'] ? value['measurement_id'] : null;
-                        entity.discreteValues.push(discreteValue);
-                        const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue();
-                        procedureDataSetMeasurementValue.procedure_dataset_id = data.mrid || null;
-                        procedureDataSetMeasurementValue.measurement_value_id = value.mrid || null;
-                        entity.procedureDataSetMeasurementValue.push(procedureDataSetMeasurementValue);
                     }
                 }
             }
@@ -260,7 +263,8 @@ export const JobEntityToDto = (entity) => {
                 attachmentData : [],
             },
             data : {
-                table : [],
+                table : {
+                },
             }
         }
         testTemplate.testCondition.comment = item.comment || '';
@@ -279,58 +283,67 @@ export const JobEntityToDto = (entity) => {
         }
 
         const testData = entity.testDataSet.filter(x => x.work_task === item.mrid && x.type === 'test');
-        for(const test of testData) {
-            const rowData = {};
-            rowData.mrid = test.mrid || '';
-            const stringMeasutementValueData = entity.stringMeasurementValues.filter(x => x.procedure_dataset_id == test.mrid);
-            for (const smv of stringMeasutementValueData) {
-                const key = smv.alias_name; // vd: "assessment"
-
-                rowData[key] = {
-                    mrid: smv.mrid,
-                    type: "string",
-                    unit: "",
-                    value: smv.value || "",
-                    measurement_id: smv.string_measurement || ''
-                };
+        const grouped = {};
+        testData.forEach(item => {
+            if (!grouped[item.title]) {
+                grouped[item.title] = [];
             }
+            grouped[item.title].push(item);
+        });
+        for (const key in grouped) {
+            testTemplate.data.table[key] = [];
+            for(const test of grouped[key]) {
+                const rowData = {};
+                rowData.mrid = test.mrid || '';
+                const stringMeasutementValueData = entity.stringMeasurementValues.filter(x => x.procedure_dataset_id == test.mrid);
+                for (const smv of stringMeasutementValueData) {
+                    const key = smv.alias_name; // vd: "assessment"
 
-            const analogValueData = entity.analogValues.filter(x => x.procedure_dataset_id === test.mrid);
-            for (const av of analogValueData) {
-                const key = av.alias_name; // vd: "assessment"
-
-                rowData[key] = {
-                    mrid: av.mrid,
-                    type: "analog",
-                    unit: "",
-                    value: av.value || "",
-                    measurement_id: av.analog || ''
-                };
-            }
-
-            const discreteValueData = entity.discreteValues.filter(x => x.procedure_dataset_id === test.mrid);
-            for (const dv of discreteValueData) {
-                const key = dv.alias_name; // vd: "assessment"
-                if(key == 'assessment') {
                     rowData[key] = {
-                        mrid: dv.mrid,
-                        type: "discrete",
+                        mrid: smv.mrid,
+                        type: "string",
                         unit: "",
-                        value: dv.vta_alias_name || "",
-                        measurement_id: dv.discrete || ''
-                    };
-                } else if(key == 'condition_indicator') {
-                    rowData[key] = {
-                        mrid: dv.mrid,
-                        type: "discrete",
-                        unit: "",
-                        value: dv.vta_alias_name || "",
-                        measurement_id: dv.discrete || ''
+                        value: smv.value || "",
+                        measurement_id: smv.string_measurement || ''
                     };
                 }
-            }
 
-            testTemplate.data.table.push(rowData);
+                const analogValueData = entity.analogValues.filter(x => x.procedure_dataset_id === test.mrid);
+                for (const av of analogValueData) {
+                    const key = av.alias_name; // vd: "assessment"
+
+                    rowData[key] = {
+                        mrid: av.mrid,
+                        type: "analog",
+                        unit: "",
+                        value: av.value || "",
+                        measurement_id: av.analog || ''
+                    };
+                }
+
+                const discreteValueData = entity.discreteValues.filter(x => x.procedure_dataset_id === test.mrid);
+                for (const dv of discreteValueData) {
+                    const key = dv.alias_name; // vd: "assessment"
+                    if(key == 'assessment') {
+                        rowData[key] = {
+                            mrid: dv.mrid,
+                            type: "discrete",
+                            unit: "",
+                            value: dv.vta_alias_name || "",
+                            measurement_id: dv.discrete || ''
+                        };
+                    } else if(key == 'condition_indicator') {
+                        rowData[key] = {
+                            mrid: dv.mrid,
+                            type: "discrete",
+                            unit: "",
+                            value: dv.vta_alias_name || "",
+                            measurement_id: dv.discrete || ''
+                        };
+                    }
+                }
+                testTemplate.data.table[key].push(rowData);
+            }
         }
         const testDataCondition = entity.testDataSet.find(x => x.work_task === item.mrid && x.type === 'condition');
         if (testDataCondition) {

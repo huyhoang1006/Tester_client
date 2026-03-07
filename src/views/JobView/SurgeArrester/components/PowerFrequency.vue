@@ -37,7 +37,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, index) in testData.table" :key="index">
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>
                         <div style="display: flex;width: 100%; justify-content: flex-end;">   
                             <el-input v-if="index%(assetData.unit_count)==1" style="width: 50px;" size="mini" type="text" v-model="item.phase.value"></el-input>
@@ -141,7 +141,7 @@ export default {
     methods: {
         add() {
             for(let i=1 ; i<= this.assetData.unit_count; i++) {
-                this.testData.table.push(JSON.parse(JSON.stringify(this.rowData)))
+                this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
             }
         },
         removeAll() {
@@ -151,18 +151,18 @@ export default {
                     type: 'warning'
                 })
                 .then( () => {
-                    this.testData.table = []
+                    this.testData.table.table1 = []
                 }
             )
         },
         deleteTest(index) {
-            this.testData.table.splice(index, this.assetData.unit_count)
+            this.testData.table.table1.splice(index, this.assetData.unit_count)
         },
         addTest(index) {
             let units = this.assetData.unit_count
             for(let i=0 ; i< units; i++) {
                 const data = JSON.parse(JSON.stringify(this.rowData))
-                this.testData.table.splice(index+i+units, 0, data)
+                this.testData.table.table1.splice(index+i+units, 0, data)
             }
         },
         calculator() {
@@ -170,7 +170,7 @@ export default {
         },
 
         clear() {
-            this.testData.table.forEach(row => {
+            this.testData.table.table1.forEach(row => {
                 Object.keys(row).forEach(key => {
                     if (key === "mrid") return;
                     if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
