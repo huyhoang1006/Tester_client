@@ -13,7 +13,7 @@ export const OrgDtoToOrgEntity = (orgDto) => {
     orgEntity.organisation.street_address = orgDto.streetAddressId || null;
     orgEntity.organisation.electronic_address = orgDto.electronicAddressId || null;
     orgEntity.organisation.phone = orgDto.telephoneNumberId || null;
-    orgEntity.organisation.parent_organisation = orgDto.parentId
+    orgEntity.organisation.parent_organisation = orgDto.parentId || null
 
     //address address
     orgEntity.streetAddress.mrid = orgDto.streetAddressId || null;
