@@ -12,15 +12,19 @@ export const insertVoltageLevelEntity = async (entity) => {
         if (entity.voltageLevel.mrid) {
             await runAsync('BEGIN TRANSACTION');
             
-            // Insert các Voltage trước
+            // Insert các Voltage trước (only if they have valid mrid)
             if (entity.voltage && entity.voltage.length > 0) {
                 for (const voltage of entity.voltage) {
-                    await insertVoltageTransaction(voltage, db);
+                    if (voltage && voltage.mrid) {
+                        await insertVoltageTransaction(voltage, db);
+                    }
                 }
             }
             
-            // Insert BaseVoltage
-            await insertBaseVoltageTransaction(entity.baseVoltage, db);
+            // Insert BaseVoltage only if it has valid mrid
+            if (entity.baseVoltage && entity.baseVoltage.mrid) {
+                await insertBaseVoltageTransaction(entity.baseVoltage, db);
+            }
             
             // Insert VoltageLevel
             await insertVoltageLevelTransaction(entity.voltageLevel, db);
