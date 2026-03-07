@@ -10,6 +10,13 @@
       "type": "string"
     },
     {
+      "mrid": "cbf48165-6f7a-4716-8258-bb4eae410b3b",
+      "code": "interrupter",
+      "name": "Interrupter",
+      "type": "analog",
+      "unit": ""
+    },
+    {
       "mrid": "e58bd21c-69dd-4483-b678-1f13c3d4e58a",
       "code": "opening_time",
       "name": "Opening time",
@@ -24,6 +31,13 @@
       "unit": "m|s"
     },
     {
+      "mrid": "6976f705-74ee-4988-9886-a7750ec28925",
+      "code": "opening_sync_between_interrupter",
+      "name": "Opening sync. between interrupter (ms)",
+      "type": "analog",
+      "unit": "m|s"
+    },
+    {
       "mrid": "509a7f7d-357b-4e6e-9e99-547f4eabfcb8",
       "code": "closing_time",
       "name": "Closing time",
@@ -34,6 +48,13 @@
       "mrid": "ed668284-e6da-468e-99e7-e0901fb19edf",
       "code": "closing_sync_between_phase",
       "name": "Closing sync. between phase (ms)",
+      "type": "analog",
+      "unit": "m|s"
+    },
+    {
+      "mrid": "8387cbb8-43c9-4730-b2d4-3fe6d0e5a202",
+      "code": "closing_sync_between_interrupter",
+      "name": "Closing sync. between interrupter (ms)",
       "type": "analog",
       "unit": "m|s"
     },
