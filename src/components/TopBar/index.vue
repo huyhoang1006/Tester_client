@@ -173,11 +173,16 @@
 
         <!-- Update Dialog -->
         <el-dialog custom-class="app-dialog" title="New Version Available" :visible.sync="dialogUpdate" :modal="true"
-            append-to-body>
+            append-to-body :close-on-click-modal="!updateInfo.isDownloading" :show-close="!updateInfo.isDownloading">
             <div class="update-wrapper">
                 <div class="update-top-section">
                     <div class="version-info">
-                        <div class="info-label">New version: </div>
+                        <div class="current-version">Current version: v{{ updateInfo.currentVersion }}</div>
+                        <div class="new-version-label">Latest version: </div>
+                        <div class="version-number">v{{ updateInfo.version }}</div>
+                        <div v-if="updateInfo.updateType" class="update-type-badge">
+                            {{ updateInfo.updateType.toUpperCase() }} UPDATE
+                        </div>
                         <div class="version-number">v{{ updateInfo.version }}</div>
                         <div v-if="updateInfo.releasedAt" class="release-date">
                             Released: {{ formatReleaseDate(updateInfo.releasedAt) }}
@@ -194,12 +199,13 @@
                 </div>
             </div>
             <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" @click="dialogUpdate = false">
+                <el-button class="footer-btn" size="small" @click="dismissUpdate" :disabled="updateInfo.isDownloading">
                     Not now
                 </el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleUpdate">
-                    <i class="fas fa-download"></i>
-                    Download Update
+                <el-button class="footer-btn" size="small" type="primary" @click="handleUpdate"
+                    :loading="updateInfo.isDownloading" :disabled="updateInfo.isDownloading">
+                    <i v-if="!updateInfo.isDownloading" class="fas fa-download"></i>
+                    {{ updateInfo.isDownloading ? 'Downloading...' : 'Update Now' }}
                 </el-button>
             </span>
         </el-dialog>
@@ -235,7 +241,8 @@
                 <el-button class="footer-btn" size="small" @click="dialogNotificationDetail = false">
                     Close
                 </el-button>
-                <el-button class="footer-btn" size="small" type="danger" @click="deleteNotification(selectedNotification.mrid)">
+                <el-button class="footer-btn" size="small" type="danger"
+                    @click="deleteNotification(selectedNotification.mrid)">
                     <i class="fas fa-trash"></i> Delete
                 </el-button>
             </span>
@@ -278,9 +285,13 @@ export default {
             isMaximized: false,
             dialogUpdate: false,
             updateInfo: {
+                currentVersion: '',
                 version: '',
                 releaseNotes: '',
-                releasedAt: null
+                releasedAt: null,
+                updateType: null,
+                isDownloading: false,
+                downloadProgress: 0
             },
             notificationLimit: 10,
             currentPage: 1,
@@ -297,6 +308,35 @@ export default {
         if (window.electronAPI && window.electronAPI.onWindowStateChange) {
             window.electronAPI.onWindowStateChange((isMax) => {
                 this.isMaximized = isMax;
+            })
+        }
+
+        // Listen for auto-updater events
+        if (window.electronAPI) {
+            window.electronAPI.onUpdateAvailable((info) => {
+                this.updateInfo = {
+                    version: info.version || 'Unknown',
+                    releaseNotes: info.releaseNotes || 'No release notes available',
+                    releasedAt: info.releaseDate
+                }
+                this.dialogUpdate = true
+            })
+
+            window.electronAPI.onUpdateNotAvailable((info) => {
+                this.$message.success('You are using the latest version')
+            })
+
+            window.electronAPI.onUpdateError((error) => {
+                this.$message.error('Update error: ' + error.message)
+            })
+
+            window.electronAPI.onDownloadProgress((progress) => {
+                console.log('Download progress:', progress.percent + '%')
+            })
+
+            window.electronAPI.onUpdateDownloaded((info) => {
+                this.$message.success('Update downloaded! Restarting to install...')
+                window.electronAPI.installUpdate()
             })
         }
 
@@ -375,77 +415,73 @@ export default {
                     break
             }
         },
-        checkForUpdate() {
-            const loadingMessage = this.$message({
-                type: 'info',
-                message: "Checking for new version...",
-                duration: 0,
-                showClose: false
-            })
+        async checkForUpdate() {
+            try {
+                if (!window.electronAPI || !window.electronAPI.checkForUpdate) {
+                    this.$message.warning('Update feature is not available')
+                    return
+                }
 
-            window.electronAPI.checkForUpdate()
-                .then((result) => {
-                    loadingMessage.close()
-                    
-                    if (!result.success) {
-                        this.$message.error('Failed to check for updates: ' + result.error)
-                        return
-                    }
+                const response = await window.electronAPI.checkForUpdate()
+                console.log('Check update response:', response)
 
-                    if (result.needsUpdate) {
-                        this.updateInfo = {
-                            version: result.latestVersion,
-                            releaseNotes: result.releaseNotes || 'No release notes available',
-                            releasedAt: result.releasedAt
-                        }
-                        this.dialogUpdate = true
-                    } else {
-                        this.$message.success('You are using the latest version: v' + result.currentVersion)
-                    }
-                })
-                .catch((error) => {
-                    loadingMessage.close()
-                    console.error('Check for update error:', error)
-                    this.$message.error('Failed to check for updates')
-                })
+                if (!response) {
+                    this.$message.error('No response from update server')
+                    return
+                }
+
+                if (!response.success) {
+                    this.$message.error(response.message || 'Failed to check for updates')
+                    return
+                }
+
+                // Update check was successful, events will be triggered if update is available
+                this.$message.success('Update check completed')
+            } catch (error) {
+                console.error('Check update error:', error)
+                this.$message.error('Failed to check for updates: ' + (error.message || 'Unknown error'))
+            }
+        },
+        parseVersion(version) {
+            if (!version) return [0, 0, 0]
+            const parts = version.split('.')
+            return parts.map(p => parseInt(p, 10) || 0)
+        },
+        getUpdateType(current, latest) {
+            const c = this.parseVersion(current)
+            const l = this.parseVersion(latest)
+
+            if (l[0] > c[0]) return 'major'
+            if (l[1] > c[1]) return 'minor'
+            return 'patch'
         },
         handleUpdate() {
             this.dialogUpdate = false
-            
+
             const loadingMessage = this.$message({
                 type: 'info',
-                message: 'Opening download page...',
+                message: 'Downloading update...',
                 duration: 0,
                 showClose: false
             })
 
-            window.electronAPI.performUpdate()
+            window.electronAPI.downloadUpdate()
                 .then((result) => {
-                    loadingMessage.close()
-                    
                     if (result.success) {
-                        if (result.manual) {
-                            this.$message({
-                                type: 'info',
-                                message: 'Please download and install the latest version from the opened page.',
-                                duration: 5000
-                            })
-                        } else {
-                            this.$message({
-                                type: 'success',
-                                message: 'Download started! Please install the new version after download completes.',
-                                duration: 5000
-                            })
-                        }
+                        this.$message.success('Download started! The app will restart automatically after download completes.')
                     } else {
-                        this.$message.error('Update failed: ' + result.message)
+                        loadingMessage.close()
+                        this.$message.error('Download failed: ' + result.error)
                     }
                 })
                 .catch((error) => {
                     loadingMessage.close()
-                    console.error('Update error:', error)
-                    this.$message.error('Update failed')
+                    console.error('Download error:', error)
+                    this.$message.error('Download failed')
                 })
+        },
+        dismissUpdate() {
+            this.dialogUpdate = false
         },
         async changePass() {
             this.loading = true
@@ -487,9 +523,22 @@ export default {
         async loadNotifications() {
             this.isReloading = true
             try {
+                if (!window.electronAPI || !window.electronAPI.getAllNotifications) {
+                    console.warn('Notification API not available')
+                    this.notifications = []
+                    return
+                }
+
                 const response = await window.electronAPI.getAllNotifications()
+
+                if (!response) {
+                    console.error('No response from getAllNotifications')
+                    this.notifications = []
+                    return
+                }
+
                 if (response.success) {
-                    this.notifications = response.data.map(n => ({
+                    this.notifications = (response.data || []).map(n => ({
                         mrid: n.mrid,
                         name: n.name,
                         message: n.message,
@@ -498,11 +547,21 @@ export default {
                         created_at: n.created_at,
                         icon: this.getIconByType(n.type)
                     }))
-                    // this.$message.success('Loaded notifications successfully')
+                } else {
+                    console.error('Failed to load notifications:', response.message)
+                    this.notifications = []
+                    // Only show error message if user manually refreshes
+                    if (this.isReloading && this.notifications.length === 0) {
+                        this.$message.error('Failed to load notifications: ' + (response.message || 'Unknown error'))
+                    }
                 }
             } catch (error) {
                 console.error('Error loading notifications:', error)
-                this.$message.error('Failed to load notifications')
+                this.notifications = []
+                // Only show error message if user manually refreshes
+                if (this.isReloading && this.notifications.length === 0) {
+                    this.$message.error('Failed to load notifications')
+                }
             } finally {
                 this.isReloading = false
             }
@@ -638,21 +697,21 @@ export default {
         },
         formatReleaseNotes(notes) {
             if (!notes) return 'No release notes available'
-            
+
             // Convert markdown-style lists to HTML
             let formatted = notes
                 .replace(/^- (.+)$/gm, '<li>$1</li>')
                 .replace(/^\* (.+)$/gm, '<li>$1</li>')
                 .replace(/^• (.+)$/gm, '<li>$1</li>')
-            
+
             // Wrap lists in ul tags
             if (formatted.includes('<li>')) {
                 formatted = '<ul>' + formatted + '</ul>'
             }
-            
+
             // Convert line breaks to <br>
             formatted = formatted.replace(/\n/g, '<br>')
-            
+
             return formatted
         }
     }
@@ -1042,6 +1101,46 @@ export default {
     font-size: 11px;
     color: rgba(255, 255, 255, 0.6);
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.current-version {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.new-version-label {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.update-type-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #ffffff;
+    background: linear-gradient(135deg, #e6a23c 0%, #f56c6c 100%);
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    width: fit-content;
+    margin-top: 4px;
+}
+
+.download-progress {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+.progress-text {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .app-logo-mini img {
