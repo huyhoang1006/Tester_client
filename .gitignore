@@ -27,3 +27,6 @@ pnpm-debug.log*
 
 # bv (beads viewer) local config and caches
 .bv/
+.opencode/
+.planning/
+.opencode/opencode.json

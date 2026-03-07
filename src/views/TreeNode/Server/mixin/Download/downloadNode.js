@@ -155,6 +155,145 @@ export default {
                 }
                 
                 return
+            } else if (node.mode === 'voltageLevel') {
+                // ================================================================
+                // STAGE 1: VOLTAGE LEVEL DOWNLOAD
+                // ================================================================
+                console.log('[STAGE 1] VoltageLevel mode - START')
+                
+                // ================================================================
+                // ================================================================
+                // STAGE 1.1: Validate Selected Node
+                // ================================================================
+                console.log('[STAGE 1.1] Validating voltageLevel node...')
+
+                // Validate: mrid exists
+                const voltageLevelId = node.mrid || node.id
+                if (!voltageLevelId) {
+                    console.log('[STAGE 1.1] ERROR: No mrid found in node')
+                    this.$message.error('VoltageLevel ID not found')
+                    return
+                }
+
+                // Validate: parent substation exists
+                const parentSubstationId = node.parentId
+                if (!parentSubstationId) {
+                    console.log('[STAGE 1.1] ERROR: No parentId found')
+                    this.$message.error('Parent substation not found')
+                    return
+                }
+
+                console.log('[STAGE 1.1] Selected voltageLevel:', {
+                    mrid: voltageLevelId,
+                    name: node.name,
+                    aliasName: node.aliasName,
+                    parentId: parentSubstationId
+                })
+
+                // ================================================================
+                // STAGE 1.2: Download FULL Organisation Chain first
+                // ================================================================
+                console.log('[STAGE 1.2] Starting FULL Organisation Chain download...')
+
+                try {
+                    // Find parentSubstation in ServerTree
+                    const parentSubstationNode = this.findNodeById(parentSubstationId, this.ownerServerList)
+
+                    if (!parentSubstationNode) {
+                        console.log('[STAGE 1.2] ERROR: Parent substation not found in Server Tree')
+                        this.$message.error('Parent substation not found in Server Tree.')
+                        return
+                    }
+
+                    const parentOrgId = parentSubstationNode.parentId
+
+                    if (!parentOrgId) {
+                        console.log('[STAGE 1.2] ERROR: Parent org not found')
+                        this.$message.error('Parent organisation not found')
+                        return
+                    }
+
+                    // Find organisation node
+                    const orgNode = this.findNodeById(parentOrgId, this.ownerServerList)
+
+                    if (orgNode) {
+                        console.log('[STAGE 1.2] Found parent org:', orgNode.name)
+                        await this.downloadOrganisationChainForParent(orgNode)
+                        console.log('[STAGE 1.2] Full organisation chain downloaded successfully')
+                    } else {
+                        console.warn('[STAGE 1.2] WARNING: Parent org node not found in Server Tree')
+                    }
+
+                } catch (error) {
+                    console.error('[STAGE 1.2] Error downloading org chain:', error)
+                    this.$message.error('Error downloading organisation chain: ' + error.message)
+                }
+
+                // ================================================================
+                // STAGE 1.3: Download Parent Substation if not exists
+                // ================================================================
+                console.log('[STAGE 1.3] Checking parent substation in client tree...')
+
+                try {
+                    const parentSubstationNode = this.findNodeById(parentSubstationId, this.ownerServerList)
+                    
+                    if (parentSubstationNode) {
+                        // Check if exists in client tree
+                        const existingSubstation = this.findNodeById(parentSubstationId, this.organisationClientList)
+                        
+                        if (!existingSubstation) {
+                            console.log('[STAGE 1.3] Parent substation not in client tree - downloading...')
+                            
+                            // Download substation
+                            const { substation } = await this.prepareSubstationDownloadData(parentSubstationNode)
+                            const result = await this.downloadSubstationToDb(substation, parentSubstationNode.parentId)
+                            
+                            if (!result.success) {
+                                console.error('[STAGE 1.3] Failed to download parent substation:', result.message)
+                            }
+                        } else {
+                            console.log('[STAGE 1.3] Parent substation already in client tree')
+                        }
+                    }
+
+                } catch (error) {
+                    console.error('[STAGE 1.3] Error checking parent substation:', error)
+                }
+
+                // ================================================================
+                // STAGE 1.4: Refresh client tree after downloading parent substation
+                // This ensures parent substation is in client tree before voltageLevel download
+                // ================================================================
+                console.log('[STAGE 1.4] Refreshing client tree after parent substation download...')
+                await this.showLocationRoot()
+
+                // ================================================================
+                // STAGE 2: Prepare and Download VoltageLevel
+                // ================================================================
+                console.log('[STAGE 2] Starting prepareVoltageLevelDownloadData')
+
+                try {
+                    // Gọi Stage 2: Prepare data
+                    const { voltageLevel, parentSubstationId: vlParentSubstationId } = 
+                        await this.prepareVoltageLevelDownloadData(node)
+                    
+                    console.log('[STAGE 2] Data prepared, calling STAGE 3...')
+                    
+                    // Gọi Stage 3: Download to DB
+                    const result = await this.downloadVoltageLevelToDb(voltageLevel, vlParentSubstationId)
+                    
+                    if (result.success) {
+                        this.$message.success('VoltageLevel downloaded successfully!')
+                    } else {
+                        this.$message.error('Download failed: ' + result.message)
+                    }
+                    
+                } catch (error) {
+                    console.error('[STAGE 2] Error in voltageLevel download:', error)
+                    this.$message.error('VoltageLevel download failed: ' + error.message)
+                }
+
+                return
             }
 
             try {
@@ -223,6 +362,49 @@ export default {
                 
                 // Gọi download
                 await this.downloadOrganisationChain(chain)
+                
+                // ================================================================
+                // Add downloaded organisations to client tree
+                // This ensures parent org is available when adding substations
+                // ================================================================
+                console.log('[downloadOrganisationChainForParent] Adding orgs to client tree...')
+                
+                // Get Root org from client tree
+                const rootOrg = this.organisationClientList?.find(org => org.mrid === '00000000-0000-0000-0000-000000000000')
+                
+                if (rootOrg) {
+                    // Initialize children if not exists
+                    if (!rootOrg.children) {
+                        rootOrg.children = []
+                    }
+                    
+                    // Add each downloaded org to Root's children
+                    for (const org of chain) {
+                        const orgNode = {
+                            mrid: org.mrid,
+                            name: org.name,
+                            aliasName: org.aliasName || org.name,
+                            parentId: '00000000-0000-0000-0000-000000000000',
+                            mode: 'organisation'
+                        }
+                        
+                        // Check if already exists
+                        const existingIndex = rootOrg.children.findIndex(c => c.mrid === org.mrid)
+                        if (existingIndex >= 0) {
+                            console.log('[downloadOrganisationChainForParent] Org already in tree:', org.name)
+                            rootOrg.children[existingIndex] = orgNode
+                        } else {
+                            console.log('[downloadOrganisationChainForParent] Adding org to tree:', org.name)
+                            rootOrg.children.push(orgNode)
+                        }
+                    }
+                    
+                    // Expand Root to show
+                    this.$set(rootOrg, 'expanded', true)
+                    console.log('[downloadOrganisationChainForParent] Orgs added to client tree')
+                } else {
+                    console.warn('[downloadOrganisationChainForParent] Root org not found in client tree, skipping tree addition')
+                }
                 
                 console.log('[downloadOrganisationChainForParent] SUCCESS')
                 
@@ -724,11 +906,20 @@ export default {
             
             console.log('[STAGE 2.1] DEBUG: orgData to be stored:', orgData)
             
+            // FIX: If parentArr is empty and parentId is empty, this is a top-level org
+            // Use existing CLIENT_ROOT variable
+            let finalParentId = node.parentId || prevParentId
+            
+            // Check if this is a top-level organisation (parentArr empty + parentId empty)
+            if ((!node.parentArr || node.parentArr.length === 0) && !finalParentId) {
+                finalParentId = CLIENT_ROOT
+            }
+            
             chain.push({
                 id: selectedOrgId,
                 mrid: selectedOrgId,
                 name: node.name || node.aliasName || '',
-                parentId: node.parentId || prevParentId,
+                parentId: finalParentId,
                 _type: 'organisation',
                 _serverData: orgData || { id: selectedOrgId, name: node.name }
             })
@@ -1091,6 +1282,213 @@ export default {
             }
             
             console.log('[STAGE 3] downloadOrganisationChain - END')
+        },
+
+        // ================================================================
+        // STAGE 2: Prepare VoltageLevel Download Data
+        // ================================================================
+        async prepareVoltageLevelDownloadData(node) {
+            console.log('[STAGE 2] prepareVoltageLevelDownloadData - START')
+            console.log('[STAGE 2] Input node:', {
+                mrid: node.mrid,
+                name: node.name,
+                parentId: node.parentId
+            })
+
+            const voltageLevelId = node.mrid || node.id
+            if (!voltageLevelId) {
+                throw new Error('VoltageLevel ID not found')
+            }
+
+            // Gọi API lấy chi tiết voltageLevel
+            console.log('[STAGE 2] Fetching voltageLevel from API, parentSubstationId:', node.parentId)
+            
+            let voltageLevelData = null
+            try {
+                const response = await demoAPI.getVoltageLevelBySubstationId(node.parentId)
+                console.log('[STAGE 2] API response:', response)
+                
+                // Find voltageLevel with matching mRID
+                if (Array.isArray(response)) {
+                    voltageLevelData = response.find(vl => 
+                        vl.mRID === voltageLevelId || 
+                        vl.mrid === voltageLevelId ||
+                        vl.id === voltageLevelId
+                    )
+                } else if (response && (response.mRID === voltageLevelId || response.mrid === voltageLevelId)) {
+                    voltageLevelData = response
+                }
+                
+                console.log('[STAGE 2] Found voltageLevel data:', voltageLevelData)
+                
+            } catch (error) {
+                console.error('[STAGE 2] ERROR fetching voltageLevel:', error)
+                throw new Error('Failed to fetch voltageLevel from server: ' + error.message)
+            }
+
+            if (!voltageLevelData) {
+                console.warn('[STAGE 2] WARNING: voltageLevel not found in API response, using node data')
+                voltageLevelData = {
+                    mRID: voltageLevelId,
+                    name: node.name,
+                    shortName: node.aliasName || node.name
+                }
+            }
+
+            const voltageLevelObj = {
+                id: voltageLevelId,
+                mrid: String(voltageLevelId),
+                name: voltageLevelData?.name || node.name || '',
+                aliasName: voltageLevelData?.shortName || voltageLevelData?.aliasName || node.aliasName || node.name || '',
+                _type: 'voltageLevel',
+                _serverData: voltageLevelData,
+                parentId: node.parentId
+            }
+
+            console.log('[STAGE 2] VoltageLevel prepared:', {
+                mrid: voltageLevelObj.mrid,
+                name: voltageLevelObj.name,
+                aliasName: voltageLevelObj.aliasName,
+                parentId: voltageLevelObj.parentId
+            })
+            console.log('[STAGE 2] prepareVoltageLevelDownloadData - END')
+
+            return {
+                voltageLevel: voltageLevelObj,
+                parentSubstationId: node.parentId
+            }
+        },
+
+        // ================================================================
+        // STAGE 3: Download VoltageLevel to DB
+        // ================================================================
+        async downloadVoltageLevelToDb(voltageLevel, parentSubstationId) {
+            console.log('[STAGE 3] downloadVoltageLevelToDb - START')
+            console.log('[STAGE 3] VoltageLevel:', voltageLevel.name, voltageLevel.mrid)
+            console.log('[STAGE 3] Parent Substation ID:', parentSubstationId)
+
+            // [3.1] IMPORT MAPPERS & ENTITY
+            console.log('[STAGE 3.1] Importing mappers and entity...')
+            const VoltageLevelServerMapper = require('@/views/Mapping/ServerToDTO/VoltageLevel/index.js')
+            const VoltageLevelMapper = require('@/views/Mapping/VoltageLevel/index.js')
+            // eslint-disable-next-line no-unused-vars
+            const VoltageLevelEntity = require('@/views/Flatten/VoltageLevel/index.js').default
+            console.log('[STAGE 3.1] Import completed')
+
+            // [3.2] TRANSFORM SERVER DATA
+            console.log('[STAGE 3.2] Transforming server data...')
+            const serverData = {
+                ...voltageLevel._serverData,
+                mRID: voltageLevel.mrid,
+                substation: { mRID: parentSubstationId }
+            }
+            console.log('[STAGE 3.2] Server data transformed:')
+            console.log('[STAGE 3.2]   - mRID:', serverData.mRID)
+            console.log('[STAGE 3.2]   - name:', serverData.name)
+
+            // [3.3] MAP SERVER → DTO
+            console.log('[STAGE 3.3] Mapping server to DTO...')
+            const dto = VoltageLevelServerMapper.mapServerToDto(serverData)
+            
+            // QUAN TRỌNG: Gán substationId (parentSubstationId)
+            dto.substationId = parentSubstationId
+            
+            // FIX: Generate userIdentifiedObjectId để insert vào table user_identified_object
+            dto.userIdentifiedObjectId = this.generateUuid()
+            
+            console.log('[STAGE 3.3] DTO mapped:')
+            console.log('[STAGE 3.3]   - dto.voltageLevelId:', dto.voltageLevelId)
+            console.log('[STAGE 3.3]   - dto.name:', dto.name)
+            console.log('[STAGE 3.3]   - dto.substationId:', dto.substationId)
+            console.log('[STAGE 3.3]   - dto.userIdentifiedObjectId:', dto.userIdentifiedObjectId)
+
+            // [3.4] MAP DTO → ENTITY
+            console.log('[STAGE 3.4] Mapping DTO to Entity...')
+            const entity = VoltageLevelMapper.volDtoToVolEntity(dto)
+            console.log('[STAGE 3.4] Entity mapped:')
+            console.log('[STAGE 3.4]   - entity.voltageLevel.mrid:', entity.voltageLevel?.mrid)
+            console.log('[STAGE 3.4]   - entity.voltageLevel.name:', entity.voltageLevel?.name)
+            console.log('[STAGE 3.4]   - entity.voltageLevelSubstation.substation_id:', entity.voltageLevelSubstation?.substation_id)
+
+            // [3.5] CHECK EXISTS IN DB
+            console.log('[STAGE 3.5] Checking if entity exists in DB...')
+            // Note: insertVoltageLevelEntity will upsert, no need to get oldEntity
+
+            // [3.6] INSERT TO DB
+            console.log('[STAGE 3.6] Inserting entity to DB...')
+            let insertSuccess = false
+            try {
+                const insertResult = await window.electronAPI.insertVoltageLevelEntity(entity)
+                console.log('[STAGE 3.6] Insert result:')
+                console.log('[STAGE 3.6]   - success:', insertResult.success)
+                console.log('[STAGE 3.6]   - message:', insertResult.message)
+                insertSuccess = insertResult.success
+            } catch (e) {
+                console.error('[STAGE 3.6] ERROR inserting:', e.message)
+            }
+
+            // [3.7] RESULT SUMMARY
+            console.log('[STAGE 3.7] Result summary:')
+            console.log('[STAGE 3.7]   - Insert success:', insertSuccess)
+
+            if (insertSuccess) {
+                console.log('[STAGE 3] ✅ VoltageLevel downloaded successfully:', voltageLevel.name)
+
+                // [3.8] Add to ClientTree
+                console.log('[STAGE 3.8] Adding voltageLevel to client tree...')
+                await this.addVoltageLevelToClientTree(voltageLevel, parentSubstationId)
+
+                return { success: true, message: 'Download successful' }
+            } else {
+                console.error('[STAGE 3] ❌ Failed to download voltageLevel:', voltageLevel.name)
+                return { success: false, message: 'Download failed' }
+            }
+        },
+
+        // ================================================================
+        // STAGE 3.9: Add VoltageLevel to ClientTree
+        // ================================================================
+        async addVoltageLevelToClientTree(voltageLevel, parentSubstationId) {
+            console.log('[STAGE 3.9] Adding voltageLevel to client tree...')
+            console.log('[STAGE 3.9] voltageLevel:', voltageLevel.name, voltageLevel.mrid)
+            console.log('[STAGE 3.9] parentSubstationId:', parentSubstationId)
+
+            // Find parent substation in client tree
+            const parentNode = this.findNodeById(parentSubstationId, this.organisationClientList)
+            
+            console.log('[STAGE 3.9] Parent node found:', parentNode ? 'yes' : 'no')
+
+            if (parentNode) {
+                const children = Array.isArray(parentNode.children) ? [...(parentNode.children || [])] : []
+                
+                const newVoltageLevelNode = {
+                    mrid: voltageLevel.mrid,
+                    name: voltageLevel.name,
+                    aliasName: voltageLevel.aliasName,
+                    parentId: parentSubstationId,
+                    mode: 'voltageLevel'
+                }
+
+                console.log('[STAGE 3.9] New voltageLevel node:', newVoltageLevelNode)
+
+                const existingIndex = children.findIndex(c => c.mrid === voltageLevel.mrid)
+                if (existingIndex >= 0) {
+                    console.log('[STAGE 3.9] VoltageLevel already exists in children, updating...')
+                    children[existingIndex] = newVoltageLevelNode
+                } else {
+                    console.log('[STAGE 3.9] Pushing new voltageLevel to children')
+                    children.push(newVoltageLevelNode)
+                }
+
+                Vue.set(parentNode, 'children', children)
+                this.$set(parentNode, 'expanded', true)
+
+                console.log('[STAGE 3.9] ✅ VoltageLevel added to client tree successfully')
+            } else {
+                console.warn('[STAGE 3.9] Parent substation not found in client tree')
+                console.log('[STAGE 3.9] Refreshing client tree...')
+                await this.showLocationRoot()
+            }
         },
     }
 }

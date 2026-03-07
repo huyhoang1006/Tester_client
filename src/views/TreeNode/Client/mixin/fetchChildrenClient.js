@@ -646,13 +646,10 @@ export default {
                         }
                     } else {
                         const clickedRow = node
-                        console.log('[DEBUG fetchChildren] Getting substations for org:', clickedRow.mrid, 'user_id:', this.$store.state.user.user_id)
                         const [organisationReturn, substationReturn] = await Promise.all([
                             window.electronAPI.getParentOrganizationByParentMrid(clickedRow.mrid),
                             window.electronAPI.getSubstationsInOrganisationForUser(clickedRow.mrid, this.$store.state.user.user_id)
                         ])
-                        console.log('[DEBUG fetchChildren] organisationReturn:', organisationReturn)
-                        console.log('[DEBUG fetchChildren] substationReturn:', substationReturn)
                         
                         if (organisationReturn.success && organisationReturn.data && organisationReturn.data.length > 0) {
                             organisationReturn.data.forEach((row) => {
