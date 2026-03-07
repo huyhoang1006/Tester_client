@@ -9,10 +9,11 @@ import path from 'path'
 import {v4 as newUuid} from 'uuid'
 import {spawn} from 'child_process'
 import readline from 'readline'
+import * as updateStart from '@/update/index'
 
 // import {userFunc} from '@/function'
 // import {ipcUploadCustom} from '@/ipcmain'
-import {ipcCim, ipcEntity, ipcAppOption} from '@/ipcmain'
+import {ipcCim, ipcEntity, ipcAppOption,} from '@/ipcmain'
 let win
 let importerProcess = null
 
@@ -381,6 +382,8 @@ app.on('ready', async () => {
 
     //app option
     ipcAppOption.active()
+
+    updateStart.active()
 
     // ipcMain.handle('getAllUser', async function (event) {
     //     const _users = await userFunc.getAllUser()
