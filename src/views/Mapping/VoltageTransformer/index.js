@@ -44,9 +44,27 @@ export function mapDtoToEntity(dto) {
     entity.OldPotentialTransformerInfo.mrid = dto.assetInfoId;
     entity.OldPotentialTransformerInfo.manufacturer_type = dto.properties.manufacturer_type || null;
     entity.OldPotentialTransformerInfo.standard = dto.ratings.standard || '';
+    
+    // Xử lý rated_frequency (bao gồm custom value)
+    let frequencyValue = dto.ratings.rated_frequency.value;
+    let frequencyUnit = dto.ratings.rated_frequency.unit;
+    
+    if (frequencyValue === 'Custom') {
+        // Ưu tiên lấy từ rated_frequency_custom (DTO cũ), sau đó mới đến rated_frequency.custom_value
+        frequencyValue = dto.ratings.rated_frequency_custom || dto.ratings.rated_frequency.custom_value || '';
+        // Khi custom, sử dụng unit mặc định là Hz (không có multiplier)
+        frequencyUnit = 'Hz';
+    }
+    
+    const ratedFrequencyForSave = {
+        mrid: dto.ratings.rated_frequency.mrid || null,
+        value: frequencyValue,
+        unit: frequencyUnit
+    };
+    
     entity.OldPotentialTransformerInfo.rated_frequency = dto.ratings.rated_frequency.mrid || '';
     const newRatedFrequency = new Frequency();
-    mappingUnit(newRatedFrequency, dto.ratings.rated_frequency);
+    mappingUnit(newRatedFrequency, ratedFrequencyForSave);
     entity.frequency.push(newRatedFrequency);
     entity.OldPotentialTransformerInfo.rated_voltage = dto.ratings.rated_voltage.mrid || '';
     const newRatedVoltage = new Voltage();
@@ -115,7 +133,14 @@ export function mapEntityToDto(entity) {
     for (let frequency of entity.frequency) {
         if (frequency.mrid === entity.OldPotentialTransformerInfo.rated_frequency) {
             dto.ratings.rated_frequency.mrid = frequency.mrid || '';
-            dto.ratings.rated_frequency.value = frequency.value || '';
+            if (['50', '60', '16.7'].includes(frequency.value)) {
+                dto.ratings.rated_frequency.value = frequency.value || '';
+                dto.ratings.rated_frequency_custom = '';
+            } else {
+                dto.ratings.rated_frequency.value = 'Custom';
+                dto.ratings.rated_frequency.custom_value = frequency.value || '';
+                dto.ratings.rated_frequency_custom = frequency.value || '';
+            }
             dto.ratings.rated_frequency.unit = frequency.multiplier + '|' + frequency.unit || '';
         }
     }
@@ -149,9 +174,9 @@ const mapDataVTRevert = (entity) => {
             mrid: item.mrid || null,
             name: item.name || null,
 
-            usr_formula: '',
+            usr_formula: item.usr_formula || '',
 
-            rated_power_factor: '',
+            rated_power_factor: item.rated_power_factor || '',
 
             usr_rated_voltage: voltage
                 ? {

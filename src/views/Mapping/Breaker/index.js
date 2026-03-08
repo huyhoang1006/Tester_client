@@ -810,6 +810,7 @@ export function mapEntityToDto(entity) {
     dto.operatingMechanismId = entity.oldOperatingMechanism?.mrid
     dto.operating.type = entity.oldOperatingMechanism?.type
     dto.operating.serial_no = entity.oldOperatingMechanism?.serial_number
+    dto.operating.comment = entity.oldOperatingMechanism?.description || ''
     dto.operatingMechanismInfoId = entity.oldOperatingMechanismInfo?.mrid
     dto.operating.manufacturer_type = entity.oldOperatingMechanismInfo?.manufacturer_type
     dto.operatingMechanismLifecycleDateId = entity.operatingLifecycleDate?.mrid

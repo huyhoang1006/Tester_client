@@ -122,6 +122,8 @@ import * as ReactorJobMapper from '@/views/Mapping/ReactorJob/index'
 import * as DisconnectorJobMapper from '@/views/Mapping/DisconnectorJob/index'
 import * as RotatingMachineJobMapper from '@/views/Mapping/RotatingMachineJob/index'
 import * as VoltageTransformerJobMapper from '@/views/Mapping/VoltageTransformerJob/index'
+import * as BayServerMapper from '@/views/Mapping/ServerToDTO/Bay/index.js'
+import * as TransformerServerMapper from '@/views/Mapping/ServerToDTO/Transformer/index.js'
 
 import * as disconnectorMapper from '@/views/Mapping/Disconnector/index'
 import * as PowerCableMapper from '@/views/Mapping/PowerCable'
@@ -135,6 +137,8 @@ import * as reactorMapper from '@/views/Mapping/Reactor'
 import * as demoAPI from '@/api/demo/index.js'
 import * as PowerCableServerMapper from '@/views/Mapping/ServerToDTO/PowerCable/index.js'
 import * as OrganisationServerMapper from '@/views/Mapping/ServerToDTO/Organisation/index.js'
+import * as SubstationServerMapper from '@/views/Mapping/ServerToDTO/Substation/index.js'
+import * as VoltageLevelServerMapper from '@/views/Mapping/ServerToDTO/VoltageLevel/index.js'
 
 import VoltageLevel from '@/views/VoltageLevel/index.vue'
 import Bay from '@/views/Bay/index.vue'
@@ -955,20 +959,7 @@ export default {
                         }
                         const dataCurrentTransformer = await window.electronAPI.getCurrentTransformerEntityByMrid(tab.parentId)
                         if (dataCurrentTransformer.success) {
-                            // Keep full entity but add flat properties for Overview compatibility
-                            const entity = dataCurrentTransformer.data
-                            this.assetData = {
-                                ...entity,
-                                // Add flat properties for Overview component
-                                kind: entity.asset.kind,
-                                type: entity.asset.type,
-                                serial_number: entity.asset.serial_number,
-                                mrid: entity.asset.mrid
-                            }
-                            // Update productAssetModelData if available
-                            if (entity.productAssetModel) {
-                                this.productAssetModelData = entity.productAssetModel
-                            }
+                            this.assetData = dataCurrentTransformer.data
                         } else {
                             this.assetData = {}
                         }
@@ -1160,7 +1151,7 @@ export default {
                         }
                         const dataCircuitBreaker = await window.electronAPI.getBreakerEntityByMrid(tab.parentId)
                         if (dataCircuitBreaker.success) {
-                            this.assetData = BreakerMapper.mapEntityToDto(dataCircuitBreaker.data)
+                            this.assetData = dataCircuitBreaker.data
                         } else {
                             this.assetData = {}
                         }
@@ -1194,32 +1185,73 @@ export default {
        // Trong src/views/Common/Tabs.vue
         async loadDataServer(tab, index) {
             try { if (tab.mode === 'substation') {
-                    const serverData = tab; 
-
-                    
-                    const SubstationDto = require('@/views/Dto/Substation').default;
-                    const dto = new SubstationDto();
-
-                    
-                    dto.subsId = String(serverData.id || serverData.mrid || ''); 
-                    dto.name = serverData.name || '';
-                    dto.generation = serverData.generation || '';
-                    dto.industry = serverData.industry || '';
-                    dto.comment = serverData.description || ''; 
-                    
-                    dto.organisationId = String(serverData.parentId || '');
-
-                    this.$nextTick(() => {
-                        if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
-                            this.$refs.componentLoadData[index].loadData({
-                                dto: dto,
-                                locationList: [], 
-                                personList: []
-                            });
-                        }
-                    });
+                const response = await demoAPI.getSubstationById(tab.mrid);
+                console.log("Response from server for substation:", response);
+                if (response) {
+                        const serverData = response.data || response;
+                        const dto = SubstationServerMapper.mapServerToDto(serverData);
+                        this.$nextTick(() => {
+                            if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                                this.$refs.componentLoadData[index].loadData({
+                                    dto: dto,
+                                    locationList: [],
+                                    personList: []
+                                });
+                            }
+                        });
+                    } else {
+                        this.$message.error("Failed to load substation data");
+                    }
                 } 
-                
+                else if (tab.mode === 'voltageLevel') {
+                    const response = await demoAPI.getVoltageLevelById(tab.mrid);
+                    console.log("Response from server for VoltageLevel:", response);
+
+                    if (response) {
+                        // Xử lý response (có thể là data trực tiếp hoặc bọc trong .data)
+                        const serverData = response.data || response;
+                        
+                        // Map dữ liệu Server sang DTO
+                        const dto = VoltageLevelServerMapper.mapServerToDto(serverData);
+
+                        this.$nextTick(() => {
+                            if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                                // Gọi hàm loadData của component VoltageLevel/index.vue
+                                this.$refs.componentLoadData[index].loadData(dto);
+                            }
+                        });
+                    } else {
+                        this.$message.error("Failed to load Voltage Level data");
+                    }
+                }
+                else if (tab.mode === 'bay') {
+                    const response = await demoAPI.getBayById(tab.mrid);
+                    console.log("Response from server for Bay:", response);
+
+                    if (response) {
+                        // Xử lý response: lấy data bên trong nếu có wrapper .data
+                        const serverData = response.data || response;
+                        
+                        // Map dữ liệu
+                        const dto = BayServerMapper.mapServerToDto(serverData);
+
+                        // Nếu server không trả về ID cha, giữ nguyên ID cha từ lúc click trên cây (để nút Save hoạt động đúng context)
+                        if (!dto.voltageLevel && !dto.substation) {
+                            // Logic phụ thuộc vào Bay này thuộc VoltageLevel hay Substation
+                            // tab.parentId đã có sẵn từ cây thư mục
+                            // Bạn có thể gán thêm vào dto nếu component View cần
+                            dto.parentId = tab.parentId;
+                        }
+
+                        this.$nextTick(() => {
+                            if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                                this.$refs.componentLoadData[index].loadData(dto);
+                            }
+                        });
+                    } else {
+                        this.$message.error("Failed to load Bay data");
+                    }
+                }
                 else if (tab.mode === 'organisation') {
                     const serverData = tab;
 
@@ -1236,10 +1268,36 @@ export default {
 
                     this.$nextTick(() => {
                         if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
-                            this.$refs.componentLoadData[index].loadData(dto);
+                            this.$refs.componentLoadData[index].loadData({
+    dto: dto,
+    locationList: [],
+    personList: []
+});
                         }
                     });
                 } 
+                else if (tab.mode === 'asset' && tab.asset === 'Transformer') {
+                    // Gọi API lấy dữ liệu Transformer
+                    // tab.mrid ở đây tương ứng với ID transformer (vd: 5)
+                    const response = await demoAPI.getTransformerById(tab.mrid);
+                    console.log("Response from server for Transformer:", response);
+
+                    if (response) {
+                        // Log cho thấy dữ liệu nằm trong response.data
+                        const serverData = response.data || response;
+                        
+                        // Map dữ liệu
+                        const dto = TransformerServerMapper.mapServerToDto(serverData);
+
+                        this.$nextTick(() => {
+                            if (this.$refs.componentLoadData && this.$refs.componentLoadData[index]) {
+                                this.$refs.componentLoadData[index].loadData(dto);
+                            }
+                        });
+                    } else {
+                        this.$message.error("Failed to load Transformer data");
+                    }
+                }
                 else if (tab.mode == 'asset' && tab.asset === 'Power cable') {
                     const response = await demoAPI.getAssetById(tab.mrid, 'PowerCable');
                     if (response) {

@@ -17,7 +17,8 @@ export const mapServerToDto = (serverData) => {
     }
 
     // 2. Base Voltage
-    const baseV = serverData.baseVoltage || {};
+    const baseVContainer = serverData.baseVoltage || {};
+    const baseV = baseVContainer.nominalVoltage || baseVContainer;
     dto.baseVoltageId = baseV.mRID || '';
     dto.base_voltage_value = baseV.value !== undefined ? baseV.value : '';
     dto.base_voltage_unit = baseV.unit || UnitSymbol.V;

@@ -1,7 +1,9 @@
 import * as demoAPI from '@/api/demo/index.js'
 import * as PowerCableMapping from '@/views/Mapping/PowerCable/index'
 import * as PowerCableServerMapper from '@/views/Mapping/ServerToDTO/PowerCable/index.js'
-import { mapOrganisationEntityToServer } from '@/utils/MapperClient/mapOrganisationToServer.js'
+import { mapSubstationEntityToServer } from '@/utils/MapperClient/mapSubstationToServer.js'
+import { mapVoltageLevelEntityToServer } from '@/utils/MapperClient/mapVoltageLevelToServer.js'
+import { mapBayEntityToServer } from '@/utils/MapperClient/mapBayToServer.js'
 
 export default {
     methods: {
@@ -11,14 +13,25 @@ export default {
                 return;
             }
             const node = this.selectedNodes[this.selectedNodes.length - 1];
-
-            if (node.mode === 'organisation') {
-                this.$confirm(`Upload Organisation "${node.name}" to Server?`, 'Confirm Upload', {
+            if (!node.parentId) {
+                this.$message.error('Cannot upload root node. Please select a child node with parent.');
+                return;
+            }
+            if (node.mode === 'substation') {
+                this.$confirm(`Upload Substation "${node.name}" to Server?`, 'Confirm Upload', {
                     confirmButtonText: 'Upload',
                     cancelButtonText: 'Cancel',
                     type: 'info'
                 }).then(async () => {
-                    await this.processUploadOrganisation(node);
+                    await this.processUploadSubstation(node);
+                }).catch(() => { });
+            } else if (node.mode === 'voltageLevel') {
+                this.$confirm(`Upload VoltageLevel "${node.name}" to Server?`, 'Confirm Upload', {
+                    confirmButtonText: 'Upload',
+                    cancelButtonText: 'Cancel',
+                    type: 'info'
+                }).then(async () => {
+                    await this.processUploadVoltageLevel(node);
                 }).catch(() => { });
             } else if (node.asset === 'Power cable') {
                 this.$confirm(`Upload Power Cable "${node.serial_number || node.name}" to Server?`, 'Confirm Upload', {
@@ -28,97 +41,157 @@ export default {
                 }).then(async () => {
                     await this.processUploadPowerCable(node);
                 }).catch(() => { });
+            } else if (node.mode === 'bay') {
+                this.$confirm(`Upload Bay "${node.name}" to Server?`, 'Confirm Upload', {
+                    confirmButtonText: 'Upload',
+                    cancelButtonText: 'Cancel',
+                    type: 'info'
+                }).then(async () => {
+                    await this.processUploadBay(node);
+                }).catch(() => { });
             } else {
-                this.$message.warning('Currently only "Organisation" and "Power cable" upload are supported.');
+                this.$message.warning('Currently only "Substation", "VoltageLevel" and "Power cable" upload are supported.');
             }
         },
 
-        async processUploadOrganisation(node) {
-            const loading = this.$loading({
-                lock: true,
-                text: 'Uploading Organisation to Server...',
-                spinner: 'el-icon-loading',
-                background: 'rgba(0, 0, 0, 0.7)'
-            });
+        async validateParentOnServer(parentMrid) {
+            try {
+                if (!parentMrid) {
+                    return false;
+                }
+                try {
+                    const res = await demoAPI.getOrganisationById(parentMrid);
+                    if (res && (res.id || res.data?.id)) {
+                        return true;
+                    }
+                } catch (e) {
+                    // Silent fail
+                }
+
+                const ownerRes = await demoAPI.getOwnerOrganisation();
+                const ownerId = ownerRes?.id || ownerRes?.[0]?.id;
+
+                if (ownerId) {
+                    const childrenRes = await demoAPI.getChildOrganisation(ownerId);
+                    const children = Array.isArray(childrenRes) ? childrenRes : (childrenRes?.data || []);
+
+                    const found = children.find(org =>
+                        org.mrid === parentMrid ||
+                        org.id === parentMrid ||
+                        String(org.id) === String(parentMrid) ||
+                        org.aliasName === parentMrid
+                    );
+
+                    if (found) {
+                        return true;
+                    }
+
+                    const foundDeep = await this.searchOrganisationDeep(ownerId, parentMrid);
+                    if (foundDeep) {
+                        return true;
+                    }
+                }
+
+                const parentIdNum = parseInt(parentMrid);
+                if (!isNaN(parentIdNum) && ownerId && parentIdNum !== parseInt(ownerId)) {
+                    try {
+                        const resByNum = await demoAPI.getOrganisationById(parentIdNum);
+                        if (resByNum && (resByNum.id || resByNum.data?.id)) {
+                            return true;
+                        }
+                    } catch (e) {
+                        // Silent fail
+                    }
+                }
+
+                return false;
+            } catch (error) {
+                console.error('[validateParentOnServer] Error:', error);
+                return false;
+            }
+        },
+
+        async searchOrganisationDeep(parentId, targetMrid, maxDepth = 5, currentDepth = 0) {
+            if (currentDepth >= maxDepth) return null;
 
             try {
-                // 1. Lấy entity từ local database
-                const entityRes = await window.electronAPI.getOrganisationEntityByMrid(node.mrid);
-                if (!entityRes.success || !entityRes.data) {
-                    throw new Error("Local organisation data not found.");
-                }
+                const childrenRes = await demoAPI.getChildOrganisation(parentId);
+                const children = Array.isArray(childrenRes) ? childrenRes : (childrenRes?.data || []);
 
-                const entity = entityRes.data;
-                console.log('[Upload Organisation] Local entity:', entity);
+                const found = children.find(org =>
+                    org.mrid === targetMrid ||
+                    org.id === targetMrid ||
+                    String(org.id) === String(targetMrid)
+                );
 
-                // 2. Xác định Parent Node
-                // - node.parentId là mrid của parent organisation trong local DB
-                let parentNode = null;
-                if (node.parentId) {
-                    parentNode = this.findNodeById(node.parentId, this.organisationClientList);
-                }
+                if (found) return found;
 
-                // 3. Map entity sang format server
-                // - parentOrganisation sẽ là mrid (UUID) của parent từ local DB
-                const serverPayload = mapOrganisationEntityToServer(entity, parentNode);
-
-                console.log('[Upload Organisation] Server payload:', serverPayload);
-
-                // 4. Xác định ownerId cho API
-                // - Nếu có parent, ownerId = id của parent trên server (cần resolve)
-                // - Nếu là root org, ownerId = id của owner organisation trên server
-                let ownerId = null;
-
-                if (parentNode && parentNode.serverId) {
-                    // Parent đã có server ID
-                    ownerId = parentNode.serverId;
-                } else if (parentNode) {
-                    // Parent chưa có server ID, cần tìm trên server
-                    // Tìm parent trên server bằng mrid
-                    const parentRes = await demoAPI.getOrganisationById(parentNode.mrid);
-                    if (parentRes && parentRes.id) {
-                        ownerId = parentRes.id;
-                    }
-                } else {
-                    // Root organisation - lấy owner từ server
-                    const ownerOrgRes = await demoAPI.getOwnerOrganisation();
-                    if (ownerOrgRes && ownerOrgRes.id) {
-                        ownerId = ownerOrgRes.id;
+                for (const child of children) {
+                    if (child.id) {
+                        const result = await this.searchOrganisationDeep(child.id, targetMrid, maxDepth, currentDepth + 1);
+                        if (result) return result;
                     }
                 }
-
-                if (!ownerId) {
-                    throw new Error("Cannot determine ownerId for organisation.");
-                }
-
-                console.log('[Upload Organisation] ownerId:', ownerId);
-
-                // 5. Gọi API tạo organisation
-                const response = await demoAPI.createOrganisation(serverPayload, ownerId);
-
-                if (response) {
-                    this.$message.success(`Upload Organisation "${node.name}" successfully!`);
-
-                    // Refresh tree
-                    if (this.clientSlide) {
-                        await this.showLocationRoot();
-                    }
-                }
-
             } catch (error) {
-                console.error("[Upload Organisation] Error:", error);
-                if (error.response && error.response.data) {
-                    const msg = error.response.data.message || error.response.data.error || JSON.stringify(error.response.data);
-                    this.$message.error(`Server Error: ${msg}`);
-                } else {
-                    this.$message.error(error.message || 'Error during organisation upload');
+                // Silent fail
+            }
+
+            return null;
+        },
+
+        async resolveOrganisationNumericId(parentMrid) {
+            try {
+                try {
+                    const res = await demoAPI.getOrganisationById(parentMrid);
+                    if (res && (res.id || res.data?.id)) {
+                        return res.id || res.data?.id;
+                    }
+                } catch (e) {
+                    // Silent fail
                 }
-            } finally {
-                loading.close();
+
+                const ownerRes = await demoAPI.getOwnerOrganisation();
+                const ownerId = ownerRes?.id || ownerRes?.[0]?.id;
+
+                if (ownerId) {
+                    const childrenRes = await demoAPI.getChildOrganisation(ownerId);
+                    const children = Array.isArray(childrenRes) ? childrenRes : (childrenRes?.data || []);
+
+                    const found = children.find(org =>
+                        org.mrid === parentMrid ||
+                        org.id === parentMrid ||
+                        String(org.id) === String(parentMrid)
+                    );
+
+                    if (found) {
+                        return found.id;
+                    }
+
+                    const foundDeep = await this.searchOrganisationDeep(ownerId, parentMrid);
+                    if (foundDeep) {
+                        return foundDeep.id;
+                    }
+                }
+
+                const parentIdNum = parseInt(parentMrid);
+                if (!isNaN(parentIdNum) && ownerId && parentIdNum !== parseInt(ownerId)) {
+                    try {
+                        const resByNum = await demoAPI.getOrganisationById(parentIdNum);
+                        if (resByNum && (resByNum.id || resByNum.data?.id)) {
+                            return resByNum.id || resByNum.data?.id;
+                        }
+                    } catch (e) {
+                        // Silent fail
+                    }
+                }
+
+                return null;
+            } catch (error) {
+                console.error('[resolveOrganisationNumericId] Error:', error);
+                return null;
             }
         },
 
-        // Hàm quét toàn bộ server để tìm ID (dự phòng)
         async findBayNumericIdGlobal(bayMrid) {
             try {
                 const orgRes = await demoAPI.getOwnerOrganisation();
@@ -141,11 +214,9 @@ export default {
         },
 
         async resolveServerParentId(parentMrid, parentType) {
-            // --- FIX CỨNG ID CHO TRƯỜNG HỢP CỦA BẠN ---
             if (parentMrid === 'e423cbd1-470b-4b8b-b06d-74575075fe02') {
-                return 6; // Trả về ID 6
+                return 6;
             }
-            // ------------------------------------------
 
             if (parentType === 'bay') {
                 return await this.findBayNumericIdGlobal(parentMrid);
@@ -154,15 +225,7 @@ export default {
         },
 
         async processUploadPowerCable(node) {
-            const loading = this.$loading({
-                lock: true,
-                text: 'Uploading to Server...',
-                spinner: 'el-icon-loading',
-                background: 'rgba(0, 0, 0, 0.7)'
-            });
-
             try {
-                // 1. Lấy dữ liệu & Map
                 const entityRes = await window.electronAPI.getPowerCableEntityByMrid(node.mrid, node.parentId);
                 if (!entityRes.success || !entityRes.data) throw new Error("Local data not found.");
 
@@ -172,27 +235,20 @@ export default {
                 }
                 const serverPayload = PowerCableServerMapper.mapDtoToServer(dto);
 
-                // 2. Xác định Parent Node
                 const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
                 if (!parentNode) throw new Error("Parent node not found in Client Tree");
 
-                // --- XÁC ĐỊNH OWNER TYPE ---
-                let ownerType = 'substation'; // Mặc định
+                let ownerType = 'substation';
 
-                // Logic thông thường
                 if (parentNode.mode === 'bay') ownerType = 'bay';
                 else if (parentNode.mode === 'substation') ownerType = 'substation';
                 else if (parentNode.mode === 'voltageLevel') ownerType = 'voltageLevel';
 
-                // --- FIX CỨNG TYPE CHO TRƯỜNG HỢP CỦA BẠN ---
-                // Nếu UUID khớp, ép kiểu về 'bay' bất kể cây Client đang để là gì
                 if (node.parentId === 'e423cbd1-470b-4b8b-b06d-74575075fe02') {
                     console.warn("Target UUID detected. Forcing ownerType = 'bay'");
                     ownerType = 'bay';
                 }
-                // --------------------------------------------
 
-                // 3. Lấy ID số (Sẽ trả về 6)
                 const numericOwnerId = await this.resolveServerParentId(node.parentId, ownerType);
 
                 if (!numericOwnerId) {
@@ -201,7 +257,6 @@ export default {
 
                 console.log(`Uploading to: ownerId=${numericOwnerId} & ownerType=${ownerType}`);
 
-                // 4. Gọi API
                 const response = await demoAPI.createPowerCableCim(serverPayload, numericOwnerId, ownerType);
 
                 if (response) {
@@ -216,8 +271,312 @@ export default {
                 } else {
                     this.$message.error(error.message || 'Error during upload');
                 }
-            } finally {
-                loading.close();
+            }
+        },
+
+        async processUploadSubstation(node) {
+            try {
+                const userId = this.$store.state.user.user_id
+                const entityRes = await window.electronAPI.getSubstationEntityByMrid(node.mrid, userId, node.parentId);
+                if (!entityRes.success || !entityRes.data) {
+                    throw new Error("Local substation data not found.");
+                }
+
+                const entity = entityRes.data;
+                console.log('[Upload Substation] Local entity:', entity);
+
+                if (!node.parentId) {
+                    throw new Error("Cannot upload substation without parent organisation.");
+                }
+
+                let parentNode = null;
+                parentNode = this.findNodeById(node.parentId, this.organisationClientList);
+
+                console.log('[Upload Substation] Resolving parent ID:', node.parentId);
+                const ownerId = node.parentId;
+
+                console.log('[Upload Substation] Resolved ownerId:', ownerId);
+
+                const serverPayload = mapSubstationEntityToServer(entity, parentNode);
+
+                console.log('[Upload Substation] Server payload:', serverPayload);
+
+                console.log('[Upload Substation] Using ownerId:', ownerId);
+
+                const response = await demoAPI.createSubstation(serverPayload, ownerId);
+
+                console.log('[Upload Substation] Response:', response);
+                this.$message.success(`Upload Substation "${node.name}" successfully!`);
+
+                if (this.clientSlide) {
+                    await this.showLocationRoot();
+                }
+
+            } catch (error) {
+                console.error("[Upload Substation] Error:", error);
+                if (error.response && error.response.data) {
+                    const msg = error.response.data.message || error.response.data.error || JSON.stringify(error.response.data);
+                    this.$message.error(`Server Error: ${msg}`);
+                } else {
+                    this.$message.error(error.message || 'Error during substation upload');
+                }
+            }
+        },
+
+        async processUploadVoltageLevel(node) {
+            try {
+                const entityRes = await window.electronAPI.getVoltageLevelEntityByMrid(node.mrid);
+                if (!entityRes.success || !entityRes.data) {
+                    throw new Error("Local voltage level data not found.");
+                }
+
+                const entity = entityRes.data;
+
+                if (!node.parentId) {
+                    throw new Error("Cannot upload voltage level without parent substation.");
+                }
+
+                const serverPayload = mapVoltageLevelEntityToServer(entity, null);
+
+                console.log('[Upload VoltageLevel] Server payload:', serverPayload);
+
+                const numericOwnerId = await this.resolveSubstationNumericId(node.parentId);
+                if (!numericOwnerId) {
+                    throw new Error(`Cannot find parent Substation on Server. Make sure Substation is uploaded first.`);
+                }
+                const response = await demoAPI.createVoltageLevel(serverPayload, numericOwnerId);
+
+                console.log('[Upload VoltageLevel] Response:', response);
+                this.$message.success(`Upload VoltageLevel "${node.name}" successfully!`);
+
+                if (this.clientSlide) {
+                    await this.showLocationRoot();
+                }
+
+            } catch (error) {
+                console.error("[Upload VoltageLevel] Error:", error);
+                if (error.response && error.response.data) {
+                    const msg = error.response.data.message || error.response.data.error || JSON.stringify(error.response.data);
+                    this.$message.error(`Server Error: ${msg}`);
+                } else {
+                    this.$message.error(error.message || 'Error during voltage level upload');
+                }
+            }
+        },
+
+        async resolveVoltageLevelNumericId(voltageLevelMrid, substationIdFromEntity) {
+            try {
+                const parentNode = this.findNodeById(voltageLevelMrid, this.organisationClientList);
+                const voltageLevelName = parentNode?.name;
+                const substationId = substationIdFromEntity || parentNode?.substationId;
+
+                console.log('[resolveVoltageLevelNumericId] Looking for mrid:', voltageLevelMrid, 'name:', voltageLevelName, 'substationId:', substationId);
+
+                if (!voltageLevelMrid) return null;
+
+                const orgRes = await demoAPI.getOwnerOrganisation();
+                let orgId = (Array.isArray(orgRes) && orgRes.length > 0) ? (orgRes[0].id || orgRes[0].mrid) : (orgRes?.id);
+
+                console.log('[resolveVoltageLevelNumericId] Owner orgId:', orgId);
+
+                if (!orgId) return null;
+
+                // Nếu có substationId, tìm Substation trực tiếp trước
+                if (substationId) {
+                    console.log('[resolveVoltageLevelNumericId] Trying to find substation by substationId:', substationId);
+                    try {
+                        const subRes = await demoAPI.getSubstationById(substationId);
+                        console.log('[resolveVoltageLevelNumericId] getSubstationById response:', subRes);
+
+                        const sub = subRes?.data || subRes;
+                        console.log('[resolveVoltageLevelNumericId] Parsed sub:', sub);
+
+                        if (sub && (sub.id || sub.mrid)) {
+                            console.log('[resolveVoltageLevelNumericId] Found substation:', sub.name, 'id:', sub.id || sub.mrid);
+
+                            const vlListRes = await demoAPI.getVoltageLevelBySubstationId(sub.id || sub.mrid);
+                            const vlList = Array.isArray(vlListRes) ? vlListRes : (vlListRes.data || []);
+
+                            console.log('[resolveVoltageLevelNumericId] VoltageLevels in substation:', vlList.map(v => ({ name: v.name, mrid: v.mrid, id: v.id })));
+
+                            let match = vlList.find(vl => (vl.mrid || vl.id) === voltageLevelMrid);
+                            if (match) return match.id;
+
+                            if (voltageLevelName) {
+                                match = vlList.find(vl => vl.name === voltageLevelName);
+                                if (match) return match.id;
+                            }
+
+                            return null;
+                        }
+                    } catch (e) {
+                        console.log('[resolveVoltageLevelNumericId] Error finding substation by id:', e.message);
+                    }
+                }
+
+                // Lấy tất cả Substations từ owner org và các child orgs
+                let subListRes = await demoAPI.getChildSubstation(orgId);
+                let subList = Array.isArray(subListRes) ? subListRes : (subListRes.data || []);
+
+                // Nếu không có substation, thử get child organisations
+                if (subList.length === 0) {
+                    const childOrgs = await demoAPI.getChildOrganisation(orgId);
+                    const childOrgList = Array.isArray(childOrgs) ? childOrgs : (childOrgs.data || []);
+
+                    console.log('[resolveVoltageLevelNumericId] Child orgs:', childOrgList.map(o => o.name || o.id));
+
+                    for (const childOrg of childOrgList) {
+                        subListRes = await demoAPI.getChildSubstation(childOrg.id);
+                        const tempSubList = Array.isArray(subListRes) ? subListRes : (subListRes.data || []);
+                        subList = [...subList, ...tempSubList];
+                    }
+                }
+
+                // Nếu vẫn không có substation trong org 20, thử tìm trực tiếp Substation bằng substationId nếu có
+                if (subList.length === 0 && parentNode?.substationId) {
+                    try {
+                        const subRes = await demoAPI.getSubstationById(parentNode.substationId);
+                        if (subRes && (subRes.id || subRes.data?.id)) {
+                            subList = [subRes.data || subRes];
+                        }
+                    } catch (e) {
+                        console.log('[resolveVoltageLevelNumericId] Could not find substation by id:', parentNode.substationId);
+                    }
+                }
+
+                console.log('[resolveVoltageLevelNumericId] All Substations:', subList.map(s => s.name));
+
+                // Tìm VoltageLevel theo mrid trong tất cả Substations
+                for (const sub of subList) {
+                    const vlListRes = await demoAPI.getVoltageLevelBySubstationId(sub.id);
+                    const vlList = Array.isArray(vlListRes) ? vlListRes : (vlListRes.data || []);
+
+                    console.log('[resolveVoltageLevelNumericId] Sub:', sub.name, '- VoltageLevels:', vlList.map(v => ({ name: v.name, mrid: v.mrid, id: v.id })));
+
+                    // Tìm theo mrid trước
+                    let match = vlList.find(vl => (vl.mrid || vl.id) === voltageLevelMrid);
+                    if (match) return match.id;
+
+                    // Nếu không tìm thấy theo mrid, thử tìm theo name
+                    if (voltageLevelName) {
+                        match = vlList.find(vl => vl.name === voltageLevelName);
+                        if (match) return match.id;
+                    }
+                }
+
+                return null;
+            } catch (error) {
+                console.error("[resolveVoltageLevelNumericId] Error:", error);
+                return null;
+            }
+        },
+
+        async resolveSubstationNumericId(substationMrid) {
+            try {
+                const parentNode = this.findNodeById(substationMrid, this.organisationClientList);
+                const substationName = parentNode?.name;
+
+                if (!substationName) return null;
+
+                const orgRes = await demoAPI.getOwnerOrganisation();
+                let orgId = (Array.isArray(orgRes) && orgRes.length > 0) ? (orgRes[0].id || orgRes[0].mrid) : (orgRes?.id);
+
+                if (!orgId) return null;
+
+                let subListRes = await demoAPI.getChildSubstation(orgId);
+                let subList = Array.isArray(subListRes) ? subListRes : (subListRes.data || []);
+
+                if (subList.length === 0) {
+                    const childOrgs = await demoAPI.getChildOrganisation(orgId);
+                    const childOrgList = Array.isArray(childOrgs) ? childOrgs : (childOrgs.data || []);
+
+                    for (const childOrg of childOrgList) {
+                        subListRes = await demoAPI.getChildSubstation(childOrg.id);
+                        const tempSubList = Array.isArray(subListRes) ? subListRes : (subListRes.data || []);
+                        subList = [...subList, ...tempSubList];
+                    }
+                }
+
+                const match = subList.find(sub =>
+                    sub.mrid === substationMrid ||
+                    sub.id === substationMrid ||
+                    String(sub.id) === String(substationMrid)
+                ); if (match) return match.id;
+
+                return null;
+            } catch (error) {
+                console.error("[resolveSubstationNumericId] Error:", error);
+                return null;
+            }
+        },
+
+        async processUploadBay(node) {
+            try {
+                const entityRes = await window.electronAPI.getBayEntityByMrid(node.mrid);
+                if (!entityRes.success || !entityRes.data) {
+                    throw new Error("Local bay data not found.");
+                }
+
+                const entity = entityRes.data;
+
+                if (!node.parentId) {
+                    throw new Error("Cannot upload bay without parent.");
+                }
+
+                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
+
+                // Lấy substationId từ parentNode (voltageLevel có parentId = substation mrid)
+                const substationId = parentNode?.parentId;
+                console.log('[Upload Bay] parentNode:', parentNode?.name, 'mode:', parentNode?.mode, 'substationId (parentId):', substationId);
+
+                let ownerType = '';
+                let numericOwnerId = null;
+
+                if (parentNode) {
+                    if (parentNode.mode === 'voltageLevel') {
+                        ownerType = 'VOLTAGE_LEVEL';
+                        numericOwnerId = await this.resolveVoltageLevelNumericId(node.parentId, substationId);
+                    } else if (parentNode.mode === 'substation') {
+                        ownerType = 'SUBSTATION';
+                        numericOwnerId = await this.resolveSubstationNumericId(node.parentId);
+                    }
+                }
+
+                // Fallback: nếu parentId đã là numeric ID từ server (sau khi upload parent thành công)
+                if (!numericOwnerId && /^\d+$/.test(String(node.parentId))) {
+                    numericOwnerId = parseInt(node.parentId);
+                    if (parentNode?.mode === 'voltageLevel') {
+                        ownerType = 'VOLTAGE_LEVEL';
+                    } else {
+                        ownerType = 'SUBSTATION';
+                    }
+                }
+
+                if (!numericOwnerId || !ownerType) {
+                    throw new Error(`Cannot find Numeric ID for parent (UUID: ${node.parentId}) on Server. Make sure parent is uploaded first.`);
+                }
+
+                const serverPayload = mapBayEntityToServer(entity);
+
+                console.log('[Upload Bay] Uploading to ownerId:', numericOwnerId, 'ownerType:', ownerType);
+
+                const response = await demoAPI.createBay(serverPayload, numericOwnerId, ownerType);
+
+                console.log('[Upload Bay] Response:', response);
+                this.$message.success(`Upload Bay "${node.name}" successfully!`);
+
+                if (this.clientSlide) {
+                    await this.showLocationRoot();
+                }
+
+            } catch (error) {
+                console.error("[Upload Bay] Error:", error);
+                if (error.response && error.response.data) {
+                    const msg = error.response.data.message || error.response.data.error || JSON.stringify(error.response.data);
+                    this.$message.error(`Server Error: ${msg}`);
+                } else {
+                    this.$message.error(error.message || 'Error during bay upload');
+                }
             }
         }
     }

@@ -7,6 +7,7 @@ export const mapServerToDto = (serverData) => {
     // 1. Root & Substation Level
     dto.subsId = serverData.mRID || '';
     dto.name = serverData.name || '';
+    dto.aliasName = serverData.aliasName || '';
     dto.comment = serverData.description || '';
 
     // Các cờ boolean trong JSON trả về string "false"/"true" hoặc boolean
