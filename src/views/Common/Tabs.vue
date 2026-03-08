@@ -1151,7 +1151,7 @@ export default {
                         }
                         const dataCircuitBreaker = await window.electronAPI.getBreakerEntityByMrid(tab.parentId)
                         if (dataCircuitBreaker.success) {
-                            this.assetData = dataCircuitBreaker.data
+                            this.assetData = BreakerMapper.mapEntityToDto(dataCircuitBreaker.data)
                         } else {
                             this.assetData = {}
                         }
