@@ -1,5 +1,31 @@
 {
-    "testId": "cd37afa1-0357-4fe3-b52e-cd960c39a1cf",
-    "testCode": "GeneralInspection",
-    "testName": "General inspection"
+    "testId": "4523fb4a-6733-4b08-9675-278a4c8ac7cf",
+    "testCode": "SeparateSourceAc",
+    "testName": "Separate Source AC Voltage Test",
+    "columns": [
+        {
+            "mrid": "0bd89524-919d-4597-bbfa-556b19db1636",
+            "code": "applied_terminal",
+            "name": "Applied Terminal",
+            "type": "string"
+        },
+        {
+            "mrid": "8a1f2b3c-4d5e-4a6b-9c01-0f1e2d3c4b5a",
+            "code": "test_voltage",
+            "name": "Test voltage",
+            "type": "analog",
+            "unit": "k|V"
+        },
+        {
+            "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",
+            "code": "assessment",
+            "name": "Assessment",
+            "type": "discrete",
+            "valueAliasSetId": "40c60468-232a-4643-851f-50616900f601",
+            "options": [
+                { "value": 0, "alias": "Fail", "mrid": "d8858564-e438-4034-9273-030919163001" },
+                { "value": 1, "alias": "Pass", "mrid": "d8858564-e438-4034-9273-030919163002" }
+            ]
+        }
+    ]
 }

@@ -1,5 +1,19 @@
 {
-    "testId": "cd37afa1-0357-4fe3-b52e-cd960c39a1cf",
-    "testCode": "GeneralInspection",
-    "testName": "General inspection"
+    "testId": "0e78e50b-ce66-4329-9201-d795a827f962",
+    "testCode": "TestingInstruments",
+    "testName": "Testing Instruments",
+    "columns": [
+        {
+            "mrid": "9f1b8c4e-2e44-4b8a-9a33-000000000003",
+            "code": "item",
+            "name": "Item",
+            "type": "string"
+        },
+        {
+            "mrid": "8a44e2f7-19f6-4ac4-b691-69a96231c06e",
+            "code": "type",
+            "name": "Type",
+            "type": "string"
+        }
+    ]
 }
