@@ -89,7 +89,7 @@ const versionAPI = {
 // Git Update API
 const gitUpdateAPI = {
     checkForUpdate: () => ipcRenderer.invoke('checkForUpdate'),
-   downloadUpdate: () => ipcRenderer.invoke('downloadUpdate'),
+    downloadUpdate: () => ipcRenderer.invoke('downloadUpdate'),
     installUpdate: () => ipcRenderer.invoke('installUpdate'),
     onUpdateAvailable: (callback) => ipcRenderer.on('update-available', (_event, data) => callback(data)),
     onUpdateNotAvailable: (callback) => ipcRenderer.on('update-not-available', (_event, data) => callback(data)),

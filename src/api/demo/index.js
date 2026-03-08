@@ -27,9 +27,9 @@ export const getVoltageLevelById = (voltageLevelId) => {
     return client.get(`http://222.252.22.158:8087/api/voltage-level/cim/${voltageLevelId}`)
 }
 
-export const getBayById = (id) => {
-    return client.get(`http://222.252.22.158:8087/api/bay/cim/${id}`)
-}
+// export const getBayById = (id) => {
+//     return client.get(`http://222.252.22.158:8087/api/bay/cim/${id}`)
+// }
 
 export const getTransformerById = (id) => {
     return client.get(`http://222.252.22.158:8087/api/transformer/${id}`)
@@ -117,6 +117,15 @@ export const createVoltageLevel = (data, ownerId) => {
 
 export const createBay = (data, ownerId, ownerType) => {
     return client.post(`http://222.252.22.158:8087/api/bay/cim/create`, data, {
+        params: {
+            ownerId: ownerId,
+            ownerType: ownerType
+        }
+    });
+}
+
+export const createTransformer = (data, ownerId, ownerType) => {
+    return client.post(`http://222.252.22.158:8087/api/transformer/cim/create`, data, {
         params: {
             ownerId: ownerId,
             ownerType: ownerType

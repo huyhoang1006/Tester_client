@@ -1,4 +1,3 @@
-
 import BayDto from "@/views/Dto/Bay";
 
 export const mapServerToDto = (serverData) => {

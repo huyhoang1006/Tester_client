@@ -23,11 +23,12 @@ export const mapServerToDto = (serverData) => {
 
     // 1. Properties
     // Dùng ID của transformer làm mrid chính
-    dto.properties.mrid = String(trans.id || ''); 
+    dto.properties.mrid = String(trans.id || '');
     dto.properties.serial_no = info.serialNo || '';
     dto.properties.apparatus_id = info.apparatusId || '';
     dto.properties.manufacturer = info.manufacturerName || '';
-    dto.properties.manufacturing_year = info.manufacturingYear || '';
+    dto.properties.manufacturer_type = info.manufacturerType || info.manufacturerName || '';  // Thêm
+    dto.properties.manufacturer_year = info.manufacturingYear || '';
     dto.properties.country_of_origin = info.countryName || '';
     dto.properties.type = trans.assetType || '';
     dto.properties.kind = 'Transformer';
