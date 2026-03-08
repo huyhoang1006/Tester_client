@@ -39,7 +39,7 @@
                     <th @click="removeAll()" class="action-col"><i class="fa-solid fa-trash pointer"></i></th>
                 </thead>
                 <tbody>
-                    <tr v-for="(item, index) in testData.table" :key="index">
+                    <tr v-for="(item, index) in testData.table.table1" :key="index">
                         <td>
                             <div style="display: flex; width: 100%;">
                                 <el-input size="mini" v-model="item.phase.value"></el-input>
@@ -100,7 +100,7 @@
                     <th class="action-col"><i class="fa-solid fa-trash pointer "></i></th>
                 </thead>
                 <tbody>
-                    <tr v-for="(item, index) in testData.table" :key="index">
+                    <tr v-for="(item, index) in testData.table.table1" :key="index">
                         <td v-if="index % assetData.circuitBreaker.interruptersPerPhase === 0"
                             :rowspan="assetData.circuitBreaker.interruptersPerPhase">
                             <div style="display: flex; width: 100%;">

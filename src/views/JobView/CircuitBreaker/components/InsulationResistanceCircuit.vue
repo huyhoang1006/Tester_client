@@ -39,7 +39,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, index) in testData.table" :key="index">
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>
                         {{ index + 1 }}
                     </td>
@@ -146,13 +146,14 @@
 </template>
 
 <script>
+import CircuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
+import * as common from '../../Common/index'
 export default {
     name: 'InsulationResistanceCircuit',
     data() {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
-            asset_: {},
         }
     },
     props: {
@@ -171,6 +172,9 @@ export default {
         },
         assetData() {
             return this.asset
+        },
+        rowData() {
+            return common.buildEmptyTestRow(CircuitBreakerTestMap['InsulationResistanceCircuit'].columns)
         }
     },
     watch: {
@@ -244,13 +248,7 @@ export default {
             this.openAssessmentDialog = false
         },
         add() {
-            this.testData.table.push({
-                measure: '',
-                testVoltage: '',
-                r60s: '',
-                assessment: '',
-                condition_indicator: ''
-            })
+            this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
@@ -258,30 +256,26 @@ export default {
                 cancelButtonText: 'Cancel',
                 type: 'warning'
             }).then(() => {
-                this.testData.table = []
+                this.testData.table.table1 = []
             })
         },
         deleteTest(index) {
-            this.testData.table.splice(index, 1)
+            this.testData.table.table1.splice(index, 1)
         },
         addTest(index) {
-            const data = {
-                measure: '',
-                testVoltage: '',
-                r60s: '',
-                assessment: '',
-                condition_indicator: ''
-            }
-            this.testData.table.splice(index + 1, 0, data)
+            const data = JSON.parse(JSON.stringify(this.rowData))
+            this.testData.table.table1.splice(index + 1, 0, data)
         },
         calculator() {
             this.$message.success('Calculating successfully')
         },
-
         clear() {
-            this.testData.table.forEach((element) => {
-                Object.keys(element).forEach((key) => {
-                    element[key] = ''
+            this.testData.table.table1.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (key === "mrid") return;
+                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                        row[key].value = ""
+                    }
                 })
             })
         },

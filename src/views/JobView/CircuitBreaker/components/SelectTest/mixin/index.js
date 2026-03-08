@@ -33,7 +33,7 @@ export default {
                     data = await this.initOCOCOTiming(testTypeCode, assetData)
                     break
                 case 'ContactResistance':
-                    data = await this.initcontactResistance(testTypeCode, assetData)
+                    data = await this.initContactResistance(testTypeCode, assetData)
                     break
                 case 'MinimumPickup':
                     data = await this.initMinimumPickup(testTypeCode)
@@ -583,11 +583,13 @@ export default {
                 }
             }
         },
-        async initcontactResistance(testTypeCode, assetData) {
+        async initContactResistance(testTypeCode, assetData) {
+            console.log(assetData)
+
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
 
-            let table = []
+            let table1 = []
             let phase = ['A', 'B', 'C']
 
             for (let i = 0; i < assetData.circuitBreaker.numberOfPhases; i++) {
@@ -613,14 +615,14 @@ export default {
                         }
                     }
 
-                    table.push(row)
+                    table1.push(row)
                 }
             }
 
             return {
                 rowDataExampleCondition,
                 table: {
-                    table1: table
+                    table1: table1
                 }
             }
         },
@@ -723,7 +725,6 @@ export default {
             }
         },
         async initInsulationResistanceCircuit(testTypeCode, assetData) {
-            console.log(assetData)
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
 
@@ -961,23 +962,36 @@ export default {
             }
         },
         async initGeneralInspection(testTypeCode) {
-            const testConfig = circuitBreakerTestMap[testTypeCode]
-
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
 
             let table1 = []
 
-            const defaultRows = testConfig.defaultRows || []
+            const data = [
+                'Nameplate',
+                'Installation check',
+                'Grounding check',
+                'SF6 pressure check',
+                'Mechanical operating',
+                'Electrical operaing',
+                'Close at 75% control voltage',
+                'Open at 70% control voltage',
+                'Checking local control',
+                'Checking remote control',
+                'Check interlocking circuit by SF6 gas pressure',
+                'Check contact resistance of auxiliary contacts'
+            ]
 
-            defaultRows.forEach((defRow) => {
+            data.forEach((element) => {
                 const row = JSON.parse(JSON.stringify(rowDataExample))
 
-                Object.keys(defRow).forEach((key) => {
-                    if (row[key] && typeof row[key] === 'object' && 'value' in row[key]) {
-                        row[key].value = defRow[key]
-                    }
-                })
+                if (row.item) {
+                    row.item.value = element
+                } else if (row.items) {
+                    row.items.value = element
+                } else if (row.name) {
+                    row.name.value = element
+                }
 
                 table1.push(row)
             })

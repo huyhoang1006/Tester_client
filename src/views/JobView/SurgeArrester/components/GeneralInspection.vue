@@ -137,7 +137,6 @@ export default {
         calculator() {
             this.$message.success('Calculating successfully')
         },
-
         clear() {
             this.testData.table.table1.forEach(row => {
                 Object.keys(row).forEach(key => {
