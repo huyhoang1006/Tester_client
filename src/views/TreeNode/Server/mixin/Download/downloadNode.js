@@ -294,6 +294,208 @@ export default {
                 }
 
                 return
+            } else if (node.mode === 'bay') {
+                // ================================================================
+                // STAGE 1: BAY DOWNLOAD
+                // ================================================================
+                console.log('[STAGE 1] Bay mode - START')
+
+                // ================================================================
+                // STAGE 1.1: Validate Selected Node
+                // ================================================================
+                console.log('[STAGE 1.1] Validating Bay node...')
+
+                const bayId = node.mrid || node.id
+                if (!bayId) {
+                    console.log('[STAGE 1.1] ERROR: No mrid found in node')
+                    this.$message.error('Bay ID not found')
+                    return
+                }
+
+                const parentVoltageLevelId = node.parentId
+                if (!parentVoltageLevelId) {
+                    console.log('[STAGE 1.1] ERROR: No parentId (VoltageLevel) found')
+                    this.$message.error('Parent VoltageLevel not found')
+                    return
+                }
+
+                console.log('[STAGE 1.1] Selected Bay:', {
+                    mrid: bayId,
+                    name: node.name,
+                    parentId: parentVoltageLevelId
+                })
+
+                // ================================================================
+                // STAGE 1.2: User Confirmation Dialog
+                // ================================================================
+                try {
+                    await this.$confirm(
+                        `Download Bay [${node.name}] + ancestors?`,
+                        'Xác nhận',
+                        {
+                            confirmButtonText: 'Tải',
+                            cancelButtonText: 'Hủy',
+                            type: 'info'
+                        }
+                    )
+                } catch (cancel) {
+                    this.$message.info('Đã hủy tải')
+                    return
+                }
+
+                // ================================================================
+                // STAGE 1.3: Show Progress Loading
+                // ================================================================
+                const loading = this.$loading({
+                    lock: true,
+                    text: 'Đang kiểm tra...',
+                    spinner: 'el-icon-loading'
+                })
+
+                // ================================================================
+                // STAGE 1.4: Validate Parent VoltageLevel Exists in ServerTree
+                // ================================================================
+                console.log('[STAGE 1.4] Validating parent VoltageLevel in ServerTree...')
+                loading.setText('Đang kiểm tra VoltageLevel cha...')
+
+                const parentVLNode = this.findNodeById(parentVoltageLevelId, this.ownerServerList)
+                if (!parentVLNode) {
+                    loading.close()
+                    this.$message.error('VoltageLevel cha không tồn tại trong ServerTree')
+                    return
+                }
+
+                // ================================================================
+                // STAGE 1.5: Download FULL Chain: Organisation -> Substation
+                // CRITICAL: Download in order - Organisation FIRST, then Substation
+                // ================================================================
+                console.log('[STAGE 1.5] Starting FULL chain download (Org + Substation)...')
+                loading.setText('Đang tải ancestors...')
+
+                try {
+                    const parentSubstationId = parentVLNode.parentId
+                    console.log('[STAGE 1.5] Parent Substation ID:', parentSubstationId)
+                    
+                    if (parentSubstationId) {
+                        const parentSubstationNode = this.findNodeById(parentSubstationId, this.ownerServerList)
+                        console.log('[STAGE 1.5] Parent Substation Node:', parentSubstationNode)
+                        
+                        if (parentSubstationNode) {
+                            // Step 1: Download Organisation FIRST (needed by Substation)
+                            const parentOrgId = parentSubstationNode.parentId
+                            if (parentOrgId) {
+                                const orgNode = this.findNodeById(parentOrgId, this.ownerServerList)
+                                if (orgNode) {
+                                    console.log('[STAGE 1.5] Step 1: Downloading Organisation chain FIRST...')
+                                    await this.downloadOrganisationChainForParent(orgNode)
+                                    console.log('[STAGE 1.5] Organisation chain complete')
+                                }
+                            }
+                            
+                            // Step 2: Then download Substation (Organisation now exists)
+                            console.log('[STAGE 1.5] Step 2: Downloading Substation chain...')
+                            const { substation } = await this.prepareSubstationDownloadData(parentSubstationNode)
+                            const subResult = await this.downloadSubstationToDb(substation, parentSubstationNode.parentId)
+                            console.log('[STAGE 1.5] Substation download result:', subResult)
+                        } else {
+                            console.warn('[STAGE 1.5] Parent Substation node not found in ServerTree')
+                        }
+                    } else {
+                        console.warn('[STAGE 1.5] No parentSubstationId found')
+                    }
+                } catch (error) {
+                    console.warn('[STAGE 1.5] Chain download warning:', error)
+                }
+
+                // Refresh after chain download
+                await this.showLocationRoot()
+
+                // ================================================================
+                // STAGE 1.6: Download Parent VoltageLevel if Not Exists
+                // ================================================================
+                console.log('[STAGE 1.6] Checking parent VoltageLevel in client tree...')
+                loading.setText('Đang kiểm tra VoltageLevel...')
+
+                try {
+                    const existingVL = this.findNodeById(parentVoltageLevelId, this.organisationClientList)
+                    if (!existingVL) {
+                        console.log('[STAGE 1.6] Parent VoltageLevel not in client tree - downloading...')
+                        const { voltageLevel } = await this.prepareVoltageLevelDownloadData(parentVLNode)
+                        const result = await this.downloadVoltageLevelToDb(voltageLevel, parentVLNode.parentId)
+                        if (!result.success) {
+                            console.warn('[STAGE 1.6] VL download warning:', result.message)
+                        }
+                    } else {
+                        console.log('[STAGE 1.6] Parent VoltageLevel already in client tree')
+                    }
+                } catch (error) {
+                    console.error('[STAGE 1.6] Error checking parent VL:', error)
+                }
+
+                // ================================================================
+                // STAGE 2: Prepare and Download Bay
+                // ================================================================
+                console.log('[STAGE 2] Starting prepareBayDownloadData')
+                loading.setText('Đang tải Bay...')
+
+                try {
+                    // Gọi API lấy chi tiết Bay
+                    console.log('[STAGE 2] Fetching Bay from API, bayId:', bayId)
+                    
+                    let bayData = null
+                    let retryCount = 0
+                    const maxRetries = 3
+
+                    while (retryCount < maxRetries) {
+                        try {
+                            const response = await demoAPI.getBayById(bayId)
+                            if (response && (response.mRID || response.mrid)) {
+                                bayData = response
+                                break
+                            }
+                            retryCount++
+                            if (retryCount < maxRetries) {
+                                console.warn(`[STAGE 2] Retry ${retryCount}/${maxRetries} - invalid response`)
+                            }
+                        } catch (apiError) {
+                            retryCount++
+                            console.error(`[STAGE 2] API call failed, retry ${retryCount}/${maxRetries}:`, apiError.message)
+                            if (retryCount >= maxRetries) {
+                                throw apiError
+                            }
+                        }
+                    }
+
+                    if (!bayData) {
+                        loading.close()
+                        this.$message.error('Không lấy được dữ liệu từ API')
+                        return
+                    }
+
+                    const { bay } = await this.prepareBayDownloadData(node, bayData, parentVoltageLevelId)
+                    
+                    console.log('[STAGE 2] Data prepared, calling STAGE 3...')
+                    
+                    // Gọi Stage 3: Download to DB
+                    const result = await this.downloadBayToDb(bay, parentVoltageLevelId)
+                    
+                    loading.close()
+
+                    if (result.success) {
+                        // Refresh client tree
+                        await this.showLocationRoot()
+                        this.$message.success(`Bay [${node.name}] + ancestors downloaded successfully!`)
+                    } else {
+                        this.$message.error('Download failed: ' + result.message)
+                    }
+                    
+                } catch (error) {
+                    console.error('[STAGE 2] Error in Bay download:', error)
+                    loading.close()
+                    this.$message.error('Bay download failed: ' + error.message)
+                }
+
+                return
             }
 
             try {
@@ -1488,6 +1690,154 @@ export default {
                 console.warn('[STAGE 3.9] Parent substation not found in client tree')
                 console.log('[STAGE 3.9] Refreshing client tree...')
                 await this.showLocationRoot()
+            }
+        },
+
+        // ================================================================
+        // BAY DOWNLOAD: Prepare Bay Download Data
+        // ================================================================
+        async prepareBayDownloadData(node, bayServerData, parentVoltageLevelId) {
+            console.log('[STAGE 2] prepareBayDownloadData - START')
+            console.log('[STAGE 2] Input node:', {
+                mrid: node.mrid,
+                name: node.name,
+                parentId: parentVoltageLevelId
+            })
+
+            const bayId = node.mrid || node.id
+            if (!bayId) {
+                throw new Error('Bay ID not found')
+            }
+
+            // Import Bay mapper
+            const BayServerMapper = require('@/views/Mapping/ServerToDTO/Bay/index.js')
+
+            // Transform server data
+            const serverData = {
+                ...bayServerData,
+                mRID: bayId,
+                voltageLevel: { mRID: parentVoltageLevelId }
+            }
+
+            // Map to DTO
+            const dto = BayServerMapper.mapServerToDto(serverData)
+
+            console.log('[STAGE 2] Bay DTO mapped:', {
+                bayId: dto.bayId,
+                name: dto.name,
+                voltage_level: dto.voltage_level
+            })
+
+            // Prepare Bay object for DB
+            const bayObj = {
+                mrid: dto.bayId,
+                name: dto.name,
+                bay_energy_meas_flag: dto.bay_energy_meas_flag,
+                bay_power_meas_flag: dto.bay_power_meas_flag,
+                breaker_configuration: dto.breaker_configuration,
+                bus_bar_configuration: dto.bus_bar_configuration,
+                voltage_level: parentVoltageLevelId,
+                _type: 'bay',
+                _serverData: bayServerData
+            }
+
+            console.log('[STAGE 2] Bay prepared:', {
+                mrid: bayObj.mrid,
+                name: bayObj.name,
+                voltage_level: bayObj.voltage_level
+            })
+            console.log('[STAGE 2] prepareBayDownloadData - END')
+
+            return {
+                bay: bayObj,
+                parentVoltageLevelId: parentVoltageLevelId
+            }
+        },
+
+        // ================================================================
+        // BAY DOWNLOAD: Download Bay to DB
+        // ================================================================
+        async downloadBayToDb(bay, parentVoltageLevelId) {
+            console.log('[STAGE 3] downloadBayToDb - START')
+            console.log('[STAGE 3] Bay:', bay.name, bay.mrid)
+            console.log('[STAGE 3] Parent VoltageLevel ID:', parentVoltageLevelId)
+
+            try {
+                // [3.1] Check if Bay already exists
+                console.log('[STAGE 3.1] Checking if Bay exists in DB...')
+                const existingBay = await window.electronAPI.getBayEntityByMrid(bay.mrid)
+                
+                if (existingBay && existingBay.success && existingBay.data) {
+                    console.log('[STAGE 3.1] Bay already exists, will update')
+                }
+
+                // [3.2] Insert/Update Bay via IPC
+                console.log('[STAGE 3.2] Inserting/Updating Bay to DB...')
+                
+                const entityData = {
+                    mrid: bay.mrid,
+                    name: bay.name,
+                    bay_energy_meas_flag: bay.bay_energy_meas_flag || '',
+                    bay_power_meas_flag: bay.bay_power_meas_flag || '',
+                    breaker_configuration: bay.breaker_configuration || '',
+                    bus_bar_configuration: bay.bus_bar_configuration || '',
+                    voltage_level: parentVoltageLevelId,
+                    substation: null // Will be set via voltageLevel relationship
+                }
+
+                const insertResult = await window.electronAPI.insertBayEntity(entityData)
+                
+                if (!insertResult.success) {
+                    console.error('[STAGE 3.2] Bay insert failed:', insertResult.message)
+                    return { success: false, message: insertResult.message }
+                }
+
+                console.log('[STAGE 3.2] ✅ Bay inserted successfully:', bay.name)
+
+                // [3.3] Add Bay to ClientTree
+                console.log('[STAGE 3.3] Adding Bay to client tree...')
+                
+                const parentNode = this.findNodeById(parentVoltageLevelId, this.organisationClientList)
+                
+                if (parentNode) {
+                    if (!parentNode.children) {
+                        parentNode.children = []
+                    }
+                    
+                    const children = parentNode.children
+                    
+                    const newBayNode = {
+                        id: bay.mrid,
+                        mrid: bay.mrid,
+                        name: bay.name,
+                        aliasName: bay.name,
+                        parentId: parentVoltageLevelId,
+                        mode: 'bay'
+                    }
+
+                    const existingIndex = children.findIndex(c => c.mrid === bay.mrid)
+                    if (existingIndex >= 0) {
+                        console.log('[STAGE 3.3] Bay already exists in children, updating...')
+                        children[existingIndex] = newBayNode
+                    } else {
+                        console.log('[STAGE 3.3] Pushing new Bay to children')
+                        children.push(newBayNode)
+                    }
+
+                    Vue.set(parentNode, 'children', children)
+                    this.$set(parentNode, 'expanded', true)
+
+                    console.log('[STAGE 3.3] ✅ Bay added to client tree successfully')
+                } else {
+                    console.warn('[STAGE 3.3] Parent VoltageLevel not found in client tree')
+                }
+
+                console.log('[STAGE 3] ✅ Bay downloaded successfully:', bay.name)
+                return { success: true, message: 'Bay downloaded successfully' }
+
+            } catch (error) {
+                console.error('[STAGE 3] ❌ Failed to download Bay:', error)
+                return { success: false, message: error.message }
             }
         },
     }
