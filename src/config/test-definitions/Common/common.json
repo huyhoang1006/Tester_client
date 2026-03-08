@@ -7,6 +7,12 @@
       "type": "string"
     },
     {
+      "mrid": "0bd89524-919d-4597-bbfa-556b19db1636",
+      "code": "applied_terminal",
+      "name": "Applied Terminal",
+      "type": "string"
+    },
+    {
       "mrid": "509a7f7d-357b-4e6e-9e99-547f4eabfcb8",
       "code": "closing_time",
       "name": "Closing time",
@@ -66,6 +72,41 @@
       "mrid": "494cc6d4-e98f-4895-84cc-03322b5bc610",
       "code": "r_dev",
       "name": "R dev",
+      "type": "analog",
+      "unit": "%"
+    },
+    {
+      "mrid": "a7d78f25-725a-4777-831d-69e602537bd8",
+      "code": "rk",
+      "name": "Rk",
+      "type": "analog",
+      "unit": "Ω"
+    },
+    {
+      "mrid": "cee0c8ba-6c8b-4fa1-8ff8-bbf2f6d2a792",
+      "code": "xk",
+      "name": "Xk",
+      "type": "analog",
+      "unit": "Ω"
+    },
+    {
+      "mrid": "5f7ef146-ecd1-4a8d-91df-bc64bbcc344f",
+      "code": "zk",
+      "name": "Zk",
+      "type": "analog",
+      "unit": "Ω"
+    },
+    {
+      "mrid": "02121b30-c92a-41cc-aa0e-b7a4e6592f46",
+      "code": "uk_cal",
+      "name": "Uk cal",
+      "type": "analog",
+      "unit": "%"
+    },
+    {
+      "mrid": "68ebea17-7af1-4438-87bf-cf7bda61e691",
+      "code": "uk_dev",
+      "name": "Uk dev",
       "type": "analog",
       "unit": "%"
     },
@@ -193,6 +234,12 @@
       "mrid": "c2b9f0a1-1a9d-4a22-8e44-000000000004",
       "code": "measurement",
       "name": "Measurement",
+      "type": "string"
+    },
+    {
+      "mrid": "8a44e2f7-19f6-4ac4-b691-69a96231c06e",
+      "code": "type",
+      "name": "Type",
       "type": "string"
     },
     {

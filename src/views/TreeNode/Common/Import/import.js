@@ -156,143 +156,140 @@ export default {
          * Opens file dialog, parses Excel, and imports transformers
          */
         async importETAPTransformers() {
-            // Validate: Must have selected node as parent
-            if (!this.selectedNodes || this.selectedNodes.length === 0) {
-                this.$message.warning('Please select a parent node (Bay or Voltage Level) to import transformers into')
-                return
-            }
+        //     // Validate: Must have selected node as parent
+        //     // if (!this.selectedNodes || this.selectedNodes.length === 0) {
+        //     //     this.$message.warning('Please select a parent node (Bay or Voltage Level) to import transformers into')
+        //     //     return
+        //     // }
 
-            const parentNode = this.selectedNodes[0]
+        //     const parentNode = this.selectedNodes[0]
 
-            // Validate parent node type - only allow Bay or VoltageLevel
-            if (parentNode.mode !== 'bay' && parentNode.mode !== 'voltageLevel') {
-                this.$message.warning('Please select a Bay or Voltage Level node to import transformers')
-                return
-            }
+        //     // Validate parent node type - only allow Bay or VoltageLevel
+        //     // if (parentNode.mode !== 'bay' && parentNode.mode !== 'voltageLevel') {
+        //     //     this.$message.warning('Please select a Bay or Voltage Level node to import transformers')
+        //     //     return
+        //     // }
 
-            try {
-                // Open file picker for .xlsx files
-                const fileResult = await window.electronAPI.selectFile({
-                    filters: [
-                        { name: 'Excel Files', extensions: ['xlsx', 'xls'] }
-                    ],
-                    properties: ['openFile']
-                })
+        //     try {
+        //         // Open file picker for .xlsx files
+        //         const fileResult = await window.electronAPI.selectFile({
+        //             filters: [
+        //                 { name: 'Excel Files', extensions: ['xlsx', 'xls'] }
+        //             ],
+        //             properties: ['openFile']
+        //         })
 
-                if (!fileResult || fileResult.canceled || !fileResult.filePaths || fileResult.filePaths.length === 0) {
-                    return // User cancelled
-                }
+        //         if (!fileResult || fileResult.canceled || !fileResult.filePaths || fileResult.filePaths.length === 0) {
+        //             return // User cancelled
+        //         }
 
-                const filePath = fileResult.filePaths[0]
-                const fileName = filePath.split(/[\\/]/).pop()
+        //         const filePath = fileResult.filePaths[0]
+        //         const fileName = filePath.split(/[\\/]/).pop()
 
-                // Set importing status
-                this.$store.dispatch('importHistory/setImporting', true)
-                this.$store.dispatch('importHistory/setProgress', 0)
+        //         // Set importing status
+        //         this.$store.dispatch('importHistory/setImporting', true)
+        //         this.$store.dispatch('importHistory/setProgress', 0)
 
-                const { close } = startLoading(this, {
-                    action: 'import',
-                    customText: `Importing ${fileName}...`,
-                    type: 'heavy'
-                });
+        //         const { close } = startLoading(this, {
+        //             action: 'import',
+        //             customText: `Importing ${fileName}...`,
+        //             type: 'heavy'
+        //         });
 
-                let result;
+        //         let result;
 
-                try {
-                    // Import transformers using the ETAP parser
-                    const { importETAPTransformer: importETAPUtil } = await import('@/function/entity/import/ETAPTransformer')
+        //         try {
+        //             // Import transformers using the ETAP parser
+        //             const { importETAPTransformer: importETAPUtil } = await import('@/function/entity/import/ETAPTransformer')
                     
-                    const dependencies = {
-                        electronAPI: window.electronAPI,
-                        mappings: {
-                            TransformerMapping
-                        },
-                        userId: this.$store.state.user.user_id,
-                        messageHandler: this.$message,
-                        progressCallback: (progress) => {
-                            this.$store.dispatch('importHistory/setProgress', progress)
-                        }
-                    }
+        //             const dependencies = {
+        //                 electronAPI: window.electronAPI,
+        //                 mappings: {
+        //                     TransformerMapping
+        //                 },
+        //                 userId: this.$store.state.user.user_id,
+        //                 messageHandler: this.$message,
+        //                 progressCallback: (progress) => {
+        //                     this.$store.dispatch('importHistory/setProgress', progress)
+        //                 }
+        //             }
 
-                    result = await importETAPUtil(filePath, parentNode, dependencies)
+        //             result = await importETAPUtil(filePath, parentNode, dependencies)
 
-                    // Set importing status to false
-                    this.$store.dispatch('importHistory/setImporting', false)
-                    this.$store.dispatch('importHistory/setProgress', 0)
+        //             // Set importing status to false
+        //             this.$store.dispatch('importHistory/setImporting', false)
+        //             this.$store.dispatch('importHistory/setProgress', 0)
 
-                    // Add to import history
-                    this.$store.dispatch('importHistory/addSession', {
-                        fileName: fileName,
-                        timestamp: new Date(),
-                        totalRecords: result.totalRecords,
-                        successCount: result.successCount,
-                        errorCount: result.errorCount,
-                        errors: result.errors || [],
-                        importedNodeIds: result.importedNodeIds || []
-                    })
+        //             // Add to import history
+        //             this.$store.dispatch('importHistory/addSession', {
+        //                 fileName: fileName,
+        //                 timestamp: new Date(),
+        //                 totalRecords: result.totalRecords,
+        //                 successCount: result.successCount,
+        //                 errorCount: result.errorCount,
+        //                 errors: result.errors || [],
+        //                 importedNodeIds: result.importedNodeIds || []
+        //             })
 
-                    // Refresh parent node to show new transformers
-                    if (result.importedNodes && result.importedNodes.length > 0) {
-                        // Add nodes to tree UI
-                        for (const newNodeData of result.importedNodes) {
-                            const node = this.findNodeById(newNodeData.parentId, this.organisationClientList)
-                            if (node) {
-                                const children = Array.isArray(node.children) ? node.children : []
-                                Vue.set(node, 'children', [...children, newNodeData])
-                            }
-                        }
-                    }
+        //             // Refresh parent node to show new transformers
+        //             if (result.importedNodes && result.importedNodes.length > 0) {
+        //                 // Add nodes to tree UI
+        //                 for (const newNodeData of result.importedNodes) {
+        //                     const node = this.findNodeById(newNodeData.parentId, this.organisationClientList)
+        //                     if (node) {
+        //                         const children = Array.isArray(node.children) ? node.children : []
+        //                         Vue.set(node, 'children', [...children, newNodeData])
+        //                     }
+        //                 }
+        //             }
 
-                    // Force refresh parent node
-                    Vue.set(parentNode, '_childrenFetched', false)
-                    await this.fetchChildren(parentNode)
+        //             // Force refresh parent node
+        //             Vue.set(parentNode, '_childrenFetched', false)
+        //             await this.fetchChildren(parentNode)
 
-                } catch (error) {
-                    console.error('Error importing ETAP transformers:', error)
+        //         } catch (error) {
+        //             console.error('Error importing ETAP transformers:', error)
                     
-                    // Set importing status to false
-                    this.$store.dispatch('importHistory/setImporting', false)
-                    this.$store.dispatch('importHistory/setProgress', 0)
+        //             // Set importing status to false
+        //             this.$store.dispatch('importHistory/setImporting', false)
+        //             this.$store.dispatch('importHistory/setProgress', 0)
                     
-                    // Đóng loading và đợi modal biến mất
-                    await close();
+        //             // Đóng loading và đợi modal biến mất
+        //             await close();
                     
-                    // Hiển thị error sau khi modal đã ẩn
-                    this.$message.error(`An error occurred while importing: ${error.message}`)
-                    return;
-                }
+        //             // Hiển thị error sau khi modal đã ẩn
+        //             this.$message.error(`An error occurred while importing: ${error.message}`)
+        //             return;
+        //         }
 
-                // Đóng loading và đợi modal biến mất hoàn toàn
-                await close();
+        //         // Đóng loading và đợi modal biến mất hoàn toàn
+        //         await close();
 
-                // Show result message SAU KHI modal đã biến mất
-                if (result.success) {
-                    if (result.errorCount > 0) {
-                        this.$message.warning(
-                            `Import completed with warnings: ${result.successCount} transformers imported, ${result.errorCount} errors. Check ETAP History for details.`
-                        )
-                    } else {
-                        this.$message.success(
-                            `Successfully imported ${result.successCount} transformers from ${fileName}`
-                        )
-                    }
-                } else {
-                    this.$message.error(
-                        `Import failed: ${result.errors && result.errors.length > 0 ? result.errors[0].message : 'Unknown error'}`
-                    )
-                }
-            } catch (error) {
-                console.error('Error importing ETAP transformers:', error)
+        //         // Show result message SAU KHI modal đã biến mất
+        //         if (result.success) {
+        //             if (result.errorCount > 0) {
+        //                 this.$message.warning(
+        //                     `Import completed with warnings: ${result.successCount} transformers imported, ${result.errorCount} errors. Check ETAP History for details.`
+        //                 )
+        //             } else {
+        //                 this.$message.success(
+        //                     `Successfully imported ${result.successCount} transformers from ${fileName}`
+        //                 )
+        //             }
+        //         } else {
+        //             this.$message.error(
+        //                 `Import failed: ${result.errors && result.errors.length > 0 ? result.errors[0].message : 'Unknown error'}`
+        //             )
+        //         }
+        //     } catch (error) {
+        //         console.error('Error importing ETAP transformers:', error)
                 
-                // Set importing status to false
-                this.$store.dispatch('importHistory/setImporting', false)
-                this.$store.dispatch('importHistory/setProgress', 0)
+        //         // Set importing status to false
+        //         this.$store.dispatch('importHistory/setImporting', false)
+        //         this.$store.dispatch('importHistory/setProgress', 0)
                 
-                this.$message.error(`An error occurred while importing: ${error.message}`)
-            }
+        //         this.$message.error(`An error occurred while importing: ${error.message}`)
+        //     }
         },
-
-
-
     }
 }

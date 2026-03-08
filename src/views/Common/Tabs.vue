@@ -545,13 +545,7 @@ export default {
                                 assetType: tab.asset
                             })
                         } else {
-                            // Nếu entity chưa tồn tại, tạo DTO mới từ tab data
-                            const SurgeArresterDto = require('@/views/Dto/SurgeArrester').default
-                            const dto = new SurgeArresterDto()
-                            if (!dto.properties) dto.properties = {}
-                            dto.properties.serial_no = tab.serial_number || ''
-                            dto.assetId = tab.mrid || ''
-                            this.$refs.componentLoadData[index].loadData(dto)
+                            this.$message.error("Failed to load surge arrester data");
                         }
                     } else if (tab.asset === 'Bushing') {
                         this.parentOrganization = {
