@@ -20,6 +20,16 @@ export const getNotificationById = async (mrid) => {
 }
 
 export const insertNotification = async (entity) => {
+    // Check for duplicate update notification by version in message
+    const versionMatch = entity.message && entity.message.match(/Version\s+(\S+)/)
+    if (versionMatch) {
+        const version = versionMatch[1]
+        const existing = await checkUpdateNotificationExists(version)
+        if (existing) {
+            return { success: false, data: existing, message: 'Update notification already exists', duplicate: true }
+        }
+    }
+
     const createdAt = entity.created_at || new Date().toISOString()
     return new Promise((resolve, reject) => {
         db.run(
@@ -28,6 +38,20 @@ export const insertNotification = async (entity) => {
             function (err) {
                 if (err) reject(err)
                 else resolve({ success: true, data: { ...entity, created_at: createdAt }, message: 'Notification inserted successfully' })
+            }
+        )
+    })
+}
+
+// Check if update notification for this version already exists
+export const checkUpdateNotificationExists = async (version) => {
+    return new Promise((resolve, reject) => {
+        db.get(
+            `SELECT * FROM notification WHERE message LIKE ?`,
+            [`%${version}%`],
+            (err, row) => {
+                if (err) reject(err)
+                else resolve(row || null)
             }
         )
     })
