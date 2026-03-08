@@ -132,7 +132,7 @@ export default {
     },
     methods: {
         add() {
-            this.testData.table.pressureGaugeTable.push({
+            this.testData.table.table1.pressureGaugeTable.push({
                 mrid: '',
                 sf6Pressure: {
                     mrid: '',

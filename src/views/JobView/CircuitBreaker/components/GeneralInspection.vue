@@ -37,7 +37,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, index) in testData.table" :key="index">
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td style="text-align: center;">
                         {{ index + 1 }}
                     </td>
@@ -94,6 +94,20 @@ export default {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
+            generalInspection: [
+                { no: "1", item: "Nameplate" },
+                { no: "2", item: "Installation check" },
+                { no: "3", item: "Grounding check" },
+                { no: "4", item: "SF6 pressure check" },
+                { no: "5", item: "Mechanical operating" },
+                { no: "6", item: "Electrical operating" },
+                { no: "6.1", item: "Close at 75% control voltage" },
+                { no: "6.2", item: "Open at 70% control voltage" },
+                { no: "6.3", item: "Checking local control" },
+                { no: "6.4", item: "Checking remote control" },
+                { no: "7", item: "Check interlocking circuit by SF6 gas pressure" },
+                { no: "8", item: "Check contact resistance of auxililary contacts" }
+            ]
         }
     },
     props: {
@@ -118,7 +132,7 @@ export default {
     },
     methods: {
         add() {
-            this.testData.table.push({
+            this.testData.table.table1.push({
                 mrid: '',
                 item: {
                     mrid: '',
@@ -147,14 +161,14 @@ export default {
                 type: 'warning'
             })
                 .then(() => {
-                    this.testData.table = []
+                    this.testData.table.table1 = []
                 })
                 .catch(() => {
                     // User cancelled, do nothing
                 })
         },
         deleteTest(index) {
-            this.testData.table.splice(index, 1)
+            this.testData.table.table1.splice(index, 1)
         },
         addTest(index) {
             const data = {
@@ -178,15 +192,14 @@ export default {
                     type: 'discrete'
                 }
             }
-            this.testData.table.splice(index + 1, 0, data)
+            this.testData.table.table1.splice(index + 1, 0, data)
         },
         calculator() {
             this.$message.success('Calculating successfully')
         },
-
         clear() {
-            this.testData.table.forEach((element) => {
-                element.items = '',
+            this.testData.table.table1.forEach((element) => {
+                element.item = '',
                     element.assessment = '',
                     element.condition_indicator = ''
             })
