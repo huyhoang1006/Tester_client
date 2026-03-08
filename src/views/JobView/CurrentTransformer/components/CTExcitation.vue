@@ -36,7 +36,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, index) in testData.table" :key="index">
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
                         <td>
                             <el-input size="mini" type="text" v-model="item.name.value"></el-input>
                         </td>
@@ -123,7 +123,7 @@ export default {
     },
     methods: {
         add() {
-            this.testData.table.push({
+            this.testData.table.table1.push({
                 mrid : "",
                 name : {
                     mrid : "",
@@ -164,12 +164,12 @@ export default {
                     type: 'warning'
                 })
                 .then( () => {
-                    this.testData.table = []
+                    this.testData.table.table1 = []
                 }
             )
         },
         deleteTest(index) {
-            this.testData.table.splice(index, 1)
+            this.testData.table.table1.splice(index, 1)
         },
         addTest(index) {
             const data = {
@@ -205,14 +205,14 @@ export default {
                     type : "discrete"
                 }
             }
-            this.testData.table.splice(index+1, 0, data)
+            this.testData.table.table1.splice(index+1, 0, data)
         },
         calculator() {
             this.$message.success('Calculating successfully')
         },
 
         clear() {
-            this.testData.table.forEach((element) => {
+            this.testData.table.table1.forEach((element) => {
                 element.name.value = "",
                 element.i_knee.value = '',
                 element.v_knee.value = '',

@@ -34,12 +34,12 @@ export default {
             const rowDataExample = common.buildEmptyTestRow(CurrentTransformerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(CurrentTransformerConditionMap[testTypeCode].columns)
             
-            let table = []
+            let table1 = []
             
             // Hàng đầu tiên luôn là "Prim - (Sec + GND)"
             const row1 = JSON.parse(JSON.stringify(rowDataExample))
             row1.measurement.value = 'Prim - (Sec + GND)'
-            table.push(row1)
+            table1.push(row1)
             
             // Xử lý Entity (có CtTapInfo)
             if (assetData && assetData.CtTapInfo) {
@@ -47,7 +47,7 @@ export default {
                 assetData.CtTapInfo.forEach(tap => {
                     const row = JSON.parse(JSON.stringify(rowDataExample))
                     row.measurement.value = `${tap.tap_name || 'Unnamed'} - GND`
-                    table.push(row)
+                    table1.push(row)
                 })
             }
             // Xử lý DTO (có ctConfiguration.dataCT)
@@ -57,7 +57,7 @@ export default {
                     if (core.fullTap && core.fullTap.table) {
                         const row = JSON.parse(JSON.stringify(rowDataExample))
                         row.measurement.value = `${core.fullTap.table.name || `Core ${coreIndex + 1} - Full`} - GND`
-                        table.push(row)
+                        table1.push(row)
                     }
                     
                     // Load Main taps
@@ -66,7 +66,7 @@ export default {
                             if (tap.table) {
                                 const row = JSON.parse(JSON.stringify(rowDataExample))
                                 row.measurement.value = `${tap.table.name || `Core ${coreIndex + 1} - Main ${tapIndex + 1}`} - GND`
-                                table.push(row)
+                                table1.push(row)
                             }
                         })
                     }
@@ -77,7 +77,7 @@ export default {
                             if (tap.table) {
                                 const row = JSON.parse(JSON.stringify(rowDataExample))
                                 row.measurement.value = `${tap.table.name || `Core ${coreIndex + 1} - Inter ${tapIndex + 1}`} - GND`
-                                table.push(row)
+                                table1.push(row)
                             }
                         })
                     }
@@ -85,14 +85,18 @@ export default {
             }
             
             // Nếu không có tap nào được load (chỉ có hàng đầu tiên), thêm 3 hàng mặc định nữa
-            if (table.length === 1) {
+            if (table1.length === 1) {
                 const row2 = JSON.parse(JSON.stringify(rowDataExample))
                 row2.measurement.value = 'Phase B - GND'
                 const row3 = JSON.parse(JSON.stringify(rowDataExample))
                 row3.measurement.value = 'Phase C - GND'
                 const row4 = JSON.parse(JSON.stringify(rowDataExample))
                 row4.measurement.value = 'Phase - GND'
-                table.push(row2, row3, row4)
+                table1.push(row2, row3, row4)
+            }
+            
+            let table = {
+                'table1': table1
             }
             
             return {
@@ -101,7 +105,7 @@ export default {
             }
         },
         async initCTRatio(testTypeCode, assetData) {
-    let table = []
+    let table1 = []
     const rowDataExample = common.buildEmptyTestRow(CurrentTransformerTestMap[testTypeCode].columns)
     const rowDataExampleCondition = common.buildEmptyTestCondition(CurrentTransformerConditionMap[testTypeCode].columns)
     
@@ -120,7 +124,7 @@ export default {
             row.name.value = tap.tap_name || 'Unnamed'
             row.ipr.value = findCurrentValue(tap.ipn, assetData.currentFlow)
             row.isr.value = findCurrentValue(tap.isn, assetData.currentFlow)
-            table.push(row)
+            table1.push(row)
         })
     }
     // Xử lý DTO (có ctConfiguration.dataCT)
@@ -132,7 +136,7 @@ export default {
                 row.name.value = core.fullTap.table.name || `Core ${coreIndex + 1} - Full`
                 row.ipr.value = core.fullTap.table.ipn.value || ''
                 row.isr.value = core.fullTap.table.isn.value || ''
-                table.push(row)
+                table1.push(row)
             }
             
             // Load Main taps
@@ -143,7 +147,7 @@ export default {
                         row.name.value = tap.table.name || `Core ${coreIndex + 1} - Main ${tapIndex + 1}`
                         row.ipr.value = tap.table.ipn.value || ''
                         row.isr.value = tap.table.isn.value || ''
-                        table.push(row)
+                        table1.push(row)
                     }
                 })
             }
@@ -156,7 +160,7 @@ export default {
                         row.name.value = tap.table.name || `Core ${coreIndex + 1} - Inter ${tapIndex + 1}`
                         row.ipr.value = tap.table.ipn.value || ''
                         row.isr.value = tap.table.isn.value || ''
-                        table.push(row)
+                        table1.push(row)
                     }
                 })
             }
@@ -164,10 +168,14 @@ export default {
     }
     
     // Nếu không có configuration, tạo 1 row mặc định
-    if (table.length === 0) {
+    if (table1.length === 0) {
         const row = JSON.parse(JSON.stringify(rowDataExample))
         row.name.value = 'Primary'
-        table.push(row)
+        table1.push(row)
+    }
+    
+    let table = {
+        'table1': table1
     }
     
     return {
@@ -180,7 +188,7 @@ export default {
             const rowDataExample = common.buildEmptyTestRow(CurrentTransformerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(CurrentTransformerConditionMap[testTypeCode].columns)
             
-            let table = []
+            let table1 = []
             
             // Xử lý Entity (có CtTapInfo)
             if (assetData && assetData.CtTapInfo) {
@@ -188,7 +196,7 @@ export default {
                 assetData.CtTapInfo.forEach(tap => {
                     const row = JSON.parse(JSON.stringify(rowDataExample))
                     row.name.value = tap.tap_name || 'Unnamed'
-                    table.push(row)
+                    table1.push(row)
                 })
             }
             // Xử lý DTO (có ctConfiguration.dataCT)
@@ -198,7 +206,7 @@ export default {
                     if (core.fullTap && core.fullTap.table) {
                         const row = JSON.parse(JSON.stringify(rowDataExample))
                         row.name.value = core.fullTap.table.name || `Core ${coreIndex + 1} - Full`
-                        table.push(row)
+                        table1.push(row)
                     }
                     
                     // Load Main taps
@@ -207,7 +215,7 @@ export default {
                             if (tap.table) {
                                 const row = JSON.parse(JSON.stringify(rowDataExample))
                                 row.name.value = tap.table.name || `Core ${coreIndex + 1} - Main ${tapIndex + 1}`
-                                table.push(row)
+                                table1.push(row)
                             }
                         })
                     }
@@ -218,7 +226,7 @@ export default {
                             if (tap.table) {
                                 const row = JSON.parse(JSON.stringify(rowDataExample))
                                 row.name.value = tap.table.name || `Core ${coreIndex + 1} - Inter ${tapIndex + 1}`
-                                table.push(row)
+                                table1.push(row)
                             }
                         })
                     }
@@ -226,10 +234,14 @@ export default {
             }
             
             // Nếu không có configuration, tạo 1 row mặc định
-            if (table.length === 0) {
+            if (table1.length === 0) {
                 const row = JSON.parse(JSON.stringify(rowDataExample))
                 row.name.value = 'Primary'
-                table.push(row)
+                table1.push(row)
+            }
+            
+            let table = {
+                'table1': table1
             }
             
             return {
@@ -241,7 +253,7 @@ export default {
             const rowDataExample = common.buildEmptyTestRow(CurrentTransformerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(CurrentTransformerConditionMap[testTypeCode].columns)
             
-            let table = []
+            let table1 = []
             
             // Xử lý Entity (có CtTapInfo)
             if (assetData && assetData.CtTapInfo) {
@@ -249,7 +261,7 @@ export default {
                 assetData.CtTapInfo.forEach(tap => {
                     const row = JSON.parse(JSON.stringify(rowDataExample))
                     row.name.value = tap.tap_name || 'Unnamed'
-                    table.push(row)
+                    table1.push(row)
                 })
             }
             // Xử lý DTO (có ctConfiguration.dataCT)
@@ -259,7 +271,7 @@ export default {
                     if (core.fullTap && core.fullTap.table) {
                         const row = JSON.parse(JSON.stringify(rowDataExample))
                         row.name.value = core.fullTap.table.name || `Core ${coreIndex + 1} - Full`
-                        table.push(row)
+                        table1.push(row)
                     }
                     
                     // Load Main taps
@@ -268,7 +280,7 @@ export default {
                             if (tap.table) {
                                 const row = JSON.parse(JSON.stringify(rowDataExample))
                                 row.name.value = tap.table.name || `Core ${coreIndex + 1} - Main ${tapIndex + 1}`
-                                table.push(row)
+                                table1.push(row)
                             }
                         })
                     }
@@ -279,7 +291,7 @@ export default {
                             if (tap.table) {
                                 const row = JSON.parse(JSON.stringify(rowDataExample))
                                 row.name.value = tap.table.name || `Core ${coreIndex + 1} - Inter ${tapIndex + 1}`
-                                table.push(row)
+                                table1.push(row)
                             }
                         })
                     }
@@ -287,10 +299,14 @@ export default {
             }
             
             // Nếu không có configuration, tạo 1 row mặc định
-            if (table.length === 0) {
+            if (table1.length === 0) {
                 const row = JSON.parse(JSON.stringify(rowDataExample))
                 row.name.value = 'Primary'
-                table.push(row)
+                table1.push(row)
+            }
+            
+            let table = {
+                'table1': table1
             }
             
             return {
@@ -302,7 +318,7 @@ export default {
             const rowDataExample = common.buildEmptyTestRow(CurrentTransformerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(CurrentTransformerConditionMap[testTypeCode].columns)
             
-            let table = []
+            let table1 = []
 
             // 2. Clone dòng đầu tiên từ template
             const row = JSON.parse(JSON.stringify(rowDataExample))
@@ -320,7 +336,11 @@ export default {
             }
 
             // Đẩy dòng dữ liệu vào table
-            table.push(row)
+            table1.push(row)
+
+            let table = {
+                'table1': table1
+            }
 
             // 4. Trả về đúng format chuẩn hệ thống
             return {
@@ -329,7 +349,7 @@ export default {
             }
         },
         async initGeneralInspection(testTypeCode) {
-            let table = []
+            let table1 = []
             const rowDataExample = common.buildEmptyTestRow(CurrentTransformerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(CurrentTransformerConditionMap[testTypeCode].columns)
             
@@ -342,8 +362,13 @@ export default {
             defaultItems.forEach(element => {
                 const rowData = JSON.parse(JSON.stringify(rowDataExample))
                 rowData.item.value = element
-                table.push(rowData)
+                table1.push(rowData)
             })
+            
+            let table = {
+                'table1': table1
+            }
+            
             return {
                 rowDataExampleCondition,
                 table

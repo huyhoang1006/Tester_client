@@ -959,7 +959,7 @@ export default {
                         }
                         const dataCurrentTransformer = await window.electronAPI.getCurrentTransformerEntityByMrid(tab.parentId)
                         if (dataCurrentTransformer.success) {
-                            this.assetData = dataCurrentTransformer.data
+                            this.assetData = currentTransformerMapper.mapEntityToDto(dataCurrentTransformer.data)
                         } else {
                             this.assetData = {}
                         }

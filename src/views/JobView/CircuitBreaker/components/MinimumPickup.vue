@@ -70,9 +70,13 @@
                             class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                     <td>
-                        <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                        <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
                             size="mini" v-model="item.condition_indicator.value">
-                        </el-input>
+                            <el-option value="Good">Good</el-option>
+                            <el-option value="Fair">Fair</el-option>
+                            <el-option value="Poor">Poor</el-option>
+                            <el-option value="Bad">Bad</el-option>
+                        </el-select>
                     </td>
                     <td>
                         <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
@@ -269,7 +273,287 @@ export default {
         const dataTemp = JSON.parse(JSON.stringify(asset))
         this.back_asset = dataTemp.assessmentLimits
     },
+    mounted() {
+        // Initialize table - will add missing rows if needed
+        this.$nextTick(() => {
+            if (this.testData) {
+                this.initializeTable()
+            }
+        })
+    },
     methods: {
+        initializeTable() {
+            if (!this.data) return
+
+            if (!this.data.table) {
+                this.$set(this.data, 'table', [])
+            }
+
+            const currentLength = this.data.table.length
+            
+            if (currentLength === 0) {
+                // No rows - create both Trip and Close
+                const tripRow = {
+                    mrid: '',
+                    operation: {
+                        mrid: '',
+                        value: 'Trip',
+                        unit: '',
+                        type: 'string'
+                    },
+                    trip_coil_no: {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'string'
+                    },
+                    close_coil_no: {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'string'
+                    },
+                    v_pickup: {
+                        mrid: '',
+                        value: '',
+                        unit: 'V',
+                        type: 'analog'
+                    },
+                    assessment: {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
+                    },
+                    condition_indicator: {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
+                    }
+                }
+
+                const closeRow = {
+                    mrid: '',
+                    operation: {
+                        mrid: '',
+                        value: 'Close',
+                        unit: '',
+                        type: 'string'
+                    },
+                    trip_coil_no: {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'string'
+                    },
+                    close_coil_no: {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'string'
+                    },
+                    v_pickup: {
+                        mrid: '',
+                        value: '',
+                        unit: 'V',
+                        type: 'analog'
+                    },
+                    assessment: {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
+                    },
+                    condition_indicator: {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
+                    }
+                }
+
+                const newTable = [tripRow, closeRow]
+                this.$set(this.data, 'table', newTable)
+            } else if (currentLength === 1) {
+                // Only 1 row exists - check what it is and add the missing one
+                const existingRow = this.data.table[0]
+                const existingOperation = existingRow.operation?.value || existingRow.operation
+                
+                if (existingOperation === 'Trip') {
+                    // Has Trip, need to add Close
+                    const closeRow = {
+                        mrid: '',
+                        operation: {
+                            mrid: '',
+                            value: 'Close',
+                            unit: '',
+                            type: 'string'
+                        },
+                        trip_coil_no: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'string'
+                        },
+                        close_coil_no: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'string'
+                        },
+                        v_pickup: {
+                            mrid: '',
+                            value: '',
+                            unit: 'V',
+                            type: 'analog'
+                        },
+                        assessment: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
+                        },
+                        condition_indicator: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
+                        }
+                    }
+                    // Use Vue.set to avoid mutating prop
+                    const newTable = [...this.data.table, closeRow]
+                    this.$set(this.data, 'table', newTable)
+                } else if (existingOperation === 'Close') {
+                    // Has Close, need to add Trip at the beginning
+                    const tripRow = {
+                        mrid: '',
+                        operation: {
+                            mrid: '',
+                            value: 'Trip',
+                            unit: '',
+                            type: 'string'
+                        },
+                        trip_coil_no: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'string'
+                        },
+                        close_coil_no: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'string'
+                        },
+                        v_pickup: {
+                            mrid: '',
+                            value: '',
+                            unit: 'V',
+                            type: 'analog'
+                        },
+                        assessment: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
+                        },
+                        condition_indicator: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
+                        }
+                    }
+                    // Use Vue.set to avoid mutating prop
+                    const newTable = [tripRow, ...this.data.table]
+                    this.$set(this.data, 'table', newTable)
+                } else {
+                    // Unknown operation, add both Trip and Close
+                    const tripRow = {
+                        mrid: '',
+                        operation: {
+                            mrid: '',
+                            value: 'Trip',
+                            unit: '',
+                            type: 'string'
+                        },
+                        trip_coil_no: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'string'
+                        },
+                        close_coil_no: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'string'
+                        },
+                        v_pickup: {
+                            mrid: '',
+                            value: '',
+                            unit: 'V',
+                            type: 'analog'
+                        },
+                        assessment: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
+                        },
+                        condition_indicator: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
+                        }
+                    }
+                    const closeRow = {
+                        mrid: '',
+                        operation: {
+                            mrid: '',
+                            value: 'Close',
+                            unit: '',
+                            type: 'string'
+                        },
+                        trip_coil_no: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'string'
+                        },
+                        close_coil_no: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'string'
+                        },
+                        v_pickup: {
+                            mrid: '',
+                            value: '',
+                            unit: 'V',
+                            type: 'analog'
+                        },
+                        assessment: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
+                        },
+                        condition_indicator: {
+                            mrid: '',
+                            value: '',
+                            unit: '',
+                            type: 'discrete'
+                        }
+                    }
+                    // Use Vue.set to avoid mutating prop
+                    const newTable = [...this.data.table, tripRow, closeRow]
+                    this.$set(this.data, 'table', newTable)
+                }
+            }
+        },
         normalizeAssessmentLimits(data) {
             if (!data || typeof data !== 'object') {
                 data = {}
@@ -663,6 +947,32 @@ export default {
                 // When opening dialog, sync limits from asset_ to testData
                 if (newVal && this.asset_ && this.asset_.limits && this.testData) {
                     this.$set(this.testData, 'limits', this.asset_.limits)
+                }
+            }
+        },
+        'testData.table': {
+            immediate: true,
+            handler: function (newVal) {
+                // Initialize if table has less than 2 rows
+                if (this.testData && newVal !== undefined && Array.isArray(newVal) && newVal.length < 2) {
+                    this.$nextTick(() => {
+                        if (this.testData && this.testData.table && this.testData.table.length < 2) {
+                            this.initializeTable()
+                        }
+                    })
+                }
+            }
+        },
+        'testData': {
+            immediate: true,
+            handler: function (newVal) {
+                // When testData becomes available, check if table needs initialization
+                if (newVal && newVal.table !== undefined && newVal.table.length < 2) {
+                    this.$nextTick(() => {
+                        if (this.testData && this.testData.table && this.testData.table.length < 2) {
+                            this.initializeTable()
+                        }
+                    })
                 }
             }
         }
