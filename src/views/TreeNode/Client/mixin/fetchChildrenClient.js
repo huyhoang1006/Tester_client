@@ -15,6 +15,12 @@ export default {
             if (needsFetch) {
                 try {
                     let newRows = []
+                    let parentDisplayName = node.name;
+                    if (['organisation', 'substation', 'voltageLevel', 'bay'].includes(node.mode)) {
+                        parentDisplayName = node.aliasName || node.name;
+                    } else if (node.mode === 'asset') {
+                        parentDisplayName = node.apparatus_id || node.serial_number || node.name;
+                    }
                     if (node.mode == 'asset') {
                         const clickedRow = node
                         if (node.asset && node.asset == 'Surge arrester') {
@@ -29,7 +35,7 @@ export default {
                                     row.parentArr = [...(clickedRow.parentArr || [])]
                                     row.parentArr.push({
                                         mrid: clickedRow.mrid,
-                                        parent: clickedRow.name
+                                        parent: parentDisplayName
                                     })
                                 })
                                 newRows.push(...jobsReturn.data)
@@ -46,7 +52,7 @@ export default {
                                     row.parentArr = [...(clickedRow.parentArr || [])]
                                     row.parentArr.push({
                                         mrid: clickedRow.mrid,
-                                        parent: clickedRow.name
+                                        parent: parentDisplayName
                                     })
                                 })
                                 newRows.push(...jobsReturn.data)
@@ -63,7 +69,7 @@ export default {
                                     row.parentArr = [...(clickedRow.parentArr || [])]
                                     row.parentArr.push({
                                         mrid: clickedRow.mrid,
-                                        parent: clickedRow.name
+                                        parent: parentDisplayName
                                     })
                                 })
                                 newRows.push(...jobsReturn.data)
@@ -80,7 +86,7 @@ export default {
                                     row.parentArr = [...(clickedRow.parentArr || [])]
                                     row.parentArr.push({
                                         mrid: clickedRow.mrid,
-                                        parent: clickedRow.name
+                                        parent: parentDisplayName
                                     })
                                 })
                                 newRows.push(...jobsReturn.data)
@@ -97,7 +103,7 @@ export default {
                                     row.parentArr = [...(clickedRow.parentArr || [])]
                                     row.parentArr.push({
                                         mrid: clickedRow.mrid,
-                                        parent: clickedRow.name
+                                        parent: parentDisplayName
                                     })
                                 })
                                 newRows.push(...jobsReturn.data)
@@ -114,7 +120,7 @@ export default {
                                     row.parentArr = [...(clickedRow.parentArr || [])]
                                     row.parentArr.push({
                                         mrid: clickedRow.mrid,
-                                        parent: clickedRow.name
+                                        parent: parentDisplayName
                                     })
                                 })
                                 newRows.push(...jobsReturn.data)
@@ -131,7 +137,7 @@ export default {
                                     row.parentArr = [...(clickedRow.parentArr || [])]
                                     row.parentArr.push({
                                         mrid: clickedRow.mrid,
-                                        parent: clickedRow.name
+                                        parent: parentDisplayName
                                     })
                                 })
                                 newRows.push(...jobsReturn.data)
@@ -148,7 +154,7 @@ export default {
                                     row.parentArr = [...(clickedRow.parentArr || [])]
                                     row.parentArr.push({
                                         mrid: clickedRow.mrid,
-                                        parent: clickedRow.name
+                                        parent: parentDisplayName
                                     })
                                 })
                                 newRows.push(...jobsReturn.data)
@@ -165,7 +171,7 @@ export default {
                                     row.parentArr = [...(clickedRow.parentArr || [])]
                                     row.parentArr.push({
                                         mrid: clickedRow.mrid,
-                                        parent: clickedRow.name
+                                        parent: parentDisplayName
                                     })
                                 })
                                 newRows.push(...jobsReturn.data)
@@ -182,7 +188,7 @@ export default {
                                     row.parentArr = [...(clickedRow.parentArr || [])]
                                     row.parentArr.push({
                                         mrid: clickedRow.mrid,
-                                        parent: clickedRow.name
+                                        parent: parentDisplayName
                                     })
                                 })
                                 newRows.push(...jobsReturn.data)
@@ -199,7 +205,7 @@ export default {
                                     row.parentArr = [...(clickedRow.parentArr || [])]
                                     row.parentArr.push({
                                         mrid: clickedRow.mrid,
-                                        parent: clickedRow.name
+                                        parent: parentDisplayName
                                     })
                                 })
                                 newRows.push(...jobsReturn.data)
@@ -233,7 +239,7 @@ export default {
                                 row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
+                                    parent: parentDisplayName
                                 })
                             })
                             newRows.push(...voltageLevelReturn.data)
@@ -248,7 +254,7 @@ export default {
                                 row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
+                                    parent: parentDisplayName
                                 })
                             })
                             newRows.push(...bayReturn.data)
@@ -264,7 +270,7 @@ export default {
                                 row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
+                                    parent: parentDisplayName
                                 })
                                 // Đánh dấu rằng node này đã có đầy đủ thông tin properties từ API
                                 row._hasFullProperties = true
@@ -282,7 +288,7 @@ export default {
                                 row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
+                                    parent: parentDisplayName
                                 })
                                 // Đánh dấu rằng node này đã có đầy đủ thông tin properties từ API
                                 row._hasFullProperties = true
@@ -300,7 +306,7 @@ export default {
                                 row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
+                                    parent: parentDisplayName
                                 })
                                 // Đánh dấu rằng node này đã có đầy đủ thông tin properties từ API
                                 row._hasFullProperties = true
@@ -318,7 +324,7 @@ export default {
                                 row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
+                                    parent: parentDisplayName
                                 })
                                 // Đánh dấu rằng node này đã có đầy đủ thông tin properties từ API
                                 row._hasFullProperties = true
@@ -337,7 +343,7 @@ export default {
                                 row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
+                                    parent: parentDisplayName
                                 })
                                 // Đánh dấu rằng node này đã có đầy đủ thông tin properties từ API
                                 row._hasFullProperties = true
@@ -355,7 +361,7 @@ export default {
                                 row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
+                                    parent: parentDisplayName
                                 })
                                 // Đánh dấu rằng node này đã có đầy đủ thông tin properties từ API
                                 row._hasFullProperties = true
@@ -373,7 +379,7 @@ export default {
                                 row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
+                                    parent: parentDisplayName
                                 })
                                 // Đánh dấu rằng node này đã có đầy đủ thông tin properties từ API
                                 row._hasFullProperties = true
@@ -404,7 +410,7 @@ export default {
                                 row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
+                                    parent: parentDisplayName
                                 })
                                 // Đánh dấu rằng node này đã có đầy đủ thông tin properties từ API
                                 row._hasFullProperties = true
@@ -422,7 +428,7 @@ export default {
                                 row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
+                                    parent: parentDisplayName
                                 })
                                 // Đánh dấu rằng node này đã có đầy đủ thông tin properties từ API
                                 row._hasFullProperties = true
@@ -442,7 +448,7 @@ export default {
                                 row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
+                                    parent: parentDisplayName
                                 })
                                 // Đánh dấu rằng node này đã có đầy đủ thông tin properties từ API
                                 row._hasFullProperties = true
@@ -462,7 +468,7 @@ export default {
                                 row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
+                                    parent: parentDisplayName
                                 })
                             })
                             newRows.push(...bayReturn.data)
@@ -492,7 +498,7 @@ export default {
                                 row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
+                                    parent: parentDisplayName
                                 })
                                 row._hasFullProperties = true
                             })
@@ -508,7 +514,7 @@ export default {
                                 row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
+                                    parent: parentDisplayName
                                 })
                                 row._hasFullProperties = true
                             })
@@ -524,7 +530,7 @@ export default {
                                 row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
+                                    parent: parentDisplayName
                                 })
                                 row._hasFullProperties = true
                             })
@@ -540,7 +546,7 @@ export default {
                                 row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
+                                    parent: parentDisplayName
                                 })
                                 row._hasFullProperties = true
                             })
@@ -557,7 +563,7 @@ export default {
                                 row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
+                                    parent: parentDisplayName
                                 })
                                 row._hasFullProperties = true
                             })
@@ -573,7 +579,7 @@ export default {
                                 row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
+                                    parent: parentDisplayName
                                 })
                                 row._hasFullProperties = true
                             })
@@ -589,7 +595,7 @@ export default {
                                 row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
+                                    parent: parentDisplayName
                                 })
                                 row._hasFullProperties = true
                             })
@@ -605,7 +611,7 @@ export default {
                                 row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
+                                    parent: parentDisplayName
                                 })
                                 row._hasFullProperties = true
                             })
@@ -621,7 +627,7 @@ export default {
                                 row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
+                                    parent: parentDisplayName
                                 })
                                 row._hasFullProperties = true
                             })
@@ -638,7 +644,7 @@ export default {
                                 row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
+                                    parent: parentDisplayName
                                 })
                                 row._hasFullProperties = true
                             })
@@ -650,7 +656,7 @@ export default {
                             window.electronAPI.getParentOrganizationByParentMrid(clickedRow.mrid),
                             window.electronAPI.getSubstationsInOrganisationForUser(clickedRow.mrid, this.$store.state.user.user_id)
                         ])
-                        
+
                         if (organisationReturn.success && organisationReturn.data && organisationReturn.data.length > 0) {
                             organisationReturn.data.forEach((row) => {
                                 row.parentId = clickedRow.mrid
@@ -660,7 +666,7 @@ export default {
                                 row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
+                                    parent: parentDisplayName
                                 })
                                 // Đánh dấu rằng node này đã có đầy đủ thông tin properties từ API
                                 // Để tránh gọi API lại trong showPropertiesDataClient
@@ -678,7 +684,7 @@ export default {
                                 row.parentArr = [...(clickedRow.parentArr || [])]
                                 row.parentArr.push({
                                     mrid: clickedRow.mrid,
-                                    parent: clickedRow.name
+                                    parent: parentDisplayName
                                 })
                             })
                             newRows.push(...substationReturn.data)

@@ -50,7 +50,7 @@ export const OrgDtoToOrgEntity = (orgDto) => {
         orgEntity.configurationEvent = orgDto.configurationEvent
     }
 
-    if(Array.isArray(orgDto.positionPoints.x) && orgDto.positionPoints.x.length > 0) {
+    if (Array.isArray(orgDto.positionPoints.x) && orgDto.positionPoints.x.length > 0) {
         for (let i = 0; i < orgDto.positionPoints.x.length; i++) {
             const geoMapPoint = new GeoMap();
             geoMapPoint.mrid = orgDto.positionPoints.x[i].id || null;
@@ -71,19 +71,20 @@ export const OrgEntityToOrgDto = (orgEntity) => {
     // Organisation
     orgDto.organisationId = orgEntity.organisation.mrid || ''
     orgDto.name = orgEntity.organisation.name || ''
+    orgDto.aliasName = orgEntity.organisation.alias_name || ''
     orgDto.tax_code = orgEntity.organisation.tax_code || ''
     orgDto.comment = orgEntity.organisation.description || ''
     orgDto.streetAddressId = orgEntity.organisation.street_address || ''
     orgDto.electronicAddressId = orgEntity.organisation.electronic_address || ''
     orgDto.telephoneNumberId = orgEntity.organisation.phone || ''
     orgDto.parentId = orgEntity.organisation.parent_organisation || '';
-    
+
 
     // Street Address
     orgDto.streetAddressId = orgEntity.streetAddress.mrid || '';
     orgDto.postal_code = orgEntity.streetAddress.postal_code || ''; // Thêm postal code
 
-        
+
     // Street Detail
 
     orgDto.streetDetailId = orgEntity.streetDetail.mrid || '';

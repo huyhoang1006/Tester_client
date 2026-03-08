@@ -36,7 +36,7 @@ export default {
                     const clientTabs = this.getClientTabsRef ? this.getClientTabsRef() : this.$refs.clientTabs
                     if (clientTabs) {
                         clientTabs.selectTab(this.activeTabClient, newTabs.length - 1)
-                        
+
                         // ✅ KHÔNG truyền _cachedEntityData như savedData khi tạo tab mới
                         // Luôn gọi API để load đầy đủ locationList, personList
                         // _cachedEntityData chỉ dùng cho việc update properties, không dùng cho loadData
@@ -53,23 +53,23 @@ export default {
             const now = Date.now()
             const lastCall = this._lastPropertiesCall || 0
             const isSameNode = this._lastPropertiesNode?.mrid === node.mrid
-            
+
             // Nếu cùng node và gọi trong vòng 300ms → skip
             if (isSameNode && (now - lastCall) < 300) {
                 return
             }
-            
+
             // Update tracking
             this._lastPropertiesCall = now
             this._lastPropertiesNode = node
-            
+
             this.assetPropertySignClient = false
             this.jobPropertySignClient = false
             if (node.asset != undefined) {
                 this.assetPropertySignClient = true
-                
+
                 let assetDetailData
-                
+
                 // ✅ Ưu tiên dùng _cachedEntityData nếu có (data mới từ save)
                 if (node._cachedEntityData) {
                     // DTO structure: data.properties.serial_no, data.properties.manufacturer, etc.
@@ -90,7 +90,7 @@ export default {
                     // Không cần gọi API, dùng trực tiếp data từ node
                     assetDetailData = node
                 }
-                
+
                 // Map từ assetDetailData
                 await this.mappingAssetPropertiesClient(assetDetailData)
                 this.assetPropertiesClient.asset = node.asset || ''
@@ -99,7 +99,7 @@ export default {
                 const parentNode = node.parentId ? this.findNodeById(node.parentId, this.organisationClientList) : null
                 if (parentNode) {
                     let parentDetailData = parentNode
-                    
+
                     // Nếu parent là Substation, cần lấy đầy đủ thông tin
                     if (parentNode.mode === 'substation') {
                         // Kiểm tra xem đã cache entity data chưa
@@ -159,7 +159,7 @@ export default {
                             }
                         }
                     }
-                    
+
                     await this.mappingPropertiesClient(parentDetailData)
                 }
                 await this.loadPathMapClient(node)
@@ -242,7 +242,7 @@ export default {
                     // Nếu node đã có flag _hasFullProperties = true, nghĩa là fetchChildren đã lấy đầy đủ thông tin
                     // Không cần gọi API lại, tận dụng luôn dữ liệu đã có
                     if (node._hasFullProperties) {
-                        
+
                         // ✅ Ưu tiên dùng _cachedEntityData nếu có (data mới từ save)
                         if (node._cachedEntityData) {
                             detailData = node._cachedEntityData
@@ -268,7 +268,15 @@ export default {
 
                 await this.mappingPropertiesClient(detailData)
                 await this.loadPathMapClient(node)
-                const nodeName = node.name || node.serial_number || node.serial_no || 'Unknown'
+                let nodeName = node.name || 'Unknown'
+
+                // Nếu là các node cấu trúc (Org, Sub, Bay, Voltage), dùng aliasName nếu có
+                if (['organisation', 'substation', 'voltageLevel', 'bay'].includes(node.mode)) {
+                    nodeName = node.aliasName || node.name || 'Unknown';
+                } else {
+                    // Fallback cho các trường hợp khác
+                    nodeName = node.name || node.serial_number || node.serial_no || 'Unknown'
+                }
                 this.pathMapClient.push({
                     id: node.id || node.mrid,
                     mrid: node.mrid,

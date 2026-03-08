@@ -21,10 +21,10 @@
                         <icon v-else-if="tab.mode == 'job'" size="16px" folderType="job" badgeColor="FF0000"></icon>
                         <icon v-else-if="tab.mode == 'test'" size="16px" folderType="test" badgeColor="008001"></icon>
                         <icon v-else size="16px" folderType="building" badgeColor="008001"></icon>
-                        <span v-if="tab.mode == 'organisation'" class="tab-label">{{ tab.name }}</span>
-                        <span v-else-if="tab.mode == 'substation'" class="tab-label">{{ tab.name }}</span>
-                        <span v-else-if="tab.mode == 'voltageLevel'" class="tab-label">{{ tab.name }}</span>
-                        <span v-else-if="tab.mode == 'bay'" class="tab-label">{{ tab.name }}</span>
+                        <span v-if="tab.mode == 'organisation'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
+                        <span v-else-if="tab.mode == 'substation'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
+                        <span v-else-if="tab.mode == 'voltageLevel'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
+                        <span v-else-if="tab.mode == 'bay'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
                         <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.apparatus_id || tab.serial_number }}</span>
                         <span v-else-if="tab.mode == 'job'" class="tab-label">{{ tab.name }}</span>
                     </div>
@@ -72,9 +72,9 @@
                         <icon v-else-if="tab.mode == 'test'" size="16px" folderType="test" badgeColor="008001"></icon>
                         <icon v-else size="16px" folderType="building" badgeColor="008001"></icon>
                         <span v-if="tab.mode == 'organisation'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
-                        <span v-else-if="tab.mode == 'substation'" class="tab-label">{{ tab.name }}</span>
-                        <span v-else-if="tab.mode == 'voltageLevel'" class="tab-label">{{ tab.name }}</span>
-                        <span v-else-if="tab.mode == 'bay'" class="tab-label">{{ tab.name }}</span>
+                        <span v-else-if="tab.mode == 'substation'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
+                        <span v-else-if="tab.mode == 'voltageLevel'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
+                        <span v-else-if="tab.mode == 'bay'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
                         <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.apparatus_id || tab.serial_number }}</span>
                         <span v-else-if="tab.mode == 'job'" class="tab-label">{{ tab.name }}</span>
                     </div>
@@ -339,7 +339,8 @@ export default {
                     // ✅ Update tab với data mới
                     if (data.dto) {
                         Object.assign(tab, {
-                            name: data.dto.name
+                            name: data.dto.name,
+                            aliasName: data.dto.aliasName || data.dto.name
                         })
                     }
                     
@@ -438,7 +439,8 @@ export default {
                     
                     // ✅ Update tab với data mới
                     Object.assign(tab, {
-                        name: voltageLevelDto.name
+                        name: voltageLevelDto.name,
+                        aliasName: voltageLevelDto.aliasName || voltageLevelDto.name
                     })
                     
                     // ✅ Update tree node
@@ -480,7 +482,8 @@ export default {
                     
                     // ✅ Update tab với data mới
                     Object.assign(tab, {
-                        name: bayData.name
+                        name: bayData.name,
+                         aliasName: bayData.aliasName || bayData.name
                     })
                     
                     // ✅ Update tree node
