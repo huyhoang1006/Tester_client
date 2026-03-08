@@ -109,14 +109,23 @@ export const mapDtoToEntity = (dto) => {
     mappingUnit(newRatingFactorTemp, dto.ratings.rating_factor_temp);
     entity.temperature.push(newRatingFactorTemp);
 
-    // Xử lý CT Configuration
-    entity.oldCurrentTransformerInfo.core_count = dto.ctConfiguration.cores;
+    // CT Configuration - validate cores (must be 1-9)
+    const validCores = parseInt(dto.ctConfiguration.cores);
+    entity.oldCurrentTransformerInfo.core_count = (validCores >= 1 && validCores <= 9) ? validCores : 1;
+    
     dto.ctConfiguration.dataCT.forEach((coreDto, index) => {
         const coreInfo = new CtCoreInfo();
         coreInfo.mrid = coreDto.mrid || '';
         coreInfo.core_index = index + 1;
-        coreInfo.tap_count = coreDto.taps;
-        coreInfo.common_tap = coreDto.commonTap;
+        
+        // Validate taps (must be 2-6)
+        const validTaps = parseInt(coreDto.taps);
+        coreInfo.tap_count = (validTaps >= 2 && validTaps <= 6) ? validTaps : 2;
+        
+        // Validate commonTap (must be 1 to taps)
+        const validCommonTap = parseInt(coreDto.commonTap);
+        coreInfo.common_tap = (validCommonTap >= 1 && validCommonTap <= coreInfo.tap_count) ? validCommonTap : 1;
+        
         coreInfo.current_transformer_info_id = entity.oldCurrentTransformerInfo.mrid;
 
         const fullTapClassRating = coreDto.fullTap.classRating;
@@ -305,16 +314,24 @@ export const mapEntityToDto = (entity) => {
     dto.ratings.rating_factor_temp.mrid = entity.oldCurrentTransformerInfo.rating_factor_temp || '';
     dto.ratings.rating_factor_temp.value = findUnitValue(entity.temperature, dto.ratings.rating_factor_temp.mrid);
 
-    // CT Configuration
-    dto.ctConfiguration.cores = entity.oldCurrentTransformerInfo.core_count || '1';
+    // CT Configuration - validate cores (must be 1-9)
+    const validCoreCount = parseInt(entity.oldCurrentTransformerInfo.core_count);
+    dto.ctConfiguration.cores = ((validCoreCount >= 1 && validCoreCount <= 9) ? validCoreCount : 1).toString();
     dto.ctConfiguration.dataCT = [];
 
     const dataCT = (entity.CtCoreInfo || []).sort((a, b) => a.core_index - b.core_index);
     dataCT.forEach(coreInfo => {
         const core = new CoreDto();
         core.mrid = coreInfo.mrid;
-        core.taps = (coreInfo.tap_count || '2').toString();
-        core.commonTap = (coreInfo.common_tap || '1').toString();
+        
+        // Validate taps (must be 2-6)
+        const validTapCount = parseInt(coreInfo.tap_count);
+        core.taps = ((validTapCount >= 2 && validTapCount <= 6) ? validTapCount : 2).toString();
+        
+        // Validate commonTap (must be 1 to taps)
+        const validCommonTap = parseInt(coreInfo.common_tap);
+        const maxCommonTap = parseInt(core.taps);
+        core.commonTap = ((validCommonTap >= 1 && validCommonTap <= maxCommonTap) ? validCommonTap : 1).toString();
 
         // Xóa dữ liệu giữ chỗ
         core.mainTap.data = [];

@@ -22,6 +22,18 @@ export const getSubstationById = (substationId) => {
     // API endpoint để lấy chi tiết substation đầy đủ
     return client.get(`http://222.252.22.158:8087/api/substation/cim/${substationId}`)
 }
+export const getVoltageLevelById = (voltageLevelId) => {
+    // API endpoint để lấy chi tiết voltage level đầy đủ
+    return client.get(`http://222.252.22.158:8087/api/voltage-level/cim/${voltageLevelId}`)
+}
+
+export const getBayById = (id) => {
+    return client.get(`http://222.252.22.158:8087/api/bay/cim/${id}`)
+}
+
+export const getTransformerById = (id) => {
+    return client.get(`http://222.252.22.158:8087/api/transformer/${id}`)
+}
 
 export const getChildBay = (substationId) => {
     return client.get(`http://222.252.22.158:8087/api/bay/get-by-substation/${substationId}`)
@@ -87,10 +99,27 @@ export const createPowerCableCim = (data, ownerId, ownerType) => {
     });
 }
 
-export const createOrganisation = (data, ownerId) => {
-    return client.post(`http://222.252.22.158:8087/api/organisation/cim/create`, data, {
+export const createSubstation = (data, ownerId) => {
+    return client.post(`http://222.252.22.158:8087/api/substation/cim/create`, data, {
         params: {
             ownerId: ownerId
+        }
+    });
+}
+
+export const createVoltageLevel = (data, ownerId) => {
+    return client.post(`http://222.252.22.158:8087/api/voltage-level/cim/create`, data, {
+        params: {
+            ownerId: ownerId
+        }
+    });
+}
+
+export const createBay = (data, ownerId, ownerType) => {
+    return client.post(`http://222.252.22.158:8087/api/bay/cim/create`, data, {
+        params: {
+            ownerId: ownerId,
+            ownerType: ownerType
         }
     });
 }
