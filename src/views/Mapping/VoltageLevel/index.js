@@ -20,7 +20,7 @@ export const volDtoToVolEntity = (volDto) => {
     entity.baseVoltage.nominal_voltage = volDto.nominalVoltageId || null;
 
     // Voltage
-    if(volDto.highVoltageLimitId) {
+    if (volDto.highVoltageLimitId) {
         const highVoltage = new Voltage();
         highVoltage.mrid = volDto.highVoltageLimitId;
         highVoltage.value = volDto.high_voltage_limit_value || null;
@@ -29,7 +29,7 @@ export const volDtoToVolEntity = (volDto) => {
         entity.voltage.push(highVoltage);
     }
 
-    if(volDto.lowVoltageLimitId) {
+    if (volDto.lowVoltageLimitId) {
         const lowVoltage = new Voltage();
         lowVoltage.mrid = volDto.lowVoltageLimitId;
         lowVoltage.value = volDto.low_voltage_limit_value || null;
@@ -38,7 +38,7 @@ export const volDtoToVolEntity = (volDto) => {
         entity.voltage.push(lowVoltage);
     }
 
-    if(volDto.baseVoltageId) {
+    if (volDto.baseVoltageId) {
         const baseVoltage = new Voltage();
         baseVoltage.mrid = volDto.nominalVoltageId;
         baseVoltage.value = volDto.base_voltage_value || null;
@@ -51,6 +51,7 @@ export const volDtoToVolEntity = (volDto) => {
 }
 
 export const volEntityToVolDto = (volEntity) => {
+    console.log("Mapping VoltageLevelEntity to VoltageLevelDto:", volEntity);
     const volDto = new VoltageLevelDto()
 
     // VoltageLevel
@@ -63,23 +64,32 @@ export const volEntityToVolDto = (volEntity) => {
     volDto.locationId = volEntity.voltageLevel.location || ''
 
     // Base Voltage
-    volDto.nominalVoltageId = volEntity.baseVoltage.nominal_voltage || ''
-    volDto.baseVoltageId = volEntity.baseVoltage.mrid || ''
+    // volDto.nominalVoltageId = volEntity.baseVoltage.nominal_voltage || ''
+    // volDto.baseVoltageId = volEntity.baseVoltage.mrid || ''
 
+    // Base Voltage - thêm kiểm tra đầy đủ
+    if (volEntity.baseVoltage) {
+        volDto.baseVoltageId = volEntity.baseVoltage.mrid || '';
+        if (volEntity.baseVoltage.nominal_voltage) {
+            volDto.nominalVoltageId = volEntity.baseVoltage.nominal_voltage || '';
+        }
+    }
     // Voltage
-    for (const voltage of volEntity.voltage) {
-        if (voltage.mrid === volEntity.voltageLevel.high_voltage_limit) {
-            volDto.high_voltage_limit_value = voltage.value || ''
-            volDto.high_voltage_limit_unit = voltage.unit || ''
-            volDto.high_voltage_limit_multiplier = voltage.multiplier || ''
-        } else if (voltage.mrid === volEntity.voltageLevel.low_voltage_limit) {
-            volDto.low_voltage_limit_value = voltage.value || ''
-            volDto.low_voltage_limit_unit = voltage.unit || ''
-            volDto.low_voltage_limit_multiplier = voltage.multiplier || ''
-        } else if (voltage.mrid === volEntity.baseVoltage.nominal_voltage) {
-            volDto.base_voltage_value = voltage.value || ''
-            volDto.base_voltage_unit = voltage.unit || ''
-            volDto.base_voltage_multiplier = voltage.multiplier || ''
+    if (volEntity.voltage && Array.isArray(volEntity.voltage)) {
+        for (const voltage of volEntity.voltage) {
+            if (voltage.mrid === volEntity.voltageLevel.high_voltage_limit) {
+                volDto.high_voltage_limit_value = voltage.value || ''
+                volDto.high_voltage_limit_unit = voltage.unit || ''
+                volDto.high_voltage_limit_multiplier = voltage.multiplier || ''
+            } else if (voltage.mrid === volEntity.voltageLevel.low_voltage_limit) {
+                volDto.low_voltage_limit_value = voltage.value || ''
+                volDto.low_voltage_limit_unit = voltage.unit || ''
+                volDto.low_voltage_limit_multiplier = voltage.multiplier || ''
+            } else if (voltage.mrid === volEntity.baseVoltage.nominal_voltage) {
+                volDto.base_voltage_value = voltage.value || ''
+                volDto.base_voltage_unit = voltage.unit || ''
+                volDto.base_voltage_multiplier = voltage.multiplier || ''
+            }
         }
     }
     return volDto;

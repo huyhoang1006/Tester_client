@@ -12,8 +12,8 @@ export const mapServerToDto = (serverData) => {
     // 2. Bay Specific Fields
     dto.bay_energy_meas_flag = serverData.bay_energy_meas_flag !== undefined ? serverData.bay_energy_meas_flag : '';
     dto.bay_power_meas_flag = serverData.bay_power_meas_flag !== undefined ? serverData.bay_power_meas_flag : '';
-    dto.breaker_configuration = serverData.breaker_configuration || '';
-    dto.bus_bar_configuration = serverData.bus_bar_configuration || '';
+    dto.breaker_configuration = serverData.breakerConfiguration || '';
+    dto.bus_bar_configuration = serverData.busBarConfiguration || '';
 
     // 3. Relations
     // VoltageLevel cha
