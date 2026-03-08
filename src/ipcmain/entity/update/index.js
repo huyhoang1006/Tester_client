@@ -46,4 +46,6 @@ const downloadUpdate = () => {
 export const active = () => {
     checkForUpdate()
     downloadUpdate()
+    // Auto check for updates on startup
+    entityFunc.updateEntityFunc.autoCheckForUpdates()
 }
