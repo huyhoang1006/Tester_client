@@ -88,26 +88,14 @@
 </template>
 
 <script>
+import CircuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
+import * as common from '../../Common/index'
 export default {
     name: "GeneralInspection",
     data() {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
-            generalInspection: [
-                { no: "1", item: "Nameplate" },
-                { no: "2", item: "Installation check" },
-                { no: "3", item: "Grounding check" },
-                { no: "4", item: "SF6 pressure check" },
-                { no: "5", item: "Mechanical operating" },
-                { no: "6", item: "Electrical operating" },
-                { no: "6.1", item: "Close at 75% control voltage" },
-                { no: "6.2", item: "Open at 70% control voltage" },
-                { no: "6.3", item: "Checking local control" },
-                { no: "6.4", item: "Checking remote control" },
-                { no: "7", item: "Check interlocking circuit by SF6 gas pressure" },
-                { no: "8", item: "Check contact resistance of auxililary contacts" }
-            ]
         }
     },
     props: {
@@ -127,97 +115,55 @@ export default {
         assetData() {
             return this.asset
         },
+        rowData() {
+            return common.buildEmptyTestRow(CircuitBreakerTestMap['GeneralInspection'].columns)
+        }
     },
     watch: {
     },
     methods: {
         add() {
-            this.testData.table.table1.push({
-                mrid: '',
-                item: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                assessment: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                },
-                condition_indicator: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                }
-            })
+            this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
                 confirmButtonText: 'OK',
                 cancelButtonText: 'Cancel',
                 type: 'warning'
+            }).then(() => {
+                this.testData.table.table1 = []
             })
-                .then(() => {
-                    this.testData.table.table1 = []
-                })
-                .catch(() => {
-                    // User cancelled, do nothing
-                })
         },
         deleteTest(index) {
             this.testData.table.table1.splice(index, 1)
         },
         addTest(index) {
-            const data = {
-                mrid: '',
-                item: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                assessment: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                },
-                condition_indicator: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                }
-            }
+            const data = JSON.parse(JSON.stringify(this.rowData))
             this.testData.table.table1.splice(index + 1, 0, data)
         },
         calculator() {
             this.$message.success('Calculating successfully')
         },
         clear() {
-            this.testData.table.table1.forEach((element) => {
-                element.item = '',
-                    element.assessment = '',
-                    element.condition_indicator = ''
+            this.testData.table.table1.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (key === "mrid") return;
+                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                        row[key].value = ""
+                    }
+                })
             })
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) {
                 return 'Good'
-            }
-            else if (data === this.$constant.FAIR) {
+            } else if (data === this.$constant.FAIR) {
                 return 'Fair'
-            }
-            else if (data === this.$constant.POOR) {
+            } else if (data === this.$constant.POOR) {
                 return 'Poor'
-            }
-            else if (data === this.$constant.BAD) {
+            } else if (data === this.$constant.BAD) {
                 return 'Bad'
-            }
-            else {
+            } else {
                 return;
             }
         }
