@@ -39,13 +39,9 @@ function loadAppConfig() {
     return {}
 }
 
-// ================================
-// 1️⃣ APP VERSION MANAGEMENT
-// ================================
-
 export class AppVersionManager {
-    constructor() {
-        this.cacheFile = path.join(app.getPath('userData'), 'version-cache.json')
+    constructor(db = null) {
+        this.db = db
         this.cacheDuration = 6 * 60 * 60 * 1000 // 6 hours
     }
 
@@ -53,6 +49,12 @@ export class AppVersionManager {
      * Lấy app version hiện tại (local)
      */
     getCurrentAppVersion() {
+        if (this.db) {
+            const dbVersion = this.getVersionFromDatabase()
+            if (dbVersion) {
+                return dbVersion
+            }
+        }
         try {
             const appPath = app.getAppPath()
             
@@ -73,6 +75,52 @@ export class AppVersionManager {
             console.error('[Version] Error reading version:', err.message)
             return '0.0.0'
         }
+    }
+
+    /**
+     * Lấy version từ database (PRAGMA user_version)
+     */
+    getVersionFromDatabase() {
+        if (!this.db) return null
+        
+        try {
+            const version = this.db.prepare('PRAGMA user_version').get()
+            if (version && version.user_version) {
+                const ver = version.user_version
+                if (ver >= 1000) {
+                    const major = Math.floor(ver / 1000) % 100
+                    const minor = Math.floor(ver / 10) % 100
+                    const patch = ver % 10
+                    return `${major}.${minor}.${patch}`
+                }
+                return ver.toString()
+            }
+        } catch (err) {
+            console.warn('[Version] Could not get user_version:', err.message)
+        }
+        return null
+    }
+
+    /**
+     * Lưu version vào database (PRAGMA user_version)
+     * Format: major*1000 + minor*10 + patch
+     * Ví dụ: 0.1.0 -> 1010
+     */
+    setVersionToDatabase(version) {
+        if (!this.db) return false
+        
+        try {
+            const parsed = semver.parse(version)
+            if (parsed) {
+                const verNum = parsed.major * 1000 + parsed.minor * 10 + parsed.patch
+                this.db.prepare(`PRAGMA user_version = ${verNum}`).run()
+                console.log('[Version] Updated user_version to:', verNum, '(', version, ')')
+                return true
+            }
+        } catch (err) {
+            console.error('[Version] Could not set user_version:', err.message)
+        }
+        return false
     }
 
     /**
@@ -410,7 +458,7 @@ export class DatabaseSchemaManager {
 
 export class VersionService {
     constructor(db) {
-        this.appVersionManager = new AppVersionManager()
+        this.appVersionManager = new AppVersionManager(db)
         this.schemaManager = new DatabaseSchemaManager(db)
     }
 

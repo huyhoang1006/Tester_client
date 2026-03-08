@@ -18,12 +18,13 @@ import * as reactorEntityPreload from './reactor/index.js'
 import * as exportPreload from './export/index'
 import * as assetPsrPreload from './assetPsr/index.js'
 import * as notificationEntityPreload from './notification/index.js'
+import * as updateEntityPreload from './update/index.js'
 
 
 export {
     attachmentPreload, substationPreload, parentOrganizationPreload,
     voltageLevelPreload, bayPreload, surgeArresterEntityPreload, transformerEntityPreload,
-    jobEntityPreload, powerCableEntityPreload, voltageTransformerEntityPreload,
+    jobEntityPreload, powerCableEntityPreload, voltageTransformerEntityPreload, updateEntityPreload,
     bushingEntityPreload, disconnectorEntityPreload, rotatingMachineEntityPreload, currentTransformerEntityPreload,
     capacitorEntityPreload, breakerEntityPreload, reactorEntityPreload, exportPreload, assetPsrPreload, notificationEntityPreload
 

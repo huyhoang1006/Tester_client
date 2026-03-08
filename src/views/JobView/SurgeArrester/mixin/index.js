@@ -168,14 +168,27 @@ export default {
                 } else {
                     test.testCondition.attachment.path = JSON.stringify(test.testCondition.attachmentData)
                 }
-                for (const row of test.data.table) {
-                    if (row.mrid === '' || row.mrid === null) {
-                        row.mrid = uuid.newUuid();
-                        Object.keys(row).forEach(key => {
-                            if(row[key] && row[key].mrid === '' || row[key].mrid === null) {
-                                row[key].mrid = uuid.newUuid();
+                for (const key in test.data.table) {
+                    const rows = test.data.table[key];
+
+                    if (Array.isArray(rows)) {
+                        rows.forEach(row => {
+
+                            if (!row.mrid) {
+                                row.mrid = uuid.newUuid();
                             }
-                        })
+
+                            Object.keys(row).forEach(field => {
+                                const value = row[field];
+
+                                if (value && typeof value === 'object') {
+                                    if (!value.mrid) {
+                                        value.mrid = uuid.newUuid();
+                                    }
+                                }
+                            });
+
+                        });
                     }
                 }
 

@@ -96,33 +96,21 @@ export const getParentOrganizationById = async (mrid) => {
                 WHERE CAST(o.mrid AS TEXT) = CAST(? AS TEXT)
             `
             
-            console.log('[DEBUG getParentOrganizationById] Querying for mrid:', mrid)
-            
             // Convert mrid to string for comparison
             const mridStr = String(mrid)
             
             db.get(query, [mridStr], (err, row) => {
                 if (err) {
-                    console.log('[DEBUG getParentOrganizationById] Query error:', err)
                     return reject({ success: false, err, message: 'Get parent organization failed' })
                 }
                 if (!row) {
-                    console.log('[DEBUG getParentOrganizationById] No row found for mrid:', mrid)
                     return resolve({ success: false, data: null, message: 'Parent organization not found' })
                 }
-                
-                // DEBUG: Log all keys in row to identify duplicate columns
-                console.log('[DEBUG getParentOrganizationById] Row keys:', Object.keys(row))
-                console.log('[DEBUG getParentOrganizationById] Row mrid:', row.mrid)
-                console.log('[DEBUG getParentOrganizationById] Row name:', row.name)
-                console.log('[DEBUG getParentOrganizationById] Row alias_name:', row.alias_name)
-                console.log('[DEBUG getParentOrganizationById] Full row:', row)
                 
                 return resolve({ success: true, data: row, message: 'Get parent organization completed' })
             })
         })
     } catch (err) {
-        console.log("Get parent organization error:", err)
         return { success: false, err, message: 'Get parent organization failed' }
     }
 }

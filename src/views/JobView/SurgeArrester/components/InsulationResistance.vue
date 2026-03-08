@@ -37,7 +37,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, index) in testData.table" :key="index">
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>
                         {{ index + 1 }}
                     </td>
@@ -125,7 +125,7 @@ export default {
     },
     methods: {
         add() {
-            this.testData.table.push(
+            this.testData.table.table1.push(
                 JSON.parse(JSON.stringify(this.rowData))
             )
         },
@@ -136,23 +136,23 @@ export default {
                     type: 'warning'
                 })
                 .then( () => {
-                    this.testData.table = []
+                    this.testData.table.table1 = []
                 }
             )
         },
         deleteTest(index) {
-            this.testData.table.splice(index, 1)
+            this.testData.table.table1.splice(index, 1)
         },
         addTest(index) {
             const data = JSON.parse(JSON.stringify(this.rowData))
-            this.testData.table.splice(index+1, 0, data)
+            this.testData.table.table1.splice(index+1, 0, data)
         },
         calculator() {
             this.$message.success('Calculating successfully')
         },
 
         clear() {
-            this.testData.table.forEach(row => {
+            this.testData.table.table1.forEach(row => {
                 Object.keys(row).forEach(key => {
                     if (key === "mrid") return;
                     if (row[key] && typeof row[key] === "object" && "value" in row[key]) {

@@ -33,12 +33,15 @@ export default {
             row3.measurement.value = 'Phase C - A'
             const row4 = JSON.parse(JSON.stringify(rowDataExample))
             row4.measurement.value = 'Phase - GND'
-            let table = [
+            let table1 = [
                 row1,
                 row2,
                 row3,
                 row4
             ]
+            let table = {
+                'table1': table1
+            }
             return {
                 rowDataExampleCondition,
                 table,
@@ -47,7 +50,7 @@ export default {
         async initLeakageCurrent(assetData, testTypeCode) {
             let units = assetData.unit_count || 0
             let phase = ["A", "B", "C"]
-            let table = []
+            let table1 = []
             const rowDataExample = common.buildEmptyTestRow(surgeArresterTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(surgeArresterConditionMap[testTypeCode].columns)
             for (let i in phase) {
@@ -55,9 +58,14 @@ export default {
                     let data = JSON.parse(JSON.stringify(rowDataExample))
                     data.phase.value = phase[i]
                     data.unit_no.value = j
-                    table.push(data)
+                    table1.push(data)
                 }
             }
+
+            let table = {
+                'table1': table1
+            }
+            
             return {
                 rowDataExampleCondition,
                 table
@@ -66,7 +74,7 @@ export default {
         async initPowerFrequency(assetData, testTypeCode) {
             let units = assetData.unit_count || 0
             let phase = ["A", "B", "C"]
-            let table = []
+            let table1 = []
             const rowDataExample = common.buildEmptyTestRow(surgeArresterTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(surgeArresterConditionMap[testTypeCode].columns)
             for (let i in phase) {
@@ -74,8 +82,11 @@ export default {
                     let data = JSON.parse(JSON.stringify(rowDataExample))
                     data.phase.value = phase[i]
                     data.unit_no.value = j
-                    table.push(data)
+                    table1.push(data)
                 }
+            }
+            let table = {
+                'table1': table1
             }
             return {
                 rowDataExampleCondition,
@@ -83,15 +94,18 @@ export default {
             }
         },
         async initGeneralInspection(testTypeCode) {
-            let table = []
+            let table1 = []
             const rowDataExample = common.buildEmptyTestRow(surgeArresterTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(surgeArresterConditionMap[testTypeCode].columns)
             const data = ['Nameplate', 'Installation check', 'Grounding check', 'Discharge counter check']
             data.forEach(element => {
                 const rowData = JSON.parse(JSON.stringify(rowDataExample))
                 rowData.item.value = element
-                table.push(rowData)
+                table1.push(rowData)
             })
+             let table = {
+                'table1': table1
+            }
             return {
                 rowDataExampleCondition,
                 table

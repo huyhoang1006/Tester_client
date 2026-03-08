@@ -447,6 +447,7 @@ import {
 import mixinTreeNavigation from '@/views/TreeNode/Common/mixinTreeNavigation/mixin'
 import TopBarServer from './Server/TopBarServer/index.vue'
 import uploadNodeMixin from './mixin/Upload/index.js';
+import downloadNode from './Server/mixin/Download/downloadNode.js';
 import ClientTreePanel from './Client/ClientTree/index.vue'
 import ServerTreePanel from './Server/ServerTree/index.vue'
 export default {
@@ -799,7 +800,7 @@ export default {
                 : 'app-dialog'
         }
     },
-    mixins: [mixin, mixinTreeNavigation, uploadNodeMixin],
+    mixins: [mixin, mixinTreeNavigation, uploadNodeMixin, downloadNode],
     async beforeMount() {
         try {
             const data = await window.electronAPI.getAllConfigurationEvents()

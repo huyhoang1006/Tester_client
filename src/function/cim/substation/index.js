@@ -67,7 +67,6 @@ export const insertSubstationTransaction = async (substation, dbsql) => {
 }
 
 export const getSubstationsInOrganisationForUser = async (organisationId, userId) => {
-    console.log('[DEBUG getSubstationsInOrganisationForUser] FUNCTION CALLED with:', { organisationId, userId })
     try {
         return new Promise((resolve, reject) => {
             const query = `
@@ -85,16 +84,10 @@ export const getSubstationsInOrganisationForUser = async (organisationId, userId
             `;
 
             db.all(query, [organisationId, userId], (err, rows) => {
-                console.log('[DEBUG getSubstationsInOrganisationForUser] Query params:', { organisationId: organisationId, userId: userId })
-                console.log('[DEBUG getSubstationsInOrganisationForUser] Query:', query)
-                console.log('[DEBUG getSubstationsInOrganisationForUser] Rows:', rows)
-                console.log('[DEBUG getSubstationsInOrganisationForUser] Rows count:', rows ? rows.length : 0)
                 if (err) {
-                    console.error('[DEBUG getSubstationsInOrganisationForUser] Error:', err)
                     return reject({ success: false, data: null, message: 'Query failed', err: err });
                 }
                 if (!rows || rows.length === 0) {
-                    console.log('[DEBUG getSubstationsInOrganisationForUser] No rows found, returning fail')
                     return resolve({ success: false, data: [], message: 'No substations found for this user in organisation' });
                 }
 

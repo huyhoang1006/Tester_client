@@ -1,19 +1,35 @@
+
+import BayDto from "@/views/Dto/Bay";
+
 export const mapServerToDto = (serverData) => {
-    if (!serverData) return {};
+    const dto = new BayDto();
+    if (!serverData) return dto;
 
-    // Map dữ liệu từ JSON Server sang cấu trúc mà Client View (Bay/index.vue) hiểu
-    return {
-        mrid: serverData.mRID || '',
-        name: serverData.name || '',
-        aliasName: serverData.aliasName || '',
-        description: serverData.description || '',
+    // 1. Identification
+    dto.bayId = serverData.mRID || serverData.mrid || '';
+    dto.name = serverData.name || '';
+    dto.aliasName = serverData.aliasName || serverData.shortName || serverData.name || '';
 
-        // Các cờ boolean (nếu cần hiển thị)
-        bayEnergyMeasFlag: serverData.bayEnergyMeasFlag,
-        bayPowerMeasFlag: serverData.bayPowerMeasFlag,
+    // 2. Bay Specific Fields
+    dto.bay_energy_meas_flag = serverData.bay_energy_meas_flag !== undefined ? serverData.bay_energy_meas_flag : '';
+    dto.bay_power_meas_flag = serverData.bay_power_meas_flag !== undefined ? serverData.bay_power_meas_flag : '';
+    dto.breaker_configuration = serverData.breaker_configuration || '';
+    dto.bus_bar_configuration = serverData.bus_bar_configuration || '';
 
-        // Giữ lại các cấu hình nếu có
-        breakerConfiguration: serverData.breakerConfiguration,
-        busBarConfiguration: serverData.busBarConfiguration
-    };
+    // 3. Relations
+    // VoltageLevel cha
+    if (serverData.voltageLevel) {
+        dto.voltage_level = serverData.voltageLevel.mRID || serverData.voltageLevel.mrid || '';
+    } else if (serverData.voltage_level) {
+        dto.voltage_level = serverData.voltage_level;
+    }
+
+    // Substation (có thể có hoặc không)
+    if (serverData.substation) {
+        dto.substation = serverData.substation.mRID || serverData.substation.mrid || '';
+    } else if (serverData.substationId) {
+        dto.substation = serverData.substationId;
+    }
+
+    return dto;
 };

@@ -4,16 +4,16 @@ import {app, protocol, BrowserWindow, ipcMain, screen} from 'electron'
 import {createProtocol} from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, {VUEJS_DEVTOOLS} from 'electron-devtools-installer'
 import sqlite3 from '@journeyapps/sqlcipher'
-import * as updateModule from './update/index'
 import fs from 'fs'
 import path from 'path'
 import {v4 as newUuid} from 'uuid'
 import {spawn} from 'child_process'
 import readline from 'readline'
-import {autoUpdater} from 'electron-updater'
+import * as updateStart from '@/update/index'
+
 // import {userFunc} from '@/function'
 // import {ipcUploadCustom} from '@/ipcmain'
-import {ipcCim, ipcEntity, ipcAppOption} from '@/ipcmain'
+import {ipcCim, ipcEntity, ipcAppOption,} from '@/ipcmain'
 let win
 let importerProcess = null
 
@@ -306,26 +306,6 @@ app.on('ready', async () => {
         console.error('🔥 UNHANDLED PROMISE:', reason)
     })
 
-    // await updateModule.active()
-    // autoUpdater.forceDevUpdateConfig = true
-    // autoUpdater.setFeedURL({
-    //     provider: "generic",
-    //     url: "http://103.163.118.212:30151/api/v4/projects/21/repository/files/release%2F?/raw?ref=master",
-    //     requestHeaders: {
-    //         "PRIVATE-TOKEN": "glpat-HUjXTi4QQ_KbSH0vmcMiWW86MQp1OnQH.01.0w1lew3ho"
-    //     }
-    // })
-
-    // const a = await autoUpdater.checkForUpdates()
-    // window.alert(JSON.stringify(a))
-    // ipcMain.handle('login', async function (event, user) {
-    //     const _user = await userFunc.getUser(user)
-    //     if (_user === undefined) return false
-    //     else return _user
-    // })
-
-    // upload attachment
-
     ipcMain.handle('uploadAttachment', async function (event, id_foreign, type, info) {
         const rs = await uploadAttachment(id_foreign, type, info)
         if (rs === true) {
@@ -402,6 +382,8 @@ app.on('ready', async () => {
 
     //app option
     ipcAppOption.active()
+
+    updateStart.active()
 
     // ipcMain.handle('getAllUser', async function (event) {
     //     const _users = await userFunc.getAllUser()
@@ -514,65 +496,6 @@ app.on('ready', async () => {
         win.isMaximized() ? win.unmaximize() : win.maximize()
     })
 
-    // Git Update handlers
-    ipcMain.handle('checkForUpdate', async () => {
-        try {
-            const { GitUpdateService } = await import('./update/GitUpdateService.js')
-            const { AppVersionManager } = await import('./update/VersionService.js')
-            
-            const gitService = new GitUpdateService()
-            const versionManager = new AppVersionManager()
-            
-            // Get current and latest version
-            const currentVersion = versionManager.getCurrentAppVersion()
-            const latestVersion = await versionManager.getLatestAppVersion()
-            
-            // Get release info from GitLab
-            const releaseInfo = await gitService.getLatestReleaseInfo()
-            
-            return {
-                success: true,
-                currentVersion,
-                latestVersion: releaseInfo.version,
-                releaseNotes: releaseInfo.releaseNotes,
-                releasedAt: releaseInfo.releasedAt,
-                needsUpdate: latestVersion !== currentVersion
-            }
-        } catch (error) {
-            console.error('[IPC] Check for update failed:', error)
-            return {
-                success: false,
-                error: error.message
-            }
-        }
-    })
-
-    ipcMain.handle('performUpdate', async () => {
-        try {
-            const { GitUpdateService } = await import('./update/GitUpdateService.js')
-            const gitService = new GitUpdateService()
-            
-            const result = await gitService.performUpdate()
-            
-            if (result.success && !result.manual) {
-                // Nếu download thành công, hiển thị thông báo
-                // Không tự động restart vì user cần install file mới
-                return {
-                    ...result,
-                    message: 'Download started. Please install the new version after download completes.'
-                }
-            }
-            
-            return result
-        } catch (error) {
-            console.error('[IPC] Perform update failed:', error)
-            return {
-                success: false,
-                error: error.message
-            }
-        }
-    })
-
     ipcMain.handle('convert-files', async (event, filePaths, fileType) => {
         const promises = filePaths.map((filePath) => {
             return new Promise((resolve) => {
@@ -617,3 +540,5 @@ if (isDevelopment) {
         })
     }
 }
+
+export default win

@@ -25,12 +25,13 @@ import * as currentTransformerEntityFunc from "./currentTransformer/index"
 import * as reactorEntityFunc from "./reactor/index"
 import * as assetPsrFunc from "./assetPsr/index"
 import * as notificationEntityFunc from "./notification/index"
+import * as updateEntityFunc from "./update/index"
 
 export {
     attachmentFunc, fileFunc, organisationLocationFunc, personSubstationFunc,
     userFunc, userIdentifiedObjectFunc, substationEntityFunc, organisationPersonFunc,
     organisationPsrFunc, geoMapFunc, parentOrganizationEntityFunc, voltageLevelEntityFunc,
     bayEntityFunc, surgeArresterEntityFunc, transformerEntityFunc, jobEntityFunc, powerCableEntityFunc,
-    capacitorEntityFunc, breakerEntityFunc,
+    capacitorEntityFunc, breakerEntityFunc, updateEntityFunc,
     voltageTransformerEntityFunc, bushingEntityFunc, disconnectorEntityFunc, rotatingMachineEntityFunc, currentTransformerEntityFunc, reactorEntityFunc, assetPsrFunc, notificationEntityFunc
 }

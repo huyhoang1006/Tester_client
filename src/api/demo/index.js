@@ -47,6 +47,13 @@ export const getBayByVoltageLevel = (voltageLevelId) => {
     return client.get(`http://222.252.22.158:8087/api/bay/get-by-voltage-level/${voltageLevelId}`)
 }
 
+export const getBayById = (bayId) => {
+    if (!bayId) {
+        return Promise.reject(new Error("bayId is required"));
+    }
+    return client.get(`http://222.252.22.158:8087/api/bay/cim/${bayId}`)
+}
+
 export const getAssetById = (assetId, mode) => {
     if (!assetId) {
         return Promise.reject(new Error("assetId is required"));
