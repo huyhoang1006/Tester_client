@@ -94,12 +94,12 @@ export default {
             const row = JSON.parse(JSON.stringify(rowDataExample))
             table.push(row)
 
-            console.log(testTypeCode)
-
             return {
                 rowDataExampleCondition,
                 motorChar,
-                table
+                table: {
+                    table1: table
+                }
             }
         },
         async initCTiming(testTypeCode, assetData) {
@@ -170,7 +170,9 @@ export default {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}],
                     rel: [{}, {}, {}, {}, {}, {}, {}, {}]
                 },
-                table: table
+                table: {
+                    table1: table
+                }
             }
         },
         async initOTiming(testTypeCode, assetData) {
@@ -237,7 +239,9 @@ export default {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}],
                     rel: [{}, {}, {}, {}, {}, {}, {}, {}]
                 },
-                table: table
+                table: {
+                    table1: table
+                }
             }
         },
         async initocTiming(testTypeCode, assetData) {
@@ -304,7 +308,9 @@ export default {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}],
                     rel: [{}, {}, {}, {}, {}, {}, {}, {}]
                 },
-                table
+                table: {
+                    table1: table
+                }
             }
         },
         async initCOTiming(testTypeCode, assetData) {
@@ -373,7 +379,9 @@ export default {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}],
                     rel: [{}, {}, {}, {}, {}, {}, {}, {}]
                 },
-                table
+                table: {
+                    table1: table
+                }
             }
         },
         async initOCOTiming(testTypeCode, assetData) {
@@ -442,7 +450,9 @@ export default {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}],
                     rel: [{}, {}, {}, {}, {}, {}, {}, {}]
                 },
-                table
+                table: {
+                    table1: table
+                }
             }
         },
         async initCOCOTiming(testTypeCode, assetData) {
@@ -504,7 +514,9 @@ export default {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}],
                     rel: [{}, {}, {}, {}, {}, {}, {}, {}]
                 },
-                table
+                table: {
+                    table1: table
+                }
             }
         },
         async initOCOCOTiming(testTypeCode, assetData) {
@@ -566,7 +578,9 @@ export default {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}],
                     rel: [{}, {}, {}, {}, {}, {}, {}, {}]
                 },
-                table
+                table: {
+                    table1: table
+                }
             }
         },
         async initcontactResistance(testTypeCode, assetData) {
@@ -605,7 +619,9 @@ export default {
 
             return {
                 rowDataExampleCondition,
-                table
+                table: {
+                    table1: table
+                }
             }
         },
         async initMinimumPickup(testTypeCode) {
@@ -624,7 +640,9 @@ export default {
 
             return {
                 rowDataExampleCondition,
-                table
+                table: {
+                    table1: table
+                }
             }
         },
         async initDCWindingTripCoil(testTypeCode, assetData) {
@@ -652,7 +670,9 @@ export default {
             return {
                 rowDataExampleCondition,
                 limits: 'Absolute',
-                table
+                table: {
+                    table1: table
+                }
             }
         },
         async initDCWindingCloseCoil(testTypeCode, assetData) {
@@ -680,7 +700,9 @@ export default {
             return {
                 rowDataExampleCondition,
                 limits: 'Absolute',
-                table
+                table: {
+                    table1: table
+                }
             }
         },
         async initDCWindingMotor(testTypeCode) {
@@ -695,7 +717,9 @@ export default {
             return {
                 rowDataExampleCondition,
                 limits: 'Absolute',
-                table
+                table: {
+                    table1: table
+                }
             }
         },
         async initInsulationResistanceCircuit(testTypeCode, assetData) {
@@ -738,7 +762,9 @@ export default {
                     rel: {}
                 },
                 limits: 'Absolute',
-                table
+                table: {
+                    table1: table
+                }
             }
         },
         async initInsulationResistanceTripCoil(testTypeCode, assetData) {
@@ -770,7 +796,9 @@ export default {
                     rel: {}
                 },
                 limits: 'Absolute',
-                table
+                table: {
+                    table1: table
+                }
             }
         },
         async initInsulationResistanceCloseCoil(testTypeCode, assetData) {
@@ -802,7 +830,9 @@ export default {
                     rel: {}
                 },
                 limits: 'Absolute',
-                table
+                table: {
+                    table1: table
+                }
             }
         },
         async initInsulationResistanceMotor(testTypeCode) {
@@ -821,7 +851,9 @@ export default {
                     rel: {}
                 },
                 limits: 'Absolute',
-                table
+                table: {
+                    table1: table
+                }
             }
         },
         async initSF6MoiturePurity(testTypeCode) {
@@ -845,8 +877,8 @@ export default {
                 },
                 limits: 'Absolute',
                 table: {
-                    moitureTable: moitureTable,
-                    purityTable: purityTable
+                    table1: moitureTable,
+                    table2: purityTable
                 }
             }
         },
@@ -875,9 +907,9 @@ export default {
                 },
                 limits: 'Absolute',
                 table: {
-                    decomSf6Table: decomSf6Table,
-                    so2Sof2Table: so2Sof2Table,
-                    hfTable: hfTable
+                    table1: decomSf6Table,
+                    table2: so2Sof2Table,
+                    table3: hfTable
                 }
             }
         },
@@ -893,7 +925,9 @@ export default {
             return {
                 rowDataExampleCondition,
                 limits: 'Absolute',
-                table
+                table: {
+                    table1: table
+                }
             }
         },
         async initOverCurrentRelease(testTypeCode) {
@@ -907,7 +941,9 @@ export default {
 
             return {
                 rowDataExampleCondition,
-                table
+                table: {
+                    table1: table
+                }
             }
         },
         async initUnderVoltageRelease(testTypeCode) {
@@ -930,7 +966,7 @@ export default {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
 
-            let table = []
+            let table1 = []
 
             const defaultRows = testConfig.defaultRows || []
 
@@ -943,12 +979,14 @@ export default {
                     }
                 })
 
-                table.push(row)
+                table1.push(row)
             })
 
             return {
                 rowDataExampleCondition,
-                table
+                table: {
+                    table1: table1
+                }
             }
         }
     }

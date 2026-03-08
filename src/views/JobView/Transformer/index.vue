@@ -116,7 +116,7 @@ import TestSummary from './components/TestSummary/index.vue'
 import HealthIndex from './components/HealthIndex/index.vue'
 import mixin from './mixin'
 import Mixtestcondition from './mixin/Mixtestcondition'
-import testInformation from '@/views/Common/testInformation.vue'
+import testInformation from '@/views/Common/TestInformation.vue'
 import exportData from './components/ExportData'
 import TestingEquipment from './components/TestingEquipment'
 

@@ -1,6 +1,5 @@
 <template>
     <div id="dc-winding-resistance-prim">
-
         <!-- Cấu hình -->
         <div style="position: sticky; left: 0; display: inline-block;">
             <el-row class="mgb-10">
@@ -10,7 +9,7 @@
                     </el-button>
                     <el-button class="btn-action" size="mini" type="success"
                         @click="openConditionIndicatorDialog = true">
-                        <i class="fa-solid fa-hammer"></i> Condition indicatior settings
+                        <i class="fa-solid fa-hammer"></i> Condition indicator settings
                     </el-button>
                 </el-col>
             </el-row>
@@ -90,13 +89,13 @@
         <el-dialog class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px"
             append-to-body>
 
-            <el-radio-group v-model="testData.limits">
+            <el-radio-group v-model="assetData.assessmentLimits.limits">
                 <el-radio label="Absolute" value="Absolute"></el-radio>
                 <el-radio label="Relative" value="Relative"></el-radio>
             </el-radio-group>
 
             <transition>
-                <table v-if="testData.limits === 'Absolute'" class="table-strip-input-data">
+                <table v-if="assetData.assessmentLimits.limits === 'Absolute'" class="table-strip-input-data">
                     <thead>
                         <tr>
                             <th></th>
@@ -106,25 +105,23 @@
                     </thead>
                     <tbody>
                         <tr v-for="(item, index) in motorCharacteristics" :key="index">
-                            <td>{{ item }}</td>
+                            <td>{{ item.label }}</td>
                             <td>
-                                <el-input size="mini" v-model="asset_.motorChar.abs[index].min">
-                                    <template v-if="index === 1" slot="append">s</template>
-                                    <template v-else-if="index === 3" slot="append">V</template>
-                                    <template v-else slot="append">A</template>
+                                <el-input size="mini"
+                                    v-model="assetData.assessmentLimits.motor_characteristics.abs[item.key].min.value">
+                                    <template slot="append">{{ item.unit }}</template>
                                 </el-input>
                             </td>
                             <td>
-                                <el-input size="mini" v-model="asset_.motorChar.abs[index].max">
-                                    <template v-if="index === 1" slot="append">s</template>
-                                    <template v-else-if="index === 3" slot="append">V</template>
-                                    <template v-else slot="append">A</template>
+                                <el-input size="mini"
+                                    v-model="assetData.assessmentLimits.motor_characteristics.abs[item.key].max.value">
+                                    <template slot="append">{{ item.unit }}</template>
                                 </el-input>
                             </td>
                         </tr>
                     </tbody>
                 </table>
-                <table v-if="testData.limits === 'Relative'" class="table-strip-input-data">
+                <table v-if="assetData.assessmentLimits.limits === 'Relative'" class="table-strip-input-data">
                     <thead>
                         <tr>
                             <th></th>
@@ -134,17 +131,17 @@
                     </thead>
                     <tbody>
                         <tr v-for="(item, index) in motorCharacteristics" :key="index">
-                            <td>{{ item }}</td>
-                            <el-input size="mini" v-model="asset_.motorChar.rel[index].ref">
-                                <template v-if="index === 1" slot="append">s</template>
-                                <template v-else-if="index === 3" slot="append">V</template>
-                                <template v-else slot="append">A</template>
-                            </el-input>
+                            <td>{{ item.label }}</td>
                             <td>
-                                <el-input size="mini" v-model="asset_.motorChar.rel[index].dev">
-                                    <template v-if="index === 1" slot="append">s</template>
-                                    <template v-else-if="index === 3" slot="append">V</template>
-                                    <template v-else slot="append">A</template>
+                                <el-input size="mini"
+                                    v-model="assetData.assessmentLimits.motor_characteristics.rel[item.key].ref.value">
+                                    <template slot="append">{{ item.unit }}</template>
+                                </el-input>
+                            </td>
+                            <td>
+                                <el-input size="mini"
+                                    v-model="assetData.assessmentLimits.motor_characteristics.rel[item.key].dev.value">
+                                    <template slot="append">{{ item.unit }}</template>
                                 </el-input>
                             </td>
                         </tr>
@@ -157,9 +154,13 @@
                 <span style=" margin-top: 20px; width:100%; position: absolute; right: 10px; bottom: 10px;"
                     class="dialog-footer">
                     <el-button @click="resetAssessment">Cancel</el-button>
-                    <el-button type="primary" @click="updateAssessment">Confirm</el-button>
+                    <el-button type="primary" @click="updateAssessment" :disabled="true">Confirm</el-button>
                 </span>
             </template>
+        </el-dialog>
+
+        <el-dialog class="dialog_assess" title="Condition indicator settings"
+            :visible.sync="openConditionIndicatorDialog" width="600px" append-to-body>
         </el-dialog>
     </div>
 </template>
@@ -180,10 +181,10 @@ export default {
             },
             back_asset: {},
             motorCharacteristics: [
-                "Inrush current",
-                "Charging time",
-                "Charging current",
-                "Minimum voltage"
+                { label: "Inrush current", key: "inrush_current", unit: "A" },
+                { label: "Charging time", key: "charging_time", unit: "s" },
+                { label: "Charging current", key: "charging_current", unit: "A" },
+                { label: "Minimum voltage", key: "minimum_voltage", unit: "V" }
             ]
         }
     },
@@ -240,103 +241,41 @@ export default {
             this.openAssessmentDialog = false
         },
         add() {
-            this.testData.table.push({
-                mrid: '',
-                inrush_current: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                charging: {
-                    mrid: '',
-                    value: '',
-                    unit: 's',
-                    type: 'analog'
-                },
-                charging_current: {
-                    mrid: '',
-                    value: '',
-                    unit: 'A',
-                    type: 'analog'
-                },
-                mini_voltage: {
-                    mrid: '',
-                    value: '',
-                    unit: 'V',
-                    type: 'analog'
-                },
-                assessment: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                },
-                condition_indicator: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
+            if (!this.testData.table.table1 || this.testData.table.table1.length === 0) return;
+            const newRow = JSON.parse(JSON.stringify(this.testData.table[0]));
+            Object.keys(newRow).forEach(key => {
+                if (newRow[key] && typeof newRow[key] === 'object' && 'value' in newRow[key]) {
+                    newRow[key].value = '';
                 }
-            })
+            });
+            this.testData.table.push(newRow);
         },
         removeAll() {
-            this.$confirm('This will delete the file. Continue?', 'Warning', {
+            this.$confirm('This will clear all rows except the first one. Continue?', 'Warning', {
                 confirmButtonText: 'OK',
                 cancelButtonText: 'Cancel',
                 type: 'warning'
-            })
-                .then(() => {
-                    this.testData.table = []
-                })
-                .catch(() => {
-                    // User cancelled, do nothing
-                })
+            }).then(() => {
+                this.testData.table.splice(1);
+                this.clear();
+            }).catch(() => { });
         },
         deleteTest(index) {
-            this.testData.table.splice(index, 1)
+            if (this.testData.table.length > 1) {
+                this.testData.table.splice(index, 1);
+            } else {
+                this.clear();
+            }
         },
         addTest(index) {
-            const data = {
-                mrid: '',
-                inrush_current: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                charging: {
-                    mrid: '',
-                    value: '',
-                    unit: 's',
-                    type: 'analog'
-                },
-                charging_current: {
-                    mrid: '',
-                    value: '',
-                    unit: 'A',
-                    type: 'analog'
-                },
-                mini_voltage: {
-                    mrid: '',
-                    value: '',
-                    unit: 'V',
-                    type: 'analog'
-                },
-                assessment: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                },
-                condition_indicator: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
+            if (!this.testData.table || this.testData.table.length === 0) return;
+            const newRow = JSON.parse(JSON.stringify(this.testData.table[index]));
+            Object.keys(newRow).forEach(key => {
+                if (newRow[key] && typeof newRow[key] === 'object' && 'value' in newRow[key]) {
+                    newRow[key].value = '';
                 }
-            }
-            this.testData.table.splice(index + 1, 0, data)
+            });
+            this.testData.table.splice(index + 1, 0, newRow);
         },
         calculator() {
             this.testData.table.forEach(item => {
@@ -604,12 +543,5 @@ td {
 
 .Bad input {
     background: #ff3300;
-}
-
-table,
-th,
-tr,
-td {
-    white-space: nowrap;
 }
 </style>

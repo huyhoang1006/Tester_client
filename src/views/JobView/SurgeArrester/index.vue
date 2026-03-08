@@ -19,6 +19,7 @@
                         :obj-active-name="objActiveName"></select-test>
                 </el-tab-pane>
 
+                <!-- Testing equipment -->
                 <el-tab-pane>
                     <span slot="label"><i class="fa-solid fa-list-check"></i> Testing equipment</span>
                     <div>
@@ -53,8 +54,8 @@
 import mixin from './mixin'
 import overview from './components/Overview/index.vue'
 import SelectTest from './components/SelectTest'
-import testInformation from '@/views/Common/testInformation.vue'
-import testingEquipment from './components/TestingEquipment/index.vue'
+import TestInformation from '@/views/Common/TestInformation.vue'
+import TestingEquipment from './components/TestingEquipment/index.vue'
 
 import InsulationResistance from './components/InsulationResistance.vue'
 import GeneralInspection from './components/GeneralInspection.vue'
@@ -66,10 +67,10 @@ export default {
     components: {
         overview,
         SelectTest,
-        testInformation,
+        TestInformation,
         InsulationResistance,
         GeneralInspection,
-        testingEquipment,
+        TestingEquipment,
         LeakageCurrent,
         PowerFrequency
     },

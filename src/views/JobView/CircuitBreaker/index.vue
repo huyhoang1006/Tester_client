@@ -19,6 +19,7 @@
                         :obj-active-name="objActiveName"></select-test>
                 </el-tab-pane>
 
+                <!-- Testing equipment -->
                 <el-tab-pane>
                     <span slot="label"><i class="fa-solid fa-list-check"></i> Testing equipment</span>
                     <div>
@@ -53,7 +54,7 @@
 import mixin from './mixin'
 import overview from './components/Overview/index.vue'
 import SelectTest from './components/SelectTest'
-import testInformation from '@/views/Common/testInformation.vue'
+import testInformation from '@/views/Common/TestInformation.vue'
 import testingEquipment from './components/TestingEquipment/index.vue'
 
 //circuit breaker

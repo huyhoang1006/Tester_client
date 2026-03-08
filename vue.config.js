@@ -5,6 +5,10 @@ module.exports = {
             builderOptions: {
                 appId: 'com.at.digitaltester',
                 productName: 'AT Digital Tester',
+                publish: {
+                    provider: 'generic',
+                    url: 'https://disparately-nonrationalistic-hope.ngrok-free.dev/'
+                },
                 extraResources: ['./database/**', './icon/**', './attachment/**', './etrc-icon/**', './template/**', './extra_binaries/**'],
                 win: {
                     target: ['nsis'],
