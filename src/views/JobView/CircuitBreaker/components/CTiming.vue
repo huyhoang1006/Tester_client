@@ -26,10 +26,10 @@
         </div>
 
         <div
-            v-if="assetData.circuitBreaker.interruptersPerPhase === 1 || assetData.circuitBreaker.interruptersPerPhase === ''">
+            v-if="testData && testData.table && testData.table.length > 0 && getInterruptersPerPhase() === 1">
             <div v-for="items in testData.table.length" :key="items" style="margin-top: 2%">
-                <div style="font-weight: bold ;font-size: 12px;">Close coil no. {{ items }}</div>
-                <br />
+                <div v-if="testData.table.length > 1" style="font-weight: bold ;font-size: 12px;">Close coil no. {{ items }}</div>
+                <br v-if="testData.table.length > 1" />
                 <table class="table-strip-input-data" style="width: 100%; font-size: 12px;">
                     <thead>
                         <th>Phase</th>
@@ -40,20 +40,23 @@
                     </thead>
                     <tbody>
                         <tr v-for="(item, index) in testData.table[items - 1]" :key="index">
-                            <td style="display: flex;">
-                                <el-input size="mini" v-model="item.phase.value"></el-input>
-                                <div
-                                    :class="{ colorTableRed: index % 3 == 0, colorTableYellow: index % 3 == 1, colorTableBlue: index % 3 == 2 }">
+                            <td>
+                                <div style="display: flex; width: 100%;">
+                                    <el-input size="mini" v-model="item.phase.value"></el-input>
+                                    <div
+                                        :class="{ colorTableRed: item.phase.value == 'A', colorTableYellow: item.phase.value == 'B', colorTableBlue: item.phase.value == 'C' }">
+                                    </div>
                                 </div>
                             </td>
                             <td>
                                 <el-input size="mini" v-model="item.closing_time.value"></el-input>
                             </td>
-                            <td v-if="index % (assetData.circuitBreaker.interruptersPerPhase || 1 * assetData.circuitBreaker.numberOfPhases || 3) === 0"
-                                :rowspan="assetData.circuitBreaker.interruptersPerPhase * assetData.circuitBreaker.numberOfPhases">
+                            <td v-if="index % (getInterruptersPerPhase() * getNumberOfPhases()) === 0"
+                                :rowspan="getInterruptersPerPhase() * getNumberOfPhases()">
                                 <el-input
-                                    :rows="assetData.circuitBreaker.interruptersPerPhase || 1 * assetData.circuitBreaker.numberOfPhases || 3"
-                                    type="textarea" size="mini" v-model="item.closing_sync_between_phase.value"></el-input>
+                                    :rows="getInterruptersPerPhase() * getNumberOfPhases()"
+                                    type="textarea" size="mini"
+                                    v-model="item.closing_sync_between_phase.value"></el-input>
                             </td>
                             <td>
                                 <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -67,8 +70,8 @@
                                     class="fa-solid fa-xmark fail icon-status"></span>
                             </td>
                             <td>
-                                <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
-                                    size="mini" v-model="item.condition_indicator.value">
+                                <el-select :class="nameColor(item.condition_indicator.value)" size="mini"
+                                    v-model="item.condition_indicator.value">
                                     <el-option value="Good">Good</el-option>
                                     <el-option value="Fair">Fair</el-option>
                                     <el-option value="Poor">Poor</el-option>
@@ -81,10 +84,10 @@
             </div>
         </div>
 
-        <div v-if="assetData.circuitBreaker.interruptersPerPhase > 1">
+        <div v-if="testData && testData.table && testData.table.length > 0 && getInterruptersPerPhase() > 1">
             <div v-for="items in testData.table.length" :key="items" style="margin-top: 2%">
-                <div style="font-weight: bold ;font-size: 12px;">Close coil no. {{ items }}</div>
-                <br />
+                <div v-if="testData.table.length > 1" style="font-weight: bold ;font-size: 12px;">Close coil no. {{ items }}</div>
+                <br v-if="testData.table.length > 1" />
                 <table class="table-strip-input-data" style="width: 100%; font-size: 12px;">
                     <thead class="test">
                         <th>Phase</th>
@@ -97,8 +100,8 @@
                     </thead>
                     <tbody>
                         <tr v-for="(item, index) in testData.table[items - 1]" :key="index">
-                            <td v-if="index % assetData.circuitBreaker.interruptersPerPhase || 1 === 0"
-                                :rowspan="assetData.circuitBreaker.interruptersPerPhase || 1">
+                            <td v-if="index % getInterruptersPerPhase() === 0"
+                                :rowspan="getInterruptersPerPhase()">
                                 <div style="display: flex; width: 100%;">
                                     <el-input size="mini" v-model="item.phase.value"></el-input>
                                     <div
@@ -106,21 +109,21 @@
                                     </div>
                                 </div>
                             </td>
-                            <td style="width: 500px;">
+                            <td>
                                 <el-input size="mini" v-model="item.interrupter.value"></el-input>
                             </td>
                             <td>
                                 <el-input size="mini" v-model="item.closing_time.value"></el-input>
                             </td>
-                            <td v-if="index % assetData.circuitBreaker.interruptersPerPhase || 1 === 0"
-                                :rowspan="assetData.circuitBreaker.interruptersPerPhase || 1">
-                                <el-input :rows="assetData.circuitBreaker.interruptersPerPhase || 1" type="textarea"
+                            <td v-if="index % getInterruptersPerPhase() === 0"
+                                :rowspan="getInterruptersPerPhase()">
+                                <el-input :rows="getInterruptersPerPhase()" type="textarea"
                                     v-model="item.closing_sync_between_interrupter.value"></el-input>
                             </td>
-                            <td v-if="index % (assetData.circuitBreaker.interruptersPerPhase || 1 * assetData.circuitBreaker.numberOfPhases || 3) === 0"
-                                :rowspan="assetData.circuitBreaker.interruptersPerPhase || 1 * assetData.circuitBreaker.numberOfPhases || 3">
+                            <td v-if="index % (getInterruptersPerPhase() * getNumberOfPhases()) === 0"
+                                :rowspan="getInterruptersPerPhase() * getNumberOfPhases()">
                                 <el-input
-                                    :rows="assetData.circuitBreaker.interruptersPerPhase || 1 * assetData.circuitBreaker.numberOfPhases || 3"
+                                    :rows="getInterruptersPerPhase() * getNumberOfPhases()"
                                     type="textarea" v-model="item.closing_sync_between_phase.value"></el-input>
                             </td>
                             <td>
@@ -135,8 +138,8 @@
                                     class="fa-solid fa-xmark fail icon-status"></span>
                             </td>
                             <td>
-                                <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
-                                    size="mini" v-model="item.condition_indicator.value">
+                                <el-select :class="nameColor(item.condition_indicator.value)" size="mini"
+                                    v-model="item.condition_indicator.value">
                                     <el-option value="Good">Good</el-option>
                                     <el-option value="Fair">Fair</el-option>
                                     <el-option value="Poor">Poor</el-option>
@@ -518,6 +521,39 @@ export default {
         },
         assetData() {
             return this.asset
+        },
+        assessLimitsData() {
+            if (!this.asset || !this.asset.assessmentLimits) {
+                return {}
+            }
+
+            // If it's already an object, return it directly
+            if (typeof this.asset.assessmentLimits === 'object') {
+                return this.asset.assessmentLimits
+            }
+
+            // If it's a string, try to parse it
+            if (typeof this.asset.assessmentLimits === 'string') {
+                try {
+                    return JSON.parse(this.asset.assessmentLimits)
+                } catch (error) {
+                    console.warn('Error parsing assessmentLimits:', error)
+                    return {}
+                }
+            }
+
+            return {}
+        },
+        numberOfCloseCoils() {
+            if (this.assetData && this.assetData.operating) {
+                const value = this.assetData.operating.numberCloseCoil || 
+                             this.assetData.operating.number_of_close_coil
+                const parsed = parseInt(value)
+                if (!isNaN(parsed) && parsed > 0) {
+                    return parsed
+                }
+            }
+            return 1
         }
     },
     watch: {
@@ -569,6 +605,23 @@ export default {
                     this.$nextTick(() => {
                         this.initializeTable()
                     })
+                }
+            }
+        },
+        numberOfCloseCoils: {
+            immediate: true,
+            handler: function (newVal) {
+                // Re-initialize table when number of close coils changes
+                if (this.testData && this.testData.table) {
+                    // Check if table needs to be resized
+                    if (this.testData.table.length !== newVal) {
+                        console.log(`Auto-resizing table from ${this.testData.table.length} to ${newVal} close coils`)
+                        // Clear and re-initialize
+                        this.$set(this.testData, 'table', [])
+                        this.$nextTick(() => {
+                            this.initializeTable()
+                        })
+                    }
                 }
             }
         }
@@ -1054,8 +1107,8 @@ export default {
             const numCloseCoil = this.assetData?.operating?.numberCloseCoil ||
                 this.assetData?.operating?.number_of_close_coil ||
                 1
-            const numPhase = this.assetData?.circuitBreaker?.numberOfPhases || 3
-            const numInterruptPhase = this.assetData?.circuitBreaker?.interruptersPerPhase || 1
+            const numPhase = this.getNumberOfPhases()
+            const numInterruptPhase = this.getInterruptersPerPhase()
             const phase = ["A", "B", "C"]
 
             if (!this.data.table) {
@@ -1069,13 +1122,13 @@ export default {
                     for (let phaseIdx = 0; phaseIdx < numPhase; phaseIdx++) {
                         for (let interruptIdx = 0; interruptIdx < numInterruptPhase; interruptIdx++) {
                             tableRow.push({
-                                phase: phase[phaseIdx] || '',
-                                assessment: '',
-                                closingTime: '',
-                                closingSyncPhase: '',
-                                closingSyncInterrupt: '',
-                                interruptNo: '',
-                                condition_indicator: ''
+                                phase: { mrid: '', value: phase[phaseIdx] || '', unit: '', type: 'string' },
+                                closing_time: { mrid: '', value: '', unit: 'm|s', type: 'analog' },
+                                interrupter: { mrid: '', value: (interruptIdx + 1).toString(), unit: '', type: 'analog' },
+                                closing_sync_between_phase: { mrid: '', value: '', unit: 'm|s', type: 'analog' },
+                                closing_sync_between_interrupter: { mrid: '', value: '', unit: 'm|s', type: 'analog' },
+                                assessment: { mrid: '', value: '', unit: '', type: 'discrete' },
+                                condition_indicator: { mrid: '', value: '', unit: '', type: 'discrete' }
                             })
                         }
                     }
@@ -1083,6 +1136,34 @@ export default {
                 }
                 this.$set(this.data, 'table', newTable)
             }
+        },
+        getInterruptersPerPhase() {
+            if (this.assetData && this.assetData.circuitBreaker) {
+                const value = this.assetData.circuitBreaker.interruptersPerPhase || 
+                             this.assetData.circuitBreaker.numberOfInterruptPhase || 
+                             this.assetData.circuitBreaker.number_of_interrupt_phase
+                // Parse to number and check if valid
+                const parsed = parseInt(value)
+                if (!isNaN(parsed) && parsed > 0) {
+                    return parsed
+                }
+            }
+            // Default to 1 if not set or invalid
+            return 1
+        },
+        getNumberOfPhases() {
+            if (this.assetData && this.assetData.circuitBreaker) {
+                const value = this.assetData.circuitBreaker.numberOfPhases || 
+                             this.assetData.circuitBreaker.numberOfPhase || 
+                             this.assetData.circuitBreaker.number_of_phases
+                // Parse to number and check if valid
+                const parsed = parseInt(value)
+                if (!isNaN(parsed) && parsed > 0) {
+                    return parsed
+                }
+            }
+            // Default to 3 if not set or invalid
+            return 3
         },
         resetAssessment() {
             this.asset_ = JSON.parse(JSON.stringify(this.back_asset))
@@ -1240,7 +1321,9 @@ export default {
             this.testData.table.forEach((element) => {
                 element.forEach((ele) => {
                     Object.keys(ele).forEach((key) => {
-                        ele[key] = ''
+                        if (ele[key] && typeof ele[key] === 'object' && ele[key].value !== undefined) {
+                            ele[key].value = ''
+                        }
                     })
                 })
             })

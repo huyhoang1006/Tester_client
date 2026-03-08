@@ -59,9 +59,13 @@
                             class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                     <td>
-                        <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
-                            size="mini" v-model="item.condition_indicator.value">
-                        </el-input>
+                        <el-select :class="nameColor(item.condition_indicator.value)" size="mini"
+                            v-model="item.condition_indicator.value">
+                            <el-option value="Good">Good</el-option>
+                            <el-option value="Fair">Fair</el-option>
+                            <el-option value="Poor">Poor</el-option>
+                            <el-option value="Bad">Bad</el-option>
+                        </el-select>
                     </td>
                     <td>
                         <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
@@ -190,12 +194,17 @@ export default {
         }
     },
     beforeMount() {
-        const asset = {
-            id: this.asset.id,
-            assessmentLimits: this.asset_
-        }
-        const dataTemp = JSON.parse(JSON.stringify(asset))
-        this.back_asset = dataTemp.assessmentLimits
+        // Store backup for reset - will be updated by watcher
+        const dataTemp = JSON.parse(JSON.stringify(this.asset_ || {}))
+        this.back_asset = dataTemp
+    },
+    mounted() {
+        // Initialize table after component is mounted
+        this.$nextTick(() => {
+            if (this.testData && (!this.testData.table || this.testData.table.length === 0) && this.assetData && this.assetData.operating) {
+                this.initializeTable()
+            }
+        })
     },
     props: {
         data: {
@@ -213,10 +222,43 @@ export default {
         },
         assetData() {
             return this.asset
+        },
+        assessLimitsData() {
+            if (!this.asset || !this.asset.assessmentLimits) {
+                return {}
+            }
+
+            // If it's already an object, return it directly
+            if (typeof this.asset.assessmentLimits === 'object') {
+                return this.asset.assessmentLimits
+            }
+
+            // If it's a string, try to parse it
+            if (typeof this.asset.assessmentLimits === 'string') {
+                try {
+                    return JSON.parse(this.asset.assessmentLimits)
+                } catch (error) {
+                    console.warn('Error parsing assessmentLimits:', error)
+                    return {}
+                }
+            }
+
+            return {}
+        },
+        numberOfTripCoils() {
+            if (this.assetData && this.assetData.operating) {
+                const value = this.assetData.operating.numberTripCoil || 
+                             this.assetData.operating.number_of_trip_coil
+                const parsed = parseInt(value)
+                if (!isNaN(parsed) && parsed > 0) {
+                    return parsed
+                }
+            }
+            return 1
         }
     },
     watch: {
-        assetData: {
+        assessLimitsData: {
             deep: true,
             immediate: true,
             handler: function (newVal) {
@@ -248,7 +290,31 @@ export default {
                     this.$set(this.testData, 'limits', this.asset_.limits)
                 }
             }
-        }
+        },
+        assetData: {
+            immediate: true,
+            deep: true,
+            handler: function () {
+                // Initialize table if empty when assetData is available
+                if (this.testData && (!this.testData.table || this.testData.table.length === 0) && this.assetData && this.assetData.operating) {
+                    this.$nextTick(() => {
+                        this.initializeTable()
+                    })
+                }
+            }
+        },
+        'testData.table': {
+            immediate: true,
+            handler: function (newVal) {
+                // Initialize table if empty
+                if ((!newVal || newVal.length === 0) && this.assetData && this.assetData.operating) {
+                    this.$nextTick(() => {
+                        this.initializeTable()
+                    })
+                }
+            }
+        },
+
     },
     methods: {
         normalizeAssessmentLimits(data) {
@@ -412,16 +478,55 @@ export default {
             }
             this.openAssessmentDialog = false
         },
+        initializeTable() {
+            if (!this.data) return
+
+            if (!this.data.table) {
+                this.$set(this.data, 'table', [])
+            }
+
+            if (this.data.table.length === 0) {
+                // Always create only 1 default row
+                const newTable = [{
+                    mrid: '',
+                    trip_coil_no: {
+                        mrid: '',
+                        value: '1',
+                        unit: '',
+                        type: 'string'
+                    },
+                    r_meas: {
+                        mrid: '',
+                        value: '',
+                        unit: 'Ω',
+                        type: 'analog'
+                    },
+                    assessment: {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
+                    },
+                    condition_indicator: {
+                        mrid: '',
+                        value: '',
+                        unit: '',
+                        type: 'discrete'
+                    }
+                }]
+                this.$set(this.data, 'table', newTable)
+            }
+        },
         add() {
             this.testData.table.push({
                 mrid: '',
-                tripCoilNo: {
+                trip_coil_no: {
                     mrid: '',
                     value: '',
                     unit: '',
                     type: 'string'
                 },
-                rmeas: {
+                r_meas: {
                     mrid: '',
                     value: '',
                     unit: 'Ω',
@@ -456,13 +561,13 @@ export default {
         addTest(index) {
             const data = {
                 mrid: '',
-                tripCoilNo: {
+                trip_coil_no: {
                     mrid: '',
                     value: '',
                     unit: '',
                     type: 'string'
                 },
-                rmeas: {
+                r_meas: {
                     mrid: '',
                     value: '',
                     unit: 'Ω',
@@ -485,41 +590,38 @@ export default {
         },
         calculator() {
             this.testData.table.forEach((item) => {
-                console.log(this.testData.limits)
-                //console.log(item.rmeas);
-                //console.log(this.asset_.coilCharacter.abs)
-                //console.log(this.asset_.coilCharacter.abs[7].max)
                 if (this.testData.limits === 'Absolute') {
-                    if ((parseFloat(item.rmeas) >= parseFloat(this.asset_.coilCharacter.abs[7].min)) && (parseFloat(item.rmeas) <= parseFloat(this.asset_.coilCharacter.abs[7].max))) {
-                        item.assessment = 'Pass';
-                        console.log('Pass 1')
+                    const rMeasValue = parseFloat(item.r_meas.value)
+                    const minValue = parseFloat(this.asset_.coilCharacter.abs[7].min)
+                    const maxValue = parseFloat(this.asset_.coilCharacter.abs[7].max)
+                    
+                    if (rMeasValue >= minValue && rMeasValue <= maxValue) {
+                        item.assessment.value = 'Pass'
                     }
                     else {
-                        item.assessment = 'Fail';
-                        console.log('Fail 1')
+                        item.assessment.value = 'Fail'
                     }
-
                 }
-                if (this.testData.limits === 'Relative') {
-                    if (parseFloat(item.rmeas) <= parseFloat(this.asset_.coilCharacter.rel[7].ref)) {
-                        if (parseFloat(item.rmeas) >= (parseFloat(this.asset_.coilCharacter.rel[7].ref) - parseFloat(this.asset_.coilCharacter.rel[7].devZ))) {
-                            item.assessment = 'Pass';
-                            console.log('Pass 2');
+                else if (this.testData.limits === 'Relative') {
+                    const rMeasValue = parseFloat(item.r_meas.value)
+                    const refValue = parseFloat(this.asset_.coilCharacter.rel[7].ref)
+                    const devZ = parseFloat(this.asset_.coilCharacter.rel[7].devZ)
+                    const devN = parseFloat(this.asset_.coilCharacter.rel[7].devN)
+                    
+                    if (rMeasValue <= refValue) {
+                        if (rMeasValue >= (refValue - devZ)) {
+                            item.assessment.value = 'Pass'
                         }
                         else {
-                            item.assessment = 'Fail';
-                            console.log('Fail 2')
+                            item.assessment.value = 'Fail'
                         }
-
                     }
-                    else if (parseFloat(item.rmeas) > parseFloat(this.asset_.coilCharacter.rel[7].ref)) {
-                        if (parseFloat(item.rmeas) <= (parseFloat(this.asset_.coilCharacter.rel[7].ref) + parseFloat(this.asset_.coilCharacter.rel[7].devN))) {
-                            item.assessment = 'Pass';
-                            console.log('Pass 3')
+                    else if (rMeasValue > refValue) {
+                        if (rMeasValue <= (refValue + devN)) {
+                            item.assessment.value = 'Pass'
                         }
                         else {
-                            item.assessment = 'Fail';
-                            console.log('Fail 3')
+                            item.assessment.value = 'Fail'
                         }
                     }
                 }
@@ -530,7 +632,9 @@ export default {
         clear() {
             this.testData.table.forEach((element) => {
                 Object.keys(element).forEach((key) => {
-                    element[key] = ''
+                    if (element[key] && typeof element[key] === 'object' && element[key].value !== undefined) {
+                        element[key].value = ''
+                    }
                 })
             })
         },

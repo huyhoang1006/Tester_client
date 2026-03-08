@@ -166,6 +166,18 @@ export default {
                 } else {
                     test.testCondition.attachment.path = JSON.stringify(test.testCondition.attachmentData)
                 }
+
+                // Convert array structure to object structure for tests like OTiming
+                // OTiming uses testData.table as 2D array: [[row1, row2], [row1, row2]]
+                if (Array.isArray(test.data.table) && test.data.table.length > 0 && Array.isArray(test.data.table[0])) {
+                    const tableObject = {}
+                    test.data.table.forEach((tripCoilData, index) => {
+                        const key = `table${index + 1}`
+                        tableObject[key] = tripCoilData
+                    })
+                    test.data.table = tableObject
+                }
+
                 for (const key in test.data.table) {
                     const rows = test.data.table[key]
 

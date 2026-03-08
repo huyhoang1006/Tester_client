@@ -123,8 +123,11 @@ export const jobDtoToEntity = (dto) => {
                                 discreteValue.value = commonFunc.assessmentToValue(value.value) ?? null
                             } else if (key == 'condition_indicator') {
                                 discreteValue.value = commonFunc.conditionIndicatorToValue(value.value) ?? null
+                            } else {
+                                // For other discrete values, store value as-is
+                                discreteValue.value = value.value || null
                             }
-                            discreteValue.vta_alias_name = value.value
+                            discreteValue.vta_alias_name = value.value || ''
                             discreteValue.alias_name = key || null
                             discreteValue.procedure_dataset_id = data.mrid
                             discreteValue.discrete = value['measurement_id'] ? value['measurement_id'] : null
@@ -321,21 +324,37 @@ export const JobEntityToDto = (entity) => {
 
                 const discreteValueData = entity.discreteValues.filter((x) => x.procedure_dataset_id === test.mrid)
                 for (const dv of discreteValueData) {
-                    const key = dv.alias_name // vd: "assessment"
-                    if (key == 'assessment') {
+                    const key = dv.alias_name // vd: "assessment", "condition_indicator"
+                    
+                    let displayValue = dv.vta_alias_name || ''
+                    
+                    // If vta_alias_name is empty, convert from numeric value
+                    if (!displayValue && dv.value !== null && dv.value !== undefined) {
+                        if (key == 'assessment') {
+                            displayValue = dv.value == 1 ? 'Pass' : dv.value == 0 ? 'Fail' : ''
+                        } else if (key == 'condition_indicator') {
+                            if (dv.value == 3) displayValue = 'Good'
+                            else if (dv.value == 2) displayValue = 'Fair'
+                            else if (dv.value == 1) displayValue = 'Poor'
+                            else if (dv.value == 0) displayValue = 'Bad'
+                        }
+                    }
+                    
+                    if (key == 'assessment' || key == 'condition_indicator') {
                         rowData[key] = {
                             mrid: dv.mrid,
                             type: 'discrete',
                             unit: '',
-                            value: dv.vta_alias_name || '',
+                            value: displayValue,
                             measurement_id: dv.discrete || ''
                         }
-                    } else if (key == 'condition_indicator') {
+                    } else {
+                        // For other discrete values
                         rowData[key] = {
                             mrid: dv.mrid,
                             type: 'discrete',
                             unit: '',
-                            value: dv.vta_alias_name || '',
+                            value: displayValue || dv.value || '',
                             measurement_id: dv.discrete || ''
                         }
                     }
@@ -344,6 +363,23 @@ export const JobEntityToDto = (entity) => {
                 testTemplate.data.table[key].push(rowData)
             }
         }
+
+        // Convert object structure back to array for tests like OTiming
+        // Check if all keys follow pattern "tableX" (table1, table2, table3...)
+        const tableKeys = Object.keys(testTemplate.data.table)
+        const isTablePattern = tableKeys.every(key => /^table\d+$/.test(key))
+        if (isTablePattern && tableKeys.length > 0) {
+            // Sort keys by table number
+            const sortedKeys = tableKeys.sort((a, b) => {
+                const numA = parseInt(a.replace('table', ''))
+                const numB = parseInt(b.replace('table', ''))
+                return numA - numB
+            })
+            // Convert to array
+            const tableArray = sortedKeys.map(key => testTemplate.data.table[key])
+            testTemplate.data.table = tableArray
+        }
+
         const testDataCondition = entity.testDataSet.find((x) => x.work_task === item.mrid && x.type === 'condition')
         if (testDataCondition) {
             const rowData = {}

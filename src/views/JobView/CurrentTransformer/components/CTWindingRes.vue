@@ -38,7 +38,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, index) in testData.table" :key="index">
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
                         <td>
                             <el-input size="mini" type="text" v-model="item.name.value"></el-input>
                         </td>
@@ -133,7 +133,7 @@ export default {
     },
     methods: {
         add() {
-            this.testData.table.push({
+            this.testData.table.table1.push({
                 mrid : "",
                 name : {
                     mrid : "",
@@ -186,12 +186,12 @@ export default {
                     type: 'warning'
                 })
                 .then( () => {
-                    this.testData.table = []
+                    this.testData.table.table1 = []
                 }
             )
         },
         deleteTest(index) {
-            this.testData.table.splice(index, 1)
+            this.testData.table.table1.splice(index, 1)
         },
         addTest(index) {
             const data = {
@@ -239,7 +239,7 @@ export default {
                     type : "discrete"
                 }
             }
-            this.testData.table.splice(index+1, 0, data)
+            this.testData.table.table1.splice(index+1, 0, data)
         },
         calculator() {
             this.$message.success('Calculating successfully')
@@ -248,7 +248,7 @@ export default {
         },
 
         calcRcorr() {
-            this.testData.table.forEach((item) => {
+            this.testData.table.table1.forEach((item) => {
                 if(!isNaN(parseFloat(item.r_meas.value))) {
                     // Check if testCondition and condition exist
                     if(this.testConditionData && this.testConditionData.condition && 
@@ -265,14 +265,14 @@ export default {
             })
         },
         calcRdev() {
-            this.testData.table.forEach((item) => {
+            this.testData.table.table1.forEach((item) => {
                 if(!isNaN(parseFloat(item.r_meas.value)) && !isNaN(parseFloat(item.r_ref.value)) && item.r_ref.value != 0) {
                     item.r_dev.value = (100 * (parseFloat(item.r_meas.value) - parseFloat(item.r_ref.value))/ parseFloat(item.r_ref.value)).toFixed(4)
                 }
             })
         },
         clear() {
-            this.testData.table.forEach((element) => {
+            this.testData.table.table1.forEach((element) => {
                 element.name.value = "",
                 element.r_meas.value = '',
                 element.r_ref.value = '',

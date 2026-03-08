@@ -39,7 +39,7 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testData.table">
+                <template v-for="(item, index) in testData.table.table1">
                     <tr :key="index">
                         <td>
                             <el-input size="mini" type="text" v-model="item.name.value"></el-input>
@@ -141,7 +141,7 @@ export default {
     },
     methods: {
         add() {
-            this.testData.table.push(
+            this.testData.table.table1.push(
                 JSON.parse(JSON.stringify(this.rowData))
             )
         },
@@ -152,16 +152,16 @@ export default {
                     type: 'warning'
                 })
                 .then( () => {
-                    this.testData.table = []
+                    this.testData.table.table1 = []
                 }
             )
         },
         deleteTest(index) {
-            this.testData.table.splice(index, 1)
+            this.testData.table.table1.splice(index, 1)
         },
         addTest(index) {
             const data = JSON.parse(JSON.stringify(this.rowData))
-            this.testData.table.splice(index+1, 0, data)
+            this.testData.table.table1.splice(index+1, 0, data)
         },
         calculator() {
             this.calcRdev()
@@ -169,7 +169,7 @@ export default {
         },
 
         clear() {
-            this.testData.table.forEach(row => {
+            this.testData.table.table1.forEach(row => {
                 Object.keys(row).forEach(key => {
                     if (key === "mrid") return;
                     if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
@@ -179,7 +179,7 @@ export default {
             })
         },
         calcRdev() {
-            this.testData.table.forEach((element) => {
+            this.testData.table.table1.forEach((element) => {
                 if(!isNaN(parseFloat(element.ratio_meas.value)) && element.ratio_meas.value != 0) {
                     if(!isNaN(parseFloat(element.ipr.value)) && !isNaN(parseFloat(element.isr.value)) && element.isr.value != 0) {
                         element.ratio_dev.value = (100 * (parseFloat(element.ratio_meas.value) - (parseFloat(element.ipr.value)/parseFloat(element.isr.value)))/(parseFloat(element.ipr.value)/parseFloat(element.isr.value))).toFixed(4)

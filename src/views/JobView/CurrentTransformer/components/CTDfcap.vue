@@ -42,7 +42,7 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testData.table">
+                <template v-for="(item, index) in testData.table.table1">
                     <tr :key="index">
                         <td>
                            {{ index + 1 }}
@@ -155,7 +155,7 @@ export default {
     },
     methods: {
         add() {
-            this.testData.table.push({
+            this.testData.table.table1.push({
                 mrid : "",
                 measurement : {
                     mrid : "",
@@ -226,12 +226,12 @@ export default {
                     type: 'warning'
                 })
                 .then( () => {
-                    this.testData.table = []
+                    this.testData.table.table1 = []
                 }
             )
         },
         deleteTest(index) {
-            this.testData.table.splice(index, 1)
+            this.testData.table.table1.splice(index, 1)
         },
         addTest(index) {
             const data = {
@@ -297,21 +297,21 @@ export default {
                     type : "discrete"
                 }
             }
-            this.testData.table.splice(index+1, 0, data)
+            this.testData.table.table1.splice(index+1, 0, data)
         },
         calculator() {
             this.calcDeltaC()
             this.$message.success('Calculating successfully')
         },
         calcDeltaC() {
-            this.testData.table.forEach(item => {
+            this.testData.table.table1.forEach(item => {
                 if(!isNaN(parseFloat(item.c_ref.value)) && !isNaN(parseFloat(item.c_meas.value)) && item.c_ref.value != 0) {
                     item.delta_c_percent.value = (100 * (parseFloat(item.c_meas.value) - parseFloat(item.c_ref.value)) / parseFloat(item.c_ref.value)).toFixed(4)
                 }
             })
         },
         clear() {
-            this.testData.table.forEach((element) => {
+            this.testData.table.table1.forEach((element) => {
                 element.measurement.value = "",
                 element.test_mode.value = '',
                 element.test_voltage.value = '',
