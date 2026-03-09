@@ -407,19 +407,28 @@ export const mapEntityToDto = (entity) => {
         // --- FIX START: Tự động điền (Fill gaps) và SINH TÊN cho Main/Inter Taps ---
         const tapsCount = parseInt(core.taps);
         const coreIndex = coreInfo.core_index;
+        const totalCores = parseInt(dto.ctConfiguration.cores);
 
-        // 1. Tạo lại logic sinh tên cho Full Tap nếu bị thiếu (dù thường ít khi thiếu)
-        if (!core.fullTap.table.name) {
-            // Logic: 1S1 - 1S[Taps]
-            core.fullTap.table.name = `${coreIndex}S1 - ${coreIndex}S${tapsCount}`;
+        // 1. Luôn sinh lại tên cho Full Tap để đảm bảo đúng format
+        // Logic: Nếu chỉ có 1 core -> "S1 - S[Taps]", nếu nhiều core -> "1S1 - 1S[Taps]"
+        if (core.fullTap && core.fullTap.table) {
+            if (totalCores === 1) {
+                core.fullTap.table.name = `S1 - S${tapsCount}`;
+            } else {
+                core.fullTap.table.name = `${coreIndex}S1 - ${coreIndex}S${tapsCount}`;
+            }
         }
 
         // 2. Logic sinh tên Main Tap (giả sử Common Tap = 1 như UI mặc định)
         const expectedMainNames = [];
         for (let i = 0; i < tapsCount - 2; i++) {
-            // Logic: 1S1 - 1S2, 1S1 - 1S3...
+            // Logic: Nếu 1 core -> S1 - S2, S1 - S3..., nếu nhiều core -> 1S1 - 1S2, 1S1 - 1S3...
             // i=0 -> S2, i=1 -> S3...
-            expectedMainNames.push(`${coreIndex}S1 - ${coreIndex}S${i + 2}`);
+            if (totalCores === 1) {
+                expectedMainNames.push(`S1 - S${i + 2}`);
+            } else {
+                expectedMainNames.push(`${coreIndex}S1 - ${coreIndex}S${i + 2}`);
+            }
         }
 
         const requiredMainTaps = tapsCount > 2 ? tapsCount - 2 : 0;
@@ -452,8 +461,12 @@ export const mapEntityToDto = (entity) => {
         // Logic loop giống hệt UI: chosenCommonTap
         for (let i = 2; i <= tapsCount; i++) {
             for (let j = i + 1; j <= tapsCount; j++) {
-                // Name: 1S2 - 1S3, 1S2 - 1S4 ...
-                expectedInterNames.push(`${coreIndex}S${i} - ${coreIndex}S${j}`);
+                // Name: Nếu 1 core -> S2 - S3, S2 - S4..., nếu nhiều core -> 1S2 - 1S3, 1S2 - 1S4...
+                if (totalCores === 1) {
+                    expectedInterNames.push(`S${i} - S${j}`);
+                } else {
+                    expectedInterNames.push(`${coreIndex}S${i} - ${coreIndex}S${j}`);
+                }
             }
         }
 

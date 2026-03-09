@@ -42,18 +42,17 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testData.table.table1">
-                    <tr :key="index">
-                        <td>
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
+                    <td>
                            {{ index + 1 }}
-                        </td>
-                        <td>
+                    </td>
+                    <td>
                             <div style="display: flex;width: 100%;">   
                                 <el-input style="width: 80px;" size="mini" type="text" v-model="item.measurement.value"></el-input>
                                 <div :class="{colorTableRed : index%3==0, colorTableYellow : index%3==1, colorTableBlue : index%3==2}"></div>
                             </div>
-                        </td>
-                        <td>
+                    </td>
+                    <td>
                             <el-select size="mini" v-model="item.test_mode.value">
                                 <el-option label="GST" value="GST"></el-option>
                                 <el-option label="GSTg-A" value="GSTg-A"></el-option>
@@ -110,7 +109,6 @@
                             </el-button>
                         </td>
                     </tr>
-                </template>
             </tbody>
         </table>
 
@@ -151,9 +149,34 @@ export default {
             return this.asset
         },
     },
+    mounted() {
+        this.$nextTick(() => {
+            this.initializeTable()
+        })
+    },
     watch: {
+        'testData.table': {
+            immediate: true,
+            handler: function (newVal) {
+                // Auto-convert old array structure to new object structure
+                if (newVal && Array.isArray(newVal)) {
+                    this.$set(this.testData, 'table', { table1: newVal })
+                }
+                // Initialize if empty
+                if (!newVal || (typeof newVal === 'object' && !newVal.table1)) {
+                    this.$nextTick(() => {
+                        this.initializeTable()
+                    })
+                }
+            }
+        }
     },
     methods: {
+        initializeTable() {
+            if (!this.testData.table || (typeof this.testData.table === 'object' && !this.testData.table.table1)) {
+                this.$set(this.testData, 'table', { table1: [] })
+            }
+        },
         add() {
             this.testData.table.table1.push({
                 mrid : "",

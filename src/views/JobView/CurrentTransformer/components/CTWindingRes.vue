@@ -104,6 +104,12 @@ export default {
             openConditionIndicatorDialog: false,
         }
     },
+    mounted() {
+        // Initialize table if needed
+        this.$nextTick(() => {
+            this.initializeTable()
+        })
+    },
     props: {
         data: {
             type: Object,
@@ -130,9 +136,44 @@ export default {
         }
     },
     watch: {
+        'testData.table': {
+            immediate: true,
+            handler: function (newVal) {
+                // Convert array to object if needed (for backward compatibility)
+                if (newVal && Array.isArray(newVal)) {
+                    const tableObject = { table1: newVal }
+                    this.$set(this.testData, 'table', tableObject)
+                    return
+                }
+                
+                // Initialize table if empty
+                if (!newVal || (typeof newVal === 'object' && Object.keys(newVal).length === 0)) {
+                    this.$nextTick(() => {
+                        this.initializeTable()
+                    })
+                }
+            }
+        }
     },
     methods: {
+        initializeTable() {
+            if (!this.testData.table) {
+                this.$set(this.testData, 'table', {})
+            }
+            
+            if (Object.keys(this.testData.table).length === 0) {
+                this.$set(this.testData.table, 'table1', [])
+            }
+            
+            // Ensure table1 exists
+            if (!this.testData.table.table1) {
+                this.$set(this.testData.table, 'table1', [])
+            }
+        },
         add() {
+            if (!this.testData.table.table1) {
+                this.initializeTable()
+            }
             this.testData.table.table1.push({
                 mrid : "",
                 name : {
@@ -248,8 +289,12 @@ export default {
         },
 
         calcRcorr() {
+            if (!this.testData.table.table1) {
+                return
+            }
             this.testData.table.table1.forEach((item) => {
-                if(!isNaN(parseFloat(item.r_meas.value))) {
+                // Only calculate r_corr if it's empty (don't overwrite user input)
+                if(!isNaN(parseFloat(item.r_meas.value)) && (!item.r_corr.value || item.r_corr.value === '')) {
                     // Check if testCondition and condition exist
                     if(this.testConditionData && this.testConditionData.condition && 
                        this.testConditionData.condition.winding_temp && 
@@ -265,13 +310,21 @@ export default {
             })
         },
         calcRdev() {
+            if (!this.testData.table.table1) {
+                return
+            }
             this.testData.table.table1.forEach((item) => {
-                if(!isNaN(parseFloat(item.r_meas.value)) && !isNaN(parseFloat(item.r_ref.value)) && item.r_ref.value != 0) {
-                    item.r_dev.value = (100 * (parseFloat(item.r_meas.value) - parseFloat(item.r_ref.value))/ parseFloat(item.r_ref.value)).toFixed(4)
+                // Use r_corr (corrected resistance) instead of r_meas for deviation calculation
+                if(!isNaN(parseFloat(item.r_corr.value)) && !isNaN(parseFloat(item.r_ref.value)) && item.r_ref.value != 0) {
+                    item.r_dev.value = (100 * (parseFloat(item.r_corr.value) - parseFloat(item.r_ref.value))/ parseFloat(item.r_ref.value)).toFixed(4)
                 }
             })
         },
         clear() {
+            if (!this.testData.table.table1) {
+                this.initializeTable()
+                return
+            }
             this.testData.table.table1.forEach((element) => {
                 element.name.value = "",
                 element.r_meas.value = '',

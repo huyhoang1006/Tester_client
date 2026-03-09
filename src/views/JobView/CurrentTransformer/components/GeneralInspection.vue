@@ -115,9 +115,34 @@ export default {
             return common.buildEmptyTestRow(currentTransformerTestMap['GeneralInspection'].columns)
         }
     },
+    mounted() {
+        this.$nextTick(() => {
+            this.initializeTable()
+        })
+    },
     watch: {
+        'testData.table': {
+            immediate: true,
+            handler: function (newVal) {
+                // Auto-convert old array structure to new object structure
+                if (newVal && Array.isArray(newVal)) {
+                    this.$set(this.testData, 'table', { table1: newVal })
+                }
+                // Initialize if empty
+                if (!newVal || (typeof newVal === 'object' && !newVal.table1)) {
+                    this.$nextTick(() => {
+                        this.initializeTable()
+                    })
+                }
+            }
+        }
     },
     methods: {
+        initializeTable() {
+            if (!this.testData.table || (typeof this.testData.table === 'object' && !this.testData.table.table1)) {
+                this.$set(this.testData, 'table', { table1: [] })
+            }
+        },
         add() {
             this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
         },

@@ -840,7 +840,7 @@ export default {
                 for (let i = 0; i < this.configsData.cores; i++) {
                     // Create consistent structure for all cores
                     const coreData = {
-                        taps: 2,
+                        taps: '2',
                         commonTap: '1',
                         mrid: '',
                         fullTap: {
@@ -956,7 +956,7 @@ export default {
                     for (let i = 0; i < (data - length); i++) {
                         const newCoreData = {
                             mrid: '',
-                            taps: 2,
+                            taps: '2',
                             commonTap: '1',
                             fullTap: {
                                 table: {
@@ -1163,7 +1163,7 @@ export default {
             }
         },
         changeTap(data, index) {
-            this.configsData.dataCT[index].commonTap = 1
+            this.configsData.dataCT[index].commonTap = '1'
             const lengthData = this.configsData.dataCT[index].mainTap.data.length
             if ((parseInt(data) - 2) > lengthData) {
                 for (let i = 0; i < (parseInt(data) - lengthData - 2); i++) {
