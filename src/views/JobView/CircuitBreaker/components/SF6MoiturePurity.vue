@@ -34,13 +34,13 @@
                     <th>Moiture (ppm)</th>
                     <th class="assessment-col">Assessment</th>
                     <th class="condition-indicator-col">Condition indicator</th>
-                    <th @click="add('moitureTable')" class="action-col"><i class="fa-solid fa-plus pointer"></i></th>
-                    <th @click="removeAll('moitureTable')" class="action-col"><i class="fa-solid fa-trash pointer"></i>
+                    <th @click="add('table1')" class="action-col"><i class="fa-solid fa-plus pointer"></i></th>
+                    <th @click="removeAll('table1')" class="action-col"><i class="fa-solid fa-trash pointer"></i>
                     </th>
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, index) in testData.table.moitureTable" :key="index">
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>
                         {{ index + 1 }}
                     </td>
@@ -58,17 +58,21 @@
                             class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                     <td>
-                        <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                        <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
                             size="mini" v-model="item.condition_indicator.value">
-                        </el-input>
+                            <el-option value="Good">Good</el-option>
+                            <el-option value="Fair">Fair</el-option>
+                            <el-option value="Poor">Poor</el-option>
+                            <el-option value="Bad">Bad</el-option>
+                        </el-select>
                     </td>
                     <td>
-                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index, 'moitureTable')">
+                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index, 'table1')">
                             <i class="fa-solid fa-plus"></i>
                         </el-button>
                     </td>
                     <td>
-                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index, 'moitureTable')">
+                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index, 'table1')">
                             <i class="fas fa-trash"></i>
                         </el-button>
                     </td>
@@ -85,13 +89,13 @@
                     <th>Purity (%)</th>
                     <th class="assessment-col">Assessment</th>
                     <th class="condition-indicator-col">Condition indicator</th>
-                    <th @click="add('purityTable')" class="action-col"><i class="fa-solid fa-plus pointer"></i></th>
-                    <th @click="removeAll('purityTable')" class="action-col"><i class="fa-solid fa-trash pointer"></i>
+                    <th @click="add('table2')" class="action-col"><i class="fa-solid fa-plus pointer"></i></th>
+                    <th @click="removeAll('table2')" class="action-col"><i class="fa-solid fa-trash pointer"></i>
                     </th>
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, index) in testData.table.purityTable" :key="index">
+                <tr v-for="(item, index) in testData.table.table2" :key="index">
                     <td>
                         {{ index + 1 }}
                     </td>
@@ -109,17 +113,21 @@
                             class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                     <td>
-                        <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                        <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
                             size="mini" v-model="item.condition_indicator.value">
-                        </el-input>
+                            <el-option value="Good">Good</el-option>
+                            <el-option value="Fair">Fair</el-option>
+                            <el-option value="Poor">Poor</el-option>
+                            <el-option value="Bad">Bad</el-option>
+                        </el-select>
                     </td>
                     <td>
-                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index, 'purityTable')">
+                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index, 'table2')">
                             <i class="fa-solid fa-plus"></i>
                         </el-button>
                     </td>
                     <td>
-                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index, 'purityTable')">
+                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index, 'table2')">
                             <i class="fas fa-trash"></i>
                         </el-button>
                     </td>
@@ -134,13 +142,14 @@
 </template>
 
 <script>
+import CircuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
+import * as common from '../../Common/index'
 export default {
     name: "SF6MoiturePurity",
     data() {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
-            asset_: {}
         }
     },
     props: {
@@ -159,112 +168,57 @@ export default {
         },
         assetData() {
             return this.asset
+        },
+        rowData() {
+            return common.buildEmptyTestRow(CircuitBreakerTestMap['SF6MoiturePurity'].columns)
         }
     },
     watch: {
-        assetData: {
-            deep: true,
-            immediate: true,
-            handler: function (newVal) {
-                this.asset_ = newVal
-            }
-        }
+        // assetData: {
+        //     deep: true,
+        //     immediate: true,
+        //     handler: function (newVal) {
+        //         this.asset_ = newVal
+        //     }
+        // }
     },
     methods: {
         add(label) {
-            if (label === 'moitureTable') {
-                let data = {
-                    moiture: "",
-                    assessment: "",
-                    condition_indicator: ""
-                }
-                this.testData.table[label].push(data)
-            }
-            else if (label === 'purityTable') {
-                let data = {
-                    purity: "",
-                    assessment: "",
-                    condition_indicator: ""
-                }
-                this.testData.table[label].push(data)
-            }
+            const newRow = JSON.parse(JSON.stringify(this.rowData));
+            this.testData.table[label].push(newRow);
         },
         removeAll(label) {
-            this.$confirm('This will delete the content. Continue?', 'Warning', {
+            this.$confirm('This will delete all rows. Continue?', 'Warning', {
                 confirmButtonText: 'OK',
                 cancelButtonText: 'Cancel',
                 type: 'warning'
-            })
-                .then(() => {
-                    this.testData.table[label] = []
-                })
-                .catch(() => {
-                    // User cancelled, do nothing
-                })
+            }).then(() => {
+                this.testData.table[label] = [];
+            }).catch(() => { });
         },
         deleteTest(index, label) {
-            this.testData.table[label].splice(index, 1)
+            this.testData.table[label].splice(index, 1);
         },
         addTest(index, label) {
-            if (label === 'moitureTable') {
-                let data = {
-                    mrid: '',
-                    moiture: {
-                        mrid: '',
-                        value: '',
-                        unit: 'ppm',
-                        type: 'analog'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                }
-                this.testData.table[label].splice(index + 1, 0, data)
-            }
-            else if (label === 'purityTable') {
-                let data = {
-                    mrid: '',
-                    purity: {
-                        mrid: '',
-                        value: '',
-                        unit: '%',
-                        type: 'analog'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                }
-                this.testData.table[label].splice(index + 1, 0, data)
-            }
+            const newRow = JSON.parse(JSON.stringify(this.rowData));
+            this.testData.table[label].splice(index + 1, 0, newRow);
         },
         calculator() {
             this.$message.success('Calculating successfully')
         },
-
         clear() {
-            this.testData.table.forEach((element) => {
-                Object.keys(element).forEach((key) => {
-                    element[key] = ''
-                })
-            })
+            Object.values(this.testData.table).forEach(subTable => {
+                if (Array.isArray(subTable)) {
+                    subTable.forEach(row => {
+                        Object.keys(row).forEach(key => {
+                            if (key === "mrid") return;
+                            if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                                row[key].value = "";
+                            }
+                        });
+                    });
+                }
+            });
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) {

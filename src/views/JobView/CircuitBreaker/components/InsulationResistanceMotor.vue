@@ -38,7 +38,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, index) in testData.table" :key="index">
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>
                         {{ index + 1 }}
                     </td>
@@ -59,9 +59,13 @@
                             class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                     <td>
-                        <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                        <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
                             size="mini" v-model="item.condition_indicator.value">
-                        </el-input>
+                            <el-option value="Good">Good</el-option>
+                            <el-option value="Fair">Fair</el-option>
+                            <el-option value="Poor">Poor</el-option>
+                            <el-option value="Bad">Bad</el-option>
+                        </el-select>
                     </td>
                     <td>
                         <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
@@ -80,7 +84,7 @@
         <!-- Assessment settings -->
         <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog"
             width="50%">
-            <el-radio-group v-model="assetData.assessmentLimits.limits">
+            <!-- <el-radio-group v-model="assetData.assessmentLimits.limits">
                 <el-radio label="Absolute" value="Absolute"></el-radio>
                 <el-radio label="Relative" value="Relative"></el-radio>
             </el-radio-group>
@@ -92,19 +96,20 @@
                     <el-button @click="resetAssessment">Cancel</el-button>
                     <el-button type="primary" @click="updateAssessment"> Confirm </el-button>
                 </span>
-            </template>
+            </template> -->
         </el-dialog>
     </div>
 </template>
 
 <script>
+import CircuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
+import * as common from '../../Common/index'
 export default {
     name: 'InsulationResistanceMotor',
     data() {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
-            asset_: {},
         }
     },
     props: {
@@ -123,20 +128,23 @@ export default {
         },
         assetData() {
             return this.asset
+        },
+        rowData() {
+            return common.buildEmptyTestRow(CircuitBreakerTestMap['InsulationResistanceMotor'].columns)
         }
     },
     watch: {
-        assetData: {
-            deep: true,
-            immediate: true,
-            handler: function (newVal) {
-                this.asset_ = newVal
-                // Sync limits to testData if asset_ has limits
-                if (this.asset_ && this.asset_.limits && this.testData) {
-                    this.$set(this.testData, 'limits', this.asset_.limits)
-                }
-            }
-        },
+        // assetData: {
+        //     deep: true,
+        //     immediate: true,
+        //     handler: function (newVal) {
+        //         this.asset_ = newVal
+        //         // Sync limits to testData if asset_ has limits
+        //         if (this.asset_ && this.asset_.limits && this.testData) {
+        //             this.$set(this.testData, 'limits', this.asset_.limits)
+        //         }
+        //     }
+        // },
         openAssessmentDialog: {
             handler: function (newVal) {
                 // When opening dialog, sync limits from asset_ to testData if available
@@ -196,33 +204,7 @@ export default {
             this.openAssessmentDialog = false
         },
         add() {
-            this.testData.table.push({
-                mrid: '',
-                testVoltage: {
-                    mrid: '',
-                    value: '',
-                    unit: 'V',
-                    type: 'analog'
-                },
-                r60s: {
-                    mrid: '',
-                    value: '',
-                    unit: 'MΩ',
-                    type: 'analog'
-                },
-                assessment: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                },
-                condition_indicator: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                }
-            })
+            this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
@@ -230,50 +212,26 @@ export default {
                 cancelButtonText: 'Cancel',
                 type: 'warning'
             }).then(() => {
-                this.testData.table = []
+                this.testData.table.table1 = []
             })
         },
         deleteTest(index) {
-            this.testData.table.splice(index, 1)
+            this.testData.table.table1.splice(index, 1)
         },
         addTest(index) {
-            const data = {
-                mrid: '',
-                testVoltage: {
-                    mrid: '',
-                    value: '',
-                    unit: 'V',
-                    type: 'analog'
-                },
-                r60s: {
-                    mrid: '',
-                    value: '',
-                    unit: 'MΩ',
-                    type: 'analog'
-                },
-                assessment: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                },
-                condition_indicator: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                }
-            }
-            this.testData.table.splice(index + 1, 0, data)
+            const data = JSON.parse(JSON.stringify(this.rowData))
+            this.testData.table.table1.splice(index + 1, 0, data)
         },
         calculator() {
             this.$message.success('Calculating successfully')
         },
-
         clear() {
-            this.testData.table.forEach((element) => {
-                Object.keys(element).forEach((key) => {
-                    element[key] = ''
+            this.testData.table.table1.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (key === "mrid") return;
+                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                        row[key].value = ""
+                    }
                 })
             })
         },

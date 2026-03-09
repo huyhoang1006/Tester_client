@@ -156,7 +156,7 @@
         <!-- Assessment settings -->
         <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog"
             width="75%">
-            <el-radio-group v-model="assetData.assessmentLimits.limits" style="margin-bottom: 20px">
+            <!-- <el-radio-group v-model="assetData.assessmentLimits.limits" style="margin-bottom: 20px">
                 <el-radio label="Absolute" value="Absolute"></el-radio>
                 <el-radio label="Relative" value="Relative"></el-radio>
             </el-radio-group>
@@ -221,7 +221,7 @@
                     <el-button @click="resetAssessment">Cancel</el-button>
                     <el-button type="primary" @click="updateAssessment" disabled> Confirm </el-button>
                 </span>
-            </template>
+            </template> -->
         </el-dialog>
     </div>
 </template>

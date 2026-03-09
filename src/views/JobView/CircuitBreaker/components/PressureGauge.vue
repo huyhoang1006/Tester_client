@@ -40,7 +40,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(item, index) in testData.table" :key="index">
+                    <tr v-for="(item, index) in testData.table.table1" :key="index">
                         <td>
                             {{ index + 1 }}
                         </td>
@@ -94,13 +94,14 @@
 </template>
 
 <script>
+import CircuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
+import * as common from '../../Common/index'
 export default {
     name: "PressureGauge",
     data() {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
-            asset_: {}
         }
     },
     props: {
@@ -119,116 +120,51 @@ export default {
         },
         assetData() {
             return this.asset
+        },
+        rowData() {
+            return common.buildEmptyTestRow(CircuitBreakerTestMap['PressureGauge'].columns)
         }
     },
     watch: {
-        assetData: {
-            deep: true,
-            immediate: true,
-            handler: function (newVal) {
-                this.asset_ = newVal
-            }
-        }
+        // assetData: {
+        //     deep: true,
+        //     immediate: true,
+        //     handler: function (newVal) {
+        //         this.asset_ = newVal
+        //     }
+        // }
     },
     methods: {
         add() {
-            this.testData.table.table1.pressureGaugeTable.push({
-                mrid: '',
-                sf6Pressure: {
-                    mrid: '',
-                    value: '',
-                    unit: 'MPa',
-                    type: 'analog'
-                },
-                alarm: {
-                    mrid: '',
-                    value: '',
-                    unit: 'MPa',
-                    type: 'analog'
-                },
-                lockout: {
-                    mrid: '',
-                    value: '',
-                    unit: 'MPa',
-                    type: 'analog'
-                },
-                assessment: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                },
-                condition_indicator: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                }
-            })
+            this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
                 confirmButtonText: 'OK',
                 cancelButtonText: 'Cancel',
                 type: 'warning'
+            }).then(() => {
+                this.testData.table.table1 = []
             })
-                .then(() => {
-                    this.testData.table.pressureGaugeTable = []
-                })
-                .catch(() => {
-                    // User cancelled, do nothing
-                })
         },
         deleteTest(index) {
-            this.testData.table.pressureGaugeTable.splice(index, 1)
+            this.testData.table.table1.splice(index, 1)
         },
         addTest(index) {
-            const data = {
-                mrid: '',
-                sf6Pressure: {
-                    mrid: '',
-                    value: '',
-                    unit: 'MPa',
-                    type: 'analog'
-                },
-                alarm: {
-                    mrid: '',
-                    value: '',
-                    unit: 'MPa',
-                    type: 'analog'
-                },
-                lockout: {
-                    mrid: '',
-                    value: '',
-                    unit: 'MPa',
-                    type: 'analog'
-                },
-                assessment: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                },
-                condition_indicator: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                }
-            }
-            this.testData.table.pressureGaugeTable.splice(index + 1, 0, data)
+            const data = JSON.parse(JSON.stringify(this.rowData))
+            this.testData.table.table1.splice(index + 1, 0, data)
         },
         calculator() {
             this.$message.success('Calculating successfully')
         },
-
         clear() {
-            this.testData.table.pressureGaugeTable.forEach((element) => {
-                element.sf6Pressure = '',
-                    element.alarm = '',
-                    element.lockout = '',
-                    element.assessment = '',
-                    element.condition_indicator = ''
+            this.testData.table.table1.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (key === "mrid") return;
+                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                        row[key].value = ""
+                    }
+                })
             })
         },
         nameColor(data) {

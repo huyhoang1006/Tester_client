@@ -103,8 +103,6 @@ export default {
             }
         },
         async initCTiming(testTypeCode, assetData) {
-            console.log(assetData)
-
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
 
@@ -584,8 +582,6 @@ export default {
             }
         },
         async initContactResistance(testTypeCode, assetData) {
-            console.log(assetData)
-
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
 
@@ -951,14 +947,16 @@ export default {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
 
-            let table = []
+            let table1 = []
 
             const row = JSON.parse(JSON.stringify(rowDataExample))
-            table.push(row)
+            table1.push(row)
 
             return {
                 rowDataExampleCondition,
-                table
+                table: {
+                    table1: table1
+                }
             }
         },
         async initGeneralInspection(testTypeCode) {

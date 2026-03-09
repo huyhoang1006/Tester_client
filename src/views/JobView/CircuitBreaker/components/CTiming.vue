@@ -26,7 +26,7 @@
         </div>
 
         <!-- Debug info - Set to false to hide -->
-        <div v-if="false" style="background: #f0f0f0; padding: 10px; margin-bottom: 10px; font-size: 11px;">
+        <!-- <div v-if="false" style="background: #f0f0f0; padding: 10px; margin-bottom: 10px; font-size: 11px;">
             <div>testData exists: {{ testData ? 'YES' : 'NO' }}</div>
             <div>testData.table exists: {{ testData && testData.table ? 'YES' : 'NO' }}</div>
             <div>testData.table type: {{ testData && testData.table ? (Array.isArray(testData.table) ? 'ARRAY' : typeof testData.table) : 'N/A' }}</div>
@@ -43,7 +43,7 @@
                     Table {{ tableKey }}: {{ tableData && Array.isArray(tableData) ? tableData.length + ' rows' : 'NOT AN ARRAY' }}
                 </div>
             </div>
-        </div>
+        </div> -->
 
         <div
             v-if="testData && testData.table && Object.keys(testData.table).length > 0 && getInterruptersPerPhase() === 1">
@@ -179,13 +179,13 @@
         <!-- Assessment settings -->
         <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog"
             width="75%">
-            <el-radio-group v-model="testData.limits" style="margin-bottom: 20px">
+            <!-- <el-radio-group v-model="testData.limits" style="margin-bottom: 20px">
                 <el-radio label="Absolute" value="Absolute"></el-radio>
                 <el-radio label="Relative" value="Relative"></el-radio>
-            </el-radio-group>
+            </el-radio-group> -->
 
             <!-- opening_times -->
-            <transition>
+            <!-- <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
                         <tr>
@@ -240,10 +240,10 @@
                         </tr>
                     </tbody>
                 </table>
-            </transition>
+            </transition> -->
 
             <!-- Auxiliary_contact -->
-            <transition>
+            <!-- <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
                         <tr>
@@ -308,10 +308,10 @@
                         </tr>
                     </tbody>
                 </table>
-            </transition>
+            </transition> -->
 
             <!-- //miscellaneous -->
-            <transition>
+            <!-- <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
                         <tr>
@@ -368,10 +368,10 @@
                         </tr>
                     </tbody>
                 </table>
-            </transition>
+            </transition> -->
 
             <!-- //coilCharacteristics -->
-            <transition>
+            <!-- <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
                         <tr>
@@ -442,7 +442,7 @@
                     <el-button @click="resetAssessment">Cancel</el-button>
                     <el-button type="primary" @click="updateAssessment"> Confirm </el-button>
                 </span>
-            </template>
+            </template> -->
         </el-dialog>
     </div>
 </template>
