@@ -40,7 +40,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, index) in testData.table" :key="index">
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>
                         {{ index + 1 }}
                     </td>
@@ -167,29 +167,14 @@
 </template>
 
 <script>
+import CircuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
+import * as common from '../../Common/index'
 export default {
     name: "MinimumPickup",
     data() {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
-            asset_: {
-                pickupVol: {
-                    abs: [
-                        { vmin: '', vmax: '' },
-                        { vmin: '', vmax: '' }
-                    ],
-                    rel: [
-                        { vref: '', vdev: '' },
-                        { vref: '', vdev: '' }
-                    ]
-                }
-            },
-            back_asset: {},
-            pickupVoltage: [
-                "Minimum pickup voltage (close)",
-                "Minimum pickup voltage (trip)"
-            ],
         }
     },
     props: {
@@ -209,60 +194,8 @@ export default {
         assetData() {
             return this.asset
         },
-        assessLimitsData() {
-            if (!this.asset || !this.asset.assessmentLimits) {
-                return {
-                    pickupVol: {
-                        abs: [
-                            { vmin: '', vmax: '' },
-                            { vmin: '', vmax: '' }
-                        ],
-                        rel: [
-                            { vref: '', vdev: '' },
-                            { vref: '', vdev: '' }
-                        ]
-                    }
-                }
-            }
-
-            // If it's already an object, return it directly
-            if (typeof this.asset.assessmentLimits === 'object') {
-                return this.asset.assessmentLimits
-            }
-
-            // If it's a string, try to parse it
-            if (typeof this.asset.assessmentLimits === 'string') {
-                try {
-                    return JSON.parse(this.asset.assessmentLimits)
-                } catch (error) {
-                    console.warn('Error parsing assessmentLimits:', error)
-                    return {
-                        pickupVol: {
-                            abs: [
-                                { vmin: '', vmax: '' },
-                                { vmin: '', vmax: '' }
-                            ],
-                            rel: [
-                                { vref: '', vdev: '' },
-                                { vref: '', vdev: '' }
-                            ]
-                        }
-                    }
-                }
-            }
-
-            return {
-                pickupVol: {
-                    abs: [
-                        { vmin: '', vmax: '' },
-                        { vmin: '', vmax: '' }
-                    ],
-                    rel: [
-                        { vref: '', vdev: '' },
-                        { vref: '', vdev: '' }
-                    ]
-                }
-            }
+        rowData() {
+            return common.buildEmptyTestRow(CircuitBreakerTestMap['MinimumPickup'].columns)
         }
     },
     beforeMount() {
@@ -274,12 +207,6 @@ export default {
         this.back_asset = dataTemp.assessmentLimits
     },
     mounted() {
-        // Initialize table - will add missing rows if needed
-        this.$nextTick(() => {
-            if (this.testData) {
-                this.initializeTable()
-            }
-        })
     },
     methods: {
         initializeTable() {
@@ -290,7 +217,7 @@ export default {
             }
 
             const currentLength = this.data.table.length
-            
+
             if (currentLength === 0) {
                 // No rows - create both Trip and Close
                 const tripRow = {
@@ -379,7 +306,7 @@ export default {
                 // Only 1 row exists - check what it is and add the missing one
                 const existingRow = this.data.table[0]
                 const existingOperation = existingRow.operation?.value || existingRow.operation
-                
+
                 if (existingOperation === 'Trip') {
                     // Has Trip, need to add Close
                     const closeRow = {
@@ -746,103 +673,23 @@ export default {
             this.openAssessmentDialog = false
         },
         add() {
-            this.testData.table.push({
-                mrid: '',
-                operation: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                tripCoilNo: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                closeCoilNo: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                vPickup: {
-                    mrid: '',
-                    value: '',
-                    unit: 'V',
-                    type: 'string'
-                },
-                assessment: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                },
-                condition_indicator: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                }
-            })
+            this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
                 confirmButtonText: 'OK',
                 cancelButtonText: 'Cancel',
                 type: 'warning'
+            }).then(() => {
+                this.testData.table.table1 = []
             })
-                .then(() => {
-                    this.testData.table = []
-                })
-                .catch(() => {
-                    // User cancelled, do nothing
-                })
         },
         deleteTest(index) {
-            this.testData.table.splice(index, 1)
+            this.testData.table.table1.splice(index, 1)
         },
         addTest(index) {
-            const data = {
-                mrid: '',
-                operation: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                tripCoilNo: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                closeCoilNo: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                vPickup: {
-                    mrid: '',
-                    value: '',
-                    unit: 'V',
-                    type: 'string'
-                },
-                assessment: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                },
-                condition_indicator: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                }
-            }
-            this.testData.table.splice(index + 1, 0, data)
+            const data = JSON.parse(JSON.stringify(this.rowData))
+            this.testData.table.table1.splice(index + 1, 0, data)
         },
         calculator() {
             if (!this.asset_ || !this.asset_.pickupVol) {
@@ -892,9 +739,12 @@ export default {
         },
 
         clear() {
-            this.testData.table.forEach((element) => {
-                Object.keys(element).forEach((key) => {
-                    element[key] = ''
+            this.testData.table.table1.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (key === "mrid") return;
+                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                        row[key].value = ""
+                    }
                 })
             })
         },

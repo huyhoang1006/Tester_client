@@ -34,13 +34,13 @@
                     <th>Decomposition of SF6 (ppm)</th>
                     <th class="assessment-col">Assessment</th>
                     <th class="condition-indicator-col">Condition indicator</th>
-                    <th @click="add('decomSf6Table')" class="action-col"><i class="fa-solid fa-plus pointer"></i></th>
-                    <th @click="removeAll('decomSf6Table')" class="action-col"><i class="fa-solid fa-trash pointer"></i>
+                    <th @click="add('table1')" class="action-col"><i class="fa-solid fa-plus pointer"></i></th>
+                    <th @click="removeAll('table1')" class="action-col"><i class="fa-solid fa-trash pointer"></i>
                     </th>
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, index) in testData.table.decomSf6Table" :key="index">
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>
                         {{ index + 1 }}
                     </td>
@@ -67,12 +67,12 @@
                         </el-select>
                     </td>
                     <td>
-                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index, 'decomSf6Table')">
+                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index, 'table1')">
                             <i class="fa-solid fa-plus"></i>
                         </el-button>
                     </td>
                     <td>
-                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index, 'decomSf6Table')">
+                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index, 'table1')">
                             <i class="fas fa-trash"></i>
                         </el-button>
                     </td>
@@ -89,13 +89,13 @@
                     <th>SO<sub>2</sub> + SOF<sub>2</sub> (ppm)</th>
                     <th class="assessment-col">Assessment</th>
                     <th class="condition-indicator-col">Condition indicator</th>
-                    <th @click="add('so2Sof2Table')" class="action-col"><i class="fa-solid fa-plus pointer"></i></th>
-                    <th @click="removeAll('so2Sof2Table')" class="action-col"><i class="fa-solid fa-trash pointer"></i>
+                    <th @click="add('table2')" class="action-col"><i class="fa-solid fa-plus pointer"></i></th>
+                    <th @click="removeAll('table2')" class="action-col"><i class="fa-solid fa-trash pointer"></i>
                     </th>
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, index) in testData.table.so2Sof2Table" :key="index">
+                <tr v-for="(item, index) in testData.table.table2" :key="index">
                     <td>
                         {{ index + 1 }}
                     </td>
@@ -122,12 +122,12 @@
                         </el-select>
                     </td>
                     <td>
-                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index, 'so2Sof2Table')">
+                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index, 'table2')">
                             <i class="fa-solid fa-plus"></i>
                         </el-button>
                     </td>
                     <td>
-                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index, 'so2Sof2Table')">
+                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index, 'table2')">
                             <i class="fas fa-trash"></i>
                         </el-button>
                     </td>
@@ -144,12 +144,12 @@
                     <th>HF (ppm)</th>
                     <th class="assessment-col">Assessment</th>
                     <th class="condition-indicator-col">Condition indicator</th>
-                    <th @click="add('hfTable')" class="action-col"><i class="fa-solid fa-plus pointer"></i></th>
-                    <th @click="removeAll('hfTable')" class="action-col"><i class="fa-solid fa-trash pointer"></i></th>
+                    <th @click="add('table3')" class="action-col"><i class="fa-solid fa-plus pointer"></i></th>
+                    <th @click="removeAll('table3')" class="action-col"><i class="fa-solid fa-trash pointer"></i></th>
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, index) in testData.table.hfTable" :key="index">
+                <tr v-for="(item, index) in testData.table.table3" :key="index">
                     <td>
                         {{ index + 1 }}
                     </td>
@@ -176,12 +176,12 @@
                         </el-select>
                     </td>
                     <td>
-                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index, 'hfTable')">
+                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index, 'table3')">
                             <i class="fa-solid fa-plus"></i>
                         </el-button>
                     </td>
                     <td>
-                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index, 'hfTable')">
+                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index, 'table3')">
                             <i class="fas fa-trash"></i>
                         </el-button>
                     </td>
@@ -196,6 +196,8 @@
 </template>
 
 <script>
+import CircuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
+import * as common from '../../Common/index'
 export default {
     name: "SF6GasAnalysis",
     data() {
@@ -221,190 +223,57 @@ export default {
         },
         assetData() {
             return this.asset
+        },
+        rowData() {
+            return common.buildEmptyTestRow(CircuitBreakerTestMap['SF6GasAnalysis'].columns)
         }
     },
     watch: {
-        assetData: {
-            deep: true,
-            immediate: true,
-            handler: function (newVal) {
-                this.asset_ = newVal
-            }
-        }
+        // assetData: {
+        //     deep: true,
+        //     immediate: true,
+        //     handler: function (newVal) {
+        //         this.asset_ = newVal
+        //     }
+        // }
     },
     methods: {
         add(label) {
-            if (label === 'decomSf6Table') {
-                let data = {
-                    mrid: '',
-                    decom_sf6: {
-                        mrid: '',
-                        value: '',
-                        unit: 'ppm',
-                        type: 'analog'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                }
-                this.testData.table[label].push(data)
-            }
-            else if (label === 'so2Sof2Table') {
-                let data = {
-                    mrid: '',
-                    so2_sof2: {
-                        mrid: '',
-                        value: '',
-                        unit: 'ppm',
-                        type: 'analog'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                }
-                this.testData.table[label].push(data)
-            } else {
-                let data = {
-                    mrid: '',
-                    hf: {
-                        mrid: '',
-                        value: '',
-                        unit: 'ppm',
-                        type: 'analog'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                }
-                this.testData.table[label].push(data)
-            }
+            const newRow = JSON.parse(JSON.stringify(this.rowData));
+            this.testData.table[label].push(newRow);
         },
         removeAll(label) {
-            this.$confirm('This will delete the content. Continue?', 'Warning', {
+            this.$confirm('This will delete all rows. Continue?', 'Warning', {
                 confirmButtonText: 'OK',
                 cancelButtonText: 'Cancel',
                 type: 'warning'
-            })
-                .then(() => {
-                    this.testData.table[label] = []
-                })
-                .catch(() => {
-                    // User cancelled, do nothing
-                })
+            }).then(() => {
+                this.testData.table[label] = [];
+            }).catch(() => { });
         },
         deleteTest(index, label) {
-            this.testData.table[label].splice(index, 1)
+            this.testData.table[label].splice(index, 1);
         },
         addTest(index, label) {
-            if (label === 'decomSf6Table') {
-                let data = {
-                    mrid: '',
-                    decom_sf6: {
-                        mrid: '',
-                        value: '',
-                        unit: 'ppm',
-                        type: 'analog'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                }
-                this.testData.table[label].splice(index + 1, 0, data)
-            }
-            else if (label === 'so2Sof2Table') {
-                let data = {
-                    mrid: '',
-                    so2_sof2: {
-                        mrid: '',
-                        value: '',
-                        unit: 'ppm',
-                        type: 'analog'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                }
-                this.testData.table[label].splice(index + 1, 0, data)
-            } else {
-                let data = {
-                    mrid: '',
-                    hf: {
-                        mrid: '',
-                        value: '',
-                        unit: 'ppm',
-                        type: 'analog'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                }
-                this.testData.table[label].splice(index + 1, 0, data)
-            }
+            const newRow = JSON.parse(JSON.stringify(this.rowData));
+            this.testData.table[label].splice(index + 1, 0, newRow);
         },
         calculator() {
             this.$message.success('Calculating successfully')
         },
-
         clear() {
-            this.testData.table.forEach((element) => {
-                Object.keys(element).forEach((key) => {
-                    element[key] = ''
-                })
-            })
+            Object.values(this.testData.table).forEach(subTable => {
+                if (Array.isArray(subTable)) {
+                    subTable.forEach(row => {
+                        Object.keys(row).forEach(key => {
+                            if (key === "mrid") return;
+                            if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                                row[key].value = "";
+                            }
+                        });
+                    });
+                }
+            });
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) {

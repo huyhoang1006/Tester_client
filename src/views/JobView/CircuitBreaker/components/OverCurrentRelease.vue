@@ -39,7 +39,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, index) in testData.table" :key="index">
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>
                         {{ index + 1 }}
                     </td>
@@ -90,6 +90,8 @@
 </template>
 
 <script>
+import CircuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
+import * as common from '../../Common/index'
 export default {
     name: "OverCurrentRelease",
     data() {
@@ -114,93 +116,41 @@ export default {
         conditionIndicator() {
             return this.data.condition_indicator
         },
+        rowData() {
+            return common.buildEmptyTestRow(CircuitBreakerTestMap['OverCurrentRelease'].columns)
+        }
     },
     methods: {
         add() {
-            this.testData.table.push({
-                mrid: '',
-                tripCoilNo: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                tripCurrent: {
-                    mrid: '',
-                    value: '',
-                    unit: 'mA',
-                    type: 'analog'
-                },
-                assessment: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                },
-                condition_indicator: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                }
-            })
+            this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
                 confirmButtonText: 'OK',
                 cancelButtonText: 'Cancel',
                 type: 'warning'
+            }).then(() => {
+                this.testData.table.table1 = []
             })
-                .then(() => {
-                    this.testData.table = []
-                })
-                .catch(() => {
-                    // User cancelled, do nothing
-                })
         },
         deleteTest(index) {
-            this.testData.table.splice(index, 1)
+            this.testData.table.table1.splice(index, 1)
         },
         addTest(index) {
-            const data = {
-                mrid: '',
-                tripCoilNo: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                tripCurrent: {
-                    mrid: '',
-                    value: '',
-                    unit: 'mA',
-                    type: 'analog'
-                },
-                assessment: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                },
-                condition_indicator: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                }
-            }
-            this.testData.table.splice(index + 1, 0, data)
+            const data = JSON.parse(JSON.stringify(this.rowData))
+            this.testData.table.table1.splice(index + 1, 0, data)
         },
         calculator() {
             this.$message.success('Calculating successfully')
         },
-
         clear() {
-            this.testData.table.forEach((element) => {
-                element.tripCoil = '',
-                    element.tripCurrent = '',
-                    element.assessment = '',
-                    element.condition_indicator = ''
+            this.testData.table.table1.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (key === "mrid") return;
+                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                        row[key].value = ""
+                    }
+                })
             })
         },
         nameColor(data) {

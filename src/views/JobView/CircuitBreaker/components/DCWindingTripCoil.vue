@@ -38,7 +38,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, index) in testData.table" :key="index">
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>
                         {{ index + 1 }}
                     </td>
@@ -84,7 +84,7 @@
         <!-- Assessment settings -->
         <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog"
             width="50%">
-            <el-radio-group v-model="testData.limits">
+            <!-- <el-radio-group v-model="testData.limits">
                 <el-radio label="Absolute" value="Absolute"></el-radio>
                 <el-radio label="Relative" value="Relative"></el-radio>
             </el-radio-group>
@@ -104,83 +104,77 @@
                             <td>
                                 <el-input size="mini" v-model="asset_.coilCharacter.abs[index].min">
                                     <template v-if="index <= 3" slot="append">A</template>
-                                    <template v-else-if="3 < index && index <= 5" slot="append">V</template>
-                                    <template v-else slot="append">&#8486;</template>
-                                </el-input>
-                            </td>
-                            <td>
-                                <el-input size="mini" v-model="asset_.coilCharacter.abs[index].max">
-                                    <template v-if="index <= 3" slot="append">A</template>
-                                    <template v-else-if="3 < index && index <= 5" slot="append">V</template>
-                                    <template v-else slot="append">&#8486;</template>
-                                </el-input>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <table class="table-strip-input-data" v-if="testData.limits === 'Relative'">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>Reference</th>
-                            <th>- Deviation</th>
-                            <th>+ Deviation</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(item, index) in coilCharacteristics" :key="index">
-                            <td>{{ item }}</td>
-                            <el-input size="mini" v-model="asset_.coilCharacter.rel[index].ref">
-                                <template v-if="index <= 3" slot="append">A</template>
-                                <template v-else-if="3 < index && index <= 5" slot="append">V</template>
-                                <template v-else slot="append">&#8486;</template>
-                            </el-input>
-                            <td>
-                                <el-input size="mini" v-model="asset_.coilCharacter.rel[index].devZ">
-                                    <template v-if="index <= 3" slot="append">A</template>
-                                    <template v-else-if="3 < index && index <= 5" slot="append">V</template>
-                                    <template v-else slot="append">&#8486;</template>
-                                </el-input>
-                            </td>
-                            <td>
-                                <el-input size="mini" v-model="asset_.coilCharacter.rel[index].devN">
-                                    <template v-if="index <= 3" slot="append">A</template>
-                                    <template v-else-if="3 < index && index <= 5" slot="append">V</template>
-                                    <template v-else slot="append">&#8486;</template>
-                                </el-input>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </transition>
+<template v-else-if="3 < index && index <= 5" slot="append">V</template>
+<template v-else slot="append">&#8486;</template>
+</el-input>
+</td>
+<td>
+    <el-input size="mini" v-model="asset_.coilCharacter.abs[index].max">
+        <template v-if="index <= 3" slot="append">A</template>
+        <template v-else-if="3 < index && index <= 5" slot="append">V</template>
+        <template v-else slot="append">&#8486;</template>
+    </el-input>
+</td>
+</tr>
+</tbody>
+</table>
+<table class="table-strip-input-data" v-if="testData.limits === 'Relative'">
+    <thead>
+        <tr>
+            <th></th>
+            <th>Reference</th>
+            <th>- Deviation</th>
+            <th>+ Deviation</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr v-for="(item, index) in coilCharacteristics" :key="index">
+            <td>{{ item }}</td>
+            <el-input size="mini" v-model="asset_.coilCharacter.rel[index].ref">
+                <template v-if="index <= 3" slot="append">A</template>
+                <template v-else-if="3 < index && index <= 5" slot="append">V</template>
+                <template v-else slot="append">&#8486;</template>
+            </el-input>
+            <td>
+                <el-input size="mini" v-model="asset_.coilCharacter.rel[index].devZ">
+                    <template v-if="index <= 3" slot="append">A</template>
+                    <template v-else-if="3 < index && index <= 5" slot="append">V</template>
+                    <template v-else slot="append">&#8486;</template>
+                </el-input>
+            </td>
+            <td>
+                <el-input size="mini" v-model="asset_.coilCharacter.rel[index].devN">
+                    <template v-if="index <= 3" slot="append">A</template>
+                    <template v-else-if="3 < index && index <= 5" slot="append">V</template>
+                    <template v-else slot="append">&#8486;</template>
+                </el-input>
+            </td>
+        </tr>
+    </tbody>
+</table>
+</transition>
 
-            <br />
-            <template #footer>
+<br />
+<template #footer>
                 <span style="margin-top: 20px; width: 100%; position: absolute; right: 10px; bottom: 10px"
                     class="dialog-footer">
                     <el-button @click="resetAssessment">Cancel</el-button>
                     <el-button type="primary" @click="updateAssessment"> Confirm </el-button>
                 </span>
-            </template>
+            </template> -->
         </el-dialog>
     </div>
 </template>
 
 <script>
+import CircuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
+import * as common from '../../Common/index'
 export default {
     name: 'DCWindingTripCoil',
     data() {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
-            asset_: {
-                coilCharacter: {
-                    abs: Array(8).fill(null).map(() => ({ min: '', max: '', mrid: '' })),
-                    rel: Array(8).fill(null).map(() => ({ ref: '', devZ: '', devN: '', mrid: '' }))
-                },
-                limits: 'Absolute'
-            },
-            back_asset: {},
             coilCharacteristics: [
                 "Peak close coil current",
                 "Peak trip coil current",
@@ -199,12 +193,6 @@ export default {
         this.back_asset = dataTemp
     },
     mounted() {
-        // Initialize table after component is mounted
-        this.$nextTick(() => {
-            if (this.testData && (!this.testData.table || this.testData.table.length === 0) && this.assetData && this.assetData.operating) {
-                this.initializeTable()
-            }
-        })
     },
     props: {
         data: {
@@ -223,32 +211,13 @@ export default {
         assetData() {
             return this.asset
         },
-        assessLimitsData() {
-            if (!this.asset || !this.asset.assessmentLimits) {
-                return {}
-            }
-
-            // If it's already an object, return it directly
-            if (typeof this.asset.assessmentLimits === 'object') {
-                return this.asset.assessmentLimits
-            }
-
-            // If it's a string, try to parse it
-            if (typeof this.asset.assessmentLimits === 'string') {
-                try {
-                    return JSON.parse(this.asset.assessmentLimits)
-                } catch (error) {
-                    console.warn('Error parsing assessmentLimits:', error)
-                    return {}
-                }
-            }
-
-            return {}
+        rowData() {
+            return common.buildEmptyTestRow(CircuitBreakerTestMap['DCWindingTripCoil'].columns)
         },
         numberOfTripCoils() {
             if (this.assetData && this.assetData.operating) {
-                const value = this.assetData.operating.numberTripCoil || 
-                             this.assetData.operating.number_of_trip_coil
+                const value = this.assetData.operating.numberTripCoil ||
+                    this.assetData.operating.number_of_trip_coil
                 const parsed = parseInt(value)
                 if (!isNaN(parsed) && parsed > 0) {
                     return parsed
@@ -258,63 +227,26 @@ export default {
         }
     },
     watch: {
-        assessLimitsData: {
-            deep: true,
-            immediate: true,
-            handler: function (newVal) {
-                if (newVal && Object.keys(newVal).length > 0) {
-                    this.asset_ = this.normalizeAssessmentLimits(newVal)
-                    // Update backup for reset
-                    const dataTemp = JSON.parse(JSON.stringify(this.asset_ || {}))
-                    this.back_asset = dataTemp
-                    // Sync limits to testData
-                    if (this.asset_.limits && this.testData) {
-                        this.$set(this.testData, 'limits', this.asset_.limits)
-                    }
-                }
-            }
-        },
-        'asset_.limits': {
-            immediate: true,
-            handler: function (newVal) {
-                // Sync asset_.limits to testData.limits
-                if (newVal && this.testData) {
-                    this.$set(this.testData, 'limits', newVal)
-                }
-            }
-        },
-        openAssessmentDialog: {
-            handler: function (newVal) {
-                // When opening dialog, sync limits from asset_ to testData
-                if (newVal && this.asset_ && this.asset_.limits && this.testData) {
-                    this.$set(this.testData, 'limits', this.asset_.limits)
-                }
-            }
-        },
-        assetData: {
-            immediate: true,
-            deep: true,
-            handler: function () {
-                // Initialize table if empty when assetData is available
-                if (this.testData && (!this.testData.table || this.testData.table.length === 0) && this.assetData && this.assetData.operating) {
-                    this.$nextTick(() => {
-                        this.initializeTable()
-                    })
-                }
-            }
-        },
-        'testData.table': {
-            immediate: true,
-            handler: function (newVal) {
-                // Initialize table if empty
-                if ((!newVal || newVal.length === 0) && this.assetData && this.assetData.operating) {
-                    this.$nextTick(() => {
-                        this.initializeTable()
-                    })
-                }
-            }
-        },
-
+        // openAssessmentDialog: {
+        //     handler: function (newVal) {
+        //         // When opening dialog, sync limits from asset_ to testData
+        //         if (newVal && this.asset_ && this.asset_.limits && this.testData) {
+        //             this.$set(this.testData, 'limits', this.asset_.limits)
+        //         }
+        //     }
+        // },
+        // assetData: {
+        //     immediate: true,
+        //     deep: true,
+        //     handler: function () {
+        //         // Initialize table if empty when assetData is available
+        //         if (this.testData && (!this.testData.table || this.testData.table.length === 0) && this.assetData && this.assetData.operating) {
+        //             this.$nextTick(() => {
+        //                 this.initializeTable()
+        //             })
+        //         }
+        //     }
+        // },
     },
     methods: {
         normalizeAssessmentLimits(data) {
@@ -478,73 +410,8 @@ export default {
             }
             this.openAssessmentDialog = false
         },
-        initializeTable() {
-            if (!this.data) return
-
-            if (!this.data.table) {
-                this.$set(this.data, 'table', [])
-            }
-
-            if (this.data.table.length === 0) {
-                // Always create only 1 default row
-                const newTable = [{
-                    mrid: '',
-                    trip_coil_no: {
-                        mrid: '',
-                        value: '1',
-                        unit: '',
-                        type: 'string'
-                    },
-                    r_meas: {
-                        mrid: '',
-                        value: '',
-                        unit: 'Ω',
-                        type: 'analog'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    },
-                    condition_indicator: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'discrete'
-                    }
-                }]
-                this.$set(this.data, 'table', newTable)
-            }
-        },
         add() {
-            this.testData.table.push({
-                mrid: '',
-                trip_coil_no: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                r_meas: {
-                    mrid: '',
-                    value: '',
-                    unit: 'Ω',
-                    type: 'analog'
-                },
-                assessment: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                },
-                condition_indicator: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                }
-            })
+            this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
@@ -552,41 +419,15 @@ export default {
                 cancelButtonText: 'Cancel',
                 type: 'warning'
             }).then(() => {
-                this.testData.table = []
+                this.testData.table.table1 = []
             })
         },
         deleteTest(index) {
-            this.testData.table.splice(index, 1)
+            this.testData.table.table1.splice(index, 1)
         },
         addTest(index) {
-            const data = {
-                mrid: '',
-                trip_coil_no: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                r_meas: {
-                    mrid: '',
-                    value: '',
-                    unit: 'Ω',
-                    type: 'analog'
-                },
-                assessment: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                },
-                condition_indicator: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                }
-            }
-            this.testData.table.splice(index + 1, 0, data)
+            const data = JSON.parse(JSON.stringify(this.rowData))
+            this.testData.table.table1.splice(index + 1, 0, data)
         },
         calculator() {
             this.testData.table.forEach((item) => {
@@ -594,7 +435,7 @@ export default {
                     const rMeasValue = parseFloat(item.r_meas.value)
                     const minValue = parseFloat(this.asset_.coilCharacter.abs[7].min)
                     const maxValue = parseFloat(this.asset_.coilCharacter.abs[7].max)
-                    
+
                     if (rMeasValue >= minValue && rMeasValue <= maxValue) {
                         item.assessment.value = 'Pass'
                     }
@@ -607,7 +448,7 @@ export default {
                     const refValue = parseFloat(this.asset_.coilCharacter.rel[7].ref)
                     const devZ = parseFloat(this.asset_.coilCharacter.rel[7].devZ)
                     const devN = parseFloat(this.asset_.coilCharacter.rel[7].devN)
-                    
+
                     if (rMeasValue <= refValue) {
                         if (rMeasValue >= (refValue - devZ)) {
                             item.assessment.value = 'Pass'
@@ -630,10 +471,11 @@ export default {
         },
 
         clear() {
-            this.testData.table.forEach((element) => {
-                Object.keys(element).forEach((key) => {
-                    if (element[key] && typeof element[key] === 'object' && element[key].value !== undefined) {
-                        element[key].value = ''
+            this.testData.table.table1.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (key === "mrid") return;
+                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                        row[key].value = ""
                     }
                 })
             })

@@ -41,7 +41,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, index) in testData.table" :key="index">
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>
                         <div style="display: flex;width: 100%;">
                             <el-input size="mini" type="text" v-model="item.phase.value"></el-input>
@@ -73,9 +73,13 @@
                             class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                     <td>
-                        <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                        <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
                             size="mini" v-model="item.condition_indicator.value">
-                        </el-input>
+                            <el-option value="Good">Good</el-option>
+                            <el-option value="Fair">Fair</el-option>
+                            <el-option value="Poor">Poor</el-option>
+                            <el-option value="Bad">Bad</el-option>
+                        </el-select>
                     </td>
                     <td>
                         <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
@@ -363,38 +367,14 @@
 </template>
 
 <script>
+import CircuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
+import * as common from '../../Common/index'
 export default {
     name: "OCOCOTiming",
     data() {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
-            asset_: {
-                openTime: {
-                    abs: Array(9).fill(null).map(() => ({ tmin: '', tmax: '', mrid: '' })),
-                    rel: Array(9).fill(null).map(() => ({ rref: '', tdevZ: '', tdevN: '', mrid: '' }))
-                },
-                auxContact: {
-                    abs: {
-                        trip: Array(6).fill(null).map(() => ({ tmin: '', tmax: '', mrid: '' })),
-                        close: Array(6).fill(null).map(() => ({ tmin: '', tmax: '', mrid: '' }))
-                    },
-                    rel: {
-                        trip: Array(6).fill(null).map(() => ({ tref: '', tdef: '', mrid: '' })),
-                        close: Array(6).fill(null).map(() => ({ tref: '', tdef: '', mrid: '' }))
-                    }
-                },
-                miscell: {
-                    abs: Array(4).fill(null).map(() => ({ min: '', max: '', mrid: '' })),
-                    rel: Array(4).fill(null).map(() => ({ ref: '', dev: '', mrid: '' }))
-                },
-                coilCharacter: {
-                    abs: Array(8).fill(null).map(() => ({ min: '', max: '', mrid: '' })),
-                    rel: Array(8).fill(null).map(() => ({ ref: '', devZ: '', devN: '', mrid: '' }))
-                },
-                limits: 'Absolute'
-            },
-            back_asset: {},
             opening_times: [
                 'Opening time',
                 'Opening sync. (contacts within a phase)',
@@ -443,6 +423,9 @@ export default {
         },
         assetData() {
             return this.asset
+        },
+        rowData() {
+            return common.buildEmptyTestRow(CircuitBreakerTestMap['OCOCOTiming'].columns)
         }
     },
     beforeMount() {
@@ -451,31 +434,31 @@ export default {
         this.back_asset = dataTemp
     },
     watch: {
-        assessLimitsData: {
-            deep: true,
-            immediate: true,
-            handler: function (newVal) {
-                if (newVal && Object.keys(newVal).length > 0) {
-                    this.asset_ = this.normalizeAssessmentLimits(newVal)
-                    // Update backup for reset
-                    const dataTemp = JSON.parse(JSON.stringify(this.asset_ || {}))
-                    this.back_asset = dataTemp
-                    // Sync limits to testData
-                    if (this.asset_.limits && this.testData) {
-                        this.$set(this.testData, 'limits', this.asset_.limits)
-                    }
-                }
-            }
-        },
-        'asset_.limits': {
-            immediate: true,
-            handler: function (newVal) {
-                // Sync asset_.limits to testData.limits
-                if (newVal && this.testData) {
-                    this.$set(this.testData, 'limits', newVal)
-                }
-            }
-        },
+        // assessLimitsData: {
+        //     deep: true,
+        //     immediate: true,
+        //     handler: function (newVal) {
+        //         if (newVal && Object.keys(newVal).length > 0) {
+        //             this.asset_ = this.normalizeAssessmentLimits(newVal)
+        //             // Update backup for reset
+        //             const dataTemp = JSON.parse(JSON.stringify(this.asset_ || {}))
+        //             this.back_asset = dataTemp
+        //             // Sync limits to testData
+        //             if (this.asset_.limits && this.testData) {
+        //                 this.$set(this.testData, 'limits', this.asset_.limits)
+        //             }
+        //         }
+        //     }
+        // },
+        // 'asset_.limits': {
+        //     immediate: true,
+        //     handler: function (newVal) {
+        //         // Sync asset_.limits to testData.limits
+        //         if (newVal && this.testData) {
+        //             this.$set(this.testData, 'limits', newVal)
+        //         }
+        //     }
+        // },
         openAssessmentDialog: {
             handler: function (newVal) {
                 // When opening dialog, sync limits from asset_ to testData
@@ -869,57 +852,35 @@ export default {
             }
         },
         add() {
-            this.testData.table.push({
-                phase: "",
-                tripCoil: "",
-                interrupter: '',
-                openingTime: '',
-                openingSync: '',
-                assessment: '',
-                condition_indicator: ''
-            })
+            this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
                 confirmButtonText: 'OK',
                 cancelButtonText: 'Cancel',
                 type: 'warning'
+            }).then(() => {
+                this.testData.table.table1 = []
             })
-                .then(() => {
-                    this.testData.table = []
-                })
-                .catch(() => {
-                    // User cancelled, do nothing
-                })
         },
         deleteTest(index) {
-            this.testData.table.splice(index, 1)
+            this.testData.table.table1.splice(index, 1)
         },
         addTest(index) {
-            const data = {
-                phase: "",
-                tripCoil: "",
-                interrupter: '',
-                openingTime: '',
-                openingSync: '',
-                assessment: '',
-                condition_indicator: ''
-            }
-            this.testData.table.splice(index + 1, 0, data)
+            const data = JSON.parse(JSON.stringify(this.rowData))
+            this.testData.table.table1.splice(index + 1, 0, data)
         },
         calculator() {
             this.$message.success('Calculating successfully')
         },
-
         clear() {
-            this.testData.table.forEach((element) => {
-                element.phase = "",
-                    element.tripCoil = "",
-                    element.interrupter = '',
-                    element.openingTime = '',
-                    element.openingSync = '',
-                    element.assessment = '',
-                    element.condition_indicator = ''
+            this.testData.table.table1.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (key === "mrid") return;
+                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                        row[key].value = ""
+                    }
+                })
             })
         },
         nameColor(data) {

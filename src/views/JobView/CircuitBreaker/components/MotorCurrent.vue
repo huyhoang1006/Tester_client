@@ -29,7 +29,7 @@
             <thead>
                 <tr>
                     <th>Inrush current (A)</th>
-                    <th>Charging (s)</th>
+                    <th>Charging time (s)</th>
                     <th>Charging current (A)</th>
                     <th>Minimum voltage (V)</th>
                     <th class="assessment-col">Assessment</th>
@@ -39,7 +39,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, index) in testData.table" :key="index">
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>
                         <el-input size="mini" type="text" v-model="item.inrush_current.value"></el-input>
                     </td>
@@ -88,7 +88,6 @@
         <!-- Assessment settings -->
         <el-dialog class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px"
             append-to-body>
-
             <el-radio-group v-model="assetData.assessmentLimits.limits">
                 <el-radio label="Absolute" value="Absolute"></el-radio>
                 <el-radio label="Relative" value="Relative"></el-radio>
@@ -166,20 +165,14 @@
 </template>
 
 <script>
+import CircuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
+import * as common from '../../Common/index'
 export default {
     name: "MotorCurrent",
     data() {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
-            asset_: {
-                motorChar: {
-                    abs: Array(4).fill(null).map(() => ({ min: '', max: '', mrid: '' })),
-                    rel: Array(4).fill(null).map(() => ({ ref: '', dev: '', mrid: '' }))
-                },
-                limits: 'Absolute'
-            },
-            back_asset: {},
             motorCharacteristics: [
                 { label: "Inrush current", key: "inrush_current", unit: "A" },
                 { label: "Charging time", key: "charging_time", unit: "s" },
@@ -187,11 +180,6 @@ export default {
                 { label: "Minimum voltage", key: "minimum_voltage", unit: "V" }
             ]
         }
-    },
-    beforeMount() {
-        // Store backup for reset - will be updated by watcher
-        const dataTemp = JSON.parse(JSON.stringify(this.asset_ || {}))
-        this.back_asset = dataTemp
     },
     props: {
         data: {
@@ -209,6 +197,9 @@ export default {
         },
         assetData() {
             return this.asset
+        },
+        rowData() {
+            return common.buildEmptyTestRow(CircuitBreakerTestMap['MotorCurrent'].columns)
         }
     },
     methods: {
@@ -241,41 +232,23 @@ export default {
             this.openAssessmentDialog = false
         },
         add() {
-            if (!this.testData.table.table1 || this.testData.table.table1.length === 0) return;
-            const newRow = JSON.parse(JSON.stringify(this.testData.table[0]));
-            Object.keys(newRow).forEach(key => {
-                if (newRow[key] && typeof newRow[key] === 'object' && 'value' in newRow[key]) {
-                    newRow[key].value = '';
-                }
-            });
-            this.testData.table.push(newRow);
+            this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
         },
         removeAll() {
-            this.$confirm('This will clear all rows except the first one. Continue?', 'Warning', {
+            this.$confirm('This will delete the file. Continue?', 'Warning', {
                 confirmButtonText: 'OK',
                 cancelButtonText: 'Cancel',
                 type: 'warning'
             }).then(() => {
-                this.testData.table.splice(1);
-                this.clear();
-            }).catch(() => { });
+                this.testData.table.table1 = []
+            })
         },
         deleteTest(index) {
-            if (this.testData.table.length > 1) {
-                this.testData.table.splice(index, 1);
-            } else {
-                this.clear();
-            }
+            this.testData.table.table1.splice(index, 1)
         },
         addTest(index) {
-            if (!this.testData.table || this.testData.table.length === 0) return;
-            const newRow = JSON.parse(JSON.stringify(this.testData.table[index]));
-            Object.keys(newRow).forEach(key => {
-                if (newRow[key] && typeof newRow[key] === 'object' && 'value' in newRow[key]) {
-                    newRow[key].value = '';
-                }
-            });
-            this.testData.table.splice(index + 1, 0, newRow);
+            const data = JSON.parse(JSON.stringify(this.rowData))
+            this.testData.table.table1.splice(index + 1, 0, data)
         },
         calculator() {
             this.testData.table.forEach(item => {
