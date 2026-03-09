@@ -291,6 +291,8 @@ export const JobEntityToDto = (entity) => {
             }
             grouped[item.title].push(item)
         })
+        
+        // Keep table structure as object with table1, table2, table3 keys
         for (const key in grouped) {
             testTemplate.data.table[key] = []
             for (const test of grouped[key]) {
@@ -364,22 +366,7 @@ export const JobEntityToDto = (entity) => {
             }
         }
 
-        // Convert object structure back to array for tests like OTiming
-        // Check if all keys follow pattern "tableX" (table1, table2, table3...)
-        const tableKeys = Object.keys(testTemplate.data.table)
-        const isTablePattern = tableKeys.every(key => /^table\d+$/.test(key))
-        if (isTablePattern && tableKeys.length > 0) {
-            // Sort keys by table number
-            const sortedKeys = tableKeys.sort((a, b) => {
-                const numA = parseInt(a.replace('table', ''))
-                const numB = parseInt(b.replace('table', ''))
-                return numA - numB
-            })
-            // Convert to array
-            const tableArray = sortedKeys.map(key => testTemplate.data.table[key])
-            testTemplate.data.table = tableArray
-        }
-
+        
         const testDataCondition = entity.testDataSet.find((x) => x.work_task === item.mrid && x.type === 'condition')
         if (testDataCondition) {
             const rowData = {}

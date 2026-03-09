@@ -25,12 +25,32 @@
             </el-row>
         </div>
 
+        <!-- Debug info - Set to false to hide -->
+        <div v-if="false" style="background: #f0f0f0; padding: 10px; margin-bottom: 10px; font-size: 11px;">
+            <div>testData exists: {{ testData ? 'YES' : 'NO' }}</div>
+            <div>testData.table exists: {{ testData && testData.table ? 'YES' : 'NO' }}</div>
+            <div>testData.table type: {{ testData && testData.table ? (Array.isArray(testData.table) ? 'ARRAY' : typeof testData.table) : 'N/A' }}</div>
+            <div>testData.table keys: {{ testData && testData.table && typeof testData.table === 'object' ? Object.keys(testData.table).length : 'N/A' }}</div>
+            <div>testData.table content: {{ testData && testData.table ? JSON.stringify(Object.keys(testData.table)) : 'N/A' }}</div>
+            <div>numberTripCoil (raw): {{ assetData && assetData.operating ? (assetData.operating.numberTripCoil || assetData.operating.number_of_trip_coil) : 'N/A' }}</div>
+            <div>numberOfTripCoils (computed): {{ numberOfTripCoils }}</div>
+            <div>getInterruptersPerPhase(): {{ getInterruptersPerPhase() }}</div>
+            <div>Should show {{ testData && testData.table ? Object.keys(testData.table).length : 0 }} table(s)</div>
+            <div style="color: red; font-weight: bold;">Condition check for interruptersPerPhase === 1: {{ getInterruptersPerPhase() === 1 ? 'TRUE (will show first div)' : 'FALSE' }}</div>
+            <div style="color: red; font-weight: bold;">Condition check for interruptersPerPhase > 1: {{ getInterruptersPerPhase() > 1 ? 'TRUE (will show second div)' : 'FALSE' }}</div>
+            <div v-if="testData && testData.table">
+                <div v-for="(tableData, tableKey) in testData.table" :key="tableKey">
+                    Table {{ tableKey }}: {{ tableData && Array.isArray(tableData) ? tableData.length + ' rows' : 'NOT AN ARRAY' }}
+                </div>
+            </div>
+        </div>
+
         <div
-            v-if="testData && testData.table && testData.table.length > 0 && getInterruptersPerPhase() === 1">
-            <div v-for="items in testData.table.length" :key="items" style="margin-top: 2%">
-                <div v-if="testData.table.length > 1" style="font-weight: bold ;font-size: 12px;">Close coil no. {{ items }}</div>
-                <br v-if="testData.table.length > 1" />
-                <table class="table-strip-input-data" style="width: 100%; font-size: 12px;">
+            v-if="testData && testData.table && Object.keys(testData.table).length > 0 && getInterruptersPerPhase() === 1">
+            <div v-for="(tableData, tableKey) in testData.table" :key="tableKey" style="margin-top: 2%">
+                <div v-if="Object.keys(testData.table).length > 1" style="font-weight: bold ;font-size: 12px;">Trip coil no. {{ tableKey.replace('table', '') }}</div>
+                <br v-if="Object.keys(testData.table).length > 1" />
+                <table v-if="tableData && Array.isArray(tableData)" class="table-strip-input-data" style="width: 100%; font-size: 12px;">
                     <thead>
                         <th>Phase</th>
                         <th>Closing time (ms)</th>
@@ -39,7 +59,8 @@
                         <th class="condition-indicator-col">Condition indicator</th>
                     </thead>
                     <tbody>
-                        <tr v-for="(item, index) in testData.table[items - 1]" :key="index">
+                        <template v-for="(item, index) in tableData">
+                            <tr v-if="item && item.phase && item.closing_time && item.assessment && item.condition_indicator" :key="index">
                             <td>
                                 <div style="display: flex; width: 100%;">
                                     <el-input size="mini" v-model="item.phase.value"></el-input>
@@ -79,16 +100,17 @@
                                 </el-select>
                             </td>
                         </tr>
+                        </template>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <div v-if="testData && testData.table && testData.table.length > 0 && getInterruptersPerPhase() > 1">
-            <div v-for="items in testData.table.length" :key="items" style="margin-top: 2%">
-                <div v-if="testData.table.length > 1" style="font-weight: bold ;font-size: 12px;">Close coil no. {{ items }}</div>
-                <br v-if="testData.table.length > 1" />
-                <table class="table-strip-input-data" style="width: 100%; font-size: 12px;">
+        <div v-if="testData && testData.table && Object.keys(testData.table).length > 0 && getInterruptersPerPhase() > 1">
+            <div v-for="(tableData, tableKey) in testData.table" :key="tableKey" style="margin-top: 2%">
+                <div v-if="Object.keys(testData.table).length > 1" style="font-weight: bold ;font-size: 12px;">Trip coil no. {{ tableKey.replace('table', '') }}</div>
+                <br v-if="Object.keys(testData.table).length > 1" />
+                <table v-if="tableData && Array.isArray(tableData)" class="table-strip-input-data" style="width: 100%; font-size: 12px;">
                     <thead class="test">
                         <th>Phase</th>
                         <th>Interrupter no.</th>
@@ -99,7 +121,8 @@
                         <th class="condition-indicator-col">Condition indicator</th>
                     </thead>
                     <tbody>
-                        <tr v-for="(item, index) in testData.table[items - 1]" :key="index">
+                        <template v-for="(item, index) in tableData">
+                            <tr v-if="item && item.phase && item.closing_time && item.interrupter && item.assessment && item.condition_indicator" :key="index">
                             <td v-if="index % getInterruptersPerPhase() === 0"
                                 :rowspan="getInterruptersPerPhase()">
                                 <div style="display: flex; width: 100%;">
@@ -147,6 +170,7 @@
                                 </el-select>
                             </td>
                         </tr>
+                        </template>
                     </tbody>
                 </table>
             </div>
@@ -500,8 +524,10 @@ export default {
     mounted() {
         // Initialize table after component is mounted
         this.$nextTick(() => {
-            if (this.testData && (!this.testData.table || this.testData.table.length === 0) && this.assetData && this.assetData.operating) {
-                this.initializeTable()
+            if (this.testData && this.assetData && this.assetData.operating) {
+                if (!this.testData.table || (typeof this.testData.table === 'object' && Object.keys(this.testData.table).length === 0)) {
+                    this.initializeTable()
+                }
             }
         })
     },
@@ -544,10 +570,10 @@ export default {
 
             return {}
         },
-        numberOfCloseCoils() {
+        numberOfTripCoils() {
             if (this.assetData && this.assetData.operating) {
-                const value = this.assetData.operating.numberCloseCoil || 
-                             this.assetData.operating.number_of_close_coil
+                const value = this.assetData.operating.numberTripCoil || 
+                             this.assetData.operating.number_of_trip_coil
                 const parsed = parseInt(value)
                 if (!isNaN(parsed) && parsed > 0) {
                     return parsed
@@ -590,34 +616,47 @@ export default {
             deep: true,
             handler: function () {
                 // Initialize table if empty when assetData is available
-                if (this.testData && (!this.testData.table || this.testData.table.length === 0) && this.assetData && this.assetData.operating) {
-                    this.$nextTick(() => {
-                        this.initializeTable()
-                    })
+                if (this.testData && this.assetData && this.assetData.operating) {
+                    if (!this.testData.table || (typeof this.testData.table === 'object' && Object.keys(this.testData.table).length === 0)) {
+                        this.$nextTick(() => {
+                            this.initializeTable()
+                        })
+                    }
                 }
             }
         },
         'testData.table': {
             immediate: true,
             handler: function (newVal) {
-                // Initialize table if empty
-                if ((!newVal || newVal.length === 0) && this.assetData && this.assetData.operating) {
-                    this.$nextTick(() => {
-                        this.initializeTable()
+                // Convert array to object if needed (for backward compatibility)
+                if (newVal && Array.isArray(newVal) && newVal.length > 0) {
+                    const tableObject = {}
+                    newVal.forEach((tableData, index) => {
+                        tableObject[`table${index + 1}`] = tableData
                     })
+                    this.$set(this.testData, 'table', tableObject)
+                    return
+                }
+                
+                // Initialize table if empty
+                if (this.assetData && this.assetData.operating) {
+                    if (!newVal || (typeof newVal === 'object' && Object.keys(newVal).length === 0)) {
+                        this.$nextTick(() => {
+                            this.initializeTable()
+                        })
+                    }
                 }
             }
         },
-        numberOfCloseCoils: {
+        numberOfTripCoils: {
             immediate: true,
             handler: function (newVal) {
-                // Re-initialize table when number of close coils changes
+                // Re-initialize table when number of trip coils changes
                 if (this.testData && this.testData.table) {
                     // Check if table needs to be resized
-                    if (this.testData.table.length !== newVal) {
-                        console.log(`Auto-resizing table from ${this.testData.table.length} to ${newVal} close coils`)
+                    if (Object.keys(this.testData.table).length !== newVal) {
                         // Clear and re-initialize
-                        this.$set(this.testData, 'table', [])
+                        this.$set(this.testData, 'table', {})
                         this.$nextTick(() => {
                             this.initializeTable()
                         })
@@ -1103,21 +1142,22 @@ export default {
         initializeTable() {
             if (!this.data) return
 
-            // Get numberCloseCoil from either camelCase or snake_case
-            const numCloseCoil = this.assetData?.operating?.numberCloseCoil ||
-                this.assetData?.operating?.number_of_close_coil ||
+            // Get numberTripCoil from either camelCase or snake_case (C Timing uses trip coils to divide tables)
+            const numTripCoil = this.assetData?.operating?.numberTripCoil ||
+                this.assetData?.operating?.number_of_trip_coil ||
                 1
             const numPhase = this.getNumberOfPhases()
             const numInterruptPhase = this.getInterruptersPerPhase()
             const phase = ["A", "B", "C"]
 
             if (!this.data.table) {
-                this.$set(this.data, 'table', [])
+                this.$set(this.data, 'table', {})
             }
 
-            if (this.data.table.length === 0) {
-                const newTable = []
-                for (let i = 0; i < numCloseCoil; i++) {
+            if (Object.keys(this.data.table).length === 0) {
+                const newTable = {}
+                for (let i = 0; i < numTripCoil; i++) {
+                    const tableKey = `table${i + 1}`
                     const tableRow = []
                     for (let phaseIdx = 0; phaseIdx < numPhase; phaseIdx++) {
                         for (let interruptIdx = 0; interruptIdx < numInterruptPhase; interruptIdx++) {
@@ -1132,7 +1172,7 @@ export default {
                             })
                         }
                     }
-                    newTable.push(tableRow)
+                    newTable[tableKey] = tableRow
                 }
                 this.$set(this.data, 'table', newTable)
             }
@@ -1196,41 +1236,41 @@ export default {
         calculator() {
             /* eslint-disable */
             const circuitBreaker_ = JSON.parse(this.$store.state.selectedAsset[0].circuitBreaker)
-            this.testData.table.forEach((element, i) => {
+            
+            // Loop through object keys (table1, table2, table3, ...)
+            Object.keys(this.testData.table).forEach((tableKey) => {
+                const element = this.testData.table[tableKey]
                 if (this.testData.limits === 'Absolute') {
                     element.forEach((e, index) => {
                         //Closing Sync Phase la [5]
                         if (index % (circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases) == 0) {
-                            if (parseFloat(e.closingSyncPhase) < parseFloat(this.asset_.openTime.abs[5].tmin) || parseFloat(e.closingSyncPhase) > parseFloat(this.asset_.openTime.abs[5].tmax) && e.closingSyncPhase) {
+                            if (parseFloat(e.closing_sync_between_phase.value) < parseFloat(this.asset_.openTime.abs[5].tmin) || parseFloat(e.closing_sync_between_phase.value) > parseFloat(this.asset_.openTime.abs[5].tmax) && e.closing_sync_between_phase.value) {
                                 for (let j = 0; j < circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases; j++) {
-                                    this.testData.table[i][index + j].assessment = 'Fail'
+                                    this.testData.table[tableKey][index + j].assessment.value = 'Fail'
                                 }
                             }
                             else {
                                 for (let j = 0; j < circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases; j++) {
-                                    this.testData.table[i][index + j].assessment = 'Pass'
+                                    this.testData.table[tableKey][index + j].assessment.value = 'Pass'
                                 }
                             }
                         }
                         //Closing Interrupt la [4]
-                        if (e.assessment !== 'Fail') {
+                        if (e.assessment.value !== 'Fail') {
                             if (index % (circuitBreaker_.interruptersPerPhase) == 0) {
-                                if (parseFloat(e.closingSyncInterrupt) < parseFloat(this.asset_.openTime.abs[4].tmin) || parseFloat(e.closingSyncInterrupt) > parseFloat(this.asset_.openTime.abs[4].tmax)) {
+                                if (parseFloat(e.closing_sync_between_interrupter.value) < parseFloat(this.asset_.openTime.abs[4].tmin) || parseFloat(e.closing_sync_between_interrupter.value) > parseFloat(this.asset_.openTime.abs[4].tmax)) {
                                     for (let j = 0; j < circuitBreaker_.interruptersPerPhase; j++) {
-                                        this.testData.table[i][index + j].assessment = 'Fail'
+                                        this.testData.table[tableKey][index + j].assessment.value = 'Fail'
                                     }
                                 }
                             }
-                            //Closing Open
-                            if (e.assessment !== 'Fail') {
-                                if (parseFloat(e.closingTime) < parseFloat(this.asset_.openTime.abs[3].tmin) || parseFloat(e.closingTime) > parseFloat(this.asset_.openTime.abs[3].tmax)) {
-                                    e.assessment = 'Fail'
+                            //Closing Time
+                            if (e.assessment.value !== 'Fail') {
+                                if (parseFloat(e.closing_time.value) < parseFloat(this.asset_.openTime.abs[3].tmin) || parseFloat(e.closing_time.value) > parseFloat(this.asset_.openTime.abs[3].tmax)) {
+                                    e.assessment.value = 'Fail'
                                 }
-                                else if (parseFloat(e.closeOpenTime) < parseFloat(this.asset_.openTime.abs[8].tmin) || parseFloat(e.closeOpenTime) > parseFloat(this.asset_.openTime.abs[8].tmax)) {
-                                    e.assessment = 'Fail'
-                                }
-                                else if (parseFloat(e.closeOpenTime !== '')) {
-                                    e.assessment = 'Pass'
+                                else if (e.closing_time.value !== '') {
+                                    e.assessment.value = 'Pass'
                                 }
                             }
                         }
@@ -1241,75 +1281,62 @@ export default {
                     element.forEach((e, index) => {
                         //Closing Sync la [5]
                         if (index % (circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases) == 0) {
-                            if (parseFloat(e.closingSyncPhase) < parseFloat(this.asset_.openTime.rel[5].rref)) {
-                                if (parseFloat(e.closingSyncPhase) < (parseFloat(this.asset_.openTime.rel[5].rref) - parseFloat(this.asset_.openTime.rel[5].tdevZ))) {
+                            if (parseFloat(e.closing_sync_between_phase.value) < parseFloat(this.asset_.openTime.rel[5].rref)) {
+                                if (parseFloat(e.closing_sync_between_phase.value) < (parseFloat(this.asset_.openTime.rel[5].rref) - parseFloat(this.asset_.openTime.rel[5].tdevZ))) {
                                     for (let j = 0; j < circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases; j++) {
-                                        this.testData.table[i][index + j].assessment = 'Fail'
+                                        this.testData.table[tableKey][index + j].assessment.value = 'Fail'
                                     }
                                 }
                                 else {
                                     for (let j = 0; j < circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases; j++) {
-                                        this.testData.table[i][index + j].assessment = 'Pass'
+                                        this.testData.table[tableKey][index + j].assessment.value = 'Pass'
                                     }
                                 }
                             }
-                            else if (parseFloat(e.closingSyncPhase) >= parseFloat(this.asset_.openTime.rel[5].rref)) {
-                                if (parseFloat(e.closingSyncPhase) > (parseFloat(this.asset_.openTime.rel[5].rref) + parseFloat(this.asset_.openTime.rel[5].tdevN))) {
+                            else if (parseFloat(e.closing_sync_between_phase.value) >= parseFloat(this.asset_.openTime.rel[5].rref)) {
+                                if (parseFloat(e.closing_sync_between_phase.value) > (parseFloat(this.asset_.openTime.rel[5].rref) + parseFloat(this.asset_.openTime.rel[5].tdevN))) {
                                     for (let j = 0; j < circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases; j++) {
-                                        this.testData.table[i][index + j].assessment = 'Fail'
+                                        this.testData.table[tableKey][index + j].assessment.value = 'Fail'
                                     }
                                 }
                                 else {
                                     for (let j = 0; j < circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases; j++) {
-                                        this.testData.table[i][index + j].assessment = 'Pass'
+                                        this.testData.table[tableKey][index + j].assessment.value = 'Pass'
                                     }
                                 }
                             }
                         }
                         //Closing Interrupt la [4]
-                        if (e.assessment !== 'Fail') {
+                        if (e.assessment.value !== 'Fail') {
                             if (index % (circuitBreaker_.interruptersPerPhase) == 0) {
-                                if (parseFloat(e.closingSyncInterrupt) < parseFloat(this.asset_.openTime.rel[4].rref)) {
-                                    if (parseFloat(e.closingSyncInterrupt) < (parseFloat(this.asset_.openTime.rel[4].rref) - parseFloat(this.asset_.openTime.rel[4].tdevZ))) {
+                                if (parseFloat(e.closing_sync_between_interrupter.value) < parseFloat(this.asset_.openTime.rel[4].rref)) {
+                                    if (parseFloat(e.closing_sync_between_interrupter.value) < (parseFloat(this.asset_.openTime.rel[4].rref) - parseFloat(this.asset_.openTime.rel[4].tdevZ))) {
                                         for (let j = 0; j < circuitBreaker_.interruptersPerPhase; j++) {
-                                            this.testData.table[i][index + j].assessment = 'Fail'
+                                            this.testData.table[tableKey][index + j].assessment.value = 'Fail'
                                         }
                                     }
                                 }
-                                else if (parseFloat(e.closingSyncInterrupt) >= parseFloat(this.asset_.openTime.rel[4].rref)) {
-                                    if (parseFloat(e.closingSyncInterrupt) > (parseFloat(this.asset_.openTime.rel[4].rref) + parseFloat(this.asset_.openTime.rel[4].tdevN))) {
+                                else if (parseFloat(e.closing_sync_between_interrupter.value) >= parseFloat(this.asset_.openTime.rel[4].rref)) {
+                                    if (parseFloat(e.closing_sync_between_interrupter.value) > (parseFloat(this.asset_.openTime.rel[4].rref) + parseFloat(this.asset_.openTime.rel[4].tdevN))) {
                                         for (let j = 0; j < circuitBreaker_.interruptersPerPhase; j++) {
-                                            this.testData.table[i][index + j].assessment = 'Fail'
+                                            this.testData.table[tableKey][index + j].assessment.value = 'Fail'
                                         }
                                     }
                                 }
                             }
-                            //Closing Open
-                            if (e.assessment !== 'Fail') {
-                                if (parseFloat(e.closeOpenTime) < parseFloat(this.asset_.openTime.rel[8].rref)) {
-                                    if (parseFloat(e.closeOpenTime) < (parseFloat(this.asset_.openTime.rel[8].rref) - parseFloat(this.asset_.openTime.rel[8].tdevZ))) {
-                                        e.assessment = 'Fail'
+                            //Closing Time
+                            if (e.assessment.value !== 'Fail') {
+                                if (parseFloat(e.closing_time.value) < parseFloat(this.asset_.openTime.rel[3].rref)) {
+                                    if (parseFloat(e.closing_time.value) < (parseFloat(this.asset_.openTime.rel[3].rref) - parseFloat(this.asset_.openTime.rel[3].tdevZ))) {
+                                        e.assessment.value = 'Fail'
                                     }
+                                    else e.assessment.value = 'Pass'
                                 }
-                                else if (parseFloat(e.closeOpenTime) >= parseFloat(this.asset_.openTime.rel[8].rref)) {
-                                    if (parseFloat(e.closeOpenTime) > (parseFloat(this.asset_.openTime.rel[8].rref) + parseFloat(this.asset_.openTime.rel[8].tdevN))) {
-                                        e.assessment = 'Fail'
+                                else if (parseFloat(e.closing_time.value) >= parseFloat(this.asset_.openTime.rel[3].rref)) {
+                                    if (parseFloat(e.closing_time.value) > (parseFloat(this.asset_.openTime.rel[3].rref) + parseFloat(this.asset_.openTime.rel[3].tdevN))) {
+                                        e.assessment.value = 'Fail'
                                     }
-                                }
-                                //Closing Time
-                                if (e.assessment !== 'Fail') {
-                                    if (parseFloat(e.closingTime) < parseFloat(this.asset_.openTime.rel[3].rref)) {
-                                        if (parseFloat(e.closingTime) < (parseFloat(this.asset_.openTime.rel[3].rref) - parseFloat(this.asset_.openTime.rel[3].tdevZ))) {
-                                            e.assessment = 'Fail'
-                                        }
-                                        else e.assessment = 'Pass'
-                                    }
-                                    else if (parseFloat(e.closingTime) >= parseFloat(this.asset_.openTime.rel[3].rref)) {
-                                        if (parseFloat(e.closingTime) > (parseFloat(this.asset_.openTime.rel[3].rref) + parseFloat(this.asset_.openTime.rel[3].tdevN))) {
-                                            e.assessment = 'Fail'
-                                        }
-                                        else e.assessment = 'Pass'
-                                    }
+                                    else e.assessment.value = 'Pass'
                                 }
                             }
                         }
@@ -1318,8 +1345,15 @@ export default {
             })
         },
         clear() {
-            this.testData.table.forEach((element) => {
-                element.forEach((ele) => {
+            // Check if table exists and is object
+            if (!this.testData.table || typeof this.testData.table !== 'object') {
+                this.initializeTable()
+                return
+            }
+            
+            // Loop through object keys (table1, table2, table3, ...)
+            Object.keys(this.testData.table).forEach((tableKey) => {
+                this.testData.table[tableKey].forEach((ele) => {
                     Object.keys(ele).forEach((key) => {
                         if (ele[key] && typeof ele[key] === 'object' && ele[key].value !== undefined) {
                             ele[key].value = ''
