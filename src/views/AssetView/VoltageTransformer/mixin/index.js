@@ -2,7 +2,6 @@
 import VoltageTransformerDto from "@/views/Dto/VoltageTransformer"
 import uuid from "@/utils/uuid";
 import * as voltageTransformerMapping from "@/views/Mapping/VoltageTransformer/index"
-import ValueWithUnit from "@/views/Cim/ValueWithUnit";
 
 export default {
     data() {

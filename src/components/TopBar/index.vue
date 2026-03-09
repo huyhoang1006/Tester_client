@@ -332,7 +332,6 @@ export default {
                     downloadProgress: 0
                 }
                 this.dialogUpdate = true
-                console.log('[Event] Dialog should show, dialogUpdate:', this.dialogUpdate)
 
                 // Reload notifications to show update notification
                 this.loadNotifications()

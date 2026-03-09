@@ -7,7 +7,7 @@
                         <div style="font-size: 12px;" class="bolder">Testing conditions</div>
                         <el-divider></el-divider>
                         <table style="width: 100%;">
-                            <tr v-if="assetData.properties.kind !== 'Circuit breaker' && assetData.properties.kind !== 'Current transformer' && conditions.top_oil_temp">
+                            <tr v-if="conditions.top_oil_temp">
                                 <td class="condition-head">Top oil temperature</td>
                                 <td>
                                     <el-input size="mini" v-model="conditions.top_oil_temp.value">
@@ -15,7 +15,7 @@
                                     </el-input>
                                 </td>
                             </tr>
-                            <tr v-if="assetData.properties.kind !== 'Circuit breaker' && assetData.properties.kind !== 'Current transformer' && conditions.bottom_oil_temp">
+                            <tr v-if="conditions.bottom_oil_temp">
                                 <td class="condition-head">Bottom oil temperature</td>
                                 <td>
                                     <el-input size="mini" v-model="conditions.bottom_oil_temp.value">
