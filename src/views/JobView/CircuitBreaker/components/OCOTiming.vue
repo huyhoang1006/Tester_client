@@ -25,11 +25,11 @@
             </el-row>
         </div>
 
-        <div v-if="testData && testData.table && testData.table.length > 0">
-            <div v-for="items in testData.table.length" :key="items" style="margin-top: 2%">
-                <div v-if="testData.table.length > 1" style="font-weight: bold ;font-size: 12px;">Trip coil no. {{ items }}</div>
-                <br v-if="testData.table.length > 1" />
-                <table class="table-strip-input-data" style="width: 100%; font-size: 12px;">
+        <div v-if="testData && testData.table && Object.keys(testData.table).length > 0">
+            <div v-for="(tableData, tableKey) in testData.table" :key="tableKey" style="margin-top: 2%">
+                <div v-if="Object.keys(testData.table).length > 1" style="font-weight: bold ;font-size: 12px;">Trip coil no. {{ tableKey.replace('table', '') }}</div>
+                <br v-if="Object.keys(testData.table).length > 1" />
+                <table v-if="tableData && Array.isArray(tableData)" class="table-strip-input-data" style="width: 100%; font-size: 12px;">
                     <thead>
                         <th>Phase</th>
                         <th>Opening time (ms)</th>
@@ -41,59 +41,61 @@
                         <th class="condition-indicator-col">Condition indicator</th>
                     </thead>
                     <tbody>
-                        <tr v-for="(item, index) in testData.table[items - 1]" :key="index">
-                            <td>
-                                <div style="display: flex; width: 100%;">
-                                    <el-input size="mini" v-model="item.phase.value"></el-input>
-                                    <div
-                                        :class="{ colorTableRed: item.phase.value == 'A', colorTableYellow: item.phase.value == 'B', colorTableBlue: item.phase.value == 'C' }">
+                        <template v-for="(item, index) in tableData">
+                            <tr v-if="item && item.phase && item.opening_time && item.closing_time" :key="index">
+                                <td>
+                                    <div style="display: flex; width: 100%;">
+                                        <el-input size="mini" v-model="item.phase.value"></el-input>
+                                        <div
+                                            :class="{ colorTableRed: item.phase.value == 'A', colorTableYellow: item.phase.value == 'B', colorTableBlue: item.phase.value == 'C' }">
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                            <td>
-                                <el-input size="mini" v-model="item.opening_time.value"></el-input>
-                            </td>
-                            <td v-if="index % (getInterruptersPerPhase() * getNumberOfPhases()) === 0"
-                                :rowspan="getInterruptersPerPhase() * getNumberOfPhases()">
-                                <el-input
-                                    :rows="getInterruptersPerPhase() * getNumberOfPhases()"
-                                    type="textarea" size="mini"
-                                    v-model="item.opening_sync.value"></el-input>
-                            </td>
-                            <td>
-                                <el-input size="mini" v-model="item.closing_time.value"></el-input>
-                            </td>
-                            <td v-if="index % (getInterruptersPerPhase() * getNumberOfPhases()) === 0"
-                                :rowspan="getInterruptersPerPhase() * getNumberOfPhases()">
-                                <el-input
-                                    :rows="getInterruptersPerPhase() * getNumberOfPhases()"
-                                    type="textarea" size="mini"
-                                    v-model="item.closing_sync.value"></el-input>
-                            </td>
-                            <td>
-                                <el-input size="mini" v-model="item.open_close_time.value"></el-input>
-                            </td>
-                            <td>
-                                <el-select class="assessment" size="mini" v-model="item.assessment.value">
-                                    <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i>
-                                        Pass</el-option>
-                                    <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
-                                </el-select>
-                                <span v-if="item.assessment.value === 'Pass'"
-                                    class="fa-solid fa-square-check pass icon-status"></span>
-                                <span v-else-if="item.assessment.value === 'Fail'"
-                                    class="fa-solid fa-xmark fail icon-status"></span>
-                            </td>
-                            <td>
-                                <el-select :class="nameColor(item.condition_indicator.value)" size="mini"
-                                    v-model="item.condition_indicator.value">
-                                    <el-option value="Good">Good</el-option>
-                                    <el-option value="Fair">Fair</el-option>
-                                    <el-option value="Poor">Poor</el-option>
-                                    <el-option value="Bad">Bad</el-option>
-                                </el-select>
-                            </td>
-                        </tr>
+                                </td>
+                                <td>
+                                    <el-input size="mini" v-model="item.opening_time.value"></el-input>
+                                </td>
+                                <td v-if="index % (getInterruptersPerPhase() * getNumberOfPhases()) === 0"
+                                    :rowspan="getInterruptersPerPhase() * getNumberOfPhases()">
+                                    <el-input
+                                        :rows="getInterruptersPerPhase() * getNumberOfPhases()"
+                                        type="textarea" size="mini"
+                                        v-model="item.opening_sync.value"></el-input>
+                                </td>
+                                <td>
+                                    <el-input size="mini" v-model="item.closing_time.value"></el-input>
+                                </td>
+                                <td v-if="index % (getInterruptersPerPhase() * getNumberOfPhases()) === 0"
+                                    :rowspan="getInterruptersPerPhase() * getNumberOfPhases()">
+                                    <el-input
+                                        :rows="getInterruptersPerPhase() * getNumberOfPhases()"
+                                        type="textarea" size="mini"
+                                        v-model="item.closing_sync.value"></el-input>
+                                </td>
+                                <td>
+                                    <el-input size="mini" v-model="item.open_close_time.value"></el-input>
+                                </td>
+                                <td>
+                                    <el-select class="assessment" size="mini" v-model="item.assessment.value">
+                                        <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i>
+                                            Pass</el-option>
+                                        <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
+                                    </el-select>
+                                    <span v-if="item.assessment.value === 'Pass'"
+                                        class="fa-solid fa-square-check pass icon-status"></span>
+                                    <span v-else-if="item.assessment.value === 'Fail'"
+                                        class="fa-solid fa-xmark fail icon-status"></span>
+                                </td>
+                                <td>
+                                    <el-select :class="nameColor(item.condition_indicator.value)" size="mini"
+                                        v-model="item.condition_indicator.value">
+                                        <el-option value="Good">Good</el-option>
+                                        <el-option value="Fair">Fair</el-option>
+                                        <el-option value="Poor">Poor</el-option>
+                                        <el-option value="Bad">Bad</el-option>
+                                    </el-select>
+                                </td>
+                            </tr>
+                        </template>
                     </tbody>
                 </table>
             </div>
@@ -493,15 +495,9 @@ export default {
         this.back_asset = dataTemp
     },
     mounted() {
-        // Migrate old data structure to new structure FIRST
-        this.migrateOldDataStructure()
-        
-        // Force re-render after migration
-        this.$forceUpdate()
-        
         // Initialize table after component is mounted
         this.$nextTick(() => {
-            if (this.testData && (!this.testData.table || this.testData.table.length === 0) && this.assetData && this.assetData.operating) {
+            if (this.testData && (!this.testData.table || Object.keys(this.testData.table).length === 0) && this.assetData && this.assetData.operating) {
                 this.initializeTable()
             }
         })
@@ -545,7 +541,7 @@ export default {
             deep: true,
             handler: function () {
                 // Initialize table if empty when assetData is available
-                if (this.testData && (!this.testData.table || this.testData.table.length === 0) && this.assetData && this.assetData.operating) {
+                if (this.testData && (!this.testData.table || Object.keys(this.testData.table).length === 0) && this.assetData && this.assetData.operating) {
                     this.$nextTick(() => {
                         this.initializeTable()
                     })
@@ -555,12 +551,19 @@ export default {
         'testData.table': {
             immediate: true,
             handler: function (newVal) {
-                // Migrate data structure first
-                if (newVal && newVal.length > 0) {
-                    this.migrateOldDataStructure()
+                // Convert array to object if needed (for backward compatibility)
+                if (newVal && Array.isArray(newVal) && newVal.length > 0) {
+                    console.log('Converting table from array to object structure')
+                    const tableObject = {}
+                    newVal.forEach((tableData, index) => {
+                        tableObject[`table${index + 1}`] = tableData
+                    })
+                    this.$set(this.testData, 'table', tableObject)
+                    return
                 }
+                
                 // Initialize table if empty
-                if ((!newVal || newVal.length === 0) && this.assetData && this.assetData.operating) {
+                if ((!newVal || Object.keys(newVal).length === 0) && this.assetData && this.assetData.operating) {
                     this.$nextTick(() => {
                         this.initializeTable()
                     })
@@ -573,10 +576,10 @@ export default {
                 // Re-initialize table when number of trip coils changes
                 if (this.testData && this.testData.table) {
                     // Check if table needs to be resized
-                    if (this.testData.table.length !== newVal) {
-                        console.log(`Auto-resizing table from ${this.testData.table.length} to ${newVal} trip coils`)
+                    if (Object.keys(this.testData.table).length !== newVal) {
+                        console.log(`Auto-resizing table from ${Object.keys(this.testData.table).length} to ${newVal} trip coils`)
                         // Clear and re-initialize
-                        this.$set(this.testData, 'table', [])
+                        this.$set(this.testData, 'table', {})
                         this.$nextTick(() => {
                             this.initializeTable()
                         })
@@ -586,62 +589,6 @@ export default {
         }
     },
     methods: {
-        migrateOldDataStructure() {
-            // Migrate old data structure to new {mrid, value, unit, type} structure
-            if (this.testData && this.testData.table && Array.isArray(this.testData.table)) {
-                this.testData.table.forEach((tripCoilTable) => {
-                    if (Array.isArray(tripCoilTable)) {
-                        tripCoilTable.forEach((row) => {
-                            // First, migrate old field names to new simplified names
-                            if (row.opening_sync_between_phase && !row.opening_sync) {
-                                row.opening_sync = row.opening_sync_between_phase
-                            }
-                            if (row.closing_sync_between_phase && !row.closing_sync) {
-                                row.closing_sync = row.closing_sync_between_phase
-                            }
-                            
-                            // List of fields that should be objects
-                            const fields = [
-                                'phase', 'opening_time', 'opening_sync',
-                                'closing_time', 'closing_sync', 'open_close_time',
-                                'assessment', 'condition_indicator'
-                            ]
-                            
-                            fields.forEach(field => {
-                                // If field exists but is not an object with 'value' property, migrate it
-                                if (row[field] !== undefined && (typeof row[field] !== 'object' || !Object.prototype.hasOwnProperty.call(row[field], 'value'))) {
-                                    const oldValue = row[field]
-                                    row[field] = {
-                                        mrid: '',
-                                        value: oldValue || '',
-                                        unit: field.includes('time') || field.includes('sync') ? 'm|s' : '',
-                                        type: field === 'assessment' || field === 'condition_indicator' ? 'discrete' : 
-                                              field === 'phase' ? 'string' : 'analog'
-                                    }
-                                }
-                                // If field doesn't exist, create it
-                                if (!row[field]) {
-                                    row[field] = {
-                                        mrid: '',
-                                        value: '',
-                                        unit: field.includes('time') || field.includes('sync') ? 'm|s' : '',
-                                        type: field === 'assessment' || field === 'condition_indicator' ? 'discrete' : 
-                                              field === 'phase' ? 'string' : 'analog'
-                                    }
-                                }
-                            })
-                            
-                            // Clean up old fields after migration
-                            delete row.opening_sync_between_phase
-                            delete row.opening_sync_between_interrupter
-                            delete row.closing_sync_between_phase
-                            delete row.closing_sync_between_interrupter
-                            delete row.interrupter
-                        })
-                    }
-                })
-            }
-        },
         getInterruptersPerPhase() {
             if (this.assetData && this.assetData.circuitBreaker) {
                 const value = this.assetData.circuitBreaker.interruptersPerPhase || 
@@ -1038,12 +985,13 @@ export default {
             const phase = ["A", "B", "C"]
 
             if (!this.data.table) {
-                this.$set(this.data, 'table', [])
+                this.$set(this.data, 'table', {})
             }
 
-            if (this.data.table.length === 0) {
-                const newTable = []
+            if (Object.keys(this.data.table).length === 0) {
+                const newTable = {}
                 for (let i = 0; i < numTripCoil; i++) {
+                    const tableKey = `table${i + 1}`
                     const tableRow = []
                     for (let phaseIdx = 0; phaseIdx < numPhase; phaseIdx++) {
                         for (let interruptIdx = 0; interruptIdx < numInterruptPhase; interruptIdx++) {
@@ -1059,7 +1007,7 @@ export default {
                             })
                         }
                     }
-                    newTable.push(tableRow)
+                    newTable[tableKey] = tableRow
                 }
                 this.$set(this.data, 'table', newTable)
             }
@@ -1095,8 +1043,8 @@ export default {
         },
 
         clear() {
-            this.testData.table.forEach((element) => {
-                element.forEach((ele) => {
+            Object.keys(this.testData.table).forEach((tableKey) => {
+                this.testData.table[tableKey].forEach((ele) => {
                     Object.keys(ele).forEach((key) => {
                         if (ele[key] && typeof ele[key] === 'object' && ele[key].value !== undefined) {
                             ele[key].value = ''
