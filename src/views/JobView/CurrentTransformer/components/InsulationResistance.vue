@@ -106,6 +106,12 @@ export default {
             openConditionIndicatorDialog: false,
         }
     },
+    mounted() {
+        // Initialize table if needed
+        this.$nextTick(() => {
+            this.initializeTable()
+        })
+    },
     props: {
         data: {
             type: Object,
@@ -128,9 +134,44 @@ export default {
         }
     },
     watch: {
+        'testData.table': {
+            immediate: true,
+            handler: function (newVal) {
+                // Convert array to object if needed (for backward compatibility)
+                if (newVal && Array.isArray(newVal)) {
+                    const tableObject = { table1: newVal }
+                    this.$set(this.testData, 'table', tableObject)
+                    return
+                }
+                
+                // Initialize table if empty
+                if (!newVal || (typeof newVal === 'object' && Object.keys(newVal).length === 0)) {
+                    this.$nextTick(() => {
+                        this.initializeTable()
+                    })
+                }
+            }
+        }
     },
     methods: {
+        initializeTable() {
+            if (!this.testData.table) {
+                this.$set(this.testData, 'table', {})
+            }
+            
+            if (Object.keys(this.testData.table).length === 0) {
+                this.$set(this.testData.table, 'table1', [])
+            }
+            
+            // Ensure table1 exists
+            if (!this.testData.table.table1) {
+                this.$set(this.testData.table, 'table1', [])
+            }
+        },
         add() {
+            if (!this.testData.table.table1) {
+                this.initializeTable()
+            }
             this.testData.table.table1.push(
                 JSON.parse(JSON.stringify(this.rowData))
             )
@@ -158,6 +199,10 @@ export default {
         },
 
         clear() {
+            if (!this.testData.table.table1) {
+                this.initializeTable()
+                return
+            }
             this.testData.table.table1.forEach(row => {
                 Object.keys(row).forEach(key => {
                     if (key === "mrid") return;
