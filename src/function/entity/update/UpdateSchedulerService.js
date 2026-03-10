@@ -42,7 +42,7 @@ export class UpdateSchedulerService {
         } catch (e) {
             console.warn('[Scheduler] Failed to read state:', e.message)
         }
-        
+
         return {
             lastCheckTime: null,
             lastCheckResult: null,
@@ -85,14 +85,14 @@ export class UpdateSchedulerService {
      */
     getTimeUntilNextCheck() {
         const state = this.getState()
-        
+
         if (!state.lastCheckTime) {
             return 0
         }
 
         const nextCheckTime = state.lastCheckTime + this.checkInterval
         const remaining = nextCheckTime - Date.now()
-        
+
         return Math.max(0, remaining)
     }
 
@@ -101,7 +101,7 @@ export class UpdateSchedulerService {
      */
     formatTimeUntilNextCheck() {
         const remaining = this.getTimeUntilNextCheck()
-        
+
         if (remaining === 0) {
             return 'Now'
         }
@@ -183,14 +183,14 @@ export class UpdateSchedulerService {
         }
 
         const shouldCheck = this.shouldCheckUpdate()
-        
+
         if (shouldCheck) {
             console.log('[Scheduler] Will check update now')
             updateCallback()
         } else {
             const timeUntilNext = this.getTimeUntilNextCheck()
             console.log(`[Scheduler] Next check in ${this.formatTimeUntilNextCheck()}`)
-            
+
             this.scheduledTimer = setTimeout(() => {
                 updateCallback()
             }, timeUntilNext)
@@ -228,7 +228,7 @@ export class UpdateSchedulerService {
     getStatusInfo() {
         const state = this.getState()
         const shouldCheck = this.shouldCheckUpdate()
-        
+
         return {
             lastCheckTime: state.lastCheckTime ? new Date(state.lastCheckTime).toLocaleString() : 'Never',
             timeUntilNext: this.formatTimeUntilNextCheck(),

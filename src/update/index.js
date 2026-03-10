@@ -1,12 +1,10 @@
 import * as rootOrganisationFunc from './organisationRoot/index'
 import * as procedureFunc from './procedure/index'
-import UpdateSchedulerService from './UpdateSchedulerService'
-import { entityFunc } from '@/function'
+import UpdateSchedulerService from '@/function/entity/update/UpdateSchedulerService'
 import db from '@/function/datacontext/index'
 import { app } from 'electron'
 import path from 'path'
 import fs from 'fs'
-import semver from 'semver'
 
 const schedulerService = new UpdateSchedulerService()
 
@@ -58,23 +56,6 @@ export const updateProcedure = async () => {
     }
 }
 
-
-/**
- * Xác định loại update: major, minor, patch
- */
-const getUpdateType = (current, latest) => {
-    if (!semver.gt(latest, current)) return null
-
-    const currentParsed = semver.parse(current)
-    const latestParsed = semver.parse(latest)
-
-    if (!currentParsed || !latestParsed) return 'patch'
-
-    if (latestParsed.major > currentParsed.major) return 'major'
-    if (latestParsed.minor > currentParsed.minor) return 'minor'
-    return 'patch'
-}
-
 /**
  * Bỏ qua thông báo update cho version hiện tại
  */
@@ -96,45 +77,6 @@ export const resetScheduler = () => {
  */
 export const getSchedulerStatus = () => {
     return schedulerService.getStatusInfo()
-}
-
-/**
- * Tạo notification cho app update (chỉ app version, không liên quan schema)
- */
-const createUpdateNotification = async (appUpdateInfo) => {
-    try {
-        const { v4: uuid } = await import('uuid')
-        const notificationId = uuid()
-
-        const notification = {
-            mrid: notificationId,
-            name: (appUpdateInfo.updateType ? appUpdateInfo.updateType.toUpperCase() : 'UNKNOWN') + ' Update Available',
-            message: 'Version ' + appUpdateInfo.latestVersion + ' is ready to install. You\'re currently on ' + appUpdateInfo.currentVersion + '.',
-            type: appUpdateInfo.updateType === 'major' ? 'warning' : 'info',
-            status: 'unread',
-            created_at: new Date().toISOString(),
-            metadata: {
-                current_version: appUpdateInfo.currentVersion,
-                latest_version: appUpdateInfo.latestVersion,
-                update_type: appUpdateInfo.updateType,
-                needs_update: true
-            }
-        }
-
-        // Lưu vào database
-        const result = await entityFunc.notificationEntityFunc.insertNotification(notification)
-
-        if (result.success) {
-            console.log(appUpdateInfo.updateType + ' update notification created:', notificationId)
-            return { success: true, notificationId }
-        } else {
-            throw new Error(result.message || 'Failed to create notification')
-        }
-
-    } catch (error) {
-        console.error(' Error creating update notification:', error)
-        return { success: false, error: error.message }
-    }
 }
 
 /**
