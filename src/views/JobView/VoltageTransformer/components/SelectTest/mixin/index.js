@@ -31,18 +31,28 @@ export default {
         async initInsulationResistance(testTypeCode, assetData) {
             const rowDataExample = common.buildEmptyTestRow(voltageTransformerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(voltageTransformerConditionMap[testTypeCode].columns)
+            
             const row1 = JSON.parse(JSON.stringify(rowDataExample))
             row1.measurement.value = 'Prim - (Sec + GND)'
-            let table = [row1]
+            let insulation = [row1]
 
-            let winding = parseInt(assetData.OldPotentialTransformerInfo.windings || 0) || 2
+            // Lấy windings từ DTO structure
+            let winding = 2 // default value
+            if (assetData && assetData.vt_Configuration && assetData.vt_Configuration.windings) {
+                winding = parseInt(assetData.vt_Configuration.windings) || 2
+            }
+
             for (let i = 1; i <= parseInt(winding); i++) {
                 const row = JSON.parse(JSON.stringify(rowDataExample))
-                ;(row.measurement.value = '(' + i + 'a' + i + 'n' + ')' + ' - GND'), table.push(row)
+                row.measurement.value = '(' + i + 'a' + i + 'n' + ')' + ' - GND'
+                insulation.push(row)
             }
+            
             return {
                 rowDataExampleCondition,
-                table
+                table: {
+                    "table1": insulation
+                }
             }
         },
         async initVTRatio(testTypeCode, assetData) {
@@ -71,9 +81,14 @@ export default {
                 return parseFloat(usr)
             }
 
-            let winding = parseInt(assetData?.OldPotentialTransformerInfo?.windings || 0) || 2
+            // Lấy windings từ DTO structure
+            let winding = 2 // default value
+            if (assetData && assetData.vt_Configuration && assetData.vt_Configuration.windings) {
+                winding = parseInt(assetData.vt_Configuration.windings) || 2
+            }
 
-            let ratings = assetData?.OldPotentialTransformerInfo?.ratings || assetData?.ratings || {}
+            // Lấy ratings từ DTO structure
+            let ratings = assetData?.ratings || {}
             if (typeof ratings === 'string') {
                 try {
                     ratings = JSON.parse(ratings)
@@ -82,7 +97,8 @@ export default {
                 }
             }
 
-            let dataVT = assetData?.OldPotentialTransformerInfo?.dataVT || []
+            // Lấy dataVT từ DTO structure
+            let dataVT = assetData?.vt_Configuration?.dataVT || []
             if (typeof dataVT === 'string') {
                 try {
                     dataVT = JSON.parse(dataVT)
@@ -121,7 +137,9 @@ export default {
 
             return {
                 rowDataExampleCondition,
-                table
+                table: {
+                    "table1": table
+                }
             }
         },
         async initDcWindingResistance(testTypeCode, assetData) {
@@ -129,7 +147,13 @@ export default {
             const rowDataExampleCondition = common.buildEmptyTestCondition(voltageTransformerConditionMap[testTypeCode].columns)
 
             let table = []
-            let winding = parseInt(assetData.OldPotentialTransformerInfo.windings || 0) || 2
+            
+            // Lấy windings từ DTO structure
+            let winding = 2 // default value
+            if (assetData && assetData.vt_Configuration && assetData.vt_Configuration.windings) {
+                winding = parseInt(assetData.vt_Configuration.windings) || 2
+            }
+
             for (let i = 1; i <= parseInt(winding); i++) {
                 const row = JSON.parse(JSON.stringify(rowDataExample))
                 if (row.name) {
@@ -141,7 +165,9 @@ export default {
             }
             return {
                 rowDataExampleCondition,
-                table
+                table: {
+                    "table1": table
+                }
             }
         },
         async initVTDfcap(testTypeCode) {
@@ -165,7 +191,9 @@ export default {
 
             return {
                 rowDataExampleCondition,
-                table
+                table: {
+                    "table1": table // Changed to use table1 structure
+                }
             }
         },
         async initGeneralInspection(testTypeCode) {
@@ -178,7 +206,9 @@ export default {
             data.forEach((element) => {
                 const row = JSON.parse(JSON.stringify(rowDataExample))
 
-                if (row.items) {
+                if (row.item) {
+                    row.item.value = element
+                } else if (row.items) {
                     row.items.value = element
                 } else if (row.measurement) {
                     row.measurement.value = element
@@ -190,7 +220,9 @@ export default {
             })
             return {
                 rowDataExampleCondition,
-                table
+                table: {
+                    "table1": table // Changed to use table1 structure
+                }
             }
         }
     }

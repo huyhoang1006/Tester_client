@@ -38,8 +38,7 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testData.table">
-                    <tr :key="index">
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
                         <td>
                             <el-input size="mini" type="text" v-model="item.name.value"></el-input>
                         </td>
@@ -64,8 +63,13 @@
                             <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
-                            </el-input>
+                            <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                                size="mini" v-model="item.condition_indicator.value">
+                                <el-option value="Good">Good</el-option>
+                                <el-option value="Fair">Fair</el-option>
+                                <el-option value="Poor">Poor</el-option>
+                                <el-option value="Bad">Bad</el-option>
+                            </el-select>
                         </td>
                         <td>
                             <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
@@ -77,8 +81,7 @@
                                 <i class="fas fa-trash"></i>
                             </el-button>
                         </td>
-                    </tr>
-                </template>
+                </tr>
             </tbody>
         </table>
 
@@ -93,6 +96,9 @@
 </template>
 
 <script>
+import voltageTransformerTestMap from '@/config/test-definitions/VoltageTransformer'
+import * as common from '@/views/JobView/Common/index'
+
 export default {
     name :"DcWindingResistance",
     data() {
@@ -100,6 +106,12 @@ export default {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
         }
+    },
+    mounted() {
+        // Initialize table if needed
+        this.$nextTick(() => {
+            this.initializeTable()
+        })
     },
     props: {
         data: {
@@ -124,57 +136,53 @@ export default {
         },
         testConditionData() {
             return this.testCondition
+        },
+        rowData() {
+            return common.buildEmptyTestRow(voltageTransformerTestMap['DcWindingResistance'].columns)
         }
     },
     watch: {
+        'testData.table': {
+            immediate: true,
+            handler: function (newVal) {
+                // Convert array to object if needed (for backward compatibility)
+                if (newVal && Array.isArray(newVal)) {
+                    const tableObject = { table1: newVal }
+                    this.$set(this.testData, 'table', tableObject)
+                    return
+                }
+                
+                // Initialize table if empty
+                if (!newVal || (typeof newVal === 'object' && Object.keys(newVal).length === 0)) {
+                    this.$nextTick(() => {
+                        this.initializeTable()
+                    })
+                }
+            }
+        }
     },
     methods: {
+        initializeTable() {
+            if (!this.testData.table) {
+                this.$set(this.testData, 'table', {})
+            }
+            
+            if (Object.keys(this.testData.table).length === 0) {
+                this.$set(this.testData.table, 'table1', [])
+            }
+            
+            // Ensure table1 exists
+            if (!this.testData.table.table1) {
+                this.$set(this.testData.table, 'table1', [])
+            }
+        },
         add() {
-            this.testData.table.push({
-                mrid : "",
-                name : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                r_meas : {
-                    mrid : "",
-                    value : "",
-                    unit : "Ω",
-                    type : "analog"
-                },
-                r_ref : {
-                    mrid : "",
-                    value : "",
-                    unit : "Ω",
-                    type : "analog"
-                },
-                r_corr : {
-                    mrid : "",
-                    value : "",
-                    unit : "Ω",
-                    type : "analog"
-                },
-                r_dev : {
-                    mrid : "",
-                    value : "",
-                    unit : "%",
-                    type : "analog"
-                },
-                assessment : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                },
-                condition_indicator : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                }
-            })
+            if (!this.testData.table.table1) {
+                this.initializeTable()
+            }
+            this.testData.table.table1.push(
+                JSON.parse(JSON.stringify(this.rowData))
+            )
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
@@ -183,60 +191,16 @@ export default {
                     type: 'warning'
                 })
                 .then( () => {
-                    this.testData.table = []
+                    this.testData.table.table1 = []
                 }
             )
         },
         deleteTest(index) {
-            this.testData.table.splice(index, 1)
+            this.testData.table.table1.splice(index, 1)
         },
         addTest(index) {
-            const data = {
-                mrid : "",
-                name : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                r_meas : {
-                    mrid : "",
-                    value : "",
-                    unit : "Ω",
-                    type : "analog"
-                },
-                r_ref : {
-                    mrid : "",
-                    value : "",
-                    unit : "Ω",
-                    type : "analog"
-                },
-                r_corr : {
-                    mrid : "",
-                    value : "",
-                    unit : "Ω",
-                    type : "analog"
-                },
-                r_dev : {
-                    mrid : "",
-                    value : "",
-                    unit : "%",
-                    type : "analog"
-                },
-                assessment : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                },
-                condition_indicator : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                }
-            }
-            this.testData.table.splice(index+1, 0, data)
+            const data = JSON.parse(JSON.stringify(this.rowData))
+            this.testData.table.table1.splice(index+1, 0, data)
         },
         calculator() {
             this.calcRcorr()
@@ -245,34 +209,53 @@ export default {
         },
 
         calcRcorr() {
-            this.testData.table.forEach((item) => {
+            if (!this.testData.table.table1) {
+                this.initializeTable()
+                return
+            }
+            this.testData.table.table1.forEach((item) => {
+                // Always calculate r_corr when r_meas has value
                 if(!isNaN(parseFloat(item.r_meas.value))) {
-                    if(!isNaN(parseFloat(this.testConditionData.condition.winding_temperature)) && !isNaN(parseFloat(this.testConditionData.condition.reference_temperature))) {
-                        item.r_corr.value = parseFloat(parseFloat(item.r_meas.value) * (235+parseFloat(this.testConditionData.condition.reference_temperature))/(235+parseFloat(this.testConditionData.condition.winding_temperature))).toFixed(4)
+                    // Check if testCondition and condition exist
+                    if(this.testConditionData && this.testConditionData.condition && 
+                       this.testConditionData.condition.winding_temp && 
+                       this.testConditionData.condition.reference_temp &&
+                       !isNaN(parseFloat(this.testConditionData.condition.winding_temp.value)) && 
+                       !isNaN(parseFloat(this.testConditionData.condition.reference_temp.value))) {
+                        item.r_corr.value = parseFloat(parseFloat(item.r_meas.value) * (235+parseFloat(this.testConditionData.condition.reference_temp.value))/(235+parseFloat(this.testConditionData.condition.winding_temp.value))).toFixed(4)
                     }
                     else {
+                        // Fallback: không có temperature correction
                         item.r_corr.value = item.r_meas.value
                     }
                 }
             })
         },
         calcRdev() {
-            this.testData.table.forEach((item) => {
-                if(!isNaN(parseFloat(item.r_meas.value)) && !isNaN(parseFloat(item.r_ref.value)) && item.r_ref.value != 0) {
-                    item.r_dev.value = (100 * (parseFloat(item.r_meas.value) - parseFloat(item.r_ref.value))/ parseFloat(item.r_ref.value)).toFixed(4)
+            if (!this.testData.table.table1) {
+                this.initializeTable()
+                return
+            }
+            this.testData.table.table1.forEach((item) => {
+                // Use r_corr (corrected resistance) instead of r_meas for deviation calculation
+                if(!isNaN(parseFloat(item.r_corr.value)) && !isNaN(parseFloat(item.r_ref.value)) && item.r_ref.value != 0) {
+                    item.r_dev.value = (100 * (parseFloat(item.r_corr.value) - parseFloat(item.r_ref.value))/ parseFloat(item.r_ref.value)).toFixed(4)
                 }
             })
         },
 
         clear() {
-            this.testData.table.forEach((element) => {
-                element.name.value = "",
-                element.rmeas.value = '',
-                element.r_ref.value = '',
-                element.r_corr.value = '',
-                element.r_dev.value = '',
-                element.assessment.value = '',
-                element.condition_indicator.value = ''
+            if (!this.testData.table.table1) {
+                this.initializeTable()
+                return
+            }
+            this.testData.table.table1.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (key === "mrid") return;
+                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                        row[key].value = ""
+                    }
+                })
             })
         },
         nameColor(data) {

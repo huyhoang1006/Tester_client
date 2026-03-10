@@ -39,8 +39,7 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testData.table">
-                    <tr :key="index">
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
                         <td>
                             <el-input size="mini" type="text" v-model="item.name.value"></el-input>
                         </td>
@@ -68,8 +67,13 @@
                             <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
-                            </el-input>
+                            <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                                size="mini" v-model="item.condition_indicator.value">
+                                <el-option value="Good">Good</el-option>
+                                <el-option value="Fair">Fair</el-option>
+                                <el-option value="Poor">Poor</el-option>
+                                <el-option value="Bad">Bad</el-option>
+                            </el-select>
                         </td>
                         <td>
                             <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
@@ -81,8 +85,7 @@
                                 <i class="fas fa-trash"></i>
                             </el-button>
                         </td>
-                    </tr>
-                </template>
+                </tr>
             </tbody>
         </table>
 
@@ -97,6 +100,9 @@
 </template>
 
 <script>
+import voltageTransformerTestMap from '@/config/test-definitions/VoltageTransformer'
+import * as common from '@/views/JobView/Common/index'
+
 export default {
     name :"VTRatio",
     data() {
@@ -104,6 +110,12 @@ export default {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
         }
+    },
+    mounted() {
+        // Initialize table if needed
+        this.$nextTick(() => {
+            this.initializeTable()
+        })
     },
     props: {
         data: {
@@ -122,62 +134,52 @@ export default {
         assetData() {
             return this.asset
         },
+        rowData() {
+            return common.buildEmptyTestRow(voltageTransformerTestMap['VTRatio'].columns)
+        }
     },
     watch: {
+        'testData.table': {
+            immediate: true,
+            handler: function (newVal) {
+                // Convert array to object if needed (for backward compatibility)
+                if (newVal && Array.isArray(newVal)) {
+                    const tableObject = { table1: newVal }
+                    this.$set(this.testData, 'table', tableObject)
+                    return
+                }
+                
+                // Initialize table if empty
+                if (!newVal || (typeof newVal === 'object' && Object.keys(newVal).length === 0)) {
+                    this.$nextTick(() => {
+                        this.initializeTable()
+                    })
+                }
+            }
+        }
     },
     methods: {
+        initializeTable() {
+            if (!this.testData.table) {
+                this.$set(this.testData, 'table', {})
+            }
+            
+            if (Object.keys(this.testData.table).length === 0) {
+                this.$set(this.testData.table, 'table1', [])
+            }
+            
+            // Ensure table1 exists
+            if (!this.testData.table.table1) {
+                this.$set(this.testData.table, 'table1', [])
+            }
+        },
         add() {
-            this.testData.table.push({
-                mrid : "",
-                name : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                upr : {
-                    mrid : "",
-                    value : "",
-                    unit : "A",
-                    type : "analog"
-                },
-                usr : {
-                    mrid : "",
-                    value : "",
-                    unit : "A",
-                    type : "analog"
-                },
-                ratio_meas : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                ratio_dev : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                polarity : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                assessment : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                },
-                condition_indicator : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                }
-            })
+            if (!this.testData.table.table1) {
+                this.initializeTable()
+            }
+            this.testData.table.table1.push(
+                JSON.parse(JSON.stringify(this.rowData))
+            )
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
@@ -186,74 +188,47 @@ export default {
                     type: 'warning'
                 })
                 .then( () => {
-                    this.testData.table = []
+                    this.testData.table.table1 = []
                 }
             )
         },
         deleteTest(index) {
-            this.testData.table.splice(index, 1)
+            this.testData.table.table1.splice(index, 1)
         },
         addTest(index) {
-            const data = {
-                mrid : "",
-                name : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                upr : {
-                    mrid : "",
-                    value : "",
-                    unit : "A",
-                    type : "analog"
-                },
-                usr : {
-                    mrid : "",
-                    value : "",
-                    unit : "A",
-                    type : "analog"
-                },
-                ratio_meas : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                ratio_dev : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                polarity : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                assessment : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                },
-                condition_indicator : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                }
-            }
-            this.testData.table.splice(index+1, 0, data)
+            const data = JSON.parse(JSON.stringify(this.rowData))
+            this.testData.table.table1.splice(index+1, 0, data)
         },
+
+        autoCalculate(index) {
+            // Auto calculate when ratio_meas, upr, or usr changes
+            this.$nextTick(() => {
+                if (this.testData.table.table1 && this.testData.table.table1[index]) {
+                    const item = this.testData.table.table1[index]
+                    
+                    // Calculate ratio_dev
+                    if(!isNaN(parseFloat(item.ratio_meas.value)) && item.ratio_meas.value != 0) {
+                        if( !isNaN(item.upr.value) && !isNaN(item.usr.value) && item.usr.value != 0) {
+                            item.ratio_dev.value = (100 * (parseFloat(item.ratio_meas.value) - (parseFloat(item.upr.value)/parseFloat(item.usr.value)))/(parseFloat(item.upr.value)/parseFloat(item.usr.value))).toFixed(4) 
+                        } else if(!isNaN(parseFloat(item.upr.value)) && !isNaN(parseFloat(item.usr.value)) && item.usr.value != 0) {
+                            item.ratio_dev.value = (100 * (parseFloat(item.ratio_meas.value) - (parseFloat(item.upr.value)/parseFloat(item.usr.value)))/(parseFloat(item.upr.value)/parseFloat(item.usr.value))).toFixed(4)
+                        }
+                    }
+                }
+            })
+        },
+
         calculator() {
             this.calcRdev()
             this.$message.success('Calculating successfully')
         },
 
         calcRdev() {
-            this.testData.table.forEach(element => {
+            if (!this.testData.table.table1) {
+                this.initializeTable()
+                return
+            }
+            this.testData.table.table1.forEach(element => {
                 if(!isNaN(parseFloat(element.ratio_meas.value)) && element.ratio_meas.value != 0) {
                     if( !isNaN(element.upr.value) && !isNaN(element.usr.value) && element.usr.value != 0) {
                         element.ratio_dev.value = (100 * (parseFloat(element.ratio_meas.value) - (parseFloat(element.upr.value)/parseFloat(element.usr.value)))/(parseFloat(element.upr.value)/parseFloat(element.usr.value))).toFixed(4) 
@@ -265,15 +240,17 @@ export default {
         },
 
         clear() {
-            this.testData.table.forEach((element) => {
-                element.name.value = "",
-                element.upr.value = '',
-                element.usr.value = '',
-                element.ratio_meas.value = '',
-                element.ratio_dev.value = '',
-                element.polarity.value = '',
-                element.assessment.value = '',
-                element.condition_indicator.value = ''
+            if (!this.testData.table.table1) {
+                this.initializeTable()
+                return
+            }
+            this.testData.table.table1.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (key === "mrid") return;
+                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                        row[key].value = ""
+                    }
+                })
             })
         },
         nameColor(data) {
