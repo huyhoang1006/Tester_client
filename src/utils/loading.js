@@ -16,13 +16,13 @@
  * @returns {Object} { close: Function, timeoutValue: number }
  */
 export const startLoading = (vm, { action = 'default', customText = null, type = 'default' } = {}) => {
-    console.log('[startLoading] Called with:', { action, customText, type });
+    
     
     // Dispatch action lên Vuex Store
     if (vm && vm.$store) {
-        console.log('[startLoading] Dispatching to store...');
+        
         vm.$store.dispatch('loading/start', { action, customText, type });
-        console.log('[startLoading] Store state after dispatch:', vm.$store.state.loading);
+       
     } else {
         console.error('Vue instance or Store not available');
     }

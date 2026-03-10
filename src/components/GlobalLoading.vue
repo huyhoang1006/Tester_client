@@ -7,7 +7,7 @@
                     <div class="progress-bar">
                         <div class="progress-fill" :style="{ width: internalPercent + '%' }"></div>
                     </div>
-                    <span class="progress-percent">{{ internalPercent }}%</span>
+                    <span class="progress-percent">{{ displayPercent }}%</span>
                 </div>
             </div>
         </div>
@@ -43,6 +43,9 @@ export default {
         displayText() {
             // Trả về cached text hoặc text từ store
             return this.cachedDisplayText || ACTION_TEXTS.default;
+        },
+        displayPercent() {
+            return parseInt(Math.round(this.internalPercent));
         }
     },
     watch: {
@@ -82,12 +85,12 @@ export default {
                     } else if (this.internalPercent < 85) {
                         increment = 1; // Chậm lại 75-85%
                     } else if (this.internalPercent < 92) {
-                        increment = 0.5; // Chậm hơn 85-92%
+                        increment = 1; // Chậm hơn 85-92% (đổi từ 0.5 thành 1)
                     } else {
-                        increment = 0.2; // Cực chậm 92-99%
+                        increment = 1; // Cực chậm 92-99% (đổi từ 0.2 thành 1)
                     }
                     
-                    this.internalPercent = Math.min(99, this.internalPercent + increment);
+                    this.internalPercent = Math.min(99, Math.round(this.internalPercent + increment));
                 } else {
                     // Dừng lại ở 99% và không tự động tăng nữa
                     this.stopProgress();

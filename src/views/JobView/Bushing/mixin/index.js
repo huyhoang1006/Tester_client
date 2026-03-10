@@ -90,7 +90,8 @@ export default {
 
         checkAssetId(data) {
             if (data.properties.asset_id === '' || data.properties.asset_id === null) {
-                data.properties.asset_id = this.assetData.mrid;
+                // Xử lý cả Entity (mrid), DTO (properties.mrid), và flat object (mrid)
+                data.properties.asset_id = this.assetData.properties?.mrid || this.assetData.mrid;
             }
         },
 
@@ -182,7 +183,7 @@ export default {
                 if(data.procedureAsset.map(x => x.procedure_id).indexOf(test.testTypeId) === -1) {
                     data.procedureAsset.push({
                         procedure_id: test.testTypeId,
-                        asset_id: this.assetData.mrid
+                        asset_id: this.assetData.properties?.mrid || this.assetData.mrid
                     });
                 }
             }
