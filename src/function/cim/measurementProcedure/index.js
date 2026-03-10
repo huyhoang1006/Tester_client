@@ -15,6 +15,7 @@ export const insertMeasurementProcedureTransaction = async (info, dbsql) => {
             ],
             function (err) {
                 if (err) {
+                    console.log('Error inserting measurementProcedure:', info)
                     return reject({ success: false, err, message: 'Insert measurementProcedure failed' })
                 }
                 return resolve({ success: true, data: info, message: 'Insert measurementProcedure completed' })
