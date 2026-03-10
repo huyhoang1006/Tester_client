@@ -1,12 +1,14 @@
 import * as rootOrganisationFunc from './organisationRoot/index'
 import * as procedureFunc from './procedure/index'
 import UpdateSchedulerService from '@/function/entity/update/UpdateSchedulerService'
+import { entityFunc } from '@/function'
 import db from '@/function/datacontext/index'
 import { app } from 'electron'
 import path from 'path'
 import fs from 'fs'
 
 const schedulerService = new UpdateSchedulerService()
+const { checkForUpdates } = entityFunc.updateEntityFunc
 
 export const createRootOrganisation = async () => {
     try {
@@ -87,9 +89,9 @@ export const active = async () => {
     await updateProcedure()
 
     schedulerService.scheduleCheck(async () => {
-        await checkVersionUpdate()
+        await checkForUpdates()
         schedulerService.scheduleNextCheck(async () => {
-            await checkVersionUpdate()
+            await checkForUpdates()
         })
     })
 }
