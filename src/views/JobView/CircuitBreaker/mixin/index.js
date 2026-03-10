@@ -77,7 +77,6 @@ export default {
             this.checkProperties(data)
             this.checkAssetId(data)
             this.checkAttachment(data)
-            ;``
             this.checkTestingEquipment(data)
             await this.checkDataMeasurement(data)
             return data

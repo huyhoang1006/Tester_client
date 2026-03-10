@@ -13,7 +13,7 @@
 
                 <!-- Select test -->
                 <el-tab-pane>
-                    <span slot="label"><i class="fa-solid fa-list-check"></i> Test settings</span>
+                    <span slot="label"><i class="fa-solid fa-list-check"></i> Select test</span>
                     <select-test style="width: 100%;" :data="circuitBreakerJobDto.testList"
                         :testTypeListData="testTypeListData" :assetData="assetData"
                         :obj-active-name="objActiveName"></select-test>
