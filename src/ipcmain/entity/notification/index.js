@@ -181,6 +181,31 @@ export const deleteNotification = () => {
     })
 }
 
+export const deleteAllNotifications = () => {
+    ipcMain.handle('deleteAllNotifications', async function (event) {
+        try {
+            const rs = await entityFunc.notificationEntityFunc.deleteAllNotifications()
+            if (rs.success == true) {
+                return {
+                    success: true,
+                    message: "Success"
+                }
+            } else {
+                return {
+                    success: false,
+                    message: "fail",
+                }
+            }
+        } catch (error) {
+            return {
+                error: error,
+                success: false,
+                message: (error && error.message) ? error.message : "Internal error",
+            }
+        }
+    })
+}
+
 export const active = () => {
     getAllNotifications()
     getNotificationById()
@@ -189,4 +214,5 @@ export const active = () => {
     markAsRead()
     hmrideNotification()
     deleteNotification()
+    deleteAllNotifications()
 }

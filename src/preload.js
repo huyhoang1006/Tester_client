@@ -75,29 +75,8 @@ const procedureAPI = cimPreload.procedurePreload.procedurePreload()
 const licenseAPI = cimPreload.licensePreload.licensePreload()
 const notificationEntityAPI = entityPreload.notificationEntityPreload.notificationEntityPreload()
 
-
-// Version management API (Enterprise)
-const versionAPI = {
-    checkVersionUpdate: () => ipcRenderer.invoke('check-version-update'),
-    getAppVersion: () => ipcRenderer.invoke('get-app-version'),
-    getSchemaVersion: () => ipcRenderer.invoke('get-schema-version'),
-    updateAppVersion: (version) => ipcRenderer.invoke('update-app-version', version),
-    onUpdateAvailable: (callback) => ipcRenderer.on('update-available', (_event, data) => callback(data))
-}
-
-// Git Update API
-const gitUpdateAPI = {
-    checkForUpdate: () => ipcRenderer.invoke('checkForUpdate'),
-    downloadUpdate: () => ipcRenderer.invoke('downloadUpdate'),
-    installUpdate: () => ipcRenderer.invoke('installUpdate'),
-    onUpdateAvailable: (callback) => ipcRenderer.on('update-available', (_event, data) => callback(data)),
-    onUpdateNotAvailable: (callback) => ipcRenderer.on('update-not-available', (_event, data) => callback(data)),
-    onUpdateError: (callback) => ipcRenderer.on('update-error', (_event, data) => callback(data)),
-    onDownloadProgress: (callback) => ipcRenderer.on('download-progress', (_event, data) => callback(data)),
-    onUpdateDownloaded: (callback) => ipcRenderer.on('update-downloaded', (_event, data) => callback(data)),
-    onAutoUpdaterLog: (callback) => ipcRenderer.on('auto-updater-log', (_event, data) => callback(data))
-}
-
+// Update API from entity preload
+const updateAPI = entityPreload.updateEntityPreload.updateEntityPreload()
 
 const ipcMain = Object.assign(
     userAPI,
@@ -162,8 +141,7 @@ const ipcMain = Object.assign(
     windowControlAPI,
     licenseAPI,
     notificationEntityAPI,
-    versionAPI,
-    gitUpdateAPI,
+    updateAPI,
     fileConverterAPI,
     systemInfoAPI
 )

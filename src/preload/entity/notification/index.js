@@ -22,6 +22,9 @@ export const notificationEntityPreload = () => {
         },
         deleteNotification: async (mrid) => {
             return await ipcRenderer.invoke('deleteNotification', mrid)
+        },
+        deleteAllNotifications: async () => {
+            return await ipcRenderer.invoke('deleteAllNotifications')
         }
     }
 }

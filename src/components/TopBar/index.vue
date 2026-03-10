@@ -34,6 +34,10 @@
                                             title="Refresh Notifications">
                                             <i class="fas fa-sync-alt" :class="{ 'fa-spin': isReloading }"></i>
                                         </el-button>
+                                        <el-button type="text" size="mini" @click.stop="deleteAllNotifications"
+                                            title="Delete All Notifications" style="color: #f56c6c;">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </el-button>
                                     </div>
                                 </div>
                                 <div class="notification-list">
@@ -619,6 +623,12 @@ export default {
                         notification.status = 'read'
                     }
                 }
+                // Keep dropdown open
+                this.$nextTick(() => {
+                    if (this.$refs.notificationDropdown) {
+                        this.$refs.notificationDropdown.handleClick()
+                    }
+                })
             } catch (error) {
                 console.error('Error marking notification as read:', error)
             }
@@ -633,6 +643,12 @@ export default {
                     }
                     this.$message.success('Notifications have been hidden.')
                 }
+                // Keep dropdown open
+                this.$nextTick(() => {
+                    if (this.$refs.notificationDropdown) {
+                        this.$refs.notificationDropdown.handleClick()
+                    }
+                })
             } catch (error) {
                 console.error('Error hiding notification:', error)
                 this.$message.error('Notifications cannot be hidden.')
@@ -648,9 +664,33 @@ export default {
                     }
                     this.$message.success('Notification has been deleted.')
                 }
+                // Keep dropdown open
+                this.$nextTick(() => {
+                    if (this.$refs.notificationDropdown) {
+                        this.$refs.notificationDropdown.handleClick()
+                    }
+                })
             } catch (error) {
                 console.error('Error deleting notification:', error)
                 this.$message.error('Unable to delete notification')
+            }
+        },
+        async deleteAllNotifications() {
+            try {
+                const response = await window.electronAPI.deleteAllNotifications()
+                if (response.success) {
+                    this.notifications = []
+                    this.$message.success('All notifications have been deleted.')
+                }
+                // Keep dropdown open
+                this.$nextTick(() => {
+                    if (this.$refs.notificationDropdown) {
+                        this.$refs.notificationDropdown.handleClick()
+                    }
+                })
+            } catch (error) {
+                console.error('Error deleting all notifications:', error)
+                this.$message.error('Unable to delete all notifications')
             }
         },
         handleNotificationAction(command) {
