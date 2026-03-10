@@ -97,6 +97,15 @@ export const deleteNotification = async (mrid) => {
     })
 }
 
+export const deleteAllNotifications = async () => {
+    return new Promise((resolve, reject) => {
+        db.run(`DELETE FROM notification`, [], function (err) {
+            if (err) reject(err)
+            else resolve({ success: true, message: 'All notifications deleted successfully' })
+        })
+    })
+}
+
 const runAsync = (sql, params = []) => {
     return new Promise((resolve, reject) => {
         db.run(sql, params, function (err) {
