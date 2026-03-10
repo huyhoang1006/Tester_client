@@ -890,7 +890,7 @@ export default {
                         } else {
                             this.testTypeListData = []
                         }
-                        const dataTransformer = await window.electronAPI.getTransformerByMrid(tab.parentId)
+                        const dataTransformer = await window.electronAPI.getTransformerEntityByMrid(tab.parentId)
                         if (dataTransformer.success) {
                             this.assetData = transformerMapper.transformerEntityToDto(dataTransformer.data)
                         } else {

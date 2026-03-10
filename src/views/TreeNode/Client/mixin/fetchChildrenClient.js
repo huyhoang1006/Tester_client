@@ -42,6 +42,7 @@ export default {
                             }
                         } else if (node.asset && node.asset == 'Transformer') {
                             const jobsReturn = await this.fetchJobsByAssetId(node.mrid)
+                            console.log('Jobs return for Transformer:', jobsReturn)
                             if (jobsReturn.success) {
                                 jobsReturn.data.forEach((row) => {
                                     row.parentId = clickedRow.mrid
