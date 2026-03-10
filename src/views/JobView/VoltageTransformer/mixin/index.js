@@ -90,7 +90,8 @@ export default {
 
         checkAssetId(data) {
             if (data.properties.asset_id === '' || data.properties.asset_id === null) {
-                data.properties.asset_id = this.assetData.asset.mrid;
+                // Xử lý cả Entity (mrid), DTO (properties.mrid), và flat object (mrid)
+                data.properties.asset_id = this.assetData.properties?.mrid || this.assetData.mrid;
             }
         },
 
@@ -168,24 +169,45 @@ export default {
                 } else {
                     test.testCondition.attachment.path = JSON.stringify(test.testCondition.attachmentData)
                 }
-                for (const row of test.data.table) {
-                    if (row.mrid === '' || row.mrid === null) {
-                        row.mrid = uuid.newUuid();
-                        Object.keys(row).forEach(key => {
-                            if(row[key] && row[key].mrid === '' || row[key].mrid === null) {
-                                row[key].mrid = uuid.newUuid();
+
+                // Updated table save logic similar to SurgeArrester
+                for (const key in test.data.table) {
+                    const rows = test.data.table[key];
+
+                    if (Array.isArray(rows)) {
+                        rows.forEach(row => {
+                            // Generate mrid for row if not exists
+                            if (!row.mrid) {
+                                row.mrid = uuid.newUuid();
                             }
-                        })
+
+                            // Generate mrid for each field in row
+                            Object.keys(row).forEach(field => {
+                                const value = row[field];
+
+                                if (value && typeof value === 'object') {
+                                    if (!value.mrid) {
+                                        value.mrid = uuid.newUuid();
+                                    }
+                                }
+                            });
+                        });
                     }
                 }
 
                 if(data.procedureAsset.map(x => x.procedure_id).indexOf(test.testTypeId) === -1) {
                     data.procedureAsset.push({
                         procedure_id: test.testTypeId,
-                        asset_id: this.assetData.asset.mrid
+                        asset_id: this.assetData.properties?.mrid || this.assetData.mrid
                     });
                 }
             }
+
+            // Remove procedureAsset entries that no longer exist in testList
+            const currentTestTypeIds = data.testList.map(test => test.testTypeId);
+            data.procedureAsset = data.procedureAsset.filter(pa => 
+                currentTestTypeIds.includes(pa.procedure_id)
+            );
         },
     }
 }

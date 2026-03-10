@@ -96,7 +96,7 @@
 
 <script>
 import voltageTransformerTestMap from '@/config/test-definitions/VoltageTransformer'
-import * as common from '../../Common/index'
+import * as common from '@/views/JobView/Common/index'
 
 export default {
     name :"InsulationResistance",

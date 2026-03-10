@@ -924,9 +924,29 @@ export default {
                         }
                         const dataVoltageTransformer = await window.electronAPI.getVoltageTransformerEntityByMrid(tab.parentId)
                         if (dataVoltageTransformer.success) {
-                            this.assetData = dataVoltageTransformer.data
+                            this.assetData = vtMapper.mapEntityToDto(dataVoltageTransformer.data)
+                            
+                            // Load location và product asset model data từ assetData
+                            const [dataLocation, dataProductAssetModel] = await Promise.all([
+                                window.electronAPI.getLocationDetailByMrid(this.assetData.locationId),
+                                window.electronAPI.getProductAssetModelByMrid(this.assetData.productAssetModelId)
+                            ]);
+                            
+                            if (dataLocation.success) {
+                                this.locationData = dataLocation.data
+                            } else {
+                                this.locationData = {}
+                            }
+
+                            if (dataProductAssetModel.success) {
+                                this.productAssetModelData = dataProductAssetModel.data
+                            } else {
+                                this.productAssetModelData = {}
+                            }
                         } else {
                             this.assetData = {}
+                            this.locationData = {}
+                            this.productAssetModelData = {}
                         }
                         this.checkJobType = 'JobVoltageTransformer'
                         this.signJob = true;

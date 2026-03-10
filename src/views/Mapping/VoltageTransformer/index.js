@@ -100,6 +100,7 @@ export function mapEntityToDto(entity) {
     const dto = new VoltageTransformerDto();
 
     //properties
+    dto.mrid = entity.asset.mrid; // Thêm dòng này để đảm bảo dto.mrid được set
     dto.properties.mrid = entity.asset.mrid;
     dto.properties.kind = entity.asset.kind;
     dto.properties.asset_type = entity.asset.type;

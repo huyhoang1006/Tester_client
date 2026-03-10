@@ -42,8 +42,7 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testData.table">
-                    <tr :key="index">
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
                         <td>
                            {{ index + 1 }}
                         </td>
@@ -91,8 +90,13 @@
                             <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
-                            </el-input>
+                            <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                                size="mini" v-model="item.condition_indicator.value">
+                                <el-option value="Good">Good</el-option>
+                                <el-option value="Fair">Fair</el-option>
+                                <el-option value="Poor">Poor</el-option>
+                                <el-option value="Bad">Bad</el-option>
+                            </el-select>
                         </td>
                         <td>
                             <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
@@ -104,8 +108,7 @@
                                 <i class="fas fa-trash"></i>
                             </el-button>
                         </td>
-                    </tr>
-                </template>
+                </tr>
             </tbody>
         </table>
 
@@ -120,6 +123,9 @@
 </template>
 
 <script>
+import voltageTransformerTestMap from '@/config/test-definitions/VoltageTransformer'
+import * as common from '@/views/JobView/Common/index'
+
 export default {
     name :"VTDfcap",
     data() {
@@ -127,6 +133,12 @@ export default {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
         }
+    },
+    mounted() {
+        // Initialize table if needed
+        this.$nextTick(() => {
+            this.initializeTable()
+        })
     },
     props: {
         data: {
@@ -145,74 +157,52 @@ export default {
         assetData() {
             return this.asset
         },
+        rowData() {
+            return common.buildEmptyTestRow(voltageTransformerTestMap['VTDfcap'].columns)
+        }
     },
     watch: {
+        'testData.table': {
+            immediate: true,
+            handler: function (newVal) {
+                // Convert array to object if needed (for backward compatibility)
+                if (newVal && Array.isArray(newVal)) {
+                    const tableObject = { table1: newVal }
+                    this.$set(this.testData, 'table', tableObject)
+                    return
+                }
+                
+                // Initialize table if empty
+                if (!newVal || (typeof newVal === 'object' && Object.keys(newVal).length === 0)) {
+                    this.$nextTick(() => {
+                        this.initializeTable()
+                    })
+                }
+            }
+        }
     },
     methods: {
+        initializeTable() {
+            if (!this.testData.table) {
+                this.$set(this.testData, 'table', {})
+            }
+            
+            if (Object.keys(this.testData.table).length === 0) {
+                this.$set(this.testData.table, 'table1', [])
+            }
+            
+            // Ensure table1 exists
+            if (!this.testData.table.table1) {
+                this.$set(this.testData.table, 'table1', [])
+            }
+        },
         add() {
-            this.testData.table.push({
-                mrid : "",
-                measurement : {
-                    mrid : "",
-                    value : "C H-G",
-                    unit : "",
-                    type : "string"
-                },
-                test_mode : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                test_voltage : {
-                    mrid : "",
-                    value : "",
-                    unit : "kV",
-                    type : "analog"
-                },
-                df_ref : {
-                    mrid : "",
-                    value : "",
-                    unit : "%",
-                    type : "analog"
-                },
-                c_ref : {
-                    mrid : "",
-                    value : "",
-                    unit : "pF",
-                    type : "analog"
-                },
-                df_meas : {
-                    mrid : "",
-                    value : "",
-                    unit : "%",
-                    type : "analog"
-                },
-                c_meas : {
-                    mrid : "",
-                    value : "",
-                    unit : "pF",
-                    type : "analog"
-                },
-                delta_c_percent : {
-                    mrid : "",
-                    value : "",
-                    unit : "%",
-                    type : "analog"
-                },
-                assessment : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                },
-                condition_indicator : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                }
-            })
+            if (!this.testData.table.table1) {
+                this.initializeTable()
+            }
+            this.testData.table.table1.push(
+                JSON.parse(JSON.stringify(this.rowData))
+            )
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
@@ -221,78 +211,16 @@ export default {
                     type: 'warning'
                 })
                 .then( () => {
-                    this.testData.table = []
+                    this.testData.table.table1 = []
                 }
             )
         },
         deleteTest(index) {
-            this.testData.table.splice(index, 1)
+            this.testData.table.table1.splice(index, 1)
         },
         addTest(index) {
-            const data = {
-                mrid : "",
-                measurement : {
-                    mrid : "",
-                    value : "C H-G",
-                    unit : "",
-                    type : "string"
-                },
-                test_mode : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                test_voltage : {
-                    mrid : "",
-                    value : "",
-                    unit : "kV",
-                    type : "analog"
-                },
-                df_ref : {
-                    mrid : "",
-                    value : "",
-                    unit : "%",
-                    type : "analog"
-                },
-                c_ref : {
-                    mrid : "",
-                    value : "",
-                    unit : "pF",
-                    type : "analog"
-                },
-                df_meas : {
-                    mrid : "",
-                    value : "",
-                    unit : "%",
-                    type : "analog"
-                },
-                c_meas : {
-                    mrid : "",
-                    value : "",
-                    unit : "pF",
-                    type : "analog"
-                },
-                delta_c_percent : {
-                    mrid : "",
-                    value : "",
-                    unit : "%",
-                    type : "analog"
-                },
-                assessment : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                },
-                condition_indicator : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                }
-            }
-            this.testData.table.splice(index+1, 0, data)
+            const data = JSON.parse(JSON.stringify(this.rowData))
+            this.testData.table.table1.splice(index+1, 0, data)
         },
         calculator() {
             this.calcDeltaC()
@@ -300,7 +228,11 @@ export default {
         },
 
         calcDeltaC() {
-            this.testData.table.forEach(item => {
+            if (!this.testData.table.table1) {
+                this.initializeTable()
+                return
+            }
+            this.testData.table.table1.forEach(item => {
                 if(!isNaN(parseFloat(item.c_ref.value)) && !isNaN(parseFloat(item.c_meas.value)) && item.c_ref.value != 0) {
                     item.delta_c_percent.value = (100 * (parseFloat(item.c_meas.value) - parseFloat(item.c_ref.value)) / parseFloat(item.c_ref.value)).toFixed(4)
                 }
@@ -308,17 +240,17 @@ export default {
         },
 
         clear() {
-            this.testData.table.forEach((element) => {
-                element.measurement.value = "",
-                element.test_mode.value = '',
-                element.test_voltage = '',
-                element.df_ref.value = '',
-                element.c_ref.value = '',
-                element.df_meas.value = '',
-                element.c_meas.value = '',
-                element.delta_c_percent.value = '',
-                element.assessment.value = '',
-                element.condition_indicator.value = ''
+            if (!this.testData.table.table1) {
+                this.initializeTable()
+                return
+            }
+            this.testData.table.table1.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (key === "mrid") return;
+                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                        row[key].value = ""
+                    }
+                })
             })
         },
         nameColor(data) {
