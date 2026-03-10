@@ -59,79 +59,25 @@
 
 <script>
 /* eslint-disable */
-import mixin from './mixin'
-import Mixtestcondition from '../../mixin/Mixtestcondition'
-import loader from "@/utils/preload"
-import { mapState } from 'vuex'
+import Attachment from '@/views/Flatten/Attachment'
 import { UnitMultiplier } from '@/views/Enum/UnitMultiplier'
 import { UnitSymbol } from '@/views/Enum/UnitSymbol'
-import Attachment from '@/views/Flatten/Attachment'
+import mixin from './mixin'
+import uuid from "@/utils/uuid";
 
 export default {
-    mixins: [mixin, Mixtestcondition],
+    mixins: [mixin],
     props: {
-        // mode: {
-        //     type: String,
-        //     require: true,
-        //     default() {
-        //         return 'add'
-        //     }
-        // },
-        // attachmentArr: {
-        //     type: Array,
-        //     required: true,
-        //     default() {
-        //         return []
-        //     } 
-        // },
-        // testconditionArr: {
-        //     type: Array,
-        //     required: true,
-        //     default() {
-        //         return []
-        //     } 
-        // },
         data: {
             type: Array,
-            required: true,
             default() {
                 return []
-            }
-        },
-        // bushings : {
-        //     type: Object,
-        //     require: true,
-        // },
-        tapChangers: {
-            type: Object,
-            required: false,
-            default() {
-                return {
-                    id: null,
-                    mode: null,
-                    serial_no: null,
-                    manufacturer: null,
-                    manufacturer_type: null,
-                    winding: null,
-                    tap_scheme: null,
-                    no_of_taps: null,
-                    voltage_table: []
-                }
             }
         },
         assetData: {
             type: Object,
             default() {
                 return {}
-            }
-        },
-        objActiveName: {
-            type: Object,
-            required: false,
-            default() {
-                return {
-                    activeName: null
-                }
             }
         },
         testTypeListData: {
@@ -148,20 +94,12 @@ export default {
     },
     mounted() {},
     computed: {
-
-        ...mapState(['selectedLocation', 'selectedAsset']),
         testListData: function () {
             return this.data
         },
         objActiveNameData: function () {
             return this.objActiveName
         },
-        // attachmentArray : function() {
-        //     return this.attachmentArr
-        // },
-        // testconditionArray : function() {
-        //     return this.testconditionArr
-        // },
         testTypeList: function () {
             return this.testTypeListData.length > 0 ? this.testTypeListData : this.testTypeListDefault
         }
@@ -176,57 +114,25 @@ export default {
         },
         async addTest(testType) {
             const count = await this.countTest(testType.mrid)
-            const initData = await this.initTest(testType.code, this.assetData)
+            const initTest = await this.initTest(testType.alias_name, this.assetData)
+            const initData = initTest.table
+            const initCondition = initTest.rowDataExampleCondition
             const name = count == 0 ? testType.name : `${testType.name} (${count})`
-            const testCondition = {
-                mrid : '',
-                condition: {
-                    top_oil_temperature: {
-                        mrid: '',
-                        value: "",
-                        unit: this.unitSymbol.degC
-                    },
-                    bottom_oil_temperature: {
-                        mrid: '',
-                        value: "",
-                        unit: this.unitSymbol.degC
-                    },
-                    winding_temperature: {
-                        mrid: '',
-                        value: "",
-                        unit: this.unitSymbol.degC
-                    },
-                    reference_temperature: {
-                        mrid: '',
-                        value: "",
-                        unit: this.unitSymbol.degC
-                    },
-                    ambient_temperature: {
-                        mrid: '',
-                        value: "",
-                        unit: this.unitSymbol.degC
-                    },
-                    humidity: {
-                        mrid: '',
-                        value: "",
-                        unit: this.unitSymbol.percent
-                    },
-                    weather: ""
-                },
-                comment: "",
-                attachment : new Attachment(),
-                attachmentData : []
-            }
-            const tabId = this.$uuid.newUuid()
+            const mrid = uuid.newUuid()
             this.testListData.push({
-                mrid: this.$uuid.EMPTY,
+                mrid: mrid,
                 testTypeId: testType.mrid,
-                testTypeCode: testType.code,
+                testTypeCode: testType.alias_name,
                 testTypeName: testType.name,
                 name,
-                tabId: tabId,
-                data: initData,
-                testCondition : testCondition,
+                data: {table: initData},
+                testCondition : {
+                    mrid : '',
+                    condition: initCondition,
+                    comment: "",
+                    attachment : new Attachment(),
+                    attachmentData : []
+                },
                 worst_score: null,
                 worst_score_df: null,
                 worst_score_c: null,
@@ -238,19 +144,6 @@ export default {
                 total_worst_score: null,
                 created_on: new Date().getTime()
             })
-            // Push testCondition và attachment vào arrays để component có thể render
-            // Access through $parent to ensure we're using the same arrays as parent component
-            if (this.$parent && this.$parent.testconditionArr) {
-                this.$parent.testconditionArr.push(testCondition)
-            } else if (this.testconditionArr) {
-                this.testconditionArr.push(testCondition)
-            }
-            if (this.$parent && this.$parent.attachmentArr) {
-                this.$parent.attachmentArr.push([])
-            } else if (this.attachmentArr) {
-                this.attachmentArr.push([])
-            }
-            console.log(this.testListData)
         },
         deleteTest(index) {
             /* eslint-disable */
@@ -261,17 +154,6 @@ export default {
             })
                 .then(async () => {
                     this.testListData.splice(index, 1)
-                    // Remove corresponding testCondition and attachment
-                    if (this.$parent && this.$parent.testconditionArr) {
-                        this.$parent.testconditionArr.splice(index, 1)
-                    } else if (this.testconditionArr) {
-                        this.testconditionArr.splice(index, 1)
-                    }
-                    if (this.$parent && this.$parent.attachmentArr) {
-                        this.$parent.attachmentArr.splice(index, 1)
-                    } else if (this.attachmentArr) {
-                        this.attachmentArr.splice(index, 1)
-                    }
                 })
                 .catch(() => {})
         }

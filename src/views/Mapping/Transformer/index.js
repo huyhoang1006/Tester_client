@@ -29,7 +29,6 @@ import OldSurgeArresterInfo from "@/views/Cim/OldSurgeArresterInfo"
 import SurgeArrester from "@/views/Cim/SurgeArrester"
 
 export const transformerDtoToEntity = (dto) => {
-    console.log('DTO nhận được để chuyển đổi thành Entity:', dto);
     const entity = new TransformerEntity();
 
     //properties
@@ -731,7 +730,6 @@ export const transformerDtoToEntity = (dto) => {
 }
 
 export const transformerEntityToDto = (entity) => {
-    console.log('transformerEntityToDto', entity)
     const dto = new TransformerDto();
     dto.properties.mrid = entity.asset.mrid || ''
     dto.properties.kind = entity.asset.kind || ''

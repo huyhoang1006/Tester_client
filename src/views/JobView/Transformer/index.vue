@@ -5,68 +5,44 @@
                 <!-- Overview -->
                 <el-tab-pane style="width: 100%;">
                     <span slot="label"><i class="fa-solid fa-book"></i> Overview</span>
-                    <overview :data="transformerJobDto.properties" @update-attachment="updateAttachmentOverView" :attachment.sync="transformerJobDto.attachmentData" :locationData="locationData" :assetData="assetData" :productAssetModelData="productAssetModelData" :parentOrganization="parentOrganization"></overview>
+                    <overview :data="transformerJobDto.properties" @update-attachment="updateAttachmentOverView"
+                        :attachment.sync="transformerJobDto.attachmentData" :locationData="locationData"
+                        :assetData="assetData" :productAssetModelData="productAssetModelData"
+                        :parentOrganization="parentOrganization"></overview>
                 </el-tab-pane>
 
                 <!-- Select test -->
                 <el-tab-pane>
-                    <span slot="label"><i class="fa-solid fa-list-check"></i> Select test</span>
-                    <select-test style="width: 100%;"
-                        :data="transformerJobDto.testList" 
-                        :assetData="assetData" 
-                        :obj-active-name="objActiveName"
-                        :testTypeListData="testTypeListData"
-                        :tap-changers="tapChangers"
-                        ></select-test>
+                    <span slot="label"><i class="fa-solid fa-list-check"></i> Test settings</span>
+                    <select-test style="width: 100%;" :data="transformerJobDto.testList"
+                        :testTypeListData="testTypeListData" :assetData="assetData"
+                        :obj-active-name="objActiveName"></select-test>
                 </el-tab-pane>
 
+                <!-- Testing equipment -->
                 <el-tab-pane>
                     <span slot="label"><i class="fa-solid fa-list-check"></i> Testing equipment</span>
                     <div>
-                        <testing-equipment :data="transformerJobDto.testingEquipmentData" :testTypeListData="testTypeListData"></testing-equipment>
+                        <testing-equipment :data="transformerJobDto.testingEquipmentData"
+                            :testTypeListData="testTypeListData"></testing-equipment>
                     </div>
                 </el-tab-pane>
 
                 <!-- Tests -->
                 <el-tab-pane>
-                    <span slot="label"><i class="fa-solid fa-calculator"></i> Tests</span>
+                    <span slot="label"><i class="fa-solid fa-calculator"></i> Test data</span>
                     <div id="tests" style="width: 100%;">
                         <el-tabs v-model="objActiveName.activeName" type="card" class="w-100 h-100">
-                            <el-tab-pane v-for="(item, index) in transformerJobDto.testList" :key="index" :label="item.name" :name="item.tabId">
-                                <test-information
-                                :title="item.name"
-                                :data="item.testCondition || testconditionArr[index]"
-                                :assetData="assetData"
-                                :attachment.sync="attachmentArr[index]"
-                                >
+                            <el-tab-pane v-for="(item, index) in transformerJobDto.testList" :key="index"
+                                :label="item.name" :name="item.name + index">
+                                <test-information :title="item.name" :data="item.testCondition" :assetData="assetData"
+                                    :attachment="item.testCondition.attachmentData">
                                 </test-information>
-                                <component 
-                                    v-if="item.testCondition || testconditionArr[index]"
-                                    :is="item.testTypeCode" 
-                                    :data="item.data" 
-                                    :asset="asset" 
-                                    :tap-changers="tapChangers"
-                                    :testCondition="item.testCondition || testconditionArr[index]"
-                                    >
+                                <component :is="item.testTypeCode" :data="item.data" :asset="assetData">
                                 </component>
                             </el-tab-pane>
                         </el-tabs>
                     </div>
-                </el-tab-pane>
-
-                <!-- Health Index -->
-                <el-tab-pane>
-                    <span slot="label"><i class="fa-solid fa-heart-pulse"></i> Health Index</span>
-                    <health-index style="width: 100%;" v-if="transformerJobDto.properties.asset_id !== '' && listHeal.length !== 0" :properties="transformerJobDto.properties" :data="listHeal"></health-index>
-                </el-tab-pane>
-
-                <el-tab-pane>
-                    <span slot="label"><i class="fa-solid fa-table-columns"></i> Test summary</span>
-                    <test-summary style="width: 100%;" v-if="transformerJobDto.testList.length !==0" :data="transformerJobDto.testList" :asset="asset"></test-summary>
-                </el-tab-pane>
-                <el-tab-pane>
-                    <span slot="label"><i class="fa-solid fa-file-export"></i> Report</span>
-                    <exportData v-if="transformerJobDto.testList.length !==0" :data="transformerJobDto.testList"></exportData>
                 </el-tab-pane>
             </el-tabs>
         </el-row>
@@ -75,7 +51,12 @@
 
 <script>
 /* eslint-disable */
-import SelectTest from './components/SelectTest/index.vue'
+import mixin from './mixin'
+import overview from './components/Overview/index.vue'
+import SelectTest from './components/SelectTest'
+import TestInformation from '@/views/Common/TestInformation.vue'
+import TestingEquipment from './components/TestingEquipment/index.vue'
+
 import DcWindingPrim from './components/DcWindingPrim/index.vue'
 import DcWindingSec from './components/DcWindingSec/index.vue'
 import DcWindingTert from './components/DcWindingTert/index.vue'
@@ -91,7 +72,6 @@ import MeasurementOfShortCircuit from './components/MeasurementOfShortCircuit/in
 import RatioPrimSec from './components/RatioPrimSec/index.vue'
 import SeparateSourceAc from './components/SeparateSourceAc/index.vue'
 import TestingInstruments from './components/TestingInstruments'
-import Overview from './components/Overview/index.vue'
 import WindingDfCap from './components/WindingDfCap/index.vue'
 import BushingPrimC1 from './components/BushingPrimC1/index.vue'
 import BushingPrimC2 from './components/BushingPrimC2/index.vue'
@@ -104,27 +84,18 @@ import ShortCircuitImpedancePrim from './components/ShortCircuitImpedancePrim/in
 import ShortCircuitImpedanceSec from './components/ShortCircuitImpedanceSec/index.vue'
 import ShortCircuitImpedanceTert from './components/ShortCircuitImpedanceTert'
 import GasChromatography from './components/GasChromatography/index.vue'
-
-// import ShortPrimSec from './components/ShortPrimSec'
-// import ShortSecTert from './components/ShortSecTert'
-// import ShortPrimTert from './components/ShortPrimTert'
 import Dga from './components/Dga'
-// import DielectricResponseAnalysis from './components/DielectricResponseAnalysis'
 
 
 import TestSummary from './components/TestSummary/index.vue'
 import HealthIndex from './components/HealthIndex/index.vue'
-import mixin from './mixin'
-import Mixtestcondition from './mixin/Mixtestcondition'
-import testInformation from '@/views/Common/TestInformation.vue'
 import exportData from './components/ExportData'
-import TestingEquipment from './components/TestingEquipment'
 
 export default {
-    name: 'JobView',
+    name: 'JobViewTransformer',
     components: {
         SelectTest,
-        Overview,
+        overview,
         DcWindingPrim,
         DcWindingSec,
         DcWindingTert,
@@ -147,24 +118,26 @@ export default {
         BushingSecC2,
         BushingTertC1,
         BushingTertC2,
-        // ShortPrimSec,
-        // ShortSecTert,
-        // ShortPrimTert,
         Dga,
         GasChromatography,
         InsulationResistanceYokeCore,
         ShortCircuitImpedancePrim,
         ShortCircuitImpedanceSec,
         ShortCircuitImpedanceTert,
-        // DielectricResponseAnalysis
         TestSummary,
         HealthIndex,
-        testInformation,
+        TestInformation,
         exportData,
         TestingEquipment
 
     },
-    mixins: [mixin, Mixtestcondition],
+    props: {
+        parentOrganization: {
+            type: Object,
+            default: () => ({})
+        },
+    },
+    mixins: [mixin],
     data() {
         return {
             objActiveName: {
@@ -174,19 +147,15 @@ export default {
             assetData : {},
             locationData : {},
             productAssetModelData: {},
+
         }
     },
-    props: {
-        
-        parentOrganization: {
-            type: Object,
-            default: () => ({})
-        },
-    },
-    mounted() {},
+    mounted() { },
     methods: {
         updateAttachmentOverView(attachment) {
             this.attachmentData = attachment
+        },
+        loadMapForView() {
         }
     },
 }

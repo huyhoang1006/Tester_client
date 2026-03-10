@@ -36,7 +36,7 @@
                             </el-date-picker>
                         </td>
                         <td>
-                            <el-select multiple collapse-tags size="mini" v-model="item.test_type_surge_arrester_id" placeholder="Select test type">
+                            <el-select multiple collapse-tags size="mini" v-model="item.test_type_transformer_id" placeholder="Select test type">
                                 <el-option
                                     v-for="test in testTypeListData"
                                     :key="test.mrid"
@@ -93,7 +93,7 @@ export default {
                 serial_number: '',
                 calibration_date: '',
                 work_id: '',
-                test_type_surge_arrester_id: []
+                test_type_transformer_id: []
             }
             this.testingEquipmentListData.push(data);
         },
@@ -104,7 +104,7 @@ export default {
                 serial_number: '',
                 calibration_date: '',
                 work_id : '',
-                test_type_surge_arrester_id: []
+                test_type_transformer_id: []
             }
             this.testingEquipmentListData.splice(index + 1, 0, data);
         },

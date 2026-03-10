@@ -1,11 +1,4 @@
-import { mapState } from 'vuex'
-
 export default {
-    data() {
-        return {}
-    },
-    computed: mapState(['selectedAsset', 'selectedJob']),
-    async beforeMount() { },
     methods: {
         initTest(testTypeCode, assetData = null) {
             let data = null
