@@ -98,7 +98,8 @@ export default {
 
         checkAssetId(data) {
             if (data.properties.asset_id === '' || data.properties.asset_id === null) {
-                data.properties.asset_id = this.assetData.mrid;
+                // Xử lý cả Entity (mrid), DTO (properties.mrid), và flat object (mrid)
+                data.properties.asset_id = this.assetData.properties?.mrid || this.assetData.mrid;
             }
         },
 

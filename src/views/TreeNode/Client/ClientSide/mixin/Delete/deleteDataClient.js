@@ -407,6 +407,256 @@ export default {
                         } else {
                             this.$message.warning('Parent node not found in tree')
                         }
+                    } else if(node.job == 'Voltage transformer') {
+                        const entity = await window.electronAPI.getVoltageTransformerJobByMrid(node.mrid)
+                        if(!entity.success) {
+                            this.$message.error('Entity not found')
+                            return
+                        }
+                        const deleteSign = await window.electronAPI.deleteVoltageTransformerJobByMrid(entity.data)
+                        if (!deleteSign.success) {
+                            this.$message.error('Delete data failed')
+                            return
+                        }
+
+                        // ✅ Xóa node khỏi cây organisationClientList
+                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                        if (parentNode && Array.isArray(parentNode.children)) {
+                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                            if (index !== -1) {
+                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
+                                this.$message.success('Delete data successfully')
+                            } else {
+                                this.$message.warning('Node not found in tree structure')
+                            }
+                        } else {
+                            this.$message.warning('Parent node not found in tree')
+                        }
+                    } else if(node.job == 'Current transformer') {
+                        const entity = await window.electronAPI.getCurrentTransformerJobByMrid(node.mrid)
+                        if(!entity.success) {
+                            this.$message.error('Entity not found')
+                            return
+                        }
+                        const deleteSign = await window.electronAPI.deleteCurrentTransformerJobByMrid(entity.data)
+                        if (!deleteSign.success) {
+                            this.$message.error('Delete data failed')
+                            return
+                        }
+
+                        // ✅ Xóa node khỏi cây organisationClientList
+                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                        if (parentNode && Array.isArray(parentNode.children)) {
+                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                            if (index !== -1) {
+                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
+                                this.$message.success('Delete data successfully')
+                            } else {
+                                this.$message.warning('Node not found in tree structure')
+                            }
+                        } else {
+                            this.$message.warning('Parent node not found in tree')
+                        }
+                    } else if(node.job == 'Power cable') {
+                        const entity = await window.electronAPI.getPowerCableJobByMrid(node.mrid)
+                        if(!entity.success) {
+                            this.$message.error('Entity not found')
+                            return
+                        }
+                        const deleteSign = await window.electronAPI.deletePowerCableJobByMrid(entity.data)
+                        if (!deleteSign.success) {
+                            this.$message.error('Delete data failed')
+                            return
+                        }
+
+                        // ✅ Xóa node khỏi cây organisationClientList
+                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                        if (parentNode && Array.isArray(parentNode.children)) {
+                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                            if (index !== -1) {
+                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
+                                this.$message.success('Delete data successfully')
+                            } else {
+                                this.$message.warning('Node not found in tree structure')
+                            }
+                        } else {
+                            this.$message.warning('Parent node not found in tree')
+                        }
+                    } else if(node.job == 'Transformer') {
+                        const entity = await window.electronAPI.getTransformerJobByMrid(node.mrid)
+                        if(!entity.success) {
+                            this.$message.error('Entity not found')
+                            return
+                        }
+                        const deleteSign = await window.electronAPI.deleteTransformerJobByMrid(entity.data)
+                        if (!deleteSign.success) {
+                            this.$message.error('Delete data failed')
+                            return
+                        }
+
+                        // ✅ Xóa node khỏi cây organisationClientList
+                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                        if (parentNode && Array.isArray(parentNode.children)) {
+                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                            if (index !== -1) {
+                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
+                                this.$message.success('Delete data successfully')
+                            } else {
+                                this.$message.warning('Node not found in tree structure')
+                            }
+                        } else {
+                            this.$message.warning('Parent node not found in tree')
+                        }
+                    } else if(node.job == 'Disconnector') {
+                        const entity = await window.electronAPI.getDisconnectorJobByMrid(node.mrid)
+                        if(!entity.success) {
+                            this.$message.error('Entity not found')
+                            return
+                        }
+                        const deleteSign = await window.electronAPI.deleteDisconnectorJobByMrid(entity.data)
+                        if (!deleteSign.success) {
+                            this.$message.error('Delete data failed')
+                            return
+                        }
+
+                        // ✅ Xóa node khỏi cây organisationClientList
+                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                        if (parentNode && Array.isArray(parentNode.children)) {
+                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                            if (index !== -1) {
+                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
+                                this.$message.success('Delete data successfully')
+                            } else {
+                                this.$message.warning('Node not found in tree structure')
+                            }
+                        } else {
+                            this.$message.warning('Parent node not found in tree')
+                        }
+                    } else if(node.job == 'Rotating machine') {
+                        const entity = await window.electronAPI.getRotatingMachineJobByMrid(node.mrid)
+                        if(!entity.success) {
+                            this.$message.error('Entity not found')
+                            return
+                        }
+                        const deleteSign = await window.electronAPI.deleteRotatingMachineJobByMrid(entity.data)
+                        if (!deleteSign.success) {
+                            this.$message.error('Delete data failed')
+                            return
+                        }
+
+                        // ✅ Xóa node khỏi cây organisationClientList
+                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                        if (parentNode && Array.isArray(parentNode.children)) {
+                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                            if (index !== -1) {
+                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
+                                this.$message.success('Delete data successfully')
+                            } else {
+                                this.$message.warning('Node not found in tree structure')
+                            }
+                        } else {
+                            this.$message.warning('Parent node not found in tree')
+                        }
+                    } else if(node.job == 'Reactor') {
+                        const entity = await window.electronAPI.getReactorJobByMrid(node.mrid)
+                        if(!entity.success) {
+                            this.$message.error('Entity not found')
+                            return
+                        }
+                        const deleteSign = await window.electronAPI.deleteReactorJobByMrid(entity.data)
+                        if (!deleteSign.success) {
+                            this.$message.error('Delete data failed')
+                            return
+                        }
+
+                        // ✅ Xóa node khỏi cây organisationClientList
+                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                        if (parentNode && Array.isArray(parentNode.children)) {
+                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                            if (index !== -1) {
+                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
+                                this.$message.success('Delete data successfully')
+                            } else {
+                                this.$message.warning('Node not found in tree structure')
+                            }
+                        } else {
+                            this.$message.warning('Parent node not found in tree')
+                        }
+                    } else if(node.job == 'Capacitor') {
+                        const entity = await window.electronAPI.getCapacitorJobByMrid(node.mrid)
+                        if(!entity.success) {
+                            this.$message.error('Entity not found')
+                            return
+                        }
+                        const deleteSign = await window.electronAPI.deleteCapacitorJobByMrid(entity.data)
+                        if (!deleteSign.success) {
+                            this.$message.error('Delete data failed')
+                            return
+                        }
+
+                        // ✅ Xóa node khỏi cây organisationClientList
+                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                        if (parentNode && Array.isArray(parentNode.children)) {
+                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                            if (index !== -1) {
+                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
+                                this.$message.success('Delete data successfully')
+                            } else {
+                                this.$message.warning('Node not found in tree structure')
+                            }
+                        } else {
+                            this.$message.warning('Parent node not found in tree')
+                        }
+                    } else if(node.job == 'Bushing') {
+                        const entity = await window.electronAPI.getBushingJobByMrid(node.mrid)
+                        if(!entity.success) {
+                            this.$message.error('Entity not found')
+                            return
+                        }
+                        const deleteSign = await window.electronAPI.deleteBushingJobByMrid(entity.data)
+                        if (!deleteSign.success) {
+                            this.$message.error('Delete data failed')
+                            return
+                        }
+
+                        // ✅ Xóa node khỏi cây organisationClientList
+                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                        if (parentNode && Array.isArray(parentNode.children)) {
+                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                            if (index !== -1) {
+                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
+                                this.$message.success('Delete data successfully')
+                            } else {
+                                this.$message.warning('Node not found in tree structure')
+                            }
+                        } else {
+                            this.$message.warning('Parent node not found in tree')
+                        }
+                    } else if(node.job == 'Circuit breaker') {
+                        const entity = await window.electronAPI.getCircuitBreakerJobByMrid(node.mrid)
+                        if(!entity.success) {
+                            this.$message.error('Entity not found')
+                            return
+                        }
+                        const deleteSign = await window.electronAPI.deleteCircuitBreakerJobByMrid(entity.data)
+                        if (!deleteSign.success) {
+                            this.$message.error('Delete data failed')
+                            return
+                        }
+
+                        // ✅ Xóa node khỏi cây organisationClientList
+                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                        if (parentNode && Array.isArray(parentNode.children)) {
+                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                            if (index !== -1) {
+                                parentNode.children.splice(index, 1) // Xóa khỏi mảng children
+                                this.$message.success('Delete data successfully')
+                            } else {
+                                this.$message.warning('Node not found in tree structure')
+                            }
+                        } else {
+                            this.$message.warning('Parent node not found in tree')
+                        }
                     }
                 } catch(e) {
                     this.$message.error('Some error occur when deleting data')
