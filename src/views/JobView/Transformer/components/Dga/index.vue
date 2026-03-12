@@ -11,8 +11,10 @@
         <!-- Tính toán đánh giá -->
         <el-row class="mgb-10">
             <el-col>
-                <el-button size="mini" type="primary" class="btn-action" @click="calculator"> <i class="fas fa-circle-play"></i> Assess results </el-button>
-                <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i class="fas fa-xmark"></i> Clear all </el-button>
+                <el-button size="mini" type="primary" class="btn-action" @click="calculator"> <i
+                        class="fas fa-circle-play"></i> Assess results </el-button>
+                <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i class="fas fa-xmark"></i>
+                    Clear all </el-button>
             </el-col>
         </el-row>
 
@@ -32,49 +34,49 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>
-                        <el-input type="number" size="mini" v-model="testData.h2.value">
+                        <el-input type="number" size="mini" v-model="item.h2.value">
                             <template slot="append">ppm</template>
                         </el-input>
                     </td>
                     <td>
-                        <el-input type="number" size="mini" v-model="testData.ch4.value">
+                        <el-input type="number" size="mini" v-model="item.ch4.value">
                             <template slot="append">ppm</template>
                         </el-input>
                     </td>
                     <td>
-                        <el-input type="number" size="mini" v-model="testData.c2h2.value">
+                        <el-input type="number" size="mini" v-model="item.c2h2.value">
                             <template slot="append">ppm</template>
                         </el-input>
                     </td>
                     <td>
-                        <el-input type="number" size="mini" v-model="testData.c2h4.value">
+                        <el-input type="number" size="mini" v-model="item.c2h4.value">
                             <template slot="append">ppm</template>
                         </el-input>
                     </td>
                     <td>
-                        <el-input type="number" size="mini" v-model="testData.c2h6.value">
+                        <el-input type="number" size="mini" v-model="item.c2h6.value">
                             <template slot="append">ppm</template>
                         </el-input>
                     </td>
                     <td>
-                        <el-input type="number" size="mini" v-model="testData.co.value">
+                        <el-input type="number" size="mini" v-model="item.co.value">
                             <template slot="append">ppm</template>
                         </el-input>
                     </td>
                     <td>
-                        <el-input type="number" size="mini" v-model="testData.co2.value">
+                        <el-input type="number" size="mini" v-model="item.co2.value">
                             <template slot="append">ppm</template>
                         </el-input>
                     </td>
                     <td>
-                        <el-input type="number" size="mini" v-model="testData.tdcg.value">
+                        <el-input type="number" size="mini" v-model="item.tdcg.value">
                             <template slot="append">ppm</template>
                         </el-input>
                     </td>
                     <td>
-                        <el-select style="width: 120px" size="mini" v-model="testData.status.value">
+                        <el-select style="width: 120px" size="mini" v-model="item.status.value">
                             <el-option label="Condition 1" value="Condition 1"></el-option>
                             <el-option label="Condition 2" value="Condition 2"></el-option>
                             <el-option label="Condition 3" value="Condition 3"></el-option>
@@ -82,16 +84,22 @@
                         </el-select>
                     </td>
                     <td>
-                        <el-input :class="nameColor()" id="condition" type="text" size="mini" v-model="testData.condition_indicator.value">
-                        </el-input>
+                        <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                            size="mini" v-model="item.condition_indicator.value">
+                            <el-option value="Good">Good</el-option>
+                            <el-option value="Fair">Fair</el-option>
+                            <el-option value="Poor">Poor</el-option>
+                            <el-option value="Bad">Bad</el-option>
+                        </el-select>
                     </td>
                 </tr>
             </tbody>
         </table>
 
         <!-- Condition indicator settings -->
-        <el-dialog append-to-body title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="1120px">
-            <table class="table-strip-input-data mgb-10">
+        <el-dialog append-to-body title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog"
+            width="1120px">
+            <!-- <table class="table-strip-input-data mgb-10">
                 <thead>
                     <tr>
                         <th>Status</th>
@@ -156,7 +164,7 @@
                         <td>{{ conditionIndicatorSetting.bad.score.value }}</td>
                     </tr>
                 </tbody>
-            </table>
+            </table> -->
         </el-dialog>
     </div>
 </template>
@@ -198,17 +206,17 @@ export default {
             this.testData.status = ''
             this.testData.condition_indicator = ''
         },
-        nameColor() {
-            if(this.testData.condition_indicator === this.$constant.GOOD) {
+        nameColor(data) {
+            if (data === this.$constant.GOOD) {
                 return 'Good'
             }
-            else if(this.testData.condition_indicator === this.$constant.FAIR) {
+            else if (data === this.$constant.FAIR) {
                 return 'Fair'
             }
-            else if(this.testData.condition_indicator === this.$constant.POOR) {
+            else if (data === this.$constant.POOR) {
                 return 'Poor'
             }
-            else if(this.testData.condition_indicator === this.$constant.BAD) {
+            else if (data === this.$constant.BAD) {
                 return 'Bad'
             }
             else {
@@ -247,22 +255,19 @@ export default {
 </script>
 
 <style>
-
 .Good input {
     background: #00CC00;
 }
 
 .Fair input {
-    background: #FFFF00;
+    background: #ffff00;
 }
 
 .Poor input {
-    background: #FFC000;
+    background: #ff9900;
 }
 
 .Bad input {
-    background: #FF0000;
+    background: #ff3300;
 }
-
 </style>
-

@@ -43,10 +43,11 @@
             </thead>
             <tbody>
                 <tr v-for="(item, index) in testData.table.table1" :key="index">
-                    <td>{{ index + 1 }}</td>
-                    <td style="display: flex;">
-                        <el-input size="mini" v-model="item.measured_position.value" placeholder="Measured Position">
-                        </el-input>
+                    <td style="text-align: center;">
+                        {{ index + 1 }}
+                    </td>
+                    <td style="display: flex; width: 100%;">
+                        <el-input size="mini" v-model="item.measurement.value"></el-input>
                         <div
                             :class="{ colorTableRed: index % 3 == 0, colorTableYellow: index % 3 == 1, colorTableBlue: index % 3 == 2 }">
                         </div>
@@ -61,9 +62,15 @@
                         <el-input size="mini" v-model="item.r15s.value"> </el-input>
                     </td>
                     <td><el-input size="mini" v-model="item.r60s.value"> </el-input></td>
-                    <td><el-input size="mini" v-model="item.r10min.value"> </el-input></td>
-                    <td><el-input size="mini" v-model="item.kht.value"> </el-input></td>
-                    <td><el-input size="mini" v-model="item.pi.value"> </el-input></td>
+                    <td>
+                        <el-input size="mini" v-model="item.r_10m.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" v-model="item.dar.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" v-model="item.pi.value"></el-input>
+                    </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
                             <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
@@ -75,9 +82,13 @@
                             class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                     <td>
-                        <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                        <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
                             size="mini" v-model="item.condition_indicator.value">
-                        </el-input>
+                            <el-option value="Good">Good</el-option>
+                            <el-option value="Fair">Fair</el-option>
+                            <el-option value="Poor">Poor</el-option>
+                            <el-option value="Bad">Bad</el-option>
+                        </el-select>
                     </td>
                     <td>
                         <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
@@ -85,7 +96,7 @@
                         </el-button>
                     </td>
                     <td>
-                        <el-button size="mini" type="danger" class="w-100" @click="deleteRow(index)">
+                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
                             <i class="fas fa-trash"></i>
                         </el-button>
                     </td>
@@ -235,13 +246,14 @@
 </template>
 
 <script>
-
+import TransformerTestMap from '@/config/test-definitions/Transformer'
+import * as common from '../../../Common/index'
 export default {
+    name: 'InsulationResistance',
     data() {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
-            isdisplay: 'none'
         }
     },
     props: {
@@ -258,6 +270,12 @@ export default {
         testData() {
             return this.data
         },
+        assetData() {
+            return this.asset
+        },
+        rowData() {
+            return common.buildEmptyTestRow(TransformerTestMap['InsulationResistance'].columns)
+        },
         conditionIndicatorSetting() {
             return this.data.condition_indicator_setting
         },
@@ -273,127 +291,23 @@ export default {
     },
     methods: {
         add() {
-            this.testData.table.push({
-                measured_position: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                type: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                r15s: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                r60s: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                r10min: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                kht: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                pi: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                assessment: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                condition_indicator: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                }
-            })
+            this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
         },
         removeAll() {
-            this.testData.table = []
+            this.$confirm('This will delete the file. Continue?', 'Warning', {
+                confirmButtonText: 'OK',
+                cancelButtonText: 'Cancel',
+                type: 'warning'
+            }).then(() => {
+                this.testData.table.table1 = []
+            })
         },
-        deleteRow(index) {
-            this.testData.table.splice(index, 1)
+        deleteTest(index) {
+            this.testData.table.table1.splice(index, 1)
         },
         addTest(index) {
-            const data = {
-                measured_position: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                type: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                r15s: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                r60s: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                r10min: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                kht: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                pi: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                assessment: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                condition_indicator: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                }
-            }
-            this.testData.table.splice(index + 1, 0, data)
+            const data = JSON.parse(JSON.stringify(this.rowData))
+            this.testData.table.table1.splice(index + 1, 0, data)
         },
         calculator() {
             let voltage_ll = null
@@ -442,15 +356,13 @@ export default {
             })
         },
         clear() {
-            this.testData.table.forEach((element) => {
-                element.type.value = ''
-                element.r15s.value = ''
-                element.r60s.value = ''
-                element.r10min.value = ''
-                element.kht.value = ''
-                element.pi.value = ''
-                element.assessment.value = ''
-                element.condition_indicator.value = ''
+            this.testData.table.table1.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (key === "mrid") return;
+                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                        row[key].value = ""
+                    }
+                })
             })
         },
         displayType() {
