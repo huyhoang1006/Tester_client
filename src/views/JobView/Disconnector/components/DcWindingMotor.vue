@@ -27,7 +27,7 @@
             <thead>
                 <tr>
                     <th>No.</th>
-                    <th>Rmeas (Ω)</th>
+                    <th>R meas (Ω)</th>
                     <th class="assessment-col">Assessment</th>
                     <th class="condition-indicator-col">Condition indicator</th>
                     <th @click="add()" class="action-col"><i class="fa-solid fa-plus pointer"></i></th>
@@ -35,25 +35,30 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testData.table">
-                    <tr :key="index">
+                <template v-if="testData.table && testData.table.table1">
+                    <tr v-for="(item, index) in testData.table.table1" :key="index">
                         <td>
                             {{ index + 1 }}
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.rmeas"></el-input>
+                            <el-input size="mini" type="text" v-model="item.r_meas.value" v-if="item.r_meas"></el-input>
                         </td>
                         <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment">
+                            <el-select class="assessment" size="mini" v-model="item.assessment.value" v-if="item.assessment">
                                 <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                                 <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
-                            <span v-if="item.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                            <span v-if="item.assessment && item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                            <span v-else-if="item.assessment && item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini" v-model="item.condition_indicator">
-                            </el-input>
+                            <el-select :class="nameColor(item.condition_indicator && item.condition_indicator.value)" id="condition" type="text"
+                                size="mini" v-model="item.condition_indicator.value" v-if="item.condition_indicator">
+                                <el-option value="Good">Good</el-option>
+                                <el-option value="Fair">Fair</el-option>
+                                <el-option value="Poor">Poor</el-option>
+                                <el-option value="Bad">Bad</el-option>
+                            </el-select>
                         </td>
                         <td>
                             <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
@@ -101,7 +106,7 @@ export default {
     },
     computed: {
         testData() {
-            return this.data
+            return this.data || { table: { table1: [] } }
         },
         assetData() {
             return this.asset
@@ -111,9 +116,15 @@ export default {
     },
     methods: {
         add() {
-            this.testData.table.push({
+            if (!this.testData.table) {
+                this.testData.table = { table1: [] }
+            }
+            if (!this.testData.table.table1) {
+                this.testData.table.table1 = []
+            }
+            this.testData.table.table1.push({
                 mrid : "",
-                rmeas : {
+                r_meas : {
                     mrid : "",
                     value : "",
                     unit : "Ω",
@@ -140,17 +151,29 @@ export default {
                     type: 'warning'
                 })
                 .then( () => {
-                    this.testData.table = []
+                    if (this.testData.table && this.testData.table.table1) {
+                        this.testData.table.table1 = []
+                    }
                 }
             )
         },
         deleteTest(index) {
-            this.testData.table.splice(index, 1)
+            this.$confirm('This will permanently delete the file. Continue?', 'Warning', {
+                confirmButtonText: 'OK',
+                cancelButtonText: 'Cancel',
+                type: 'warning'
+            })
+            .then(async () => {
+                if (this.testData.table && this.testData.table.table1) {
+                    this.testData.table.table1.splice(index, 1)
+                }
+            })
+            .catch(() => {})
         },
         addTest(index) {
             const data = {
                 mrid : "",
-                rmeas : {
+                r_meas : {
                     mrid : "",
                     value : "",
                     unit : "Ω",
@@ -169,18 +192,22 @@ export default {
                     type : "discrete"
                 }
             }
-            this.testData.table.splice(index+1, 0, data)
+            if (this.testData.table && this.testData.table.table1) {
+                this.testData.table.table1.splice(index+1, 0, data)
+            }
         },
         calculator() {
             this.$message.success('Calculating successfully')
         },
 
         clear() {
-            this.testData.table.forEach((element) => {
-                element.rmeas = '',
-                element.assessment = '',
-                element.condition_indicator = ''
-            })
+            if (this.testData.table && this.testData.table.table1) {
+                this.testData.table.table1.forEach((element) => {
+                    if (element.r_meas) element.r_meas.value = ""
+                    if (element.assessment) element.assessment.value = ""
+                    if (element.condition_indicator) element.condition_indicator.value = ""
+                })
+            }
         },
         nameColor(data) {
             if(data === this.$constant.GOOD) {
