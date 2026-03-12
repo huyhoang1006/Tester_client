@@ -689,8 +689,8 @@ export default {
                     } else if (tab.job === 'Disconnector') {
                         const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Disconnector")
                         this.testTypeListData = dataTestType.success ? dataTestType.data :[]
-                        const dataDisconnector = await window.electronAPI.getDisconnectorByMrid(tab.parentId)
-                        this.assetData = dataDisconnector.success ? dataDisconnector.data : {}
+                        const dataDisconnector = await window.electronAPI.getDisconnectorEntityByMrid(tab.parentId)
+                        this.assetData = dataDisconnector.success ? disconnectorMapper.disconnectorEntityToDto(dataDisconnector.data) : {}
 
                         const data = await window.electronAPI.getDisconnectorJobByMrid(tab.mrid)
                         if (data.success) {
@@ -712,8 +712,8 @@ export default {
                     } else if (tab.job === 'Rotating machine') {
                         const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Rotating machine")
                         this.testTypeListData = dataTestType.success ? dataTestType.data :[]
-                        const dataRotatingMachine = await window.electronAPI.getRotatingMachineByMrid(tab.parentId)
-                        this.assetData = dataRotatingMachine.success ? dataRotatingMachine.data : {}
+                        const dataRotatingMachine = await window.electronAPI.getRotatingMachineEntityByMrid(tab.parentId)
+                        this.assetData = dataRotatingMachine.success ? RotatingMachineMapper.mapEntityToDto(dataRotatingMachine.data) : {}
 
                         const data = await window.electronAPI.getRotatingMachineJobByMrid(tab.mrid)
                         if (data.success) {
@@ -758,8 +758,8 @@ export default {
                     } else if (tab.job === 'Capacitor') {
                         const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Capacitor")
                         this.testTypeListData = dataTestType.success ? dataTestType.data :[]
-                        const dataCapacitor = await window.electronAPI.getCapacitorByMrid(tab.parentId)
-                        this.assetData = dataCapacitor.success ? dataCapacitor.data : {}
+                        const dataCapacitor = await window.electronAPI.getCapacitorEntityByMrid(tab.parentId)
+                        this.assetData = dataCapacitor.success ? CapacitorMapper.mapEntityToDto(dataCapacitor.data) : {}
 
                         const data = await window.electronAPI.getCapacitorJobByMrid(tab.mrid)
                         if (data.success) {

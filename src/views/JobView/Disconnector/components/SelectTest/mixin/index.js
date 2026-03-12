@@ -1,4 +1,8 @@
+/* eslint-disable */
 import { mapState } from 'vuex'
+import disconnectorTestMap from '@/config/test-definitions/Disconnector'
+import disconnectorConditionMap from '@/config/testing-condition/Disconnector'
+import * as common from '@/views/JobView/Common/index'
 
 export default {
     data() {
@@ -11,133 +15,132 @@ export default {
             let data = null
             switch (testTypeCode) {
                 case 'InsulationResistance':
-                    data = this.initInsulationResistance()
+                    data = this.initInsulationResistance(testTypeCode)
                     break
                 case 'ContactResistance':
-                    data = await this.initContactResistance()
+                    data = await this.initContactResistance(testTypeCode)
                     break
                 case 'InsulationResMotor':
-                    data = await this.initInsulationResMotor()
+                    data = await this.initInsulationResMotor(testTypeCode)
                     break
                 case 'DcWindingMotor':
-                    data = await this.initDcWindingMotor()
+                    data = await this.initDcWindingMotor(testTypeCode)
                     break
                 case 'OperatingTest':
-                    data = await this.initOperatingTest()
+                    data = await this.initOperatingTest(testTypeCode)
                     break
                 case 'ControlCheck':
-                    data = await this.initControlCheck()
+                    data = await this.initControlCheck(testTypeCode)
                     break
                 case 'GeneralInspection':
-                    data = await this.initGeneralInspection()
-                    break
-                case 'LeakageCurrent':
-                    data = await this.initLeakageCurrent(assetData || {})
-                    break
-                case 'PowerFrequency':
-                    data = await this.initPowerFrequency(assetData || {})
+                    data = await this.initGeneralInspection(testTypeCode)
                     break
             }
 
             return data
         },
-        async initInsulationResistance() {
-            let table = [
-                {
-                    measurement: "Phase A-(B+C+GND)",
-                    test_voltage: '',
-                    r60s: '',
-                    assessment: '',
-                    condition_indicator: ''
-                },
-                {
-                    measurement: "Phase B-(A+C+GND)",
-                    test_voltage: '',
-                    r60s: '',
-                    assessment: '',
-                    condition_indicator: ''
-                },
-                {
-                    measurement: "Phase C-(A+B+GND)",
-                    test_voltage: '',
-                    r60s: '',
-                    assessment: '',
-                    condition_indicator: ''
-                }
-            ]
+        async initInsulationResistance(testTypeCode) {
+            const rowDataExample = common.buildEmptyTestRow(disconnectorTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(disconnectorConditionMap[testTypeCode].columns)
+
+            const row1 = JSON.parse(JSON.stringify(rowDataExample))
+            row1.measurement.value = 'Phase A-(B+C+GND)'
+            const row2 = JSON.parse(JSON.stringify(rowDataExample))
+            row2.measurement.value = 'Phase B-(A+C+GND)'
+            const row3 = JSON.parse(JSON.stringify(rowDataExample))
+            row3.measurement.value = 'Phase C-(A+B+GND)'
+
+            const table1 = [row1, row2, row3]
+            const table = { table1 }
 
             return {
+                rowDataExampleCondition,
                 table
             }
         },
-        async initContactResistance() {
-            let table = [
-                {
-                    measurement: "Main contact",
-                    itest: "",
-                    contactResistance: "",
-                    assessment: "",
-                    condition_indicator: ""
-                },
-                {
-                    measurement: "Earth switch",
-                    itest: "",
-                    contactResistance: "",
-                    assessment: "",
-                    condition_indicator: ""
-                }
-            ]
+        async initContactResistance(testTypeCode) {
+            const rowDataExample = common.buildEmptyTestRow(disconnectorTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(disconnectorConditionMap[testTypeCode].columns)
+
+            // Tạo ít nhất 1 row mặc định
+            const row1 = JSON.parse(JSON.stringify(rowDataExample))
+
+            const table1 = [row1] // Hoặc có thể tạo nhiều rows
+            const table = { table1 }
+
             return {
+                rowDataExampleCondition,
                 table
             }
         },
 
-        async initInsulationResMotor() {
-            let table = []
+        async initInsulationResMotor(testTypeCode) {
+            const rowDataExampleCondition = common.buildEmptyTestCondition(disconnectorConditionMap[testTypeCode].columns)
+            const rowDataExample = common.buildEmptyTestRow(disconnectorTestMap[testTypeCode].columns)
+            const row1 = JSON.parse(JSON.stringify(rowDataExample))
+            const table1 = [row1] // Hoặc có thể tạo nhiều rows
+            const table = { table1 }
             return {
+                rowDataExampleCondition,
                 table
             }
         },
-        async initDcWindingMotor() {
+        async initDcWindingMotor(testTypeCode) {
+            const rowDataExample = common.buildEmptyTestRow(disconnectorTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(disconnectorConditionMap[testTypeCode].columns)
+            
+            // Tạo ít nhất 1 row với cấu trúc đúng
+            const row1 = JSON.parse(JSON.stringify(rowDataExample))
+            
+            const table1 = [row1]
+            const table = { table1 }
+
             return {
-                table: []
+                rowDataExampleCondition,
+                table
             }
         },
-        async initOperatingTest() {
-            let table = [
-                {
-                    measurement: "Main contact",
-                    workingTime: "",
-                    assessment: "",
-                    condition_indicator: ""
-                },
-                {
-                    measurement: "Earth switch",
-                    workingTime: "",
-                    assessment: "",
-                    condition_indicator: ""
+        async initOperatingTest(testTypeCode) {
+            const rowDataExample = common.buildEmptyTestRow(disconnectorTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(disconnectorConditionMap[testTypeCode].columns)
+
+            const row1 = JSON.parse(JSON.stringify(rowDataExample))
+            row1.measurement.value = 'Main contact'
+            const row2 = JSON.parse(JSON.stringify(rowDataExample))
+            row2.measurement.value = 'Earth switch'
+
+            const table1 = [row1, row2]
+            const table = { table1 }
+
+            return {
+                rowDataExampleCondition,
+                table
+            }
+        },
+        async initControlCheck(testTypeCode) {
+            const rowDataExampleCondition = common.buildEmptyTestCondition(disconnectorConditionMap[testTypeCode].columns)
+            return {
+                rowDataExampleCondition,
+                table: { table1: [] }
+            }
+        },
+        async initGeneralInspection(testTypeCode) {
+            const rowDataExample = common.buildEmptyTestRow(disconnectorTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(disconnectorConditionMap[testTypeCode].columns)
+
+            const defaultItems = ['Nameplate', 'Installation check', 'Insulation surface', 'Ground frame', 'Terminal box', 'Marking of terminals', 'Oil check']
+
+            const table1 = defaultItems.map(itemValue => {
+                const row = JSON.parse(JSON.stringify(rowDataExample))
+                if (row.item) {
+                    row.item.value = itemValue
                 }
-            ]
-            return {
-                table
-            }
-        },
-        async initControlCheck() {
-            return {
-                table: []
-            }
-        },
-        async initGeneralInspection() {
-            let table = []
-            const data = ['Nameplate', 'Installation check', 'Insulation surface', 'Ground frame', 'Terminal box', 'Marking of terminals', 'Oil check']
-            data.forEach(element => {
-                table.push({
-                    items: element,
-                    assessment: '',
-                    condition_indicator: ''
-                })
+                return row
             })
+
+            const table = { table1 }
             return {
+                rowDataExampleCondition,
                 table
             }
         }

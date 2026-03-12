@@ -35,12 +35,12 @@
     }
   ],
   "defaultRows": [
-    { "items": "Nameplate" },
-    { "items": "Installation check" },
-    { "items": "Insulation surface" },
-    { "items": "Ground frame" },
-    { "items": "Terminal box" },
-    { "items": "Marking of terminals" },
-    { "items": "Oil check" }
+    { "item": "Nameplate" },
+    { "item": "Installation check" },
+    { "item": "Insulation surface" },
+    { "item": "Ground frame" },
+    { "item": "Terminal box" },
+    { "item": "Marking of terminals" },
+    { "item": "Oil check" }
   ]
 }
