@@ -27,6 +27,27 @@
       "unit": "m|s"
     },
     {
+      "mrid": "db8c190c-ac81-4ada-b786-fbb50d1627c5",
+      "code": "duration",
+      "name": "Test duration",
+      "type": "analog",
+      "unit": "min"
+    },
+    {
+      "mrid": "3ca74239-df46-4260-9420-79599d155945",
+      "code": "frequency",
+      "name": "Frequency",
+      "type": "analog",
+      "unit": "Hz"
+    },
+    {
+      "mrid": "f6f2b092-1c9e-49e8-b4a7-2c81f0310fdc",
+      "code": "leakage_current",
+      "name": "Leakage current",
+      "type": "analog",
+      "unit": "m|A"
+    },
+    {
       "mrid": "8387cbb8-43c9-4730-b2d4-3fe6d0e5a202",
       "code": "closing_sync_between_interrupter",
       "name": "Closing sync. between interrupter (ms)",
