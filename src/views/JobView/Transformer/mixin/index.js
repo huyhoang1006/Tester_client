@@ -165,6 +165,7 @@ export default {
                 } else {
                     test.testCondition.attachment.path = JSON.stringify(test.testCondition.attachmentData)
                 }
+                
                 for (const key in test.data.table) {
                     const rows = test.data.table[key]
 
