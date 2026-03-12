@@ -89,7 +89,7 @@
 
 <script>
 import TransformerTestMap from '@/config/test-definitions/Transformer'
-import * as common from '../../Common/index'
+import * as common from '../../../Common/index'
 export default {
     name: 'GeneralInspection',
     data() {

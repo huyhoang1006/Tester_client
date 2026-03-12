@@ -18,7 +18,7 @@ export default {
                     data = await this.initOTiming(testTypeCode, assetData)
                     break
                 case 'OCTiming':
-                    data = await this.initocTiming(testTypeCode, assetData)
+                    data = await this.initOCTiming(testTypeCode, assetData)
                     break
                 case 'COTiming':
                     data = await this.initCOTiming(testTypeCode, assetData)
@@ -242,7 +242,7 @@ export default {
                 }
             }
         },
-        async initocTiming(testTypeCode, assetData) {
+        async initOCTiming(testTypeCode, assetData) {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
 

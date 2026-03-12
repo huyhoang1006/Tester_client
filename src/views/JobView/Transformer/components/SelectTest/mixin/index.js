@@ -12,10 +12,10 @@ export default {
                     data = await this.initGeneralInspection(testTypeCode)
                     break
                 case 'InsulationResistance':
-                    data = this.initInsulationResistance(assetData)
+                    data = await this.initInsulationResistance(testTypeCode, assetData)
                     break
                 case 'RatioPrimSec':
-                    data = this.initRatioPrimSec()
+                    data = await this.initRatioPrimSec(testTypeCode, assetData)
                     break
                 case 'DcWindingPrim':
                     data = this.initDcWindingPrim()
@@ -27,7 +27,7 @@ export default {
                     data = this.initDcWindingTert()
                     break
                 case 'MeasurementOfNoLoad':
-                    data = this.initMeasurementOfNoLoad()
+                    data = await this.initMeasurementOfNoLoad(testTypeCode)
                     break
                 case 'MeasurementOfShortCircuit':
                     data = this.initMeasurementOfShortCircuit()
@@ -39,7 +39,7 @@ export default {
                     data = this.initInducedAcVoltageTests()
                     break
                 case 'MeasurementOfOil':
-                    data = this.initMeasurementOfOil()
+                    data = this.initMeasurementOfOil(testTypeCode)
                     break
                 case 'DimensionWeight':
                     data = this.initDimensionWeight()
@@ -84,7 +84,7 @@ export default {
                     data = this.initShortPrimTert()
                     break
                 case 'Dga':
-                    data = this.initDga()
+                    data = await this.initDga(testTypeCode)
                     break
                 case 'DielectricResponseAnalysis':
                     data = this.initDielectricResponseAnalysis()
@@ -93,7 +93,7 @@ export default {
                     data = this.initmotorCurrent()
                     break
                 case 'InsulationResistanceYokeCore':
-                    data = this.initInsulationResistanceYokeCore()
+                    data = await this.initInsulationResistanceYokeCore(testTypeCode)
                     break
                 case 'ShortCircuitImpedancePrim':
                     data = this.initShortCircuitImpedancePrim()
@@ -105,7 +105,7 @@ export default {
                     data = this.initShortCircuitImpedanceTert()
                     break
                 case 'GasChromatography':
-                    data = this.initGasChromatography()
+                    data = await this.initGasChromatography(testTypeCode)
             }
             return data
         },
@@ -157,988 +157,56 @@ export default {
                 }
             }
         },
-        initInsulationResistance(assetData = null) {
-            const asset = assetData || this.asset || {}
-            const data = {
-                code: 'insulationresistance',
-                // t: '',
-                // megohmmeter: '',
-                // top_oil_temperature: '',
-                // bottom_oil_temperature: '',
-                // winding_temperature: '',
-                // reference_temperature: '',
-                // ambient_temperature: '',
-                // humidity: '',
-                // weather: '',
-                // model: '',
-                // serial_no: '',
-                // calibration_date: '',
-                // comment: '',
-                // dữ liệu cấu hình indicator
-                assessment_setting: {
-                    option: {
-                        mrid: '',
-                        value: 'cigre',
-                        unit: '',
-                        type: 'string'
-                    },
-                    data: {
-                        cigre: {
-                            pass_1: {
-                                prim: {
-                                    mrid: '',
-                                    value: '69',
-                                    unit: '',
-                                    type: 'string'
-                                },
-                                r60s: {
-                                    mrid: '',
-                                    value: '1000',
-                                    unit: '',
-                                    type: 'string'
-                                }
-                            },
-                            pass_2: {
-                                prim: {
-                                    mrid: '',
-                                    value: '69',
-                                    unit: '',
-                                    type: 'string'
-                                },
-                                r60s: {
-                                    mrid: '',
-                                    value: '500',
-                                    unit: '',
-                                    type: 'string'
-                                }
-                            }
-                        },
-                        custom: {
-                            pass_1: {
-                                prim: {
-                                    mrid: '',
-                                    value: '1',
-                                    unit: '',
-                                    type: 'string'
-                                },
-                                r60s: {
-                                    mrid: '',
-                                    value: '1000',
-                                    unit: '',
-                                    type: 'string'
-                                }
-                            },
-                            pass_2: {
-                                prim: {
-                                    mrid: '',
-                                    value: '69',
-                                    unit: '',
-                                    type: 'string'
-                                },
-                                r60s: {
-                                    mrid: '',
-                                    value: '500',
-                                    unit: '',
-                                    type: 'string'
-                                }
-                            }
-                        }
-                    }
-                },
-                condition_indicator_setting: {
-                    good: {
-                        kht: [
-                            {
-                                mrid: '',
-                                value: null,
-                                unit: '',
-                                type: 'string'
-                            },
-                            {
-                                mrid: '',
-                                value: '1.4',
-                                unit: '',
-                                type: 'string'
-                            }
-                        ],
-                        r60s_hve: [
-                            {
-                                mrid: '',
-                                value: null,
-                                unit: '',
-                                type: 'string'
-                            },
-                            {
-                                mrid: '',
-                                value: '1000',
-                                unit: '',
-                                type: 'string'
-                            }
-                        ],
-                        r60s_lve: [
-                            {
-                                mrid: '',
-                                value: null,
-                                unit: '',
-                                type: 'string'
-                            },
-                            {
-                                mrid: '',
-                                value: '500',
-                                unit: '',
-                                type: 'string'
-                            }
-                        ],
-                        score: {
-                            mrid: '',
-                            value: '3',
-                            unit: '',
-                            type: 'string'
-                        }
-                    },
-                    fair: {
-                        kht: [
-                            {
-                                mrid: '',
-                                value: '1.3',
-                                unit: '',
-                                type: 'string'
-                            },
-                            {
-                                mrid: '',
-                                value: '1.4',
-                                unit: '',
-                                type: 'string'
-                            }
-                        ],
-                        r60s_hve: [
-                            {
-                                mrid: '',
-                                value: '600',
-                                unit: '',
-                                type: 'string'
-                            },
-                            {
-                                mrid: '',
-                                value: '1000',
-                                unit: '',
-                                type: 'string'
-                            }
-                        ],
-                        r60s_lve: [
-                            {
-                                mrid: '',
-                                value: '300',
-                                unit: '',
-                                type: 'string'
-                            },
-                            {
-                                mrid: '',
-                                value: '500',
-                                unit: '',
-                                type: 'string'
-                            }
-                        ],
-                        score: {
-                            mrid: '',
-                            value: '2',
-                            unit: '',
-                            type: 'string'
-                        }
-                    },
-                    poor: {
-                        kht: [
-                            {
-                                mrid: '',
-                                value: '1.2',
-                                unit: '',
-                                type: 'string'
-                            },
-                            {
-                                mrid: '',
-                                value: '1.3',
-                                unit: '',
-                                type: 'string'
-                            }
-                        ],
-                        r60s_hve: [
-                            {
-                                mrid: '',
-                                value: '400',
-                                unit: '',
-                                type: 'string'
-                            },
-                            {
-                                mrid: '',
-                                value: '600',
-                                unit: '',
-                                type: 'string'
-                            }
-                        ],
-                        r60s_lve: [
-                            {
-                                mrid: '',
-                                value: '200',
-                                unit: '',
-                                type: 'string'
-                            },
-                            {
-                                mrid: '',
-                                value: '300',
-                                unit: '',
-                                type: 'string'
-                            }
-                        ],
-                        score: {
-                            mrid: '',
-                            value: '1',
-                            unit: '',
-                            type: 'string'
-                        }
-                    },
-                    bad: {
-                        kht: [
-                            {
-                                mrid: '',
-                                value: '1.2',
-                                unit: '',
-                                type: 'string'
-                            },
-                            {
-                                mrid: '',
-                                value: null,
-                                unit: '',
-                                type: 'string'
-                            }
-                        ],
-                        r60s_hve: [
-                            {
-                                mrid: '',
-                                value: '400',
-                                unit: '',
-                                type: 'string'
-                            },
-                            {
-                                mrid: '',
-                                value: null,
-                                unit: '',
-                                type: 'string'
-                            }
-                        ],
-                        r60s_lve: [
-                            {
-                                mrid: '',
-                                value: '200',
-                                unit: '',
-                                type: 'string'
-                            },
-                            {
-                                mrid: '',
-                                value: null,
-                                unit: '',
-                                type: 'string'
-                            }
-                        ],
-                        score: {
-                            mrid: '',
-                            value: '0',
-                            unit: '',
-                            type: 'string'
-                        }
-                    }
+        async initInsulationResistance(testTypeCode, assetData) {
+            const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
+
+            const asset = assetData
+
+            let table1 = []
+
+            let measurementConfigs = []
+
+            if (asset.properties.type === 'Two-winding') {
+                measurementConfigs = [
+                    {pos: '(HV + LV) - GND', type: 'HV-E'},
+                    {pos: 'HV - (LV + GND)', type: 'HV-E'},
+                    {pos: 'LV - (HV + GND)', type: 'LV-E'}
+                ]
+            } else if (asset.properties.type === 'Three-winding') {
+                measurementConfigs = [
+                    {pos: 'HV - (LV + TV + GND)', type: 'HV-E'},
+                    {pos: 'LV - (HV + LV + GND)', type: 'LV-E'},
+                    {pos: '(HV + LV + TV) - GND', type: 'HV-E'},
+                    {pos: 'TV - (HV + LV + GND)', type: 'LV-E'}
+                ]
+            } else if (asset.properties.type === 'Auto w/ tert') {
+                measurementConfigs = [
+                    {pos: '(HV + LV) - (TV + GND)', type: 'HV-E'},
+                    {pos: '(HV + LV + TV) - GND', type: 'HV-E'},
+                    {pos: 'TV - (HV + LV + GND)', type: 'LV-E'}
+                ]
+            } else if (asset.properties.type === 'Auto w/o tert') {
+                measurementConfigs = [{pos: '(HV + LV) - GND', type: 'HV-E'}]
+            } else {
+                measurementConfigs = [{pos: '', type: ''}]
+            }
+
+            measurementConfigs.forEach((config) => {
+                const row = JSON.parse(JSON.stringify(rowDataExample))
+
+                row.measurement.value = config.pos
+                row.type.value = config.type
+
+                table1.push(row)
+            })
+
+            return {
+                rowDataExampleCondition,
+                table: {
+                    table1: table1
                 }
             }
-
-            if (asset && asset.asset_type === 'Two-winding') {
-                data.table = [
-                    {
-                        measured_position: {
-                            mrid: '',
-                            value: '(HV + LV) - GND',
-                            unit: '',
-                            type: 'string'
-                        },
-                        type: {
-                            mrid: '',
-                            value: 'HV-E',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r15s: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r60s: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r10min: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        kht: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        pi: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        assessment: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        condition_indicator: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        }
-                    },
-                    {
-                        measured_position: {
-                            mrid: '',
-                            value: 'HV - (LV + GND)',
-                            unit: '',
-                            type: 'string'
-                        },
-                        type: {
-                            mrid: '',
-                            value: 'HV-E',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r15s: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r60s: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r10min: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        kht: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        pi: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        assessment: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        condition_indicator: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        }
-                    },
-                    {
-                        measured_position: {
-                            mrid: '',
-                            value: 'LV - (HV + GND)',
-                            unit: '',
-                            type: 'string'
-                        },
-                        type: {
-                            mrid: '',
-                            value: 'LV-E',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r15s: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r60s: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r10min: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        kht: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        pi: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        assessment: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        condition_indicator: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        }
-                    }
-                ]
-            } else if (asset && asset.asset_type === 'Three-winding') {
-                data.table = [
-                    {
-                        measured_position: {
-                            mrid: '',
-                            value: 'HV - (LV + TV + GND)',
-                            unit: '',
-                            type: 'string'
-                        },
-                        type: {
-                            mrid: '',
-                            value: 'HV-E',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r15s: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r60s: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r10min: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        kht: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        pi: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        assessment: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        condition_indicator: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        }
-                    },
-                    {
-                        measured_position: {
-                            mrid: '',
-                            value: 'LV - (HV + LV + GND)',
-                            unit: '',
-                            type: 'string'
-                        },
-                        type: {
-                            mrid: '',
-                            value: 'LV-E',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r15s: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r60s: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r10min: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        kht: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        pi: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        assessment: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        condition_indicator: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        }
-                    },
-                    {
-                        measured_position: {
-                            mrid: '',
-                            value: '(HV + LV + TV) - GND',
-                            unit: '',
-                            type: 'string'
-                        },
-                        type: {
-                            mrid: '',
-                            value: 'HV-E',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r15s: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r60s: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r10min: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        kht: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        pi: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        assessment: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        condition_indicator: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        }
-                    },
-                    {
-                        measured_position: {
-                            mrid: '',
-                            value: 'TV - (HV + LV + GND)',
-                            unit: '',
-                            type: 'string'
-                        },
-                        type: {
-                            mrid: '',
-                            value: 'LV-E',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r15s: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r60s: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r10min: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        kht: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        pi: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        assessment: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        condition_indicator: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        }
-                    }
-                ]
-            } else if (asset && asset.asset_type === 'Auto w/ tert') {
-                data.table = [
-                    {
-                        measured_position: {
-                            mrid: '',
-                            value: '(HV + LV) - (TV + GND)',
-                            unit: '',
-                            type: 'string'
-                        },
-                        type: {
-                            mrid: '',
-                            value: 'HV-E',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r15s: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r60s: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r10min: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        kht: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        pi: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        assessment: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        condition_indicator: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        }
-                    },
-                    {
-                        measured_position: {
-                            mrid: '',
-                            value: '(HV + LV + TV) - GND',
-                            unit: '',
-                            type: 'string'
-                        },
-                        type: {
-                            mrid: '',
-                            value: 'HV-E',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r15s: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r60s: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r10min: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        kht: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        pi: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        assessment: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        condition_indicator: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        }
-                    },
-                    {
-                        measured_position: {
-                            mrid: '',
-                            value: 'TV - (HV + LV + GND)',
-                            unit: '',
-                            type: 'string'
-                        },
-                        type: {
-                            mrid: '',
-                            value: 'LV-E',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r15s: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r60s: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r10min: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        kht: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        pi: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        assessment: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        condition_indicator: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        }
-                    }
-                ]
-            } else if (asset && asset.asset_type === 'Auto w/o tert') {
-                data.table = [
-                    {
-                        measured_position: {
-                            mrid: '',
-                            value: '(HV + LV) - GND',
-                            unit: '',
-                            type: 'string'
-                        },
-                        type: {
-                            mrid: '',
-                            value: 'HV-E',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r15s: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r60s: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r10min: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        kht: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        pi: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        assessment: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        condition_indicator: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        }
-                    }
-                ]
-            } else {
-                data.table = [
-                    {
-                        measured_position: {
-                            mrid: '',
-                            value: '1',
-                            unit: '',
-                            type: 'string'
-                        },
-                        type: {
-                            mrid: '',
-                            value: 'HV-E',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r15s: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r60s: {
-                            mrid: '',
-                            value: '3',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r10min: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        kht: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        pi: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        assessment: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        condition_indicator: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        }
-                    }
-                ]
-            }
-
-            return data
         },
         initExcitingCurrent(assetData) {
             // const tapChangers = this.tapChangers
@@ -1418,367 +486,48 @@ export default {
             }
             // }
         },
-        initRatioPrimSec() {
-            const tapChangers = this.tapChangers || {}
+        async initRatioPrimSec(testTypeCode, assetData) {
+            console.log(assetData)
+
+            const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
+
+            const asset = assetData || []
+            const tapChangers = asset.tap_changers || {}
+
             if (!tapChangers.mode || !tapChangers.winding || !tapChangers.tap_scheme || !tapChangers.no_of_taps) {
                 return {
-                    code: 'RatioPrimSec',
-                    top_oil_temperature: '',
-                    bottom_oil_temperature: '',
-                    winding_temperature: '',
-                    reference_temperature: '',
-                    ambient_temperature: '',
-                    humidity: '',
-                    weather: '',
-                    model: '',
-                    serial_no: '',
-                    calibration_date: '',
-                    comment: '',
-                    table: [],
-                    // dữ liệu cấu hình assessment
-                    assessment_setting: {
-                        option: {
-                            mrid: '',
-                            value: 'IEC',
-                            unit: '',
-                            type: 'string'
-                        },
-                        data: {
-                            iec: {
-                                ratio_dev: {
-                                    mrid: '',
-                                    value: 0.5,
-                                    unit: '',
-                                    type: 'analog'
-                                }
-                            },
-                            ieee: {
-                                ratio_dev: {
-                                    mrid: '',
-                                    value: 0.5,
-                                    unit: '',
-                                    type: 'analog'
-                                }
-                            },
-                            custom: {
-                                ratio_dev: {
-                                    mrid: '',
-                                    value: 0.5,
-                                    unit: '',
-                                    type: 'analog'
-                                }
-                            }
-                        }
-                    },
-                    condition_indicator_setting: {
-                        good: {
-                            ratio_dev: [
-                                {
-                                    mrid: '',
-                                    value: '0.3',
-                                    unit: '',
-                                    type: 'analog'
-                                },
-                                {
-                                    mrid: '',
-                                    value: null,
-                                    unit: '',
-                                    type: 'analog'
-                                }
-                            ],
-                            score: {
-                                mrid: '',
-                                value: '3',
-                                unit: '',
-                                type: 'analog'
-                            }
-                        },
-                        fair: {
-                            ratio_dev: [
-                                {
-                                    mrid: '',
-                                    value: '0.3',
-                                    unit: '',
-                                    type: 'analog'
-                                },
-                                {
-                                    mrid: '',
-                                    value: '0.5',
-                                    unit: '',
-                                    type: 'analog'
-                                }
-                            ],
-                            score: {
-                                mrid: '',
-                                value: '2',
-                                unit: '',
-                                type: 'analog'
-                            }
-                        },
-                        poor: {
-                            ratio_dev: [
-                                {
-                                    mrid: '',
-                                    value: '0.5',
-                                    unit: '',
-                                    type: 'analog'
-                                },
-                                {
-                                    mrid: '',
-                                    value: '0.7',
-                                    unit: '',
-                                    type: 'analog'
-                                }
-                            ],
-                            score: {
-                                mrid: '',
-                                value: '1',
-                                unit: '',
-                                type: 'analog'
-                            }
-                        },
-                        bad: {
-                            ratio_dev: [
-                                {
-                                    mrid: '',
-                                    value: null,
-                                    unit: '',
-                                    type: 'analog'
-                                },
-                                {
-                                    mrid: '',
-                                    value: '0.7',
-                                    unit: '',
-                                    type: 'analog'
-                                }
-                            ],
-                            score: {
-                                mrid: '',
-                                value: '0',
-                                unit: '',
-                                type: 'analog'
-                            }
-                        }
+                    rowDataExampleCondition,
+                    table: {
+                        table1: []
                     }
                 }
             }
 
             let table = []
             const voltage_table = tapChangers.voltage_table || []
-            console.log('voltage_table', voltage_table)
             const phases = ['A', 'B', 'C']
+
             voltage_table.forEach((element) => {
                 const tap = element.tap
-                const voltage = element.voltage
-                const voltage_table_id = element.id
+                const voltage = element.voltage.value
+
                 phases.forEach((phase) => {
-                    table.push({
-                        voltage_table_id: {
-                            mrid: '',
-                            value: voltage_table_id,
-                            unit: '',
-                            type: 'string'
-                        },
-                        tap: {
-                            mrid: '',
-                            value: tap,
-                            unit: '',
-                            type: 'string'
-                        },
-                        _voltage: {
-                            mrid: '',
-                            value: voltage,
-                            unit: '',
-                            type: 'analog'
-                        },
-                        phase: {
-                            mrid: '',
-                            value: phase,
-                            unit: '',
-                            type: 'string'
-                        },
-                        _phase: {
-                            mrid: '',
-                            value: phase,
-                            unit: '',
-                            type: 'string'
-                        },
-                        hv1: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'analog'
-                        },
-                        lv: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'analog'
-                        },
-                        nominal_ratio: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'analog'
-                        },
-                        v_ratio: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'analog'
-                        },
-                        ratio_dev: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'analog'
-                        },
-                        assessment: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        condition_indicator: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        }
-                    })
+                    const row = JSON.parse(JSON.stringify(rowDataExample))
+
+                    if (row.tap) row.tap.value = tap
+                    if (row._voltage) row._voltage.value = voltage
+                    if (row.phase) row.phase.value = phase
+                    if (row._phase) row._phase.value = phase
+
+                    table.push(row)
                 })
             })
 
             return {
-                code: 'RatioPrimSec',
-                table,
-                model: '',
-                serial_no: '',
-                calibration_date: '',
-                // dữ liệu cấu hình assessment
-                assessment_setting: {
-                    option: {
-                        mrid: '',
-                        value: 'IEC',
-                        unit: '',
-                        type: 'string'
-                    },
-                    data: {
-                        iec: {
-                            ratio_dev: {
-                                mrid: '',
-                                value: 0.5,
-                                unit: '',
-                                type: 'analog'
-                            }
-                        },
-                        ieee: {
-                            ratio_dev: {
-                                mrid: '',
-                                value: 0.5,
-                                unit: '',
-                                type: 'analog'
-                            }
-                        },
-                        custom: {
-                            ratio_dev: {
-                                mrid: '',
-                                value: 0.5,
-                                unit: '',
-                                type: 'analog'
-                            }
-                        }
-                    }
-                },
-                condition_indicator_setting: {
-                    good: {
-                        ratio_dev: [
-                            {
-                                mrid: '',
-                                value: '0.3',
-                                unit: '',
-                                type: 'analog'
-                            },
-                            {
-                                mrid: '',
-                                value: null,
-                                unit: '',
-                                type: 'analog'
-                            }
-                        ],
-                        score: {
-                            mrid: '',
-                            value: '3',
-                            unit: '',
-                            type: 'analog'
-                        }
-                    },
-                    fair: {
-                        ratio_dev: [
-                            {
-                                mrid: '',
-                                value: '0.3',
-                                unit: '',
-                                type: 'analog'
-                            },
-                            {
-                                mrid: '',
-                                value: '0.5',
-                                unit: '',
-                                type: 'analog'
-                            }
-                        ],
-                        score: {
-                            mrid: '',
-                            value: '2',
-                            unit: '',
-                            type: 'analog'
-                        }
-                    },
-                    poor: {
-                        ratio_dev: [
-                            {
-                                mrid: '',
-                                value: '0.5',
-                                unit: '',
-                                type: 'analog'
-                            },
-                            {
-                                mrid: '',
-                                value: '0.7',
-                                unit: '',
-                                type: 'analog'
-                            }
-                        ],
-                        score: {
-                            mrid: '',
-                            value: '1',
-                            unit: '',
-                            type: 'analog'
-                        }
-                    },
-                    bad: {
-                        ratio_dev: [
-                            {
-                                mrid: '',
-                                value: null,
-                                unit: '',
-                                type: 'analog'
-                            },
-                            {
-                                mrid: '',
-                                value: '0.7',
-                                unit: '',
-                                type: 'analog'
-                            }
-                        ],
-                        score: {
-                            mrid: '',
-                            value: '0',
-                            unit: '',
-                            type: 'analog'
-                        }
-                    }
+                rowDataExampleCondition,
+                table: {
+                    table1: table1
                 }
             }
         },
@@ -3170,48 +1919,26 @@ export default {
                 }
             }
         },
-        initMeasurementOfNoLoad() {
+        async initMeasurementOfNoLoad(testTypeCode) {
+            const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
+
+            let table1 = []
+            let names = ['No-load loss (W)', 'No-load current (%)']
+
+            names.forEach((element) => {
+                const row = JSON.parse(JSON.stringify(rowDataExample))
+                if (row.name) {
+                    row.name.value = element
+                }
+
+                table1.push(row)
+            })
+
             return {
-                code: 'MeasurementOfNoLoad',
-                no_load_loss: {
-                    result: {
-                        mrid: '',
-                        value: '2',
-                        unit: '',
-                        type: 'analog'
-                    },
-                    standard: {
-                        mrid: '',
-                        value: '2',
-                        unit: '',
-                        type: 'analog'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'analog'
-                    }
-                },
-                no_load_current: {
-                    result: {
-                        mrid: '',
-                        value: '2',
-                        unit: '',
-                        type: 'analog'
-                    },
-                    standard: {
-                        mrid: '',
-                        value: '2',
-                        unit: '',
-                        type: 'analog'
-                    },
-                    assessment: {
-                        mrid: '',
-                        value: '',
-                        unit: '',
-                        type: 'analog'
-                    }
+                rowDataExampleCondition,
+                table: {
+                    table1: table1
                 }
             }
         },
@@ -3282,53 +2009,19 @@ export default {
                 ]
             }
         },
-        initMeasurementOfOil() {
-            return {
-                code: 'MeasurementOfOil',
-                type_oil: {mrid: '', value: '', unit: '', type: 'string'},
-                election_gap: {mrid: '', value: '', unit: '', type: 'analog'},
-                result: {mrid: '', value: '', unit: '', type: 'string'},
-                assessment: {mrid: '', value: '', unit: '', type: 'string'},
-                condition_indicator: {mrid: '', value: '', unit: '', type: 'string'},
+        initMeasurementOfOil(testTypeCode) {
+            const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
 
-                // dữ liệu cấu hình assessment
-                assessment_setting: {
-                    option: {mrid: '', value: 'IEC', unit: '', type: 'string'},
-                    data: {
-                        iec: {voltage: {mrid: '', value: 0.5, unit: '', type: 'analog'}},
-                        ieee: {voltage: {mrid: '', value: 0.5, unit: '', type: 'analog'}},
-                        custom: {voltage: {mrid: '', value: 0.5, unit: '', type: 'analog'}}
-                    }
-                },
-                condition_indicator_setting: {
-                    good: {
-                        breakdown_voltage: [
-                            {mrid: '', value: null, unit: '', type: 'analog'},
-                            {mrid: '', value: '60', unit: '', type: 'analog'}
-                        ],
-                        score: {mrid: '', value: '3', unit: '', type: 'analog'}
-                    },
-                    fair: {
-                        breakdown_voltage: [
-                            {mrid: '', value: '55', unit: '', type: 'analog'},
-                            {mrid: '', value: '60', unit: '', type: 'analog'}
-                        ],
-                        score: {mrid: '', value: '2', unit: '', type: 'analog'}
-                    },
-                    poor: {
-                        breakdown_voltage: [
-                            {mrid: '', value: '40', unit: '', type: 'analog'},
-                            {mrid: '', value: '55', unit: '', type: 'analog'}
-                        ],
-                        score: {mrid: '', value: '1', unit: '', type: 'analog'}
-                    },
-                    bad: {
-                        breakdown_voltage: [
-                            {mrid: '', value: '40', unit: '', type: 'analog'},
-                            {mrid: '', value: null, unit: '', type: 'analog'}
-                        ],
-                        score: {mrid: '', value: '0', unit: '', type: 'analog'}
-                    }
+            let table1 = []
+
+            const row = JSON.parse(JSON.stringify(rowDataExample))
+            table1.push(row)
+
+            return {
+                rowDataExampleCondition,
+                table: {
+                    table1: table1
                 }
             }
         },
@@ -4980,277 +3673,33 @@ export default {
                 table: []
             }
         },
-        initDga() {
+        async initDga(testTypeCode) {
+            const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
+
+            let table1 = []
+
+            const row = JSON.parse(JSON.stringify(rowDataExample))
+            table1.push(row)
+
             return {
-                code: 'dga',
-                top_oil_temperature: '',
-                bottom_oil_temperature: '',
-                winding_temperature: '',
-                reference_temperature: '',
-                ambient_temperature: '',
-                humidity: '',
-                weather: '',
-                model: '',
-                serial_no: '',
-                calibration_date: '',
-                comment: '',
-                h2: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'analog'
-                },
-                ch4: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'analog'
-                },
-                c2h2: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'analog'
-                },
-                c2h4: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'analog'
-                },
-                c2h6: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'analog'
-                },
-                co: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'analog'
-                },
-                co2: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'analog'
-                },
-                tdcg: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'analog'
-                },
-                status: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                },
-                condition_indicator: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                },
-                // dữ liệu cấu hình indicator
-                condition_indicator_setting: {
-                    good: {
-                        h2: [
-                            {mrid: '', value: '100', unit: '', type: 'analog'},
-                            {mrid: '', value: null, unit: '', type: 'analog'}
-                        ],
-                        c2h2: [
-                            {mrid: '', value: '35', unit: '', type: 'analog'},
-                            {mrid: '', value: null, unit: '', type: 'analog'}
-                        ],
-                        c2h4: [
-                            {mrid: '', value: '50', unit: '', type: 'analog'},
-                            {mrid: '', value: null, unit: '', type: 'analog'}
-                        ],
-                        c2h6: [
-                            {mrid: '', value: '65', unit: '', type: 'analog'},
-                            {mrid: '', value: null, unit: '', type: 'analog'}
-                        ],
-                        ch4: [
-                            {mrid: '', value: '120', unit: '', type: 'analog'},
-                            {mrid: '', value: null, unit: '', type: 'analog'}
-                        ],
-                        co: [
-                            {mrid: '', value: '350', unit: '', type: 'analog'},
-                            {mrid: '', value: null, unit: '', type: 'analog'}
-                        ],
-                        tdcg: [
-                            {mrid: '', value: '720', unit: '', type: 'analog'},
-                            {mrid: '', value: null, unit: '', type: 'analog'}
-                        ],
-                        score: {
-                            mrid: '',
-                            value: '3',
-                            unit: '',
-                            type: 'analog'
-                        }
-                    },
-                    fair: {
-                        h2: [
-                            {mrid: '', value: '101', unit: '', type: 'analog'},
-                            {mrid: '', value: '700', unit: '', type: 'analog'}
-                        ],
-                        c2h2: [
-                            {mrid: '', value: '36', unit: '', type: 'analog'},
-                            {mrid: '', value: '50', unit: '', type: 'analog'}
-                        ],
-                        c2h4: [
-                            {mrid: '', value: '51', unit: '', type: 'analog'},
-                            {mrid: '', value: '100', unit: '', type: 'analog'}
-                        ],
-                        c2h6: [
-                            {mrid: '', value: '66', unit: '', type: 'analog'},
-                            {mrid: '', value: '100', unit: '', type: 'analog'}
-                        ],
-                        ch4: [
-                            {mrid: '', value: '121', unit: '', type: 'analog'},
-                            {mrid: '', value: '400', unit: '', type: 'analog'}
-                        ],
-                        co: [
-                            {mrid: '', value: '351', unit: '', type: 'analog'},
-                            {mrid: '', value: '570', unit: '', type: 'analog'}
-                        ],
-                        tdcg: [
-                            {mrid: '', value: '721', unit: '', type: 'analog'},
-                            {mrid: '', value: '1920', unit: '', type: 'analog'}
-                        ],
-                        score: {
-                            mrid: '',
-                            value: '2',
-                            unit: '',
-                            type: 'analog'
-                        }
-                    },
-                    poor: {
-                        h2: [
-                            {mrid: '', value: '701', unit: '', type: 'analog'},
-                            {mrid: '', value: '1800', unit: '', type: 'analog'}
-                        ],
-                        c2h2: [
-                            {mrid: '', value: '51', unit: '', type: 'analog'},
-                            {mrid: '', value: '80', unit: '', type: 'analog'}
-                        ],
-                        c2h4: [
-                            {mrid: '', value: '101', unit: '', type: 'analog'},
-                            {mrid: '', value: '200', unit: '', type: 'analog'}
-                        ],
-                        c2h6: [
-                            {mrid: '', value: '101', unit: '', type: 'analog'},
-                            {mrid: '', value: '150', unit: '', type: 'analog'}
-                        ],
-                        ch4: [
-                            {mrid: '', value: '401', unit: '', type: 'analog'},
-                            {mrid: '', value: '1000', unit: '', type: 'analog'}
-                        ],
-                        co: [
-                            {mrid: '', value: '571', unit: '', type: 'analog'},
-                            {mrid: '', value: '1400', unit: '', type: 'analog'}
-                        ],
-                        tdcg: [
-                            {mrid: '', value: '1921', unit: '', type: 'analog'},
-                            {mrid: '', value: '4630', unit: '', type: 'analog'}
-                        ],
-                        score: {
-                            mrid: '',
-                            value: '1',
-                            unit: '',
-                            type: 'analog'
-                        }
-                    },
-                    bad: {
-                        h2: [
-                            {mrid: '', value: null, unit: '', type: 'analog'},
-                            {mrid: '', value: '1800', unit: '', type: 'analog'}
-                        ],
-                        c2h2: [
-                            {mrid: '', value: null, unit: '', type: 'analog'},
-                            {mrid: '', value: '80', unit: '', type: 'analog'}
-                        ],
-                        c2h4: [
-                            {mrid: '', value: null, unit: '', type: 'analog'},
-                            {mrid: '', value: '200', unit: '', type: 'analog'}
-                        ],
-                        c2h6: [
-                            {mrid: '', value: null, unit: '', type: 'analog'},
-                            {mrid: '', value: '150', unit: '', type: 'analog'}
-                        ],
-                        ch4: [
-                            {mrid: '', value: null, unit: '', type: 'analog'},
-                            {mrid: '', value: '1000', unit: '', type: 'analog'}
-                        ],
-                        co: [
-                            {mrid: '', value: null, unit: '', type: 'analog'},
-                            {mrid: '', value: '1400', unit: '', type: 'analog'}
-                        ],
-                        tdcg: [
-                            {mrid: '', value: null, unit: '', type: 'analog'},
-                            {mrid: '', value: '4630', unit: '', type: 'analog'}
-                        ],
-                        score: {
-                            mrid: '',
-                            value: '1',
-                            unit: '',
-                            type: 'analog'
-                        }
-                    }
+                rowDataExampleCondition,
+                table: {
+                    table1: table1
                 }
             }
         },
-        initGasChromatography() {
+        async initGasChromatography(testTypeCode) {
+            const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
+
+            let table1 = []
+
             return {
-                option: {},
-                code: 'GasChromatography',
-                assessment_setting: {
-                    option: 'IEEEnewTrans',
-                    data: {}
-                },
-                condition_indicator: {
-                    good: {},
-                    fair: {},
-                    poor: {},
-                    bad: {}
-                },
-                table: [
-                    {
-                        name: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        method: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        result: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        assessment: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'discrete'
-                        },
-                        condition_indicator: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'discrete'
-                        }
-                    }
-                ]
+                rowDataExampleCondition,
+                table: {
+                    table1: table1
+                }
             }
         },
         initDielectricResponseAnalysis() {
@@ -5259,127 +3708,20 @@ export default {
                 table: []
             }
         },
-        initInsulationResistanceYokeCore() {
+        async initInsulationResistanceYokeCore(testTypeCode) {
+            const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
+
+            let table1 = []
+
+            const row = JSON.parse(JSON.stringify(rowDataExample))
+            table1.push(row)
+
             return {
-                code: 'InsulationResistanceYokeCore',
-                assessment_setting: {
-                    option: {
-                        mrid: '',
-                        value: 'IEEEnewTrans',
-                        unit: '',
-                        type: 'string'
-                    },
-                    data: {
-                        IEEEnewTrans: {
-                            pass: {
-                                mrid: '',
-                                value: '500',
-                                unit: '',
-                                type: 'analog'
-                            }
-                        },
-                        IEEEserviceTrans: {
-                            pass: {
-                                mrid: '',
-                                value: '100',
-                                unit: '',
-                                type: 'analog'
-                            },
-                            fail: {
-                                mrid: '',
-                                value: '10',
-                                unit: '',
-                                type: 'analog'
-                            }
-                        },
-                        custom: {
-                            pass: {
-                                mrid: '',
-                                value: '',
-                                unit: '',
-                                type: 'analog'
-                            },
-                            fail: {
-                                mrid: '',
-                                value: '',
-                                unit: '',
-                                type: 'analog'
-                            }
-                        }
-                    }
-                },
-                condition_indicator: {
-                    good: {
-                        r60s: [
-                            {mrid: '', value: null, unit: '', type: 'analog'},
-                            {mrid: '', value: '500', unit: '', type: 'analog'}
-                        ],
-                        score: {mrid: '', value: '3', unit: '', type: 'string'} // cần có
-                    },
-                    fair: {
-                        r60s: [
-                            {mrid: '', value: '100', unit: '', type: 'analog'},
-                            {mrid: '', value: '500', unit: '', type: 'analog'}
-                        ],
-                        r60sref: [
-                            {mrid: '', value: '50', unit: '', type: 'analog'},
-                            {mrid: '', value: null, unit: '', type: 'analog'}
-                        ],
-                        score: {mrid: '', value: '3', unit: '', type: 'string'} // cần có
-                    },
-                    poor: {
-                        r60s: [
-                            {mrid: '', value: '10', unit: '', type: 'analog'},
-                            {mrid: '', value: '100', unit: '', type: 'analog'}
-                        ],
-                        r60sref: [
-                            {mrid: '', value: '50', unit: '', type: 'analog'},
-                            {mrid: '', value: null, unit: '', type: 'analog'}
-                        ],
-                        score: {mrid: '', value: '3', unit: '', type: 'string'} // cần có
-                    },
-                    bad: {
-                        r60s: [
-                            {mrid: '', value: '10', unit: '', type: 'analog'},
-                            {mrid: '', value: null, unit: '', type: 'analog'}
-                        ],
-                        score: {mrid: '', value: '3', unit: '', type: 'string'} // cần có
-                    }
-                },
-                table: [
-                    {
-                        measurement: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'string'
-                        },
-                        r60sRef: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'analog'
-                        },
-                        r60s: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'analog'
-                        },
-                        assessment: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'discrete'
-                        },
-                        condition_indicator: {
-                            mrid: '',
-                            value: '',
-                            unit: '',
-                            type: 'discrete'
-                        }
-                    }
-                ]
+                rowDataExampleCondition,
+                table: {
+                    table1: table1
+                }
             }
         },
         initShortCircuitImpedancePrim() {
