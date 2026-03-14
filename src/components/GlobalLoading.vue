@@ -23,6 +23,7 @@ const ACTION_TEXTS = {
     import: 'Importing...',
     export: 'Exporting...',
     update: 'Updating...',
+    download: 'Downloading...',
     default: 'Processing...'
 };
 
