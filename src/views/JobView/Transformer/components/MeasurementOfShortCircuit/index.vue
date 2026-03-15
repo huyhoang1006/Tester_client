@@ -10,30 +10,19 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <th>Load loss (W)</th>
-                    <td><el-input size="mini" v-model="testData.load_loss.result.value"></el-input></td>
-                    <td><el-input size="mini" v-model="testData.load_loss.standard.value"></el-input></td>
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
+                    <th>{{ item.name.value }}</th>
+                    <td><el-input size="mini" v-model="item.result.value"></el-input></td>
+                    <td><el-input size="mini" v-model="item.standard.value"></el-input></td>
                     <td>
-                        <el-select  class="assessment" size="mini" v-model="testData.load_loss.assessment.value">
+                        <el-select class="assessment" size="mini" v-model="item.assessment.value">
                             <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                             <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                         </el-select>
-                        <span v-if="testData.load_loss.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                        <span v-else-if="testData.load_loss.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
-                    </td>
-                </tr>
-                <tr>
-                    <th>Short circuit impedance(%)</th>
-                    <td><el-input size="mini" v-model="testData.short_circuit_impedance.result.value"></el-input></td>
-                    <td><el-input size="mini" v-model="testData.short_circuit_impedance.standard.value"></el-input></td>
-                    <td>
-                        <el-select  class="assessment" size="mini" v-model="testData.short_circuit_impedance.assessment.value">
-                            <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
-                            <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
-                        </el-select>
-                        <span v-if="testData.short_circuit_impedance.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                        <span v-else-if="testData.short_circuit_impedance.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                        <span v-if="item.assessment.value === 'Pass'"
+                            class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment.value === 'Fail'"
+                            class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                 </tr>
             </tbody>
@@ -42,7 +31,10 @@
 </template>
 
 <script>
+import TransformerTestMap from '@/config/test-definitions/Transformer'
+import * as common from '../../../Common/index'
 export default {
+    name: 'MeasurementOfShortCircuit',
     props: {
         data: {
             type: Object,
@@ -67,6 +59,9 @@ export default {
     computed: {
         testData() {
             return this.data
+        },
+        rowData() {
+            return common.buildEmptyTestRow(TransformerTestMap['MeasurementOfShortCurcuit'].columns)
         }
     }
 }

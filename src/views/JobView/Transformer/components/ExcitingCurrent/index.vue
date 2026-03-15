@@ -8,11 +8,14 @@
                 </el-button>
             </el-col>
         </el-row>
+
         <!-- Tính toán đánh giá -->
         <el-row class="mgb-10">
             <el-col>
-                <el-button size="mini" type="primary" class="btn-action" @click="calculator"> <i class="fas fa-circle-play"></i> Assess results </el-button>
-                <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i class="fas fa-xmark"></i> Clear all </el-button>
+                <el-button size="mini" type="primary" class="btn-action" @click="calculator"> <i
+                        class="fas fa-circle-play"></i> Assess results </el-button>
+                <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i class="fas fa-xmark"></i>
+                    Clear all </el-button>
             </el-col>
         </el-row>
 
@@ -30,47 +33,60 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, index) in testData.table" :key="index">
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>{{ item.tap.value }}</td>
                     <td>
                         <div class="col-phase">
                             <div class="phase">
                                 <el-input size="mini" type="text" v-model="item.phase.value"></el-input>
                             </div>
-                            <div class="rectangle" :class="{red: item._phase.value == 'A', yellow: item._phase.value == 'B', blue: item._phase.value == 'C'}"></div>
+                            <div class="rectangle"
+                                :class="{ red: item.phase.value == 'A', yellow: item.phase.value == 'B', blue: item.phase.value == 'C' }">
+                            </div>
                         </div>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.i_out.value"><template slot="append">mA</template> </el-input>
+                        <el-input size="mini" type="text" v-model="item.i_out.value"><template
+                                slot="append">mA</template>
+                        </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.watt_losses.value"><template slot="append">W</template> </el-input>
+                        <el-input size="mini" type="text" v-model="item.watt_losses.value"><template
+                                slot="append">W</template> </el-input>
                     </td>
                     <td>
                         <el-input size="mini" type="text" v-model="item.i_ref.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.dev_per.value"></el-input>
+                        <el-input size="mini" type="text" v-model="item.i_dev.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
                             <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                             <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                         </el-select>
-                        <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                        <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                        <span v-if="item.assessment.value === 'Pass'"
+                            class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment.value === 'Fail'"
+                            class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                     <td>
-                        <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
-                        </el-input>
+                        <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                            size="mini" v-model="item.condition_indicator.value">
+                            <el-option value="Good">Good</el-option>
+                            <el-option value="Fair">Fair</el-option>
+                            <el-option value="Poor">Poor</el-option>
+                            <el-option value="Bad">Bad</el-option>
+                        </el-select>
                     </td>
                 </tr>
             </tbody>
         </table>
 
         <!-- Condition indicator settings -->
-        <el-dialog :modal="false" title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="640px">
-            <table class="table-strip-input-data">
+        <el-dialog :modal="false" title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog"
+            width="640px">
+            <!-- <table class="table-strip-input-data">
                 <thead>
                     <tr>
                         <th>Result</th>
@@ -80,39 +96,53 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Dev (%) ≤ <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.good.dev_per[0].value"></el-input></td>
+                        <td>Dev (%) ≤ <el-input size="mini" class="w-100px"
+                                v-model="conditionIndicatorSetting.good.dev_per[0].value"></el-input></td>
                         <td class="good">Good</td>
                         <td><el-input size="mini" v-model="conditionIndicatorSetting.good.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.fair.dev_per[0].value"></el-input> &lt; Dev (%) ≤
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.fair.dev_per[1].value"></el-input>
+                            <el-input size="mini" class="w-100px"
+                                v-model="conditionIndicatorSetting.fair.dev_per[0].value"></el-input> &lt; Dev (%) ≤
+                            <el-input size="mini" class="w-100px"
+                                v-model="conditionIndicatorSetting.fair.dev_per[1].value"></el-input>
                         </td>
                         <td class="fair">Fair</td>
                         <td><el-input size="mini" v-model="conditionIndicatorSetting.fair.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.poor.dev_per[0].value"></el-input> &lt; Dev (%) ≤
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.poor.dev_per[1].value"></el-input>
+                            <el-input size="mini" class="w-100px"
+                                v-model="conditionIndicatorSetting.poor.dev_per[0].value"></el-input> &lt; Dev (%) ≤
+                            <el-input size="mini" class="w-100px"
+                                v-model="conditionIndicatorSetting.poor.dev_per[1].value"></el-input>
                         </td>
                         <td class="poor">Poor</td>
                         <td><el-input size="mini" v-model="conditionIndicatorSetting.poor.score.value"></el-input></td>
                     </tr>
                     <tr>
-                        <td>Dev (%) > <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.bad.dev_per[1].value"></el-input></td>
+                        <td>Dev (%) > <el-input size="mini" class="w-100px"
+                                v-model="conditionIndicatorSetting.bad.dev_per[1].value"></el-input></td>
                         <td class="bad">Bad</td>
                         <td><el-input size="mini" v-model="conditionIndicatorSetting.bad.score.value"></el-input></td>
                     </tr>
                 </tbody>
-            </table>
+            </table> -->
         </el-dialog>
     </div>
 </template>
 
 <script>
+import TransformerTestMap from '@/config/test-definitions/Transformer'
+import * as common from '../../../Common/index'
 export default {
+    name: 'ExcitingCurrent',
+    data() {
+        return {
+            openConditionIndicatorDialog: false,
+        }
+    },
     props: {
         data: {
             type: Object,
@@ -120,54 +150,52 @@ export default {
         }
 
     },
-    data() {
-        return {
-            openConditionIndicatorDialog: false,
-        }
-    },
     computed: {
         testData() {
             return this.data
         },
         conditionIndicatorSetting() {
             return this.data.condition_indicator_setting
+        },
+        rowData() {
+            return common.buildEmptyTestRow(TransformerTestMap['ExcitingCurrent'].columns)
         }
     },
     methods: {
         calculator() {
-            this.testData.table.forEach((item) => {
-                if (item.i_out !== '' && item.i_ref !== '') {
-                    item.dev_per = 100 * ((item.i_out - item.i_ref) / item.i_ref)
-                }
+            // this.testData.table.forEach((item) => {
+            //     if (item.i_out !== '' && item.i_ref !== '') {
+            //         item.dev_per = 100 * ((item.i_out - item.i_ref) / item.i_ref)
+            //     }
 
-                if (item.dev_per !== '') {
-                    item.dev_per = item.dev_per.toFixed(this.$config.RoundConfig)
-                }
-            })
+            //     if (item.dev_per !== '') {
+            //         item.dev_per = item.dev_per.toFixed(this.$config.RoundConfig)
+            //     }
+            // })
 
             this.$message.success('Calculating successfully')
         },
         clear() {
-            this.testData.table.forEach((element) => {
-                element.i_out = ''
-                element.i_ref = ''
-                element.watt_losses = ''
-                element.dev_per = ''
-                element.assessment = ''
-                element.condition_indicator = ''
+            this.testData.table.table1.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (key === "mrid") return;
+                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                        row[key].value = ""
+                    }
+                })
             })
         },
         nameColor(data) {
-            if(data === this.$constant.GOOD) {
+            if (data === this.$constant.GOOD) {
                 return 'Good'
             }
-            else if(data === this.$constant.FAIR) {
+            else if (data === this.$constant.FAIR) {
                 return 'Fair'
             }
-            else if(data === this.$constant.POOR) {
+            else if (data === this.$constant.POOR) {
                 return 'Poor'
             }
-            else if(data === this.$constant.BAD) {
+            else if (data === this.$constant.BAD) {
                 return 'Bad'
             }
             else {

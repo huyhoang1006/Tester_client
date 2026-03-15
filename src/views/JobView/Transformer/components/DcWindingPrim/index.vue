@@ -13,7 +13,7 @@
                     </el-button>
                 </el-col>
             </el-row>
-            
+
             <!-- Tính toán đánh giá -->
             <el-row class="mgb-10">
                 <el-col>
@@ -41,16 +41,16 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, index) in testData.table" :key="index">
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td v-if="tapChangers.winding === $constant.PRIM">{{ item.tap.value }}</td>
                     <td style="width: 10%">
                         <div class="col-phase">
                             <div class="phase">
-                                <el-input size="mini" type="text" v-model="item.phase.value"></el-input>
+                                <el-input size="mini" type="text" v-model="item.name.value"></el-input>
                             </div>
-                            <div class="rectangle"
-                                :class="{ red: item._phase.value == 'A', yellow: item._phase.value == 'B', blue: item._phase.value == 'C' }">
-                            </div>
+                            <!-- <div class="rectangle"
+                                :class="{ red: item.name.value == 'A', yellow: item.name.value == 'B', blue: item.name.value == 'C' }">
+                            </div> -->
                         </div>
                     </td>
                     <td>
@@ -66,11 +66,11 @@
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="number" v-model="item.error_r_ref.value"></el-input>
+                        <el-input size="mini" type="number" v-model="item.dev_r_ref.value"></el-input>
                     </td>
                     <template v-if="index % 3 == 0 && tapChangers.winding === $constant.PRIM">
                         <td rowspan="3">
-                            <el-input size="mini" type="number" v-model="item.error_between_phase.value"></el-input>
+                            <el-input size="mini" type="number" v-model="item.dev_phase.value"></el-input>
                         </td>
 
                         <!-- <td rowspan="3">
@@ -79,7 +79,7 @@
                     </template>
                     <template v-else-if="index % 3 == 0 && tapChangers.winding !== $constant.PRIM">
                         <td rowspan="3">
-                            <el-input size="mini" type="number" v-model="item.error_between_phase.value"></el-input>
+                            <el-input size="mini" type="number" v-model="item.dev_phase.value"></el-input>
                         </td>
 
                         <!-- <td rowspan="3">
@@ -97,9 +97,13 @@
                             class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                     <td>
-                        <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                        <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
                             size="mini" v-model="item.condition_indicator.value">
-                        </el-input>
+                            <el-option value="Good">Good</el-option>
+                            <el-option value="Fair">Fair</el-option>
+                            <el-option value="Poor">Poor</el-option>
+                            <el-option value="Bad">Bad</el-option>
+                        </el-select>
                     </td>
                 </tr>
             </tbody>
@@ -107,7 +111,7 @@
 
         <!-- Assessment settings -->
         <el-dialog append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px">
-            <el-form size="small" label-position="left" label-width="140px">
+            <!-- <el-form size="small" label-position="left" label-width="140px">
                 <el-form-item label="Option">
                     <el-select class="w-100" placeholder="please select" v-model="assessmentSetting.option.value">
                         <el-option label="IEEE C57.152 (2013)" value="IEEE"></el-option>
@@ -200,13 +204,13 @@
                         <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
                 </tbody>
-            </table>
+            </table> -->
         </el-dialog>
 
         <!-- Condition indicator settings -->
         <el-dialog append-to-body title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog"
             width="870px">
-            <table class="table-strip-input-data">
+            <!-- <table class="table-strip-input-data">
                 <thead>
                     <tr>
                         <th>Result</th>
@@ -258,13 +262,16 @@
                         <td><el-input size="mini" v-model="conditionIndicatorSetting.bad.score.value"></el-input></td>
                     </tr>
                 </tbody>
-            </table>
+            </table> -->
         </el-dialog>
     </div>
 </template>
 
 <script>
+import TransformerTestMap from '@/config/test-definitions/Transformer'
+import * as common from '../../../Common/index'
 export default {
+    name: 'DCWindingPrim',
     data() {
         return {
             openAssessmentDialog: false,
@@ -275,6 +282,10 @@ export default {
         data: {
             type: Object,
             require: true
+        },
+        asset: {
+            type: Object,
+            required: false,
         },
         tapChangers: {
             type: Object,
@@ -288,6 +299,9 @@ export default {
     computed: {
         testData() {
             return this.data
+        },
+        assetData() {
+            return this.asset
         },
         assessmentSetting() {
             return this.data.assessment_setting
@@ -306,6 +320,9 @@ export default {
             }
             this.testData.table.forEach((item, index_) => filter_index(item, index_, arr))
             return { index: index, value: arr }
+        },
+        rowData() {
+            return common.buildEmptyTestRow(TransformerTestMap['DCWindingPrim'].columns)
         }
     },
     watch: {
@@ -440,16 +457,13 @@ export default {
             }
         },
         clear() {
-            this.testData.table.forEach((element) => {
-                element.r_meas.value = ''
-                element.r_ref.value = ''
-                element.r_corr.value = ''
-                element.error_between_phase.value = ''
-                element.error_r_ref.value = ''
-                element.mean_value.value = ''
-                element.assessment.value = ''
-                element.error_r_ref.value = ''
-                element.condition_indicator.value = ''
+            this.testData.table.table1.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (key === "mrid") return;
+                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                        row[key].value = ""
+                    }
+                })
             })
         },
         nameColor(data) {
