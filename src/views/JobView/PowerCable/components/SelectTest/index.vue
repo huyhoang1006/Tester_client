@@ -11,7 +11,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- changed: iterate available test types, not selected tests -->
                         <tr v-for="(item, index) in testTypeList" :key="index">
                             <td style="font-weight: bold;">{{ index + 1 }}</td>
                             <td class="ellipsis-cell" style="font-weight: bold;">
@@ -40,7 +39,7 @@
                         <tr v-for="(item, index) in testListData" :key="index">
                             <td style="font-weight: bold;">{{ index + 1 }}</td>
                             <td class="ellipsis-cell">
-                                {{ item.name }}
+                                {{ item.testTypeName }}
                             </td>
                             <td>
                                 <el-input size="mini" type="text" v-model="item.name"></el-input>
@@ -64,131 +63,48 @@ import Attachment from '@/views/Flatten/Attachment'
 import { UnitMultiplier } from '@/views/Enum/UnitMultiplier'
 import { UnitSymbol } from '@/views/Enum/UnitSymbol'
 import mixin from './mixin'
-import { mapState } from 'vuex'
+import uuid from "@/utils/uuid";
 
 export default {
     mixins: [mixin],
     props: {
-        mode: {
-            type: String,
-            require: true,
-            default() {
-                return 'add'
-            }
-        },
-        attachmentArr: {
-            type: Array,
-            required: true,
-            default() {
-                return []
-            } 
-        },
-        testconditionArr: {
-            type: Array,
-            required: true,
-            default() {
-                return []
-            } 
-        },
         data: {
             type: Array,
-            required: true,
             default() {
                 return []
             }
         },
-        tapChangers: {
+        assetData: {
             type: Object,
-            require: true,
             default() {
-                return {
-                    id: null,
-                    mode: null,
-                    serial_no: null,
-                    manufacturer: null,
-                    manufacturer_type: null,
-                    winding: null,
-                    tap_scheme: null,
-                    no_of_taps: null,
-                    voltage_table: []
-                }
-            }
-        },
-        asset: {
-            type: Object,
-            require: true,
-            default() {
-                return {
-                    id: '',
-                    asset: '',
-                    asset_type: '',
-                    serial_number: '',
-                    manufacturer: ''
-                }
-            }
-        },
-        objActiveName: {
-            type: Object,
-            require: true,
-            default() {
-                return {
-                    activeName: null
-                }
+                return {}
             }
         },
         testTypeListData: {
             type: Array,
-            required: false,
-            default() { return [] }
-        },
+            default: () => []
+        }
     },
     data() {
         return {
-            testTypeList: [], // <-- ensure available types stored here
+            testTypeListDefault: [],
             unitMultiplier: UnitMultiplier,
             unitSymbol: UnitSymbol,
         }
     },
-    mounted() {
-        // initialize available test types from prop (or fetch)
-        if (this.testTypeListData && this.testTypeListData.length > 0) {
-            this.testTypeList = this.testTypeListData
-        } else {
-            // optional: fetch from preload if prop not provided
-            this.getTestTypes().then(() => {}).catch(()=>{})
-        }
-    },
-    watch: {
-        // keep local list in sync if parent updates prop
-        testTypeListData(newVal) {
-            this.testTypeList = newVal || []
-        }
-    },
+    mounted() {},
     computed: {
-        ...mapState(['selectedLocation', 'selectedAsset']),
         testListData: function () {
             return this.data
         },
         objActiveNameData: function () {
             return this.objActiveName
         },
-        attachmentArray : function() {
-            return this.attachmentArr
-        },
-        testconditionArray : function() {
-            return this.testconditionArr
+        testTypeList: function () {
+            return this.testTypeListData.length > 0 ? this.testTypeListData : this.testTypeListDefault
         }
     },
-   methods: {
-        async getTestTypes() {
-            const rs = await window.electronAPI.getTestPowerCableTypes()
-            if (rs.success) {
-                const data = rs.data
-                this.testTypeList = data
-            } else {
-                this.$message.error(rs.message)
-            }
-        },
+    methods: {
         async countTest(testTypeId) {
             let count = 0
             this.testListData.forEach((element) => {
@@ -198,86 +114,36 @@ export default {
         },
         async addTest(testType) {
             const count = await this.countTest(testType.mrid)
-            const initData = await this.initTest(testType.code, this.assetData)
-            const name = count == 0 ? testType.name : `${testType.name} (${count + 1})`
+            const initTest = await this.initTest(testType.alias_name, this.assetData)
+            const initData = initTest.table
+            const initCondition = initTest.rowDataExampleCondition
+            const name = count == 0 ? testType.name : `${testType.name} (${count})`
+            const mrid = uuid.newUuid()
             this.testListData.push({
-                mrid: this.$uuid.EMPTY,
+                mrid: mrid,
                 testTypeId: testType.mrid,
-                testTypeCode: testType.code,
+                testTypeCode: testType.alias_name,
                 testTypeName: testType.name,
                 name,
-                data: initData,
-                testCondition: {
-                    mrid: '',
-                    condition: {
-                        top_oil_temperature: {
-                            mrid: '',
-                            value: '',
-                            unit: ''
-                        },
-                        bottom_oil_temperature: {
-                            mrid: '',
-                            value: '',
-                            unit: ''
-                        },
-                        winding_temperature: {
-                            mrid: '',
-                            value: '',
-                            unit: ''
-                        },
-                        reference_temperature: {
-                            mrid: '',
-                            value: '',
-                            unit: ''
-                        },
-                        ambient_temperature: {
-                            mrid: '',
-                            value: '',
-                            unit: ''
-                        },
-                        humidity: {
-                            mrid: '',
-                            value: '',
-                            unit: ''
-                        }
-                    },
-                    equipment: [{
-                        model: "",
-                        serial_no: "",
-                        calibration_date: ""
-                    }],
+                data: {table: initData},
+                testCondition : {
+                    mrid : '',
+                    condition: initCondition,
                     comment: "",
-                    attachment: {
-                        id: '',
-                        name: '',
-                        path: '',
-                        type: 'test',
-                        id_foreign: ''
-                    },
-                    attachmentData: []
-                }
-            })
-            this.attachmentArray.push([])
-            this.testconditionArray.push({
-                condition: { 
-                    top_oil_temperature: "",
-                    bottom_oil_temperature: "",
-                    winding_temperature: "",
-                    reference_temperature: "",
-                    ambient_temperature: "",
-                    humidity: "",
-                    weather: ""
+                    attachment : new Attachment(),
+                    attachmentData : []
                 },
-                equipment: [{
-                    model: "",
-                    serial_no: "",
-                    calibration_date: ""
-                }],
-                comment: "",
+                worst_score: null,
+                worst_score_df: null,
+                worst_score_c: null,
+                average_score: null,
+                average_score_df: null,
+                average_score_c: null,
+                weighting_factor: null,
+                total_average_score: null,
+                total_worst_score: null,
+                created_on: new Date().getTime()
             })
-            if (this.testListData.length == 1) {
-                this.objActiveNameData.activeName = name + '0'
-            }
         },
         deleteTest(index) {
             /* eslint-disable */
@@ -286,7 +152,7 @@ export default {
                 cancelButtonText: 'Cancel',
                 type: 'warning'
             })
-            .then(async () => {
+                .then(async () => {
                     this.testListData.splice(index, 1)
                 })
                 .catch(() => {})

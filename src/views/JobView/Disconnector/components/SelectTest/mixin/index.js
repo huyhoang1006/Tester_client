@@ -118,10 +118,25 @@ export default {
             }
         },
         async initControlCheck(testTypeCode) {
+            const rowDataExample = common.buildEmptyTestRow(disconnectorTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(disconnectorConditionMap[testTypeCode].columns)
+
+            // Create default rows based on config
+            const defaultItems = ['Control circuit A', 'Control circuit B', 'Control circuit C', 'Auxiliary circuit', 'Heater circuit']
+            
+            const table1 = defaultItems.map(itemValue => {
+                const row = JSON.parse(JSON.stringify(rowDataExample))
+                if (row.measurement) {
+                    row.measurement.value = itemValue
+                }
+                return row
+            })
+
+            const table = { table1 }
+
             return {
                 rowDataExampleCondition,
-                table: { table1: [] }
+                table
             }
         },
         async initGeneralInspection(testTypeCode) {

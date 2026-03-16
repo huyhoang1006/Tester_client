@@ -6,21 +6,20 @@
                 <el-tab-pane style="width: 100%;">
                     <span slot="label"><i class="fa-solid fa-book"></i> Overview</span>
                     <overview :data="powerCableJobDto.properties" @update-attachment="updateAttachmentOverView"
-                        :attachmentData.sync="powerCableJobDto.attachmentData" :locationData="locationData"
+                        :attachment.sync="powerCableJobDto.attachmentData" :locationData="locationData"
                         :assetData="assetData" :productAssetModelData="productAssetModelData"
-                        :parentOrganization="parentOrganization">
-                    </overview>
-
+                        :parentOrganization="parentOrganization"></overview>
                 </el-tab-pane>
 
                 <!-- Select test -->
                 <el-tab-pane>
                     <span slot="label"><i class="fa-solid fa-list-check"></i> Test settings</span>
                     <select-test style="width: 100%;" :data="powerCableJobDto.testList"
-                        :testTypeListData="testTypeListData" :assetData="assetData" :obj-active-name="objActiveName"
-                        :attachment-arr="attachmentArr" :testcondition-arr="testconditionArr"></select-test>
+                        :testTypeListData="testTypeListData" :assetData="assetData"
+                        :obj-active-name="objActiveName"></select-test>
                 </el-tab-pane>
 
+                <!-- Testing equipment -->
                 <el-tab-pane>
                     <span slot="label"><i class="fa-solid fa-list-check"></i> Testing equipment</span>
                     <div>
@@ -31,7 +30,7 @@
 
                 <!-- Tests -->
                 <el-tab-pane>
-                    <span slot="label"><i class="fa-solid fa-calculator"></i> Tests</span>
+                    <span slot="label"><i class="fa-solid fa-calculator"></i> Test data</span>
                     <div id="tests" style="width: 100%;">
                         <el-tabs v-model="objActiveName.activeName" type="card" class="w-100 h-100">
                             <el-tab-pane v-for="(item, index) in powerCableJobDto.testList" :key="index"
@@ -85,7 +84,6 @@ export default {
         GeneralInspection
     },
     props: {
-        
         parentOrganization: {
             type: Object,
             default: () => ({})
@@ -101,18 +99,20 @@ export default {
             assetData : {},
             locationData : {},
             productAssetModelData: {},
+
         }
     },
     mounted() { },
     methods: {
         updateAttachmentOverView(attachment) {
-            this.powerCableJobDto.attachmentData = attachment
+            this.attachmentData = attachment
         },
         loadMapForView() {
-        },
+        }
     },
 }
 </script>
+
 <style lang="scss" scoped>
 #job {
     width: 100%;

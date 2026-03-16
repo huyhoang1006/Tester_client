@@ -25,7 +25,8 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
             return result;
         } else {
             backupAllFilesInDir(null, null, entity.oldWork.mrid);
-            const syncResult = syncFilesWithDeletion(JSON.parse(entity.attachment.path), null, entity.oldWork.mrid);
+            const attachmentPath = entity.attachment.path || '[]';
+            const syncResult = syncFilesWithDeletion(JSON.parse(attachmentPath), null, entity.oldWork.mrid);
             if (!syncResult.success) {
                 restoreFiles(null, null, entity.oldWork.mrid);
                 deleteBackupFiles(null, entity.oldWork.mrid);
@@ -56,8 +57,9 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
 
             await runAsync('BEGIN TRANSACTION');
             await insertOldWorkTransaction(entity.oldWork, db);
-            if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
-                const pathData = JSON.parse(entity.attachment.path);
+            const entityAttachmentPath1 = entity.attachment.path || '[]';
+            if (entity.attachment.id && Array.isArray(JSON.parse(entityAttachmentPath1))) {
+                const pathData = JSON.parse(entityAttachmentPath1);
                 const newPath = []
                 for(let i = 0; i < pathData.length; i++) {
                     const namefile = path.basename(pathData[i].path);
@@ -119,8 +121,9 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
             }
 
             //attachemt
-            if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
-                const pathData = JSON.parse(entity.attachment.path);
+            const entityAttachmentPath2 = entity.attachment.path || '[]';
+            if (entity.attachment.id && Array.isArray(JSON.parse(entityAttachmentPath2))) {
+                const pathData = JSON.parse(entityAttachmentPath2);
                 const newPath = []
                 for(let i = 0; i < pathData.length; i++) {
                     const namefile = path.basename(pathData[i].path);
