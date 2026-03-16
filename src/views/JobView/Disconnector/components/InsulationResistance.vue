@@ -130,6 +130,13 @@ export default {
     },
     methods: {
         add() {
+            if (!this.testData.table) {
+                this.$set(this.testData, 'table', {});
+            }
+            if (!this.testData.table.table1) {
+                this.$set(this.testData.table, 'table1', []);
+            }
+            
             this.testData.table.table1.push(
                 JSON.parse(JSON.stringify(this.rowData))
             )
@@ -141,30 +148,38 @@ export default {
                     type: 'warning'
                 })
                 .then( () => {
-                    this.testData.table.table1 = []
+                    if (this.testData.table) {
+                        this.testData.table.table1 = []
+                    }
                 }
             )
         },
         deleteTest(index) {
-            this.testData.table.table1.splice(index, 1)
+            if (this.testData.table && this.testData.table.table1) {
+                this.testData.table.table1.splice(index, 1)
+            }
         },
         addTest(index) {
             const data = JSON.parse(JSON.stringify(this.rowData))
-            this.testData.table.table1.splice(index+1, 0, data)
+            if (this.testData.table && this.testData.table.table1) {
+                this.testData.table.table1.splice(index+1, 0, data)
+            }
         },
         calculator() {
             this.$message.success('Calculating successfully')
         },
 
         clear() {
-            this.testData.table.table1.forEach(row => {
-                Object.keys(row).forEach(key => {
-                    if (key === "mrid") return;
-                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
-                    row[key].value = ""
-                    }
+            if (this.testData.table && this.testData.table.table1) {
+                this.testData.table.table1.forEach(row => {
+                    Object.keys(row).forEach(key => {
+                        if (key === "mrid") return;
+                        if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                            row[key].value = ""
+                        }
+                    })
                 })
-            })
+            }
         },
         nameColor(data) {
             if(data === this.$constant.GOOD) {

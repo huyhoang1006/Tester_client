@@ -24,11 +24,11 @@
                             </icon>
                             <icon v-else size="16px" folderType="building" badgeColor="008001"></icon>
                             <span v-if="tab.mode == 'organisation'" class="tab-label">{{ tab.aliasName || tab.name
-                                }}</span>
+                            }}</span>
                             <span v-else-if="tab.mode == 'substation'" class="tab-label">{{ tab.aliasName || tab.name
-                                }}</span>
+                            }}</span>
                             <span v-else-if="tab.mode == 'voltageLevel'" class="tab-label">{{ tab.aliasName || tab.name
-                                }}</span>
+                            }}</span>
                             <span v-else-if="tab.mode == 'bay'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
                             <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.apparatus_id ||
                                 tab.serial_number }}</span>
@@ -93,11 +93,11 @@
                             </icon>
                             <icon v-else size="16px" folderType="building" badgeColor="008001"></icon>
                             <span v-if="tab.mode == 'organisation'" class="tab-label">{{ tab.aliasName || tab.name
-                                }}</span>
+                            }}</span>
                             <span v-else-if="tab.mode == 'substation'" class="tab-label">{{ tab.aliasName || tab.name
-                                }}</span>
+                            }}</span>
                             <span v-else-if="tab.mode == 'voltageLevel'" class="tab-label">{{ tab.aliasName || tab.name
-                                }}</span>
+                            }}</span>
                             <span v-else-if="tab.mode == 'bay'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
                             <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.apparatus_id ||
                                 tab.serial_number }}</span>
@@ -576,7 +576,7 @@ export default {
                             const surgeArresterJobDto = SurgeArresterJobMapper.JobEntityToDto(data.data)
                             for (const test of surgeArresterJobDto.testList) {
                                 for (const type of this.testTypeListData) {
-                                    if (test.testTypeCode === type.code) {
+                                    if (test.testTypeCode === type.alias_name) {
                                         test.testTypeName = type.name
                                         test.testTypeId = type.mrid
                                         break
@@ -591,15 +591,20 @@ export default {
                     } else if (tab.job === 'Power cable') {
                         const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Power cable")
                         this.testTypeListData = dataTestType.success ? dataTestType.data : []
-                        const dataPowerCable = await window.electronAPI.getPowerCableByMrid(tab.parentId)
-                        this.assetData = dataPowerCable.success ? dataPowerCable.data : {}
+                        const dataPowerCable = await window.electronAPI.getPowerCableEntityByMrid(tab.parentId)
+                        if (dataPowerCable.success && dataPowerCable.data) {
+                            // Map entity to pro format like other asset types
+                            this.assetData = PowerCableMapper.mapEntityToDto(dataPowerCable.data)
+                        } else {
+                            this.assetData = {}
+                        }
 
                         const data = await window.electronAPI.getPowerCableJobByMrid(tab.mrid)
                         if (data.success) {
                             const powerCableJobDto = PowerCableJobMapper.JobEntityToDto(data.data)
                             for (const test of powerCableJobDto.testList) {
                                 for (const type of this.testTypeListData) {
-                                    if (test.testTypeCode === type.code) {
+                                    if (test.testTypeCode === type.alias_name) {
                                         test.testTypeName = type.name
                                         test.testTypeId = type.mrid
                                         break
@@ -699,7 +704,7 @@ export default {
                             const disconnectorJobDto = DisconnectorJobMapper.JobEntityToDto(data.data)
                             for (const test of disconnectorJobDto.testList) {
                                 for (const type of this.testTypeListData) {
-                                    if (test.testTypeCode === type.code) {
+                                    if (test.testtypecode === type.code || test.testtypecode === type.alias_name) {
                                         test.testTypeName = type.name
                                         test.testTypeId = type.mrid
                                         break
@@ -966,6 +971,7 @@ export default {
                 else if (tab.job === 'Capacitor') return 'CapacitorJob'
                 else if (tab.job === 'Bushing') return 'BushingJob'
                 else if (tab.job === 'Circuit breaker') return 'CircuitBreakerJob'
+                else if (tab.job === 'Power cable') return 'PowerCableJob'
             }
         },
         saveCtrlS() {

@@ -86,6 +86,9 @@
 </template>
 
 <script>
+import disconnectorTestMap from '@/config/test-definitions/Disconnector'
+import * as common from '@/views/JobView/Common/index'
+
 export default {
     name :"DcWindingMotor",
     data() {
@@ -111,38 +114,24 @@ export default {
         assetData() {
             return this.asset
         },
+        rowData() {
+            return common.buildEmptyTestRow(disconnectorTestMap.DcWindingMotor.columns)
+        }
     },
     watch: {
     },
     methods: {
         add() {
             if (!this.testData.table) {
-                this.testData.table = { table1: [] }
+                this.$set(this.testData, 'table', {});
             }
             if (!this.testData.table.table1) {
-                this.testData.table.table1 = []
+                this.$set(this.testData.table, 'table1', []);
             }
-            this.testData.table.table1.push({
-                mrid : "",
-                r_meas : {
-                    mrid : "",
-                    value : "",
-                    unit : "Ω",
-                    type : "analog"
-                },
-                assessment : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                },
-                condition_indicator : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                }
-            })
+            
+            this.testData.table.table1.push(
+                JSON.parse(JSON.stringify(this.rowData))
+            )
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
@@ -151,47 +140,19 @@ export default {
                     type: 'warning'
                 })
                 .then( () => {
-                    if (this.testData.table && this.testData.table.table1) {
+                    if (this.testData.table) {
                         this.testData.table.table1 = []
                     }
                 }
             )
         },
         deleteTest(index) {
-            this.$confirm('This will permanently delete the file. Continue?', 'Warning', {
-                confirmButtonText: 'OK',
-                cancelButtonText: 'Cancel',
-                type: 'warning'
-            })
-            .then(async () => {
-                if (this.testData.table && this.testData.table.table1) {
-                    this.testData.table.table1.splice(index, 1)
-                }
-            })
-            .catch(() => {})
+            if (this.testData.table && this.testData.table.table1) {
+                this.testData.table.table1.splice(index, 1)
+            }
         },
         addTest(index) {
-            const data = {
-                mrid : "",
-                r_meas : {
-                    mrid : "",
-                    value : "",
-                    unit : "Ω",
-                    type : "analog"
-                },
-                assessment : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                },
-                condition_indicator : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                }
-            }
+            const data = JSON.parse(JSON.stringify(this.rowData))
             if (this.testData.table && this.testData.table.table1) {
                 this.testData.table.table1.splice(index+1, 0, data)
             }
@@ -202,10 +163,13 @@ export default {
 
         clear() {
             if (this.testData.table && this.testData.table.table1) {
-                this.testData.table.table1.forEach((element) => {
-                    if (element.r_meas) element.r_meas.value = ""
-                    if (element.assessment) element.assessment.value = ""
-                    if (element.condition_indicator) element.condition_indicator.value = ""
+                this.testData.table.table1.forEach(row => {
+                    Object.keys(row).forEach(key => {
+                        if (key === "mrid") return;
+                        if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                            row[key].value = ""
+                        }
+                    })
                 })
             }
         },

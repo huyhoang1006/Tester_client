@@ -1,6 +1,5 @@
 <template>
     <div id="dc-winding-resistance-prim">
-
         <!-- Cấu hình -->
         <div style="position: sticky; left: 0; display: inline-block;">
         <el-row class="mgb-10">
@@ -23,13 +22,13 @@
         </el-row>
         </div>
 
-        <table class="table-strip-input-data" style="width: 100%; font-size: 12px;  ">
+        <table class="table-strip-input-data" style="width: 100%; font-size: 12px;">
             <thead>
                 <tr>
                     <th>No.</th>
                     <th>Measurement</th>
                     <th>Test voltage (kV)</th>
-                    <th>Test duration (minute)</th>
+                    <th>Test duration (min)</th>
                     <th class="assessment-col">Assessment</th>
                     <th class="condition-indicator-col">Condition indicator</th>
                     <th @click="add()" class="action-col"><i class="fa-solid fa-plus pointer"></i></th>
@@ -37,44 +36,48 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testData.table">
-                    <tr :key="index">
-                        <td>
-                           {{ index + 1 }}
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.test_voltage.value"></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.test_duration.value"></el-input>
-                        </td>
-                        <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
-                                <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
-                                <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
-                            </el-select>
-                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
-                        </td>
-                        <td>
-                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
-                            </el-input>
-                        </td>
-                        <td>
-                            <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
-                                <i class="fa-solid fa-plus"></i>
-                            </el-button>
-                        </td>
-                        <td>
-                            <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
-                                <i class="fas fa-trash"></i>
-                            </el-button>
-                        </td>
-                    </tr>
-                </template>
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
+                    <td>
+                       {{ index + 1 }}
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.test_voltage.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.duration.value"></el-input>
+                    </td>
+                    <td>
+                        <el-select class="assessment" size="mini" v-model="item.assessment.value">
+                            <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
+                        </el-select>
+                        <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                    </td>
+                    <td>
+                        <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                            size="mini" v-model="item.condition_indicator.value">
+                            <el-option value="Good">Good</el-option>
+                            <el-option value="Fair">Fair</el-option>
+                            <el-option value="Poor">Poor</el-option>
+                            <el-option value="Bad">Bad</el-option>
+                        </el-select>
+                    </td>
+
+                    <td>
+                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
+                            <i class="fa-solid fa-plus"></i>
+                        </el-button>
+                    </td>
+                    <td>
+                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
+                            <i class="fas fa-trash"></i>
+                        </el-button>
+                    </td>
+                </tr>
             </tbody>
         </table>
 
@@ -89,6 +92,9 @@
 </template>
 
 <script>
+import powerCableTestMap from '@/config/test-definitions/PowerCable'
+import * as common from '../../Common/index'
+
 export default {
     name :"DcVoltageOverSheath",
     data() {
@@ -114,44 +120,22 @@ export default {
         assetData() {
             return this.asset
         },
-    },
-    watch: {
+        rowData() {
+            return common.buildEmptyTestRow(powerCableTestMap['DcVoltageOverSheath'].columns)
+        }
     },
     methods: {
         add() {
-            this.testData.table.push({
-                mrid : "",
-                measurement : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                test_voltage : {
-                    mrid : "",
-                    value : "",
-                    unit : "k|V",
-                    type : "analog"
-                },
-                test_duration : {
-                    mrid : "",
-                    value : "",
-                    unit : "min",
-                    type : "analog"
-                },
-                assessment : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                },
-                condition_indicator : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                }
-            })
+            if (!this.testData.table) {
+                this.$set(this.testData, 'table', {});
+            }
+            if (!this.testData.table.table1) {
+                this.$set(this.testData.table, 'table1', []);
+            }
+            
+            this.testData.table.table1.push(
+                JSON.parse(JSON.stringify(this.rowData))
+            )
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
@@ -160,61 +144,38 @@ export default {
                     type: 'warning'
                 })
                 .then( () => {
-                    this.testData.table = []
+                    if (this.testData.table) {
+                        this.testData.table.table1 = []
+                    }
                 }
             )
         },
         deleteTest(index) {
-            this.testData.table.splice(index, 1)
+            if (this.testData.table && this.testData.table.table1) {
+                this.testData.table.table1.splice(index, 1)
+            }
         },
         addTest(index) {
-            const data = {
-                mrid : "",
-                measurement : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                test_voltage : {
-                    mrid : "",
-                    value : "",
-                    unit : "k|V",
-                    type : "analog"
-                },
-                test_duration : {
-                    mrid : "",
-                    value : "",
-                    unit : "min",
-                    type : "analog"
-                },
-                assessment : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                },
-                condition_indicator : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                }
+            const data = JSON.parse(JSON.stringify(this.rowData))
+            if (this.testData.table && this.testData.table.table1) {
+                this.testData.table.table1.splice(index+1, 0, data)
             }
-            this.testData.table.splice(index+1, 0, data)
         },
         calculator() {
             this.$message.success('Calculating successfully')
         },
 
         clear() {
-            this.testData.table.forEach((element) => {
-                element.measurement = "",
-                element.test_voltage = '',
-                element.duration = '',
-                element.assessment = '',
-                element.condition_indicator = ''
-            })
+            if (this.testData.table && this.testData.table.table1) {
+                this.testData.table.table1.forEach(row => {
+                    Object.keys(row).forEach(key => {
+                        if (key === "mrid") return;
+                        if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                            row[key].value = ""
+                        }
+                    })
+                })
+            }
         },
         nameColor(data) {
             if(data === this.$constant.GOOD) {
