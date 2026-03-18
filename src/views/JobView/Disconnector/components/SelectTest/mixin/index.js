@@ -142,8 +142,7 @@ export default {
         async initGeneralInspection(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(disconnectorTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(disconnectorConditionMap[testTypeCode].columns)
-
-            const defaultItems = ['Nameplate', 'Installation check', 'Insulation surface', 'Ground frame', 'Terminal box', 'Marking of terminals', 'Oil check']
+            const defaultItems = disconnectorTestMap[testTypeCode].defaultRows.map(x => x.item)
 
             const table1 = defaultItems.map(itemValue => {
                 const row = JSON.parse(JSON.stringify(rowDataExample))

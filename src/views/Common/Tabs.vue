@@ -704,8 +704,8 @@ export default {
                             const disconnectorJobDto = DisconnectorJobMapper.JobEntityToDto(data.data)
                             for (const test of disconnectorJobDto.testList) {
                                 for (const type of this.testTypeListData) {
-                                    if (test.testtypecode === type.code || test.testtypecode === type.alias_name) {
-                                        test.testTypeName = type.name
+                                    if (test.testTypeCode === type.code || test.testTypeCode === type.alias_name) {
+                                            test.testTypeName = type.name
                                         test.testTypeId = type.mrid
                                         break
                                     }
