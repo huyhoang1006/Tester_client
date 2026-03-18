@@ -23,7 +23,7 @@
         </el-row>
         </div>
 
-        <table class="table-strip-input-data" style="width: 50%">
+        <table class="table-strip-input-data" style="width: 100%;">
             <thead>
                 <tr>
                     <th>No.</th>
@@ -35,20 +35,20 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-if="testData.table && testData.table.table1">
+                <template v-if="testData.table && testData.table.table1 && testData.table.table1.length > 0">
                     <tr v-for="(item, index) in testData.table.table1" :key="index">
-                        <td>
-                           {{ index + 1 }}
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.item.value" v-if="item.item"></el-input>
-                        </td>
+                    <td style="font-weight: bold;">
+                        {{ index + 1 }}
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.item.value" v-if="item.item"></el-input>
+                    </td>
                         <td>
                             <el-select class="assessment" size="mini" v-model="item.assessment.value" v-if="item.assessment">
-                                <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
-                                <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
+                                <el-option value="Pass" label="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                                <el-option value="Fail" label="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
-                            <span v-if="item.assessment && item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                            <span v-if="item.assessment && item.assessment.value === 'Pass' " class="fa-solid fa-square-check pass icon-status"></span>
                             <span v-else-if="item.assessment && item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
@@ -109,7 +109,11 @@ export default {
     },
     computed: {
         testData() {
-            return this.data || { table: { table1: [] } }
+            // Đảm bảo có cấu trúc dữ liệu cơ bản
+            if (!this.data || !this.data.table || !this.data.table.table1) {
+                return { table: { table1: [] } }
+            }
+            return this.data
         },
         assetData() {
             return this.asset
@@ -119,19 +123,28 @@ export default {
         }
     },
     watch: {
+        data: {
+            handler(newVal) {
+                console.log('GeneralInspection data changed:', newVal);
+            },
+            deep: true
+        }
+    },
+    mounted() {
+        console.log('GeneralInspection mounted with data:', this.data);
+        console.log('testData computed:', this.testData);
+        console.log('rowData computed:', this.rowData);
     },
     methods: {
         add() {
+            // Đảm bảo cấu trúc dữ liệu tồn tại
             if (!this.testData.table) {
                 this.$set(this.testData, 'table', {});
             }
             if (!this.testData.table.table1) {
                 this.$set(this.testData.table, 'table1', []);
             }
-            
-            this.testData.table.table1.push(
-                JSON.parse(JSON.stringify(this.rowData))
-            )
+            this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
@@ -140,7 +153,7 @@ export default {
                     type: 'warning'
                 })
                 .then( () => {
-                    if (this.testData.table) {
+                    if (this.testData.table && this.testData.table.table1) {
                         this.testData.table.table1 = []
                     }
                 }
@@ -220,5 +233,9 @@ table, th, td, tr {
 
 .Bad input {
     background: #ff3300;
+}
+
+td, th {
+    font-size: 12px;
 }
 </style>

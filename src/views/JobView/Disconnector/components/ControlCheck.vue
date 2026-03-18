@@ -19,12 +19,12 @@
             <el-col>
                 <el-button size="mini" type="primary" class="btn-action" @click="calculator" > <i class="fas fa-circle-play"></i> Assess results </el-button>
                 <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i class="fas fa-xmark"></i> Clear all</el-button>
-                <el-button size="mini" type="info" class="btn-action" @click="resetToDefault"> <i class="fas fa-undo"></i> Reset to default</el-button>
+                
             </el-col>
         </el-row>
         </div>
 
-        <table class="table-strip-input-data" style="width: 50%">
+        <table class="table-strip-input-data" style="width: 100%;">
             <thead>
                 <tr>
                     <th>No.</th>
@@ -36,9 +36,9 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-if="testData.table && testData.table.table1">
+                <template v-if="testData.table && testData.table.table1 && testData.table.table1.length > 0">
                     <tr v-for="(item, index) in testData.table.table1" :key="index">
-                        <td>
+                        <td style="font-weight: bold;">
                            {{ index + 1 }}
                         </td>
                         <td>
@@ -46,8 +46,8 @@
                         </td>
                         <td>
                             <el-select class="assessment" size="mini" v-model="item.assessment.value" v-if="item.assessment">
-                                <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
-                                <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
+                                <el-option value="Pass" label="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                                <el-option value="Fail" label="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
                             <span v-if="item.assessment && item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
                             <span v-else-if="item.assessment && item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
@@ -110,7 +110,11 @@ export default {
     },
     computed: {
         testData() {
-            return this.data || { table: { table1: [] } }
+            // Đảm bảo có cấu trúc dữ liệu cơ bản
+            if (!this.data || !this.data.table || !this.data.table.table1) {
+                return { table: { table1: [] } }
+            }
+            return this.data
         },
         assetData() {
             return this.asset
@@ -120,56 +124,28 @@ export default {
         }
     },
     mounted() {
-        this.initializeDefaultRows()
+        console.log('ControlCheck mounted with data:', this.data);
+        console.log('testData computed:', this.testData);
+        console.log('rowData computed:', this.rowData);
     },
     watch: {
         data: {
-            handler(newData) {
-                // Khi data thay đổi, kiểm tra và khởi tạo defaultRows nếu cần
-                if (newData && (!newData.table || !newData.table.table1 || newData.table.table1.length === 0)) {
-                    this.initializeDefaultRows();
-                }
+            handler(newVal) {
+                console.log('ControlCheck data changed:', newVal);
             },
-            immediate: true,
             deep: true
         }
     },
     methods: {
-        initializeDefaultRows() {
-            // Kiểm tra nếu chưa có dữ liệu hoặc table1 rỗng thì khởi tạo với defaultRows
-            if (!this.testData.table || !this.testData.table.table1 || this.testData.table.table1.length === 0) {
-                if (!this.testData.table) {
-                    this.$set(this.testData, 'table', {});
-                }
-                if (!this.testData.table.table1) {
-                    this.$set(this.testData.table, 'table1', []);
-                }
-                
-                // Lấy defaultRows từ config và tạo các row với dữ liệu mặc định
-                const defaultRows = disconnectorTestMap.ControlCheck.defaultRows || [];
-                defaultRows.forEach(defaultRow => {
-                    const newRow = JSON.parse(JSON.stringify(this.rowData));
-                    // Set giá trị item từ defaultRows
-                    if (newRow.item && defaultRow.item) {
-                        newRow.item.value = defaultRow.item;
-                    }
-                    this.testData.table.table1.push(newRow);
-                });
-                
-                console.log('Initialized with default rows:', this.testData.table.table1);
-            }
-        },
         add() {
+            // Đảm bảo cấu trúc dữ liệu tồn tại
             if (!this.testData.table) {
                 this.$set(this.testData, 'table', {});
             }
             if (!this.testData.table.table1) {
                 this.$set(this.testData.table, 'table1', []);
             }
-            
-            this.testData.table.table1.push(
-                JSON.parse(JSON.stringify(this.rowData))
-            )
+            this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
@@ -178,7 +154,7 @@ export default {
                     type: 'warning'
                 })
                 .then( () => {
-                    if (this.testData.table) {
+                    if (this.testData.table && this.testData.table.table1) {
                         this.testData.table.table1 = []
                     }
                 }
@@ -212,21 +188,6 @@ export default {
             }
         },
 
-        resetToDefault() {
-            this.$confirm('This will reset all data to default values. Continue?', 'Warning', {
-                confirmButtonText: 'OK',
-                cancelButtonText: 'Cancel',
-                type: 'warning'
-            }).then(() => {
-                // Xóa dữ liệu hiện tại
-                if (this.testData.table) {
-                    this.testData.table.table1 = [];
-                }
-                // Khởi tạo lại với dữ liệu mặc định
-                this.initializeDefaultRows();
-                this.$message.success('Reset to default values successfully');
-            });
-        },
         nameColor(data) {
             if(data === this.$constant.GOOD) {
                 return 'Good'
@@ -274,5 +235,9 @@ table, th, td, tr {
 
 .Bad input {
     background: #ff3300;
+}
+
+td, th {
+    font-size: 12px;
 }
 </style>

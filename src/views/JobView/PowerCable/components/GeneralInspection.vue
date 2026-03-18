@@ -1,7 +1,7 @@
 <template>
     <div id="dc-winding-resistance-prim">
         <!-- Cấu hình -->
-        <div style="position: sticky; left: 0; display: inline-block;">
+        <div style="position: sticky; left: 0; display: inline-block; margin-top: 20px;">
         <el-row class="mgb-10">
             <el-col>
                 <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
@@ -22,7 +22,7 @@
         </el-row>
         </div>
 
-        <table class="table-strip-input-data" style="width: 65% ; font-size: 12px;">
+        <table class="table-strip-input-data" style="width: 100%;">
             <thead>
                 <tr>
                     <th>No.</th>
@@ -34,20 +34,21 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, index) in testData.table.table1" :key="index">
+                <template v-if="testData.table && testData.table.table1 && testData.table.table1.length > 0">
+                    <tr v-for="(item, index) in testData.table.table1" :key="index">
+                        <td style="font-weight: bold;">
+                           {{ index + 1 }}
+                        </td>
+                        <td>
+                            <el-input size="mini" type="text" v-model="item.item.value" v-if="item.item"></el-input>
+                        </td>
                     <td>
-                       {{ index + 1 }}
-                    </td>
-                    <td>
-                        <el-input size="mini" type="text" v-model="item.item.value"></el-input>
-                    </td>
-                    <td>
-                        <el-select class="assessment" size="mini" v-model="item.assessment.value">
-                            <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
-                            <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
+                        <el-select class="assessment" size="mini" v-model="item.assessment.value" v-if="item.assessment">
+                            <el-option value="Pass" label="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Fail" label="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                         </el-select>
-                        <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                        <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                        <span v-if="item.assessment && item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment && item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                     <td>
                         <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
@@ -70,6 +71,7 @@
                         </el-button>
                     </td>
                 </tr>
+                </template>
             </tbody>
         </table>
 
@@ -107,6 +109,10 @@ export default {
     },
     computed: {
         testData() {
+            // Đảm bảo có cấu trúc dữ liệu cơ bản
+            if (!this.data || !this.data.table || !this.data.table.table1) {
+                return { table: { table1: [] } }
+            }
             return this.data
         },
         assetData() {
@@ -116,18 +122,29 @@ export default {
             return common.buildEmptyTestRow(powerCableTestMap['GeneralInspection'].columns)
         }
     },
+    mounted() {
+        console.log('PowerCable GeneralInspection mounted with data:', this.data);
+        console.log('testData computed:', this.testData);
+        console.log('rowData computed:', this.rowData);
+    },
+    watch: {
+        data: {
+            handler(newVal) {
+                console.log('PowerCable GeneralInspection data changed:', newVal);
+            },
+            deep: true
+        }
+    },
     methods: {
         add() {
+            // Đảm bảo cấu trúc dữ liệu tồn tại
             if (!this.testData.table) {
                 this.$set(this.testData, 'table', {});
             }
             if (!this.testData.table.table1) {
                 this.$set(this.testData.table, 'table1', []);
             }
-            
-            this.testData.table.table1.push(
-                JSON.parse(JSON.stringify(this.rowData))
-            )
+            this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
@@ -136,7 +153,7 @@ export default {
                     type: 'warning'
                 })
                 .then( () => {
-                    if (this.testData.table) {
+                    if (this.testData.table && this.testData.table.table1) {
                         this.testData.table.table1 = []
                     }
                 }
@@ -216,5 +233,9 @@ table, th, td, tr {
 
 .Bad input {
     background: #ff3300;
+}
+
+td, th {
+    font-size: 12px;
 }
 </style>
