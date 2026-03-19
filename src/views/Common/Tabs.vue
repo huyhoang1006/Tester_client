@@ -2,7 +2,6 @@
 <template>
     <!-- Màn hình Client -->
     <div v-if="side == 'client'" ref="customTabs" class="custom-tabs">
-        <!-- Nếu mảng tabs rỗng, không hiển thị gì cả (hoặc có thể hiển thị một màn hình welcome) -->
         <template v-if="tabs && tabs.length > 0">
             <div class="tabs-header">
                 <div class="scroll-btn left" @click="scrollLeft"><i class="fa-solid fa-chevron-left"></i></div>
@@ -11,60 +10,58 @@
                         @mouseover="hoveredTab = tab.mrid" @mouseleave="hoveredTab = null" class="tab-item"
                         :class="{ active: compareTab(activeTab, tab) }" ref="tabItems">
                         <div class="icon-wrapper mgl-10">
-                            <icon v-if="tab.mode == 'substation'" size="16px" folderType="location" badgeColor="146EBE">
-                            </icon>
-                            <icon v-else-if="tab.mode == 'voltageLevel'" size="16px" folderType="voltageLevel"
-                                badgeColor="146EBE"></icon>
+                            <icon v-if="tab.mode == 'substation'" size="16px" folderType="location" badgeColor="146EBE"></icon>
+                            <icon v-else-if="tab.mode == 'voltageLevel'" size="16px" folderType="voltageLevel" badgeColor="146EBE"></icon>
                             <icon v-else-if="tab.mode == 'bay'" size="16px" folderType="bay" badgeColor="146EBE"></icon>
-                            <icon v-else-if="tab.mode == 'asset'" size="16px" folderType="asset"
-                                :assetDetail="tab.asset" :transformerType="tab.type" badgeColor="146EBE">
-                            </icon>
+                            <icon v-else-if="tab.mode == 'asset'" size="16px" folderType="asset" :assetDetail="tab.asset" :transformerType="tab.type" badgeColor="146EBE"></icon>
                             <icon v-else-if="tab.mode == 'job'" size="16px" folderType="job" badgeColor="FF0000"></icon>
-                            <icon v-else-if="tab.mode == 'test'" size="16px" folderType="test" badgeColor="008001">
-                            </icon>
+                            <icon v-else-if="tab.mode == 'test'" size="16px" folderType="test" badgeColor="008001"></icon>
                             <icon v-else size="16px" folderType="building" badgeColor="008001"></icon>
-                            <span v-if="tab.mode == 'organisation'" class="tab-label">{{ tab.aliasName || tab.name
-                            }}</span>
-                            <span v-else-if="tab.mode == 'substation'" class="tab-label">{{ tab.aliasName || tab.name
-                            }}</span>
-                            <span v-else-if="tab.mode == 'voltageLevel'" class="tab-label">{{ tab.aliasName || tab.name
-                            }}</span>
+                            <span v-if="tab.mode == 'organisation'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
+                            <span v-else-if="tab.mode == 'substation'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
+                            <span v-else-if="tab.mode == 'voltageLevel'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
                             <span v-else-if="tab.mode == 'bay'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
-                            <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.apparatus_id ||
-                                tab.serial_number }}</span>
+                            <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.apparatus_id || tab.serial_number }}</span>
                             <span v-else-if="tab.mode == 'job'" class="tab-label">{{ tab.name }}</span>
                         </div>
-                        <span class="close-icon mgr-10 mgl-10"
-                            :class="{ visible: hoveredTab === tab.mrid || compareTab(activeTab, tab) }"
-                            @click.stop="closeTab(index)">✖</span>
+                        <span class="close-icon mgr-10 mgl-10" :class="{ visible: hoveredTab === tab.mrid || compareTab(activeTab, tab) }" @click.stop="closeTab(index)">✖</span>
                     </div>
                 </div>
                 <div class="scroll-btn right" @click="scrollRight"><i class="fa-solid fa-angle-right"></i></div>
             </div>
 
-            <!-- TỐI ƯU HÓA: Render Đơn Component với Keep-Alive thay vì V-For -->
             <div class="tabs-content">
                 <div class="mgr-20 mgt-20 mgb-20 mgl-20">
-                    <!-- Vẫn dùng keep-alive để cache RAM -->
-                    <keep-alive :max="20">
-                        <!-- BỌC THÊM 1 THẺ DIV Ở ĐÂY ĐỂ ĐÓNG GÓI CONTENT + BUTTON THÀNH 1 KHỐI -->
-                        <div v-if="activeTab && (activeTab.mrid || activeTab.id)" :key="activeTab.mrid || activeTab.id"
-                            class="tab-scroll-wrapper">
-                            <component :ref="'component_' + (activeTab.mrid || activeTab.id)" mode="update"
-                                @reload="handleReload(activeTab, indexTab, $event)" :sideData="sideSign"
-                                :is="checkTab(activeTab)" :organisationId="String(activeTab.parentId)"
-                                :testTypeListData="testTypeListData" :assetData="assetData"
-                                :productAssetModelData="productAssetModelData" :parent="parentOrganization"
-                                :locationData="locationData" style="min-height: calc(100vh - 250px);">
-                            </component>
+                    
+                    <!-- SỬA TẠI ĐÂY: Thay v-if thành v-show để không bao giờ tiêu diệt keep-alive -->
+                    <div v-show="activeTab && (activeTab.mrid || activeTab.id)" class="tab-scroll-wrapper">
+                        
+                        <!-- KEEP-ALIVE BẮT BUỘC BỌC TRỰC TIẾP LÊN COMPONENT -->
+                        <keep-alive :max="20">
+                            <component 
+                                v-if="activeTab && (activeTab.mrid || activeTab.id)"
+                                :key="activeTab.mrid || activeTab.id"
+                                :ref="'component_' + (activeTab.mrid || activeTab.id)" 
+                                mode="update"
+                                @reload="handleReload(activeTab, indexTab, $event)" 
+                                :sideData="sideSign"
+                                :is="checkTab(activeTab)" 
+                                :organisationId="String(activeTab.parentId)"
 
-                            <!-- Hai nút này sẽ trôi theo sau nội dung component -->
-                            <span class="tab-actions">
-                                <el-button size="small" type="danger" @click="closeTab(indexTab)">Close</el-button>
-                                <el-button size="small" type="primary" @click="saveCtrlS()">Save</el-button>
-                            </span>
-                        </div>
-                    </keep-alive>
+                                :testTypeListData="getContext(activeTab.mrid || activeTab.id).testTypeListData" 
+                                :assetData="getContext(activeTab.mrid || activeTab.id).assetData"
+                                :productAssetModelData="getContext(activeTab.mrid || activeTab.id).productAssetModelData" 
+                                :parent="getContext(activeTab.mrid || activeTab.id).parentOrganization"
+                                :locationData="getContext(activeTab.mrid || activeTab.id).locationData" 
+                                style="min-height: calc(100vh - 250px);">
+                            </component>
+                        </keep-alive>
+
+                        <span class="tab-actions">
+                            <el-button size="small" type="danger" @click="closeTab(indexTab)">Close</el-button>
+                            <el-button size="small" type="primary" @click="saveCtrlS()">Save</el-button>
+                        </span>
+                    </div>
                 </div>
             </div>
         </template>
@@ -74,38 +71,27 @@
     <div v-else class="custom-tabs" ref="customTabsServer">
         <template v-if="tabs && tabs.length > 0">
             <div class="tabs-header">
-                <!-- Header giữ nguyên -->
                 <div class="scroll-btn left" @click="scrollLeft"><i class="fa-solid fa-chevron-left"></i></div>
                 <div class="tabs-header-data" ref="tabsHeader" @scroll="checkScroll">
                     <div v-for="(tab, index) in tabs" :key="tab.mrid || tab.id" @click="selectTab(tab, index)"
                         @mouseover="hoveredTab = tab.mrid" @mouseleave="hoveredTab = null" class="tab-item"
                         :class="{ active: compareTab(activeTab, tab) }" ref="tabItems">
                         <div class="icon-wrapper mgl-10">
-                            <icon v-if="tab.mode == 'substation'" size="16px" folderType="location" badgeColor="146EBE">
-                            </icon>
-                            <icon v-else-if="tab.mode == 'voltageLevel'" size="16px" folderType="voltageLevel"
-                                badgeColor="146EBE"></icon>
+                            <icon v-if="tab.mode == 'substation'" size="16px" folderType="location" badgeColor="146EBE"></icon>
+                            <icon v-else-if="tab.mode == 'voltageLevel'" size="16px" folderType="voltageLevel" badgeColor="146EBE"></icon>
                             <icon v-else-if="tab.mode == 'bay'" size="16px" folderType="bay" badgeColor="146EBE"></icon>
-                            <icon v-else-if="tab.mode == 'asset'" size="16px" folderType="asset"
-                                :assetDetail="tab.asset" :transformerType="tab.type" badgeColor="146EBE"></icon>
+                            <icon v-else-if="tab.mode == 'asset'" size="16px" folderType="asset" :assetDetail="tab.asset" :transformerType="tab.type" badgeColor="146EBE"></icon>
                             <icon v-else-if="tab.mode == 'job'" size="16px" folderType="job" badgeColor="FF0000"></icon>
-                            <icon v-else-if="tab.mode == 'test'" size="16px" folderType="test" badgeColor="008001">
-                            </icon>
+                            <icon v-else-if="tab.mode == 'test'" size="16px" folderType="test" badgeColor="008001"></icon>
                             <icon v-else size="16px" folderType="building" badgeColor="008001"></icon>
-                            <span v-if="tab.mode == 'organisation'" class="tab-label">{{ tab.aliasName || tab.name
-                            }}</span>
-                            <span v-else-if="tab.mode == 'substation'" class="tab-label">{{ tab.aliasName || tab.name
-                            }}</span>
-                            <span v-else-if="tab.mode == 'voltageLevel'" class="tab-label">{{ tab.aliasName || tab.name
-                            }}</span>
+                            <span v-if="tab.mode == 'organisation'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
+                            <span v-else-if="tab.mode == 'substation'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
+                            <span v-else-if="tab.mode == 'voltageLevel'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
                             <span v-else-if="tab.mode == 'bay'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
-                            <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.apparatus_id ||
-                                tab.serial_number }}</span>
+                            <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.apparatus_id || tab.serial_number }}</span>
                             <span v-else-if="tab.mode == 'job'" class="tab-label">{{ tab.name }}</span>
                         </div>
-                        <span class="close-icon mgr-10 mgl-10"
-                            :class="{ visible: hoveredTab === tab.mrid || compareTab(activeTab, tab) }"
-                            @click.stop="closeTab(index)">✖</span>
+                        <span class="close-icon mgr-10 mgl-10" :class="{ visible: hoveredTab === tab.mrid || compareTab(activeTab, tab) }" @click.stop="closeTab(index)">✖</span>
                     </div>
                 </div>
                 <div class="scroll-btn right" @click="scrollRight"><i class="fa-solid fa-angle-right"></i></div>
@@ -113,18 +99,25 @@
 
             <div class="tabs-content">
                 <div class="mgr-20 mgt-20 mgb-20 mgl-20">
-                    <keep-alive :max="20">
-                        <component v-if="activeTab && (activeTab.mrid || activeTab.id)"
-                            :key="activeTab.mrid || activeTab.id" :ref="'component_' + (activeTab.mrid || activeTab.id)"
-                            mode="update" @reload="handleReload(activeTab, indexTab, $event)" :sideData="sideSign"
-                            :is="checkTab(activeTab)" :organisationId="String(activeTab.parentId)"
-                            :testTypeListData="testTypeListData" :assetData="assetData"
-                            :productAssetModelData="productAssetModelData" :parent="parentOrganization"
-                            :locationData="locationData" style="min-height: calc(100vh - 250px);">
-                        </component>
-                    </keep-alive>
-
-                    <!-- Form server hiện tại chưa có các nút action này ở bản trước của bạn -->
+                    <!-- Áp dụng tương tự cho Server -->
+                    <div class="tab-scroll-wrapper" v-show="activeTab && (activeTab.mrid || activeTab.id)">
+                        <keep-alive :max="20">
+                            <component 
+                                v-if="activeTab && (activeTab.mrid || activeTab.id)"
+                                :key="activeTab.mrid || activeTab.id" 
+                                :ref="'component_' + (activeTab.mrid || activeTab.id)"
+                                mode="update" @reload="handleReload(activeTab, indexTab, $event)" :sideData="sideSign"
+                                :is="checkTab(activeTab)" :organisationId="String(activeTab.parentId)"
+                                
+                                :testTypeListData="getContext(activeTab.mrid || activeTab.id).testTypeListData" 
+                                :assetData="getContext(activeTab.mrid || activeTab.id).assetData"
+                                :productAssetModelData="getContext(activeTab.mrid || activeTab.id).productAssetModelData" 
+                                :parent="getContext(activeTab.mrid || activeTab.id).parentOrganization"
+                                :locationData="getContext(activeTab.mrid || activeTab.id).locationData" 
+                                style="min-height: calc(100vh - 250px);">
+                            </component>
+                        </keep-alive>
+                    </div>
                 </div>
             </div>
         </template>
@@ -133,7 +126,6 @@
 
 <script>
 /* eslint-disable */
-
 import LocationViewData from '@/views/LocationInsert/locationLevelView.vue'
 import OrganisationView from '@/views/Organisation/index.vue'
 import * as subsMapper from '@/views/Mapping/Substation/index'
@@ -221,17 +213,16 @@ export default {
     data() {
         return {
             activeTab: this.value,
-            testTypeListData: [],
-            assetData: {},
-            productAssetModelData: {},
-            parentOrganization: {},
-            locationData: {},
+            
+            // Tạo vùng nhớ độc lập cho từng Tab
+            tabContexts: {}, 
+
             indexTab: null,
             sideSign: this.side,
             hoveredTab: null,
             canScrollLeft: false,
             canScrollRight: false,
-            pendingLoadData: {} // Hàng chờ lưu data để tránh lỗi khi chuyển tab quá nhanh
+            pendingLoadData: {} 
         }
     },
     watch: {
@@ -246,12 +237,11 @@ export default {
                 if (!newTab) return;
                 const id = newTab.mrid || newTab.id;
 
-                // Nếu user vừa quay lại tab, kiểm tra xem có dữ liệu chờ nạp không
                 this.$nextTick(() => {
                     const comp = this.getComponentRef(id);
                     if (comp && this.pendingLoadData[id]) {
                         this.pendingLoadData[id](comp);
-                        this.$delete(this.pendingLoadData, id); // Nạp xong thì xóa cache
+                        this.$delete(this.pendingLoadData, id); 
                     }
                 });
             },
@@ -260,7 +250,21 @@ export default {
         }
     },
     methods: {
-        // Helper method: Lấy đúng component kể cả khi Vue trả về Array
+        // Hàm cấp phát vùng nhớ độc lập để tránh dữ liệu tab này đè tab kia
+        getContext(id) {
+            if (!id) return {};
+            if (!this.tabContexts[id]) {
+                this.$set(this.tabContexts, id, {
+                    testTypeListData:[],
+                    assetData: {},
+                    productAssetModelData: {},
+                    parentOrganization: {},
+                    locationData: {}
+                });
+            }
+            return this.tabContexts[id];
+        },
+
         getComponentRef(id) {
             const refName = 'component_' + id;
             const comp = this.$refs[refName];
@@ -268,14 +272,13 @@ export default {
             return Array.isArray(comp) ? comp[0] : comp;
         },
 
-        // Helper method: Giải quyết việc user nhảy tab trước khi API kịp load xong
         executeOrQueueLoadData(id, loadFn) {
             this.$nextTick(() => {
                 const comp = this.getComponentRef(id);
                 if (comp) {
-                    loadFn(comp); // Tab đang mở -> Nạp luôn
+                    loadFn(comp); 
                 } else {
-                    this.$set(this.pendingLoadData, id, loadFn); // Tab đã ẩn -> Xếp hàng chờ
+                    this.$set(this.pendingLoadData, id, loadFn); 
                 }
             });
         },
@@ -291,6 +294,7 @@ export default {
             }
             this.loadData(tab, index, savedData)
         },
+
         async loadData(tab, index, savedData) {
             if (this.side === 'client') {
                 await this.loadDataClient(tab, index, savedData)
@@ -298,6 +302,7 @@ export default {
                 await this.loadDataServer(tab, index, savedData)
             }
         },
+
         async loadDataClient(tab, index, savedData) {
             try {
                 if (index == null) {
@@ -308,19 +313,20 @@ export default {
                     }
                 }
                 const id = tab.mrid || tab.id;
+                const ctx = this.getContext(id); // Gọi bộ nhớ độc lập
 
                 if (tab.mode === 'substation') {
                     let data
                     if (savedData) {
                         data = savedData
                     } else {
-                        const [dataLocation, dataPerson, dataEntity] = await Promise.all([
+                        const[dataLocation, dataPerson, dataEntity] = await Promise.all([
                             window.electronAPI.getLocationByOrganisationId(tab.parentId),
                             window.electronAPI.getPersonByOrganisationId(tab.parentId),
                             window.electronAPI.getSubstationEntityByMrid(tab.mrid, this.$store.state.user.user_id, tab.parentId)
                         ]);
 
-                        data = { locationList: [], personList: [], dto: null, substation: tab }
+                        data = { locationList: [], personList:[], dto: null, substation: tab }
                         if (dataLocation.success) data.locationList = dataLocation.data;
                         if (dataPerson.success) data.personList = dataPerson.data;
 
@@ -415,7 +421,7 @@ export default {
 
                 } else if (tab.mode === 'asset') {
                     if (savedData) {
-                        this.parentOrganization = { mrid: tab.parentId }
+                        ctx.parentOrganization = { mrid: tab.parentId }
 
                         this.executeOrQueueLoadData(id, (comp) => comp.loadData(savedData));
 
@@ -429,7 +435,7 @@ export default {
                         this.$emit('refresh-properties', tab)
                     } else {
                         if (tab.asset === 'Surge arrester') {
-                            this.parentOrganization = { mrid: tab.parentId }
+                            ctx.parentOrganization = { mrid: tab.parentId }
                             const data = await window.electronAPI.getSurgeArresterEntityByMrid(tab.mrid, tab.parentId)
                             if (data.success) {
                                 const surgeArresterDto = surgeMapper.mapEntityToDto(data.data)
@@ -440,7 +446,7 @@ export default {
                                 this.$emit('update-node-data', { mrid: tab.mrid, data: surgeArresterDto, mode: 'asset', assetType: tab.asset })
                             }
                         } else if (tab.asset === 'Bushing') {
-                            this.parentOrganization = { mrid: tab.parentId }
+                            ctx.parentOrganization = { mrid: tab.parentId }
                             const data = await window.electronAPI.getBushingEntityByMrid(tab.mrid, tab.parentId)
                             if (data.success) {
                                 const BushingDto = bushingMapper.mapEntityToDto(data.data)
@@ -451,7 +457,7 @@ export default {
                                 this.$emit('update-node-data', { mrid: tab.mrid, data: BushingDto, mode: 'asset', assetType: tab.asset })
                             }
                         } else if (tab.asset === 'Current transformer') {
-                            this.parentOrganization = { mrid: tab.parentId }
+                            ctx.parentOrganization = { mrid: tab.parentId }
                             const data = await window.electronAPI.getCurrentTransformerEntityByMrid(tab.mrid, tab.parentId)
                             if (data.success) {
                                 const currentTransformerDto = currentTransformerMapper.mapEntityToDto(data.data)
@@ -462,7 +468,7 @@ export default {
                                 this.$emit('update-node-data', { mrid: tab.mrid, data: currentTransformerDto, mode: 'asset', assetType: tab.asset })
                             }
                         } else if (tab.asset === 'Voltage transformer') {
-                            this.parentOrganization = { mrid: tab.parentId }
+                            ctx.parentOrganization = { mrid: tab.parentId }
                             const data = await window.electronAPI.getVoltageTransformerEntityByMrid(tab.mrid, tab.parentId)
                             if (data.success) {
                                 const vtDto = vtMapper.mapEntityToDto(data.data)
@@ -473,7 +479,7 @@ export default {
                                 this.$emit('update-node-data', { mrid: tab.mrid, data: vtDto, mode: 'asset', assetType: tab.asset })
                             }
                         } else if (tab.asset === 'Disconnector') {
-                            this.parentOrganization = { mrid: tab.parentId }
+                            ctx.parentOrganization = { mrid: tab.parentId }
                             const data = await window.electronAPI.getDisconnectorEntityByMrid(tab.mrid, tab.parentId)
                             if (data.success) {
                                 const disconnectorDto = disconnectorMapper.disconnectorEntityToDto(data.data)
@@ -484,7 +490,7 @@ export default {
                                 this.$emit('update-node-data', { mrid: tab.mrid, data: disconnectorDto, mode: 'asset', assetType: tab.asset })
                             }
                         } else if (tab.asset === 'Power cable') {
-                            this.parentOrganization = { mrid: tab.parentId }
+                            ctx.parentOrganization = { mrid: tab.parentId }
                             const data = await window.electronAPI.getPowerCableEntityByMrid(tab.mrid, tab.parentId)
                             if (data.success) {
                                 const powerCableDto = PowerCableMapper.mapEntityToDto(data.data)
@@ -495,7 +501,7 @@ export default {
                                 this.$emit('update-node-data', { mrid: tab.mrid, data: powerCableDto, mode: 'asset', assetType: tab.asset })
                             }
                         } else if (tab.asset === 'Rotating machine') {
-                            this.parentOrganization = { mrid: tab.parentId }
+                            ctx.parentOrganization = { mrid: tab.parentId }
                             const data = await window.electronAPI.getRotatingMachineEntityByMrid(tab.mrid, tab.parentId)
                             if (data.success) {
                                 const rotatingMachineDto = RotatingMachineMapper.mapEntityToDto(data.data)
@@ -506,7 +512,7 @@ export default {
                                 this.$emit('update-node-data', { mrid: tab.mrid, data: rotatingMachineDto, mode: 'asset', assetType: tab.asset })
                             }
                         } else if (tab.asset === 'Capacitor') {
-                            this.parentOrganization = { mrid: tab.parentId }
+                            ctx.parentOrganization = { mrid: tab.parentId }
                             const data = await window.electronAPI.getCapacitorEntityByMrid(tab.mrid, tab.parentId)
                             if (data.success) {
                                 const capacitorDto = CapacitorMapper.mapEntityToDto(data.data)
@@ -517,7 +523,7 @@ export default {
                                 this.$emit('update-node-data', { mrid: tab.mrid, data: capacitorDto, mode: 'asset', assetType: tab.asset })
                             }
                         } else if (tab.asset === 'Circuit breaker') {
-                            this.parentOrganization = { mrid: tab.parentId }
+                            ctx.parentOrganization = { mrid: tab.parentId }
                             const data = await window.electronAPI.getBreakerEntityByMrid(tab.mrid, tab.parentId)
                             if (data.success) {
                                 const breakerDto = BreakerMapper.mapEntityToDto(data.data)
@@ -528,7 +534,7 @@ export default {
                                 this.$emit('update-node-data', { mrid: tab.mrid, data: breakerDto, mode: 'asset', assetType: tab.asset })
                             }
                         } else if (tab.asset === 'Transformer') {
-                            this.parentOrganization = { mrid: tab.parentId }
+                            ctx.parentOrganization = { mrid: tab.parentId }
                             const data = await window.electronAPI.getTransformerEntityByMrid(tab.mrid, tab.parentId)
                             if (data.success) {
                                 const transformerDto = transformerMapper.transformerEntityToDto(data.data)
@@ -539,7 +545,7 @@ export default {
                                 this.$emit('update-node-data', { mrid: tab.mrid, data: transformerDto, mode: 'asset', assetType: tab.asset })
                             }
                         } else if (tab.asset === 'Reactor') {
-                            this.parentOrganization = { mrid: tab.parentId }
+                            ctx.parentOrganization = { mrid: tab.parentId }
                             const data = await window.electronAPI.getReactorEntityByMrid(tab.mrid, tab.parentId)
                             if (data.success) {
                                 const reactorDto = reactorMapper.mapEntityToDto(data.data)
@@ -554,31 +560,31 @@ export default {
                 } else if (tab.mode === 'job') {
                     const dataAsset = await window.electronAPI.getAssetByMrid(tab.parentId)
                     if (dataAsset.success) {
-                        this.assetData = dataAsset.data
-                        this.parentOrganization = dataAsset.data
-                        const [dataLocation, dataProductAssetModel] = await Promise.all([
+                        ctx.assetData = dataAsset.data
+                        ctx.parentOrganization = dataAsset.data
+                        const[dataLocation, dataProductAssetModel] = await Promise.all([
                             window.electronAPI.getLocationDetailByMrid(dataAsset.data.location),
                             window.electronAPI.getProductAssetModelByMrid(dataAsset.data.product_asset_model)
                         ]);
-                        this.locationData = dataLocation.success ? dataLocation.data : {}
-                        this.productAssetModelData = dataProductAssetModel.success ? dataProductAssetModel.data : {}
+                        ctx.locationData = dataLocation.success ? dataLocation.data : {}
+                        ctx.productAssetModelData = dataProductAssetModel.success ? dataProductAssetModel.data : {}
                     } else {
-                        this.assetData = {}
-                        this.locationData = {}
-                        this.productAssetModelData = {}
+                        ctx.assetData = {}
+                        ctx.locationData = {}
+                        ctx.productAssetModelData = {}
                     }
 
                     if (tab.job === 'Surge arrester') {
                         const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Surge arrester")
-                        this.testTypeListData = dataTestType.success ? dataTestType.data : []
+                        ctx.testTypeListData = dataTestType.success ? dataTestType.data :[]
                         const dataSurgeArrester = await window.electronAPI.getSurgeArresterByMrid(tab.parentId)
-                        this.assetData = dataSurgeArrester.success ? dataSurgeArrester.data : {}
+                        ctx.assetData = dataSurgeArrester.success ? dataSurgeArrester.data : {}
 
                         const data = await window.electronAPI.getSurgeArresterJobByMrid(tab.mrid)
                         if (data.success) {
                             const surgeArresterJobDto = SurgeArresterJobMapper.JobEntityToDto(data.data)
                             for (const test of surgeArresterJobDto.testList) {
-                                for (const type of this.testTypeListData) {
+                                for (const type of ctx.testTypeListData) {
                                     if (test.testTypeCode === type.alias_name) {
                                         test.testTypeName = type.name
                                         test.testTypeId = type.mrid
@@ -587,26 +593,26 @@ export default {
                                 }
                             }
                             this.executeOrQueueLoadData(id, (comp) => {
-                                comp.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData);
+                                comp.loadParameter(ctx.testTypeListData, ctx.assetData, ctx.productAssetModelData, ctx.locationData);
                                 comp.loadData(surgeArresterJobDto);
                             });
                         }
                     } else if (tab.job === 'Power cable') {
                         const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Power cable")
-                        this.testTypeListData = dataTestType.success ? dataTestType.data : []
+                        ctx.testTypeListData = dataTestType.success ? dataTestType.data :[]
                         const dataPowerCable = await window.electronAPI.getPowerCableEntityByMrid(tab.parentId)
                         if (dataPowerCable.success && dataPowerCable.data) {
                             // Map entity to pro format like other asset types
-                            this.assetData = PowerCableMapper.mapEntityToDto(dataPowerCable.data)
+                            ctx.assetData = PowerCableMapper.mapEntityToDto(dataPowerCable.data)
                         } else {
-                            this.assetData = {}
+                            ctx.assetData = {}
                         }
 
                         const data = await window.electronAPI.getPowerCableJobByMrid(tab.mrid)
                         if (data.success) {
                             const powerCableJobDto = PowerCableJobMapper.JobEntityToDto(data.data)
                             for (const test of powerCableJobDto.testList) {
-                                for (const type of this.testTypeListData) {
+                                for (const type of ctx.testTypeListData) {
                                     if (test.testTypeCode === type.alias_name) {
                                         test.testTypeName = type.name
                                         test.testTypeId = type.mrid
@@ -615,21 +621,21 @@ export default {
                                 }
                             }
                             this.executeOrQueueLoadData(id, (comp) => {
-                                comp.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData);
+                                comp.loadParameter(ctx.testTypeListData, ctx.assetData, ctx.productAssetModelData, ctx.locationData);
                                 comp.loadData(powerCableJobDto);
                             });
                         }
                     } else if (tab.job === 'Transformer') {
                         const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Transformer")
-                        this.testTypeListData = dataTestType.success ? dataTestType.data : []
+                        ctx.testTypeListData = dataTestType.success ? dataTestType.data :[]
                         const dataTransformer = await window.electronAPI.getTransformerEntityByMrid(tab.parentId)
-                        this.assetData = dataTransformer.success ? transformerMapper.transformerEntityToDto(dataTransformer.data) : {}
+                        ctx.assetData = dataTransformer.success ? transformerMapper.transformerEntityToDto(dataTransformer.data) : {}
 
                         const data = await window.electronAPI.getTransformerJobByMrid(tab.mrid)
                         if (data.success) {
                             const transformerJobDto = TransformerJobMapper.JobEntityToDto(data.data)
                             for (const test of transformerJobDto.testList) {
-                                for (const type of this.testTypeListData) {
+                                for (const type of ctx.testTypeListData) {
                                     if (test.testTypeCode === type.code) {
                                         test.testTypeName = type.name
                                         test.testTypeId = type.mrid
@@ -638,29 +644,29 @@ export default {
                                 }
                             }
                             this.executeOrQueueLoadData(id, (comp) => {
-                                comp.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData);
+                                comp.loadParameter(ctx.testTypeListData, ctx.assetData, ctx.productAssetModelData, ctx.locationData);
                                 comp.loadData(transformerJobDto);
                             });
                         }
                     } else if (tab.job === 'Voltage transformer') {
                         const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Voltage transformer")
-                        this.testTypeListData = dataTestType.success ? dataTestType.data : []
+                        ctx.testTypeListData = dataTestType.success ? dataTestType.data :[]
                         const dataVoltageTransformer = await window.electronAPI.getVoltageTransformerEntityByMrid(tab.parentId)
                         if (dataVoltageTransformer.success) {
-                            this.assetData = vtMapper.mapEntityToDto(dataVoltageTransformer.data)
+                            ctx.assetData = vtMapper.mapEntityToDto(dataVoltageTransformer.data)
                             const [dataLocation, dataProductAssetModel] = await Promise.all([
-                                window.electronAPI.getLocationDetailByMrid(this.assetData.locationId),
-                                window.electronAPI.getProductAssetModelByMrid(this.assetData.productAssetModelId)
+                                window.electronAPI.getLocationDetailByMrid(ctx.assetData.locationId),
+                                window.electronAPI.getProductAssetModelByMrid(ctx.assetData.productAssetModelId)
                             ]);
-                            this.locationData = dataLocation.success ? dataLocation.data : {}
-                            this.productAssetModelData = dataProductAssetModel.success ? dataProductAssetModel.data : {}
+                            ctx.locationData = dataLocation.success ? dataLocation.data : {}
+                            ctx.productAssetModelData = dataProductAssetModel.success ? dataProductAssetModel.data : {}
                         }
 
                         const data = await window.electronAPI.getVoltageTransformerJobByMrid(tab.mrid)
                         if (data.success) {
                             const voltageTransformerJobDto = VoltageTransformerJobMapper.JobEntityToDto(data.data)
                             for (const test of voltageTransformerJobDto.testList) {
-                                for (const type of this.testTypeListData) {
+                                for (const type of ctx.testTypeListData) {
                                     if (test.testTypeCode === type.code) {
                                         test.testTypeName = type.name
                                         test.testTypeId = type.mrid
@@ -669,21 +675,21 @@ export default {
                                 }
                             }
                             this.executeOrQueueLoadData(id, (comp) => {
-                                comp.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData);
+                                comp.loadParameter(ctx.testTypeListData, ctx.assetData, ctx.productAssetModelData, ctx.locationData);
                                 comp.loadData(voltageTransformerJobDto);
                             });
                         }
                     } else if (tab.job === 'Current transformer') {
                         const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Current transformer")
-                        this.testTypeListData = dataTestType.success ? dataTestType.data : []
+                        ctx.testTypeListData = dataTestType.success ? dataTestType.data :[]
                         const dataCurrentTransformer = await window.electronAPI.getCurrentTransformerEntityByMrid(tab.parentId)
-                        this.assetData = dataCurrentTransformer.success ? currentTransformerMapper.mapEntityToDto(dataCurrentTransformer.data) : {}
+                        ctx.assetData = dataCurrentTransformer.success ? currentTransformerMapper.mapEntityToDto(dataCurrentTransformer.data) : {}
 
                         const data = await window.electronAPI.getCurrentTransformerJobByMrid(tab.mrid)
                         if (data.success) {
                             const currentTransformerJobDto = CurrentTransformerJobMapper.JobEntityToDto(data.data)
                             for (const test of currentTransformerJobDto.testList) {
-                                for (const type of this.testTypeListData) {
+                                for (const type of ctx.testTypeListData) {
                                     if (test.testTypeCode === type.code) {
                                         test.testTypeName = type.name
                                         test.testTypeId = type.mrid
@@ -692,21 +698,21 @@ export default {
                                 }
                             }
                             this.executeOrQueueLoadData(id, (comp) => {
-                                comp.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData);
+                                comp.loadParameter(ctx.testTypeListData, ctx.assetData, ctx.productAssetModelData, ctx.locationData);
                                 comp.loadData(currentTransformerJobDto);
                             });
                         }
                     } else if (tab.job === 'Disconnector') {
                         const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Disconnector")
-                        this.testTypeListData = dataTestType.success ? dataTestType.data : []
+                        ctx.testTypeListData = dataTestType.success ? dataTestType.data :[]
                         const dataDisconnector = await window.electronAPI.getDisconnectorEntityByMrid(tab.parentId)
-                        this.assetData = dataDisconnector.success ? disconnectorMapper.disconnectorEntityToDto(dataDisconnector.data) : {}
+                        ctx.assetData = dataDisconnector.success ? disconnectorMapper.disconnectorEntityToDto(dataDisconnector.data) : {}
 
                         const data = await window.electronAPI.getDisconnectorJobByMrid(tab.mrid)
                         if (data.success) {
                             const disconnectorJobDto = DisconnectorJobMapper.JobEntityToDto(data.data)
                             for (const test of disconnectorJobDto.testList) {
-                                for (const type of this.testTypeListData) {
+                                for (const type of ctx.testTypeListData) {
                                     if (test.testTypeCode === type.code || test.testTypeCode === type.alias_name) {
                                             test.testTypeName = type.name
                                         test.testTypeId = type.mrid
@@ -715,21 +721,21 @@ export default {
                                 }
                             }
                             this.executeOrQueueLoadData(id, (comp) => {
-                                comp.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData);
+                                comp.loadParameter(ctx.testTypeListData, ctx.assetData, ctx.productAssetModelData, ctx.locationData);
                                 comp.loadData(disconnectorJobDto);
                             });
                         }
                     } else if (tab.job === 'Rotating machine') {
                         const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Rotating machine")
-                        this.testTypeListData = dataTestType.success ? dataTestType.data : []
+                        ctx.testTypeListData = dataTestType.success ? dataTestType.data :[]
                         const dataRotatingMachine = await window.electronAPI.getRotatingMachineEntityByMrid(tab.parentId)
-                        this.assetData = dataRotatingMachine.success ? RotatingMachineMapper.mapEntityToDto(dataRotatingMachine.data) : {}
+                        ctx.assetData = dataRotatingMachine.success ? RotatingMachineMapper.mapEntityToDto(dataRotatingMachine.data) : {}
 
                         const data = await window.electronAPI.getRotatingMachineJobByMrid(tab.mrid)
                         if (data.success) {
                             const rotatingMachineJobDto = RotatingMachineJobMapper.JobEntityToDto(data.data)
                             for (const test of rotatingMachineJobDto.testList) {
-                                for (const type of this.testTypeListData) {
+                                for (const type of ctx.testTypeListData) {
                                     if (test.testTypeCode === type.code) {
                                         test.testTypeName = type.name
                                         test.testTypeId = type.mrid
@@ -738,21 +744,21 @@ export default {
                                 }
                             }
                             this.executeOrQueueLoadData(id, (comp) => {
-                                comp.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData);
+                                comp.loadParameter(ctx.testTypeListData, ctx.assetData, ctx.productAssetModelData, ctx.locationData);
                                 comp.loadData(rotatingMachineJobDto);
                             });
                         }
                     } else if (tab.job === 'Reactor') {
                         const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Reactor")
-                        this.testTypeListData = dataTestType.success ? dataTestType.data : []
+                        ctx.testTypeListData = dataTestType.success ? dataTestType.data :[]
                         const dataReactor = await window.electronAPI.getReactorByMrid(tab.parentId)
-                        this.assetData = dataReactor.success ? dataReactor.data : {}
+                        ctx.assetData = dataReactor.success ? dataReactor.data : {}
 
                         const data = await window.electronAPI.getReactorJobByMrid(tab.mrid)
                         if (data.success) {
                             const reactorJobDto = ReactorJobMapper.JobEntityToDto(data.data)
                             for (const test of reactorJobDto.testList) {
-                                for (const type of this.testTypeListData) {
+                                for (const type of ctx.testTypeListData) {
                                     if (test.testTypeCode === type.code) {
                                         test.testTypeName = type.name
                                         test.testTypeId = type.mrid
@@ -761,21 +767,21 @@ export default {
                                 }
                             }
                             this.executeOrQueueLoadData(id, (comp) => {
-                                comp.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData);
+                                comp.loadParameter(ctx.testTypeListData, ctx.assetData, ctx.productAssetModelData, ctx.locationData);
                                 comp.loadData(reactorJobDto);
                             });
                         }
                     } else if (tab.job === 'Capacitor') {
                         const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Capacitor")
-                        this.testTypeListData = dataTestType.success ? dataTestType.data : []
+                        ctx.testTypeListData = dataTestType.success ? dataTestType.data :[]
                         const dataCapacitor = await window.electronAPI.getCapacitorEntityByMrid(tab.parentId)
-                        this.assetData = dataCapacitor.success ? CapacitorMapper.mapEntityToDto(dataCapacitor.data) : {}
+                        ctx.assetData = dataCapacitor.success ? CapacitorMapper.mapEntityToDto(dataCapacitor.data) : {}
 
                         const data = await window.electronAPI.getCapacitorJobByMrid(tab.mrid)
                         if (data.success) {
                             const capacitorJobDto = CapacitorJobMapper.JobEntityToDto(data.data)
                             for (const test of capacitorJobDto.testList) {
-                                for (const type of this.testTypeListData) {
+                                for (const type of ctx.testTypeListData) {
                                     if (test.testTypeCode === type.code) {
                                         test.testTypeName = type.name
                                         test.testTypeId = type.mrid
@@ -784,21 +790,21 @@ export default {
                                 }
                             }
                             this.executeOrQueueLoadData(id, (comp) => {
-                                comp.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData);
+                                comp.loadParameter(ctx.testTypeListData, ctx.assetData, ctx.productAssetModelData, ctx.locationData);
                                 comp.loadData(capacitorJobDto);
                             });
                         }
                     } else if (tab.job === 'Bushing') {
                         const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Bushing")
-                        this.testTypeListData = dataTestType.success ? dataTestType.data : []
+                        ctx.testTypeListData = dataTestType.success ? dataTestType.data :[]
                         const dataBushing = await window.electronAPI.getBushingByMrid(tab.parentId)
-                        this.assetData = dataBushing.success ? dataBushing.data : {}
+                        ctx.assetData = dataBushing.success ? dataBushing.data : {}
 
                         const data = await window.electronAPI.getBushingJobByMrid(tab.mrid)
                         if (data.success) {
                             const bushingJobDto = BushingJobMapper.JobEntityToDto(data.data)
                             for (const test of bushingJobDto.testList) {
-                                for (const type of this.testTypeListData) {
+                                for (const type of ctx.testTypeListData) {
                                     if (test.testTypeCode === type.code) {
                                         test.testTypeName = type.name
                                         test.testTypeId = type.mrid
@@ -807,21 +813,21 @@ export default {
                                 }
                             }
                             this.executeOrQueueLoadData(id, (comp) => {
-                                comp.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData);
+                                comp.loadParameter(ctx.testTypeListData, ctx.assetData, ctx.productAssetModelData, ctx.locationData);
                                 comp.loadData(bushingJobDto);
                             });
                         }
                     } else if (tab.job === 'Circuit breaker') {
                         const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Circuit breaker")
-                        this.testTypeListData = dataTestType.success ? dataTestType.data : []
+                        ctx.testTypeListData = dataTestType.success ? dataTestType.data :[]
                         const dataCircuitBreaker = await window.electronAPI.getBreakerEntityByMrid(tab.parentId)
-                        this.assetData = dataCircuitBreaker.success ? BreakerMapper.mapEntityToDto(dataCircuitBreaker.data) : {}
+                        ctx.assetData = dataCircuitBreaker.success ? BreakerMapper.mapEntityToDto(dataCircuitBreaker.data) : {}
 
                         const data = await window.electronAPI.getCircuitBreakerJobByMrid(tab.mrid)
                         if (data.success) {
                             const circuitBreakerJobDto = CircuitBreakerJobMapper.JobEntityToDto(data.data)
                             for (const test of circuitBreakerJobDto.testList) {
-                                for (const type of this.testTypeListData) {
+                                for (const type of ctx.testTypeListData) {
                                     if (test.testTypeCode === type.code) {
                                         test.testTypeName = type.name
                                         test.testTypeId = type.mrid
@@ -830,7 +836,7 @@ export default {
                                 }
                             }
                             this.executeOrQueueLoadData(id, (comp) => {
-                                comp.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData);
+                                comp.loadParameter(ctx.testTypeListData, ctx.assetData, ctx.productAssetModelData, ctx.locationData);
                                 comp.loadData(circuitBreakerJobDto);
                             });
                         }
@@ -848,7 +854,7 @@ export default {
                     if (response) {
                         const dto = SubstationServerMapper.mapServerToDto(response.data || response);
                         this.executeOrQueueLoadData(id, (comp) => {
-                            comp.loadData({ dto: dto, locationList: [], personList: [] });
+                            comp.loadData({ dto: dto, locationList: [], personList:[] });
                         });
                     }
                 }
@@ -898,6 +904,9 @@ export default {
                     //     comp.loadData({ dto: dto, locationList: [], personList: [] });
                     // });
 
+                    this.executeOrQueueLoadData(id, (comp) => {
+                        comp.loadData({ dto: dto, locationList: [], personList:[] });
+                    });
                 }
                 else if (tab.mode === 'asset' && tab.asset === 'Transformer') {
                     const response = await demoAPI.getTransformerById(tab.mrid);
@@ -974,12 +983,22 @@ export default {
             if (!tab1 || !tab2) return false;
             return (tab1.mrid || tab1.id) === (tab2.mrid || tab2.id);
         },
+
+        // Dọn dẹp cache rác khi tab bị đóng
         closeTab(index) {
+            const tabToClose = this.tabs[index];
+            if (tabToClose) {
+                const id = tabToClose.mrid || tabToClose.id;
+                this.$delete(this.tabContexts, id);
+                this.$delete(this.pendingLoadData, id);
+            }
+
             this.$emit('close-tab', index)
             if (this.indexTab === index) {
                 this.indexTab = null;
             }
         },
+        
         checkScroll() {
             this.$nextTick(() => {
                 const header = this.$refs.tabsHeader
