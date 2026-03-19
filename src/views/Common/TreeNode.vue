@@ -46,7 +46,7 @@
         <ul v-if="node.expanded">
             <TreeNode 
                 v-for="child in sortedChildren" 
-                :key="child.id" :node="child" 
+                :key="getChildUniqueKey(child)" :node="child" 
                 :selectedNodes="selectedNodes"
                 @double-click-node="(n) => $emit('double-click-node', n)" 
                 @fetch-children="(n) => $emit('fetch-children', n)"
@@ -143,6 +143,13 @@ export default {
         }
     },
     methods: {
+        getChildUniqueKey(child) {
+    if (!child.mrid) return Math.random().toString(36).substr(2, 9)
+    if (child.mode === 'asset') {
+        return `${child.mrid}_${child.asset}`
+    }
+    return `${child.mrid}_${child.mode}`
+},
         async toggle(event) {
             // Phân biệt click và double click
             if (this.clickTimeout) clearTimeout(this.clickTimeout);

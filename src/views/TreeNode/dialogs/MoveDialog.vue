@@ -12,7 +12,7 @@
         <div style="height: 300px; overflow-y: auto">
             <div class="child-nav" style="height: 100%; cursor: pointer">
                 <ul style="list-style: none; padding-left: 0">
-                    <TreeNode v-for="item in moveTreeData" :key="item.mrid" :node="item"
+                    <TreeNode v-for="item in moveTreeData" :key="getItemUniqueKey(item)" :node="item"
                         :selectedNodes="selectedTargetNodes" @fetch-children="fetchChildrenForMove"
                         @update-selection="handleMoveNodeSelection" @open-context-menu="() => { }"
                         style="width: 100%">
@@ -131,6 +131,13 @@ export default {
         }
     },
     methods: {
+        getItemUniqueKey(item) {
+    if (!item.mrid) return Math.random().toString(36).substr(2, 9)
+    if (item.mode === 'asset') {
+        return `${item.mrid}_${item.asset}`
+    }
+    return `${item.mrid}_${item.mode}`
+},
         handleClose() {
             this.$emit('close')
         },

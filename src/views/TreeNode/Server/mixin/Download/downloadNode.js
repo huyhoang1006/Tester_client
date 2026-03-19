@@ -26,7 +26,7 @@ export default {
         handleDownloadTargetSelection(node) {
             const targetNode = Array.isArray(node) ? node[node.length - 1] : node
             if (!targetNode || targetNode.disabled) {
-                this.selectedDownloadTargetNodes =[]
+                this.selectedDownloadTargetNodes = []
                 this.selectedDownloadTargetNode = null
                 return
             }
@@ -37,7 +37,7 @@ export default {
         // =========================================================
         // 2. REFACTOR HANDLER CHÍNH (STRATEGY PATTERN)
         // =========================================================
-        async handleDownloadNode() {            
+        async handleDownloadNode() {
             if (!this.selectedNodes || this.selectedNodes.length === 0) {
                 return this.$message.warning('Please select a node to download')
             }
@@ -76,7 +76,7 @@ export default {
         // =========================================================
         // 3. TÁCH CÁC TIẾN TRÌNH THÀNH HÀM RIÊNG BIỆT (CLEAN CODE)
         // =========================================================
-        
+
         async processOrganisationDownload(node) {
             const { chain } = await this.prepareOrganisationDownloadData(node)
             await this.downloadOrganisationChain(chain)
@@ -93,7 +93,7 @@ export default {
             await this.downloadOrganisationChainForParent(parentNode)
             const { substation, parentOrgId } = await this.prepareSubstationDownloadData(node)
             const result = await this.downloadSubstationToDb(substation, parentOrgId)
-            
+
             if (result.success) this.$message.success('Substation downloaded successfully!')
             else throw new Error(result.message)
         },
@@ -121,7 +121,7 @@ export default {
             // Tải VoltageLevel
             const { voltageLevel, parentSubstationId } = await this.prepareVoltageLevelDownloadData(node)
             const result = await this.downloadVoltageLevelToDb(voltageLevel, parentSubstationId)
-            
+
             if (result.success) this.$message.success('VoltageLevel downloaded successfully!')
             else throw new Error(result.message)
         },
@@ -145,7 +145,7 @@ export default {
             if (parentSubstationNode) {
                 const orgNode = this.findNodeById(parentSubstationNode.parentId, this.ownerServerList)
                 if (orgNode) await this.downloadOrganisationChainForParent(orgNode)
-                
+
                 const { substation } = await this.prepareSubstationDownloadData(parentSubstationNode)
                 await this.downloadSubstationToDb(substation, parentSubstationNode.parentId)
             }
@@ -171,7 +171,7 @@ export default {
 
             const { bay } = await this.prepareBayDownloadData(node, bayData, node.parentId)
             const result = await this.downloadBayToDb(bay, node.parentId)
-            
+
             if (result.success) this.$message.success(`Bay [${node.name}] downloaded successfully!`)
             else throw new Error(result.message)
         },
@@ -184,7 +184,7 @@ export default {
             dto.assetInfoId = serverResponse.cableInfo?.mRID || serverResponse.cableInfo?.mrid || this.generateUuid()
             dto.productAssetModelId = serverResponse.assetData?.productAssetModel?.mRID || this.generateUuid()
             dto.lifecycleDateId = this.generateUuid()
-            dto.oldCableInfoId = dto.assetInfoId 
+            dto.oldCableInfoId = dto.assetInfoId
             dto.assetPsrId = this.generateUuid()
 
             const clientParent = this.findNodeById(node.parentId, this.organisationClientList)
@@ -208,10 +208,10 @@ export default {
         async downloadOrganisationChainForParent(parentNode) {
             const { chain } = await this.prepareOrganisationDownloadData(parentNode)
             await this.downloadOrganisationChain(chain)
-            
+
             const rootOrg = this.organisationClientList?.find(org => org.mrid === '00000000-0000-0000-0000-000000000000')
             if (rootOrg) {
-                if (!rootOrg.children) rootOrg.children =[]
+                if (!rootOrg.children) rootOrg.children = []
                 for (const org of chain) {
                     const orgNode = {
                         mrid: org.mrid,
@@ -231,7 +231,7 @@ export default {
         async prepareSubstationDownloadData(node) {
             const substationId = node.mrid || node.id
             const parentOrgId = node.parentId
-            
+
             let substationData = null
             try {
                 const response = await demoAPI.getSubstationById(substationId)
@@ -242,7 +242,7 @@ export default {
             } catch (error) {
                 throw new Error('Failed to fetch substation: ' + error.message)
             }
-            
+
             const substationObj = {
                 id: substationId,
                 mrid: String(substationId),
@@ -258,27 +258,27 @@ export default {
         async downloadSubstationToDb(substation, parentOrgId) {
             // Không require lại Mapper nữa
             const serverData = { ...substation._serverData, mRID: substation.mrid }
-            
+
             const dto = SubstationServerMapper.mapServerToDto(serverData)
             dto.organisationId = parentOrgId
             dto.userId = this.$store.state.user.user_id
             dto.userIdentifiedObjectId = this.generateUuid()
             dto.organisationPsrId = this.generateUuid()
-            
+
             const entity = SubstationMapper.mapDtoToEntity(dto)
-            
+
             try {
                 const insertResult = await window.electronAPI.insertSubstationEntity(entity)
                 if (insertResult.success) {
                     const parentOrgNode = this.findNodeById(parentOrgId, this.organisationClientList)
                     if (parentOrgNode) {
                         const newSubstationNode = { mrid: substation.mrid, name: substation.name, aliasName: substation.aliasName, parentId: parentOrgId, mode: 'substation' }
-                        const children = Array.isArray(parentOrgNode.children) ? [...parentOrgNode.children] :[]
+                        const children = Array.isArray(parentOrgNode.children) ? [...parentOrgNode.children] : []
                         const existingIndex = children.findIndex(c => c.mrid === substation.mrid)
-                        
+
                         if (existingIndex >= 0) children[existingIndex] = newSubstationNode
                         else children.push(newSubstationNode)
-                        
+
                         this.$set(parentOrgNode, 'children', children)
                         this.$set(parentOrgNode, 'expanded', true)
                     }
@@ -293,8 +293,8 @@ export default {
         async executeDownloadAndSave(dto, parentNode) {
             try {
                 const existingLocalRes = await window.electronAPI.getPowerCableEntityByMrid(dto.properties.mrid, dto.psrId)
-                let oldEntity = (existingLocalRes.success && existingLocalRes.data) 
-                    ? existingLocalRes.data 
+                let oldEntity = (existingLocalRes.success && existingLocalRes.data)
+                    ? existingLocalRes.data
                     : new PowerCableEntity()
 
                 const newEntity = PowerCableMapping.mapDtoToEntity(dto)
@@ -319,18 +319,18 @@ export default {
 
         async buildAncestors(node) {
             const CLIENT_ROOT = '00000000-0000-0000-0000-000000000000'
-            const chain =[]
+            const chain = []
             let prevParentId = ''
-            
+
             if (node.parentArr && Array.isArray(node.parentArr)) {
                 for (let i = 0; i < node.parentArr.length; i++) {
                     const ancestor = node.parentArr[i]
                     const ancestorId = ancestor.mrid || ancestor.id
                     if (!ancestorId) continue
-                    
+
                     let assignedParentId = (i === 0 && !prevParentId) ? CLIENT_ROOT : prevParentId
                     let ancestorData = null
-                    
+
                     try {
                         const response = await demoAPI.getOrganisationById(ancestorId)
                         ancestorData = response.data || response
@@ -341,7 +341,7 @@ export default {
                     } catch (e) {
                         throw new Error(`Failed to fetch organisation ${ancestorId}: ${e.message}`)
                     }
-                    
+
                     chain.push({
                         id: ancestorId, mrid: ancestorId, name: ancestor.parent || ancestor.name || '',
                         parentId: assignedParentId, _type: 'organisation',
@@ -350,10 +350,10 @@ export default {
                     prevParentId = ancestorId
                 }
             }
-            
+
             const selectedOrgId = node.mrid || node.id
             let orgData = null
-            
+
             try {
                 const response = await demoAPI.getOrganisationById(selectedOrgId)
                 if (response && typeof response === 'object' && response.aliasName) orgData = response
@@ -362,24 +362,24 @@ export default {
             } catch (e) {
                 if (node._serverData) orgData = node._serverData
             }
-            
+
             let finalParentId = node.parentId || prevParentId
             if ((!node.parentArr || node.parentArr.length === 0) && !finalParentId) finalParentId = CLIENT_ROOT
-            
+
             chain.push({
                 id: selectedOrgId, mrid: selectedOrgId, name: node.name || node.aliasName || '',
                 parentId: finalParentId, _type: 'organisation',
                 _serverData: orgData || { id: selectedOrgId, name: node.name }
             })
-            
+
             return chain
         },
 
         async fetchAllDescendants(nodeId, nodeType, visited = new Set()) {
-            let allDescendants =[]
+            let allDescendants = []
             if (!nodeId || visited.has(nodeId)) return allDescendants
             visited.add(nodeId)
-            
+
             try {
                 if (nodeType === 'organisation') {
                     const substations = await demoAPI.getChildSubstation(nodeId)
@@ -403,7 +403,7 @@ export default {
                         allDescendants.push(...await this.fetchAllDescendants(bayId, 'bay', visited))
                     }
                 } else if (nodeType === 'bay') {
-                    const assetTypes =['PowerCable', 'Transformer', 'CircuitBreaker', 'CurrentTransformer', 'Disconnector', 'SurgeArrester', 'VoltageTransformer', 'Capacitor', 'Reactor', 'RotatingMachine', 'Bushing']
+                    const assetTypes = ['PowerCable', 'Transformer', 'CircuitBreaker', 'CurrentTransformer', 'Disconnector', 'SurgeArrester', 'VoltageTransformer', 'Capacitor', 'Reactor', 'RotatingMachine', 'Bushing']
                     for (const assetType of assetTypes) {
                         try {
                             const assets = await demoAPI.getAssetByOwner(nodeId, assetType)
@@ -411,7 +411,7 @@ export default {
                                 const assetId = asset.mrid || asset.id
                                 allDescendants.push({ id: assetId, mrid: assetId, name: asset.name || asset.apparatus_id, _type: 'asset', _assetType: assetType, parentId: nodeId, _serverData: asset })
                             }
-                        } catch (e) {} // Bỏ qua log khi không có asset
+                        } catch (e) { } // Bỏ qua log khi không có asset
                     }
                 }
             } catch (error) {
@@ -422,7 +422,7 @@ export default {
 
         async prepareOrganisationDownloadData(node) {
             const chain = await this.buildAncestors(node)
-            return { chain, descendants:[] }
+            return { chain, descendants: [] }
         },
 
         async fetchWithRetry(fn, maxRetries = 3, delayMs = 1000) {
@@ -439,13 +439,13 @@ export default {
         async downloadOrganisationChain(chain) {
             const CLIENT_ROOT = '00000000-0000-0000-0000-000000000000'
             let failedCount = 0
-            
+
             for (let i = 0; i < chain.length; i++) {
                 const org = chain[i]
                 try {
-                    const rawPositionPoints = org._serverData?.positionPoints ||[]
+                    const rawPositionPoints = org._serverData?.positionPoints || []
                     const hasValidPositionData = rawPositionPoints.some(p => p.xposition !== null || p.yposition !== null || p.zposition !== null)
-                    
+
                     const serverData = {
                         name: org._serverData?.name || org.name,
                         aliasName: org._serverData?.shortName || org._serverData?.aliasName || org.name,
@@ -458,28 +458,28 @@ export default {
                             electronicAddress: org._serverData?.organisation?.electronicAddress || {},
                             phone: org._serverData?.organisation?.phone || {}
                         },
-                        positionPoints: hasValidPositionData ? rawPositionPoints :[]
+                        positionPoints: hasValidPositionData ? rawPositionPoints : []
                     }
-                    
+
                     const dto = OrganisationServerMapper.mapServerToDto(serverData)
                     dto.parentId = org.parentId
                     dto.organisationId = org.mrid
                     const entity = OrganisationMapper.OrgDtoToOrgEntity(dto)
-                    
+
                     if (org.parentId && org.parentId !== CLIENT_ROOT) {
-                        try { await this.fetchWithRetry(() => window.electronAPI.getOrganisationEntityByMrid(org.parentId)) } catch (e) {}
+                        try { await this.fetchWithRetry(() => window.electronAPI.getOrganisationEntityByMrid(org.parentId)) } catch (e) { }
                     }
-                    
+
                     let exists = false
                     try {
                         const existingResult = await this.fetchWithRetry(() => window.electronAPI.getOrganisationEntityByMrid(org.mrid))
                         exists = existingResult.success && existingResult.data
-                    } catch (e) {}
-                    
+                    } catch (e) { }
+
                     if (exists) {
-                        try { await this.fetchWithRetry(() => window.electronAPI.deleteParentOrganizationEntity(org.mrid)) } catch (e) {}
+                        try { await this.fetchWithRetry(() => window.electronAPI.deleteParentOrganizationEntity(org.mrid)) } catch (e) { }
                     }
-                    
+
                     try {
                         const insertResult = await this.fetchWithRetry(() => window.electronAPI.insertParentOrganizationEntity(entity))
                         if (!insertResult.success) failedCount++
@@ -548,13 +548,13 @@ export default {
         async addVoltageLevelToClientTree(voltageLevel, parentSubstationId) {
             const parentNode = this.findNodeById(parentSubstationId, this.organisationClientList)
             if (parentNode) {
-                const children = Array.isArray(parentNode.children) ? [...(parentNode.children || [])] :[]
+                const children = Array.isArray(parentNode.children) ? [...(parentNode.children || [])] : []
                 const newVoltageLevelNode = { mrid: voltageLevel.mrid, name: voltageLevel.name, aliasName: voltageLevel.aliasName, parentId: parentSubstationId, mode: 'voltageLevel' }
                 const existingIndex = children.findIndex(c => c.mrid === voltageLevel.mrid)
-                
+
                 if (existingIndex >= 0) children[existingIndex] = newVoltageLevelNode
                 else children.push(newVoltageLevelNode)
-                
+
                 this.$set(parentNode, 'children', children)
                 this.$set(parentNode, 'expanded', true)
             }
@@ -597,13 +597,13 @@ export default {
 
                 const parentNode = this.findNodeById(parentVoltageLevelId, this.organisationClientList)
                 if (parentNode) {
-                    if (!parentNode.children) parentNode.children =[]
+                    if (!parentNode.children) parentNode.children = []
                     const newBayNode = { id: bay.mrid, mrid: bay.mrid, name: bay.name, aliasName: bay.name, parentId: parentVoltageLevelId, mode: 'bay' }
                     const existingIndex = parentNode.children.findIndex(c => c.mrid === bay.mrid)
-                    
+
                     if (existingIndex >= 0) parentNode.children[existingIndex] = newBayNode
                     else parentNode.children.push(newBayNode)
-                    
+
                     this.$set(parentNode, 'expanded', true)
                 }
 

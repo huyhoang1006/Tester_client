@@ -13,7 +13,7 @@
 
     <div class="child-nav" >
       <ul>
-        <TreeNode v-for="item in organisationClientList" :key="item.id" :node="item" :selectedNodes="selectedNodes"
+        <TreeNode v-for="item in organisationClientList" :key="getItemUniqueKey(item)" :node="item" :selectedNodes="selectedNodes"
           @update:selectedNodes="$emit('update:selectedNodes', $event)"
           @double-click-node="$emit('double-click-node', $event)" @fetch-children="$emit('fetch-children', $event)"
           @show-properties="$emit('show-properties', $event)" @update-selection="$emit('update-selection', $event)"
@@ -67,7 +67,13 @@ export default {
     }
   },
   methods: {
-
+    getItemUniqueKey(item) {
+    if (!item.mrid) return Math.random().toString(36).substr(2, 9)
+    if (item.mode === 'asset') {
+        return `${item.mrid}_${item.asset}`
+    }
+    return `${item.mrid}_${item.mode}`
+},
     async openContextMenuClient(event, node) {
       const menu = this.$refs.contextMenuClient.$el
       const menuHeight = menu.offsetHeight || 320 // fallback nếu chưa render

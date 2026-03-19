@@ -8,7 +8,7 @@
 
         <div class="child-nav" >
             <ul>
-                <TreeNode v-for="item in ownerServerList" :key="item.id" :node="item" :selectedNodes="selectedNodes"
+                <TreeNode v-for="item in ownerServerList" :key="getItemUniqueKey(item)" :node="item" :selectedNodes="selectedNodes"
                     @update:selectedNodes="$emit('update:selectedNodes', $event)"
                     @fetch-children="$emit('fetch-children-server', $event)"
                     @show-properties="$emit('show-properties', $event)"
@@ -54,6 +54,13 @@ export default {
         }
     },
     methods: {
+      getItemUniqueKey(item) {
+    if (!item.mrid) return Math.random().toString(36).substr(2, 9)
+    if (item.mode === 'asset') {
+        return `${item.mrid}_${item.asset}`
+    }
+    return `${item.mrid}_${item.mode}`
+},
         // Hàm mở menu nội bộ
         async openContextMenu(event, node) {
             // 1. Lấy element của menu Server (ref="contextMenu")
