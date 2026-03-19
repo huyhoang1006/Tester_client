@@ -439,8 +439,8 @@ export function mapEntityToDto(entity) {
 
     // assetPsr
     dto.assetPsrId = entity.assetPsr.mrid || null;
-    dto.properties.mrid = entity.assetPsr.asset_id || null;
-    dto.psrId = entity.assetPsr.psr_id || null;
+    dto.properties.mrid = entity.asset.mrid || null;
+    dto.psrId = entity.asset.asset_info || null;
 
 
     // ================== phases ==================

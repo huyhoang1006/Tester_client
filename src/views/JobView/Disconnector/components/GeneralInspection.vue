@@ -23,7 +23,7 @@
         </el-row>
         </div>
 
-        <table class="table-strip-input-data" style="width: 50%">
+        <table class="table-strip-input-data" style="width: 100%;">
             <thead>
                 <tr>
                     <th>No.</th>
@@ -35,25 +35,30 @@
                 </tr>
             </thead>
             <tbody>
-                <template v-for="(item, index) in testData.table">
-                    <tr :key="index">
+                <template v-if="testData.table && testData.table.table1 && testData.table.table1.length > 0">
+                    <tr v-for="(item, index) in testData.table.table1" :key="index">
+                    <td style="font-weight: bold;">
+                        {{ index + 1 }}
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.item.value" v-if="item.item"></el-input>
+                    </td>
                         <td>
-                           {{ index + 1 }}
-                        </td>
-                        <td>
-                            <el-input size="mini" type="text" v-model="item.items"></el-input>
-                        </td>
-                        <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment">
-                                <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
-                                <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
+                            <el-select class="assessment" size="mini" v-model="item.assessment.value" v-if="item.assessment">
+                                <el-option value="Pass" label="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                                <el-option value="Fail" label="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                             </el-select>
-                            <span v-if="item.assessment === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                            <span v-if="item.assessment && item.assessment.value === 'Pass' " class="fa-solid fa-square-check pass icon-status"></span>
+                            <span v-else-if="item.assessment && item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini" v-model="item.condition_indicator">
-                            </el-input>
+                            <el-select :class="nameColor(item.condition_indicator && item.condition_indicator.value)" id="condition" type="text"
+                                size="mini" v-model="item.condition_indicator.value" v-if="item.condition_indicator">
+                                <el-option value="Good">Good</el-option>
+                                <el-option value="Fair">Fair</el-option>
+                                <el-option value="Poor">Poor</el-option>
+                                <el-option value="Bad">Bad</el-option>
+                            </el-select>
                         </td>
                         <td>
                             <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
@@ -81,6 +86,9 @@
 </template>
 
 <script>
+import disconnectorTestMap from '@/config/test-definitions/Disconnector'
+import * as common from '@/views/JobView/Common/index'
+
 export default {
     name :"GeneralInspection",
     data() {
@@ -101,37 +109,42 @@ export default {
     },
     computed: {
         testData() {
+            // Đảm bảo có cấu trúc dữ liệu cơ bản
+            if (!this.data || !this.data.table || !this.data.table.table1) {
+                return { table: { table1: [] } }
+            }
             return this.data
         },
         assetData() {
             return this.asset
         },
+        rowData() {
+            return common.buildEmptyTestRow(disconnectorTestMap.GeneralInspection.columns)
+        }
     },
     watch: {
+        data: {
+            handler(newVal) {
+                console.log('GeneralInspection data changed:', newVal);
+            },
+            deep: true
+        }
+    },
+    mounted() {
+        console.log('GeneralInspection mounted with data:', this.data);
+        console.log('testData computed:', this.testData);
+        console.log('rowData computed:', this.rowData);
     },
     methods: {
         add() {
-            this.testData.table.push({
-                mrid : "",
-                items : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                assessment : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                },
-                condition_indicator : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                }
-            })
+            // Đảm bảo cấu trúc dữ liệu tồn tại
+            if (!this.testData.table) {
+                this.$set(this.testData, 'table', {});
+            }
+            if (!this.testData.table.table1) {
+                this.$set(this.testData.table, 'table1', []);
+            }
+            this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
@@ -140,47 +153,38 @@ export default {
                     type: 'warning'
                 })
                 .then( () => {
-                    this.testData.table = []
+                    if (this.testData.table && this.testData.table.table1) {
+                        this.testData.table.table1 = []
+                    }
                 }
             )
         },
         deleteTest(index) {
-            this.testData.table.splice(index, 1)
+            if (this.testData.table && this.testData.table.table1) {
+                this.testData.table.table1.splice(index, 1)
+            }
         },
         addTest(index) {
-            const data = {
-                mrid : "",
-                items : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "string"
-                },
-                assessment : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                },
-                condition_indicator : {
-                    mrid : "",
-                    value : "",
-                    unit : "",
-                    type : "discrete"
-                }
+            const data = JSON.parse(JSON.stringify(this.rowData))
+            if (this.testData.table && this.testData.table.table1) {
+                this.testData.table.table1.splice(index+1, 0, data)
             }
-            this.testData.table.splice(index+1, 0, data)
         },
         calculator() {
             this.$message.success('Calculating successfully')
         },
 
         clear() {
-            this.testData.table.forEach((element) => {
-                element.items = '',
-                element.assessment = '',
-                element.condition_indicator = ''
-            })
+            if (this.testData.table && this.testData.table.table1) {
+                this.testData.table.table1.forEach(row => {
+                    Object.keys(row).forEach(key => {
+                        if (key === "mrid") return;
+                        if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                            row[key].value = ""
+                        }
+                    })
+                })
+            }
         },
         nameColor(data) {
             if(data === this.$constant.GOOD) {
@@ -229,5 +233,9 @@ table, th, td, tr {
 
 .Bad input {
     background: #ff3300;
+}
+
+td, th {
+    font-size: 12px;
 }
 </style>

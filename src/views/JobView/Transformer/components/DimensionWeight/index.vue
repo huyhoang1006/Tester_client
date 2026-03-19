@@ -17,35 +17,24 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>
-                        <el-input size="mini" v-model="testData.table.dimension.a.value"> </el-input>
-                    </td>
-                    <td>
-                        <el-input size="mini" v-model="testData.table.dimension.b.value"> </el-input>
-                    </td>
-                    <td>
-                        <el-input size="mini" v-model="testData.table.dimension.c.value"> </el-input>
-                    </td>
-                    <td>
-                        <el-input size="mini" v-model="testData.table.dimension.n.value"> </el-input>
-                    </td>
-                    <td>
-                        <el-input size="mini" v-model="testData.table.weight.oil.value"> </el-input>
-                    </td>
-                    <td>
-                        <el-input size="mini" v-model="testData.table.weight.active.value"> </el-input>
-                    </td>
-                    <td>
-                        <el-input size="mini" v-model="testData.table.weight.total.value"> </el-input>
-                    </td>
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
+                    <td><el-input size="mini" v-model="item.a.value"></el-input></td>
+                    <td><el-input size="mini" v-model="item.b.value"></el-input></td>
+                    <td><el-input size="mini" v-model="item.c.value"></el-input></td>
+                    <td><el-input size="mini" v-model="item.n.value"></el-input></td>
+                    <td><el-input size="mini" v-model="item.oil.value"></el-input></td>
+                    <td><el-input size="mini" v-model="item.active_part.value"></el-input></td>
+                    <td><el-input size="mini" v-model="item.total.value"></el-input></td>
                 </tr>
             </tbody>
         </table>
     </div>
 </template>
 <script>
+import TransformerTestMap from '@/config/test-definitions/Transformer'
+import * as common from '../../../Common/index'
 export default {
+    name: 'DimensionWeight',
     data() {
         return {
             openAssessmentDialog: false,
@@ -61,6 +50,9 @@ export default {
     computed: {
         testData() {
             return this.data
+        },
+        rowData() {
+            return common.buildEmptyTestRow(TransformerTestMap['DimensionWeight'].columns)
         }
     }
 }

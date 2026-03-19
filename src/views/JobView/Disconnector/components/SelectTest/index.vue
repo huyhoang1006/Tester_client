@@ -59,142 +59,60 @@
 
 <script>
 /* eslint-disable */
+import Attachment from '@/views/Flatten/Attachment'
+import { UnitMultiplier } from '@/views/Enum/UnitMultiplier'
+import { UnitSymbol } from '@/views/Enum/UnitSymbol'
 import mixin from './mixin'
-import { mapState } from 'vuex'
+import uuid from "@/utils/uuid";
 
 export default {
     mixins: [mixin],
     props: {
-        mode: {
-            type: String,
-            require: true,
-            default() {
-                return 'add'
-            }
-        },
-        attachmentArr: {
-            type: Array,
-            required: true,
-            default() {
-                return []
-            } 
-        },
-        testconditionArr: {
-            type: Array,
-            required: true,
-            default() {
-                return []
-            } 
-        },
         data: {
             type: Array,
-            required: true,
             default() {
                 return []
             }
         },
-        tapChangers: {
+        assetData: {
             type: Object,
-            require: true,
             default() {
-                return {
-                    id: null,
-                    mode: null,
-                    serial_no: null,
-                    manufacturer: null,
-                    manufacturer_type: null,
-                    winding: null,
-                    tap_scheme: null,
-                    no_of_taps: null,
-                    disconnect_table: []
-                }
+                return {}
             }
         },
-        asset: {
-            type: Object,
-            require: true,
-            default() {
-                return {
-                    id: '',
-                    asset: '',
-                    asset_type: '',
-                    serial_number: '',
-                    manufacturer: ''
-                }
-            }
+        testTypeListData: {
+            type: Array,
+            default: () => []
         },
         objActiveName: {
             type: Object,
-            require: true,
             default() {
                 return {
                     activeName: null
                 }
             }
-        },
-        testTypeListData: {
-            type: Array,
-            required: false,
-            default() { 
-                return [] 
-            }
-        },
-        assetData: {
-            type: Object,
-            required: false,
-            default() {
-                return {}
-            }
         }
     },
     data() {
         return {
-            testTypeList: []
+            testTypeListDefault: [],
+            unitMultiplier: UnitMultiplier,
+            unitSymbol: UnitSymbol,
         }
     },
-    mounted() {
-        // Initialize available test types from prop (or fetch)
-        if (this.testTypeListData && this.testTypeListData.length > 0) {
-            this.testTypeList = this.testTypeListData
-        } else {
-            // Fallback: fetch from preload if prop not provided
-            this.getTestTypes().then(() => {}).catch(() => {})
-        }
-    },
-    watch: {
-        // Keep local list in sync if parent updates prop
-        testTypeListData(newVal) {
-            if (newVal && newVal.length > 0) {
-                this.testTypeList = newVal
-            }
-        }
-    },
+    mounted() {},
     computed: {
-
-        ...mapState(['selectedLocation', 'selectedAsset']),
         testListData: function () {
             return this.data
         },
         objActiveNameData: function () {
             return this.objActiveName
         },
-        attachmentArray : function() {
-            return this.attachmentArr
-        },
-        testconditionArray : function() {
-            return this.testconditionArr
+        testTypeList: function () {
+            return this.testTypeListData.length > 0 ? this.testTypeListData : this.testTypeListDefault
         }
     },
     methods: {
-        async getTestTypes() {
-            const rs = await window.electronAPI.getTestDisconnectorTypes()
-            if (rs.success) {
-                const data = rs.data
-                this.testTypeList = data
-            } else {
-                this.$message.error(rs.message)
-            }
-        },
         async countTest(testTypeId) {
             let count = 0
             this.testListData.forEach((element) => {
@@ -203,18 +121,26 @@ export default {
             return count
         },
         async addTest(testType) {
-            const count = await this.countTest(testType.id)
-            const initData = await this.initTest(testType.code, this.assetData)
-            const tabId = this.$uuid.newUuid()
-            const name = count == 0 ? testType.name : `${testType.name} (${count + 1})`
+            const count = await this.countTest(testType.mrid)
+            const initTest = await this.initTest(testType.alias_name, this.assetData)
+            const initData = initTest.table
+            const initCondition = initTest.rowDataExampleCondition
+            const name = count == 0 ? testType.name : `${testType.name} (${count})`
+            const mrid = uuid.newUuid()
             this.testListData.push({
-                id: this.$uuid.EMPTY,
-                testTypeId: testType.id,
-                testTypeCode: testType.code,
+                mrid: mrid,
+                testTypeId: testType.mrid,
+                testTypeCode: testType.alias_name,
                 testTypeName: testType.name,
                 name,
-                data: initData,
-                tabId,
+                data: {table: initData},
+                testCondition : {
+                    mrid : '',
+                    condition: initCondition,
+                    comment: "",
+                    attachment : new Attachment(),
+                    attachmentData : []
+                },
                 worst_score: null,
                 worst_score_df: null,
                 worst_score_c: null,
@@ -226,30 +152,6 @@ export default {
                 total_worst_score: null,
                 created_on: new Date().getTime()
             })
-            this.attachmentArray.push(
-                []
-            )
-            this.testconditionArray.push({
-                condition : { 
-                    top_oil_temperature : "",
-                    bottom_oil_temperature : "",
-                    winding_temperature : "",
-                    reference_temperature : "",
-                    ambient_temperature : "",
-                    humidity : "",
-                    weather : ""
-                },
-                equipment : [{
-                    model : "",
-                    serial_no : "",
-                    calibration_date : ""
-            
-                }],
-                comment : "",
-            })
-            if (this.testListData.length == 1) {
-                this.objActiveNameData.activeName = tabId
-            }
         },
         deleteTest(index) {
             /* eslint-disable */
@@ -259,30 +161,7 @@ export default {
                 type: 'warning'
             })
                 .then(async () => {
-                    const test = this.testListData[index]
-                    const testId = test.id
-
-                    // goi api delete test
-                    // testId khác 0 được lấy từ db
-                    if (testId != this.$uuid.EMPTY) {
-                        await window.electronAPI.deleteDisconnectorTest(testId)
-                    }
-
-                    if (this.testListData.length == 1) {
-                        this.objActiveNameData.activeName = null
-                        this.testListData.splice(index, 1)
-                        this.testconditionArray.splice(index, 1)
-                        this.attachmentArray.splice(index, 1)
-                    } else {
-                        const disconnectTest = this.testListData[index]
-                        const {tabId} = disconnectTest
-                        this.testconditionArray.splice(index, 1)
-                        this.attachmentArray.splice(index, 1)
-                        this.testListData.splice(index, 1)
-                        if (tabId == this.objActiveNameData.activeName) {
-                            this.objActiveNameData.activeName = this.testListData[0].tabId
-                        }
-                    }
+                    this.testListData.splice(index, 1)
                 })
                 .catch(() => {})
         }

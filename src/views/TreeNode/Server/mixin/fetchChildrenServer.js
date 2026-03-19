@@ -22,7 +22,8 @@ export default {
                                 row.parentArr.push({
                                     mrid: node.mrid,
                                     id: node.id,
-                                    parent: node.aliasName || node.name
+                                    parent: node.aliasName || node.name,
+                                    mode: node.mode
                                 })
                             })
                             newRows.push(...newRowsOwner)
@@ -42,7 +43,8 @@ export default {
                                 row.parentArr.push({
                                     mrid: node.mrid,
                                     id: node.id,
-                                    parent: node.aliasName || node.name
+                                    parent: node.aliasName || node.name,
+                                    mode: node.mode
                                 })
                             })
                             newRows.push(...newRowsSubstation)
@@ -64,7 +66,8 @@ export default {
                                     row.parentArr.push({
                                         mrid: node.mrid,
                                         id: node.id,
-                                        parent: node.aliasName || node.name
+                                        parent: node.aliasName || node.name,
+                                        mode: node.mode
                                     })
                                 })
                                 newRows.push(...newRowsBay)
@@ -88,7 +91,8 @@ export default {
                                     row.parentArr.push({
                                         mrid: node.mrid,
                                         id: node.id,
-                                        parent: node.aliasName || node.name
+                                        parent: node.aliasName || node.name,
+                                        mode : node.mode
                                     })
                                 })
                                 newRows.push(...newRowsVoltageLevel)
@@ -98,10 +102,10 @@ export default {
                         }
 
                         try {
-                            const newRowsVoltageLevel = await demoAPI.getAssetByOwner(node.mrid, 'Substation')
-                            console.log('Fetched child assets of substation:', newRowsVoltageLevel)
-                            if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
-                                newRowsVoltageLevel.forEach((row) => {
+                            const newRowsAsset = await demoAPI.getAssetByOwner(node.mrid, 'Substation')
+                            console.log('Fetched child assets of substation:', newRowsAsset)
+                            if (newRowsAsset && newRowsAsset.length > 0) {
+                                newRowsAsset.forEach((row) => {
                                     row.id = row.mrid || row.id || ''
                                     row.mrid = row.mrid || row.id || ''
                                     row.name = row.name || ''
@@ -114,10 +118,11 @@ export default {
                                     row.parentArr.push({
                                         mrid: node.mrid,
                                         id: node.id,
-                                        parent: node.aliasName || node.name
+                                        parent: node.aliasName || node.name,
+                                        mode: node.mode
                                     })
                                 })
-                                newRows.push(...newRowsVoltageLevel)
+                                newRows.push(...newRowsAsset)
                             }
                         } catch (error) {
                             console.log(error)
@@ -139,7 +144,8 @@ export default {
                                     row.parentArr.push({
                                         mrid: node.mrid,
                                         id: node.id,
-                                        parent: node.aliasName || node.name
+                                        parent: node.aliasName || node.name,
+                                        mode: node.mode
                                     })
                                 })
                                 newRows.push(...newRowsBay)
@@ -149,10 +155,10 @@ export default {
                         }
                     } else if (node.mode == 'bay') {
                         try {
-                            const newRowsVoltageLevel = await demoAPI.getAssetByOwner(node.mrid, 'Bay')
-                            console.log('Fetched child assets of bay:', newRowsVoltageLevel)
-                            if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
-                                newRowsVoltageLevel.forEach((row) => {
+                            const newRowsAsset = await demoAPI.getAssetByOwner(node.mrid, 'Bay')
+                            console.log('Fetched child assets of bay:', newRowsAsset)
+                            if (newRowsAsset && newRowsAsset.length > 0) {
+                                newRowsAsset.forEach((row) => {
                                     row.id = row.mrid || row.id || ''
                                     row.mrid = row.mrid || row.id || ''
                                     row.name = row.name || ''
@@ -166,10 +172,11 @@ export default {
                                     row.parentArr.push({
                                         mrid: node.mrid,
                                         id: node.id,
-                                        parent: node.aliasName || node.name
+                                        parent: node.aliasName || node.name,
+                                        mode: node.mode
                                     })
                                 })
-                                newRows.push(...newRowsVoltageLevel)
+                                newRows.push(...newRowsAsset)
                             }
                         } catch (error) {
                             console.log(error)

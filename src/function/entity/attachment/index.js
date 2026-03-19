@@ -184,6 +184,13 @@ export const backupAllFilesInDir = (srcDir, backupDir, fatherMrid) => {
     srcDir = path.join(srcDir || attachmentContext.getAttachmentDir(), fatherMrid || '');
     backupDir = backupDir || path.join(srcDir, '__backup__');
     try {
+        // Check if source directory exists first
+        if (!fs.existsSync(srcDir)) {
+            // If source directory doesn't exist, create it and return empty array
+            fs.mkdirSync(srcDir, { recursive: true });
+            return [];
+        }
+
         if (!fs.existsSync(backupDir)) {
             fs.mkdirSync(backupDir, { recursive: true });
         }
@@ -292,7 +299,8 @@ export const restoreFiles = (backupDir, destDir, fatherMrid) => {
     destDir = destDir || path.join(attachmentContext.getAttachmentDir(), fatherMrid || '');
 
     if (!fs.existsSync(backupDir)) {
-        throw new Error(`Thư mục backup không tồn tại: ${backupDir}`);
+        // If backup directory doesn't exist, there's nothing to restore
+        return restored;
     }
 
     const backupFiles = fs.readdirSync(backupDir);

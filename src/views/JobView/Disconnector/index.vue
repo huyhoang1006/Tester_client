@@ -6,19 +6,20 @@
                 <el-tab-pane style="width: 100%;">
                     <span slot="label"><i class="fa-solid fa-book"></i> Overview</span>
                     <overview :data="disconnectorJobDto.properties" @update-attachment="updateAttachmentOverView"
-                        :attachmentData.sync="disconnectorJobDto.attachmentData" :locationData="locationData"
+                        :attachment.sync="disconnectorJobDto.attachmentData" :locationData="locationData"
                         :assetData="assetData" :productAssetModelData="productAssetModelData"
-                        :parentOrganization="parentOrganization">
-                    </overview>
+                        :parentOrganization="parentOrganization"></overview>
                 </el-tab-pane>
 
                 <!-- Select test -->
                 <el-tab-pane>
-                    <span slot="label"><i class="fa-solid fa-list-check"></i> Select test</span>
+                    <span slot="label"><i class="fa-solid fa-list-check"></i> Test settings</span>
                     <select-test style="width: 100%;" :data="disconnectorJobDto.testList"
-                        :testTypeListData="testTypeListData" :assetData="assetData" :obj-active-name="objActiveName"
-                        :attachmentArr.sync="attachmentArr" :testconditionArr.sync="testconditionArr"></select-test>
+                        :testTypeListData="testTypeListData" :assetData="assetData"
+                        :obj-active-name="objActiveName"></select-test>
                 </el-tab-pane>
+
+                <!-- Testing equipment -->
                 <el-tab-pane>
                     <span slot="label"><i class="fa-solid fa-list-check"></i> Testing equipment</span>
                     <div>
@@ -26,15 +27,16 @@
                             :testTypeListData="testTypeListData"></testing-equipment>
                     </div>
                 </el-tab-pane>
+
                 <!-- Tests -->
                 <el-tab-pane>
-                    <span slot="label"><i class="fa-solid fa-calculator"></i> Tests</span>
+                    <span slot="label"><i class="fa-solid fa-calculator"></i> Test data</span>
                     <div id="tests" style="width: 100%;">
                         <el-tabs v-model="objActiveName.activeName" type="card" class="w-100 h-100">
-                            <el-tab-pane v-for="(item, index) in disconnectorJobDto.testList" :key="item.tabId"
-                                :label="item.name" :name="item.tabId">
-                                <test-information title="Test" :data="testconditionArr[index]" :assetData="assetData"
-                                    :attachment.sync="attachmentArr[index]">
+                            <el-tab-pane v-for="(item, index) in disconnectorJobDto.testList" :key="index"
+                                :label="item.name" :name="item.name + index">
+                                <test-information :title="item.name" :data="item.testCondition" :assetData="assetData"
+                                    :attachment="item.testCondition.attachmentData">
                                 </test-information>
                                 <component :is="item.testTypeCode" :data="item.data" :asset="assetData">
                                 </component>
@@ -50,20 +52,18 @@
 <script>
 /* eslint-disable */
 import mixin from './mixin'
-import Mixtestcondition from './mixin/Mixtestcondition'
-import overview from './components/Overview'
+import overview from './components/Overview/index.vue'
 import SelectTest from './components/SelectTest'
-import testInformation from '@/views/Common/TestInformation.vue'
-import testingEquipment from './components/TestingEquipment/index.vue'
-import DcWindingMotor from './components/DcWindingMotor.vue'
+import TestInformation from '@/views/Common/TestInformation.vue'
+import TestingEquipment from './components/TestingEquipment/index.vue'
+
 import InsulationResistance from './components/InsulationResistance.vue'
 import GeneralInspection from './components/GeneralInspection.vue'
 import ContactResistance from './components/ContactResistance.vue'
+import DcWindingMotor from './components/DcWindingMotor.vue'
 import InsulationResMotor from './components/InsulationResMotor.vue'
 import OperatingTest from './components/OperatingTest.vue'
 import ControlCheck from './components/ControlCheck.vue'
-import LeakageCurrent from '../SurgeArrester/components/LeakageCurrent.vue'
-import PowerFrequency from '../SurgeArrester/components/PowerFrequency.vue'
 
 
 export default {
@@ -71,17 +71,15 @@ export default {
     components: {
         overview,
         SelectTest,
-        testInformation,
-        testingEquipment,
-        DcWindingMotor,
+        TestInformation,
+        TestingEquipment,
         InsulationResistance,
         GeneralInspection,
         ContactResistance,
+        DcWindingMotor,
         InsulationResMotor,
         OperatingTest,
-        ControlCheck,
-        LeakageCurrent,
-        PowerFrequency
+        ControlCheck
     },
     props: {
         parentOrganization: {
@@ -102,7 +100,33 @@ export default {
             productAssetModelData: {},
         }
     },
-    mounted() { },
+    watch: {
+        assetData: {
+            handler(newVal) {
+                console.log('Disconnector assetData changed:', newVal);
+            },
+            deep: true
+        },
+        locationData: {
+            handler(newVal) {
+                console.log('Disconnector locationData changed:', newVal);
+            },
+            deep: true
+        },
+        productAssetModelData: {
+            handler(newVal) {
+                console.log('Disconnector productAssetModelData changed:', newVal);
+            },
+            deep: true
+        }
+    },
+    mounted() {
+        console.log('Disconnector Job mounted with initial data:', {
+            assetData: this.assetData,
+            locationData: this.locationData,
+            productAssetModelData: this.productAssetModelData
+        });
+    },
     methods: {
         updateAttachmentOverView(attachment) {
             this.disconnectorJobDto.attachmentData = attachment

@@ -25,7 +25,8 @@ export const insertPowerCableJobEntity = async (old_entity,entity) => {
             return result;
         } else {
             backupAllFilesInDir(null, null, entity.oldWork.mrid);
-            const syncResult = syncFilesWithDeletion(JSON.parse(entity.attachment.path), null, entity.oldWork.mrid);
+            const attachmentPath = entity.attachment.path || '[]';
+            const syncResult = syncFilesWithDeletion(JSON.parse(attachmentPath), null, entity.oldWork.mrid);
             if (!syncResult.success) {
                 restoreFiles(null, null, entity.oldWork.mrid);
                 deleteBackupFiles(null, entity.oldWork.mrid);
@@ -38,9 +39,10 @@ export const insertPowerCableJobEntity = async (old_entity,entity) => {
             }
 
             for(const attachment of entity.attachmentTest) {
-                if(attachment.id && Array.isArray(JSON.parse(attachment.path))) {
+                const attachmentTestPath = attachment.path || '[]';
+                if(attachment.id && Array.isArray(JSON.parse(attachmentTestPath))) {
                     backupAllFilesInDir(null, null, attachment.id_foreign);
-                    const syncResult = syncFilesWithDeletion(JSON.parse(attachment.path), null, attachment.id_foreign);
+                    const syncResult = syncFilesWithDeletion(JSON.parse(attachmentTestPath), null, attachment.id_foreign);
                     if (!syncResult.success) {
                         restoreFiles(null, null, attachment.id_foreign);
                         deleteBackupFiles(null, attachment.id_foreign);
@@ -56,8 +58,9 @@ export const insertPowerCableJobEntity = async (old_entity,entity) => {
 
             await runAsync('BEGIN TRANSACTION');
             await insertOldWorkTransaction(entity.oldWork, db);
-            if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
-                const pathData = JSON.parse(entity.attachment.path);
+            const entityAttachmentPath1 = entity.attachment.path || '[]';
+            if (entity.attachment.id && Array.isArray(JSON.parse(entityAttachmentPath1))) {
+                const pathData = JSON.parse(entityAttachmentPath1);
                 const newPath = []
                 for(let i = 0; i < pathData.length; i++) {
                     const namefile = path.basename(pathData[i].path);
@@ -86,7 +89,7 @@ export const insertPowerCableJobEntity = async (old_entity,entity) => {
                 await insertTestingEquipmentTransaction(equipment, db);
             }
 
-            //power CableTestingEquipmentTestType
+            //powerCableTestingEquipmentTestType
             const newIdsSet = entity.powerCableTestingEquipmentTestType.map(v => v.mrid).filter(id => id); // bỏ null/empty
             const oldIdsSet = old_entity.powerCableTestingEquipmentTestType.map(v => v.mrid).filter(id => id);
 
@@ -119,8 +122,9 @@ export const insertPowerCableJobEntity = async (old_entity,entity) => {
             }
 
             //attachemt
-            if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
-                const pathData = JSON.parse(entity.attachment.path);
+            const entityAttachmentPath2 = entity.attachment.path || '[]';
+            if (entity.attachment.id && Array.isArray(JSON.parse(entityAttachmentPath2))) {
+                const pathData = JSON.parse(entityAttachmentPath2);
                 const newPath = []
                 for(let i = 0; i < pathData.length; i++) {
                     const namefile = path.basename(pathData[i].path);
@@ -133,8 +137,9 @@ export const insertPowerCableJobEntity = async (old_entity,entity) => {
 
             //attachment test
             for(const attachment of entity.attachmentTest) {
-                if (attachment.id && Array.isArray(JSON.parse(attachment.path))) {
-                    const pathData = JSON.parse(attachment.path);
+                const attachmentTestPath = attachment.path || '[]';
+                if (attachment.id && Array.isArray(JSON.parse(attachmentTestPath))) {
+                    const pathData = JSON.parse(attachmentTestPath);
                     const newPath = []
                     for(let i = 0; i < pathData.length; i++) {
                         const namefile = path.basename(pathData[i].path);
@@ -250,14 +255,13 @@ export const insertPowerCableJobEntity = async (old_entity,entity) => {
         }
     } catch (error) {
         await runAsync('ROLLBACK');
-        console.error('Error retrieving power cable entity:', error);
         restoreFiles(null, null, entity.oldWork.mrid);
         deleteBackupFiles(null, entity.oldWork.mrid);
         for(const attachment of entity.attachmentTest) {
             restoreFiles(null, null, attachment.id_foreign);
             deleteBackupFiles(null, attachment.id_foreign);
         }
-        return { success: false, error, message: 'Error retrieving power cable entity' };
+        return { success: false, error, message: 'Error retrieving power cable entity: ' + error.message };
     }
 }
 

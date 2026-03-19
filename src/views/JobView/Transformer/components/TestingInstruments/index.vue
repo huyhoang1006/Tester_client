@@ -11,15 +11,15 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, index) in testData.dataList" :key="index">
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-input size="mini" v-model="item.testingInstrument.value"> </el-input>
+                        <el-input size="mini" v-model="item.item.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="item.type_ins.value"> </el-input>
+                        <el-input size="mini" v-model="item.type.value"> </el-input>
                     </td>
                     <td>
                         <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
@@ -37,6 +37,8 @@
     </div>
 </template>
 <script>
+import TransformerTestMap from '@/config/test-definitions/Transformer'
+import * as common from '../../../Common/index'
 export default {
     name: 'TestingInstruments',
     props: {
@@ -60,40 +62,30 @@ export default {
     computed: {
         testData() {
             return this.data
+        },
+        rowData() {
+            return common.buildEmptyTestRow(TransformerTestMap['TestingInstruments'].columns)
         }
     },
     methods: {
         add() {
-            const temp = {
-                no: '',
-                testingInstrument: { mrid: '', value: '', unit: '', type: 'string' },
-                type_ins: { mrid: '', value: '', unit: '', type: 'string' }
-            }
-            this.testData.dataList.push(temp)
+            this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
         },
         removeAll() {
-            this.$confirm('This will delete all items. Continue?', 'Warning', {
-                    confirmButtonText: 'OK',
-                    cancelButtonText: 'Cancel',
-                    type: 'warning'
-                })
-                .then( () => {
-                    this.testData.dataList = []
-                })
-                .catch( () => {
-                    // User cancelled, do nothing
-                })
+            this.$confirm('This will delete the file. Continue?', 'Warning', {
+                confirmButtonText: 'OK',
+                cancelButtonText: 'Cancel',
+                type: 'warning'
+            }).then(() => {
+                this.testData.table.table1 = []
+            })
         },
         deleteTest(index) {
-            this.testData.dataList.splice(index, 1)
+            this.testData.table.table1.splice(index, 1)
         },
         addTest(index) {
-            const data = {
-                no: '',
-                testingInstrument: { mrid: '', value: '', unit: '', type: 'string' },
-                type_ins: { mrid: '', value: '', unit: '', type: 'string' }
-            }
-            this.testData.dataList.splice(index+1, 0, data)
+            const data = JSON.parse(JSON.stringify(this.rowData))
+            this.testData.table.table1.splice(index + 1, 0, data)
         }
     }
 }

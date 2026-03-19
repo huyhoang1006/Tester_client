@@ -14,6 +14,8 @@ import * as voltageTransformerProcedureFunc from './voltageTransformer/index'
 import * as circuitBreakerProcedureFunc from './circuitBreaker/index'
 import * as currentTransformerProcedureFunc from './currentTransformer/index'
 import * as transformerProcedureFunc from './transformer/index'
+import * as disconnectorProcedureFunc from './disconnector/index'
+import * as powerCableProcedureFunc from './powerCable/index'
 
 export const updateProcedure = async (dbsql) => {
     console.log(procedureDataMap['Capacitor'])
@@ -31,6 +33,10 @@ export const createProcedure = async (dbsql) => {
         await currentTransformerProcedureFunc.createProcedureCurrentTransformer(dbsql, procedureDataMap, testDataMap, testConditionMap,
             getProcedureInfo, getTestDefinitionInfo, getTestConditionInfo)
         await transformerProcedureFunc.createProcedureTransformer(dbsql, procedureDataMap, testDataMap, testConditionMap,
+            getProcedureInfo, getTestDefinitionInfo, getTestConditionInfo)
+        await disconnectorProcedureFunc.createProcedureDisconnector(dbsql, procedureDataMap, testDataMap, testConditionMap,
+            getProcedureInfo, getTestDefinitionInfo, getTestConditionInfo)
+        await powerCableProcedureFunc.createProcedurePowerCable(dbsql, procedureDataMap, testDataMap, testConditionMap,
             getProcedureInfo, getTestDefinitionInfo, getTestConditionInfo)
         await runAsync('COMMIT', dbsql);
     } catch (err) {
