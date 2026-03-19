@@ -112,6 +112,7 @@ export default {
                                     row.aliasName = row.shortName || row.name || ''
                                     row.parentId = node.mrid
                                     row.mode = 'asset'
+                                    row.asset = row.asset || row.assetType || row.assetKind || ''
                                     row.parentName = node.parentName + '/' + node.name
                                     row.parentArr = [...node.parentArr]
                                     row.parentArr.push({
@@ -164,6 +165,7 @@ export default {
                                     row.aliasName = row.shortName || row.name || ''
                                     row.parentId = node.mrid
                                     row.mode = 'asset'
+                                    row.asset = row.asset || row.assetType || row.assetKind || ''
                                     row.serial_number = row.serialNumber
                                     row.parentName = node.parentName + '/' + node.name
                                     row.parentArr = [...node.parentArr]

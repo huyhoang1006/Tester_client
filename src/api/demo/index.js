@@ -62,6 +62,16 @@ export const getAssetById = (assetId, mode) => {
         if (mode == 'PowerCable') {
             return client.get(`http://222.252.22.158:8087/api/cim/power-cable/${assetId}`);
         }
+        else if (mode == "SurgeArrester") {
+            return client.get(`http://222.252.22.158:8087/api/surge-arrester/${assetId}`);
+        }
+        else if (mode == "Disconnector") {
+            return client.get(`http://222.252.22.158:8087/api/disconnector/${assetId}`);
+        }
+        else if (mode == "Bushing") {
+            return client.get(`http://222.252.22.158:8087/api/bushing/${assetId}`);
+        }
+
     }
 }
 

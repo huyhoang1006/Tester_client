@@ -76,15 +76,16 @@ export const transformerDtoToEntity = (dto) => {
     }
     if (dto.winding_configuration.vector_group_data) {
         entity.oldPowerTransformerInfo.vector_group = ''
+        const getVal = (val) => (val === 'null' || val === null || val === undefined || val === '') ? '' : val
         if (dto.winding_configuration.vector_group.prim.includes('Spare I')) {
             entity.oldPowerTransformerInfo.vector_group += 'I'
         } else {
-            entity.oldPowerTransformerInfo.vector_group += dto.winding_configuration.vector_group.prim
+            entity.oldPowerTransformerInfo.vector_group += getVal(dto.winding_configuration.vector_group.prim)
         }
-        entity.oldPowerTransformerInfo.vector_group += dto.winding_configuration.vector_group.sec.i
-        entity.oldPowerTransformerInfo.vector_group += dto.winding_configuration.vector_group.sec.value
-        entity.oldPowerTransformerInfo.vector_group += dto.winding_configuration.vector_group.tert.i
-        entity.oldPowerTransformerInfo.vector_group += dto.winding_configuration.vector_group.tert.value
+        entity.oldPowerTransformerInfo.vector_group += getVal(dto.winding_configuration.vector_group.sec.i)
+        entity.oldPowerTransformerInfo.vector_group += getVal(dto.winding_configuration.vector_group.sec.value)
+        entity.oldPowerTransformerInfo.vector_group += getVal(dto.winding_configuration.vector_group.tert.i)
+        entity.oldPowerTransformerInfo.vector_group += getVal(dto.winding_configuration.vector_group.tert.value)
         entity.oldPowerTransformerInfo.vector_group_type = null
     }
 
@@ -757,19 +758,22 @@ export const transformerEntityToDto = (entity) => {
     } else {
         dto.winding_configuration.vector_group_data = entity.oldPowerTransformerInfo.vector_group || ''
         dto.oldTransformerEndInfo = entity.oldTransformerEndInfo || []
+        const getVal = (val) => (val === 'null' || val === null || val === undefined || val === '') ? '' : val
         for (const winding of dto.oldTransformerEndInfo) {
             if (winding.end_number == 1) {
                 if (winding.spare == true) {
                     dto.winding_configuration.vector_group.prim = 'Spare I'
                 } else {
-                    dto.winding_configuration.vector_group.prim = winding.connection_kind + winding.phase || ''
+                    const connKind = getVal(winding.connection_kind)
+                    const phase = getVal(winding.phase)
+                    dto.winding_configuration.vector_group.prim = (connKind === 'I' || (connKind && connKind.startsWith('I'))) ? connKind + phase : connKind
                 }
             } else if (winding.end_number == 2) {
-                dto.winding_configuration.vector_group.sec.i = winding.connection_kind || ''
-                dto.winding_configuration.vector_group.sec.value = winding.phase_angle_clock || ''
+                dto.winding_configuration.vector_group.sec.i = getVal(winding.connection_kind)
+                dto.winding_configuration.vector_group.sec.value = getVal(winding.phase_angle_clock)
             } else if (winding.end_number == 3) {
-                dto.winding_configuration.vector_group.tert.i = winding.connection_kind || ''
-                dto.winding_configuration.vector_group.tert.value = winding.phase_angle_clock || ''
+                dto.winding_configuration.vector_group.tert.i = getVal(winding.connection_kind)
+                dto.winding_configuration.vector_group.tert.value = getVal(winding.phase_angle_clock)
                 dto.winding_configuration.vector_group.tert.accessible = winding.accessibility || ''
             }
         }

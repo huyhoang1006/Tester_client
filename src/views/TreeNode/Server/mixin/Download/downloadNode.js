@@ -7,7 +7,7 @@ export default {
         handleDownloadTargetSelection(node) {
             const targetNode = Array.isArray(node) ? node[node.length - 1] : node
             if (!targetNode || targetNode.disabled) {
-                this.selectedDownloadTargetNodes =[]
+                this.selectedDownloadTargetNodes = []
                 this.selectedDownloadTargetNode = null
                 return
             }
@@ -16,14 +16,14 @@ export default {
         },
 
         async handleDownloadNode() {
-            console.log(this.selectedNodes)            
+            console.log(this.selectedNodes)
             if (!this.selectedNodes || this.selectedNodes.length === 0) {
                 return this.$message.warning('Vui lòng chọn 1 node để tải')
             }
             const node = this.selectedNodes[this.selectedNodes.length - 1]
-            
+
             // Bùm! Xong chuyện!
-            await executeDownload(node, this) 
+            await executeDownload(node, this)
         },
     }
 }

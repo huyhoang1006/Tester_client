@@ -3,25 +3,25 @@ import * as demoAPI from '@/api/demo'
 import * as BayServerMapper from '@/views/Mapping/ServerToDTO/Bay/index.js'
 import { processVoltageLevelDownload } from './voltageLevel'
 
-export async function processBayDownload(node, ctx, loading) {
+export async function processBayDownload(node, ctx) {
     if (!node.mrid && !node.id) throw new Error('Bay ID not found')
     if (!node.parentId) throw new Error('Parent VoltageLevel not found')
     ctx.$store.commit('loading/SET_CUSTOM_TEXT', 'Downloading bay...');
 
-    try { await ctx.$confirm(`Download Bay[${node.name}] + ancestors?`, 'Xác nhận', { type: 'info' }) } 
+    try { await ctx.$confirm(`Download Bay[${node.name}] + ancestors?`, 'Xác nhận', { type: 'info' }) }
     catch (e) { throw new Error('CANCELED') } // Báo lỗi để index.js bỏ qua
 
-    loading.setText('Đang kiểm tra & tải tổ tiên...')
-    
+    ctx.$store.commit('loading/SET_CUSTOM_TEXT', 'Đang kiểm tra & tải tổ tiên...')
+
     // 1. Kiểm tra VoltageLevel cha, chưa có thì nhờ tầng VoltageLevel tải (Nó sẽ tự lo vụ Sub và Org)
     const existingVL = ctx.findNodeById(node.parentId, ctx.organisationClientList)
     if (!existingVL) {
-        const parentVLNode = node.parentArr?.find(p => p.mode === 'voltageLevel') || { mrid: node.parentId, parentId: node.parentArr?.find(p=>p.mode==='substation')?.mrid, parentArr: node.parentArr }
+        const parentVLNode = node.parentArr?.find(p => p.mode === 'voltageLevel') || { mrid: node.parentId, parentId: node.parentArr?.find(p => p.mode === 'substation')?.mrid, parentArr: node.parentArr }
         await processVoltageLevelDownload(parentVLNode, ctx)
     }
 
     // 2. Tải Bay
-    loading.setText('Đang tải dữ liệu Bay...')
+    ctx.$store.commit('loading/SET_CUSTOM_TEXT', 'Đang tải dữ liệu Bay...')
     let bayData = null
     for (let i = 0; i < 3; i++) {
         try {
@@ -46,7 +46,7 @@ export async function processBayDownload(node, ctx, loading) {
     // Update UI
     const parentNode = ctx.findNodeById(node.parentId, ctx.organisationClientList)
     if (parentNode) {
-        if (!parentNode.children) parentNode.children =[]
+        if (!parentNode.children) parentNode.children = []
         const newNode = { id: dto.bayId, mrid: dto.bayId, name: dto.name, aliasName: dto.name, parentId: node.parentId, mode: 'bay' }
         const idx = parentNode.children.findIndex(c => c.mrid === dto.bayId)
         if (idx >= 0) parentNode.children[idx] = newNode

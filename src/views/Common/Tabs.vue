@@ -189,6 +189,8 @@ import ReactorJob from '@/views/JobView/Reactor/index.vue'
 import DisconnectorJob from '@/views/JobView/Disconnector/index.vue'
 import RotatingMachineJob from '@/views/JobView/RotatingMachine/index.vue'
 import VoltageTransformerJob from '@/views/JobView/VoltageTransformer/index.vue'
+import * as DisconnectorServerMapper from '@/views/Mapping/ServerToDTO/Disconnector/index.js'
+import * as BushingServerMapper from '@/views/Mapping/ServerToDTO/Bushing'
 
 import VoltageTransformer from '@/views/AssetView/VoltageTransformer/index.vue'
 import Disconnector from '@/views/AssetView/Disconnector/index.vue'
@@ -200,6 +202,7 @@ import CircuitBreaker from "@/views/AssetView/CircuitBreaker/index.vue"
 import Reactor from '@/views/AssetView/Reactor/index.vue'
 import Transformer from '@/views/AssetView/Transformer/index.vue'
 import Icon from '@/views/Common/Icon.vue'
+import * as SurgeArresterServerMapper from '@/views/Mapping/ServerToDTO/SurgeArrester/index.js'
 
 export default {
     name: "Tabs",
@@ -865,19 +868,36 @@ export default {
                     }
                 }
                 else if (tab.mode === 'organisation') {
-                    const serverData = tab;
-                    const OrganisationDto = require('@/views/Dto/Organisation').default;
-                    const dto = new OrganisationDto();
-                    dto.organisationId = String(serverData.id || '');
-                    dto.name = serverData.name || '';
-                    dto.tax_code = serverData.taxCode || '';
-                    dto.comment = serverData.description || '';
-                    dto.parentId = String(serverData.parentOrganisation || '');
-                    if (serverData.address) dto.street = serverData.address;
+                    // 1. Gọi API lấy full data của Organisation
+                    const response = await demoAPI.getOrganisationById(tab.mrid || tab.id);
+                    console.log("Response from server for Organisation:", response);
+                    if (response) {
+                        const serverData = response.data || response;
+                        
+                        // 2. Map dữ liệu chuẩn qua DTO
+                        const dto = OrganisationServerMapper.mapServerToDto(serverData);
 
-                    this.executeOrQueueLoadData(id, (comp) => {
-                        comp.loadData({ dto: dto, locationList: [], personList: [] });
-                    });
+                        // 3. Đảm bảo cấu trúc positionPoints luôn tồn tại để UI không bị lỗi undefined
+                        if (!dto.positionPoints) {
+                            dto.positionPoints = { x: [], y: [], z: [] };
+                        } else {
+                            if (!dto.positionPoints.x) dto.positionPoints.x = [];
+                            if (!dto.positionPoints.y) dto.positionPoints.y = [];
+                            if (!dto.positionPoints.z) dto.positionPoints.z = [];
+                        }
+
+                        // 4. Đẩy data vào View (SỬA LẠI Ở ĐÂY: Truyền trực tiếp dto)
+                        this.executeOrQueueLoadData(id, (comp) => {
+                            comp.loadData(dto);
+                        });
+                    } else {
+                        this.$message.error("Failed to load Organisation data");
+                    }
+
+                    // this.executeOrQueueLoadData(id, (comp) => {
+                    //     comp.loadData({ dto: dto, locationList: [], personList: [] });
+                    // });
+
                 }
                 else if (tab.mode === 'asset' && tab.asset === 'Transformer') {
                     const response = await demoAPI.getTransformerById(tab.mrid);
@@ -893,6 +913,46 @@ export default {
                         this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
                     }
                 }
+                else if (tab.mode === 'asset' && tab.asset === 'Surge arrester') {
+                    // API getAssetById nhận mode là "SurgeArrester"
+                    const response = await demoAPI.getAssetById(tab.mrid, 'SurgeArrester');
+                    console.log("Response from server for SurgeArrester:", response);
+
+                    if (response) {
+                        // Trích xuất dữ liệu từ response
+                        const serverData = response.data || response;
+                        
+                        // Map sang cấu trúc DTO cho UI
+                        const dto = SurgeArresterServerMapper.mapServerToDto(serverData);
+
+                        this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
+                    } else {
+                        this.$message.error("Failed to load Surge Arrester data");
+                    }
+                }
+                 else if (tab.mode === 'asset' && tab.asset === 'Disconnector') {
+                    const response = await demoAPI.getAssetById(tab.mrid, 'Disconnector');
+                    console.log("Response from server for Disconnector:", response);
+
+                    if (response) {
+                        const serverData = response.data || response;
+                        const dto = DisconnectorServerMapper.mapServerToDto(serverData);
+                        this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
+                    } else {
+                        this.$message.error("Failed to load Disconnector data");
+                    }
+                }
+                else if (tab.mode === 'asset' && tab.asset === 'Bushing') {
+    const response = await demoAPI.getAssetById(tab.mrid, 'Bushing');
+    console.log("Response from server for Bushing:", response);
+    if (response) {
+        const serverData = response.data || response;
+        const dto = BushingServerMapper.mapServerToDto(serverData);
+        this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
+    } else {
+        this.$message.error("Failed to load Bushing data");
+    }
+}
             } catch (error) {
                 console.error("Error loading data from server:", error);
             }
