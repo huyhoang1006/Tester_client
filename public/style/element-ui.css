@@ -33,3 +33,8 @@
 .select-in-input.el-select--mini span.el-input__suffix {
     width: 40px;
 }
+
+.el-input-number__decrease,
+.el-input-number__increase {
+   display: none !important;
+}
