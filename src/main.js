@@ -12,11 +12,13 @@ import constant from '@/utils/constant'
 import client from '@/utils/client'
 import uuid from '@/utils/uuid'
 import {LoadingPlugin} from 'vue-loading-overlay';
+import CustomInput from '@/views/Common/CustomInput.vue'
 
 
 // element ui
 Vue.config.productionTip = false
 Vue.use(ElementUI, { locale })
+Vue.component('ElInput', CustomInput)
 
 // check login
 helper.initApp()
