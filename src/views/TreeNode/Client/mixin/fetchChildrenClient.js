@@ -485,7 +485,7 @@ export default {
                             assetRotatingMachineReturn,
                             assetCurrentTransformerReturn,
                             assetCapacitorReturn,
-                            //assetBreakerReturn,
+                            assetBreakerReturn,
                             assetReactorReturn
                         ] = await this.fetchAssetByPsr(clickedRow.mrid)
                         if (assetTransformerReturn.success) {
@@ -650,6 +650,26 @@ export default {
                             })
                             newRows.push(...assetReactorReturn.data)
                         }
+
+                        if (assetBreakerReturn.success) {
+                            assetBreakerReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'asset'
+                                row.asset = 'Circuit breaker'
+                                // ✅ Preserve type from API if exists
+                                // row.type already exists from API, don't overwrite it
+                                let parentName = clickedRow.parentName + '/' + clickedRow.name
+                                row.parentName = parentName
+                                row.parentArr = [...(clickedRow.parentArr || [])]
+                                row.parentArr.push({
+                                    mrid: clickedRow.mrid,
+                                    parent: parentDisplayName
+                                })
+                                // Đánh dấu rằng node này đã có đầy đủ thông tin properties từ API
+                                row._hasFullProperties = true
+                            })
+                            newRows.push(...assetBreakerReturn.data)
+                        }
                     } else {
                         const clickedRow = node
                         const [organisationReturn, substationReturn] = await Promise.all([
@@ -704,7 +724,7 @@ export default {
                     Vue.set(node, '_childrenFetched', true)
                 } catch (error) {
                     console.error('Error fetching children:', error)
-                    this.$message.error('Có lỗi xảy ra khi tải dữ liệu: ' + error.message)
+                    this.$message.error('Error fetching children: ' + error.message)
                 }
             }
         },
