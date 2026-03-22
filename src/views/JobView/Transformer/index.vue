@@ -57,9 +57,9 @@ import SelectTest from './components/SelectTest'
 import TestInformation from '@/views/Common/TestInformation.vue'
 import TestingEquipment from './components/TestingEquipment/index.vue'
 
-import DcWindingPrim from './components/DcWindingPrim/index.vue'
-import DcWindingSec from './components/DcWindingSec/index.vue'
-import DcWindingTert from './components/DcWindingTert/index.vue'
+import DCWindingPrim from './components/DCWindingPrim/index.vue'
+import DCWindingSec from './components/DCWindingSec/index.vue'
+import DCWindingTert from './components/DCWindingTert/index.vue'
 import DimensionWeight from './components/DimensionWeight'
 import EnergyEfficiency from './components/EnergyEfficiency/index.vue'
 import ExcitingCurrent from './components/ExcitingCurrent'
@@ -96,9 +96,9 @@ export default {
     components: {
         SelectTest,
         overview,
-        DcWindingPrim,
-        DcWindingSec,
-        DcWindingTert,
+        DCWindingPrim,
+        DCWindingSec,
+        DCWindingTert,
         DimensionWeight,
         EnergyEfficiency,
         ExcitingCurrent,

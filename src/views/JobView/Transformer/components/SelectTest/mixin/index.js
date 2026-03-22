@@ -18,13 +18,25 @@ export default {
                     data = await this.initRatioPrimSec(testTypeCode, assetData)
                     break
                 case 'DCWindingPrim':
-                    data = await this.initDcWindingPrim(testTypeCode, assetData)
+                    if (assetData.tap_changers.winding === this.$constant.PRIM) {
+                        data = await this.initDCWindingPrim(testTypeCode, assetData)
+                    } else {
+                        this.$message.error('Can not choose this one')
+                    }
                     break
                 case 'DCWindingSec':
-                    data = this.initDcWindingSec(testTypeCode, assetData)
+                    if (assetData.tap_changers.winding === this.$constant.SEC) {
+                        data = await this.initDCWindingSec(testTypeCode, assetData)
+                    } else {
+                        this.$message.error('Can not choose this one')
+                    }
                     break
                 case 'DCWindingTert':
-                    data = this.initDcWindingTert(testTypeCode, assetData)
+                    if (assetData.tap_changers.winding === this.$constant.TERT) {
+                        data = await this.initDCWindingTert(testTypeCode, assetData)
+                    } else {
+                        this.$message.error('Can not choose this one')
+                    }
                     break
                 case 'MeasurementOfNoLoad':
                     data = await this.initMeasurementOfNoLoad(testTypeCode)
@@ -54,55 +66,40 @@ export default {
                     data = await this.initSeparateSourceAc(testTypeCode)
                     break
                 case 'WindingDfCap':
-                    data = this.initWindingDfCap(assetData)
+                    data = await this.initWindingDfCap(testTypeCode, assetData)
                     break
                 case 'BushingPrimC1':
-                    data = await this.initBushingPrimC1(testTypeCode)
+                    data = await this.initBushingPrimC1(testTypeCode, assetData)
                     break
                 case 'BushingPrimC2':
-                    data = this.initBushingPrimC2()
+                    data = await this.initBushingPrimC2(testTypeCode, assetData)
                     break
                 case 'BushingSecC1':
-                    data = this.initBushingSecC1()
+                    data = await this.initBushingSecC1(testTypeCode, assetData)
                     break
                 case 'BushingSecC2':
-                    data = this.initBushingSecC2()
+                    data = await this.initBushingSecC2(testTypeCode, assetData)
                     break
                 case 'BushingTertC1':
-                    data = this.initBushingTertC1()
+                    data = await this.initBushingTertC1(testTypeCode, assetData)
                     break
                 case 'BushingTertC2':
-                    data = this.initBushingTertC2()
-                    break
-                case 'ShortPrimSec':
-                    data = this.initShortPrimSec()
-                    break
-                case 'ShortSecTert':
-                    data = this.initShortSecTert()
-                    break
-                case 'ShortPrimTert':
-                    data = this.initShortPrimTert()
+                    data = await this.initBushingTertC2(testTypeCode, assetData)
                     break
                 case 'Dga':
                     data = await this.initDga(testTypeCode)
-                    break
-                // case 'DielectricResponseAnalysis':
-                //     data = await this.initDielectricResponseAnalysis(testTypeCode)
-                //     break
-                case 'motorCurrent':
-                    data = this.initmotorCurrent()
                     break
                 case 'InsulationResistanceYokeCore':
                     data = await this.initInsulationResistanceYokeCore(testTypeCode)
                     break
                 case 'ShortCircuitImpedancePrim':
-                    data = this.initShortCircuitImpedancePrim()
+                    data = await this.initShortCircuitImpedancePrim(testTypeCode, assetData)
                     break
                 case 'ShortCircuitImpedanceSec':
-                    data = this.initShortCircuitImpedanceSec()
+                    data = await this.initShortCircuitImpedanceSec(testTypeCode, assetData)
                     break
                 case 'ShortCircuitImpedanceTert':
-                    data = this.initShortCircuitImpedanceTert()
+                    data = await this.initShortCircuitImpedanceTert(testTypeCode, assetData)
                     break
                 case 'GasChromatography':
                     data = await this.initGasChromatography(testTypeCode)
@@ -210,8 +207,6 @@ export default {
             }
         },
         async initExcitingCurrent(testTypeCode, assetData) {
-            console.log(assetData)
-
             const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
 
@@ -252,8 +247,6 @@ export default {
             }
         },
         async initRatioPrimSec(testTypeCode, assetData) {
-            console.log(assetData)
-
             const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
 
@@ -269,23 +262,20 @@ export default {
                 }
             }
 
-            let table = []
+            let table1 = []
             const voltage_table = tapChangers.voltage_table || []
             const phases = ['A', 'B', 'C']
 
             voltage_table.forEach((element) => {
                 const tap = element.tap
-                const voltage = element.voltage.value
 
                 phases.forEach((phase) => {
                     const row = JSON.parse(JSON.stringify(rowDataExample))
 
                     if (row.tap) row.tap.value = tap
-                    if (row._voltage) row._voltage.value = voltage
                     if (row.phase) row.phase.value = phase
-                    if (row._phase) row._phase.value = phase
 
-                    table.push(row)
+                    table1.push(row)
                 })
             })
 
@@ -296,54 +286,132 @@ export default {
                 }
             }
         },
-        async initDcWindingPrim(testTypeCode, assetData) {
-            // const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
-            // const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
-            // let tapChangers = assetData?.tap_changers || {}
-            // if (typeof tapChangers === 'string') {
-            //     try {
-            //         tapChangers = JSON.parse(tapChangers)
-            //     } catch (e) {
-            //         tapChangers = {}
-            //     }
-            // }
-            // let table1 = []
-            // const phases = ['A', 'B', 'C']
-            // if (tapChangers.mode && tapChangers.winding === this.$constant.PRIM && tapChangers.tap_scheme && tapChangers.no_of_taps) {
-            //     // TRƯỜNG HỢP 1: Có bộ chuyển nấc -> Lặp qua từng nấc, từng pha
-            //     const voltage_table = tapChangers.voltage_table || []
-            //     voltage_table.forEach((element) => {
-            //         const voltage_table_id = element.id
-            //         const voltage = element.voltage
-            //         const tap = element.tap
-            //         phases.forEach((phase) => {
-            //             // Clone template chuẩn
-            //             const row = JSON.parse(JSON.stringify(rowDataExample))
-            //             // Gán các thông số của Nấc và Pha vào object
-            //             if (row.voltage_table_id) row.voltage_table_id.value = voltage_table_id
-            //             if (row.tap) row.tap.value = tap
-            //             if (row.phase) row.name.value = phase
-            //             console.log(row)
-            //             table1.push(row)
-            //         })
-            //     })
-            // } else {
-            //     // TRƯỜNG HỢP 2: Không có bộ chuyển nấc -> Chỉ tạo 3 dòng cho 3 pha A, B, C
-            //     phases.forEach((phase) => {
-            //         const row = JSON.parse(JSON.stringify(rowDataExample))
-            //         if (row.phase) row.name.value = phase
-            //         table1.push(row)
-            //     })
-            // }
-            // return {
-            //     rowDataExampleCondition,
-            //     table: {
-            //         table1: table1
-            //     }
-            // }
+        async initDCWindingPrim(testTypeCode, assetData) {
+            const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
+
+            let tapChangers = assetData?.tap_changers || {}
+
+            if (typeof tapChangers === 'string') {
+                try {
+                    tapChangers = JSON.parse(tapChangers)
+                } catch (e) {
+                    tapChangers = {}
+                }
+            }
+
+            let table1 = []
+            const phases = ['A', 'B', 'C']
+
+            if (tapChangers.mode && tapChangers.winding === this.$constant.PRIM && tapChangers.tap_scheme && tapChangers.no_of_taps) {
+                const voltage_table = tapChangers.voltage_table || []
+                voltage_table.forEach((element) => {
+                    const tap = element.tap
+                    phases.forEach((phase) => {
+                        const row = JSON.parse(JSON.stringify(rowDataExample))
+                        if (row.tap) row.tap.value = tap
+                        if (row.name) row.name.value = phase
+                        table1.push(row)
+                    })
+                })
+            } else {
+                phases.forEach((phase) => {
+                    const row = JSON.parse(JSON.stringify(rowDataExample))
+                    if (row.phase) row.name.value = phase
+                    table1.push(row)
+                })
+            }
+            return {
+                rowDataExampleCondition,
+                table: {
+                    table1: table1
+                }
+            }
         },
-        async initDcWindingSec(testTypeCode, assetData) {},
-        async initDcWindingTert(testTypeCode, assetData) {},
+        async initDCWindingSec(testTypeCode, assetData) {
+            const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
+
+            let tapChangers = assetData?.tap_changers || {}
+
+            if (typeof tapChangers === 'string') {
+                try {
+                    tapChangers = JSON.parse(tapChangers)
+                } catch (e) {
+                    tapChangers = {}
+                }
+            }
+
+            let table1 = []
+            const phases = ['A', 'B', 'C']
+
+            if (tapChangers.mode && tapChangers.winding === this.$constant.SEC && tapChangers.tap_scheme && tapChangers.no_of_taps) {
+                const voltage_table = tapChangers.voltage_table || []
+                voltage_table.forEach((element) => {
+                    const tap = element.tap
+                    phases.forEach((phase) => {
+                        const row = JSON.parse(JSON.stringify(rowDataExample))
+                        if (row.tap) row.tap.value = tap
+                        if (row.name) row.name.value = phase
+                        table1.push(row)
+                    })
+                })
+            } else {
+                phases.forEach((phase) => {
+                    const row = JSON.parse(JSON.stringify(rowDataExample))
+                    if (row.phase) row.name.value = phase
+                    table1.push(row)
+                })
+            }
+            return {
+                rowDataExampleCondition,
+                table: {
+                    table1: table1
+                }
+            }
+        },
+        async initDCWindingTert(testTypeCode, assetData) {
+            const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
+
+            let tapChangers = assetData?.tap_changers || {}
+
+            if (typeof tapChangers === 'string') {
+                try {
+                    tapChangers = JSON.parse(tapChangers)
+                } catch (e) {
+                    tapChangers = {}
+                }
+            }
+
+            let table1 = []
+            const phases = ['A', 'B', 'C']
+
+            if (tapChangers.mode && tapChangers.winding === this.$constant.TERT && tapChangers.tap_scheme && tapChangers.no_of_taps) {
+                const voltage_table = tapChangers.voltage_table || []
+                voltage_table.forEach((element) => {
+                    const tap = element.tap
+                    phases.forEach((phase) => {
+                        const row = JSON.parse(JSON.stringify(rowDataExample))
+                        if (row.tap) row.tap.value = tap
+                        if (row.name) row.name.value = phase
+                        table1.push(row)
+                    })
+                })
+            } else {
+                phases.forEach((phase) => {
+                    const row = JSON.parse(JSON.stringify(rowDataExample))
+                    if (row.phase) row.name.value = phase
+                    table1.push(row)
+                })
+            }
+            return {
+                rowDataExampleCondition,
+                table: {
+                    table1: table1
+                }
+            }
+        },
         async initMeasurementOfNoLoad(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
@@ -414,9 +482,27 @@ export default {
             }
         },
         async initSeparateSourceAc(testTypeCode) {
-            // const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
-            // const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
-            // let table1 = []
+            const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
+
+            let table1 = []
+            let appliedTerminals = ['HV - (LV+E)', 'LV - (HV+E)']
+
+            appliedTerminals.forEach((element) => {
+                const row = JSON.parse(JSON.stringify(rowDataExample))
+                if (row.applied_terminal) {
+                    row.applied_terminal.value = element
+                }
+
+                table1.push(row)
+            })
+
+            return {
+                rowDataExampleCondition,
+                table: {
+                    table1: table1
+                }
+            }
         },
         async initInducedAcVoltageTests(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
@@ -482,22 +568,210 @@ export default {
                 }
             }
         },
-        initWindingDfCap(assetData = null) {},
-        async initBushingPrimC1(testTypeCode) {
-            // const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
-            // const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
+        async initWindingDfCap(testTypeCode, assetData) {
+            const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
 
-            // let table1 = []
+            let table1 = []
+            let measurementPositions = []
 
+            if (assetData.properties.type === 'Three-winding') {
+                measurementPositions = [
+                    'CH+CHL+CHT',
+                    'CH+CHL',
+                    'CH+CHT',
+                    'CH',
+                    'CHL',
+                    'CHT',
+                    'CL+CHL+CLT',
+                    'CL+CHL',
+                    'CL+CLT',
+                    'CL',
+                    'CLT',
+                    'CT+CHT+CLT',
+                    'CT+CHT',
+                    'CT+CHL',
+                    'CT'
+                ]
+            } else if (assetData.properties.type === 'Two-winding') {
+                measurementPositions = ['CH+CHL', 'CH', 'CHL', 'CL', 'CL+CHL']
+            } else {
+                measurementPositions = ['CH+CHT', 'CH', 'CHT', 'CT', 'CT+CHT']
+            }
+
+            measurementPositions.forEach((pos) => {
+                const row = JSON.parse(JSON.stringify(rowDataExample))
+
+                if (row.measurement) {
+                    row.measurement.value = pos
+                }
+
+                table1.push(row)
+            })
+
+            return {
+                rowDataExampleCondition,
+                table: {
+                    table1: table1
+                }
+            }
         },
-        initBushingPrimC2() {},
-        initBushingSecC1() {},
-        initBushingSecC2() {},
-        initBushingTertC1() {},
-        initBushingTertC2() {},
-        initShortPrimSec() {},
-        initShortSecTert() {},
-        initShortPrimTert() {},
+        async initBushingPrimC1(testTypeCode, assetData) {
+            const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
+
+            let table1 = []
+            const primBushings = assetData.bushing_data.prim || []
+
+            if (primBushings.length > 0) {
+                primBushings.forEach((e) => {
+                    const row = JSON.parse(JSON.stringify(rowDataExample))
+
+                    if (row.measurement) row.measurement.value = e.pos
+                    if (row.df_ref) row.df_ref.value = e.df_c1.value
+                    if (row.c_ref) row.c_ref.value = e.cap_c1.value
+
+                    table1.push(row)
+                })
+            }
+
+            return {
+                rowDataExampleCondition,
+                table: {
+                    table1: table1
+                }
+            }
+        },
+        async initBushingPrimC2(testTypeCode, assetData) {
+            const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
+
+            let table1 = []
+            const primBushings = assetData.bushing_data.prim || []
+
+            if (primBushings.length > 0) {
+                primBushings.forEach((e) => {
+                    const row = JSON.parse(JSON.stringify(rowDataExample))
+
+                    if (row.measurement) row.measurement.value = e.pos
+                    if (row.df_ref) row.df_ref.value = e.df_c2.value
+                    if (row.c_ref) row.c_ref.value = e.cap_c2.value
+
+                    table1.push(row)
+                })
+            }
+
+            return {
+                rowDataExampleCondition,
+                table: {
+                    table1: table1
+                }
+            }
+        },
+        async initBushingSecC1(testTypeCode, assetData) {
+            const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
+
+            let table1 = []
+            const secBushings = assetData.bushing_data.sec || []
+
+            if (secBushings.length > 0) {
+                secBushings.forEach((e) => {
+                    const row = JSON.parse(JSON.stringify(rowDataExample))
+
+                    if (row.measurement) row.measurement.value = e.pos
+                    if (row.df_ref) row.df_ref.value = e.df_c1.value
+                    if (row.c_ref) row.c_ref.value = e.cap_c1.value
+
+                    table1.push(row)
+                })
+            }
+
+            return {
+                rowDataExampleCondition,
+                table: {
+                    table1: table1
+                }
+            }
+        },
+        async initBushingSecC2(testTypeCode, assetData) {
+            const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
+
+            let table1 = []
+            const secBushings = assetData.bushing_data.sec || []
+
+            if (secBushings.length > 0) {
+                secBushings.forEach((e) => {
+                    const row = JSON.parse(JSON.stringify(rowDataExample))
+
+                    if (row.measurement) row.measurement.value = e.pos
+                    if (row.df_ref) row.df_ref.value = e.df_c2.value
+                    if (row.c_ref) row.c_ref.value = e.cap_c2.value
+
+                    table1.push(row)
+                })
+            }
+
+            return {
+                rowDataExampleCondition,
+                table: {
+                    table1: table1
+                }
+            }
+        },
+        async initBushingTertC1(testTypeCode, assetData) {
+            const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
+
+            let table1 = []
+            const tertBushings = assetData.bushing_data.tert || []
+
+            if (tertBushings.length > 0) {
+                tertBushings.forEach((e) => {
+                    const row = JSON.parse(JSON.stringify(rowDataExample))
+
+                    if (row.measurement) row.measurement.value = e.pos
+                    if (row.df_ref) row.df_ref.value = e.df_c1.value
+                    if (row.c_ref) row.c_ref.value = e.cap_c1.value
+
+                    table1.push(row)
+                })
+            }
+
+            return {
+                rowDataExampleCondition,
+                table: {
+                    table1: table1
+                }
+            }
+        },
+        async initBushingTertC2(testTypeCode, assetData) {
+            const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
+
+            let table1 = []
+            const tertBushings = assetData.bushing_data.tert || []
+
+            if (tertBushings.length > 0) {
+                tertBushings.forEach((e) => {
+                    const row = JSON.parse(JSON.stringify(rowDataExample))
+
+                    if (row.measurement) row.measurement.value = e.pos
+                    if (row.df_ref) row.df_ref.value = e.df_c2.value
+                    if (row.c_ref) row.c_ref.value = e.cap_c2.value
+
+                    table1.push(row)
+                })
+            }
+
+            return {
+                rowDataExampleCondition,
+                table: {
+                    table1: table1
+                }
+            }
+        },
         async initDga(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
@@ -530,22 +804,6 @@ export default {
                 }
             }
         },
-        // async initDielectricResponseAnalysis(testTypeCode) {
-        //     const rowDataExample = common.buildEmptyTestRow(testConfig.columns)
-        //     const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
-
-        //     let table1 = []
-            
-        //     const row = JSON.parse(JSON.stringify(rowDataExample))
-        //     table1.push(row)
-
-        //     return {
-        //         rowDataExampleCondition,
-        //         table: {
-        //             table1: table1
-        //         }
-        //     }
-        // },
         async initInsulationResistanceYokeCore(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
@@ -562,8 +820,110 @@ export default {
                 }
             }
         },
-        initShortCircuitImpedancePrim() {},
-        initShortCircuitImpedanceSec() {},
-        initShortCircuitImpedanceTert() {}
+        async initShortCircuitImpedancePrim(testTypeCode, assetData) {
+            const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
+
+            let table1 = []
+            let table2 = []
+            let phases = ['A', 'B', 'C']
+            let primSec = assetData.impedances.prim_sec || []
+
+            if (primSec.length > 0) {
+                primSec.forEach((e) => {
+                    phases.forEach((phase) => {
+                        const row1 = JSON.parse(JSON.stringify(rowDataExample))
+                        const row2 = JSON.parse(JSON.stringify(rowDataExample))
+
+                        if (row1.tap) row1.tap.value = e.oltc_position
+                        if (row1.phase) row1.phase.value = phase
+
+                        if (row2.tap) row2.tap.value = e.oltc_position
+                        if (row2.phase) row2.phase.value = phase
+
+                        table1.push(row1)
+                        table2.push(row2)
+                    })
+                })
+            }
+
+            return {
+                rowDataExampleCondition,
+                table: {
+                    table1: table1,
+                    table2: table2
+                },
+            }
+        },
+        async initShortCircuitImpedanceSec(testTypeCode, assetData) {
+            const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
+
+            let table1 = []
+            let table2 = []
+            let phases = ['A', 'B', 'C']
+            let secTert = assetData.impedances.sec_tert || []
+
+            if (secTert.length > 0) {
+                secTert.forEach((e) => {
+                    phases.forEach((phase) => {
+                        const row1 = JSON.parse(JSON.stringify(rowDataExample))
+                        const row2 = JSON.parse(JSON.stringify(rowDataExample))
+
+                        if (row1.tap) row1.tap.value = e.oltc_position
+                        if (row1.phase) row1.phase.value = phase
+
+                        if (row2.tap) row2.tap.value = e.oltc_position
+                        if (row2.phase) row2.phase.value = phase
+
+                        table1.push(row1)
+                        table2.push(row2)
+                    })
+                })
+            }
+
+            return {
+                rowDataExampleCondition,
+                table: {
+                    table1: table1,
+                    table2: table2
+                },
+            }
+        },
+        async initShortCircuitImpedanceTert(testTypeCode, assetData) {
+            const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
+
+            let table1 = []
+            let table2 = []
+            let phases = ['A', 'B', 'C']
+            let primTert = assetData.impedances.prim_tert || []
+
+            if (primTert.length > 0) {
+                primTert.forEach((e) => {
+                    phases.forEach((phase) => {
+                        const row1 = JSON.parse(JSON.stringify(rowDataExample))
+                        const row2 = JSON.parse(JSON.stringify(rowDataExample))
+
+                        if (row1.tap) row1.tap.value = e.oltc_position
+                        if (row1.phase) row1.phase.value = phase
+
+                        if (row2.tap) row2.tap.value = e.oltc_position
+                        if (row2.phase) row2.phase.value = phase
+
+                        table1.push(row1)
+                        table2.push(row2)
+                    })
+                })
+            }
+
+            return {
+                rowDataExampleCondition,
+                table: {
+                    table1: table1,
+                    table2: table2
+                },
+            }
+        }
     }
 }

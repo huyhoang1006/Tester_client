@@ -11,7 +11,7 @@
             </thead>
             <tbody>
                 <tr v-for="(item, index) in testData.table.table1" :key="index">
-                    <th>{{ item.name.value }}</th>
+                    <td>{{ item.name.value }}</td>
                     <td><el-input size="mini" v-model="item.e50.value"></el-input></td>
                     <td><el-input size="mini" v-model="item.standard.value"></el-input></td>
                     <td>

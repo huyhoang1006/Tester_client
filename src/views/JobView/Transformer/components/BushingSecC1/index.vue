@@ -7,7 +7,8 @@
                     <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
                         <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
                     </el-button>
-                    <el-button class="btn-action" size="mini" type="success" @click="openConditionIndicatorDialog = true">
+                    <el-button class="btn-action" size="mini" type="success"
+                        @click="openConditionIndicatorDialog = true">
                         <i class="fa-solid fa-hammer"></i> Condition indicatior settings
                     </el-button>
                 </el-col>
@@ -16,8 +17,10 @@
             <!-- Tương tác với bảng -->
             <el-row class="mgb-10">
                 <el-col>
-                    <el-button size="mini" type="primary" class="btn-action" @click="calculator" > <i class="fas fa-circle-play"></i> Assess results </el-button>
-                    <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i class="fas fa-xmark"></i> Clear all</el-button>
+                    <el-button size="mini" type="primary" class="btn-action" @click="calculator"> <i
+                            class="fas fa-circle-play"></i> Assess results </el-button>
+                    <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i
+                            class="fas fa-xmark"></i> Clear all</el-button>
                 </el-col>
             </el-row>
         </div>
@@ -43,7 +46,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, index) in testData.table" :key="index">
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>{{ index + 1 }}</td>
                     <td>
                         <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
@@ -70,21 +73,35 @@
                         <el-input size="mini" type="text" v-model="item.df_change.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.tri_c_meas.value"></el-input>
+                        <el-input size="mini" type="text" v-model="item.delta_c_percent.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
                             <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                             <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                         </el-select>
-                        <span v-if="item.assessment.value==='Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                        <span v-else-if="item.assessment.value==='Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                        <span v-if="item.assessment.value === 'Pass'"
+                            class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment.value === 'Fail'"
+                            class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                     <td>
-                        <el-input :class="nameColor(item.condition_indicator_df.value)" size="mini" type="text" v-model="item.condition_indicator_df.value"></el-input>
+                        <el-select :class="nameColor(item.condition_indicator_df.value)" id="condition" type="text"
+                            size="mini" v-model="item.condition_indicator_df.value">
+                            <el-option value="Good">Good</el-option>
+                            <el-option value="Fair">Fair</el-option>
+                            <el-option value="Poor">Poor</el-option>
+                            <el-option value="Bad">Bad</el-option>
+                        </el-select>
                     </td>
                     <td>
-                        <el-input :class="nameColor(item.condition_indicator_c.value)" size="mini" type="text" v-model="item.condition_indicator_c.value"></el-input>
+                        <el-select :class="nameColor(item.condition_indicator_c.value)" id="condition" type="text"
+                            size="mini" v-model="item.condition_indicator_c.value">
+                            <el-option value="Good">Good</el-option>
+                            <el-option value="Fair">Fair</el-option>
+                            <el-option value="Poor">Poor</el-option>
+                            <el-option value="Bad">Bad</el-option>
+                        </el-select>
                     </td>
                     <td>
                         <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
@@ -105,12 +122,15 @@
         </el-dialog>
 
         <!-- Condition indicator settings -->
-        <el-dialog append-to-body title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="860px">
+        <el-dialog append-to-body title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog"
+            width="860px">
         </el-dialog>
     </div>
 </template>
 
 <script>
+import TransformerTestMap from '@/config/test-definitions/Transformer'
+import * as common from '../../../Common/index'
 export default {
     name: 'BushingSecC1',
     data() {
@@ -137,207 +157,54 @@ export default {
         assetData() {
             return this.asset
         },
+        rowData() {
+            return common.buildEmptyTestRow(TransformerTestMap['BushingSecC1'].columns)
+        }
     },
     methods: {
         add() {
-            this.testData.table.push({
-                measurement: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                test_mode: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                },
-                test_voltage: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'analog'
-                },
-                df_ref: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'analog'
-                },
-                c_ref: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'analog'
-                },
-                df_meas: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'analog'
-                },
-                c_meas: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'analog'
-                },
-                df_change: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'analog'
-                },
-                tri_c_meas: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'analog'
-                },
-                assessment: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                },
-                condition_indicator_df: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                },
-                condition_indicator_c: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                }
-            })
+            this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
         },
         removeAll() {
-            this.$confirm('This will delete all items. Continue?', 'Warning', {
-                    confirmButtonText: 'OK',
-                    cancelButtonText: 'Cancel',
-                    type: 'warning'
-                })
-                .then( () => {
-                    this.testData.table = []
-                })
-                .catch( () => {
-                    // User cancelled, do nothing
-                })
+            this.$confirm('This will delete the file. Continue?', 'Warning', {
+                confirmButtonText: 'OK',
+                cancelButtonText: 'Cancel',
+                type: 'warning'
+            }).then(() => {
+                this.testData.table.table1 = []
+            })
         },
         deleteTest(index) {
-            this.testData.table.splice(index, 1)
+            this.testData.table.table1.splice(index, 1)
         },
         addTest(index) {
-            const data = {
-                measurement: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'string'
-                },
-                test_mode: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                },
-                test_voltage: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'analog'
-                },
-                df_ref: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'analog'
-                },
-                c_ref: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'analog'
-                },
-                df_meas: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'analog'
-                },
-                c_meas: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'analog'
-                },
-                df_change: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'analog'
-                },
-                tri_c_meas: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'analog'
-                },
-                assessment: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                },
-                condition_indicator_df: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                },
-                condition_indicator_c: {
-                    mrid: '',
-                    value: '',
-                    unit: '',
-                    type: 'discrete'
-                }
-            }
-            this.testData.table.splice(index+1, 0, data)
+            const data = JSON.parse(JSON.stringify(this.rowData))
+            this.testData.table.table1.splice(index + 1, 0, data)
         },
         calculator() {
             this.$message.success('Calculating successfully')
         },
         clear() {
-            this.testData.table.forEach((element) => {
-                element.measurement = ''
-                element.test_mode = ''
-                element.test_voltage = ''
-                element.df_ref = ''
-                element.c_ref = ''
-                element.df_meas = ''
-                element.c_meas = ''
-                element.df_change = ''
-                element.tri_c_meas = ''
-                element.assessment = ''
-                element.condition_indicator_df = ''
-                element.condition_indicator_c = ''
+            this.testData.table.table1.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (key === "mrid") return;
+                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                        row[key].value = ""
+                    }
+                })
             })
         },
         nameColor(data) {
-            if(data === this.$constant.GOOD) {
+            if (data === this.$constant.GOOD) {
                 return 'Good'
             }
-            else if(data === this.$constant.FAIR) {
+            else if (data === this.$constant.FAIR) {
                 return 'Fair'
             }
-            else if(data === this.$constant.POOR) {
+            else if (data === this.$constant.POOR) {
                 return 'Poor'
             }
-            else if(data === this.$constant.BAD) {
+            else if (data === this.$constant.BAD) {
                 return 'Bad'
             }
             else {
@@ -349,9 +216,13 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-table, th, td, tr {
+table,
+th,
+td,
+tr {
     white-space: nowrap;
 }
+
 .flex-container {
     display: flex;
     flex-direction: column;
@@ -360,6 +231,7 @@ table, th, td, tr {
         padding: 1px;
     }
 }
+
 .Good input {
     background: #00CC00;
 }
@@ -376,7 +248,8 @@ table, th, td, tr {
     background: #ff3300;
 }
 
-td, th {
+td,
+th {
     font-size: 12px;
 }
 </style>

@@ -51,6 +51,20 @@
             "unit": "pF"
         },
         {
+            "mrid": "dcddcd9a-ff10-40b0-8baa-70962f587cbe",
+            "code": "df_change",
+            "name": "DF change",
+            "type": "analog",
+            "unit": ""
+        },
+        {
+            "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+            "code": "delta_c_percent",
+            "name": "△C cal",
+            "type": "analog",
+            "unit": "%"
+        },
+        {
             "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",
             "code": "assessment",
             "name": "Assessment",
