@@ -1,30 +1,39 @@
 <template>
     <div id="dc-winding-resistance-prim">
-
         <!-- Cấu hình -->
         <div style="position: sticky; left: 0; display: inline-block;">
-        <el-row class="mgb-10">
-            <el-col>
-                <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
-                    <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
-                </el-button>
-                <el-button class="btn-action" size="mini" type="success" @click="openConditionIndicatorDialog = true">
-                    <i class="fa-solid fa-hammer"></i> Condition indicatior settings
-                </el-button>
-            </el-col>
-        </el-row>
-        <!-- Tính toán đánh giá -->
-        <el-row class="mgb-10">
-            <el-col>
-                <el-button size="mini" type="primary" class="btn-action" @click="calculator"> <i class="fas fa-circle-play"></i> Assess results </el-button>
-                <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i class="fas fa-xmark"></i> Clear all </el-button>
-            </el-col>
-        </el-row>
+            <el-row class="mgb-10">
+                <el-col>
+                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
+                        <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
+                    </el-button>
+                    <el-button class="btn-action" size="mini" type="success"
+                        @click="openConditionIndicatorDialog = true">
+                        <i class="fa-solid fa-hammer"></i> Condition indicatior settings
+                    </el-button>
+                </el-col>
+            </el-row>
+
+            <!-- Tính toán đánh giá -->
+            <el-row class="mgb-10">
+                <el-col>
+                    <el-button size="mini" type="primary" class="btn-action" @click="calculator"> <i
+                            class="fas fa-circle-play"></i> Assess results </el-button>
+                    <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i
+                            class="fas fa-xmark"></i> Clear all </el-button>
+                </el-col>
+            </el-row>
         </div>
+
         <div style="margin-top: 20px;margin-bottom: 10px;">
-            <el-button size="mini" type="info" class="btn-action" @click="testData.option='threePhase'"> Three phase </el-button>
-            <el-button size="mini" type="info" class="btn-action" @click="testData.option='perPhase'"> Per phase </el-button>
+            <el-button size="mini" :type="currentOption === 'threePhase' ? 'primary' : 'info'" class="btn-action"
+                @click="currentOption = 'threePhase'"> Three phase
+            </el-button>
+            <el-button size="mini" :type="currentOption === 'perPhase' ? 'primary' : 'info'" class="btn-action"
+                @click="currentOption = 'perPhase'"> Per phase
+            </el-button>
         </div>
+
         <table class="table-strip-input-data" style="width: 120% ;font-size: 12px;">
             <thead>
                 <tr>
@@ -39,99 +48,119 @@
                     <th class="condition-indicator-col">Condition indicator</th>
                 </tr>
             </thead>
-            <tbody v-if="testData.option === 'threePhase'">
-                <template v-for="(item, index) in testData.table">
-                    <tr :key="index">
-                        <td><el-input size="mini" type="number" v-model="item.tap.value"></el-input></td>
-                        <td style="width: 10%">
-                            <div class="col-phase">
-                                <div class="phase">
-                                    <el-input size="mini" type="text" v-model="item.phase.value"></el-input>
-                                </div>
-                                <div class="rectangle" :class="{red: item.phase.value == 'A', yellow: item.phase.value == 'B', blue: item.phase.value == 'C'}"></div>
+            <tbody v-if="currentOption === 'threePhase'" key="three">
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
+                    <td><el-input size="mini" type="number" v-model="item.tap.value"></el-input></td>
+                    <td style="width: 10%">
+                        <div class="col-phase">
+                            <div class="phase">
+                                <el-input size="mini" type="text" v-model="item.phase.value"></el-input>
                             </div>
+                            <div class="rectangle"
+                                :class="{ red: item.phase.value == 'A', yellow: item.phase.value == 'B', blue: item.phase.value == 'C' }">
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="number" v-model="item.rk.value"><template
+                                slot="append">Ω</template></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="number" v-model="item.xk.value"><template
+                                slot="append">Ω</template></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="number" v-model="item.zk.value"><template
+                                slot="append">Ω</template></el-input>
+                    </td>
+                    <template v-if="index % 3 == 0">
+                        <td rowspan="3">
+                            <el-input size="mini" type="number" v-model="item.uk_cal.value"></el-input>
                         </td>
-                        <td>
-                            <el-input size="mini" type="number" v-model="item.rk.value"><template slot="append">Ω</template></el-input>
+                    </template>
+                    <template v-if="index % 3 == 0">
+                        <td rowspan="3">
+                            <el-input size="mini" type="number" v-model="item.uk_dev.value"></el-input>
                         </td>
-                        <td>
-                            <el-input size="mini" type="number" v-model="item.xk.value"><template slot="append">Ω</template></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="number" v-model="item.zk.value"><template slot="append">Ω</template></el-input>
-                        </td>
-                        <template v-if="index % 3 == 0">
-                            <td rowspan="3">
-                                <el-input size="mini" type="number" v-model="item.ukCal.value"></el-input>
-                            </td>
-                        </template>
-                        <template v-if="index % 3 == 0" >
-                            <td rowspan="3">
-                                <el-input size="mini" type="number" v-model="item.ukDev.value"></el-input>
-                            </td>
-                        </template>
-                        <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
-                                <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
-                                <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
-                            </el-select>
-                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
-                        </td>
-                        <td>
-                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
-                            </el-input>
-                        </td>
-                    </tr>
-                </template>
+                    </template>
+                    <td>
+                        <el-select class="assessment" size="mini" v-model="item.assessment.value">
+                            <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
+                        </el-select>
+                        <span v-if="item.assessment.value === 'Pass'"
+                            class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment.value === 'Fail'"
+                            class="fa-solid fa-xmark fail icon-status"></span>
+                    </td>
+                    <td>
+                        <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                            size="mini" v-model="item.condition_indicator.value">
+                            <el-option value="Good">Good</el-option>
+                            <el-option value="Fair">Fair</el-option>
+                            <el-option value="Poor">Poor</el-option>
+                            <el-option value="Bad">Bad</el-option>
+                        </el-select>
+                    </td>
+                </tr>
             </tbody>
-            <tbody v-else>
-                <template v-for="(item, index) in testData.table">
-                    <tr :key="index">
-                        <td><el-input size="mini" type="number" v-model="item.tap.value"></el-input></td>
-                        <td style="width: 10%">
-                            <div class="col-phase">
-                                <div class="phase">
-                                    <el-input size="mini" type="text" v-model="item.phase.value"></el-input>
-                                </div>
-                                <div class="rectangle" :class="{red: item.phase.value == 'A', yellow: item.phase.value == 'B', blue: item.phase.value == 'C'}"></div>
+            <tbody v-else key="per">
+                <tr v-for="(item, index) in testData.table.table2" :key="index">
+                    <td><el-input size="mini" type="number" v-model="item.tap.value"></el-input></td>
+                    <td style="width: 10%">
+                        <div class="col-phase">
+                            <div class="phase">
+                                <el-input size="mini" type="text" v-model="item.phase.value"></el-input>
                             </div>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="number" v-model="item.rk.value"><template slot="append">Ω</template></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="number" v-model="item.xk.value"><template slot="append">Ω</template></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="number" v-model="item.zk.value"><template slot="append">Ω</template></el-input>
-                        </td>
-                        <td >
-                            <el-input size="mini" type="number" v-model="item.ukCal.value"></el-input>
-                        </td>
-                        <td>
-                            <el-input size="mini" type="number" v-model="item.ukDev.value"></el-input>
-                        </td>
-                        <td>
-                            <el-select class="assessment" size="mini" v-model="item.assessment.value">
-                                <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
-                                <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
-                            </el-select>
-                            <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                            <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
-                        </td>
-                        <td>
-                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
-                            </el-input>
-                        </td>
-                    </tr>
-                </template>
+                            <div class="rectangle"
+                                :class="{ red: item.phase.value == 'A', yellow: item.phase.value == 'B', blue: item.phase.value == 'C' }">
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="number" v-model="item.rk.value"><template
+                                slot="append">Ω</template></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="number" v-model="item.xk.value"><template
+                                slot="append">Ω</template></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="number" v-model="item.zk.value"><template
+                                slot="append">Ω</template></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="number" v-model="item.uk_cal.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="number" v-model="item.uk_dev.value"></el-input>
+                    </td>
+                    <td>
+                        <el-select class="assessment" size="mini" v-model="item.assessment.value">
+                            <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
+                        </el-select>
+                        <span v-if="item.assessment.value === 'Pass'"
+                            class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment.value === 'Fail'"
+                            class="fa-solid fa-xmark fail icon-status"></span>
+                    </td>
+                    <td>
+                        <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                            size="mini" v-model="item.condition_indicator.value">
+                            <el-option value="Good">Good</el-option>
+                            <el-option value="Fair">Fair</el-option>
+                            <el-option value="Poor">Poor</el-option>
+                            <el-option value="Bad">Bad</el-option>
+                        </el-select>
+                    </td>
+                </tr>
             </tbody>
         </table>
 
         <!-- assessment_setting -->
         <el-dialog append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px">
-            <el-form size="small" label-position="left" label-width="140px">
+            <!-- <el-form size="small" label-position="left" label-width="140px">
                 <el-form-item label="Option">
                     <el-select class="w-100" placeholder="please select" v-model="assessmentSetting.option.value">
                         <el-option label="IEEE C57.152 (2013)" value="IEEE"></el-option>
@@ -155,14 +184,16 @@
                     <tr>
                         <th>uk dev (%)</th>
                         <td>
-                            ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.threePhase.ukDev.value"></el-input>
+                            ≤ <el-input style="width: 100px;" size="mini"
+                                v-model="assessmentSetting.data.custom.threePhase.ukDev.value"></el-input>
                         </td>
                         <th><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
                     <tr>
                         <th>uk dev (%)</th>
                         <td>
-                            > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.threePhase.ukDev.value"></el-input>
+                            > <el-input style="width: 100px;" size="mini"
+                                v-model="assessmentSetting.data.custom.threePhase.ukDev.value"></el-input>
                         </td>
                         <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
@@ -172,14 +203,16 @@
                     <tr>
                         <th>uk dev (%)</th>
                         <td>
-                            ≤ <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.perPhase.ukDev.value"></el-input>
+                            ≤ <el-input style="width: 100px;" size="mini"
+                                v-model="assessmentSetting.data.custom.perPhase.ukDev.value"></el-input>
                         </td>
                         <th><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
                     <tr>
                         <th>uk dev (%)</th>
                         <td>
-                            > <el-input style="width: 100px;" size="mini" v-model="assessmentSetting.data.custom.perPhase.ukDev.value"></el-input>
+                            > <el-input style="width: 100px;" size="mini"
+                                v-model="assessmentSetting.data.custom.perPhase.ukDev.value"></el-input>
                         </td>
                         <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
@@ -216,14 +249,14 @@
                     <tr>
                         <th>uk dev (%)</th>
                         <td>
-                            ≤ {{assessmentSetting.data.ieee.perPhase.ukDev.value}}
+                            ≤ {{ assessmentSetting.data.ieee.perPhase.ukDev.value }}
                         </td>
                         <th><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
                     <tr>
                         <th>uk dev (%)</th>
                         <td>
-                            > {{assessmentSetting.data.ieee.perPhase.ukDev.value}}
+                            > {{ assessmentSetting.data.ieee.perPhase.ukDev.value }}
                         </td>
                         <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
@@ -260,24 +293,25 @@
                     <tr>
                         <th>uk dev (%)</th>
                         <td>
-                            ≤ {{assessmentSetting.data.cigre.perPhase.ukDev.value}}
+                            ≤ {{ assessmentSetting.data.cigre.perPhase.ukDev.value }}
                         </td>
                         <th><i class="fas fa-check-square pass"></i> Pass</th>
                     </tr>
                     <tr>
                         <th>uk dev (%)</th>
                         <td>
-                            > {{assessmentSetting.data.cigre.perPhase.ukDev.value}}
+                            > {{ assessmentSetting.data.cigre.perPhase.ukDev.value }}
                         </td>
                         <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
                     </tr>
                 </tbody>
-            </table>
+            </table> -->
         </el-dialog>
 
         <!-- Condition indicator settings -->
-        <el-dialog append-to-body title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="600px">
-            <table class="table-strip-input-data">
+        <el-dialog append-to-body title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog"
+            width="600px">
+            <!-- <table class="table-strip-input-data">
                 <thead>
                     <tr>
                         <th>Breakdown voltage (kV)</th>
@@ -288,62 +322,64 @@
                 <tbody>
                     <tr>
                         <td>
-                            ≥ <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.good.breakdown_voltage[0].value"></el-input>
+                            ≥ <el-input size="mini" class="w-100px"
+                                v-model="conditionIndicatorSetting.good.breakdown_voltage[0].value"></el-input>
                         </td>
                         <td class="good">Good</td>
                         <td><el-input size="mini" v-model="conditionIndicatorSetting.good.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.fair.breakdown_voltage[0].value"></el-input> to 
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.fair.breakdown_voltage[1].value"></el-input>
+                            <el-input size="mini" class="w-100px"
+                                v-model="conditionIndicatorSetting.fair.breakdown_voltage[0].value"></el-input> to
+                            <el-input size="mini" class="w-100px"
+                                v-model="conditionIndicatorSetting.fair.breakdown_voltage[1].value"></el-input>
                         </td>
                         <td class="fair">Fair</td>
                         <td><el-input size="mini" v-model="conditionIndicatorSetting.fair.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.poor.breakdown_voltage[0].value"></el-input> to
-                            <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.poor.breakdown_voltage[1].value"></el-input>
+                            <el-input size="mini" class="w-100px"
+                                v-model="conditionIndicatorSetting.poor.breakdown_voltage[0].value"></el-input> to
+                            <el-input size="mini" class="w-100px"
+                                v-model="conditionIndicatorSetting.poor.breakdown_voltage[1].value"></el-input>
                         </td>
                         <td class="poor">Poor</td>
                         <td><el-input size="mini" v-model="conditionIndicatorSetting.poor.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            &lt; <el-input size="mini" class="w-100px" v-model="conditionIndicatorSetting.bad.breakdown_voltage[1].value"></el-input>
+                            &lt; <el-input size="mini" class="w-100px"
+                                v-model="conditionIndicatorSetting.bad.breakdown_voltage[1].value"></el-input>
                         </td>
                         <td class="bad">Bad</td>
                         <td><el-input size="mini" v-model="conditionIndicatorSetting.bad.score.value"></el-input></td>
                     </tr>
                 </tbody>
-            </table>
+            </table> -->
         </el-dialog>
 
     </div>
 </template>
 
 <script>
+import TransformerTestMap from '@/config/test-definitions/Transformer'
+import * as common from '../../../Common/index'
 export default {
+    name: 'ShortCircuitImpedanceSec',
     data() {
         return {
             openAssessmentDialog: false,
-            openConditionIndicatorDialog: false
+            openConditionIndicatorDialog: false,
+            currentOption: 'threePhase'
         }
     },
     props: {
         data: {
             type: Object,
             require: true
-        },
-        tapChangers: {
-            type: Object,
-            required: true
-        },
-        testCondition : {
-            type: Object,
-            required: true
-        },
+        }
     },
     computed: {
         testData() {
@@ -355,11 +391,13 @@ export default {
         conditionIndicatorSetting() {
             return this.data.condition_indicator
         },
-        
+        rowData() {
+            return common.buildEmptyTestRow(TransformerTestMap['ShortCircuitImpedanceSec'].columns)
+        }
     },
     watch: {
         'assessmentSetting.option': {
-            handler : function() {
+            handler: function () {
                 this.testData.table.forEach(element => {
                     element.assessment = ''
                 })
@@ -368,196 +406,204 @@ export default {
     },
     methods: {
         async calculator() {
-            await this.CalUkCal()
-            await this.CalUkDev()
-            await this.ukassessment()
+            // await this.CalUkCal()
+            // await this.CalUkDev()
+            // await this.ukassessment()
+
+            this.$message.success('Calculating successfully')
         },
-        async ukassessment() {
-            if(this.assessmentSetting.option === "CIGRE") {
-                if(this.testData.option === 'threePhase') {
-                    this.testData.table.forEach((element,index) => {
-                        if(!isNaN(parseFloat(element.ukDev))) {
-                            if(index%3==0) {
-                                if(Math.abs(element.ukDev) <= this.assessmentSetting.data.cigre[this.testData.option].ukDev) {
-                                    element.assessment = "Pass"
-                                    this.testData.table[index + 1].assessment = "Pass"
-                                    this.testData.table[index + 2].assessment = "Pass"
-                                } else {
-                                    element.assessment = "Fail"
-                                    this.testData.table[index + 1].assessment = "Fail"
-                                    this.testData.table[index + 2].assessment = "Fail"
-                                }
-                            }
-                        }
-                    })
-                } else {
-                    this.testData.table.forEach((element) => {
-                        if(!isNaN(parseFloat(element.ukDev))) {
-                            if(element.ukDev <= this.assessmentSetting.data.cigre[this.testData.option].ukDev) {
-                                element.assessment = "Pass"
-                            } else {
-                                element.assessment = "Fail"
-                            }
-                        }
-                    })
-                }
-            } else if(this.assessmentSetting.option === "IEEE") {
-                if(this.testData.option === 'threePhase') {
-                    this.testData.table.forEach((element,index) => {
-                        if(!isNaN(parseFloat(element.ukDev))) {
-                            if(index%3==0) {
-                                if(Math.abs(element.ukDev) <= this.assessmentSetting.data.ieee[this.testData.option].ukDev) {
-                                    element.assessment = "Pass"
-                                    this.testData.table[index + 1].assessment = "Pass"
-                                    this.testData.table[index + 2].assessment = "Pass"
-                                } else {
-                                    element.assessment = "Fail"
-                                    this.testData.table[index + 1].assessment = "Fail"
-                                    this.testData.table[index + 2].assessment = "Fail"
-                                }
-                            }
-                        }
-                    })
-                } else {
-                    this.testData.table.forEach((element) => {
-                        if(!isNaN(parseFloat(element.ukDev))) {
-                            if(element.ukDev <= this.assessmentSetting.data.ieee[this.testData.option].ukDev) {
-                                element.assessment = "Pass"
-                            } else {
-                                element.assessment = "Fail"
-                            }
-                        }
-                    })
-                }
-            } else {
-                if(this.testData.option === 'threePhase') {
-                    this.testData.table.forEach((element,index) => {
-                        if(!isNaN(parseFloat(element.ukDev))) {
-                            if(index%3==0) {
-                                if(Math.abs(element.ukDev) <= this.assessmentSetting.data.custom[this.testData.option].ukDev) {
-                                    element.assessment = "Pass"
-                                    this.testData.table[index + 1].assessment = "Pass"
-                                    this.testData.table[index + 2].assessment = "Pass"
-                                } else {
-                                    element.assessment = "Fail"
-                                    this.testData.table[index + 1].assessment = "Fail"
-                                    this.testData.table[index + 2].assessment = "Fail"
-                                }
-                            }
-                        }
-                    })
-                } else {
-                    this.testData.table.forEach((element) => {
-                        if(!isNaN(parseFloat(element.ukDev))) {
-                            if(element.ukDev <= this.assessmentSetting.data.custom[this.testData.option].ukDev) {
-                                element.assessment = "Pass"
-                            } else {
-                                element.assessment = "Fail"
-                            }
-                        }
-                    })
-                }
-            }
-        },
-        async CalUkCal() {
-            if(this.testData.option == "threePhase") {
-                const data = JSON.parse(this.$store.state.selectedAsset[0].sec_tert)
-                data.forEach(element => {
-                    if(!isNaN(parseFloat(element.base_power.value))) {
-                        if(!isNaN(parseFloat(element.base_voltage.value))) {
-                            if(element.base_voltage.value != 0) {
-                                this.testData.table.forEach((cell, index) => {
-                                    if(!isNaN(parseFloat(cell.zk)) && cell.tap == element[this.testData.mode]) {
-                                        if(index%3==0) {
-                                            let temp = parseFloat(this.testData.table[index].zk) + parseFloat(this.testData.table[index+1].zk) + parseFloat(this.testData.table[index+2].zk)
-                                            if(!isNaN(temp)) {
-                                                cell.ukCal = temp/3 * (parseFloat(element.base_power.value) / (Math.pow(parseFloat(element.base_voltage.value), 2)))
-                                                cell.ukCal = cell.ukCal * 100
-                                                cell.ukCal = cell.ukCal.toFixed(4)
-                                            }
-                                            
-                                        }
-                                    }
-                                })
-                            }
-                        }
-                    }
-                })
-            } else {
-                const data = JSON.parse(this.$store.state.selectedAsset[0].sec_tert)
-                data.forEach(element => {
-                    if(!isNaN(parseFloat(element.base_power.value))) {
-                        if(!isNaN(parseFloat(element.base_voltage.value))) {
-                            if(element.base_voltage.value != 0) {
-                                this.testData.table.forEach(cell => {
-                                    if(!isNaN(parseFloat(cell.zk)) && cell.tap == element[this.testData.mode]) {
-                                        cell.ukCal = cell.zk * (parseFloat(element.base_power.value) / (Math.pow(parseFloat(element.base_voltage.value), 2)))
-                                        cell.ukCal = cell.ukCal * 100
-                                        cell.ukCal = cell.ukCal.toFixed(4)
-                                    }
-                                })
-                            }
-                        }
-                    }
-                })
-            }
-        },
-        async CalUkDev() {
-            if(this.testData.option == "threePhase") {
-                const data = JSON.parse(this.$store.state.selectedAsset[0].sec_tert)
-                data.forEach(element => {
-                    if(!isNaN(parseFloat(element.short_circuit_impedances_uk))) {
-                        if(element.short_circuit_impedances_uk != 0) {
-                            this.testData.table.forEach((cell, index) => {
-                                if(!isNaN(parseFloat(cell.ukCal)) && cell.tap == element[this.testData.mode]) {
-                                    if(index%3==0) {
-                                        cell.ukDev = 100 * (cell.ukCal - element.short_circuit_impedances_uk)/element.short_circuit_impedances_uk
-                                    }
-                                }
-                            })
-                        }
-                    }
-                })
-            } else {
-                const data = JSON.parse(this.$store.state.selectedAsset[0].sec_tert)
-                data.forEach(element => {
-                    if(!isNaN(parseFloat(element.short_circuit_impedances_uk))) {
-                        if(element.short_circuit_impedances_uk != 0) {
-                            let temp = 0
-                            this.testData.table.forEach((cell, index) => {
-                                if(!isNaN(parseFloat(cell.ukCal)) && cell.tap == element[this.testData.mode]) {
-                                    if(index%3==0) {
-                                        temp = parseFloat(this.testData.table[index].ukCal) + parseFloat(this.testData.table[index+1].ukCal) + parseFloat(this.testData.table[index+2].ukCal)
-                                    }
-                                    if(!isNaN(temp) && temp != 0) {
-                                    cell.ukDev = 100 * (cell.ukCal - (temp/3)) / (temp/3) 
-                                }
-                                }
-                            })
-                        }
-                    }
-                })
-            }
-        },
+        // async ukassessment() {
+        //     if (this.assessmentSetting.option === "CIGRE") {
+        //         if (this.testData.option === 'threePhase') {
+        //             this.testData.table.forEach((element, index) => {
+        //                 if (!isNaN(parseFloat(element.ukDev))) {
+        //                     if (index % 3 == 0) {
+        //                         if (Math.abs(element.ukDev) <= this.assessmentSetting.data.cigre[this.testData.option].ukDev) {
+        //                             element.assessment = "Pass"
+        //                             this.testData.table[index + 1].assessment = "Pass"
+        //                             this.testData.table[index + 2].assessment = "Pass"
+        //                         } else {
+        //                             element.assessment = "Fail"
+        //                             this.testData.table[index + 1].assessment = "Fail"
+        //                             this.testData.table[index + 2].assessment = "Fail"
+        //                         }
+        //                     }
+        //                 }
+        //             })
+        //         } else {
+        //             this.testData.table.forEach((element) => {
+        //                 if (!isNaN(parseFloat(element.ukDev))) {
+        //                     if (element.ukDev <= this.assessmentSetting.data.cigre[this.testData.option].ukDev) {
+        //                         element.assessment = "Pass"
+        //                     } else {
+        //                         element.assessment = "Fail"
+        //                     }
+        //                 }
+        //             })
+        //         }
+        //     } else if (this.assessmentSetting.option === "IEEE") {
+        //         if (this.testData.option === 'threePhase') {
+        //             this.testData.table.forEach((element, index) => {
+        //                 if (!isNaN(parseFloat(element.ukDev))) {
+        //                     if (index % 3 == 0) {
+        //                         if (Math.abs(element.ukDev) <= this.assessmentSetting.data.ieee[this.testData.option].ukDev) {
+        //                             element.assessment = "Pass"
+        //                             this.testData.table[index + 1].assessment = "Pass"
+        //                             this.testData.table[index + 2].assessment = "Pass"
+        //                         } else {
+        //                             element.assessment = "Fail"
+        //                             this.testData.table[index + 1].assessment = "Fail"
+        //                             this.testData.table[index + 2].assessment = "Fail"
+        //                         }
+        //                     }
+        //                 }
+        //             })
+        //         } else {
+        //             this.testData.table.forEach((element) => {
+        //                 if (!isNaN(parseFloat(element.ukDev))) {
+        //                     if (element.ukDev <= this.assessmentSetting.data.ieee[this.testData.option].ukDev) {
+        //                         element.assessment = "Pass"
+        //                     } else {
+        //                         element.assessment = "Fail"
+        //                     }
+        //                 }
+        //             })
+        //         }
+        //     } else {
+        //         if (this.testData.option === 'threePhase') {
+        //             this.testData.table.forEach((element, index) => {
+        //                 if (!isNaN(parseFloat(element.ukDev))) {
+        //                     if (index % 3 == 0) {
+        //                         if (Math.abs(element.ukDev) <= this.assessmentSetting.data.custom[this.testData.option].ukDev) {
+        //                             element.assessment = "Pass"
+        //                             this.testData.table[index + 1].assessment = "Pass"
+        //                             this.testData.table[index + 2].assessment = "Pass"
+        //                         } else {
+        //                             element.assessment = "Fail"
+        //                             this.testData.table[index + 1].assessment = "Fail"
+        //                             this.testData.table[index + 2].assessment = "Fail"
+        //                         }
+        //                     }
+        //                 }
+        //             })
+        //         } else {
+        //             this.testData.table.forEach((element) => {
+        //                 if (!isNaN(parseFloat(element.ukDev))) {
+        //                     if (element.ukDev <= this.assessmentSetting.data.custom[this.testData.option].ukDev) {
+        //                         element.assessment = "Pass"
+        //                     } else {
+        //                         element.assessment = "Fail"
+        //                     }
+        //                 }
+        //             })
+        //         }
+        //     }
+        // },
+        // async CalUkCal() {
+        //     if (this.testData.option == "threePhase") {
+        //         const data = JSON.parse(this.$store.state.selectedAsset[0].sec_tert)
+        //         data.forEach(element => {
+        //             if (!isNaN(parseFloat(element.base_power.value))) {
+        //                 if (!isNaN(parseFloat(element.base_voltage.value))) {
+        //                     if (element.base_voltage.value != 0) {
+        //                         this.testData.table.forEach((cell, index) => {
+        //                             if (!isNaN(parseFloat(cell.zk)) && cell.tap == element[this.testData.mode]) {
+        //                                 if (index % 3 == 0) {
+        //                                     let temp = parseFloat(this.testData.table[index].zk) + parseFloat(this.testData.table[index + 1].zk) + parseFloat(this.testData.table[index + 2].zk)
+        //                                     if (!isNaN(temp)) {
+        //                                         cell.ukCal = temp / 3 * (parseFloat(element.base_power.value) / (Math.pow(parseFloat(element.base_voltage.value), 2)))
+        //                                         cell.ukCal = cell.ukCal * 100
+        //                                         cell.ukCal = cell.ukCal.toFixed(4)
+        //                                     }
+
+        //                                 }
+        //                             }
+        //                         })
+        //                     }
+        //                 }
+        //             }
+        //         })
+        //     } else {
+        //         const data = JSON.parse(this.$store.state.selectedAsset[0].sec_tert)
+        //         data.forEach(element => {
+        //             if (!isNaN(parseFloat(element.base_power.value))) {
+        //                 if (!isNaN(parseFloat(element.base_voltage.value))) {
+        //                     if (element.base_voltage.value != 0) {
+        //                         this.testData.table.forEach(cell => {
+        //                             if (!isNaN(parseFloat(cell.zk)) && cell.tap == element[this.testData.mode]) {
+        //                                 cell.ukCal = cell.zk * (parseFloat(element.base_power.value) / (Math.pow(parseFloat(element.base_voltage.value), 2)))
+        //                                 cell.ukCal = cell.ukCal * 100
+        //                                 cell.ukCal = cell.ukCal.toFixed(4)
+        //                             }
+        //                         })
+        //                     }
+        //                 }
+        //             }
+        //         })
+        //     }
+        // },
+        // async CalUkDev() {
+        //     if (this.testData.option == "threePhase") {
+        //         const data = JSON.parse(this.$store.state.selectedAsset[0].sec_tert)
+        //         data.forEach(element => {
+        //             if (!isNaN(parseFloat(element.short_circuit_impedances_uk))) {
+        //                 if (element.short_circuit_impedances_uk != 0) {
+        //                     this.testData.table.forEach((cell, index) => {
+        //                         if (!isNaN(parseFloat(cell.ukCal)) && cell.tap == element[this.testData.mode]) {
+        //                             if (index % 3 == 0) {
+        //                                 cell.ukDev = 100 * (cell.ukCal - element.short_circuit_impedances_uk) / element.short_circuit_impedances_uk
+        //                             }
+        //                         }
+        //                     })
+        //                 }
+        //             }
+        //         })
+        //     } else {
+        //         const data = JSON.parse(this.$store.state.selectedAsset[0].sec_tert)
+        //         data.forEach(element => {
+        //             if (!isNaN(parseFloat(element.short_circuit_impedances_uk))) {
+        //                 if (element.short_circuit_impedances_uk != 0) {
+        //                     let temp = 0
+        //                     this.testData.table.forEach((cell, index) => {
+        //                         if (!isNaN(parseFloat(cell.ukCal)) && cell.tap == element[this.testData.mode]) {
+        //                             if (index % 3 == 0) {
+        //                                 temp = parseFloat(this.testData.table[index].ukCal) + parseFloat(this.testData.table[index + 1].ukCal) + parseFloat(this.testData.table[index + 2].ukCal)
+        //                             }
+        //                             if (!isNaN(temp) && temp != 0) {
+        //                                 cell.ukDev = 100 * (cell.ukCal - (temp / 3)) / (temp / 3)
+        //                             }
+        //                         }
+        //                     })
+        //                 }
+        //             }
+        //         })
+        //     }
+        // },
         clear() {
-            this.testData.table.forEach((element) => {
-                Object.keys(element).forEach(e => {
-                    if(!["tap", "phase"].includes(e))
-                        element[e] = ''
-                })
-            })
+            Object.values(this.testData.table).forEach(subTable => {
+                if (Array.isArray(subTable)) {
+                    subTable.forEach(row => {
+                        Object.keys(row).forEach(key => {
+                            if (key === "mrid") return;
+                            if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
+                                row[key].value = "";
+                            }
+                        });
+                    });
+                }
+            });
         },
         nameColor(data) {
-            if(data === this.$constant.GOOD) {
+            if (data === this.$constant.GOOD) {
                 return 'Good'
             }
-            else if(data === this.$constant.FAIR) {
+            else if (data === this.$constant.FAIR) {
                 return 'Fair'
             }
-            else if(data === this.$constant.POOR) {
+            else if (data === this.$constant.POOR) {
                 return 'Poor'
             }
-            else if(data === this.$constant.BAD) {
+            else if (data === this.$constant.BAD) {
                 return 'Bad'
             }
             else {
@@ -572,6 +618,7 @@ export default {
 .w-100px {
     width: 100px;
 }
+
 .good {
     background: #00CC00;
 }

@@ -28,7 +28,7 @@
         <table class="table-strip-input-data" style="width: 100% ; font-size: 12px;">
             <thead>
                 <tr>
-                    <th class="no-col" v-if="tapChangers.winding === $constant.PRIM">Tap</th>
+                    <th class="no-col" v-if="assetData.tap_changers.winding === $constant.PRIM">Tap</th>
                     <th class="phase-col">Name</th>
                     <th>R meas</th>
                     <th>R ref</th>
@@ -42,15 +42,15 @@
             </thead>
             <tbody>
                 <tr v-for="(item, index) in testData.table.table1" :key="index">
-                    <td v-if="tapChangers.winding === $constant.PRIM">{{ item.tap.value }}</td>
+                    <td v-if="assetData.tap_changers.winding === $constant.PRIM">{{ item.tap.value }}</td>
                     <td style="width: 10%">
                         <div class="col-phase">
                             <div class="phase">
                                 <el-input size="mini" type="text" v-model="item.name.value"></el-input>
                             </div>
-                            <!-- <div class="rectangle"
+                            <div class="rectangle"
                                 :class="{ red: item.name.value == 'A', yellow: item.name.value == 'B', blue: item.name.value == 'C' }">
-                            </div> -->
+                            </div>
                         </div>
                     </td>
                     <td>
@@ -68,7 +68,7 @@
                     <td>
                         <el-input size="mini" type="number" v-model="item.dev_r_ref.value"></el-input>
                     </td>
-                    <template v-if="index % 3 == 0 && tapChangers.winding === $constant.PRIM">
+                    <template v-if="index % 3 == 0 && assetData.tap_changers.winding === $constant.PRIM">
                         <td rowspan="3">
                             <el-input size="mini" type="number" v-model="item.dev_phase.value"></el-input>
                         </td>
@@ -77,7 +77,7 @@
                             <el-input size="mini" type="number" v-model="item.mean_value"><template slot="append">Ω</template></el-input>
 </td> -->
                     </template>
-                    <template v-else-if="index % 3 == 0 && tapChangers.winding !== $constant.PRIM">
+                    <template v-else-if="index % 3 == 0 && assetData.tap_changers.winding !== $constant.PRIM">
                         <td rowspan="3">
                             <el-input size="mini" type="number" v-model="item.dev_phase.value"></el-input>
                         </td>
@@ -286,14 +286,6 @@ export default {
         asset: {
             type: Object,
             required: false,
-        },
-        tapChangers: {
-            type: Object,
-            required: true
-        },
-        testCondition: {
-            type: Object,
-            required: true
         }
     },
     computed: {
@@ -302,6 +294,9 @@ export default {
         },
         assetData() {
             return this.asset
+        },
+        rowData() {
+            return common.buildEmptyTestRow(TransformerTestMap['DCWindingPrim'].columns)
         },
         assessmentSetting() {
             return this.data.assessment_setting
@@ -318,148 +313,146 @@ export default {
                     arr.push(item)
                 }
             }
-            this.testData.table.forEach((item, index_) => filter_index(item, index_, arr))
+            this.testData.table.table1.forEach((item, index_) => filter_index(item, index_, arr))
             return { index: index, value: arr }
-        },
-        rowData() {
-            return common.buildEmptyTestRow(TransformerTestMap['DCWindingPrim'].columns)
         }
     },
-    watch: {
-        error_between_phase: {
-            handler: function () {
-                var index = this.error_between_phase.index
-                var value = this.error_between_phase.value
-                index.forEach((item, index) => {
-                    this.testData.table[item + 1].error_between_phase = value[index].error_between_phase
-                    this.testData.table[item + 2].error_between_phase = value[index].error_between_phase
-                })
-            },
-            deep: true,
-            immediate: true
-        }
-    },
+    // watch: {
+    //     error_between_phase: {
+    //         handler: function () {
+    //             var index = this.error_between_phase.index
+    //             var value = this.error_between_phase.value
+    //             index.forEach((item, index) => {
+    //                 this.testData.table[item + 1].error_between_phase = value[index].error_between_phase
+    //                 this.testData.table[item + 2].error_between_phase = value[index].error_between_phase
+    //             })
+    //         },
+    //         deep: true,
+    //         immediate: true
+    //     }
+    // },
     methods: {
         async calculator() {
-            let data = this.testCondition.condition
-            if (!isNaN(parseFloat(data.winding_temperature)) && !isNaN(parseFloat(data.reference_temperature))) {
-                await this.CalRcorr()
-            } else {
-                await this.CalRcorrWithoutTem()
-            }
-            await this.CalDevWithRref()
-            await this.CalDevWithPhase()
-            await this.CalAssessment()
+            // let data = this.testCondition.condition
+            // if (!isNaN(parseFloat(data.winding_temperature)) && !isNaN(parseFloat(data.reference_temperature))) {
+            //     await this.CalRcorr()
+            // } else {
+            //     await this.CalRcorrWithoutTem()
+            // }
+            // await this.CalDevWithRref()
+            // await this.CalDevWithPhase()
+            // await this.CalAssessment()
 
+            this.$message.success('Calculating successfully')
         },
-        async CalRcorr() {
-            let data = this.testCondition.condition
-            const winding = JSON.parse(this.$store.state.selectedAsset[0].winding)
-            if (winding.sec === "Copper") {
-                this.testData.table.forEach((element) => {
-                    if (!isNaN(parseFloat(element.r_meas))) {
-                        if (!isNaN(parseFloat(data.winding_temperature))) {
-                            if (!isNaN(parseFloat(data.reference_temperature))) {
-                                element.r_corr = parseFloat(parseFloat(element.r_meas) * (235 + parseFloat(data.reference_temperature)) / (235 + parseFloat(data.winding_temperature)))
-                                if (element.r_corr != null) {
-                                    element.r_corr = element.r_corr.toFixed(4)
-                                }
-                            }
-                        }
-                    }
-                })
-            } else {
-                this.testData.table.forEach((element) => {
-                    if (!isNaN(element.r_meas)) {
-                        if (!isNaN(data.winding_temperature)) {
-                            if (!isNaN(data.reference_temperature)) {
-                                element.r_corr = parseFloat(parseFloat(element.r_meas) * (225 + parseFloat(data.reference_temperature)) / (225 + parseFloat(data.winding_temperature))).toFixed(4)
-                            }
-                        }
-                    }
-                })
-            }
-        },
-        async CalRcorrWithoutTem() {
-            this.testData.table.forEach((element) => {
-                if (!isNaN(parseFloat(element.r_meas))) {
-                    element.r_corr = element.r_meas
-                }
-            })
-        },
-        async CalDevWithRref() {
-            this.testData.table.forEach((element) => {
-                if (!isNaN(parseFloat(element.r_ref))) {
-                    if (parseFloat(element.r_ref) != 0) {
-                        if (!isNaN(parseFloat(element.r_corr))) {
-                            element.error_r_ref = ((parseFloat(element.r_corr) - parseFloat(element.r_ref)) / parseFloat(element.r_ref)) * 100
-                            element.error_r_ref = element.error_r_ref.toFixed(4)
-                        }
-                    }
-                }
-            })
-        },
-        async CalDevWithPhase() {
-            this.testData.table.forEach((element, index) => {
-                if (index % 3 == 0) {
-                    if (!isNaN(parseFloat(this.testData.table[index].r_corr)) && !isNaN(parseFloat(this.testData.table[index + 1].r_corr)) && !isNaN(parseFloat(this.testData.table[index + 2].r_corr))) {
-                        let arr = [this.testData.table[index].r_corr, this.testData.table[index + 1].r_corr, this.testData.table[index + 2].r_corr]
-                        let max_r_max = Math.max(...arr)
-                        let min_r_min = Math.min(...arr)
-                        if (parseFloat(min_r_min) != 0) {
-                            this.testData.table[index].error_between_phase = 100 * (parseFloat(max_r_max) - parseFloat(min_r_min)) / parseFloat(min_r_min)
-                            this.testData.table[index + 1].error_between_phase = 100 * (parseFloat(max_r_max) - parseFloat(min_r_min)) / parseFloat(min_r_min)
-                            this.testData.table[index + 2].error_between_phase = 100 * (parseFloat(max_r_max) - parseFloat(min_r_min)) / parseFloat(min_r_min)
-                        }
-                    }
-                }
-            })
-        },
-        async CalAssessment() {
-            if (this.assessmentSetting.option === "IEEE") {
-                this.testData.table.forEach((element) => {
-                    if (!isNaN(parseFloat(element.error_between_phase))) {
-                        if (Math.abs(element.error_between_phase) <= this.assessmentSetting.data.ieee.error_between_phase) {
-                            element.assessment = "Pass"
-                        } else {
-                            element.assessment = "Fail"
-                        }
-                    }
-                })
-            } else if (this.assessmentSetting.option === "CIGRE") {
-                this.testData.table.forEach((element) => {
-                    if (!isNaN(parseFloat(element.error_r_ref))) {
-                        if (Math.abs(element.error_r_ref) <= this.assessmentSetting.data.cigre.error_r_ref) {
-                            element.assessment = "Pass"
-                        } else {
-                            element.assessment = "Fail"
-                        }
-                    }
-                })
-            } else {
-                this.testData.table.forEach((element) => {
-                    if (!isNaN(parseFloat(element.error_r_ref))) {
-                        if (Math.abs(element.error_r_ref) <= this.assessmentSetting.data.custom.error_r_ref) {
-                            element.assessment = "Pass"
-                        } else {
-                            element.assessment = "Fail"
-                        }
-                    } else {
-                        if (!isNaN(parseFloat(element.error_between_phase))) {
-                            if (Math.abs(element.error_between_phase) <= this.assessmentSetting.data.custom.error_between_phase) {
-                                element.assessment = "Pass"
-                            } else {
-                                element.assessment = "Fail"
-                            }
-                        }
-                    }
-                })
-            }
-        },
+        // async CalRcorr() {
+            // let data = this.testCondition.condition
+            // const winding = JSON.parse(this.$store.state.selectedAsset[0].winding)
+            // if (winding.sec === "Copper") {
+            //     this.testData.table.forEach((element) => {
+            //         if (!isNaN(parseFloat(element.r_meas))) {
+            //             if (!isNaN(parseFloat(data.winding_temperature))) {
+            //                 if (!isNaN(parseFloat(data.reference_temperature))) {
+            //                     element.r_corr = parseFloat(parseFloat(element.r_meas) * (235 + parseFloat(data.reference_temperature)) / (235 + parseFloat(data.winding_temperature)))
+            //                     if (element.r_corr != null) {
+            //                         element.r_corr = element.r_corr.toFixed(4)
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //     })
+            // } else {
+            //     this.testData.table.forEach((element) => {
+            //         if (!isNaN(element.r_meas)) {
+            //             if (!isNaN(data.winding_temperature)) {
+            //                 if (!isNaN(data.reference_temperature)) {
+            //                     element.r_corr = parseFloat(parseFloat(element.r_meas) * (225 + parseFloat(data.reference_temperature)) / (225 + parseFloat(data.winding_temperature))).toFixed(4)
+            //                 }
+            //             }
+            //         }
+            //     })
+            // }
+        // },
+        // async CalRcorrWithoutTem() {
+            // this.testData.table.forEach((element) => {
+            //     if (!isNaN(parseFloat(element.r_meas))) {
+            //         element.r_corr = element.r_meas
+            //     }
+            // })
+        // },
+        // async CalDevWithRref() {
+        //     this.testData.table.forEach((element) => {
+        //         if (!isNaN(parseFloat(element.r_ref))) {
+        //             if (parseFloat(element.r_ref) != 0) {
+        //                 if (!isNaN(parseFloat(element.r_corr))) {
+        //                     element.error_r_ref = ((parseFloat(element.r_corr) - parseFloat(element.r_ref)) / parseFloat(element.r_ref)) * 100
+        //                     element.error_r_ref = element.error_r_ref.toFixed(4)
+        //                 }
+        //             }
+        //         }
+        //     })
+        // },
+        // async CalDevWithPhase() {
+        //     this.testData.table.forEach((element, index) => {
+        //         if (index % 3 == 0) {
+        //             if (!isNaN(parseFloat(this.testData.table[index].r_corr)) && !isNaN(parseFloat(this.testData.table[index + 1].r_corr)) && !isNaN(parseFloat(this.testData.table[index + 2].r_corr))) {
+        //                 let arr = [this.testData.table[index].r_corr, this.testData.table[index + 1].r_corr, this.testData.table[index + 2].r_corr]
+        //                 let max_r_max = Math.max(...arr)
+        //                 let min_r_min = Math.min(...arr)
+        //                 if (parseFloat(min_r_min) != 0) {
+        //                     this.testData.table[index].error_between_phase = 100 * (parseFloat(max_r_max) - parseFloat(min_r_min)) / parseFloat(min_r_min)
+        //                     this.testData.table[index + 1].error_between_phase = 100 * (parseFloat(max_r_max) - parseFloat(min_r_min)) / parseFloat(min_r_min)
+        //                     this.testData.table[index + 2].error_between_phase = 100 * (parseFloat(max_r_max) - parseFloat(min_r_min)) / parseFloat(min_r_min)
+        //                 }
+        //             }
+        //         }
+        //     })
+        // },
+        // async CalAssessment() {
+        //     if (this.assessmentSetting.option === "IEEE") {
+        //         this.testData.table.forEach((element) => {
+        //             if (!isNaN(parseFloat(element.error_between_phase))) {
+        //                 if (Math.abs(element.error_between_phase) <= this.assessmentSetting.data.ieee.error_between_phase) {
+        //                     element.assessment = "Pass"
+        //                 } else {
+        //                     element.assessment = "Fail"
+        //                 }
+        //             }
+        //         })
+        //     } else if (this.assessmentSetting.option === "CIGRE") {
+        //         this.testData.table.forEach((element) => {
+        //             if (!isNaN(parseFloat(element.error_r_ref))) {
+        //                 if (Math.abs(element.error_r_ref) <= this.assessmentSetting.data.cigre.error_r_ref) {
+        //                     element.assessment = "Pass"
+        //                 } else {
+        //                     element.assessment = "Fail"
+        //                 }
+        //             }
+        //         })
+        //     } else {
+        //         this.testData.table.forEach((element) => {
+        //             if (!isNaN(parseFloat(element.error_r_ref))) {
+        //                 if (Math.abs(element.error_r_ref) <= this.assessmentSetting.data.custom.error_r_ref) {
+        //                     element.assessment = "Pass"
+        //                 } else {
+        //                     element.assessment = "Fail"
+        //                 }
+        //             } else {
+        //                 if (!isNaN(parseFloat(element.error_between_phase))) {
+        //                     if (Math.abs(element.error_between_phase) <= this.assessmentSetting.data.custom.error_between_phase) {
+        //                         element.assessment = "Pass"
+        //                     } else {
+        //                         element.assessment = "Fail"
+        //                     }
+        //                 }
+        //             }
+        //         })
+        //     }
+        // },
         clear() {
             this.testData.table.table1.forEach(row => {
                 Object.keys(row).forEach(key => {
-                    if (key === "mrid") return;
+                    if (key === "mrid" || key === "tap" || key === "name") return;
                     if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
                         row[key].value = ""
                     }

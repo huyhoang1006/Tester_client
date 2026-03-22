@@ -1,6 +1,6 @@
 <template>
     <div id="separate-source">
-        <table style="width: 50% ; font-size: 12px;" class="mgb-10" >
+        <table style="width: 50% ; font-size: 12px;" class="mgb-10">
             <tbody>
                 <tr>
                     <td>Test frequency</td>
@@ -22,28 +22,18 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>HV - (LV+E)</td>
-                    <td><el-input size="mini" v-model="testData.x_hv.test_voltage.value"></el-input></td>
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
+                    <td>{{ item.applied_terminal.value }}</td>
+                    <td><el-input size="mini" v-model="item.test_voltage.value"></el-input></td>
                     <td>
-                        <el-select class="assessment" size="mini" v-model="testData.x_hv.assessment.value">
+                        <el-select class="assessment" size="mini" v-model="item.assessment.value">
                             <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
                             <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                         </el-select>
-                        <span v-if="testData.x_hv.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                        <span v-else-if="testData.x_hv.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
-                    </td>
-                </tr>
-                <tr>
-                    <td>LV - (HV+E)</td>
-                    <td><el-input size="mini" v-model="testData.lv.test_voltage.value"></el-input></td>
-                    <td>
-                        <el-select class="assessment" size="mini" v-model="testData.lv.assessment.value">
-                            <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
-                            <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
-                        </el-select>
-                        <span v-if="testData.lv.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                        <span v-else-if="testData.lv.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                        <span v-if="item.assessment.value === 'Pass'"
+                            class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment.value === 'Fail'"
+                            class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                 </tr>
             </tbody>
@@ -52,7 +42,10 @@
 </template>
 
 <script>
+import TransformerTestMap from '@/config/test-definitions/Transformer'
+import * as common from '../../../Common/index'
 export default {
+    name: 'SeparateSourceAc',
     props: {
         data: {
             type: Object,
@@ -75,6 +68,9 @@ export default {
     computed: {
         testData() {
             return this.data
+        },
+        rowData() {
+            return common.buildEmptyTestRow(TransformerTestMap['SeparateSourceAc'].columns)
         }
     }
 }
