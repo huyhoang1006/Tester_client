@@ -124,17 +124,6 @@ export default {
         }
     },
     mounted() {
-        console.log('ControlCheck mounted with data:', this.data);
-        console.log('testData computed:', this.testData);
-        console.log('rowData computed:', this.rowData);
-    },
-    watch: {
-        data: {
-            handler(newVal) {
-                console.log('ControlCheck data changed:', newVal);
-            },
-            deep: true
-        }
     },
     methods: {
         add() {

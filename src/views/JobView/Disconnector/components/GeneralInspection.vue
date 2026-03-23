@@ -122,18 +122,7 @@ export default {
             return common.buildEmptyTestRow(disconnectorTestMap.GeneralInspection.columns)
         }
     },
-    watch: {
-        data: {
-            handler(newVal) {
-                console.log('GeneralInspection data changed:', newVal);
-            },
-            deep: true
-        }
-    },
     mounted() {
-        console.log('GeneralInspection mounted with data:', this.data);
-        console.log('testData computed:', this.testData);
-        console.log('rowData computed:', this.rowData);
     },
     methods: {
         add() {
