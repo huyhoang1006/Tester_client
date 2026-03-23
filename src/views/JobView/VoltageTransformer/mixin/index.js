@@ -126,7 +126,7 @@ export default {
                 }
             }
 
-            // Thêm các phần tử mới vào data.voltageTransformerTestingEquipmentTestType nếu chưa có
+            // Thêm các phần tử mới vào data.surgeArresterTestingEquipmentTestType nếu chưa có
             for (const current of arr) {
                 const existed = data.voltageTransformerTestingEquipmentTestType.some(
                     old =>
@@ -149,12 +149,13 @@ export default {
         },
 
         async checkDataMeasurement(data) {
+            console.log(this.assetData)
             for (const test of data.testList) {
                 if (test.testCondition.mrid === null || test.testCondition.mrid === '') {
                     test.testCondition.mrid = uuid.newUuid();
                 }
                 Object.keys(test.testCondition.condition).forEach(key => {
-                    if(test.testCondition.condition[key] && test.testCondition.condition[key].mrid === '' || test.testCondition.condition[key].mrid === null) {
+                    if (test.testCondition.condition[key] && test.testCondition.condition[key].mrid === '' || test.testCondition.condition[key].mrid === null) {
                         test.testCondition.condition[key].mrid = uuid.newUuid();
                     }
                 })
@@ -169,19 +170,16 @@ export default {
                 } else {
                     test.testCondition.attachment.path = JSON.stringify(test.testCondition.attachmentData)
                 }
-
-                // Updated table save logic similar to SurgeArrester
                 for (const key in test.data.table) {
                     const rows = test.data.table[key];
 
                     if (Array.isArray(rows)) {
                         rows.forEach(row => {
-                            // Generate mrid for row if not exists
+
                             if (!row.mrid) {
                                 row.mrid = uuid.newUuid();
                             }
 
-                            // Generate mrid for each field in row
                             Object.keys(row).forEach(field => {
                                 const value = row[field];
 
@@ -195,19 +193,13 @@ export default {
                     }
                 }
 
-                if(data.procedureAsset.map(x => x.procedure_id).indexOf(test.testTypeId) === -1) {
+                if (data.procedureAsset.map(x => x.procedure_id).indexOf(test.testTypeId) === -1) {
                     data.procedureAsset.push({
                         procedure_id: test.testTypeId,
-                        asset_id: this.assetData.properties?.mrid || this.assetData.mrid
+                        asset_id: this.assetData.properties?.mrid || this.assetData.asset?.mrid || this.assetData.mrid 
                     });
                 }
             }
-
-            // Remove procedureAsset entries that no longer exist in testList
-            const currentTestTypeIds = data.testList.map(test => test.testTypeId);
-            data.procedureAsset = data.procedureAsset.filter(pa => 
-                currentTestTypeIds.includes(pa.procedure_id)
-            );
         },
     }
 }

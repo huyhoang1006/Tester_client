@@ -103,29 +103,21 @@ export default {
     watch: {
         assetData: {
             handler(newVal) {
-                console.log('Disconnector assetData changed:', newVal);
             },
             deep: true
         },
         locationData: {
             handler(newVal) {
-                console.log('Disconnector locationData changed:', newVal);
             },
             deep: true
         },
         productAssetModelData: {
             handler(newVal) {
-                console.log('Disconnector productAssetModelData changed:', newVal);
             },
             deep: true
         }
     },
     mounted() {
-        console.log('Disconnector Job mounted with initial data:', {
-            assetData: this.assetData,
-            locationData: this.locationData,
-            productAssetModelData: this.productAssetModelData
-        });
     },
     methods: {
         updateAttachmentOverView(attachment) {

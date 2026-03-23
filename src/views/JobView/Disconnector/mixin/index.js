@@ -67,12 +67,6 @@ export default {
         },
 
         async loadParameter(testTypeListData, assetData, productAssetModelData, locationData) {
-            console.log('Disconnector loadParameter called with:', {
-                testTypeListData: testTypeListData?.length || 0,
-                assetData: assetData,
-                productAssetModelData: productAssetModelData,
-                locationData: locationData
-            });
             this.testTypeListData = testTypeListData
             this.assetData = assetData
             this.productAssetModelData = productAssetModelData

@@ -111,13 +111,13 @@
                 <el-row style="width: inherit;">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item class="asset-item" label="Asset">
-                            <span class="asset-name">{{ assetData.properties ? assetData.properties.kind : assetData.kind }}</span>
+                            <span class="asset-name">{{ assetData.properties?.kind || assetData.kind }}</span>
                         </el-form-item>
                         <el-form-item class="asset-item" label="Asset type">
-                            <span class="asset-name">{{ assetData.properties ? assetData.properties.asset_type : assetData.type }}</span>
+                            <span class="asset-name">{{ assetData.properties?.type || assetData.type }}</span>
                         </el-form-item>
                         <el-form-item class="asset-item" label="Serial number">
-                            <span class="asset-name">{{ assetData.properties ? assetData.properties.serial_no : assetData.serial_number }}</span>
+                            <span class="asset-name">{{ assetData.properties?.serial_no || assetData.serial_number }}</span>
                         </el-form-item>
                         <el-form-item class="asset-item" label="Manufacturer">
                             <span class="asset-name">{{ productAssetModelData.manufacturer }}</span>

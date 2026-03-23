@@ -63,8 +63,13 @@
                             <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
                         <td>
-                            <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
-                            </el-input>
+                            <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                                size="mini" v-model="item.condition_indicator.value">
+                                <el-option value="Good">Good</el-option>
+                                <el-option value="Fair">Fair</el-option>
+                                <el-option value="Poor">Poor</el-option>
+                                <el-option value="Bad">Bad</el-option>
+                            </el-select>
                         </td>
                         <td>
                             <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">

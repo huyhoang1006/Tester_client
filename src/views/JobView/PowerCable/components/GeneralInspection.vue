@@ -122,19 +122,8 @@ export default {
             return common.buildEmptyTestRow(powerCableTestMap['GeneralInspection'].columns)
         }
     },
-    mounted() {
-        console.log('PowerCable GeneralInspection mounted with data:', this.data);
-        console.log('testData computed:', this.testData);
-        console.log('rowData computed:', this.rowData);
-    },
-    watch: {
-        data: {
-            handler(newVal) {
-                console.log('PowerCable GeneralInspection data changed:', newVal);
-            },
-            deep: true
-        }
-    },
+    
+    
     methods: {
         add() {
             // Đảm bảo cấu trúc dữ liệu tồn tại
