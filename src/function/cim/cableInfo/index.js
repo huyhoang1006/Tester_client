@@ -127,15 +127,20 @@ export const updateCableInfoTransaction = async (mrid, info, dbsql) => {
 export const deleteCableInfoTransaction = async (mrid, dbsql) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const wireInfoResult = await WireInfoFunc.deleteWireInfoTransaction(mrid, dbsql)
-            if (!wireInfoResult.success) {
-                return reject({ success: false, message: 'Delete wireInfo failed', err: wireInfoResult.err })
-            }
-            dbsql.run("DELETE FROM cable_info WHERE mrid=?", [mrid], function (err) {
+            // Xóa cable_info TRƯỚC (nó REFERENCES wire_info), rồi mới xóa wire_info
+            dbsql.run("DELETE FROM cable_info WHERE mrid=?", [mrid], async function (err) {
                 if (err) {
                     return reject({ success: false, err, message: 'Delete cableInfo failed' })
                 }
-                return resolve({ success: true, data: mrid, message: 'Delete cableInfo completed' })
+                try {
+                    const wireInfoResult = await WireInfoFunc.deleteWireInfoTransaction(mrid, dbsql)
+                    if (!wireInfoResult.success) {
+                        return reject({ success: false, message: 'Delete wireInfo failed', err: wireInfoResult.err })
+                    }
+                    return resolve({ success: true, data: mrid, message: 'Delete cableInfo completed' })
+                } catch (err2) {
+                    return reject({ success: false, err: err2, message: 'Delete cableInfo transaction failed' })
+                }
             })
         } catch (err) {
             return reject({ success: false, err, message: 'Delete cableInfo transaction failed' })
