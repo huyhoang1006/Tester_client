@@ -11,7 +11,15 @@ export const insertSheathVoltageLimiterTransaction = async (svl, dbsql) => {
                     long_duration_current_impulse_withstand,
                     short_circuit_withstand,
                     cable_info_id
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(mrid) DO UPDATE SET
+                    rated_voltage_ur = excluded.rated_voltage_ur,
+                    max_continuous_operating_voltage = excluded.max_continuous_operating_voltage,
+                    nominal_discharge_current = excluded.nominal_discharge_current,
+                    high_current_impulse_withstand = excluded.high_current_impulse_withstand,
+                    long_duration_current_impulse_withstand = excluded.long_duration_current_impulse_withstand,
+                    short_circuit_withstand = excluded.short_circuit_withstand,
+                    cable_info_id = excluded.cable_info_id`,
             [
                 svl.mrid,
                 svl.rated_voltage_ur,

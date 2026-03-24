@@ -308,17 +308,42 @@ export const deletePowerCableEntity = async (entity) => {
             }
         }
 
-        // Xóa các bảng cha/bảng quan hệ trước (để nhả khóa ngoại)
+        // Xóa theo đúng thứ tự dependency (child trước, parent sau)
 
-        if (entity.assetPsr && entity.assetPsr.mrid) await deleteAssetPsrTransaction(entity.assetPsr.mrid, db);
-        if (entity.asset && entity.asset.mrid) await deleteAssetByIdTransaction(entity.asset.mrid, db);
-        if (entity.oldCableInfo && entity.oldCableInfo.mrid) await deleteOldCableInfoTransaction(entity.oldCableInfo.mrid, db);
-        if (entity.terminal && entity.terminal.mrid) await deleteTerminalCableInfoTransaction(entity.terminal.mrid, db);
-        if (entity.sheathVoltageLimiter && entity.sheathVoltageLimiter.mrid) await deleteSheathVoltageLimiterTransaction(entity.sheathVoltageLimiter.mrid, db);
-        if (entity.joint && entity.joint.mrid) await deleteJointCableInfoById(entity.joint.mrid, db);
-        if (entity.concentricNeutral && entity.concentricNeutral.mrid) await deleteConcentricNeutralCableInfoTransaction(entity.concentricNeutral.mrid, db);
-        if (entity.productAssetModel && entity.productAssetModel.mrid) await deleteProductAssetModelByIdTransaction(entity.productAssetModel.mrid, db);
-        if (entity.lifecycleDate && entity.lifecycleDate.mrid) await deleteLifecycleDateByIdTransaction(entity.lifecycleDate.mrid, db);
+        // 1. Xóa quan hệ asset_psr
+        if (entity.assetPsr && entity.assetPsr.mrid) {
+            await deleteAssetPsrTransaction(entity.assetPsr.mrid, db);
+        }
+
+        // 2. Xóa tất cả children của cable_info theo cable_info_id
+        // joint, terminal, sheath không có ON DELETE CASCADE nên phải xóa thủ công
+        // Dùng cable_info_id (= concentricNeutral.mrid) thay vì entity.xxx.mrid
+        // để đảm bảo xóa hết kể cả row thừa tích lũy từ các lần save trước
+        if (entity.concentricNeutral && entity.concentricNeutral.mrid) {
+            const cableInfoId = entity.concentricNeutral.mrid
+            await new Promise((res, rej) => db.run('DELETE FROM old_cable_info WHERE cable_info_id=?', [cableInfoId], err => err ? rej(err) : res()))
+            await new Promise((res, rej) => db.run('DELETE FROM joint_cable_info WHERE cable_info_id=?', [cableInfoId], err => err ? rej(err) : res()))
+            await new Promise((res, rej) => db.run('DELETE FROM terminal_cable_info WHERE cable_info_id=?', [cableInfoId], err => err ? rej(err) : res()))
+            await new Promise((res, rej) => db.run('DELETE FROM sheath_voltage_limiter WHERE cable_info_id=?', [cableInfoId], err => err ? rej(err) : res()))
+        }
+
+        // 3. Xóa asset + identified_object (cascade)
+        if (entity.asset && entity.asset.mrid) {
+            await deleteAssetByIdTransaction(entity.asset.mrid, db);
+        }
+
+        // 4. Xóa concentricNeutral → cascade cable_info → cascade wire_info → cascade asset_info
+        if (entity.concentricNeutral && entity.concentricNeutral.mrid) {
+            await deleteConcentricNeutralCableInfoTransaction(entity.concentricNeutral.mrid, db);
+        }
+
+        // 5. Xóa productAssetModel và lifecycleDate
+        if (entity.productAssetModel && entity.productAssetModel.mrid) {
+            await deleteProductAssetModelByIdTransaction(entity.productAssetModel.mrid, db);
+        }
+        if (entity.lifecycleDate && entity.lifecycleDate.mrid) {
+            await deleteLifecycleDateByIdTransaction(entity.lifecycleDate.mrid, db);
+        }
 
 
 

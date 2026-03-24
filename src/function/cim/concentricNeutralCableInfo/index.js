@@ -105,15 +105,21 @@ export const updateConcentricNeutralCableInfoTransaction = async (mrid, info, db
 export const deleteConcentricNeutralCableInfoTransaction = async (mrid, dbsql) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const cableInfoResult = await CableInfoFunc.deleteCableInfoTransaction(mrid, dbsql)
-            if (!cableInfoResult.success) {
-                return reject({ success: false, message: 'Delete cableInfo failed', err: cableInfoResult.err })
-            }
-            dbsql.run("DELETE FROM concentric_neutral_cable_info WHERE mrid=?", [mrid], function (err) {
+            // Xóa concentric_neutral_cable_info TRƯỚC (nó REFERENCES cable_info ON DELETE CASCADE)
+            // rồi mới xóa cable_info
+            dbsql.run("DELETE FROM concentric_neutral_cable_info WHERE mrid=?", [mrid], async function (err) {
                 if (err) {
                     return reject({ success: false, err, message: 'Delete concentricNeutralCableInfo failed' })
                 }
-                return resolve({ success: true, data: mrid, message: 'Delete concentricNeutralCableInfo completed' })
+                try {
+                    const cableInfoResult = await CableInfoFunc.deleteCableInfoTransaction(mrid, dbsql)
+                    if (!cableInfoResult.success) {
+                        return reject({ success: false, message: 'Delete cableInfo failed', err: cableInfoResult.err })
+                    }
+                    return resolve({ success: true, data: mrid, message: 'Delete concentricNeutralCableInfo completed' })
+                } catch (err2) {
+                    return reject({ success: false, err: err2, message: 'Delete concentricNeutralCableInfo transaction failed' })
+                }
             })
         } catch (err) {
             return reject({ success: false, err, message: 'Delete concentricNeutralCableInfo transaction failed' })
