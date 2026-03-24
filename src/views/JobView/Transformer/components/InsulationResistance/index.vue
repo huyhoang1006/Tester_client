@@ -59,17 +59,17 @@
                         </el-select>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="item.r15s.value"> </el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.r15s.value"> </el-input>
                     </td>
-                    <td><el-input size="mini" v-model="item.r60s.value"> </el-input></td>
+                    <td><el-input size="mini" type="text" number="positive" v-model="item.r60s.value"> </el-input></td>
                     <td>
-                        <el-input size="mini" v-model="item.r_10m.value"></el-input>
-                    </td>
-                    <td>
-                        <el-input size="mini" v-model="item.dar.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.r_10m.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="item.pi.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.dar.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" number="positive" v-model="item.pi.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -300,7 +300,7 @@ export default {
                 type: 'warning'
             }).then(() => {
                 this.testData.table.table1 = []
-            })
+            }).catch(() => { })
         },
         deleteTest(index) {
             this.testData.table.table1.splice(index, 1)

@@ -54,23 +54,23 @@
                         </div>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.r_meas.value"><template
+                        <el-input size="mini" type="text" number="positive" v-model="item.r_meas.value"><template
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.r_ref.value"><template
+                        <el-input size="mini" type="text" number="positive" v-model="item.r_ref.value"><template
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.r_corr.value"><template
+                        <el-input size="mini" type="text" number="positive" v-model="item.r_corr.value"><template
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.dev_r_ref.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.dev_r_ref.value"></el-input>
                     </td>
                     <template v-if="index % 3 == 0 && assetData.tap_changers.winding === $constant.SEC">
                         <td rowspan="3">
-                            <el-input size="mini" type="text" v-model="item.dev_phase.value"></el-input>
+                            <el-input size="mini" type="text" number="positive" v-model="item.dev_phase.value"></el-input>
                         </td>
 
                         <!-- <td rowspan="3">
@@ -79,7 +79,7 @@
                     </template>
                     <template v-else-if="index % 3 == 0 && assetData.tap_changers.winding !== $constant.SEC">
                         <td rowspan="3">
-                            <el-input size="mini" type="text" v-model="item.dev_phase.value"></el-input>
+                            <el-input size="mini" type="text" number="positive" v-model="item.dev_phase.value"></el-input>
                         </td>
                     </template>
                     <td>

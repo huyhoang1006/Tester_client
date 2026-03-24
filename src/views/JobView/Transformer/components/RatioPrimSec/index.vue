@@ -53,19 +53,19 @@
                         </div>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.voltage_prim.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.voltage_prim.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.voltage_sec.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.voltage_sec.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.nominal_ratio.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.nominal_ratio.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.ratio_meas.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.ratio_meas.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.ratio_dev.value"><template
+                        <el-input size="mini" type="text" number="positive" v-model="item.ratio_dev.value"><template
                                 slot="append">%</template></el-input>
                     </td>
                     <td>
@@ -359,9 +359,4 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
-// ::v-deep(.el-input-number__decrease),
-// ::v-deep(.el-input-number__increase) {
-//     display: none !important;
-// }
-</style>
+<style lang="scss" scoped></style>

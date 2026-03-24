@@ -22,8 +22,8 @@
                                     <el-option :label="'50' + unitSymbol.Hz" value="50"></el-option>
                                     <el-option :label="'16.7' + unitSymbol.Hz" value="16.7"></el-option>
                                 </el-select>
-                                <el-input v-model="ratingsData.rated_frequency.custom_value" size="mini"
-                                    :disabled="ratingsData.rated_frequency.value !== 'Custom'">
+                                <el-input v-model="ratingsData.rated_frequency.custom_value" size="mini" type="text"
+                                    number="positive" :disabled="ratingsData.rated_frequency.value !== 'Custom'">
                                     <template slot="append">{{ unitSymbol.Hz }}</template>
                                 </el-input>
                             </div>
@@ -94,7 +94,8 @@
                                         </el-select>
                                     </td>
                                     <td>
-                                        <el-input size="mini" v-model="item.voltage_ll.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.voltage_ll.value">
                                             <el-select size="mini" class="select-in-input"
                                                 v-model="item.voltage_ll.unit" slot="append">
                                                 <el-option :label="unitMultiplier.k + unitSymbol.V"
@@ -104,7 +105,8 @@
                                         </el-input>
                                     </td>
                                     <td>
-                                        <el-input size="mini" v-model="item.voltage_ln.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.voltage_ln.value">
                                             <el-select size="mini" class="select-in-input"
                                                 v-model="item.voltage_ln.unit" slot="append">
                                                 <el-option :label="unitMultiplier.k + unitSymbol.V"
@@ -114,7 +116,8 @@
                                         </el-input>
                                     </td>
                                     <td>
-                                        <el-input size="mini" v-model="item.insul_level_ll.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.insul_level_ll.value">
                                             <el-select size="mini" class="select-in-input"
                                                 v-model="item.insul_level_ll.unit" slot="append">
                                                 <el-option :label="unitMultiplier.k + unitSymbol.V"
@@ -192,7 +195,8 @@
                             <tbody>
                                 <tr v-for="(item, index) in ratingsData.power_ratings" :key="index">
                                     <td>
-                                        <el-input size="mini" v-model="item.rated_power.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.rated_power.value">
                                             <el-select size="mini" class="select-in-input"
                                                 v-model="item.rated_power.unit" slot="append">
                                                 <el-option :label="unitMultiplier.M + unitSymbol.VA"
@@ -222,7 +226,8 @@
                                         </el-select>
                                     </td>
                                     <td>
-                                        <el-input size="mini" v-model="item.temp_rise_wind.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.temp_rise_wind.value">
                                             <template slot="append">{{ unitSymbol.degC }}</template>
                                         </el-input>
                                     </td>
@@ -265,7 +270,8 @@
                             <tbody>
                                 <tr v-for="(item, index) in ratingsData.current_ratings" :key="index">
                                     <td>
-                                        <el-input size="mini" v-model="item.prim.data.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.prim.data.value">
                                             <el-select size="mini" class="select-in-input" v-model="item.prim.data.unit"
                                                 slot="append">
                                                 <el-option :label="unitSymbol.A" :value="unitSymbol.A"></el-option>
@@ -275,7 +281,8 @@
                                         </el-input>
                                     </td>
                                     <td>
-                                        <el-input size="mini" v-model="item.sec.data.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.sec.data.value">
                                             <el-select size="mini" class="select-in-input" v-model="item.sec.data.unit"
                                                 slot="append">
                                                 <el-option :label="unitSymbol.A" :value="unitSymbol.A"></el-option>
@@ -285,7 +292,8 @@
                                         </el-input>
                                     </td>
                                     <td v-if="properties.type === $constant.THREE_WINDING">
-                                        <el-input size="mini" v-model="item.tert.data.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.tert.data.value">
                                             <el-select size="mini" class="select-in-input" v-model="item.tert.data.unit"
                                                 slot="append">
                                                 <el-option :label="unitSymbol.A" :value="unitSymbol.A"></el-option>
@@ -295,7 +303,7 @@
                                         </el-input>
                                     </td>
                                     <td>
-                                        <el-input size="mini"
+                                        <el-input size="mini" type="text" number="positive"
                                             :value="ratingsData.power_ratings[index].rated_power.value"
                                             :disabled="true">
                                             <el-select size="mini" class="select-in-input"
@@ -325,7 +333,7 @@
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Max short-circuit current" class="inline-two-input">
                             <div class="rf-wrap">
-                                <el-input v-model="ratingsData.short_circuit.ka.value">
+                                <el-input type="text" number="positive" v-model="ratingsData.short_circuit.ka.value">
                                     <el-select size="mini" class="select-in-input"
                                         v-model="ratingsData.short_circuit.ka.unit" slot="append">
                                         <el-option :label="unitMultiplier.k + unitSymbol.A"
@@ -333,7 +341,7 @@
                                         <el-option :label="unitSymbol.A" :value="unitSymbol.A"></el-option>
                                     </el-select>
                                 </el-input>
-                                <el-input v-model="ratingsData.short_circuit.s.value">
+                                <el-input type="text" number="positive" v-model="ratingsData.short_circuit.s.value">
                                     <template slot="append">{{ ratingsData.short_circuit.s.unit }}</template>
                                 </el-input>
                             </div>

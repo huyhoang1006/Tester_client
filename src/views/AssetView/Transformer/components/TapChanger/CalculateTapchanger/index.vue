@@ -17,7 +17,7 @@
                                 {{ tapVoltable[0].tap }}
                             </td>
                             <td>
-                                <el-input size="mini" type="text" v-model="voltage_1">
+                                <el-input size="mini" type="text" number="positive" v-model="voltage_1">
                                     <template slot="append">V</template>
                                 </el-input>
                             </td>
@@ -27,7 +27,7 @@
                                 {{ tapVoltable[1].tap }}
                             </td>
                             <td>
-                                <el-input size="mini" type="text" v-model="voltage_2">
+                                <el-input size="mini" type="text" number="positive" v-model="voltage_2">
                                     <template slot="append">V</template>
                                 </el-input>
                             </td>
@@ -50,7 +50,7 @@
                                 {{ tapVoltable[0].tap }}
                             </td>
                             <td>
-                                <el-input size="mini" type="text" v-model="voltage_first">
+                                <el-input size="mini" type="text" number="positive" v-model="voltage_first">
                                     <template slot="append">V</template>
                                 </el-input>
                             </td>
@@ -60,7 +60,7 @@
                                 {{ tapVoltable[Math.round((tapVoltable.length - 1) / 2)].tap }}
                             </td>
                             <td>
-                                <el-input size="mini" type="text" v-model="voltage_middle">
+                                <el-input size="mini" type="text" number="positive" v-model="voltage_middle">
                                     <template slot="append">V</template>
                                 </el-input>
                             </td>
@@ -70,7 +70,7 @@
                                 {{ tapVoltable[tapVoltable.length - 1].tap }}
                             </td>
                             <td>
-                                <el-input size="mini" type="text" v-model="voltage_last">
+                                <el-input size="mini" type="text" number="positive" v-model="voltage_last">
                                     <template slot="append">V</template>
                                 </el-input>
                             </td>

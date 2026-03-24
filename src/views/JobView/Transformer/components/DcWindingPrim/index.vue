@@ -54,23 +54,23 @@
                         </div>
                     </td>
                     <td>
-                        <el-input size="mini" type="number" v-model="item.r_meas.value"><template
+                        <el-input size="mini" type="text" number="positive" v-model="item.r_meas.value"><template
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="number" v-model="item.r_ref.value"><template
+                        <el-input size="mini" type="text" number="positive" v-model="item.r_ref.value"><template
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="number" v-model="item.r_corr.value"><template
+                        <el-input size="mini" type="text" number="positive" v-model="item.r_corr.value"><template
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="number" v-model="item.dev_r_ref.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.dev_r_ref.value"></el-input>
                     </td>
                     <template v-if="index % 3 == 0 && assetData.tap_changers.winding === $constant.PRIM">
                         <td rowspan="3">
-                            <el-input size="mini" type="number" v-model="item.dev_phase.value"></el-input>
+                            <el-input size="mini" type="text" number="positive" v-model="item.dev_phase.value"></el-input>
                         </td>
 
                         <!-- <td rowspan="3">
@@ -79,7 +79,7 @@
                     </template>
                     <template v-else-if="index % 3 == 0 && assetData.tap_changers.winding !== $constant.PRIM">
                         <td rowspan="3">
-                            <el-input size="mini" type="number" v-model="item.dev_phase.value"></el-input>
+                            <el-input size="mini" type="text" number="positive" v-model="item.dev_phase.value"></el-input>
                         </td>
 
                         <!-- <td rowspan="3">
@@ -346,39 +346,39 @@ export default {
             this.$message.success('Calculating successfully')
         },
         // async CalRcorr() {
-            // let data = this.testCondition.condition
-            // const winding = JSON.parse(this.$store.state.selectedAsset[0].winding)
-            // if (winding.sec === "Copper") {
-            //     this.testData.table.forEach((element) => {
-            //         if (!isNaN(parseFloat(element.r_meas))) {
-            //             if (!isNaN(parseFloat(data.winding_temperature))) {
-            //                 if (!isNaN(parseFloat(data.reference_temperature))) {
-            //                     element.r_corr = parseFloat(parseFloat(element.r_meas) * (235 + parseFloat(data.reference_temperature)) / (235 + parseFloat(data.winding_temperature)))
-            //                     if (element.r_corr != null) {
-            //                         element.r_corr = element.r_corr.toFixed(4)
-            //                     }
-            //                 }
-            //             }
-            //         }
-            //     })
-            // } else {
-            //     this.testData.table.forEach((element) => {
-            //         if (!isNaN(element.r_meas)) {
-            //             if (!isNaN(data.winding_temperature)) {
-            //                 if (!isNaN(data.reference_temperature)) {
-            //                     element.r_corr = parseFloat(parseFloat(element.r_meas) * (225 + parseFloat(data.reference_temperature)) / (225 + parseFloat(data.winding_temperature))).toFixed(4)
-            //                 }
-            //             }
-            //         }
-            //     })
-            // }
+        // let data = this.testCondition.condition
+        // const winding = JSON.parse(this.$store.state.selectedAsset[0].winding)
+        // if (winding.sec === "Copper") {
+        //     this.testData.table.forEach((element) => {
+        //         if (!isNaN(parseFloat(element.r_meas))) {
+        //             if (!isNaN(parseFloat(data.winding_temperature))) {
+        //                 if (!isNaN(parseFloat(data.reference_temperature))) {
+        //                     element.r_corr = parseFloat(parseFloat(element.r_meas) * (235 + parseFloat(data.reference_temperature)) / (235 + parseFloat(data.winding_temperature)))
+        //                     if (element.r_corr != null) {
+        //                         element.r_corr = element.r_corr.toFixed(4)
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     })
+        // } else {
+        //     this.testData.table.forEach((element) => {
+        //         if (!isNaN(element.r_meas)) {
+        //             if (!isNaN(data.winding_temperature)) {
+        //                 if (!isNaN(data.reference_temperature)) {
+        //                     element.r_corr = parseFloat(parseFloat(element.r_meas) * (225 + parseFloat(data.reference_temperature)) / (225 + parseFloat(data.winding_temperature))).toFixed(4)
+        //                 }
+        //             }
+        //         }
+        //     })
+        // }
         // },
         // async CalRcorrWithoutTem() {
-            // this.testData.table.forEach((element) => {
-            //     if (!isNaN(parseFloat(element.r_meas))) {
-            //         element.r_corr = element.r_meas
-            //     }
-            // })
+        // this.testData.table.forEach((element) => {
+        //     if (!isNaN(parseFloat(element.r_meas))) {
+        //         element.r_corr = element.r_meas
+        //     }
+        // })
         // },
         // async CalDevWithRref() {
         //     this.testData.table.forEach((element) => {

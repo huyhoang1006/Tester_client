@@ -50,22 +50,30 @@
                         <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.test_mode.value"></el-input>
+                        <el-select size="mini" v-model="item.test_mode.value">
+                            <el-option label="GST" value="GST"></el-option>
+                            <el-option label="GSTg-A" value="GSTg-A"></el-option>
+                            <el-option label="GSTg-B" value="GSTg-B"></el-option>
+                            <el-option label="GSTg-A+B" value="GSTg-A+B"></el-option>
+                            <el-option label="UST-A" value="UST-A"></el-option>
+                            <el-option label="UST-B" value="UST-B"></el-option>
+                            <el-option label="UST-A+B" value="UST-A+B"></el-option>
+                        </el-select>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.test_voltage.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.test_voltage.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.df_ref.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.df_ref.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.c_ref.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.c_ref.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.df_meas.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.df_meas.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.c_meas.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.c_meas.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -164,7 +172,7 @@ export default {
                 type: 'warning'
             }).then(() => {
                 this.testData.table.table1 = []
-            })
+            }).catch(() => {})
         },
         deleteTest(index) {
             this.testData.table.table1.splice(index, 1)

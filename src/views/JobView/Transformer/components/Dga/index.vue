@@ -36,42 +36,42 @@
             <tbody>
                 <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>
-                        <el-input type="number" size="mini" v-model="item.h2.value">
+                        <el-input type="text" number="positive" size="mini" v-model="item.h2.value">
                             <template slot="append">ppm</template>
                         </el-input>
                     </td>
                     <td>
-                        <el-input type="number" size="mini" v-model="item.ch4.value">
+                        <el-input type="text" number="positive" size="mini" v-model="item.ch4.value">
                             <template slot="append">ppm</template>
                         </el-input>
                     </td>
                     <td>
-                        <el-input type="number" size="mini" v-model="item.c2h2.value">
+                        <el-input type="text" number="positive" size="mini" v-model="item.c2h2.value">
                             <template slot="append">ppm</template>
                         </el-input>
                     </td>
                     <td>
-                        <el-input type="number" size="mini" v-model="item.c2h4.value">
+                        <el-input type="text" number="positive" size="mini" v-model="item.c2h4.value">
                             <template slot="append">ppm</template>
                         </el-input>
                     </td>
                     <td>
-                        <el-input type="number" size="mini" v-model="item.c2h6.value">
+                        <el-input type="text" number="positive" size="mini" v-model="item.c2h6.value">
                             <template slot="append">ppm</template>
                         </el-input>
                     </td>
                     <td>
-                        <el-input type="number" size="mini" v-model="item.co.value">
+                        <el-input type="text" number="positive" size="mini" v-model="item.co.value">
                             <template slot="append">ppm</template>
                         </el-input>
                     </td>
                     <td>
-                        <el-input type="number" size="mini" v-model="item.co2.value">
+                        <el-input type="text" number="positive" size="mini" v-model="item.co2.value">
                             <template slot="append">ppm</template>
                         </el-input>
                     </td>
                     <td>
-                        <el-input type="number" size="mini" v-model="item.tdcg.value">
+                        <el-input type="text" number="positive" size="mini" v-model="item.tdcg.value">
                             <template slot="append">ppm</template>
                         </el-input>
                     </td>

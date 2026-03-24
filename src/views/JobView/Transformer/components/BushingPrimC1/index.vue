@@ -66,25 +66,25 @@
                         </el-select>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.test_voltage.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.test_voltage.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.df_ref.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.df_ref.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.c_ref.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.c_ref.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.df_meas.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.df_meas.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.c_meas.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.c_meas.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.df_change.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.df_change.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.delta_c_percent.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.delta_c_percent.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -444,8 +444,7 @@ export default {
                 type: 'warning'
             }).then(() => {
                 this.testData.table.table1 = []
-            }).catch(() => {
-            })
+            }).catch(() => {})
         },
         deleteTest(index) {
             this.testData.table.table1.splice(index, 1)

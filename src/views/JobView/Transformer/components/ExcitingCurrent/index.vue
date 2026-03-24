@@ -46,19 +46,19 @@
                         </div>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.i_out.value"><template
+                        <el-input size="mini" type="text" number="positive" v-model="item.i_out.value"><template
                                 slot="append">mA</template>
                         </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.watt_losses.value"><template
+                        <el-input size="mini" type="text" number="positive" v-model="item.watt_losses.value"><template
                                 slot="append">W</template> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.i_ref.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.i_ref.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.i_dev.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.i_dev.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">

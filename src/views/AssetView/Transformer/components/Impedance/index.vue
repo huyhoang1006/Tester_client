@@ -9,6 +9,7 @@
                 </div>
             </el-col>
         </el-row>
+
         <div class="content-toggle" v-if="openImpedances">
             <!-- ref temp -->
             <el-row :gutter="20" class="content">
@@ -16,7 +17,7 @@
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left"
                         class="ref-temp-form">
                         <el-form-item label="Ref. temp">
-                            <el-input v-model="impedancesData.ref_temp.value">
+                            <el-input type="text" number="positive" v-model="impedancesData.ref_temp.value">
                                 <template slot="append">{{ unitSymbol.degC }}</template>
                             </el-input>
                         </el-form-item>
@@ -78,12 +79,14 @@
                             <tbody>
                                 <tr v-for="(item, index) in impedancesData.prim_sec" :key="index">
                                     <td>
-                                        <el-input size="mini" v-model="item.short_circuit_impedances_uk.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.short_circuit_impedances_uk.value">
                                             <template slot="append">{{ unitSymbol.percent }}</template>
                                         </el-input>
                                     </td>
                                     <td>
-                                        <el-input size="mini" v-model="item.base_power.data.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.base_power.data.value">
                                             <el-select size="mini" class="select-in-input"
                                                 v-model="item.base_power.data.unit" slot="append">
                                                 <el-option :label="unitMultiplier.M + unitSymbol.VA"
@@ -94,7 +97,8 @@
                                         </el-input>
                                     </td>
                                     <td>
-                                        <el-input size="mini" v-model="item.base_voltage.data.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.base_voltage.data.value">
                                             <el-select size="mini" class="select-in-input"
                                                 v-model="item.base_voltage.data.unit" slot="append">
                                                 <el-option :label="unitMultiplier.k + unitSymbol.V"
@@ -104,7 +108,8 @@
                                         </el-input>
                                     </td>
                                     <td>
-                                        <el-input size="mini" v-model="item.load_losses_pk.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.load_losses_pk.value">
                                             <template slot="append">{{ unitSymbol.W }}</template>
                                         </el-input>
                                     </td>
@@ -195,12 +200,14 @@
                             <tbody>
                                 <tr v-for="(item, index) in impedancesData.prim_tert" :key="index">
                                     <td>
-                                        <el-input size="mini" v-model="item.short_circuit_impedances_uk.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.short_circuit_impedances_uk.value">
                                             <template slot="append">{{ unitSymbol.percent }}</template>
                                         </el-input>
                                     </td>
                                     <td>
-                                        <el-input size="mini" v-model="item.base_power.data.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.base_power.data.value">
                                             <el-select size="mini" class="select-in-input"
                                                 v-model="item.base_power.data.unit" slot="append">
                                                 <el-option :label="unitMultiplier.M + unitSymbol.VA"
@@ -211,7 +218,8 @@
                                         </el-input>
                                     </td>
                                     <td>
-                                        <el-input size="mini" v-model="item.base_voltage.data.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.base_voltage.data.value">
                                             <el-select size="mini" class="select-in-input"
                                                 v-model="item.base_voltage.data.unit" slot="append">
                                                 <el-option :label="unitMultiplier.k + unitSymbol.V"
@@ -221,7 +229,8 @@
                                         </el-input>
                                     </td>
                                     <td>
-                                        <el-input size="mini" v-model="item.load_losses_pk.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.load_losses_pk.value">
                                             <template slot="append">{{ unitSymbol.W }}</template>
                                         </el-input>
                                     </td>
@@ -311,12 +320,14 @@
                             <tbody>
                                 <tr v-for="(item, index) in impedancesData.sec_tert" :key="index">
                                     <td>
-                                        <el-input size="mini" v-model="item.short_circuit_impedances_uk.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.short_circuit_impedances_uk.value">
                                             <template slot="append">%</template>
                                         </el-input>
                                     </td>
                                     <td>
-                                        <el-input size="mini" v-model="item.base_power.data.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.base_power.data.value">
                                             <el-select size="mini" class="select-in-input"
                                                 v-model="item.base_power.data.unit" slot="append">
                                                 <el-option :label="unitMultiplier.M + unitSymbol.VA"
@@ -327,7 +338,8 @@
                                         </el-input>
                                     </td>
                                     <td>
-                                        <el-input size="mini" v-model="item.base_voltage.data.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.base_voltage.data.value">
                                             <el-select size="mini" class="select-in-input"
                                                 v-model="item.base_voltage.data.unit" slot="append">
                                                 <el-option :label="unitMultiplier.k + unitSymbol.V"
@@ -337,7 +349,8 @@
                                         </el-input>
                                     </td>
                                     <td>
-                                        <el-input size="mini" v-model="item.load_losses_pk.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.load_losses_pk.value">
                                             <template slot="append">{{ unitSymbol.W }}</template>
                                         </el-input>
                                     </td>
@@ -381,7 +394,8 @@
                 <el-col :xs="24" :sm="16" :md="12">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Base power">
-                            <el-input v-model="impedancesData.zero_sequence_impedance.base_power.data.value"
+                            <el-input type="text" number="positive"
+                                v-model="impedancesData.zero_sequence_impedance.base_power.data.value"
                                 class="ref-temp-input">
                                 <el-select size="mini" class="select-in-input"
                                     v-model="impedancesData.zero_sequence_impedance.base_power.data.unit" slot="append">
@@ -393,7 +407,8 @@
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Base voltage">
-                            <el-input v-model="impedancesData.zero_sequence_impedance.base_voltage.data.value"
+                            <el-input type="text" number="positive"
+                                v-model="impedancesData.zero_sequence_impedance.base_voltage.data.value"
                                 class="ref-temp-input">
                                 <el-select size="mini" class="select-in-input"
                                     v-model="impedancesData.zero_sequence_impedance.base_voltage.data.unit"
@@ -405,7 +420,8 @@
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Zero sequence Z0(%)">
-                            <el-input v-model="impedancesData.zero_sequence_impedance.zero_percent.zero.data.value"
+                            <el-input type="text" number="positive"
+                                v-model="impedancesData.zero_sequence_impedance.zero_percent.zero.data.value"
                                 v-if="properties.type === $constant.TWO_WINDING || properties.type === $constant.THREE_WINDING"
                                 class="ref-temp-input">
                                 <template slot="append">{{ unitSymbol.percent }}</template>
@@ -417,7 +433,7 @@
                                     <tr>
                                         <td style="font-size: 12px;">Prim</td>
                                         <td>
-                                            <el-input
+                                            <el-input type="text" number="positive"
                                                 v-model="impedancesData.zero_sequence_impedance.zero_percent.prim.data.value">
                                                 <template slot="append">{{ unitSymbol.percent }}</template>
                                             </el-input>
@@ -426,7 +442,7 @@
                                     <tr>
                                         <td style="font-size: 12px;">Sec</td>
                                         <td>
-                                            <el-input
+                                            <el-input type="text" number="positive"
                                                 v-model="impedancesData.zero_sequence_impedance.zero_percent.sec.data.value">
                                                 <template slot="append">{{ unitSymbol.percent }}</template>
                                             </el-input>

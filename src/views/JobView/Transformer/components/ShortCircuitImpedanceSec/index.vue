@@ -50,7 +50,7 @@
             </thead>
             <tbody v-if="currentOption === 'threePhase'" key="three">
                 <tr v-for="(item, index) in testData.table.table1" :key="index">
-                    <td><el-input size="mini" type="number" v-model="item.tap.value"></el-input></td>
+                    <td><el-input size="mini" type="text" number="positive" v-model="item.tap.value"></el-input></td>
                     <td style="width: 10%">
                         <div class="col-phase">
                             <div class="phase">
@@ -62,25 +62,25 @@
                         </div>
                     </td>
                     <td>
-                        <el-input size="mini" type="number" v-model="item.rk.value"><template
+                        <el-input size="mini" type="text" number="positive" v-model="item.rk.value"><template
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="number" v-model="item.xk.value"><template
+                        <el-input size="mini" type="text" number="positive" v-model="item.xk.value"><template
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="number" v-model="item.zk.value"><template
+                        <el-input size="mini" type="text" number="positive" v-model="item.zk.value"><template
                                 slot="append">Ω</template></el-input>
                     </td>
                     <template v-if="index % 3 == 0">
                         <td rowspan="3">
-                            <el-input size="mini" type="number" v-model="item.uk_cal.value"></el-input>
+                            <el-input size="mini" type="text" number="positive" v-model="item.uk_cal.value"></el-input>
                         </td>
                     </template>
                     <template v-if="index % 3 == 0">
                         <td rowspan="3">
-                            <el-input size="mini" type="number" v-model="item.uk_dev.value"></el-input>
+                            <el-input size="mini" type="text" number="positive" v-model="item.uk_dev.value"></el-input>
                         </td>
                     </template>
                     <td>
@@ -106,7 +106,7 @@
             </tbody>
             <tbody v-else key="per">
                 <tr v-for="(item, index) in testData.table.table2" :key="index">
-                    <td><el-input size="mini" type="number" v-model="item.tap.value"></el-input></td>
+                    <td><el-input size="mini" type="text" number="positive" v-model="item.tap.value"></el-input></td>
                     <td style="width: 10%">
                         <div class="col-phase">
                             <div class="phase">
@@ -118,22 +118,22 @@
                         </div>
                     </td>
                     <td>
-                        <el-input size="mini" type="number" v-model="item.rk.value"><template
+                        <el-input size="mini" type="text" number="positive" v-model="item.rk.value"><template
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="number" v-model="item.xk.value"><template
+                        <el-input size="mini" type="text" number="positive" v-model="item.xk.value"><template
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="number" v-model="item.zk.value"><template
+                        <el-input size="mini" type="text" number="positive" v-model="item.zk.value"><template
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="number" v-model="item.uk_cal.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.uk_cal.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="number" v-model="item.uk_dev.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.uk_dev.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">

@@ -62,14 +62,14 @@
                             <el-radio-group v-model="othersData.insulation.key" class="insulation-group">
                                 <div class="insulation-row">
                                     <el-radio label="Weight">Weight</el-radio>
-                                    <el-input v-model="othersData.insulation.weight.value" size="mini"
+                                    <el-input type="text" number="positive" v-model="othersData.insulation.weight.value" size="mini"
                                         class="insulation-input" :disabled="othersData.insulation.key !== 'Weight'">
                                         <template slot="append">{{ othersData.insulation.weight.unit }}</template>
                                     </el-input>
                                 </div>
                                 <div class="insulation-row">
                                     <el-radio label="Volume">Volume</el-radio>
-                                    <el-input v-model="othersData.insulation.volume.value" size="mini"
+                                    <el-input type="text" number="positive" v-model="othersData.insulation.volume.value" size="mini"
                                         class="insulation-input" :disabled="othersData.insulation.key !== 'Volume'">
                                         <template slot="append">{{ othersData.insulation.volume.unit }}</template>
                                     </el-input>
@@ -77,7 +77,7 @@
                             </el-radio-group>
                         </el-form-item>
                         <el-form-item label="Total weight">
-                            <el-input v-model="othersData.total_weight.value">
+                            <el-input type="text" number="positive" v-model="othersData.total_weight.value">
                                 <template slot="append">{{ othersData.total_weight.unit }}</template>
                             </el-input>
                         </el-form-item>
