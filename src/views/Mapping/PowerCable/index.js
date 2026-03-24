@@ -425,7 +425,6 @@ export function mapEntityToDto(entity) {
     dto.productAssetModelId = entity.productAssetModel.mrid || null;
     dto.locationId = entity.asset.location || null;
     dto.oldCableInfoId = entity.oldCableInfo.mrid || null;
-    dto.assetInfoId = entity.oldCableInfo.mrid || null;
     dto.assetPsrId = entity.assetPsr.mrid || null;
     dto.psrId = entity.assetPsr.psr_id || null;
     // ================== attachment ==================
@@ -434,13 +433,10 @@ export function mapEntityToDto(entity) {
 
     // lifecycle date
     dto.properties.manufacturer_year = entity.lifecycleDate.manufactured_date || null;
-    dto.lifecycleDateId = entity.lifecycleDate.mrid || null;
     dto.lifecycleDateId = entity.asset.lifecycle_date || null;
 
     // assetPsr
-    dto.assetPsrId = entity.assetPsr.mrid || null;
     dto.properties.mrid = entity.asset.mrid || null;
-    dto.psrId = entity.asset.asset_info || null;
 
 
     // ================== phases ==================
