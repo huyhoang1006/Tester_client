@@ -137,15 +137,21 @@ export const updateWireInfoTransaction = async (mrid, info, dbsql) => {
 export const deleteWireInfoTransaction = async (mrid, dbsql) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const assetInfoResult = await AssetInfoFunc.deleteAssetInfoByIdTransaction(mrid, dbsql)
-            if (!assetInfoResult.success) {
-                return reject({ success: false, message: 'Delete assetInfo failed', err: assetInfoResult.err })
-            }
-            dbsql.run("DELETE FROM wire_info WHERE mrid=?", [mrid], function (err) {
+            // Xóa wire_info TRƯỚC (nó REFERENCES asset_info ON DELETE CASCADE)
+            // rồi mới xóa asset_info
+            dbsql.run("DELETE FROM wire_info WHERE mrid=?", [mrid], async function (err) {
                 if (err) {
                     return reject({ success: false, err, message: 'Delete wireInfo failed' })
                 }
-                return resolve({ success: true, data: mrid, message: 'Delete wireInfo completed' })
+                try {
+                    const assetInfoResult = await AssetInfoFunc.deleteAssetInfoByIdTransaction(mrid, dbsql)
+                    if (!assetInfoResult.success) {
+                        return reject({ success: false, message: 'Delete assetInfo failed', err: assetInfoResult.err })
+                    }
+                    return resolve({ success: true, data: mrid, message: 'Delete wireInfo completed' })
+                } catch (err2) {
+                    return reject({ success: false, err: err2, message: 'Delete wireInfo transaction failed' })
+                }
             })
         } catch (err) {
             return reject({ success: false, err, message: 'Delete wireInfo transaction failed'})
