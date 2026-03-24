@@ -36,21 +36,21 @@
                             </el-input>
                         </td>
                         <td>
-                            <el-input size="mini" v-model="item.voltageLl.value">
+                            <el-input size="mini" type="text" number="positive" v-model="item.voltageLl.value">
                                 <template #append>
                                     <span>{{ unitMultiplier.k + unitSymbol.V }}</span>
                                 </template>
                             </el-input>
                         </td>
                         <td>
-                            <el-input size="mini" v-model="item.voltageLn.value">
+                            <el-input size="mini" type="text" number="positive" v-model="item.voltageLn.value">
                                 <template #append>
                                     <span>{{ unitMultiplier.k + unitSymbol.V }}</span>
                                 </template>
                             </el-input>
                         </td>
                         <td>
-                            <el-input size="mini" v-model="item.mcovRating.value">
+                            <el-input size="mini" type="text" number="positive" v-model="item.mcovRating.value">
                                 <template #append>
                                     <span>{{ unitMultiplier.k + unitSymbol.V }}</span>
                                 </template>

@@ -47,19 +47,19 @@
                         <el-input size="mini" v-model="item.applied_terminal.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="item.rated_voltage.value"> </el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.rated_voltage.value"> </el-input>
                     </td>
                     <td>
                         <el-input size="mini" v-model="item.lv_terminal.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="item.lv_tested_voltage.value"> </el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.lv_tested_voltage.value"> </el-input>
                     </td>
                     <td>
                         <el-input size="mini" v-model="item.hv_terminal.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="item.hv_tested_voltage.value"> </el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.hv_tested_voltage.value"> </el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -136,7 +136,7 @@ export default {
                 type: 'warning'
             }).then(() => {
                 this.testData.table.table1 = []
-            })
+            }).catch(() => {})
         },
         deleteTest(index) {
             this.testData.table.table1.splice(index, 1)

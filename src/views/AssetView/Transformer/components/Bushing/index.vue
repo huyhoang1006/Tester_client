@@ -64,45 +64,50 @@
                                     <el-input size="mini" v-model="item.manufacturer_type"></el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="item.manufacturer_year"></el-input>
+                                    <el-input size="mini" type="text" number="positive"
+                                        v-model="item.manufacturer_year"></el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" type="number" v-model="item.insulation_level.value">
+                                    <el-input size="mini" type="text" number="positive"
+                                        v-model="item.insulation_level.value">
                                         <template slot="append">{{ item.insulation_level.label }}</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" type="number" v-model="item.voltage_l_ground.value">
+                                    <el-input size="mini" type="text" number="positive"
+                                        v-model="item.voltage_l_ground.value">
                                         <template slot="append">{{ item.voltage_l_ground.label }}</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" type="number" v-model="item.max_system_voltage.value">
+                                    <el-input size="mini" type="text" number="positive"
+                                        v-model="item.max_system_voltage.value">
                                         <template slot="append">{{ item.max_system_voltage.label }}</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" type="number" v-model="item.rate_current.value">
+                                    <el-input size="mini" type="text" number="positive"
+                                        v-model="item.rate_current.value">
                                         <template slot="append">{{ item.rate_current.label }}</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" type="number" v-model="item.df_c1.value">
+                                    <el-input size="mini" type="text" number="positive" v-model="item.df_c1.value">
                                         <template slot="append">{{ item.df_c1.label }}</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" type="number" v-model="item.cap_c1.value">
+                                    <el-input size="mini" type="text" number="positive" v-model="item.cap_c1.value">
                                         <template slot="append">{{ item.cap_c1.label }}</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" type="number" v-model="item.df_c2.value">
+                                    <el-input size="mini" type="text" number="positive" v-model="item.df_c2.value">
                                         <template slot="append">{{ item.df_c2.label }}</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" type="number" v-model="item.cap_c2.value">
+                                    <el-input size="mini" type="text" number="positive" v-model="item.cap_c2.value">
                                         <template slot="append">{{ item.cap_c2.label }}</template>
                                     </el-input>
                                 </td>
@@ -184,45 +189,45 @@
                                     <el-input size="mini" v-model="item.manufacturer_type"></el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="item.manufacturer_year"></el-input>
+                                    <el-input size="mini" type="text" number="positive" v-model="item.manufacturer_year"></el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" type="number" v-model="item.insulation_level.value">
+                                    <el-input size="mini" type="text" number="positive" v-model="item.insulation_level.value">
                                         <template slot="append">{{ item.insulation_level.label }}</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" type="number" v-model="item.voltage_l_ground.value">
+                                    <el-input size="mini" type="text" number="positive" v-model="item.voltage_l_ground.value">
                                         <template slot="append">{{ item.voltage_l_ground.label }}</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" type="number" v-model="item.max_system_voltage.value">
+                                    <el-input size="mini" type="text" number="positive" v-model="item.max_system_voltage.value">
                                         <template slot="append">{{ item.max_system_voltage.label }}</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" type="number" v-model="item.rate_current.value">
+                                    <el-input size="mini" type="text" number="positive" v-model="item.rate_current.value">
                                         <template slot="append">{{ item.rate_current.label }}</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" type="number" v-model="item.df_c1.value">
+                                    <el-input size="mini" type="text" number="positive" v-model="item.df_c1.value">
                                         <template slot="append">{{ item.df_c1.label }}</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" type="number" v-model="item.cap_c1.value">
+                                    <el-input size="mini" type="text" number="positive" v-model="item.cap_c1.value">
                                         <template slot="append">{{ item.cap_c1.label }}</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" type="number" v-model="item.df_c2.value">
+                                    <el-input size="mini" type="text" number="positive" v-model="item.df_c2.value">
                                         <template slot="append">{{ item.df_c2.label }}</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" type="number" v-model="item.cap_c2.value">
+                                    <el-input size="mini" type="text" number="positive" v-model="item.cap_c2.value">
                                         <template slot="append">{{ item.cap_c2.label }}</template>
                                     </el-input>
                                 </td>
@@ -303,45 +308,45 @@
                                     <el-input size="mini" v-model="item.manufacturer_type"></el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="item.manufacturer_year"></el-input>
+                                    <el-input size="mini" type="text" number="positive" v-model="item.manufacturer_year"></el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" type="number" v-model="item.insulation_level.value">
+                                    <el-input size="mini" type="text" number="positive" v-model="item.insulation_level.value">
                                         <template slot="append">{{ item.insulation_level.label }}</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" type="number" v-model="item.voltage_l_ground.value">
+                                    <el-input size="mini" type="text" number="positive" v-model="item.voltage_l_ground.value">
                                         <template slot="append">{{ item.voltage_l_ground.label }}</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" type="number" v-model="item.max_system_voltage.value">
+                                    <el-input size="mini" type="text" number="positive" v-model="item.max_system_voltage.value">
                                         <template slot="append">{{ item.max_system_voltage.label }}</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" type="number" v-model="item.rate_current.value">
+                                    <el-input size="mini" type="text" number="positive" v-model="item.rate_current.value">
                                         <template slot="append">{{ item.rate_current.label }}</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" type="number" v-model="item.df_c1.value">
+                                    <el-input size="mini" type="text" number="positive" v-model="item.df_c1.value">
                                         <template slot="append">{{ item.df_c1.label }}</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" type="number" v-model="item.cap_c1.value">
+                                    <el-input size="mini" type="text" number="positive" v-model="item.cap_c1.value">
                                         <template slot="append">{{ item.cap_c1.label }}</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" type="number" v-model="item.df_c2.value">
+                                    <el-input size="mini" type="text" number="positive" v-model="item.df_c2.value">
                                         <template slot="append">{{ item.df_c2.label }}</template>
                                     </el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" type="number" v-model="item.cap_c2.value">
+                                    <el-input size="mini" type="text" number="positive" v-model="item.cap_c2.value">
                                         <template slot="append">{{ item.cap_c2.label }}</template>
                                     </el-input>
                                 </td>

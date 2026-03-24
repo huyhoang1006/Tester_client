@@ -46,10 +46,10 @@
                         </el-select>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="item.electrode_gap_spacing.value"> </el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.electrode_gap_spacing.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="item.result.value"> </el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.result.value"> </el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">

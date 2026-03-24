@@ -130,7 +130,7 @@ export default {
                 type: 'warning'
             }).then(() => {
                 this.testData.table.table1 = []
-            })
+            }).catch(() => {})
         },
         deleteTest(index) {
             this.testData.table.table1.splice(index, 1)

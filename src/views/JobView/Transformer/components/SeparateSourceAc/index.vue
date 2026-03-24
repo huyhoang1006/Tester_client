@@ -24,7 +24,7 @@
             <tbody>
                 <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>{{ item.applied_terminal.value }}</td>
-                    <td><el-input size="mini" v-model="item.test_voltage.value"></el-input></td>
+                    <td><el-input size="mini" type="text" number="positive" v-model="item.test_voltage.value"></el-input></td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
                             <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>

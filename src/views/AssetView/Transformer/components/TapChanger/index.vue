@@ -49,7 +49,7 @@
                                 </el-select>
                             </el-form-item>
                             <el-form-item label="No. of taps">
-                                <el-input type="number" v-model.number="tapChangersData.no_of_taps"
+                                <el-input type="text" number="positive" v-model.number="tapChangersData.no_of_taps"
                                     :disabled="!tapChangersData.tap_scheme" @keyup.enter.native="onEnterNoTapReset()">
                                 </el-input>
                             </el-form-item>
@@ -99,10 +99,10 @@
                                 <tbody>
                                     <tr v-for="(item, index) in tapChangersData.voltage_table" :key="index">
                                         <td>
-                                            <el-input size="mini" type="text" v-model="item.tap"></el-input>
+                                            <el-input size="mini" type="text" number="positive" v-model="item.tap"></el-input>
                                         </td>
                                         <td>
-                                            <el-input size="mini" type="number" v-model="item.voltage.value">
+                                            <el-input size="mini" type="text" number="positive" v-model="item.voltage.value">
                                                 <template slot="append">V</template>
                                             </el-input>
                                         </td>
@@ -124,6 +124,7 @@
                     </el-col>
                 </el-row>
             </el-col>
+
             <!-- detc -->
             <el-col :xs="24" :md="12" class="col-content" :class="{ 'col-hidden': tapChangersData.mode !== 'detc' }">
                 <el-row :gutter="20" class="content">
@@ -165,7 +166,7 @@
                                 </el-select>
                             </el-form-item>
                             <el-form-item label="No. of taps">
-                                <el-input type="number" v-model.number="tapChangersData.no_of_taps"
+                                <el-input type="text" number="positive" v-model.number="tapChangersData.no_of_taps"
                                     :disabled="!tapChangersData.tap_scheme" @keyup.enter.native="onEnterNoTapReset()">
                                 </el-input>
                             </el-form-item>
@@ -215,10 +216,10 @@
                                 <tbody>
                                     <tr v-for="(item, index) in tapChangersData.voltage_table" :key="index">
                                         <td>
-                                            <el-input size="mini" type="text" v-model="item.tap"></el-input>
+                                            <el-input size="mini" type="text" number="positive" v-model="item.tap"></el-input>
                                         </td>
                                         <td>
-                                            <el-input size="mini" type="text" v-model="item.voltage.value">
+                                            <el-input size="mini" type="text" number="positive" v-model="item.voltage.value">
                                                 <template slot="append">V</template>
                                             </el-input>
                                         </td>
