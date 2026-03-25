@@ -26,7 +26,7 @@
                     <el-input v-model="propertiesData.manufacturer_type"></el-input>
                 </el-form-item>
                 <el-form-item label="Manufacturing year">
-                    <el-input v-model="propertiesData.manufacturer_year"></el-input>
+                    <el-input type="text" number="year" v-model="propertiesData.manufacturer_year"></el-input>
                 </el-form-item>
                 <el-form-item label="Country of origin">
                     <el-select style="width: 100%;" filterable v-model="propertiesData.country_of_origin"

@@ -8,7 +8,8 @@
                     <el-input style="width: 100%" disabled v-model="propertiesData.kind"></el-input>
                 </el-form-item>
                 <el-form-item label="Asset type">
-                    <el-select @change="onChangeType" style="width: 100%" v-model="propertiesData.type" placeholder="Select asset type">
+                    <el-select @change="onChangeType" style="width: 100%" v-model="propertiesData.type"
+                        placeholder="Select asset type">
                         <el-option label="Two-winding" value="Two-winding"> </el-option>
                         <el-option label="Three-winding" value="Three-winding"> </el-option>
                         <el-option label="Auto w/ tert" value="Auto w/ tert"> </el-option>
@@ -27,10 +28,11 @@
                     <el-input v-model="propertiesData.manufacturer_type"></el-input>
                 </el-form-item>
                 <el-form-item label="Manufacturing year">
-                    <el-input type="text" number="positive" v-model="propertiesData.manufacturer_year"></el-input>
+                    <el-input type="text" number="year" v-model="propertiesData.manufacturer_year"></el-input>
                 </el-form-item>
                 <el-form-item label="Country of origin">
-                    <el-select style="width: 100%;" filterable v-model="propertiesData.country_of_origin" placeholder="Select country of origin">
+                    <el-select style="width: 100%;" filterable v-model="propertiesData.country_of_origin"
+                        placeholder="Select country of origin">
                         <el-option v-for="item in countryData" :key="item" :label="item" :value="item"> </el-option>
                     </el-select>
                 </el-form-item>
@@ -45,13 +47,14 @@
                 <el-divider></el-divider>
                 <el-input type="textarea" :rows="5" v-model="propertiesData.comment"></el-input>
             </el-form>
-            <Attachment :attachment_="this.attachmentData" title="substation" height="120px" @data-attachment = "getDataAttachment"></Attachment>
+            <Attachment :attachment_="this.attachmentData" title="substation" height="120px"
+                @data-attachment="getDataAttachment"></Attachment>
         </div>
     </div>
 </template>
 
 <script>
-import {country} from '@/views/ConstantAsset/index'
+import { country } from '@/views/ConstantAsset/index'
 import Attachment from '@/views/Common/Attachment.vue'
 import MANUFACTURER_MAP from '@/views/ConstantAsset/manufacturer.js';
 
@@ -78,9 +81,9 @@ export default {
     data() {
         return {
             labelWidth: `${120}px`,
-            countryData : country.default,
-            manufacturerList : MANUFACTURER_MAP['TransformerDataDto'],
-            attachmentData : [],
+            countryData: country.default,
+            manufacturerList: MANUFACTURER_MAP['TransformerDataDto'],
+            attachmentData: [],
         }
     },
     watch: {
@@ -96,7 +99,7 @@ export default {
             return this.data
         }
     },
-    methods: { 
+    methods: {
         getDataAttachment(rowData) {
             this.attachmentData = rowData
             this.$emit('update-attachment', this.attachmentData)
@@ -146,4 +149,3 @@ export default {
     }
 }
 </style>
-        

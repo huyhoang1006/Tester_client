@@ -50,7 +50,13 @@ export default {
             let newVal = strVal
 
             if (this.text !== undefined && this.text !== false) {
-                newVal = newVal.replace(/[^a-zA-ZÀ-ỹđĐ\s]/g, '')
+                newVal = newVal.replace(/[^a-zA-ZÀ-ỹđĐ.,\s]/g, '')
+            } else if (this.number === 'year') {
+                newVal = newVal.replace(/[^\d]/g, '')
+
+                if (newVal.length > 4) {
+                    newVal = newVal.substring(0, 4)
+                }
             } else if (this.number !== undefined && this.number !== false) {
                 // 1. Tự động chuyển dấu phẩy (,) thành dấu chấm (.)
                 newVal = newVal.replace(/,/g, '.')

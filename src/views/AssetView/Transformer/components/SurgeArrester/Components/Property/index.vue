@@ -16,7 +16,8 @@
                 </el-col>
                 <el-col :xs="24" :sm="12" :md="6">
                     <el-form-item label="Manufacturer year">
-                        <el-input type="text" number="positive" v-model="propertiesData.manufacturer_year" placeholder="Manufacturer year"></el-input>
+                        <el-input type="text" number="year" v-model="propertiesData.manufacturer_year"
+                            placeholder="Manufacturer year"></el-input>
                     </el-form-item>
                 </el-col>
                 <el-col :xs="24" :sm="12" :md="6">

@@ -53,19 +53,22 @@
                                                 </el-select>
                                             </el-col>
                                             <el-col :span="12">
-                                                <el-input size="mini" v-model="item.usr_rated_voltage.value">
+                                                <el-input type="text" number="positive" size="mini"
+                                                    v-model="item.usr_rated_voltage.value">
                                                     <template slot="append">V</template>
                                                 </el-input>
                                             </el-col>
                                         </el-row>
                                     </td>
                                     <td>
-                                        <el-input size="mini" v-model="item.rated_burden.value">
+                                        <el-input type="text" number="positive" size="mini"
+                                            v-model="item.rated_burden.value">
                                             <template slot="append">VA</template>
                                         </el-input>
                                     </td>
                                     <td>
-                                        <el-input size="mini" v-model="item.rated_power_factor">
+                                        <el-input type="text" number="positive" size="mini"
+                                            v-model="item.rated_power_factor">
                                         </el-input>
                                     </td>
                                 </tr>

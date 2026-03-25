@@ -29,7 +29,7 @@
                                     <el-option label="50Hz" value="50"></el-option>
                                     <el-option label="16.7Hz" value="16.7"></el-option>
                                 </el-select>
-                                <el-input :disabled="ratingsData.rated_frequency.value !== 'Custom'"
+                                <el-input type="text" number="positive" :disabled="ratingsData.rated_frequency.value !== 'Custom'"
                                     v-model="ratingsData.rated_frequency_custom" class="rf-control">
                                     <template #append>Hz</template>
                                 </el-input>
@@ -54,7 +54,7 @@
                                     <el-option label="1 / 3" value="3"></el-option>
                                     <el-option label="1 / √3" value="3sqrt"></el-option>
                                 </el-select>
-                                <el-input class="form-control" v-model="ratingsData.rated_voltage.value">
+                                <el-input type="text" number="positive" class="form-control" v-model="ratingsData.rated_voltage.value">
                                     <template #append>kV</template>
                                 </el-input>
                             </div>

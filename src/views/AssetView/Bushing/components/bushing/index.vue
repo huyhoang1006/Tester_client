@@ -5,27 +5,27 @@
                 <span class="bolder">Ratings</span>
                 <el-divider></el-divider>
                 <el-form-item label="Rated frequency">
-                    <el-input style="width: 100%" v-model="bushingData.rated_frequency.value">
+                    <el-input type="text" number="positive" style="width: 100%" v-model="bushingData.rated_frequency.value">
                         <template #append>{{ unitSymbol.Hz }}</template>
                     </el-input>
                 </el-form-item>
                 <el-form-item label="Insul. level LL (BIL)">
-                    <el-input style="width: 100%" v-model="bushingData.insulation_level.value">
+                    <el-input type="text" number="positive" style="width: 100%" v-model="bushingData.insulation_level.value">
                         <template #append>{{ bushingData.insulation_level.label }}</template>
                     </el-input>
                 </el-form-item>
                 <el-form-item label="Voltage L-ground">
-                    <el-input v-model="bushingData.voltage_l_ground.value">
+                    <el-input type="text" number="positive" v-model="bushingData.voltage_l_ground.value">
                         <template #append>{{ bushingData.voltage_l_ground.label }}</template>
                     </el-input>
                 </el-form-item>
                 <el-form-item label="Max. system voltage">
-                    <el-input style="width: 100%;" filterable v-model="bushingData.max_system_voltage.value">
+                    <el-input type="text" number="positive" style="width: 100%;" filterable v-model="bushingData.max_system_voltage.value">
                         <template #append>{{ bushingData.max_system_voltage.label }}</template>
                     </el-input>
                 </el-form-item>
                 <el-form-item label="Rated current">
-                    <el-input v-model="bushingData.rated_current.value">
+                    <el-input type="text" number="positive" v-model="bushingData.rated_current.value">
                         <template #append>{{ bushingData.rated_current.label }}</template>
                     </el-input>
                 </el-form-item>
@@ -36,22 +36,22 @@
                 <span class="bolder">Nominal values</span>
                 <el-divider></el-divider>
                 <el-form-item label="DF (C1)">
-                    <el-input style="width: 100%" v-model="bushingData.df_c1.value">
+                    <el-input type="text" number="positive" style="width: 100%" v-model="bushingData.df_c1.value">
                         <template #append>{{ bushingData.df_c1.label }}</template>
                     </el-input>
                 </el-form-item>
                 <el-form-item label="Cap. (C1)">
-                    <el-input style="width: 100%" v-model="bushingData.cap_c1.value">
+                    <el-input type="text" number="positive" style="width: 100%" v-model="bushingData.cap_c1.value">
                         <template #append>{{ bushingData.cap_c1.label }}</template>
                     </el-input>
                 </el-form-item>
                 <el-form-item label="DF (C2)">
-                    <el-input v-model="bushingData.df_c2.value">
+                    <el-input type="text" number="positive" v-model="bushingData.df_c2.value">
                         <template #append>{{ bushingData.df_c2.label }}</template>
                     </el-input>
                 </el-form-item>
                 <el-form-item label="Cap. (C2)">
-                    <el-input style="width: 100%;" v-model="bushingData.cap_c2.value">
+                    <el-input type="text" number="positive" style="width: 100%;" v-model="bushingData.cap_c2.value">
                         <template #append>{{ bushingData.cap_c2.label }}</template>
                     </el-input>
                 </el-form-item>
