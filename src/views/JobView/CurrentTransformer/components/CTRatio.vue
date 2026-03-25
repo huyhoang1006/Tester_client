@@ -50,7 +50,7 @@
                             <el-input size="mini" type="text" v-model="item.isr.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.ratio_meas.value"></el-input>
+                            <el-input size="mini" type="text" number="positive" v-model="item.ratio_meas.value"></el-input>
                         </td>
                         <td>
                             <el-input size="mini" type="text" v-model="item.ratio_dev.value"></el-input>

@@ -38,7 +38,7 @@
             <tbody>
                 <tr v-for="(item, index) in testData.table.table1" :key="index">
                         <td>
-                            <el-input size="mini" type="text" v-model="item.name.value"></el-input>
+                            <el-input size="mini" type="text" number="positive" v-model="item.name.value"></el-input>
                         </td>
                         <td>
                             <el-input 
@@ -49,7 +49,7 @@
                             </el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.v_knee.value"></el-input>
+                            <el-input size="mini" type="text" number="positive" v-model="item.v_knee.value"></el-input>
                         </td>
                         <td>
                             <el-select class="assessment" size="mini" v-model="item.assessment.value">
