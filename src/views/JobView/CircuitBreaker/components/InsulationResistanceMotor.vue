@@ -43,10 +43,10 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.test_voltage.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.test_voltage.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.r60s.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.r60s.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">

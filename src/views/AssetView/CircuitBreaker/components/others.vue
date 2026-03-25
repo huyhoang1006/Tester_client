@@ -14,24 +14,24 @@
                 <el-col :xs="24" :sm="18" :md="14" :lg="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Total Weight with gas">
-                            <el-input style="width: 100%" v-model="othersData.total_weight_with_gas.value">
+                            <el-input style="width: 100%" type="text" number="positive" v-model="othersData.total_weight_with_gas.value">
                                 <template slot="append">kg</template>
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Weight of gas">
-                            <el-input style="width: 100%" v-model="othersData.weight_of_gas.value">
+                            <el-input style="width: 100%" type="text" number="positive" v-model="othersData.weight_of_gas.value">
                                 <template slot="append">kg</template>
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Volume of gas">
-                            <el-input style="width: 100%" v-model="othersData.volume_of_gas.value">
+                            <el-input style="width: 100%" type="text" number="positive" v-model="othersData.volume_of_gas.value">
                                 <template slot="append">l</template>
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Rated gas pressure">
                             <div style="width: 100%; display: flex;">
                                 <div style="width: 45%;">
-                                    <el-input style="width: 100%;" v-model="othersData.rated_gas_pressure.value">
+                                    <el-input style="width: 100%;" type="text" number="positive" v-model="othersData.rated_gas_pressure.value">
                                         <template slot="append">Pa</template>
                                     </el-input>
                                 </div>
@@ -39,7 +39,7 @@
                                     <div>@</div>
                                 </div>
                                 <div style="width: 45%;">
-                                    <el-input v-model="othersData.rated_gas_temperature.value">
+                                    <el-input type="text" number="positive" v-model="othersData.rated_gas_temperature.value">
                                         <template slot="append">°C</template>
                                     </el-input>
                                 </div>

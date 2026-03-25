@@ -14,17 +14,17 @@
                 <el-col :xs="24" :sm="18" :md="14" :lg="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Nominal total travel">
-                            <el-input v-model="contactSysData.nominal_total_travel.value">
+                            <el-input type="text" number="positive" v-model="contactSysData.nominal_total_travel.value">
                                 <template slot="append">mm</template>
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Damping time">
-                            <el-input v-model="contactSysData.damping_time.value">
+                            <el-input type="text" number="positive" v-model="contactSysData.damping_time.value">
                                 <template slot="append">ms</template>
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Nozzle length">
-                            <el-input v-model="contactSysData.nozzle_length.value">
+                            <el-input type="text" number="positive" v-model="contactSysData.nozzle_length.value">
                                 <template slot="append">mm</template>
                             </el-input>
                         </el-form-item>
