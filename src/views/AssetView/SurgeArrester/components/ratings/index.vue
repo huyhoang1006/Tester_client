@@ -52,49 +52,56 @@
                                         </el-input>
                                     </td>
                                     <td>
-                                        <el-input size="mini" v-model="item.ratedVoltage.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.ratedVoltage.value">
                                             <template #append>
                                                 <span>{{ unitMultiplier.k + unitSymbol.V }}</span>
                                             </template>
                                         </el-input>
                                     </td>
                                     <td>
-                                        <el-input size="mini" v-model="item.maximumVoltage.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.maximumVoltage.value">
                                             <template #append>
                                                 <span>{{ unitMultiplier.k + unitSymbol.V }}</span>
                                             </template>
                                         </el-input>
                                     </td>
                                     <td>
-                                        <el-input size="mini" v-model="item.continousVoltage.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.continousVoltage.value">
                                             <template #append>
                                                 <span>{{ unitMultiplier.k + unitSymbol.V }}</span>
                                             </template>
                                         </el-input>
                                     </td>
                                     <td>
-                                        <el-input size="mini" v-model="item.shortCurrent.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.shortCurrent.value">
                                             <template #append>
                                                 <span>{{ unitMultiplier.k + unitSymbol.A }}</span>
                                             </template>
                                         </el-input>
                                     </td>
                                     <td>
-                                        <el-input size="mini" v-model="item.ratedCircuit.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.ratedCircuit.value">
                                             <template #append>
                                                 <span>{{ unitSymbol.s }}</span>
                                             </template>
                                         </el-input>
                                     </td>
                                     <td>
-                                        <el-input size="mini" v-model="item.polesVoltage.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.polesVoltage.value">
                                             <template #append>
                                                 <span>{{ unitMultiplier.k + unitSymbol.V }}</span>
                                             </template>
                                         </el-input>
                                     </td>
                                     <td>
-                                        <el-input size="mini" v-model="item.isoVoltage.value">
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="item.isoVoltage.value">
                                             <template #append>
                                                 <span>{{ unitMultiplier.k + unitSymbol.V }}</span>
                                             </template>
