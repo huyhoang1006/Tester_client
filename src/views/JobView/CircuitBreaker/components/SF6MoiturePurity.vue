@@ -45,7 +45,7 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.moiture.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.moiture.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -100,7 +100,7 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.purity.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.purity.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">

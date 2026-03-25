@@ -429,7 +429,7 @@
                                                     <el-form :inline-message="true" label-width="150px" size="mini"
                                                         label-position="left" style="width: 100%;">
                                                         <el-form-item label="Rated burden">
-                                                            <el-input class="width-half" size="mini"
+                                                            <el-input type="text" number="positive" class="width-half" size="mini"
                                                                 v-model="item.fullTap.classRating.rated_burden.value">
                                                                 <template slot="append">VA</template>
                                                             </el-input>
@@ -469,7 +469,7 @@
                                                     <el-form :inline-message="true" label-width="150px" size="mini"
                                                         label-position="left" style="width: 100%;">
                                                         <el-form-item label="cos φ">
-                                                            <el-input class="width-half" size="mini"
+                                                            <el-input type="text" number="positive" class="width-half" size="mini"
                                                                 v-model="item.fullTap.classRating.burdenCos"></el-input>
                                                         </el-form-item>
                                                     </el-form>
@@ -480,7 +480,7 @@
                                                     <el-form :inline-message="true" label-width="150px" size="mini"
                                                         label-position="left" style="width: 100%;">
                                                         <el-form-item label="Operating burden">
-                                                            <el-input class="width-half" size="mini"
+                                                            <el-input type="text" number="positive" class="width-half" size="mini"
                                                                 v-model="item.fullTap.classRating.operatingBurden.value">
                                                                 <template slot="append">VA</template>
                                                             </el-input>
@@ -494,7 +494,7 @@
                                                     <el-form :inline-message="true" label-width="150px" size="mini"
                                                         label-position="left" style="width: 100%;">
                                                         <el-form-item label="cos φ">
-                                                            <el-input class="width-half" size="mini"
+                                                            <el-input type="text" number="positive" class="width-half" size="mini"
                                                                 v-model="item.fullTap.classRating.operatingBurdenCos"></el-input>
                                                         </el-form-item>
                                                     </el-form>
@@ -559,7 +559,7 @@
                                                         <el-form :inline-message="true" label-width="150px" size="mini"
                                                             label-position="left" style="width: 100%;">
                                                             <el-form-item label="Rated burden">
-                                                                <el-input class="width-half" size="mini"
+                                                                <el-input type="text" number="positive" class="width-half" size="mini"
                                                                     v-model="item.mainTap.data[element - 1].classRating.rated_burden.value">
                                                                     <template slot="append">VA</template>
                                                                 </el-input>
@@ -599,7 +599,7 @@
                                                         <el-form :inline-message="true" label-width="150px" size="mini"
                                                             label-position="left" style="width: 100%;">
                                                             <el-form-item label="cos φ">
-                                                                <el-input class="width-half" size="mini"
+                                                                <el-input type="text" number="positive" class="width-half" size="mini"
                                                                     v-model="item.mainTap.data[element - 1].classRating.burdenCos"></el-input>
                                                             </el-form-item>
                                                         </el-form>
@@ -610,7 +610,7 @@
                                                         <el-form :inline-message="true" label-width="150px" size="mini"
                                                             label-position="left" style="width: 100%;">
                                                             <el-form-item label="Operating burden">
-                                                                <el-input class="width-half" size="mini"
+                                                                <el-input type="text" number="positive" class="width-half" size="mini"
                                                                     v-model="item.mainTap.data[element - 1].classRating.operatingBurden.value">
                                                                     <template slot="append">VA</template>
                                                                 </el-input>
@@ -624,7 +624,7 @@
                                                         <el-form :inline-message="true" label-width="150px" size="mini"
                                                             label-position="left" style="width: 100%;">
                                                             <el-form-item label="cos φ">
-                                                                <el-input class="width-half" size="mini"
+                                                                <el-input type="text" number="positive" class="width-half" size="mini"
                                                                     v-model="item.mainTap.data[element - 1].classRating.operatingBurdenCos"></el-input>
                                                             </el-form-item>
                                                         </el-form>
@@ -689,7 +689,7 @@
                                                         <el-form :inline-message="true" label-width="150px" size="mini"
                                                             label-position="left" style="width: 100%;">
                                                             <el-form-item label="Rated burden">
-                                                                <el-input class="width-half" size="mini"
+                                                                <el-input type="text" number="positive" class="width-half" size="mini"
                                                                     v-model="item.interTap.data[i].classRating.rated_burden.value">
                                                                     <template slot="append">VA</template>
                                                                 </el-input>
@@ -729,7 +729,7 @@
                                                         <el-form :inline-message="true" label-width="150px" size="mini"
                                                             label-position="left" style="width: 100%;">
                                                             <el-form-item label="cos φ">
-                                                                <el-input class="width-half" size="mini"
+                                                                <el-input type="text" number="positive" class="width-half" size="mini"
                                                                     v-model="item.interTap.data[i].classRating.burdenCos"></el-input>
                                                             </el-form-item>
                                                         </el-form>
@@ -740,7 +740,7 @@
                                                         <el-form :inline-message="true" label-width="150px" size="mini"
                                                             label-position="left" style="width: 100%;">
                                                             <el-form-item label="Operating burden">
-                                                                <el-input class="width-half" size="mini"
+                                                                <el-input type="text" number="positive" class="width-half" size="mini"
                                                                     v-model="item.interTap.data[i].classRating.operatingBurden.value">
                                                                     <template slot="append">VA</template>
                                                                 </el-input>
@@ -754,7 +754,7 @@
                                                         <el-form :inline-message="true" label-width="150px" size="mini"
                                                             label-position="left" style="width: 100%;">
                                                             <el-form-item label="cos φ">
-                                                                <el-input class="width-half" size="mini"
+                                                                <el-input type="text" number="positive" class="width-half" size="mini"
                                                                     v-model="item.interTap.data[i].classRating.operatingBurdenCos"></el-input>
                                                             </el-form-item>
                                                         </el-form>

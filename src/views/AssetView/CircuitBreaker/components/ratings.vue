@@ -35,7 +35,7 @@
                                 </div>
                                 <div style="width: 4%;"></div>
                                 <div style="width: 48%;" v-if="ratingsData.rated_frequency.value === 'Custom'">
-                                    <el-input v-model="ratingsData.rated_frequency_custom.value">
+                                    <el-input type="text" number="positive" v-model="ratingsData.rated_frequency_custom.value">
                                         <template slot="append">Hz</template>
                                     </el-input>
                                 </div>
@@ -48,50 +48,50 @@
                 <el-col :xs="24" :sm="18" :md="14" :lg="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Rated voltage L-L">
-                            <el-input v-model="ratingsData.rated_voltage_ll.value">
+                            <el-input type="text" number="positive" v-model="ratingsData.rated_voltage_ll.value">
                                 <template slot="append">kV</template>
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Rated current">
-                            <el-input v-model="ratingsData.rated_current.value">
+                            <el-input type="text" number="positive" v-model="ratingsData.rated_current.value">
                                 <template slot="append">A</template>
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Rated short-circuit breaking current">
-                            <el-input v-model="ratingsData.rated_short_circuit_breaking_current.value">
+                            <el-input type="text" number="positive" v-model="ratingsData.rated_short_circuit_breaking_current.value">
                                 <template slot="append">kA</template>
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Short-circuit nominal duration">
-                            <el-input v-model="ratingsData.short_circuit_nominal_duration.value">
+                            <el-input type="text" number="positive" v-model="ratingsData.short_circuit_nominal_duration.value">
                                 <template slot="append">s</template>
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Rated insulation level (BIL)">
-                            <el-input v-model="ratingsData.rated_insulation_level.value">
+                            <el-input type="text" number="positive" v-model="ratingsData.rated_insulation_level.value">
                                 <template slot="append">kV</template>
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Rated interrupting time">
-                            <el-input v-model="ratingsData.rated_interrupting_time.value">
+                            <el-input type="text" number="positive" v-model="ratingsData.rated_interrupting_time.value">
                                 <template slot="append">ms</template>
                             </el-input>
                         </el-form-item>
                         <el-form-item label="interrupting duty cycle">
-                            <el-input v-model="ratingsData.interrupting_duty_cycle"></el-input>
+                            <el-input type="text" number="positive" v-model="ratingsData.interrupting_duty_cycle"></el-input>
                         </el-form-item>
                         <el-form-item label="Rated power at closing">
-                            <el-input v-model="ratingsData.rated_power_at_closing.value">
+                            <el-input type="text" number="positive" v-model="ratingsData.rated_power_at_closing.value">
                                 <template slot="append">W</template>
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Rated power at opening">
-                            <el-input v-model="ratingsData.rated_power_at_opening.value">
+                            <el-input type="text" number="positive" v-model="ratingsData.rated_power_at_opening.value">
                                 <template slot="append">W</template>
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Rated power at motor charge">
-                            <el-input v-model="ratingsData.rated_power_at_motor_charge.value">
+                            <el-input type="text" number="positive" v-model="ratingsData.rated_power_at_motor_charge.value">
                                 <template slot="append">W</template>
                             </el-input>
                         </el-form-item>

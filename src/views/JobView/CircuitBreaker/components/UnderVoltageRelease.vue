@@ -47,7 +47,7 @@
                             <el-input size="mini" type="text" v-model="item.trip_coil_no.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.trip_voltage.value"></el-input>
+                            <el-input size="mini" type="text" number="positive" v-model="item.trip_voltage.value"></el-input>
                         </td>
                         <td>
                             <el-select class="assessment" size="mini" v-model="item.assessment.value">
