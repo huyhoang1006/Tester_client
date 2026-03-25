@@ -1,6 +1,5 @@
 <template>
     <div id="dc-winding-resistance-prim">
-
         <!-- Cấu hình -->
         <div style="position: sticky; left: 0; display: inline-block;">
             <el-row class="mgb-10">
@@ -34,7 +33,7 @@
                     <el-col :span="12">
                         <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                             <el-form-item label="Frequency">
-                                <el-input v-model="testData.vlfSetting.frequency">
+                                <el-input type="text" number="positive" v-model="testData.vlfSetting.frequency">
                                     <template slot="append">Hz</template>
                                 </el-input>
                             </el-form-item>
@@ -50,7 +49,7 @@
                     <el-col :span="12">
                         <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                             <el-form-item label="Test duration">
-                                <el-input v-model="testData.vlfSetting.testDuration">
+                                <el-input type="text" number="positive" v-model="testData.vlfSetting.testDuration">
                                     <template slot="append">min</template>
                                 </el-input>
                             </el-form-item>
@@ -89,10 +88,10 @@
                         <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.test_voltage.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.test_voltage.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.leakage_current.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.leakage_current.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -195,7 +194,6 @@ export default {
             if (!this.testData.table.table1) {
                 this.$set(this.testData.table, 'table1', []);
             }
-
             this.testData.table.table1.push(
                 JSON.parse(JSON.stringify(this.rowData))
             )
@@ -205,13 +203,11 @@ export default {
                 confirmButtonText: 'OK',
                 cancelButtonText: 'Cancel',
                 type: 'warning'
-            })
-                .then(() => {
-                    if (this.testData.table) {
-                        this.testData.table.table1 = []
-                    }
+            }).then(() => {
+                if (this.testData.table) {
+                    this.testData.table.table1 = []
                 }
-                )
+            }).catch(() => { })
         },
         deleteTest(index) {
             if (this.testData.table && this.testData.table.table1) {

@@ -6,17 +6,17 @@
                     <span class="bolder">Terminal</span>
                     <el-divider></el-divider>
                     <el-form-item label="Rated voltage">
-                        <el-input v-model="terminalsData.rated_u.value">
+                        <el-input type="text" number="positive" v-model="terminalsData.rated_u.value">
                             <template slot="append">kV</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="BIL">
-                        <el-input v-model="terminalsData.bil.value">
+                        <el-input type="text" number="positive" v-model="terminalsData.bil.value">
                             <template slot="append">kV</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="BSL">
-                        <el-input v-model="terminalsData.bsl.value">
+                        <el-input type="text" number="positive" v-model="terminalsData.bsl.value">
                             <template slot="append">kV</template>
                         </el-input>
                     </el-form-item>
@@ -71,12 +71,12 @@
                     <span class="bolder">Joint</span>
                     <el-divider></el-divider>
                     <el-form-item label="Rated voltage">
-                        <el-input v-model="jointsData.rated_u.value">
+                        <el-input type="text" number="positive" v-model="jointsData.rated_u.value">
                             <template slot="append">kV</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Rated current">
-                        <el-input v-model="jointsData.rated_current.value">
+                        <el-input type="text" number="positive" v-model="jointsData.rated_current.value">
                             <template slot="append">A</template>
                         </el-input>
                     </el-form-item>
@@ -102,32 +102,37 @@
                     <span class="bolder">Sheath voltage limiter</span>
                     <el-divider></el-divider>
                     <el-form-item label="Rated voltage Ur">
-                        <el-input v-model="sheathLimitsData.rated_voltage_ur.value">
+                        <el-input type="text" number="positive" v-model="sheathLimitsData.rated_voltage_ur.value">
                             <template slot="append">kV</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Maximum continuous operating voltage Uc">
-                        <el-input v-model="sheathLimitsData.max_continuous_operating_voltage.value">
+                        <el-input type="text" number="positive"
+                            v-model="sheathLimitsData.max_continuous_operating_voltage.value">
                             <template slot="append">kV</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Nominal discharge current">
-                        <el-input v-model="sheathLimitsData.nominal_discharge_current.value">
+                        <el-input type="text" number="positive"
+                            v-model="sheathLimitsData.nominal_discharge_current.value">
                             <template slot="append">A</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="High current impulse withstand">
-                        <el-input v-model="sheathLimitsData.high_current_impulse_withstand.value">
+                        <el-input type="text" number="positive"
+                            v-model="sheathLimitsData.high_current_impulse_withstand.value">
                             <template slot="append">kA</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Long duration current impulse withstand">
-                        <el-input v-model="sheathLimitsData.long_duration_current_impulse_withstand.value">
+                        <el-input type="text" number="positive"
+                            v-model="sheathLimitsData.long_duration_current_impulse_withstand.value">
                             <template slot="append">kA</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Short circuit withstand">
-                        <el-input v-model="sheathLimitsData.short_circuit_withstand.value">
+                        <el-input type="text" number="positive"
+                            v-model="sheathLimitsData.short_circuit_withstand.value">
                             <template slot="append">kA</template>
                         </el-input>
                     </el-form-item>

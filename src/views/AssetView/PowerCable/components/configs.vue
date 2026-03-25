@@ -28,27 +28,27 @@
                         <span class="bolder">Ratings</span>
                         <el-divider></el-divider>
                         <el-form-item label="Rated voltage (rms)">
-                            <el-input v-model="ratingsData.rated_voltage.value">
+                            <el-input type="text" number="positive" v-model="ratingsData.rated_voltage.value">
                                 <template slot="append">kV</template>
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Maximum voltage (rms)">
-                            <el-input v-model="ratingsData.max_voltage.value">
+                            <el-input type="text" number="positive" v-model="ratingsData.max_voltage.value">
                                 <template slot="append">kV</template>
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Rated frequency">
-                            <el-input v-model="ratingsData.rated_frequency.value">
+                            <el-input type="text" number="positive" v-model="ratingsData.rated_frequency.value">
                                 <template slot="append">Hz</template>
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Short circuit current">
-                            <el-input v-model="ratingsData.shortcircuit.value">
+                            <el-input type="text" number="positive" v-model="ratingsData.shortcircuit.value">
                                 <template slot="append">kA</template>
                             </el-input>
                         </el-form-item>
                         <el-form-item label="Rated duration of short circuit">
-                            <el-input v-model="ratingsData.rated_duration.value">
+                            <el-input type="text" number="positive" v-model="ratingsData.rated_duration.value">
                                 <template slot="append">s</template>
                             </el-input>
                         </el-form-item>
@@ -117,7 +117,7 @@
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Cable length">
-                        <el-input v-model="othersData.cable_length.value">
+                        <el-input type="text" number="positive" v-model="othersData.cable_length.value">
                             <template slot="append">km</template>
                         </el-input>
                     </el-form-item>
@@ -131,7 +131,7 @@
                     <span class="bolder">Conductor</span>
                     <el-divider></el-divider>
                     <el-form-item label="Conductor size">
-                        <el-input v-model="datasData.conductor.conductor_size.value">
+                        <el-input type="text" number="positive" v-model="datasData.conductor.conductor_size.value">
                             <template slot="append">mm<sup>2</sup></template>
                         </el-input>
                     </el-form-item>
@@ -202,7 +202,7 @@
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Nominal conductor diameter">
-                        <el-input v-model="datasData.conductor.conductor_diameter.value">
+                        <el-input type="text" number="positive" v-model="datasData.conductor.conductor_diameter.value">
                             <template slot="append">mm</template>
                         </el-input>
                     </el-form-item>
@@ -233,17 +233,18 @@
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Thickness">
-                        <el-input v-model="datasData.insulation.thickness.value">
+                        <el-input type="text" number="positive" v-model="datasData.insulation.thickness.value">
                             <template slot="append">mm</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Diameter">
-                        <el-input v-model="datasData.insulation.diameter.value">
+                        <el-input type="text" number="positive" v-model="datasData.insulation.diameter.value">
                             <template slot="append">mm</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Insulation max. operating temp">
-                        <el-input v-model="datasData.insulation.insulation_operating.value">
+                        <el-input type="text" number="positive"
+                            v-model="datasData.insulation.insulation_operating.value">
                             <template slot="append">°C</template>
                         </el-input>
                     </el-form-item>
@@ -268,27 +269,28 @@
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Thickness">
-                        <el-input v-model="datasData.sheath_reinforcing.thickness.value">
+                        <el-input type="text" number="positive" v-model="datasData.sheath_reinforcing.thickness.value">
                             <template slot="append">mm</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Diameter">
-                        <el-input v-model="datasData.sheath_reinforcing.diameter.value">
+                        <el-input type="text" number="positive" v-model="datasData.sheath_reinforcing.diameter.value">
                             <template slot="append">mm</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Width">
-                        <el-input v-model="datasData.sheath_reinforcing.width.value">
+                        <el-input type="text" number="positive" v-model="datasData.sheath_reinforcing.width.value">
                             <template slot="append">mm</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Length of lay">
-                        <el-input v-model="datasData.sheath_reinforcing.lengthOfLay.value">
+                        <el-input type="text" number="positive"
+                            v-model="datasData.sheath_reinforcing.lengthOfLay.value">
                             <template slot="append">mm</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="No. of tapes">
-                        <el-input v-model="datasData.sheath_reinforcing.numOfTapes.value">
+                        <el-input type="text" number="positive" v-model="datasData.sheath_reinforcing.numOfTapes.value">
                         </el-input>
                     </el-form-item>
                 </el-form>
@@ -313,12 +315,12 @@
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Thickness">
-                        <el-input v-model="datasData.armour.thickness.value">
+                        <el-input type="text" number="positive" v-model="datasData.armour.thickness.value">
                             <template slot="append">mm</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Diameter">
-                        <el-input v-model="datasData.armour.diameter.value">
+                        <el-input type="text" number="positive" v-model="datasData.armour.diameter.value">
                             <template slot="append">mm</template>
                         </el-input>
                     </el-form-item>
@@ -341,7 +343,7 @@
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Cross-sectional area of tap armour">
-                        <el-input v-model="datasData.armour.crossSectional.value">
+                        <el-input type="text" number="positive" v-model="datasData.armour.crossSectional.value">
                             <template slot="append">mm<sup>2</sup></template>
                         </el-input>
                     </el-form-item>
@@ -353,12 +355,12 @@
                     <span class="bolder">Conductor shield</span>
                     <el-divider></el-divider>
                     <el-form-item label="Thickness">
-                        <el-input v-model="datasData.conductor_shield.thickness.value">
+                        <el-input type="text" number="positive" v-model="datasData.conductor_shield.thickness.value">
                             <template slot="append">mm</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Diameter">
-                        <el-input v-model="datasData.conductor_shield.diameter.value">
+                        <el-input type="text" number="positive" v-model="datasData.conductor_shield.diameter.value">
                             <template slot="append">mm</template>
                         </el-input>
                     </el-form-item>
@@ -388,12 +390,12 @@
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Thickness">
-                        <el-input v-model="datasData.insulation_screen.thickness.value">
+                        <el-input type="text" number="positive" v-model="datasData.insulation_screen.thickness.value">
                             <template slot="append">mm</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Diameter">
-                        <el-input v-model="datasData.insulation_screen.diameter.value">
+                        <el-input type="text" number="positive" v-model="datasData.insulation_screen.diameter.value">
                             <template slot="append">mm</template>
                         </el-input>
                     </el-form-item>
@@ -435,27 +437,28 @@
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Thickness">
-                        <el-input v-model="datasData.concentric_neutral.thickness.value">
+                        <el-input type="text" number="positive" v-model="datasData.concentric_neutral.thickness.value">
                             <template slot="append">mm</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Diameter">
-                        <el-input v-model="datasData.concentric_neutral.diameter.value">
+                        <el-input type="text" number="positive" v-model="datasData.concentric_neutral.diameter.value">
                             <template slot="append">mm</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Area">
-                        <el-input v-model="datasData.concentric_neutral.area.value">
+                        <el-input type="text" number="positive" v-model="datasData.concentric_neutral.area.value">
                             <template slot="append">mm<sup>2</sup></template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Length of lay">
-                        <el-input v-model="datasData.concentric_neutral.lengthOfLay.value">
+                        <el-input type="text" number="positive"
+                            v-model="datasData.concentric_neutral.lengthOfLay.value">
                             <template slot="append">mm</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="No. of wires">
-                        <el-input v-model="datasData.concentric_neutral.numOfWires.value">
+                        <el-input type="text" number="positive" v-model="datasData.concentric_neutral.numOfWires.value">
                         </el-input>
                     </el-form-item>
                 </el-form>
@@ -481,12 +484,12 @@
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Thickness">
-                        <el-input v-model="datasData.oversheath.thickness.value">
+                        <el-input type="text" number="positive" v-model="datasData.oversheath.thickness.value">
                             <template slot="append">mm</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Diameter">
-                        <el-input v-model="datasData.oversheath.diameter.value">
+                        <el-input type="text" number="positive" v-model="datasData.oversheath.diameter.value">
                             <template slot="append">mm</template>
                         </el-input>
                     </el-form-item>
@@ -531,12 +534,12 @@
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Thickness">
-                        <el-input v-model="datasData.sheath.thickness.value">
+                        <el-input type="text" number="positive" v-model="datasData.sheath.thickness.value">
                             <template slot="append">mm</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Diameter">
-                        <el-input v-model="datasData.sheath.diameter.value">
+                        <el-input type="text" number="positive" v-model="datasData.sheath.diameter.value">
                             <template slot="append">mm</template>
                         </el-input>
                     </el-form-item>
@@ -563,12 +566,12 @@
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Thickness">
-                        <el-input v-model="datasData.armour_bedding.thickness.value">
+                        <el-input type="text" number="positive" v-model="datasData.armour_bedding.thickness.value">
                             <template slot="append">mm</template>
                         </el-input>
                     </el-form-item>
                     <el-form-item label="Diameter">
-                        <el-input v-model="datasData.armour_bedding.diameter.value">
+                        <el-input type="text" number="positive" v-model="datasData.armour_bedding.diameter.value">
                             <template slot="append">mm</template>
                         </el-input>
                     </el-form-item>
