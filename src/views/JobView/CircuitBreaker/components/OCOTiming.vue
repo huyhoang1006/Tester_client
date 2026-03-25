@@ -52,27 +52,27 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="item.opening_time.value"></el-input>
+                                    <el-input size="mini" type="text" number="positive" v-model="item.opening_time.value"></el-input>
                                 </td>
                                 <td v-if="index % (getInterruptersPerPhase() * getNumberOfPhases()) === 0"
                                     :rowspan="getInterruptersPerPhase() * getNumberOfPhases()">
                                     <el-input
                                         :rows="getInterruptersPerPhase() * getNumberOfPhases()"
-                                        type="textarea" size="mini"
+                                        type="textarea" number="positive" size="mini"
                                         v-model="item.opening_sync.value"></el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="item.closing_time.value"></el-input>
+                                    <el-input size="mini" type="text" number="positive" v-model="item.closing_time.value"></el-input>
                                 </td>
                                 <td v-if="index % (getInterruptersPerPhase() * getNumberOfPhases()) === 0"
                                     :rowspan="getInterruptersPerPhase() * getNumberOfPhases()">
                                     <el-input
                                         :rows="getInterruptersPerPhase() * getNumberOfPhases()"
-                                        type="textarea" size="mini"
+                                        type="textarea" number="positive" size="mini"
                                         v-model="item.closing_sync.value"></el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="item.open_close_time.value"></el-input>
+                                    <el-input size="mini" type="text" number="positive" v-model="item.open_close_time.value"></el-input>
                                 </td>
                                 <td>
                                     <el-select class="assessment" size="mini" v-model="item.assessment.value">

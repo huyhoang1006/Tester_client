@@ -33,7 +33,7 @@
                         </el-form-item>
                         <el-form-item v-if="propertiesData.type !== 'Vacuum'" label="PIR value">
                             <el-input :disabled="!circuitBreakerData.hasPIR"
-                                v-model="circuitBreakerData.pirValue.value">
+                                type="text" number="positive" v-model="circuitBreakerData.pirValue.value">
                                 <template slot="append">&#8486;</template>
                             </el-input>
                         </el-form-item>
@@ -42,7 +42,7 @@
                         </el-form-item>
                         <el-form-item v-if="propertiesData.type !== 'Vacuum'" label="Capacitor value">
                             <el-input :disabled="!circuitBreakerData.hasGradingCapacitors"
-                                v-model="circuitBreakerData.capacitorValue.value">
+                                type="text" number="positive" v-model="circuitBreakerData.capacitorValue.value">
                                 <template slot="append">pF</template>
                             </el-input>
                         </el-form-item>

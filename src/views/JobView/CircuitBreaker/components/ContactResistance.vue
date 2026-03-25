@@ -49,10 +49,10 @@
                             </div>
                         </td>
                         <td>
-                            <el-input size="mini" v-model="item.i_test.value"></el-input>
+                            <el-input size="mini" type="text" number="positive" v-model="item.i_test.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" v-model="item.contact_resistance.value"></el-input>
+                            <el-input size="mini" type="text" number="positive" v-model="item.contact_resistance.value"></el-input>
                         </td>
                         <td>
                             <el-select class="assessment" size="mini" v-model="item.assessment.value">

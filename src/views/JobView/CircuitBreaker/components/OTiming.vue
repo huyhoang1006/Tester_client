@@ -1,30 +1,5 @@
 <template>
     <div id="dc-winding-resistance-prim">
-        <!-- Debug info - Set to false to hide -->
-        <div v-if="false" style="background: #f0f0f0; padding: 10px; margin-bottom: 10px; font-size: 11px;">
-            <div>testData.table.length: {{ testData && testData.table ? testData.table.length : 'N/A' }}</div>
-            <div>numberTripCoil (raw): {{ assetData && assetData.operating ? (assetData.operating.numberTripCoil || assetData.operating.number_of_trip_coil) : 'N/A' }}</div>
-            <div>numberOfTripCoils (computed): {{ numberOfTripCoils }}</div>
-            <div>Should show {{ testData && testData.table ? testData.table.length : 0 }} table(s)</div>
-            <div>Show "Trip coil no."? {{ testData && testData.table && testData.table.length > 1 ? 'YES' : 'NO' }}</div>
-            <div>Table needs resize? {{ testData && testData.table && testData.table.length !== numberOfTripCoils ? 'YES - Click "Clear all" to reinitialize' : 'NO' }}</div>
-        </div>
-
-        <!-- Warning if asset configuration is incomplete -->
-        <el-alert
-            v-if="assetData && assetData.circuitBreaker && (!assetData.circuitBreaker.numberOfPhases || !assetData.circuitBreaker.interruptersPerPhase)"
-            title="Asset Configuration Incomplete"
-            type="warning"
-            :closable="false"
-            show-icon
-            style="margin-bottom: 10px;">
-            <div>Please configure the Circuit Breaker asset with the following information:</div>
-            <ul style="margin: 5px 0; padding-left: 20px;">
-                <li v-if="!assetData.circuitBreaker.numberOfPhases || assetData.circuitBreaker.numberOfPhases === ''">Number of Phases (currently using default: {{ getNumberOfPhases() }})</li>
-                <li v-if="!assetData.circuitBreaker.interruptersPerPhase || assetData.circuitBreaker.interruptersPerPhase === ''">Interrupters Per Phase (currently using default: {{ getInterruptersPerPhase() }})</li>
-            </ul>
-            <div style="margin-top: 5px; font-size: 11px; color: #666;">Go to Asset View → Circuit Breaker Configuration to set these values.</div>
-        </el-alert>
 
         <!-- Cấu hình -->
         <div style="position: sticky; left: 0; display: inline-block;">
@@ -60,7 +35,7 @@
                     <thead>
                         <th>Phase</th>
                         <th>Opening time (ms)</th>
-                        <th>Opening sync. between phase (ms)</th>
+                        <th>Opening sync. (ms)</th>
                         <th class="assessment-col">Assessment</th>
                         <th class="condition-indicator-col">Condition indicator</th>
                     </thead>
@@ -75,7 +50,7 @@
                                 </div>
                             </td>
                             <td>
-                                <el-input size="mini" v-model="item.opening_time.value"></el-input>
+                                <el-input type="text" number="positive" size="mini" v-model="item.opening_time.value"></el-input>
                             </td>
                             <td v-if="index % (getInterruptersPerPhase() * getNumberOfPhases()) === 0"
                                 :rowspan="getInterruptersPerPhase() * getNumberOfPhases()">
@@ -140,18 +115,18 @@
                                 <el-input size="mini" v-model="item.interrupter.value"></el-input>
                             </td>
                             <td>
-                                <el-input size="mini" v-model="item.opening_time.value"></el-input>
+                                <el-input size="mini" type="text" number="positive" v-model="item.opening_time.value"></el-input>
                             </td>
                             <td v-if="index % getInterruptersPerPhase() === 0"
                                 :rowspan="getInterruptersPerPhase()">
-                                <el-input :rows="getInterruptersPerPhase()" type="textarea"
+                                <el-input :rows="getInterruptersPerPhase()" type="textarea" number="positive"
                                     v-model="item.opening_sync_between_phase.value"></el-input>
                             </td>
                             <td v-if="index % (getInterruptersPerPhase() * getNumberOfPhases()) === 0"
                                 :rowspan="getInterruptersPerPhase() * getNumberOfPhases()">
                                 <el-input
                                     :rows="getInterruptersPerPhase() * getNumberOfPhases()"
-                                    type="textarea" v-model="item.opening_sync_between_interrupter.value"></el-input>
+                                    type="textarea" number="positive" v-model="item.opening_sync_between_interrupter.value"></el-input>
                             </td>
                             <td>
                                 <el-select class="assessment" size="mini" v-model="item.assessment.value">

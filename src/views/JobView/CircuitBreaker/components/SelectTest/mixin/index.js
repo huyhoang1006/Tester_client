@@ -108,15 +108,15 @@ export default {
 
             const {circuitBreaker, operating} = assetData
 
-            const closeCoilsCount = parseInt(operating?.numberCloseCoil || 1)
-            const phaseCount = parseInt(circuitBreaker?.numberOfPhase || 3)
+            const closeCoilsCount = parseInt(operating?.numberCloseCoil || operating?.number_of_close_coil || 1)
+            const phaseCount = parseInt(circuitBreaker?.numberOfPhase || circuitBreaker?.numberOfPhases || 3)
             const interruptCount = parseInt(circuitBreaker?.numberOfInterruptPhase || circuitBreaker?.interruptersPerPhase || 1)
 
-            let table = []
-            let phaseNames = ['A', 'B', 'C']
+            const phaseNames = ['A', 'B', 'C']
+            const table = []
 
             for (let c = 0; c < closeCoilsCount; c++) {
-                let coilTable = []
+                const coilTable = []
 
                 for (let i = 0; i < phaseCount; i++) {
                     for (let j = 0; j < interruptCount; j++) {
@@ -124,16 +124,9 @@ export default {
 
                         if (row.phase) {
                             row.phase.value = phaseNames[i] || `P${i + 1}`
-                        } else if (row.name) {
-                            row.name.value = phaseNames[i] || `P${i + 1}`
                         }
-
-                        if (interruptCount > 1) {
-                            if (row.interrupt_no) {
-                                row.interrupt_no.value = (j + 1).toString()
-                            } else {
-                                row.interrupt_no = {mrid: '', value: (j + 1).toString(), unit: '', type: 'string'}
-                            }
+                        if (row.interrupter) {
+                            row.interrupter.value = (j + 1).toString()
                         }
 
                         coilTable.push(row)
@@ -142,6 +135,12 @@ export default {
 
                 table.push(coilTable)
             }
+
+            // Build table as object {table1: [...], table2: [...]} for consistency with other components
+            const tableObj = {}
+            table.forEach((coilTable, idx) => {
+                tableObj[`table${idx + 1}`] = coilTable
+            }) 
 
             return {
                 rowDataExampleCondition,
@@ -168,9 +167,7 @@ export default {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}],
                     rel: [{}, {}, {}, {}, {}, {}, {}, {}]
                 },
-                table: {
-                    table1: table
-                }
+                table: tableObj
             }
         },
         async initOTiming(testTypeCode, assetData) {

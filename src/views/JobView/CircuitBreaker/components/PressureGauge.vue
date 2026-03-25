@@ -45,13 +45,13 @@
                             {{ index + 1 }}
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.sf6_pressure.value"></el-input>
+                            <el-input size="mini" type="text" number="positive" v-model="item.sf6_pressure.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.alarm.value"></el-input>
+                            <el-input size="mini" type="text" number="positive" v-model="item.alarm.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.lockout.value"></el-input>
+                            <el-input size="mini" type="text" number="positive" v-model="item.lockout.value"></el-input>
                         </td>
                         <td>
                             <el-select class="assessment" size="mini" v-model="item.assessment.value">

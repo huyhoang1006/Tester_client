@@ -50,13 +50,13 @@
                                 </div>
                             </td>
                             <td>
-                                <el-input size="mini" v-model="item.opening_time.value"></el-input>
+                                <el-input type="text" number="positive" size="mini" v-model="item.opening_time.value"></el-input>
                             </td>
                             <td v-if="index % (getInterruptersPerPhase() * getNumberOfPhases()) === 0"
                                 :rowspan="getInterruptersPerPhase() * getNumberOfPhases()">
                                 <el-input
                                     :rows="getInterruptersPerPhase() * getNumberOfPhases()"
-                                    type="textarea" size="mini" v-model="item.opening_sync_between_phase.value"></el-input>
+                                    type="textarea" number="positive" size="mini" v-model="item.opening_sync_between_phase.value"></el-input>
                             </td>
                             <td>
                                 <el-input size="mini" v-model="item.open_close_time.value"></el-input>
@@ -118,21 +118,21 @@
                                 <el-input size="mini" v-model="item.interrupter.value"></el-input>
                             </td>
                             <td>
-                                <el-input size="mini" v-model="item.opening_time.value"></el-input>
+                                <el-input type="text" number="positive" size="mini" v-model="item.opening_time.value"></el-input>
                             </td>
                             <td v-if="index % getInterruptersPerPhase() === 0"
                                 :rowspan="getInterruptersPerPhase()">
-                                <el-input :rows="getInterruptersPerPhase()" type="textarea"
+                                <el-input :rows="getInterruptersPerPhase()" type="textarea" number="positive"
                                     v-model="item.opening_sync_between_phase.value"></el-input>
                             </td>
                             <td v-if="index % (getInterruptersPerPhase() * getNumberOfPhases()) === 0"
                                 :rowspan="getInterruptersPerPhase() * getNumberOfPhases()">
                                 <el-input
                                     :rows="getInterruptersPerPhase() * getNumberOfPhases()"
-                                    type="textarea" v-model="item.opening_sync_between_interrupter.value"></el-input>
+                                    type="textarea" number="positive" v-model="item.opening_sync_between_interrupter.value"></el-input>
                             </td>
                             <td>
-                                <el-input size="mini" v-model="item.open_close_time.value"></el-input>
+                                <el-input size="mini" type="text" number="positive" v-model="item.open_close_time.value"></el-input>
                             </td>
                             <td>
                                 <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -463,8 +463,14 @@ export default {
         'testData.table': {
             immediate: true,
             handler: function (newVal) {
+                // Convert object {table1: [], table2: []} to array [[...], [...]] for backward compat (loaded from DB)
+                if (newVal && !Array.isArray(newVal) && typeof newVal === 'object' && Object.keys(newVal).length > 0) {
+                    const arr = Object.keys(newVal).sort().map(k => newVal[k])
+                    this.$set(this.testData, 'table', arr)
+                    return
+                }
                 // Initialize table if empty
-                if ((!newVal || newVal.length === 0) && this.assetData && this.assetData.operating) {
+                if ((!newVal || (Array.isArray(newVal) && newVal.length === 0)) && this.assetData && this.assetData.operating) {
                     this.$nextTick(() => {
                         this.initializeTable()
                     })
