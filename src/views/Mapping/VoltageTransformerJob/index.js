@@ -30,7 +30,7 @@ export const jobDtoToEntity = (dto) => {
     entity.oldWork.test_method = dto.properties.test_method || null;
     entity.oldWork.ref_standard = dto.properties.ref_standard || null;
     entity.oldWork.description = dto.properties.summary || null;
-    entity.oldWork.asset_id = dto.properties.asset_id || null;
+    entity.oldWork.asset_id = dto.properties.asset_id || dto.properties.mrid || null;
 
     //attachment
     entity.attachment.id = dto.attachmentId || null;

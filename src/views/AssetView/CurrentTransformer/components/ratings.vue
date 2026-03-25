@@ -71,27 +71,27 @@
                                     </el-select>
                                 </el-form-item>
                                 <el-form-item label="Um (r.m.s)">
-                                    <el-input v-model="ratingsData.um_rms.value">
+                                    <el-input type="text" number="positive" v-model="ratingsData.um_rms.value">
                                         <template slot="append">V</template>
                                     </el-input>
                                 </el-form-item>
                                 <el-form-item label="U withstand (r.m.s) ">
-                                    <el-input v-model="ratingsData.u_withstand_rms.value">
+                                    <el-input type="text" number="positive" v-model="ratingsData.u_withstand_rms.value">
                                         <template slot="append">V</template>
                                     </el-input>
                                 </el-form-item>
                                 <el-form-item label="U lightning (peak)">
-                                    <el-input v-model="ratingsData.u_lightning_peak.value">
+                                    <el-input type="text" number="positive" v-model="ratingsData.u_lightning_peak.value">
                                         <template slot="append">V</template>
                                     </el-input>
                                 </el-form-item>
                                 <el-form-item label="Icth">
-                                    <el-input v-model="ratingsData.icth.value">
+                                    <el-input type="text" number="positive" v-model="ratingsData.icth.value">
                                         <template slot="append">A</template>
                                     </el-input>
                                 </el-form-item>
                                 <el-form-item label="Idyn (peak)">
-                                    <el-input v-model="ratingsData.idyn_peak.value">
+                                    <el-input type="text" number="positive" v-model="ratingsData.idyn_peak.value">
                                         <template slot="append">A</template>
                                     </el-input>
                                 </el-form-item>
@@ -100,14 +100,14 @@
                         <el-row>
                             <el-col :xs="24" :md="12" :lg="10">
                                 <el-form-item label="Ith (r.m.s)">
-                                    <el-input v-model="ratingsData.ith_rms.value">
+                                    <el-input type="text" number="positive" v-model="ratingsData.ith_rms.value">
                                         <template slot="append">A</template>
                                     </el-input>
                                 </el-form-item>
                             </el-col>
                             <el-col :xs="24" :md="12" :lg="10">
                                 <el-form-item label="Duration" class="custom-form-item">
-                                    <el-input v-model="ratingsData.ith_duration.value">
+                                    <el-input type="text" number="positive" v-model="ratingsData.ith_duration.value">
                                         <template slot="append">s</template>
                                     </el-input>
                                 </el-form-item>
@@ -135,7 +135,7 @@
                         <el-row>
                             <el-col :xs="24" :sm="16" :md="12" :lg="8">
                                 <el-form-item label="System voltage">
-                                    <el-input style="width: 100%" v-model="ratingsData.system_voltage.value">
+                                    <el-input type="text" number="positive" style="width: 100%" v-model="ratingsData.system_voltage.value">
                                         <template slot="append">V</template>
                                     </el-input>
                                 </el-form-item>
@@ -154,7 +154,7 @@
                         <el-row>
                             <el-col :xs="24" :md="12" :lg="8">
                                 <el-form-item label="Rated insulation level (BIL)">
-                                    <el-input style="width: 100%" v-model="ratingsData.bil.value">
+                                    <el-input type="text" number="positive" style="width: 100%" v-model="ratingsData.bil.value">
                                         <template slot="append">V</template>
                                     </el-input>
                                 </el-form-item>
