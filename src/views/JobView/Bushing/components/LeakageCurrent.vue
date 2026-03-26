@@ -1,6 +1,5 @@
 <template>
     <div id="dc-winding-resistance-prim">
-
         <!-- Cấu hình -->
         <div style="position: sticky; left: 0; display: inline-block; margin-top: 20px;">
             <el-row class="mgb-10">
@@ -8,7 +7,8 @@
                     <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
                         <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
                     </el-button>
-                    <el-button class="btn-action" size="mini" type="success" @click="openConditionIndicatorDialog = true">
+                    <el-button class="btn-action" size="mini" type="success"
+                        @click="openConditionIndicatorDialog = true">
                         <i class="fa-solid fa-hammer"></i> Condition indicatior settings
                     </el-button>
                 </el-col>
@@ -17,8 +17,10 @@
             <!-- Tương tác với bảng -->
             <el-row class="mgb-10">
                 <el-col>
-                    <el-button size="mini" type="primary" class="btn-action" @click="calculator" > <i class="fas fa-circle-play"></i> Assess results </el-button>
-                    <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i class="fas fa-xmark"></i> Clear all</el-button>
+                    <el-button size="mini" type="primary" class="btn-action" @click="calculator"> <i
+                            class="fas fa-circle-play"></i> Assess results </el-button>
+                    <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i
+                            class="fas fa-xmark"></i> Clear all</el-button>
                 </el-col>
             </el-row>
         </div>
@@ -37,11 +39,13 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, index) in testData.table" :key="index">
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>
-                        <div style="display: flex;width: 100%; justify-content: flex-end;">   
-                            <el-input v-if="index%(assetData.unit_count)==1" style="width: 50px;" size="mini" type="text" v-model="item.phase.value"></el-input>
-                            <div :class="{colorTableRed : index%3==0, colorTableYellow : index%3==1, colorTableBlue : index%3==2}" style="min-height: 30px;"></div>
+                        <div style="display: flex;width: 100%; justify-content: flex-end;">
+                            <el-input v-if="index % (assetData.unit_count) == 1" style="width: 50px;" size="mini"
+                                type="text" v-model="item.phase.value"></el-input>
+                            <div :class="{ colorTableRed: index % 3 == 0, colorTableYellow: index % 3 == 1, colorTableBlue: index % 3 == 2 }"
+                                style="min-height: 30px;"></div>
                         </div>
                     </td>
                     <td :class="unitShow">
@@ -55,22 +59,26 @@
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
-                            <el-option value="Pass" label="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Pass" label="Pass"><i class="fa-solid fa-square-check pass"></i>
+                                Pass</el-option>
                             <el-option value="Fail" label="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                         </el-select>
-                        <span v-if="item.assessment.value === 'Pass' " class="fa-solid fa-square-check pass icon-status"></span>
-                        <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                        <span v-if="item.assessment.value === 'Pass'"
+                            class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment.value === 'Fail'"
+                            class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                     <td>
-                        <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
+                        <el-input :class="nameColor(item.condition_indicator)" id="condition" type="text" size="mini"
+                            v-model="item.condition_indicator.value">
                         </el-input>
                     </td>
-                    <td :rowspan="assetData.unit_count" v-if="index%(assetData.unit_count)==0">
+                    <td :rowspan="assetData.unit_count" v-if="index % (assetData.unit_count) == 0">
                         <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
                             <i class="fa-solid fa-plus"></i>
                         </el-button>
                     </td>
-                    <td :rowspan="assetData.unit_count" v-if="index%(assetData.unit_count)==0">
+                    <td :rowspan="assetData.unit_count" v-if="index % (assetData.unit_count) == 0">
                         <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
                             <i class="fas fa-trash"></i>
                         </el-button>
@@ -84,7 +92,8 @@
         </el-dialog>
 
         <!-- Condition indicator settings -->
-        <el-dialog :modal="false" title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="860px">
+        <el-dialog :modal="false" title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog"
+            width="860px">
         </el-dialog>
     </div>
 </template>
@@ -93,12 +102,12 @@
 import surgeArresterTestMap from '@/config/test-definitions/SurgeArrester'
 import * as common from '../../Common/index'
 export default {
-    name :"LeakageCurrent",
+    name: "LeakageCurrent",
     data() {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
-            unitShow : ''
+            unitShow: ''
         }
     },
     props: {
@@ -113,7 +122,7 @@ export default {
     },
     beforeMount() {
         let units = this.assetData.unit_count
-        if(units == 1 || units == '' || units == undefined) {
+        if (units == 1 || units == '' || units == undefined) {
             this.unitShow = 'hideUnit'
         }
     },
@@ -130,56 +139,53 @@ export default {
     },
     methods: {
         add() {
-            for(let i=1 ; i<= this.assetData.unit_count; i++) {
+            for (let i = 1; i <= this.assetData.unit_count; i++) {
                 this.testData.table.push(JSON.parse(JSON.stringify(this.rowData)))
             }
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
-                    confirmButtonText: 'OK',
-                    cancelButtonText: 'Cancel',
-                    type: 'warning'
-                })
-                .then( () => {
-                    this.testData.table = []
-                }
-            )
+                confirmButtonText: 'OK',
+                cancelButtonText: 'Cancel',
+                type: 'warning'
+            }).then(() => {
+                this.testData.table = []
+            }).catch(() => { })
         },
         deleteTest(index) {
             this.testData.table.splice(index, this.assetData.unit_count)
         },
         addTest(index) {
             let units = this.assetData.unit_count
-            for(let i=0 ; i< units; i++) {
+            for (let i = 0; i < units; i++) {
                 const data = JSON.parse(JSON.stringify(this.rowData))
-                this.testData.table.splice(index+i+units, 0, data)
+                this.testData.table.splice(index + i + units, 0, data)
             }
         },
         calculator() {
             this.$message.success('Calculating successfully')
         },
-
         clear() {
             this.testData.table.forEach(row => {
                 Object.keys(row).forEach(key => {
                     if (key === "mrid") return;
                     if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
-                    row[key].value = ""
+                        row[key].value = ""
                     }
                 })
             })
         },
         nameColor(data) {
-            if(data === this.$constant.GOOD) {
+            if (data === this.$constant.GOOD) {
                 return 'Good'
             }
-            else if(data === this.$constant.FAIR) {
+            else if (data === this.$constant.FAIR) {
                 return 'Fair'
             }
-            else if(data === this.$constant.POOR) {
+            else if (data === this.$constant.POOR) {
                 return 'Poor'
             }
-            else if(data === this.$constant.BAD) {
+            else if (data === this.$constant.BAD) {
                 return 'Bad'
             }
             else {
@@ -191,9 +197,13 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-table, th, td, tr {
+table,
+th,
+td,
+tr {
     white-space: nowrap;
 }
+
 .flex-container {
     display: flex;
     flex-direction: column;
@@ -202,6 +212,7 @@ table, th, td, tr {
         padding: 1px;
     }
 }
+
 .Good input {
     background: #00CC00;
 }
@@ -217,11 +228,13 @@ table, th, td, tr {
 .Bad input {
     background: #ff3300;
 }
+
 .hideUnit {
-    display:none;
+    display: none;
 }
 
-td, th {
+td,
+th {
     font-size: 12px;
 }
 </style>

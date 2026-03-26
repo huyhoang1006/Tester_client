@@ -6,18 +6,12 @@
                     <span class="bolder">Properties</span>
                     <el-divider></el-divider>
                     <el-form-item label="Asset">
-                        <el-select
-                            style="width: 100%"
-                            v-model="propertiesData.kind"
-                            placeholder="Select asset">
+                        <el-select style="width: 100%" v-model="propertiesData.kind" placeholder="Select asset">
                             <el-option label="Disconnector" value="Disconnector"> </el-option>
-                        </el-select> 
+                        </el-select>
                     </el-form-item>
                     <el-form-item label="Asset type">
-                        <el-select
-                            style="width: 100%"
-                            v-model="propertiesData.type"
-                            placeholder="Select asset type">
+                        <el-select style="width: 100%" v-model="propertiesData.type" placeholder="Select asset type">
                             <el-option label="Center-break disconnector" value="centerBreak"> </el-option>
                             <el-option label="Double-break disconnector" value="doubleBreak"> </el-option>
                             <el-option label="Horizontal knee disconnector" value="horizontalKnee"> </el-option>
@@ -29,20 +23,17 @@
                         <el-input v-model="propertiesData.serial_no"></el-input>
                     </el-form-item>
                     <el-form-item label="Manufacturer">
-                    <el-select style="width: 100%;" v-model="propertiesData.manufacturer" placeholder="Manufacturer" size="mini">
-                        <el-option 
-                            v-for="m in manufacturerList"
-                            :key="m"
-                            :label="m"
-                            :value="m">
-                        </el-option>
-                    </el-select>
-                </el-form-item>
+                        <el-select style="width: 100%;" v-model="propertiesData.manufacturer" placeholder="Manufacturer"
+                            size="mini">
+                            <el-option v-for="m in manufacturerList" :key="m" :label="m" :value="m">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
                     <el-form-item label="Manufacturer type">
                         <el-input v-model="propertiesData.manufacturer_type"></el-input>
                     </el-form-item>
                     <el-form-item label="Manufacturing year">
-                        <el-input v-model="propertiesData.manufacturing_year"></el-input>
+                        <el-input type="text" number="year" v-model="propertiesData.manufacturing_year"></el-input>
                     </el-form-item>
                     <el-form-item label="Country of origin">
                         <el-select style="width: 100%;" filterable v-model="propertiesData.country_of_origin">
@@ -62,7 +53,8 @@
                     <span class="bolder">Comment</span>
                     <el-divider></el-divider>
                     <el-input type="textarea" :rows="5" v-model="propertiesData.comment"></el-input>
-                    <Attachment :attachment_="this.attachmentData" title="disconnector" height="120px" @data-attachment = "getDataAttachment"></Attachment>
+                    <Attachment :attachment_="this.attachmentData" title="disconnector" height="120px"
+                        @data-attachment="getDataAttachment"></Attachment>
                 </el-form>
             </el-col>
         </el-row>
@@ -70,22 +62,22 @@
 </template>
 
 <script>
-import {country} from '@/views/ConstantAsset/index'
+import { country } from '@/views/ConstantAsset/index'
 import MANUFACTURER_MAP from '@/views/ConstantAsset/manufacturer'
 import Attachment from '@/views/Common/Attachment.vue'
 
 export default {
     name: 'voltageTransProperty',
-    components : {
+    components: {
         Attachment
     },
-    props : {
+    props: {
         properties: {
-            type : Object,
-            require : true,
+            type: Object,
+            require: true,
         },
-        title : {
-            require : true
+        title: {
+            require: true
         },
         attachment: {
             type: Array,
@@ -94,10 +86,10 @@ export default {
     },
     data() {
         return {
-            labelWidth : `200px`,
-            countryData : country.default,
-            manufacturerList : MANUFACTURER_MAP['DisconnectorDTO'],
-            attachmentData : []
+            labelWidth: `200px`,
+            countryData: country.default,
+            manufacturerList: MANUFACTURER_MAP['DisconnectorDTO'],
+            attachmentData: []
         }
     },
     watch: {
@@ -113,7 +105,7 @@ export default {
             this.$emit('update-attachment', this.attachmentData)
         },
     },
-    computed : {
+    computed: {
         propertiesData() {
             return this.properties
         }

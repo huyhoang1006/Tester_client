@@ -43,7 +43,8 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.trip_coil_no.value"></el-input>
+                        <el-input size="mini" type="text" number="positive"
+                            v-model="item.trip_coil_no.value"></el-input>
                     </td>
                     <td>
                         <el-input size="mini" type="text" number="positive" v-model="item.r_meas.value"></el-input>
@@ -420,7 +421,7 @@ export default {
                 type: 'warning'
             }).then(() => {
                 this.testData.table.table1 = []
-            })
+            }).catch(() => { })
         },
         deleteTest(index) {
             this.testData.table.table1.splice(index, 1)

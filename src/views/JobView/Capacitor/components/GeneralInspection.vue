@@ -8,7 +8,8 @@
                     <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
                         <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
                     </el-button>
-                    <el-button class="btn-action" size="mini" type="success" @click="openConditionIndicatorDialog = true">
+                    <el-button class="btn-action" size="mini" type="success"
+                        @click="openConditionIndicatorDialog = true">
                         <i class="fa-solid fa-hammer"></i> Condition indicatior settings
                     </el-button>
                 </el-col>
@@ -17,8 +18,10 @@
             <!-- Tương tác với bảng -->
             <el-row class="mgb-10">
                 <el-col>
-                    <el-button size="mini" type="primary" class="btn-action" @click="calculator" > <i class="fas fa-circle-play"></i> Assess results </el-button>
-                    <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i class="fas fa-xmark"></i> Clear all</el-button>
+                    <el-button size="mini" type="primary" class="btn-action" @click="calculator"> <i
+                            class="fas fa-circle-play"></i> Assess results </el-button>
+                    <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i
+                            class="fas fa-xmark"></i> Clear all</el-button>
                 </el-col>
             </el-row>
         </div>
@@ -35,7 +38,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, index) in testData.table" :key="index">
+                <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td style="font-weight: bold;">
                         {{ index + 1 }}
                     </td>
@@ -44,14 +47,18 @@
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
-                            <el-option value="Pass" label="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                            <el-option value="Pass" label="Pass"><i class="fa-solid fa-square-check pass"></i>
+                                Pass</el-option>
                             <el-option value="Fail" label="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                         </el-select>
-                        <span v-if="item.assessment.value === 'Pass' " class="fa-solid fa-square-check pass icon-status"></span>
-                        <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                        <span v-if="item.assessment.value === 'Pass'"
+                            class="fa-solid fa-square-check pass icon-status"></span>
+                        <span v-else-if="item.assessment.value === 'Fail'"
+                            class="fa-solid fa-xmark fail icon-status"></span>
                     </td>
                     <td>
-                        <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text" size="mini" v-model="item.condition_indicator.value">
+                        <el-input :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
+                            size="mini" v-model="item.condition_indicator.value">
                         </el-input>
                     </td>
                     <td>
@@ -73,7 +80,8 @@
         </el-dialog>
 
         <!-- Condition indicator settings -->
-        <el-dialog :modal="false" title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="860px">
+        <el-dialog :modal="false" title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog"
+            width="860px">
         </el-dialog>
     </div>
 </template>
@@ -82,7 +90,7 @@
 import surgeArresterTestMap from '@/config/test-definitions/SurgeArrester'
 import * as common from '../../Common/index'
 export default {
-    name :"GeneralInspection",
+    name: "GeneralInspection",
     data() {
         return {
             openAssessmentDialog: false,
@@ -118,21 +126,20 @@ export default {
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
-                    confirmButtonText: 'OK',
-                    cancelButtonText: 'Cancel',
-                    type: 'warning'
-                })
-                .then( () => {
+                confirmButtonText: 'OK',
+                cancelButtonText: 'Cancel',
+                type: 'warning'
+            }).then(() => {
                     this.testData.table = []
-                }
-            )
+            }
+                )
         },
         deleteTest(index) {
             this.testData.table.splice(index, 1)
         },
         addTest(index) {
             const data = JSON.parse(JSON.stringify(this.rowData))
-            this.testData.table.splice(index+1, 0, data)
+            this.testData.table.splice(index + 1, 0, data)
         },
         calculator() {
             this.$message.success('Calculating successfully')
@@ -143,22 +150,22 @@ export default {
                 Object.keys(row).forEach(key => {
                     if (key === "mrid") return;
                     if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
-                    row[key].value = ""
+                        row[key].value = ""
                     }
                 })
             })
         },
         nameColor(data) {
-            if(data === this.$constant.GOOD) {
+            if (data === this.$constant.GOOD) {
                 return 'Good'
             }
-            else if(data === this.$constant.FAIR) {
+            else if (data === this.$constant.FAIR) {
                 return 'Fair'
             }
-            else if(data === this.$constant.POOR) {
+            else if (data === this.$constant.POOR) {
                 return 'Poor'
             }
-            else if(data === this.$constant.BAD) {
+            else if (data === this.$constant.BAD) {
                 return 'Bad'
             }
             else {
@@ -170,9 +177,13 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-table, th, td, tr {
+table,
+th,
+td,
+tr {
     white-space: nowrap;
 }
+
 .flex-container {
     display: flex;
     flex-direction: column;
@@ -181,6 +192,7 @@ table, th, td, tr {
         padding: 1px;
     }
 }
+
 .Good input {
     background: #00CC00;
 }
@@ -197,7 +209,8 @@ table, th, td, tr {
     background: #ff3300;
 }
 
-td, th {
+td,
+th {
     font-size: 12px;
 }
 </style>
