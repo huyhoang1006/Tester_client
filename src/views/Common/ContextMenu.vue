@@ -49,9 +49,6 @@
                 <li @click="show">
                     <i class="fa-solid fa-eye"></i> Show
                 </li>
-                <li @click="edit">
-                    <i class="fa-solid fa-pen-to-square"></i> Edit
-                </li>
                 <li @click="refresh">
                     <i class="fa-solid fa-rotate"></i> Refresh
                 </li>
