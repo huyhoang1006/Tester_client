@@ -9,7 +9,7 @@
                 </el-input>
             </el-form-item>
             <el-form-item label="Weight">
-                <el-input v-model="otherData.weight.value">                                                                                            
+                <el-input type="number" number="positive" v-model="otherData.weight.value">                                                                                            
                     <template slot="append">kg</template>
                 </el-input>
             </el-form-item>   
