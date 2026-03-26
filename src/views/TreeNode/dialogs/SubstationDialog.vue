@@ -18,7 +18,7 @@
         />
         <span slot="footer" class="dialog-footer custom-footer">
             <el-button class="footer-btn" size="small" type="danger" @click="handleCancel">Cancel</el-button>
-            <el-button class="footer-btn" size="small" type="primary" @click="handleConfirm">Save</el-button>
+            <el-button class="footer-btn" size="small" type="primary" @click="handleConfirm" :disabled="isSaving">Save</el-button>
         </span>
     </el-dialog>
 </template>
@@ -33,6 +33,10 @@ export default {
     },
     props: {
         visible: {
+            type: Boolean,
+            default: false
+        },
+        isSaving: {
             type: Boolean,
             default: false
         },

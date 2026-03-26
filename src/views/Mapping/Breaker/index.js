@@ -1348,3 +1348,7 @@ const mappingUnit = (map, unitDto) => {
     map.multiplier = unitParts.length > 1 ? unitParts[0] : null;
     map.unit = unitParts.length > 1 ? unitParts[1] : unitParts[0] || null;
 };
+
+// Aliases for treeNavigation.vue (which expects asset-specific function names)
+export const breakerDtoToEntity = mapDtoToEntity;
+export const breakerEntityToDto = mapEntityToDto;

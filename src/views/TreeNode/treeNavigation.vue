@@ -258,82 +258,82 @@
         <!-- Dialog Components -->
         <SubstationDialog ref="substationDialog" :visible="signSubs" @update:visible="signSubs = $event"
             :parentOrganization="parentOrganization" :personList="personList" :locationList="locationList"
-            :organisationId="organisationId" @close="handleSubsCancel" @cancel="handleSubsCancel"
+            :organisationId="organisationId" :isSaving="isSaving" @close="handleSubsCancel" @cancel="handleSubsCancel"
             @confirm="handleSubsConfirm" />
 
         <OrganisationDialog ref="organisationDialog" :visible="signOrg" @update:visible="signOrg = $event"
-            :parentOrganization="parentOrganization" @close="handleOrgCancel" @cancel="handleOrgCancel"
+            :parentOrganization="parentOrganization" :isSaving="isSaving" @close="handleOrgCancel" @cancel="handleOrgCancel"
             @confirm="handleOrgConfirm" />
 
         <VoltageLevelDialog ref="voltageLevelDialog" :visible="signVoltageLevel"
             @update:visible="signVoltageLevel = $event" :locationId="locationId"
-            :parentOrganization="parentOrganization" @close="handleVoltageLevelCancel"
+            :parentOrganization="parentOrganization" :isSaving="isSaving" @close="handleVoltageLevelCancel"
             @cancel="handleVoltageLevelCancel" @confirm="handleVoltageLevelConfirm" />
 
         <BayDialog ref="bayDialog" :visible="signBay" @update:visible="signBay = $event" :locationId="locationId"
-            :parentOrganization="parentOrganization" @close="handleBayCancel" @cancel="handleBayCancel"
+            :parentOrganization="parentOrganization" :isSaving="isSaving" @close="handleBayCancel" @cancel="handleBayCancel"
             @confirm="handleBayConfirm" />
 
         <TransformerDialog ref="transformerDialog" :visible="signTransformer" @update:visible="signTransformer = $event"
             :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
             :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
-            @close="handleTransformerCancel" @cancel="handleTransformerCancel" @confirm="handleTransformerConfirm" />
+            :isSaving="isSaving" @close="handleTransformerCancel" @cancel="handleTransformerCancel" @confirm="handleTransformerConfirm" />
 
         <BushingDialog ref="bushingDialog" :visible="signBushing" @update:visible="signBushing = $event"
             :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
             :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
-            @close="handleBushingCancel" @cancel="handleBushingCancel" @confirm="handleBushingConfirm" />
+            :isSaving="isSaving" @close="handleBushingCancel" @cancel="handleBushingCancel" @confirm="handleBushingConfirm" />
 
         <SurgeArresterDialog ref="surgeArresterDialog" :visible="signSurge" @update:visible="signSurge = $event"
             :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
             :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
-            @close="handleSurgeCancel" @cancel="handleSurgeCancel" @confirm="handleSurgeConfirm" />
+            :isSaving="isSaving" @close="handleSurgeCancel" @cancel="handleSurgeCancel" @confirm="handleSurgeConfirm" />
 
         <CircuitBreakerDialog ref="circuitBreakerDialog" :visible="signCircuit" @update:visible="signCircuit = $event"
             :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
             :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
-            @close="handleCircuitCancel" @cancel="handleCircuitCancel" @confirm="handleCircuitConfirm" />
+            :isSaving="isSaving" @close="handleCircuitCancel" @cancel="handleCircuitCancel" @confirm="handleCircuitConfirm" />
 
         <CurrentTransformerDialog ref="currentTransformerDialog" :visible="signCt" @update:visible="signCt = $event"
             :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
             :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
-            @close="handleCtCancel" @cancel="handleCtCancel" @confirm="handleCtConfirm" />
+            :isSaving="isSaving" @close="handleCtCancel" @cancel="handleCtCancel" @confirm="handleCtConfirm" />
 
         <VoltageTransformerDialog ref="voltageTransformerDialog" :visible="signVt" @update:visible="signVt = $event"
             :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
             :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
-            @close="handleVtCancel" @cancel="handleVtCancel" @confirm="handleVtConfirm" />
+            :isSaving="isSaving" @close="handleVtCancel" @cancel="handleVtCancel" @confirm="handleVtConfirm" />
 
         <PowerCableDialog ref="powerCableDialog" :visible="signPower" @update:visible="signPower = $event"
             :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
             :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
-            @close="handlePowerCancel" @cancel="handlePowerCancel" @confirm="handlePowerConfirm" />
+            :isSaving="isSaving" @close="handlePowerCancel" @cancel="handlePowerCancel" @confirm="handlePowerConfirm" />
 
         <DisconnectorDialog ref="disconnectorDialog" :visible="signDisconnector"
             @update:visible="signDisconnector = $event" :locationId="locationId"
             :parentOrganization="parentOrganization" :modal="!isDuplicating" :show-close="!isDuplicating"
             :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
-            @close="handleDisconnectorCancel" @cancel="handleDisconnectorCancel" @confirm="handleDisconnectorConfirm" />
+            :isSaving="isSaving" @close="handleDisconnectorCancel" @cancel="handleDisconnectorCancel" @confirm="handleDisconnectorConfirm" />
 
         <RotatingMachineDialog ref="rotatingMachineDialog" :visible="signRotating"
             @update:visible="signRotating = $event" :locationId="locationId" :parentOrganization="parentOrganization"
             :modal="!isDuplicating" :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'"
-            :custom-class="dialogClass" @close="handleRotatingCancel" @cancel="handleRotatingCancel"
+            :custom-class="dialogClass" :isSaving="isSaving" @close="handleRotatingCancel" @cancel="handleRotatingCancel"
             @confirm="handleRotatingConfirm" />
 
         <CapacitorDialog ref="capacitorDialog" :visible="signCapacitor" @update:visible="signCapacitor = $event"
             :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
             :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
-            @close="handleCapacitorCancel" @cancel="handleCapacitorCancel" @confirm="handleCapacitorConfirm" />
+            :isSaving="isSaving" @close="handleCapacitorCancel" @cancel="handleCapacitorCancel" @confirm="handleCapacitorConfirm" />
 
         <ReactorDialog ref="reactorDialog" :visible="signReactor" @update:visible="signReactor = $event"
             :locationId="locationId" :parentOrganization="parentOrganization" :modal="!isDuplicating"
             :show-close="!isDuplicating" :transition="isDuplicating ? '' : 'dialog-fade'" :custom-class="dialogClass"
-            @close="handleReactorCancel" @cancel="handleReactorCancel" @confirm="handleReactorConfirm" />
+            :isSaving="isSaving" @close="handleReactorCancel" @cancel="handleReactorCancel" @confirm="handleReactorConfirm" />
 
         <JobDialog ref="jobDialog" :visible="signJob" @update:visible="signJob = $event" :checkJobType="checkJobType"
             :locationData="locationData" :assetData="assetData" :productAssetModelData="productAssetModelData"
-            :parentOrganization="parentOrganization" :testTypeListData="testTypeListData" @close="handleJobCancel"
+            :parentOrganization="parentOrganization" :testTypeListData="testTypeListData" :isSaving="isSaving" @close="handleJobCancel"
             @cancel="handleJobCancel" @confirm="handleJobConfirm" />
 
         <ExportDialog :visible="openExportDialog" @update:visible="openExportDialog = $event" :exportType="exportType"
@@ -358,8 +358,9 @@
             @cancel="() => downloadDialogVisible = false" @confirm="confirmDownloadSelection"
             @node-click="handleDownloadTargetSelection" @node-expand="fetchChildren" />
 
-        <ZeroDiagramDialog :visible="signZeroDiagram" @update:visible="signZeroDiagram = $event"
-            :currentNode="nodeForZeroDiagram" :isServer="!clientSlide" @close="handleZeroDiagramClose" />
+        <ZeroDiagramDialog ref="zeroDiagramDialog" :visible="signZeroDiagram" @update:visible="signZeroDiagram = $event"
+            :currentNode="nodeForZeroDiagram" :isServer="!clientSlide" @close="handleZeroDiagramClose" :checkChildrenMethod="checkChildren" @node-deleted="handleNodeDeletedFromDiagram"
+            @delete-node="handleDeleteNodeFromDiagram" @edit-node="handleEditNodeFromDiagram" />
     </div>
 </template>
 <script>
@@ -582,6 +583,9 @@ export default {
             selectedDownloadTargetNodes: [], // Lưu valid parent types để dùng trong fetchChildrenForMove
             signZeroDiagram: false, // Biến điều khiển ẩn hiện dialog
             nodeForZeroDiagram: null, // Biến lưu node đang chọn
+            isEditMode: false,
+            isSaving: false,
+            editingNode: null,
             moveTreeProps: {
                 children: 'children',
                 label: 'name',
@@ -835,33 +839,37 @@ export default {
                 //console.log('[TREE-NAV] Before update - node._cachedEntityData:', treeNode._cachedEntityData)
 
                 if (mode === 'asset') {
-                    // Update asset node - Dùng Vue.set để đảm bảo reactivity
-                    this.$set(treeNode, 'serial_number', data.properties?.serial_no)
-                    this.$set(treeNode, 'apparatus_id', data.properties?.apparatus_id)
-                    this.$set(treeNode, 'manufacturer', data.properties?.manufacturer)
-                    this.$set(treeNode, 'type', data.properties?.type)
+                    // Update asset node - Robust mapping for both DTO and raw Entity
+                    const apparatusId = data.properties?.apparatus_id || data.apparatus_id || data.name
+                    const serialNumber = data.properties?.serial_no || data.serial_number || data.serial_no
+                    const manufacturer = data.properties?.manufacturer || data.manufacturer
+                    const assetTypeField = data.properties?.type || data.type || assetType
+
+                    this.$set(treeNode, 'apparatus_id', apparatusId)
+                    this.$set(treeNode, 'name', apparatusId)
+                    this.$set(treeNode, 'serial_number', serialNumber)
+                    this.$set(treeNode, 'manufacturer', manufacturer)
+                    this.$set(treeNode, 'type', assetTypeField)
                     this.$set(treeNode, '_hasFullProperties', true)
                     this.$set(treeNode, '_cachedEntityData', data)
                 } else if (mode === 'substation') {
-                    // Update substation node - Dùng Vue.set để đảm bảo reactivity
+                    // Update substation node
                     this.$set(treeNode, 'name', data.name || '')
+                    // ... existing fields ...
                     this.$set(treeNode, 'type', data.type || '')
                     this.$set(treeNode, 'generation', data.generation || '')
                     this.$set(treeNode, 'industry', data.industry || '')
                     this.$set(treeNode, '_hasFullProperties', true)
                     this.$set(treeNode, '_cachedEntityData', data)
                 } else if (mode === 'voltageLevel') {
-                    // Update voltage level node - Dùng Vue.set để đảm bảo reactivity
                     this.$set(treeNode, 'name', data.name || '')
                     this.$set(treeNode, '_hasFullProperties', true)
                     this.$set(treeNode, '_cachedEntityData', data)
                 } else if (mode === 'bay') {
-                    // Update bay node - Dùng Vue.set để đảm bảo reactivity
                     this.$set(treeNode, 'name', data.name || '')
                     this.$set(treeNode, '_hasFullProperties', true)
                     this.$set(treeNode, '_cachedEntityData', data)
                 } else {
-                    // Update organisation node - Dùng Vue.set để đảm bảo reactivity
                     this.$set(treeNode, 'name', data.name || '')
                     this.$set(treeNode, 'geo_x', data.x_position)
                     this.$set(treeNode, 'geo_y', data.y_position)
@@ -871,11 +879,13 @@ export default {
                     this.$set(treeNode, '_cachedEntityData', data)
                 }
 
-                //console.log('[TREE-NAV] After update - node._cachedEntityData:', treeNode._cachedEntityData)
-                //console.log('[TREE-NAV] After update - node._hasFullProperties:', treeNode._hasFullProperties)
-                //console.log('[TREE-NAV] Node updated successfully with cache flag set')
-            } else {
-                //console.warn('[TREE-NAV] Node not found in tree:', mrid)
+                // this.$set(treeNode, '_cachedEntityData', data)
+            }
+
+            // Refresh Zero Diagram if it is open - SHOULD BE OUTSIDE if(treeNode)
+            if (this.signZeroDiagram && this.$refs.zeroDiagramDialog) {
+                console.log('[TREE-NAV] Refreshing Zero Diagram');
+                this.$refs.zeroDiagramDialog.refresh();
             }
         },
         async handleRefreshPropertiesClient(tab) {
@@ -1046,12 +1056,192 @@ export default {
                 }
 
             } catch (error) {
-                console.error("❌ Lỗi khi gọi Python Script:", error);
+                console.error("Lỗi khi gọi Python Script:", error);
                 this.$message.error(`Lỗi Convert: ${error.message || 'Unknown error'}`);
             } finally {
                 // Tắt loading
                 await close();
             }
+        },
+               async handleDeleteNodeFromDiagram(node, callback) {
+            try {
+                if (!this.clientSlide) {
+                    this.$message.warning('Delete from server not implemented yet');
+                    if (callback) callback(false);
+                    return;
+                }
+                const originalMessage = this.$message;
+                let deleteSuccess = false;
+                this.$message = {
+                    success: (msg) => { 
+                        deleteSuccess = true; 
+                        originalMessage.success(msg);
+                    },
+                    error: (msg) => { originalMessage.error(msg); },
+                    warning: (msg) => { originalMessage.warning(msg); },
+                    info: (msg) => { originalMessage.info(msg); }
+                };
+
+                try {
+                    await this.deleteDataClient(node);
+                } finally {
+                    this.$message = originalMessage;
+                }
+
+                if (callback) callback(deleteSuccess);
+            } catch (error) {
+                console.error('Error deleting node from diagram:', error);
+                this.$message.error('Failed to delete: ' + (error.message || 'Unknown error'));
+                if (callback) callback(false);
+            }
+        },
+        async handleNodeDeletedFromDiagram(node) {
+  // Clear selection giống như xóa trên tree
+  this.selectedNodes = [];
+  // Đóng properties panel
+  this.$emit('close-properties');
+},
+        async handleEditNodeFromDiagram(nodeData) {
+            try {
+                const type = nodeData.asset || nodeData.mode;
+                if (!type) {
+                    this.$message.warning('Cannot identify asset type for editing');
+                    return;
+                }
+
+                this.isEditMode = true;
+                this.editingNode = this.findNodeById(nodeData.mrid || nodeData.id, this.organisationClientList) || nodeData;
+
+                // 1. Fetch Entity Data and Mapping
+                let entityRes;
+                let dto = null;
+
+                // Close Zero Diagram first to avoid overlapping dialogs if needed, 
+                // but user might want it open. Let's keep it open for now or close it?
+                // The user said "edit ở zero là dialog", so usually we close the diagram or keep it under.
+                // this.signZeroDiagram = false; 
+
+                if (type === 'Transformer') {
+                    entityRes = await window.electronAPI.getTransformerEntityByMrid(nodeData.mrid, nodeData.psrId);
+                    if (entityRes.success && entityRes.data) {
+                        const m = await import('@/views/Mapping/Transformer/index');
+                        dto = m.transformerEntityToDto(entityRes.data);
+                    }
+                } else if (type === 'Current transformer') {
+                    entityRes = await window.electronAPI.getCurrentTransformerEntityByMrid(nodeData.mrid, nodeData.psrId);
+                    if (entityRes.success && entityRes.data) {
+                        const m = await import('@/views/Mapping/CurrentTransformer/index');
+                        dto = m.currentTransformerEntityToDto(entityRes.data);
+                    }
+                } else if (type === 'Voltage transformer') {
+                    entityRes = await window.electronAPI.getVoltageTransformerEntityByMrid(nodeData.mrid, nodeData.psrId);
+                    if (entityRes.success && entityRes.data) {
+                        const m = await import('@/views/Mapping/VoltageTransformer/index');
+                        dto = m.voltageTransformerEntityToDto(entityRes.data);
+                    }
+                } else if (type === 'Circuit breaker' || type === 'Breaker') {
+                    entityRes = await window.electronAPI.getBreakerEntityByMrid(nodeData.mrid, nodeData.psrId);
+                    if (entityRes.success && entityRes.data) {
+                        const m = await import('@/views/Mapping/Breaker/index');
+                        dto = m.breakerEntityToDto(entityRes.data);
+                    }
+                } else if (type === 'Power cable') {
+                    entityRes = await window.electronAPI.getPowerCableEntityByMrid(nodeData.mrid, nodeData.psrId);
+                    if (entityRes.success && entityRes.data) {
+                        const m = await import('@/views/Mapping/PowerCable/index');
+                        dto = m.powerCableEntityToDto(entityRes.data);
+                    }
+                } else if (type === 'Disconnector') {
+                    entityRes = await window.electronAPI.getDisconnectorEntityByMrid(nodeData.mrid, nodeData.psrId);
+                    if (entityRes.success && entityRes.data) {
+                        const m = await import('@/views/Mapping/Disconnector/index');
+                        dto = m.disconnectorEntityToDto(entityRes.data);
+                    }
+                } else if (type === 'Surge Arrester' || type === 'Surge arrester') {
+                    entityRes = await window.electronAPI.getSurgeArresterEntityByMrid(nodeData.mrid, nodeData.psrId);
+                    if (entityRes.success && entityRes.data) {
+                        const m = await import('@/views/Mapping/SurgeArrester/index');
+                        dto = m.surgeArresterEntityToDto(entityRes.data);
+                    }
+                } else if (type === 'Reactor') {
+                    entityRes = await window.electronAPI.getReactorEntityByMrid(nodeData.mrid, nodeData.psrId);
+                    if (entityRes.success && entityRes.data) {
+                        const m = await import('@/views/Mapping/Reactor/index');
+                        dto = m.reactorEntityToDto(entityRes.data);
+                    }
+                } else if (type === 'Capacitor') {
+                    entityRes = await window.electronAPI.getCapacitorEntityByMrid(nodeData.mrid, nodeData.psrId);
+                    if (entityRes.success && entityRes.data) {
+                        const m = await import('@/views/Mapping/Capacitor/index');
+                        dto = m.capacitorEntityToDto(entityRes.data);
+                    }
+                } else if (type === 'Rotating machine') {
+                    entityRes = await window.electronAPI.getRotatingMachineEntityByMrid(nodeData.mrid, nodeData.psrId);
+                    if (entityRes.success && entityRes.data) {
+                        const m = await import('@/views/Mapping/RotatingMachine/index');
+                        dto = m.rotatingEntityToDto(entityRes.data);
+                    }
+                } else if (type === 'Bushing') {
+                    entityRes = await window.electronAPI.getBushingEntityByMrid(nodeData.mrid, nodeData.psrId);
+                    if (entityRes.success && entityRes.data) {
+                        const m = await import('@/views/Mapping/Bushing/index');
+                        dto = m.bushingEntityToDto(entityRes.data);
+                    }
+                }
+
+                if (dto) {
+                    // 2. Open correct Dialog
+                    await this.openAssetDialogForEdit(type, dto);
+                } else {
+                    this.$message.error('Failed to load asset data for editing');
+                }
+
+            } catch (error) {
+                console.error('Error in handleEditNodeFromDiagram:', error);
+                this.$message.error('Error: ' + error.message);
+            }
+        },
+
+        async openAssetDialogForEdit(assetType, dto) {
+            const dialogConfig = {
+                'Transformer': { sign: 'signTransformer', ref: 'transformerDialog' },
+                'Circuit breaker': { sign: 'signCircuit', ref: 'circuitBreakerDialog' },
+                'Breaker': { sign: 'signCircuit', ref: 'circuitBreakerDialog' },
+                'Current transformer': { sign: 'signCt', ref: 'currentTransformerDialog' },
+                'Voltage transformer': { sign: 'signVt', ref: 'voltageTransformerDialog' },
+                'Power cable': { sign: 'signPower', ref: 'powerCableDialog' },
+                'Disconnector': { sign: 'signDisconnector', ref: 'disconnectorDialog' },
+                'Surge Arrester': { sign: 'signSurge', ref: 'surgeArresterDialog' },
+                'Surge arrester': { sign: 'signSurge', ref: 'surgeArresterDialog' },
+                'Reactor': { sign: 'signReactor', ref: 'reactorDialog' },
+                'Capacitor': { sign: 'signCapacitor', ref: 'capacitorDialog' },
+                'Rotating machine': { sign: 'signRotating', ref: 'rotatingMachineDialog' },
+                'Bushing': { sign: 'signBushing', ref: 'bushingDialog' }
+            };
+
+            const config = dialogConfig[assetType];
+            if (!config) {
+                this.$message.warning(`Asset type "${assetType}" dialog not configured`);
+                return;
+            }
+
+            // Set parentOrganization to the parent of the currently editing node
+            if (this.editingNode && this.editingNode.parentId) {
+                this.parentOrganization = this.findNodeById(this.editingNode.parentId, this.organisationClientList);
+            }
+
+            this[config.sign] = true;
+            
+            // Wait for El-Dialog animation to complete (300ms) before calling loadData
+            setTimeout(() => {
+                const dialogRef = this.$refs[config.ref];
+                const component = dialogRef ? dialogRef.getComponentRef() : null;
+                if (component && component.loadData) {
+                    component.loadData(dto);
+                } else {
+                    console.warn(`openAssetDialogForEdit: Could not find component or loadData for ref="${config.ref}"`, dialogRef);
+                }
+            }, 300);
         },
     }
 }

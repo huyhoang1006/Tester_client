@@ -248,3 +248,7 @@ export function mapEntityToDto(entity) {
     return dto;
 
 }
+
+// Aliases for treeNavigation.vue (which expects asset-specific function names)
+export const bushingDtoToEntity = mapDtoToEntity;
+export const bushingEntityToDto = mapEntityToDto;

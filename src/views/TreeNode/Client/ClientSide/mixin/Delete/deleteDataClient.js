@@ -1,7 +1,7 @@
 export default {
     methods: {
         async deleteDataClient(node) {
-            if(node.mode != 'job') {
+            if (node.mode != 'job') {
                 const checkDelete = await this.checkChildren(node)
                 if (checkDelete.hasChildren) {
                     this.$message.error('Node has children, cannot delete')
@@ -109,7 +109,7 @@ export default {
                             this.$message.warning('Parent node not found in tree')
                         }
                     } else if (node.mode == 'asset') {
-                        if (node.asset === 'Surge arrester') {
+                        if (node.asset === 'Surge arrester' || node.asset === 'Surge Arrester') {
                             const entity = await window.electronAPI.getSurgeArresterEntityByMrid(node.mrid)
                             if (!entity.success) {
                                 this.$message.error('Entity not found')
@@ -382,9 +382,9 @@ export default {
                 }
             } else {
                 try {
-                    if(node.job == 'Surge arrester') {
+                    if (node.job == 'Surge arrester') {
                         const entity = await window.electronAPI.getSurgeArresterJobByMrid(node.mrid)
-                        if(!entity.success) {
+                        if (!entity.success) {
                             this.$message.error('Entity not found')
                             return
                         }
@@ -407,9 +407,9 @@ export default {
                         } else {
                             this.$message.warning('Parent node not found in tree')
                         }
-                    } else if(node.job == 'Voltage transformer') {
+                    } else if (node.job == 'Voltage transformer') {
                         const entity = await window.electronAPI.getVoltageTransformerJobByMrid(node.mrid)
-                        if(!entity.success) {
+                        if (!entity.success) {
                             this.$message.error('Entity not found')
                             return
                         }
@@ -432,9 +432,9 @@ export default {
                         } else {
                             this.$message.warning('Parent node not found in tree')
                         }
-                    } else if(node.job == 'Current transformer') {
+                    } else if (node.job == 'Current transformer') {
                         const entity = await window.electronAPI.getCurrentTransformerJobByMrid(node.mrid)
-                        if(!entity.success) {
+                        if (!entity.success) {
                             this.$message.error('Entity not found')
                             return
                         }
@@ -457,9 +457,9 @@ export default {
                         } else {
                             this.$message.warning('Parent node not found in tree')
                         }
-                    } else if(node.job == 'Power cable') {
+                    } else if (node.job == 'Power cable') {
                         const entity = await window.electronAPI.getPowerCableJobByMrid(node.mrid)
-                        if(!entity.success) {
+                        if (!entity.success) {
                             this.$message.error('Entity not found')
                             return
                         }
@@ -482,9 +482,9 @@ export default {
                         } else {
                             this.$message.warning('Parent node not found in tree')
                         }
-                    } else if(node.job == 'Transformer') {
+                    } else if (node.job == 'Transformer') {
                         const entity = await window.electronAPI.getTransformerJobByMrid(node.mrid)
-                        if(!entity.success) {
+                        if (!entity.success) {
                             this.$message.error('Entity not found')
                             return
                         }
@@ -507,9 +507,9 @@ export default {
                         } else {
                             this.$message.warning('Parent node not found in tree')
                         }
-                    } else if(node.job == 'Disconnector') {
+                    } else if (node.job == 'Disconnector') {
                         const entity = await window.electronAPI.getDisconnectorJobByMrid(node.mrid)
-                        if(!entity.success) {
+                        if (!entity.success) {
                             this.$message.error('Entity not found')
                             return
                         }
@@ -532,9 +532,9 @@ export default {
                         } else {
                             this.$message.warning('Parent node not found in tree')
                         }
-                    } else if(node.job == 'Rotating machine') {
+                    } else if (node.job == 'Rotating machine') {
                         const entity = await window.electronAPI.getRotatingMachineJobByMrid(node.mrid)
-                        if(!entity.success) {
+                        if (!entity.success) {
                             this.$message.error('Entity not found')
                             return
                         }
@@ -557,9 +557,9 @@ export default {
                         } else {
                             this.$message.warning('Parent node not found in tree')
                         }
-                    } else if(node.job == 'Reactor') {
+                    } else if (node.job == 'Reactor') {
                         const entity = await window.electronAPI.getReactorJobByMrid(node.mrid)
-                        if(!entity.success) {
+                        if (!entity.success) {
                             this.$message.error('Entity not found')
                             return
                         }
@@ -582,9 +582,9 @@ export default {
                         } else {
                             this.$message.warning('Parent node not found in tree')
                         }
-                    } else if(node.job == 'Capacitor') {
+                    } else if (node.job == 'Capacitor') {
                         const entity = await window.electronAPI.getCapacitorJobByMrid(node.mrid)
-                        if(!entity.success) {
+                        if (!entity.success) {
                             this.$message.error('Entity not found')
                             return
                         }
@@ -607,9 +607,9 @@ export default {
                         } else {
                             this.$message.warning('Parent node not found in tree')
                         }
-                    } else if(node.job == 'Bushing') {
+                    } else if (node.job == 'Bushing') {
                         const entity = await window.electronAPI.getBushingJobByMrid(node.mrid)
-                        if(!entity.success) {
+                        if (!entity.success) {
                             this.$message.error('Entity not found')
                             return
                         }
@@ -632,9 +632,9 @@ export default {
                         } else {
                             this.$message.warning('Parent node not found in tree')
                         }
-                    } else if(node.job == 'Circuit breaker') {
+                    } else if (node.job == 'Circuit breaker') {
                         const entity = await window.electronAPI.getCircuitBreakerJobByMrid(node.mrid)
-                        if(!entity.success) {
+                        if (!entity.success) {
                             this.$message.error('Entity not found')
                             return
                         }
@@ -658,7 +658,7 @@ export default {
                             this.$message.warning('Parent node not found in tree')
                         }
                     }
-                } catch(e) {
+                } catch (e) {
                     this.$message.error('Some error occur when deleting data')
                     console.error(e)
                 }

@@ -4,6 +4,9 @@ import { startLoading } from '@/utils/loading'
 export default {
     methods: {
         async handleJobConfirm() {
+            if (this.isSaving) return;
+            this.isSaving = true;
+
             const { close, timeoutValue } = startLoading(this, { 
                 action: 'add',
                 type: 'default' 
@@ -22,6 +25,7 @@ export default {
             };
 
             try {
+                // isSaving already set to true above
                 await new Promise(resolve => setTimeout(resolve, 200));
 
                 const dialogRef = this.$refs.jobDialog
@@ -93,6 +97,7 @@ export default {
                 console.error(error);
                 return;
             } finally {
+                this.isSaving = false;
                 this.$message = originalMessage;
             }
 

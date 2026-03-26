@@ -211,7 +211,7 @@ export function mapEntityToDto(entity) {
 
     /** ---------- assetPsr ---------- */
     dto.assetPsrId = entity.assetPsr.mrid || null;
-    dto.properties.mrid = entity.assetPsr.asset_id || null;
+    // dto.properties.mrid = entity.assetPsr.asset_id || null;
     dto.psrId = entity.assetPsr.psr_id || null;
 
     /** ---------- attachment ---------- */
@@ -303,3 +303,7 @@ export function mapEntityToDto(entity) {
 
     return dto;
 }
+
+// Aliases for treeNavigation.vue (which expects asset-specific function names)
+export const capacitorDtoToEntity = mapDtoToEntity;
+export const capacitorEntityToDto = mapEntityToDto;

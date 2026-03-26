@@ -177,3 +177,7 @@ export function mapEntityToDto(entity) {
 
     return dto;
 }
+
+// Aliases for treeNavigation.vue (which expects asset-specific function names)
+export const reactorDtoToEntity = mapDtoToEntity;
+export const reactorEntityToDto = mapEntityToDto;

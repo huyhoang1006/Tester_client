@@ -48,7 +48,7 @@
               >
                 <div class="eq-content-wrapper">
                   <div class="eq-icon-container">
-                    <component :is="getIconComponent(eq.type)" />
+                    <component :is="getIconComponent(eq.type)" :iconName="getIconName(eq.type, eq.transformerType)" />
                   </div>
                   <span class="eq-name">{{ eq.name }}</span>
                 </div>
@@ -97,7 +97,7 @@
                   >
                     <div class="eq-content-wrapper">
                       <div class="eq-icon-container">
-                        <component :is="getIconComponent(eq.type)" />
+                        <component :is="getIconComponent(eq.type)" :iconName="getIconName(eq.type, eq.transformerType)" />
                       </div>
                       <span class="eq-name">{{ eq.name }}</span>
                     </div>
@@ -127,14 +127,17 @@
 <script>
 import * as demoAPI from '@/api/demo/index.js';
 import { IconSubstation, IconVoltageLevel, IconBay, IconCB, IconPowerCable, IconCT, IconVT, IconDisconnector, IconBushing, IconSurgeArrester, IconRotatingMachine, IconCapacitor, IconReactor, IconBreaker  } from './icons.js';
+import ImageIcon from './ImageIcon.vue';
+import { startLoading } from '@/utils/loading';
 
 export default {
   name: 'ZeroDiagramDialog',
-  components: { IconSubstation, IconVoltageLevel, IconBay, IconCB, IconPowerCable, IconCT, IconVT, IconDisconnector, IconBushing, IconSurgeArrester, IconRotatingMachine, IconCapacitor, IconReactor, IconBreaker },
+  components: { IconSubstation, IconVoltageLevel, IconBay, IconCB, IconPowerCable, IconCT, IconVT, IconDisconnector, IconBushing, IconSurgeArrester, IconRotatingMachine, IconCapacitor, IconReactor, IconBreaker, ImageIcon },
   props: {
     visible: { type: Boolean, default: false },
     currentNode: { type: Object, default: () => ({}) },
-    isServer: { type: Boolean, default: false }
+    isServer: { type: Boolean, default: false },
+    checkChildrenMethod: { type: Function, default: null }
   },
   data() {
     return {
@@ -160,8 +163,44 @@ export default {
   methods: {
     handleClose() { this.$emit('close'); },
     getIconComponent(type) {
-      const map = { 'CB': 'IconCB', 'PowerCable': 'IconPowerCable', 'CT': 'IconCT', 'VT': 'IconVT', 'Disconnector': 'IconDisconnector', 'Transformer': 'IconVT', 'SurgeArrester': 'IconSurgeArrester', 'Reactor': 'IconReactor', 'Bushing': 'IconBushing', 'RotatingMachine': 'IconRotatingMachine', 'Capacitor': 'IconCapacitor', 'Breaker': 'IconBreaker' };
-      return map[type] || 'IconDisconnector';
+      const imageIconTypes = ['PowerCable', 'CT', 'Disconnector', 'SurgeArrester', 'Reactor', 'Capacitor'];
+      
+      if (type === 'Transformer') {
+        return 'ImageIcon';
+      }
+      
+      if (imageIconTypes.includes(type)) {
+        return 'ImageIcon';
+      }
+      
+      const svgMap = {
+        'CB': 'IconCB',
+        'VT': 'IconVT',
+        'Breaker': 'IconBreaker',
+        'Bushing': 'IconBushing',
+        'RotatingMachine': 'IconRotatingMachine'
+      };
+      return svgMap[type] || 'IconDisconnector';
+    },
+    getIconName(type, transformerType) {
+      if (type === 'Transformer') {
+        if (transformerType) {
+          const tt = transformerType.toLowerCase();
+          if (tt.includes('three') || tt.includes('3w')) return 'Transformer-3W';
+          if (tt.includes('auto')) return 'Transformer-Auto';
+          if (tt.includes('two') || tt.includes('2w')) return 'Transformer-2W';
+        }
+        return 'Transformer';
+      }
+      const map = {
+        'PowerCable': 'PowerCable',
+        'CT': 'CurrentTransformer',
+        'Disconnector': 'Disconnector',
+        'SurgeArrester': 'SurgeArrester',
+        'Reactor': 'Reactor',
+        'Capacitor': 'Capacitor'
+      };
+      return map[type] || 'PowerCable';
     },
     mapAssetType(dbType) {
       const map = { 
@@ -256,6 +295,11 @@ export default {
         const res = await demoAPI.getAssetByOwner(ownerId, mode);
         const data = Array.isArray(res) ? res : (res?.data || []);
         return data.map(item => ({
+          id: item.id,
+          mrid: item.mrid,
+          parentId: ownerId,
+          asset: item.asset || item.assetType || item.assetKind,
+          mode: 'asset',
           name: item.aliasName || item.name || item.serialNumber || 'Unnamed',
           // Sử dụng trường .asset để map đúng Icon cho Server
           type: this.mapAssetType(item.asset || item.assetType || item.assetKind)
@@ -277,16 +321,31 @@ export default {
             const mappedType = this.mapAssetType(typeStr);
             const mappedAssetsPromises = dataArray.map(async item => {
               let displayName = item.apparatus_id || item.properties?.apparatus_id;
-              if (!displayName && item.mrid) {
+              
+              let transformerType = item.transformerType || null;
+
+              if (!transformerType && typeStr === 'Transformer' && item.mrid) {
                 try {
                   const fullAssetRes = await window.electronAPI.getAssetByMrid(item.mrid);
                   if (fullAssetRes?.success && fullAssetRes.data) {
                     displayName = fullAssetRes.data.properties?.apparatus_id || fullAssetRes.data.name;
+                    transformerType = fullAssetRes.data.properties?.transformer_type || 
+                                      fullAssetRes.data.properties?.transformerType || 
+                                      fullAssetRes.data.type;
                   }
                 } catch (err) { console.warn(err); }
               }
               if (!displayName) displayName = item.apparatus_id || item.serial_number || item.serial_no || typeStr;
-              return { name: displayName, type: mappedType };
+              
+              return { 
+                mrid: item.mrid, 
+                parentId: bayId, 
+                asset: typeStr, 
+                mode: 'asset',
+                name: displayName, 
+                type: mappedType,
+                transformerType: transformerType
+              };
             });
             const mappedAssets = await Promise.all(mappedAssetsPromises);
             allAssets = allAssets.concat(mappedAssets);
@@ -297,10 +356,108 @@ export default {
     },
 
     handleAction(action, eq) { 
-      console.log(`Action: ${action}`, eq);
+      if (action === 'delete') {
+        this.handleDelete(eq);
+      } else if (action === 'edit') {
+        this.$emit('edit-node', eq);
+      } else {
+        console.log(`Action: ${action}`, eq);
+      }
       this.activeEqKey = null; 
     },
+
+    async handleDelete(eq) {
+       if (this.checkChildrenMethod) {
+    const checkResult = await this.checkChildrenMethod(eq);
+    if (checkResult.hasChildren) {
+      this.$message.error('Node has children, cannot delete');
+      return;
+    }
+  }
+      let nodeName = eq.name || 'Unknown';
+      
+      this.$confirm(`Delete "${nodeName}"?`, 'Warning', {
+        confirmButtonText: 'Delete',
+        cancelButtonText: 'Cancel',
+        cancelButtonClass: 'el-button--danger',
+        type: 'warning'
+      })
+      .then(async () => {
+        const { close } = startLoading(this, { 
+          action: 'delete',
+          type: 'default' 
+        });
+
+        const originalMessage = this.$message;
+        let deleteSuccess = false;
+        let capturedMessages = [];
+
+        this.$message = {
+          success: (msg) => { deleteSuccess = true; capturedMessages.push({ type: 'success', message: msg }); },
+          error: (msg) => { capturedMessages.push({ type: 'error', message: msg }); },
+          warning: (msg) => { capturedMessages.push({ type: 'warning', message: msg }); },
+          info: (msg) => { capturedMessages.push({ type: 'info', message: msg }); }
+        };
+
+        try {
+          await new Promise(resolve => {
+            this.$emit('delete-node', eq, (success) => {
+              deleteSuccess = success;
+              resolve();
+            });
+          });
+        } catch (error) {
+          capturedMessages.push({ type: 'error', message: error.message });
+        } finally {
+          this.$message = originalMessage;
+          await close();
+          
+          if (capturedMessages.length > 0) {
+            const last = capturedMessages[capturedMessages.length - 1];
+            this.$message[last.type](last.message);
+          }
+
+          if (deleteSuccess) {
+            this.removeItemFromLocalState(eq);
+            this.$emit('node-deleted', eq);
+          }
+        }
+      })
+      .catch(() => {});
+    },
+
+    removeItemFromLocalState(eq) {
+      // 1. Remove from directSubstationAssets
+      const dIndex = this.directSubstationAssets.findIndex(item => 
+        (item.mrid && item.mrid === eq.mrid) || (item.id && item.id === eq.id)
+      );
+      if (dIndex !== -1) {
+        this.directSubstationAssets.splice(dIndex, 1);
+        return;
+      }
+
+      // 2. Remove from voltageLevels hierarchy
+      for (const vl of this.voltageLevels) {
+        if (vl.bays) {
+          for (const bay of vl.bays) {
+            if (bay.equipments) {
+              const eIndex = bay.equipments.findIndex(item => 
+                (item.mrid && item.mrid === eq.mrid) || (item.id && item.id === eq.id)
+              );
+              if (eIndex !== -1) {
+                bay.equipments.splice(eIndex, 1);
+                return;
+              }
+            }
+          }
+        }
+      }
+    },
     toggleActions(key) { this.activeEqKey = (this.activeEqKey === key) ? null : key; },
+    refresh() {
+      console.log('[ZERO-DIAGRAM] Refreshing data...');
+      this.fetchSubstationData();
+    },
     handleClickOutside(event) {
       if (!event.target.closest('.modern-eq-item')) this.activeEqKey = null;
     }
