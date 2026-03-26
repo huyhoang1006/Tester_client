@@ -34,28 +34,28 @@
           <el-divider></el-divider>
 
           <el-form-item label="Rated voltage">
-            <el-input v-model="ratingsData.rated_voltage.value"
+            <el-input type="number" number="positive" v-model="ratingsData.rated_voltage.value"
               @input="updateField('ratings', 'rated_voltage', $event.target ? $event.target.value : $event)">
               <template slot="append">kV</template>
             </el-input>
           </el-form-item>
 
           <el-form-item label="Rated frequency">
-            <el-input v-model="ratingsData.rated_frequency.value"
+            <el-input type="number" number="positive" v-model="ratingsData.rated_frequency.value"
               @input="updateField('ratings', 'rated_frequency', $event.target ? $event.target.value : $event)">
               <template slot="append">Hz</template>
             </el-input>
           </el-form-item>
 
           <el-form-item label="Rated current">
-            <el-input v-model="ratingsData.rated_current.value"
+            <el-input type="number" number="positive" v-model="ratingsData.rated_current.value"
               @input="updateField('ratings', 'rated_current', $event.target ? $event.target.value : $event)">
               <template slot="append">A</template>
             </el-input>
           </el-form-item>
 
           <el-form-item label="Rated power">
-            <el-input v-model="ratingsData.rated_power.value"
+            <el-input type="number" number="positive" v-model="ratingsData.rated_power.value"
               @input="updateField('ratings', 'rated_power', $event.target ? $event.target.value : $event)">
               <template slot="append">kVAr</template>
             </el-input>
@@ -64,14 +64,14 @@
           <!-- Phase 1 -->
           <template v-if="configsData.phase === '1'">
             <el-form-item label="Capacitance">
-              <el-input v-model="capacitanceData.capacitance.value.value"
+              <el-input type="number" number="positive" v-model="capacitanceData.capacitance.value.value"
                 @input="updateField('capacitance', 'capacitance', $event.target ? $event.target.value : $event)">
                 <template slot="append">nF</template>
               </el-input>
             </el-form-item>
 
             <el-form-item label="Dissipation factor">
-              <el-input v-model="dissipationFactorData.dissipation_factor.value.value"
+              <el-input type="number" number="positive" v-model="dissipationFactorData.dissipation_factor.value.value"
                 @input="updateField('dissipationFactor', 'dissipation_factor', $event.target ? $event.target.value : $event)">
                 <template slot="append">%</template>
               </el-input>
@@ -84,7 +84,7 @@
               <div class="bordered-form vertical-label">
                 <div v-for="ph in ['A', 'B', 'C']" :key="ph" class="phase-row">
                   <div class="phase-label">Phase {{ ph }}</div>
-                  <el-input v-model="capacitanceData[`capacitance_${ph}`].value.value"
+                  <el-input type="number" number="positive" v-model="capacitanceData[`capacitance_${ph}`].value.value"
                     @input="updateField('capacitance', `capacitance_${ph}`, $event.target ? $event.target.value : $event)"
                     size="mini">
                     <template slot="append">nF</template>
@@ -97,7 +97,7 @@
               <div class="bordered-form vertical-label">
                 <div v-for="ph in ['A', 'B', 'C']" :key="ph" class="phase-row">
                   <div class="phase-label">Phase {{ ph }}</div>
-                  <el-input v-model="dissipationFactorData[`dissipation_factor_${ph}`].value.value"
+                  <el-input type="number" number="positive" v-model="dissipationFactorData[`dissipation_factor_${ph}`].value.value"
                     @input="updateField('dissipationFactor', `dissipation_factor_${ph}`, $event.target ? $event.target.value : $event)"
                     size="mini">
                     <template slot="append">%</template>
@@ -121,7 +121,7 @@
           </el-form-item>
 
           <el-form-item label="Weight">
-            <el-input v-model="othersData.weight.value"
+            <el-input type="number" number="positive" v-model="othersData.weight.value"
               @input="updateField('others', 'weight', $event.target ? $event.target.value : $event)">
               <template slot="append">kg</template>
             </el-input>
