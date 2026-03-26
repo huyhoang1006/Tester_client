@@ -265,6 +265,6 @@ const mapDataVTtoArrayPotentialTransformerTable = (dto, entity) => {
     });
 };
 
-
-
-
+// Aliases for treeNavigation.vue (which expects asset-specific function names)
+export const voltageTransformerDtoToEntity = mapDtoToEntity;
+export const voltageTransformerEntityToDto = mapEntityToDto;

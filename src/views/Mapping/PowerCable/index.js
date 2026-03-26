@@ -501,6 +501,7 @@ export function mapEntityToDto(entity) {
         }
     }
     dto.datasData.conductor.conductor_class.value = entity.oldCableInfo.conductor_class || null;
+    dto.datasData.conductor.conductor_count.value = entity.oldCableInfo.strand_count || null;
 
     const conductorTypeOptions = [
         "Cooper-round, solid",
@@ -1015,10 +1016,24 @@ export function mapEntityToDto(entity) {
             break;
         }
     }
+
+    // ================== layersData ==================
+    // Implementing same logic as autoTickLayers in configs.vue to ensure UI shows active layers
+    dto.layersData.conductor = !!(dto.datasData.conductor.conductor_size.value || dto.datasData.conductor.conductor_class.value || dto.datasData.conductor.conductor_material.value || dto.datasData.conductor.conductor_type.value || dto.datasData.conductor.conductor_diameter.value);
+    dto.layersData.insulation = !!(dto.datasData.insulation.insulation_type.value || dto.datasData.insulation.thickness.value || dto.datasData.insulation.diameter.value || dto.datasData.insulation.insulation_operating.value);
+    dto.layersData.sheath_reinforcing = !!(dto.datasData.sheath_reinforcing.material.value || dto.datasData.sheath_reinforcing.thickness.value || dto.datasData.sheath_reinforcing.diameter.value || dto.datasData.sheath_reinforcing.width.value || dto.datasData.sheath_reinforcing.lengthOfLay.value || dto.datasData.sheath_reinforcing.numOfTapes.value);
+    dto.layersData.armour = !!(dto.datasData.armour.material.value || dto.datasData.armour.thickness.value || dto.datasData.armour.diameter.value || dto.datasData.armour.layerOfTapes.value || dto.datasData.armour.crossSectional.value);
+    dto.layersData.conductor_shield = !!(dto.datasData.conductor_shield.thickness.value || dto.datasData.conductor_shield.diameter.value);
+    dto.layersData.insulation_screen = !!(dto.datasData.insulation_screen.material.value || dto.datasData.insulation_screen.thickness.value || dto.datasData.insulation_screen.diameter.value);
+    dto.layersData.concentric_neutral = !!(dto.datasData.concentric_neutral.material.value || dto.datasData.concentric_neutral.construction.value || dto.datasData.concentric_neutral.thickness.value || dto.datasData.concentric_neutral.diameter.value || dto.datasData.concentric_neutral.area.value || dto.datasData.concentric_neutral.lengthOfLay.value || dto.datasData.concentric_neutral.numOfWires.value);
+    dto.layersData.oversheath = !!(dto.datasData.oversheath.material.value || dto.datasData.oversheath.thickness.value || dto.datasData.oversheath.diameter.value);
+    dto.layersData.sheath = !!(dto.datasData.sheath.sheath_type.value || dto.datasData.sheath.construction.value || dto.datasData.sheath.thickness.value || dto.datasData.sheath.diameter.value || dto.datasData.sheath.multicore.value);
+    dto.layersData.armour_bedding = !!(dto.datasData.armour_bedding.material.value || dto.datasData.armour_bedding.thickness.value || dto.datasData.armour_bedding.diameter.value);
+
     return dto;
 }
 
-
-
-
+// Aliases for treeNavigation.vue (which expects asset-specific function names)
+export const powerCableDtoToEntity = mapDtoToEntity;
+export const powerCableEntityToDto = mapEntityToDto;
 

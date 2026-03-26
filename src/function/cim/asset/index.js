@@ -42,7 +42,7 @@ export const getAssetByAssetInfoId = async (assetInfoId) => {
                         console.error(`[DEBUG] SQLite Error in getAssetByAssetInfoId for AssetInfoId: ${assetInfoId}`, err);
                         return reject({ success: false, err: err, message: 'Find Asset by AssetInfoId failed' });
                     }
-                    
+
                     if (!row) {
                         return resolve({ success: false, data: null, message: 'Asset not found for this AssetInfo' });
                     }

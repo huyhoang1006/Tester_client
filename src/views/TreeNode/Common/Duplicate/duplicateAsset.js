@@ -524,6 +524,7 @@ export default {
                         ],
                         mode: node.mode,
                         asset: node.asset,
+                        type: dto.properties?.type || null,
                         job: node.job,
                         children: [],
                         expanded: false,

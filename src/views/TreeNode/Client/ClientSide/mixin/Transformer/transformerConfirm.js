@@ -1,12 +1,17 @@
 import Vue from "vue"
 import { startLoading } from '@/utils/loading'
+import * as TransformerMapping from '@/views/Mapping/Transformer/index'
 
 export default {
     methods: {
         async handleTransformerConfirm() {
+            if (this.isSaving) return;
+            this.isSaving = true;
+
             const licenseCheck = await window.electronAPI.checkLicense('Transformer');
             if (licenseCheck.success && !licenseCheck.allowed) {
                 this.$message.error(licenseCheck.message);
+                this.isSaving = false;
                 return;
             }
             const { close, timeoutValue } = startLoading(this, {
@@ -27,6 +32,7 @@ export default {
             };
 
             try {
+                // isSaving already set to true above
                 await new Promise(resolve => setTimeout(resolve, 200));
 
                 const dialogRef = this.$refs.transformerDialog
@@ -49,26 +55,54 @@ export default {
 
                     if (success) {
                         saveSuccess = true;
-                        let newRows = []
-                        if (this.organisationClientList && this.organisationClientList.length > 0) {
-                            const apparatusId = data.asset.name || data.asset.apparatus_id
-                            const newRow = {
+                        if (this.isEditMode) {
+                            // 1. Cập nhật node trong cây
+                            this.handleUpdateNodeData({
                                 mrid: data.asset.mrid,
-                                apparatus_id: apparatusId,
-                                name: apparatusId || data.asset.serial_number || 'Unnamed Transformer',
-                                serial_number: data.asset.serial_number,
-                                parentId: this.parentOrganization.mrid,
-                                parentName: this.parentOrganization.name,
-                                parentArr: this.parentOrganization.parentArr || [],
+                                data: data.asset,
                                 mode: 'asset',
-                                asset: 'Transformer',
-                                type: data.asset.type
+                                assetType: 'Transformer'
+                            });
+                            // 2. Fetch entity mới từ DB và reload form (giống Tree Edit)
+                            try {
+                                const entityRes = await window.electronAPI.getTransformerEntityByMrid(
+                                    data.asset.mrid,
+                                    data.assetPsr?.mrid
+                                );
+                                if (entityRes.success && entityRes.data) {
+                                    const dto = TransformerMapping.transformerEntityToDto(entityRes.data);
+                                    const dialogRef = this.$refs.transformerDialog;
+                                    const component = dialogRef ? dialogRef.getComponentRef() : null;
+                                    if (component && component.loadData) {
+                                        component.loadData(dto);
+                                    }
+                                }
+                            } catch (err) {
+                                console.error('Error reloading form after save:', err);
                             }
-                            newRows.push(newRow)
-                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
-                            if (node) {
-                                const children = Array.isArray(node.children) ? node.children : []
-                                Vue.set(node, 'children', [...children, ...newRows])
+                        } else {
+                            // Thêm node mới vào cây (logic cũ)
+                            let newRows = []
+                            if (this.organisationClientList && this.organisationClientList.length > 0) {
+                                const apparatusId = data.asset.name || data.asset.apparatus_id
+                                const newRow = {
+                                    mrid: data.asset.mrid,
+                                    apparatus_id: apparatusId,
+                                    name: apparatusId || data.asset.serial_number || 'Unnamed Transformer',
+                                    serial_number: data.asset.serial_number,
+                                    parentId: this.parentOrganization.mrid,
+                                    parentName: this.parentOrganization.name,
+                                    parentArr: this.parentOrganization.parentArr || [],
+                                    mode: 'asset',
+                                    asset: 'Transformer',
+                                    type: data.asset.type
+                                }
+                                newRows.push(newRow)
+                                const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
+                                if (node) {
+                                    const children = Array.isArray(node.children) ? node.children : []
+                                    Vue.set(node, 'children', [...children, ...newRows])
+                                }
                             }
                         }
                     }
@@ -80,6 +114,7 @@ export default {
                 console.error(error);
                 return;
             } finally {
+                this.isSaving = false;
                 this.$message = originalMessage;
             }
 
@@ -93,6 +128,7 @@ export default {
             if (saveSuccess) {
                 this.$message.success('Transformer saved successfully');
                 this.signTransformer = false;
+                this.isEditMode = false;
                 if (transformerRef) {
                     this.resetFormAfterSave(transformerRef);
                 }
@@ -101,6 +137,7 @@ export default {
 
         handleTransformerCancel() {
             this.signTransformer = false
+            this.isEditMode = false
         },
     }
 }

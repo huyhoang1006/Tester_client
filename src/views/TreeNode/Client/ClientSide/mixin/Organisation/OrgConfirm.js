@@ -4,9 +4,13 @@ import { startLoading } from '@/utils/loading'
 export default {
     methods: {
         async handleOrgConfirm() {
+            if (this.isSaving) return;
+            this.isSaving = true;
+
             const licenseCheck = await window.electronAPI.checkLicense('Organisation');
             if (licenseCheck.success && !licenseCheck.allowed) {
                 this.$message.error(licenseCheck.message);
+                this.isSaving = false;
                 return; 
             }
             const { close, timeoutValue } = startLoading(this, {
@@ -27,6 +31,7 @@ export default {
             };
 
             try {
+                // isSaving already set to true above
                 await new Promise(resolve => setTimeout(resolve, 200));
 
                 const dialogRef = this.$refs.organisationDialog
@@ -80,6 +85,7 @@ export default {
                 console.error(error);
                 return;
             } finally {
+                this.isSaving = false;
                 this.$message = originalMessage;
             }
 

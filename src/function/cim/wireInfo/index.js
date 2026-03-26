@@ -154,7 +154,7 @@ export const deleteWireInfoTransaction = async (mrid, dbsql) => {
                 }
             })
         } catch (err) {
-            return reject({ success: false, err, message: 'Delete wireInfo transaction failed'})
+            return reject({ success: false, err, message: 'Delete wireInfo transaction failed' })
         }
     })
 }

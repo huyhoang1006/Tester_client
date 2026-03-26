@@ -506,3 +506,7 @@ export const mapEntityToDto = (entity) => {
 
     return dto;
 }
+
+// Aliases for treeNavigation.vue (which expects asset-specific function names)
+export const currentTransformerDtoToEntity = mapDtoToEntity;
+export const currentTransformerEntityToDto = mapEntityToDto;

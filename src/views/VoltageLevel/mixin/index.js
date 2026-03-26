@@ -10,17 +10,17 @@ export default {
         return {
             properties: new VoltageLevelDto(),
             labelWidth: `150px`,
-            voltageList : ['500', '220', '110', '35', '26', '22', '21', '15.75', '13.8', '10', '6.6', '0.4'],
-            voltageUnitArr : [UnitSymbol.V],
-            voltageMultiplierArr : [UnitMultiplier.k, UnitMultiplier.m, '']
+            voltageList: ['500', '220', '110', '35', '26', '22', '21', '15.75', '13.8', '10', '6.6', '0.4'],
+            voltageUnitArr: [UnitSymbol.V],
+            voltageMultiplierArr: [UnitMultiplier.k, UnitMultiplier.m, '']
         }
     },
     methods: {
         async saveCtrS() {
             const data = await this.saveVoltageLevel()
-            if(data.success) {
+            if (data.success) {
                 this.$message.success("Voltage Level saved successfully")
-                
+
                 // ✅ Emit reload event với data đã save - KHÔNG cần gọi API!
                 this.$emit('reload', { savedData: this.properties })
             } else {
@@ -36,12 +36,20 @@ export default {
             this.properties = data
         },
 
-        loadMapForView () {
+        loadMapForView() {
         },
 
         async saveVoltageLevel() {
             try {
-                if(isNaN(this.properties.low_voltage_limit_value) || isNaN(this.properties.high_voltage_limit_value) || isNaN(this.properties.base_voltage_value)) {
+                if (!this.properties.name || this.properties.name.trim() === '') {
+                    this.$message.error("Name is required.");
+                    return { success: false };
+                }
+                if (!this.properties.base_voltage_value || this.properties.base_voltage_value === '') {
+                    this.$message.error("Base voltage is required.");
+                    return { success: false };
+                }
+                if (isNaN(this.properties.low_voltage_limit_value) || isNaN(this.properties.high_voltage_limit_value) || isNaN(this.properties.base_voltage_value)) {
                     this.$message.error("Voltage values must be numeric.");
                 }
                 else {
@@ -49,7 +57,7 @@ export default {
                     const result = this.checkVoltageLevel(data);
                     const resultEntity = voltageMapper.volDtoToVolEntity(result);
                     const resultData = await window.electronAPI.insertVoltageLevelEntity(resultEntity)
-                    if(resultData.success) {
+                    if (resultData.success) {
                         return {
                             success: true,
                             data: resultData.data
@@ -67,32 +75,32 @@ export default {
         },
 
         checkBaseVoltage(data) {
-            if(data.baseVoltageId === null || data.baseVoltageId === '') {
-                if(data.base_voltage_value) {
+            if (data.baseVoltageId === null || data.baseVoltageId === '') {
+                if (data.base_voltage_value) {
                     data.baseVoltageId = uuid.newUuid();
                 }
             }
         },
 
         checkNominalVoltage(data) {
-            if(data.nominalVoltageId === null || data.nominalVoltageId === '') {
-                if(data.base_voltage_value) {
+            if (data.nominalVoltageId === null || data.nominalVoltageId === '') {
+                if (data.base_voltage_value) {
                     data.nominalVoltageId = uuid.newUuid();
                 }
             }
         },
 
         checkVoltageLevel(data) {
-            if(data.voltageLevelId === null || data.voltageLevelId === '') {
+            if (data.voltageLevelId === null || data.voltageLevelId === '') {
                 data.voltageLevelId = uuid.newUuid();
             }
-            if(data.substationId === null || data.substationId === '') {
+            if (data.substationId === null || data.substationId === '') {
                 data.substationId = this.parent ? this.parent.mrid : null
             }
-            if(data.locationId === null || data.locationId === '') {
+            if (data.locationId === null || data.locationId === '') {
                 data.locationId = this.locationId ? this.locationId : null
             }
-            
+
             this.checkBaseVoltage(data);
             this.checkNominalVoltage(data);
             this.checkHighVoltageLimit(data);
@@ -101,23 +109,23 @@ export default {
         },
 
         checkHighVoltageLimit(data) {
-            if(data.highVoltageLimitId === null || data.highVoltageLimitId === '') {
-                if(data.high_voltage_limit_value) {
+            if (data.highVoltageLimitId === null || data.highVoltageLimitId === '') {
+                if (data.high_voltage_limit_value) {
                     data.highVoltageLimitId = uuid.newUuid();
                 }
             }
         },
 
         checkLowVoltageLimit(data) {
-            if(data.lowVoltageLimitId === null || data.lowVoltageLimitId === '') {
-                if(data.low_voltage_limit_value) {
+            if (data.lowVoltageLimitId === null || data.lowVoltageLimitId === '') {
+                if (data.low_voltage_limit_value) {
                     data.lowVoltageLimitId = uuid.newUuid();
                 }
             }
         },
 
         handleBaseVoltageChange(value) {
-            if(this.properties.name == '') {
+            if (this.properties.name == '') {
                 this.properties.name = `${value} ${this.properties.base_voltage_multiplier}${this.properties.base_voltage_unit}`
             }
         }

@@ -93,7 +93,9 @@ export default {
                         'Earthing Switch': 'Earthing Switch.png',
                         'Load': 'Load.png',
                         'Motor': 'Motor.png',
-                        'Transformer': '2W Tranformer 2.png'
+                        'Transformer': '2W Tranformer 2.png',
+                        'Power cable' :'power cable.png',
+                        'Surge arrester' : 'Surge arrester.png'
                     };
 
                     if (this.assetDetail === 'Transformer') {

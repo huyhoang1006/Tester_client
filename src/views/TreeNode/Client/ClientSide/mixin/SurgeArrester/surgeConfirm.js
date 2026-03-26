@@ -1,12 +1,16 @@
 import Vue from "vue"
 import { startLoading } from '@/utils/loading'
-
+import * as SurgeMapping from '@/views/Mapping/SurgeArrester/index'
 export default {
     methods: {
         async handleSurgeConfirm() {
+            if (this.isSaving) return;
+            this.isSaving = true;
+
             const licenseCheck = await window.electronAPI.checkLicense('Surge Arrester');
             if (licenseCheck.success && !licenseCheck.allowed) {
                 this.$message.error(licenseCheck.message);
+                this.isSaving = false;
                 return;
             }
             const { close, timeoutValue } = startLoading(this, {
@@ -27,6 +31,7 @@ export default {
             };
 
             try {
+                // isSaving already set to true above
                 await new Promise(resolve => setTimeout(resolve, 200));
 
                 const dialogRef = this.$refs.surgeArresterDialog
@@ -49,26 +54,51 @@ export default {
 
                     if (success) {
                         saveSuccess = true;
-                        let newRows = []
-                        if (this.organisationClientList && this.organisationClientList.length > 0) {
-                            const assetData = data.asset || data.surgeArrester || data
-                            const apparatusId = assetData.name || assetData.apparatus_id
-                            const newRow = {
+                        const assetData = data.asset || data.surgeArrester || data
+                        if (this.isEditMode) {
+                            this.handleUpdateNodeData({
                                 mrid: assetData.mrid,
-                                apparatus_id: apparatusId,
-                                name: apparatusId || assetData.serial_number || 'Unnamed Surge Arrester',
-                                serial_number: assetData.serial_number,
-                                parentId: this.parentOrganization.mrid,
-                                parentName: this.parentOrganization.name,
-                                parentArr: this.parentOrganization.parentArr || [],
+                                data: assetData,
                                 mode: 'asset',
-                                asset: 'Surge arrester'
+                                assetType: 'Surge arrester'
+                            });
+                            try {
+                                const entityRes = await window.electronAPI.getSurgeArresterEntityByMrid(
+                                    assetData.mrid,
+                                    data.assetPsr?.mrid
+                                );
+                                if (entityRes.success && entityRes.data) {
+                                    const dto = SurgeMapping.surgeArresterEntityToDto(entityRes.data);
+                                    const dialogRef = this.$refs.surgeArresterDialog;
+                                    const component = dialogRef ? dialogRef.getComponentRef() : null;
+                                    if (component && component.loadData) {
+                                        component.loadData(dto);
+                                    }
+                                }
+                            } catch (err) {
+                                console.error('Error reloading form after save:', err);
                             }
-                            newRows.push(newRow)
-                            const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
-                            if (node) {
-                                const children = Array.isArray(node.children) ? node.children : []
-                                Vue.set(node, 'children', [...children, ...newRows])
+                        } else {
+                            let newRows = []
+                            if (this.organisationClientList && this.organisationClientList.length > 0) {
+                                const apparatusId = assetData.name || assetData.apparatus_id
+                                const newRow = {
+                                    mrid: assetData.mrid,
+                                    apparatus_id: apparatusId,
+                                    name: apparatusId || assetData.serial_number || 'Unnamed Surge Arrester',
+                                    serial_number: assetData.serial_number,
+                                    parentId: this.parentOrganization.mrid,
+                                    parentName: this.parentOrganization.name,
+                                    parentArr: this.parentOrganization.parentArr || [],
+                                    mode: 'asset',
+                                    asset: 'Surge arrester'
+                                }
+                                newRows.push(newRow)
+                                const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
+                                if (node) {
+                                    const children = Array.isArray(node.children) ? node.children : []
+                                    Vue.set(node, 'children', [...children, ...newRows])
+                                }
                             }
                         }
                     }
@@ -80,6 +110,7 @@ export default {
                 console.error(error);
                 return;
             } finally {
+                this.isSaving = false;
                 this.$message = originalMessage;
             }
 
@@ -93,6 +124,7 @@ export default {
             if (saveSuccess) {
                 this.$message.success('Surge Arrester saved successfully');
                 this.signSurge = false;
+                this.isEditMode = false;
                 if (surgeRef) {
                     this.resetFormAfterSave(surgeRef);
                 }
@@ -100,6 +132,7 @@ export default {
         },
         handleSurgeCancel() {
             this.signSurge = false
+            this.isEditMode = false
         },
     }
 }
