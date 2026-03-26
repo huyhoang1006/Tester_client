@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { mapState } from 'vuex'
+import {mapState} from 'vuex'
 import disconnectorTestMap from '@/config/test-definitions/Disconnector'
 import disconnectorConditionMap from '@/config/testing-condition/Disconnector'
 import * as common from '@/views/JobView/Common/index'
@@ -9,7 +9,7 @@ export default {
         return {}
     },
     computed: mapState(['selectedAsset', 'selectedJob']),
-    async beforeMount() { },
+    async beforeMount() {},
     methods: {
         async initTest(testTypeCode, assetData) {
             let data = null
@@ -51,7 +51,7 @@ export default {
             row3.measurement.value = 'Phase C-(A+B+GND)'
 
             const table1 = [row1, row2, row3]
-            const table = { table1 }
+            const table = {table1}
 
             return {
                 rowDataExampleCondition,
@@ -62,11 +62,13 @@ export default {
             const rowDataExample = common.buildEmptyTestRow(disconnectorTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(disconnectorConditionMap[testTypeCode].columns)
 
-            // Tạo ít nhất 1 row mặc định
             const row1 = JSON.parse(JSON.stringify(rowDataExample))
+            row1.measurement.value = 'Main contact'
+            const row2 = JSON.parse(JSON.stringify(rowDataExample))
+            row2.measurement.value = 'Earth switch'
 
-            const table1 = [row1] // Hoặc có thể tạo nhiều rows
-            const table = { table1 }
+            const table1 = [row1, row2] // Hoặc có thể tạo nhiều rows
+            const table = {table1}
 
             return {
                 rowDataExampleCondition,
@@ -79,7 +81,7 @@ export default {
             const rowDataExample = common.buildEmptyTestRow(disconnectorTestMap[testTypeCode].columns)
             const row1 = JSON.parse(JSON.stringify(rowDataExample))
             const table1 = [row1] // Hoặc có thể tạo nhiều rows
-            const table = { table1 }
+            const table = {table1}
             return {
                 rowDataExampleCondition,
                 table
@@ -88,12 +90,12 @@ export default {
         async initDcWindingMotor(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(disconnectorTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(disconnectorConditionMap[testTypeCode].columns)
-            
+
             // Tạo ít nhất 1 row với cấu trúc đúng
             const row1 = JSON.parse(JSON.stringify(rowDataExample))
-            
+
             const table1 = [row1]
-            const table = { table1 }
+            const table = {table1}
 
             return {
                 rowDataExampleCondition,
@@ -110,7 +112,7 @@ export default {
             row2.measurement.value = 'Earth switch'
 
             const table1 = [row1, row2]
-            const table = { table1 }
+            const table = {table1}
 
             return {
                 rowDataExampleCondition,
@@ -123,8 +125,8 @@ export default {
 
             // Create default rows based on config
             const defaultItems = ['Control circuit A', 'Control circuit B', 'Control circuit C', 'Auxiliary circuit', 'Heater circuit']
-            
-            const table1 = defaultItems.map(itemValue => {
+
+            const table1 = defaultItems.map((itemValue) => {
                 const row = JSON.parse(JSON.stringify(rowDataExample))
                 if (row.measurement) {
                     row.measurement.value = itemValue
@@ -132,7 +134,7 @@ export default {
                 return row
             })
 
-            const table = { table1 }
+            const table = {table1}
 
             return {
                 rowDataExampleCondition,
@@ -142,9 +144,9 @@ export default {
         async initGeneralInspection(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(disconnectorTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(disconnectorConditionMap[testTypeCode].columns)
-            const defaultItems = disconnectorTestMap[testTypeCode].defaultRows.map(x => x.item)
+            const defaultItems = disconnectorTestMap[testTypeCode].defaultRows.map((x) => x.item)
 
-            const table1 = defaultItems.map(itemValue => {
+            const table1 = defaultItems.map((itemValue) => {
                 const row = JSON.parse(JSON.stringify(rowDataExample))
                 if (row.item) {
                     row.item.value = itemValue
@@ -152,7 +154,7 @@ export default {
                 return row
             })
 
-            const table = { table1 }
+            const table = {table1}
             return {
                 rowDataExampleCondition,
                 table

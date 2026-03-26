@@ -47,7 +47,8 @@
                         <el-input size="mini" type="text" v-model="item.close_coil_no.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.test_voltage.value"></el-input>
+                        <el-input size="mini" type="text" number="positive"
+                            v-model="item.test_voltage.value"></el-input>
                     </td>
                     <td>
                         <el-input size="mini" type="text" number="positive" v-model="item.r60s.value"></el-input>
@@ -218,7 +219,7 @@ export default {
                 type: 'warning'
             }).then(() => {
                 this.testData.table.table1 = []
-            })
+            }).catch(() => { })
         },
         deleteTest(index) {
             this.testData.table.table1.splice(index, 1)
