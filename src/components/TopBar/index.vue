@@ -111,7 +111,7 @@
                                         Config server address
                                     </el-dropdown-item>
                                     <el-divider></el-divider>
-                                    <el-dropdown-item command="manage_user">
+                                    <!-- <el-dropdown-item command="manage_user">
                                         <i class="fas fa-user-cog"></i>
                                         User management
                                     </el-dropdown-item>
@@ -119,7 +119,7 @@
                                         <i class="fas fa-key"></i>
                                         Change password
                                     </el-dropdown-item>
-                                    <el-divider></el-divider>
+                                    <el-divider></el-divider> -->
                                     <el-dropdown-item command="log_out" class="danger-item">
                                         <i class="fas fa-sign-out-alt"></i>
                                         Log out
@@ -431,7 +431,8 @@ export default {
                     this.dialogChangePw = true
                     break
                 case 'manage_user':
-                    this.$router.push({ path: '/manage-user' })
+                    // this.$router.push({ path: '/manage-user' })
+                    this.$message.err('Not available')
                     break
                 case 'config':
                     this.dialogConfig = true
@@ -1285,7 +1286,7 @@ export default {
     line-height: 30px !important;
     padding: 2px 14px !important;
     margin: 0 !important;
-    border-radius: 8px;
+    border-radius: 6px;
     background: transparent;
     transition: background 0.2s ease;
     text-shadow: none !important;
@@ -1318,7 +1319,7 @@ export default {
     margin: 6px 0 0 0 !important;
     padding: 10px 14px !important;
     border: none !important;
-    border-radius: 8px !important;
+    border-radius: 6px !important;
     box-shadow: 0 4px 12px rgba(204, 5, 20, 0.4),
         0 2px 6px rgba(0, 0, 0, 0.2) !important;
     line-height: normal !important;

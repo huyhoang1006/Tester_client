@@ -2,25 +2,16 @@
     <el-dialog title="Import Data" :visible="visible" @update:visible="$emit('update:visible', $event)" :modal="modal"
         :show-close="showClose" :transition="transition" custom-class="app-dialog" append-to-body @close="handleCancel">
         <div class="import-wrapper">
-            <div class="import-top-section">
-                <div class="info-label">Select a file to import:</div>
-                <!-- Logo nhỏ trang trí giống update dialog (tùy chọn) -->
-                <!-- <div class="app-logo-mini">
-                    <img src="@/assets/images/atenergy_key_light.png" alt="" />
-                </div> -->
-            </div>
-
-            <!-- Khu vực upload file - Style giống changelog-body -->
             <div class="upload-container">
                 <el-upload class="upload-area" drag action="#" ref="upload" :auto-upload="false"
                     :on-change="handleChange" :on-remove="handleRemove" :on-exceed="handleExceed" :file-list="fileList"
-                    :limit="1" accept=".json, .xml, .xlsx, .xls, .doc, .docx, .pdf">
+                    :limit="1" accept=".json, .xlsx, .xls, .doc, .docx">
                     <i class="el-icon-upload" style="color: #fff; font-size: 40px; margin-bottom: 10px;"></i>
                     <div class="el-upload__text" style="color: rgba(255,255,255,0.8);">
                         Drop file here or <em>click to upload</em>
                     </div>
                     <div class="el-upload__tip" slot="tip" style="color: rgba(255,255,255,0.5);">
-                        Supported files: JSON, Excel, XML, Word, PDF
+                        Supported files: JSON, Excel, Word
                     </div>
                 </el-upload>
             </div>
@@ -111,23 +102,24 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-/* === Copy Styles từ TopBar.vue === */
-
-/* Dialog Wrapper Styles */
 ::v-deep(.app-dialog) {
     box-sizing: border-box;
 }
 
 ::v-deep(.app-dialog.el-dialog) {
-    max-width: 500px;
-    /* Nhỏ hơn chút so với Update dialog */
+    max-width: 576px;
     width: 90%;
-    margin-top: 15vh !important;
-    border-radius: 16px;
+    max-height: 90%;
     height: auto !important;
+
+    margin: 0 auto !important;
+    margin-top: max(10px, min(15vh, calc(50vh - 200px))) !important;
+
     display: flex;
+    border-radius: 16px;
     flex-direction: column;
     overflow: hidden;
+
     /* Hiệu ứng kính mờ (Glassmorphism) */
     background: rgba(255, 255, 255, 0.3) !important;
     backdrop-filter: blur(12px) saturate(180%);
@@ -183,6 +175,15 @@ export default {
 ::v-deep(.app-dialog .el-dialog__body) {
     padding: 10px 25px;
     color: #ffffff;
+    overflow-y: auto;
+    flex: 1;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+::v-deep(.app-dialog .el-dialog__body::-webkit-scrollbar) {
+    width: 0px;
+    height: 0px;
 }
 
 /* Content Wrapper */
@@ -327,11 +328,5 @@ export default {
     box-shadow: none !important;
     cursor: not-allowed;
     transform: none !important;
-}
-
-@media (max-width: 767px) {
-    ::v-deep(.custom-footer) {
-        justify-content: center;
-    }
 }
 </style>
