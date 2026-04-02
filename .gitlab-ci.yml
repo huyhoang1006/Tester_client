@@ -1,12 +1,14 @@
 stages:
   - build
   - release
+
 variables:
   APP_NAME: "ATDigitalTester"
 
 build:
   stage: build
   image: node:18
+  tags: ["250"]
   only:
     - tags
     - master
@@ -27,6 +29,7 @@ build:
 release:
   stage: release
   image: node:18
+  tags: ["250"]
   only:
     - tags
     - master
