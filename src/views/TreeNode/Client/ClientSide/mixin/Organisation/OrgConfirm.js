@@ -83,9 +83,9 @@ export default {
                 await close();
                 this.$message.error(error.message === 'Timeout' ? 'Save timed out' : 'Some error occur');
                 console.error(error);
+                this.isSaving = false;
                 return;
             } finally {
-                this.isSaving = false;
                 this.$message = originalMessage;
             }
 
@@ -103,9 +103,17 @@ export default {
                     this.resetFormAfterSave(orgRef);
                 }
             }
+            setTimeout(() => {
+                this.isSaving = false;
+            }, 300);
         },
         async handleOrgCancel() {
             this.signOrg = false
+            const dialogRef = this.$refs.organisationDialog
+            const org = dialogRef ? dialogRef.getOrganisationRef() : null
+            if (org) {
+                this.resetFormAfterSave(org)
+            }
         },
     }
 }

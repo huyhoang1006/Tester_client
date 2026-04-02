@@ -55,4 +55,9 @@ export default {
     width: 100%;
     padding-left: 10px;
 }
+.path-hover:hover {
+    color: black;
+    text-decoration: underline;
+    cursor: pointer;
+}
 </style>

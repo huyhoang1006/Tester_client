@@ -59,7 +59,7 @@
                                     type="textarea" number="positive" size="mini" v-model="item.opening_sync_between_phase.value"></el-input>
                             </td>
                             <td>
-                                <el-input size="mini" v-model="item.open_close_time.value"></el-input>
+                                <el-input size="mini" type="text" number="positive" v-model="item.open_close_time.value"></el-input>
                             </td>
                             <td>
                                 <el-select class="assessment" size="mini" v-model="item.assessment.value">

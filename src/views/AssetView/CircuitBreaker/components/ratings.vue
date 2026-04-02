@@ -77,8 +77,8 @@
                                 <template slot="append">ms</template>
                             </el-input>
                         </el-form-item>
-                        <el-form-item label="interrupting duty cycle">
-                            <el-input type="text" number="positive" v-model="ratingsData.interrupting_duty_cycle"></el-input>
+                        <el-form-item label="Interrupting duty cycle">
+                            <el-input type="textarea" maxlength="100" v-model="ratingsData.interrupting_duty_cycle"></el-input>
                         </el-form-item>
                         <el-form-item label="Rated power at closing">
                             <el-input type="text" number="positive" v-model="ratingsData.rated_power_at_closing.value">

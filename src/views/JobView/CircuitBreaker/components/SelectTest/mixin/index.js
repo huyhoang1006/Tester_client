@@ -209,6 +209,11 @@ export default {
                 table.push(coilTable)
             }
 
+            const tableObj = {}
+            table.forEach((coilTable, idx) => {
+                tableObj[`table${idx + 1}`] = coilTable
+            })
+
             return {
                 rowDataExampleCondition,
                 limits: 'Absolute',
@@ -234,9 +239,7 @@ export default {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}],
                     rel: [{}, {}, {}, {}, {}, {}, {}, {}]
                 },
-                table: {
-                    table1: table
-                }
+                table: tableObj
             }
         },
         async initOCTiming(testTypeCode, assetData) {
@@ -261,22 +264,20 @@ export default {
 
                         if (row.phase) {
                             row.phase.value = phaseNames[i] || `P${i + 1}`
-                        } else if (row.name) {
-                            row.name.value = phaseNames[i] || `P${i + 1}`
                         }
-
-                        if (interruptCount > 1) {
-                            if (row.interrupt_no) {
-                                row.interrupt_no.value = (j + 1).toString()
-                            } else {
-                                row.interrupt_no = {mrid: '', value: (j + 1).toString(), unit: '', type: 'string'}
-                            }
+                        if (row.interrupter) {
+                            row.interrupter.value = (j + 1).toString()
                         }
                         coilTable.push(row)
                     }
                 }
                 table.push(coilTable)
             }
+
+            const tableObj = {}
+            table.forEach((coilTable, idx) => {
+                tableObj[`table${idx + 1}`] = coilTable
+            })
 
             return {
                 rowDataExampleCondition,
@@ -303,9 +304,7 @@ export default {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}],
                     rel: [{}, {}, {}, {}, {}, {}, {}, {}]
                 },
-                table: {
-                    table1: table
-                }
+                table: tableObj
             }
         },
         async initCOTiming(testTypeCode, assetData) {
@@ -349,6 +348,11 @@ export default {
                 table.push(coilTable)
             }
 
+            const tableObj = {}
+            table.forEach((coilTable, idx) => {
+                tableObj[`table${idx + 1}`] = coilTable
+            })
+
             return {
                 rowDataExampleCondition,
                 limits: 'Absolute',
@@ -374,9 +378,7 @@ export default {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}],
                     rel: [{}, {}, {}, {}, {}, {}, {}, {}]
                 },
-                table: {
-                    table1: table
-                }
+                table: tableObj
             }
         },
         async initOCOTiming(testTypeCode, assetData) {
@@ -420,6 +422,11 @@ export default {
                 table.push(coilTable)
             }
 
+            const tableObj = {}
+            table.forEach((coilTable, idx) => {
+                tableObj[`table${idx + 1}`] = coilTable
+            })
+
             return {
                 rowDataExampleCondition,
                 limits: 'Absolute',
@@ -445,43 +452,37 @@ export default {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}],
                     rel: [{}, {}, {}, {}, {}, {}, {}, {}]
                 },
-                table: {
-                    table1: table
-                }
+                table: tableObj
             }
         },
         async initCOCOTiming(testTypeCode, assetData) {
-            const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
 
-            const {circuitBreaker} = assetData
+            const {circuitBreaker, operating} = assetData
 
+            const closeCoilsCount = parseInt(operating?.numberCloseCoil || operating?.number_of_close_coil || 1)
             const phaseCount = parseInt(circuitBreaker?.numberOfPhase || circuitBreaker?.numberOfPhases || 3)
             const interruptCount = parseInt(circuitBreaker?.numberOfInterruptPhase || circuitBreaker?.interruptersPerPhase || 1)
 
-            let table = []
-            let phaseNames = ['A', 'B', 'C']
+            const phaseNames = ['A', 'B', 'C']
+            const tableObj = {}
 
-            for (let i = 0; i < phaseCount; i++) {
-                for (let j = 0; j < interruptCount; j++) {
-                    const row = JSON.parse(JSON.stringify(rowDataExample))
-
-                    if (row.phase) {
-                        row.phase.value = phaseNames[i] || `P${i + 1}`
-                    } else if (row.name) {
-                        row.name.value = phaseNames[i] || `P${i + 1}`
+            for (let c = 0; c < closeCoilsCount; c++) {
+                const coilTable = []
+                for (let i = 0; i < phaseCount; i++) {
+                    for (let j = 0; j < interruptCount; j++) {
+                        coilTable.push({
+                            phase: { mrid: '', value: phaseNames[i] || `P${i + 1}`, unit: '', type: 'string' },
+                            trip_coil: { mrid: '', value: '', unit: '', type: 'analog' },
+                            interrupter: { mrid: '', value: (j + 1).toString(), unit: '', type: 'analog' },
+                            opening_time: { mrid: '', value: '', unit: 'm|s', type: 'analog' },
+                            opening_sync_between_phase: { mrid: '', value: '', unit: 'm|s', type: 'analog' },
+                            assessment: { mrid: '', value: '', unit: '', type: 'discrete' },
+                            condition_indicator: { mrid: '', value: '', unit: '', type: 'discrete' }
+                        })
                     }
-
-                    if (interruptCount > 1) {
-                        if (row.interrupt_no) {
-                            row.interrupt_no.value = (j + 1).toString()
-                        } else {
-                            row.interrupt_no = {mrid: '', value: (j + 1).toString(), unit: '', type: 'string'}
-                        }
-                    }
-
-                    table.push(row)
                 }
+                tableObj[`table${c + 1}`] = coilTable
             }
 
             return {
@@ -492,14 +493,8 @@ export default {
                     rel: [{}, {}, {}, {}, {}, {}, {}, {}, {}]
                 },
                 auxContact: {
-                    abs: {
-                        trip: [{}, {}, {}, {}, {}, {}],
-                        close: [{}, {}, {}, {}, {}, {}]
-                    },
-                    rel: {
-                        trip: [{}, {}, {}, {}, {}, {}],
-                        close: [{}, {}, {}, {}, {}, {}]
-                    }
+                    abs: { trip: [{}, {}, {}, {}, {}, {}], close: [{}, {}, {}, {}, {}, {}] },
+                    rel: { trip: [{}, {}, {}, {}, {}, {}], close: [{}, {}, {}, {}, {}, {}] }
                 },
                 miscell: {
                     abs: [{}, {}, {}, {}],
@@ -509,43 +504,37 @@ export default {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}],
                     rel: [{}, {}, {}, {}, {}, {}, {}, {}]
                 },
-                table: {
-                    table1: table
-                }
+                table: tableObj
             }
         },
         async initOCOCOTiming(testTypeCode, assetData) {
-            const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
 
-            const {circuitBreaker} = assetData
+            const {circuitBreaker, operating} = assetData
 
+            const tripCoilsCount = parseInt(operating?.numberTripCoil || operating?.number_of_trip_coil || 1)
             const phaseCount = parseInt(circuitBreaker?.numberOfPhase || circuitBreaker?.numberOfPhases || 3)
             const interruptCount = parseInt(circuitBreaker?.numberOfInterruptPhase || circuitBreaker?.interruptersPerPhase || 1)
 
-            let table = []
-            let phaseNames = ['A', 'B', 'C']
+            const phaseNames = ['A', 'B', 'C']
+            const tableObj = {}
 
-            for (let i = 0; i < phaseCount; i++) {
-                for (let j = 0; j < interruptCount; j++) {
-                    const row = JSON.parse(JSON.stringify(rowDataExample))
-
-                    if (row.phase) {
-                        row.phase.value = phaseNames[i] || `P${i + 1}`
-                    } else if (row.name) {
-                        row.name.value = phaseNames[i] || `P${i + 1}`
+            for (let t = 0; t < tripCoilsCount; t++) {
+                const coilTable = []
+                for (let i = 0; i < phaseCount; i++) {
+                    for (let j = 0; j < interruptCount; j++) {
+                        coilTable.push({
+                            phase: { mrid: '', value: phaseNames[i] || `P${i + 1}`, unit: '', type: 'string' },
+                            trip_coil: { mrid: '', value: (t + 1).toString(), unit: '', type: 'analog' },
+                            interrupter: { mrid: '', value: (j + 1).toString(), unit: '', type: 'analog' },
+                            opening_time: { mrid: '', value: '', unit: 'm|s', type: 'analog' },
+                            opening_sync_between_phase: { mrid: '', value: '', unit: 'm|s', type: 'analog' },
+                            assessment: { mrid: '', value: '', unit: '', type: 'discrete' },
+                            condition_indicator: { mrid: '', value: '', unit: '', type: 'discrete' }
+                        })
                     }
-
-                    if (interruptCount > 1) {
-                        if (row.interrupt_no) {
-                            row.interrupt_no.value = (j + 1).toString()
-                        } else {
-                            row.interrupt_no = {mrid: '', value: (j + 1).toString(), unit: '', type: 'string'}
-                        }
-                    }
-
-                    table.push(row)
                 }
+                tableObj[`table${t + 1}`] = coilTable
             }
 
             return {
@@ -556,14 +545,8 @@ export default {
                     rel: [{}, {}, {}, {}, {}, {}, {}, {}, {}]
                 },
                 auxContact: {
-                    abs: {
-                        trip: [{}, {}, {}, {}, {}, {}],
-                        close: [{}, {}, {}, {}, {}, {}]
-                    },
-                    rel: {
-                        trip: [{}, {}, {}, {}, {}, {}],
-                        close: [{}, {}, {}, {}, {}, {}]
-                    }
+                    abs: { trip: [{}, {}, {}, {}, {}, {}], close: [{}, {}, {}, {}, {}, {}] },
+                    rel: { trip: [{}, {}, {}, {}, {}, {}], close: [{}, {}, {}, {}, {}, {}] }
                 },
                 miscell: {
                     abs: [{}, {}, {}, {}],
@@ -573,9 +556,7 @@ export default {
                     abs: [{}, {}, {}, {}, {}, {}, {}, {}],
                     rel: [{}, {}, {}, {}, {}, {}, {}, {}]
                 },
-                table: {
-                    table1: table
-                }
+                table: tableObj
             }
         },
         async initContactResistance(testTypeCode, assetData) {

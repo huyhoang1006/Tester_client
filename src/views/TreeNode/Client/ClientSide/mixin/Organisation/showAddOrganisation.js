@@ -5,9 +5,10 @@ export default {
                 this.parentOrganization = node
                 this.signOrg = true
                 this.$nextTick(() => {
-                    const organisation = this.$refs.organisation
-                    if (organisation) {
-                        organisation.resetForm()
+                    const dialogRef = this.$refs.organisationDialog
+                    const org = dialogRef ? dialogRef.getOrganisationRef() : null
+                    if (org) {
+                        org.resetForm()
                     }
                 })
             } catch (error) {
