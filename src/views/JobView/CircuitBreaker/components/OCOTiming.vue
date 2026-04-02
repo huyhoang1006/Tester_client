@@ -32,70 +32,88 @@
                 <table v-if="tableData && Array.isArray(tableData)" class="table-strip-input-data" style="width: 100%; font-size: 12px;">
                     <thead>
                         <th>Phase</th>
+                        <th>Interrupter</th>
                         <th>Opening time (ms)</th>
-                        <th>Opening sync. (ms)</th>
+                        <th>Opening sync. between phase (ms)</th>
+                        <th>Opening sync. between interrupter (ms)</th>
                         <th>Closing time (ms)</th>
-                        <th>Closing sync. (ms)</th>
+                        <th>Closing sync. between phase (ms)</th>
+                        <th>Closing sync. between interrupter (ms)</th>
                         <th>Open-Close time (ms)</th>
                         <th class="assessment-col">Assessment</th>
                         <th class="condition-indicator-col">Condition indicator</th>
                     </thead>
                     <tbody>
-                        <template v-for="(item, index) in tableData">
-                            <tr v-if="item && item.phase && item.opening_time && item.closing_time" :key="index">
-                                <td>
-                                    <div style="display: flex; width: 100%;">
-                                        <el-input size="mini" v-model="item.phase.value"></el-input>
-                                        <div
-                                            :class="{ colorTableRed: item.phase.value == 'A', colorTableYellow: item.phase.value == 'B', colorTableBlue: item.phase.value == 'C' }">
-                                        </div>
+                        <tr v-for="(item, index) in tableData" :key="index">
+                            <td>
+                                <div style="display: flex; width: 100%;">
+                                    <el-input size="mini" v-model="item.phase.value"></el-input>
+                                    <div
+                                        :class="{ colorTableRed: item.phase.value == 'A', colorTableYellow: item.phase.value == 'B', colorTableBlue: item.phase.value == 'C' }">
                                     </div>
-                                </td>
-                                <td>
-                                    <el-input size="mini" type="text" number="positive" v-model="item.opening_time.value"></el-input>
-                                </td>
-                                <td v-if="index % (getInterruptersPerPhase() * getNumberOfPhases()) === 0"
-                                    :rowspan="getInterruptersPerPhase() * getNumberOfPhases()">
-                                    <el-input
-                                        :rows="getInterruptersPerPhase() * getNumberOfPhases()"
-                                        type="textarea" number="positive" size="mini"
-                                        v-model="item.opening_sync.value"></el-input>
-                                </td>
-                                <td>
-                                    <el-input size="mini" type="text" number="positive" v-model="item.closing_time.value"></el-input>
-                                </td>
-                                <td v-if="index % (getInterruptersPerPhase() * getNumberOfPhases()) === 0"
-                                    :rowspan="getInterruptersPerPhase() * getNumberOfPhases()">
-                                    <el-input
-                                        :rows="getInterruptersPerPhase() * getNumberOfPhases()"
-                                        type="textarea" number="positive" size="mini"
-                                        v-model="item.closing_sync.value"></el-input>
-                                </td>
-                                <td>
-                                    <el-input size="mini" type="text" number="positive" v-model="item.open_close_time.value"></el-input>
-                                </td>
-                                <td>
-                                    <el-select class="assessment" size="mini" v-model="item.assessment.value">
-                                        <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i>
-                                            Pass</el-option>
-                                        <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
-                                    </el-select>
-                                    <span v-if="item.assessment.value === 'Pass'"
-                                        class="fa-solid fa-square-check pass icon-status"></span>
-                                    <span v-else-if="item.assessment.value === 'Fail'"
-                                        class="fa-solid fa-xmark fail icon-status"></span>
-                                </td>
-                                <td>
-                                    <el-select :class="nameColor(item.condition_indicator.value)" size="mini"
-                                        v-model="item.condition_indicator.value">
-                                        <el-option value="Good">Good</el-option>
-                                        <el-option value="Fair">Fair</el-option>
-                                        <el-option value="Poor">Poor</el-option>
-                                        <el-option value="Bad">Bad</el-option>
-                                    </el-select>
-                                </td>
-                            </tr>
-                        </template>
+                                </div>
+                            </td>
+                            <td>
+                                <el-input size="mini" v-model="item.interrupter.value"></el-input>
+                            </td>
+                            <td>
+                                <el-input size="mini" type="text" number="positive" v-model="item.opening_time.value"></el-input>
+                            </td>
+                            <td v-if="index % (getInterruptersPerPhase() * getNumberOfPhases()) === 0"
+                                :rowspan="getInterruptersPerPhase() * getNumberOfPhases()">
+                                <el-input
+                                    :rows="getInterruptersPerPhase() * getNumberOfPhases()"
+                                    type="textarea" number="positive" size="mini"
+                                    v-model="item.opening_sync_between_phase.value"></el-input>
+                            </td>
+                            <td v-if="index % getInterruptersPerPhase() === 0"
+                                :rowspan="getInterruptersPerPhase()">
+                                <el-input
+                                    :rows="getInterruptersPerPhase()"
+                                    type="textarea" number="positive" size="mini"
+                                    v-model="item.opening_sync_between_interrupter.value"></el-input>
+                            </td>
+                            <td>
+                                <el-input size="mini" type="text" number="positive" v-model="item.closing_time.value"></el-input>
+                            </td>
+                            <td v-if="index % (getInterruptersPerPhase() * getNumberOfPhases()) === 0"
+                                :rowspan="getInterruptersPerPhase() * getNumberOfPhases()">
+                                <el-input
+                                    :rows="getInterruptersPerPhase() * getNumberOfPhases()"
+                                    type="textarea" number="positive" size="mini"
+                                    v-model="item.closing_sync_between_phase.value"></el-input>
+                            </td>
+                            <td v-if="index % getInterruptersPerPhase() === 0"
+                                :rowspan="getInterruptersPerPhase()">
+                                <el-input
+                                    :rows="getInterruptersPerPhase()"
+                                    type="textarea" number="positive" size="mini"
+                                    v-model="item.closing_sync_between_interrupter.value"></el-input>
+                            </td>
+                            <td>
+                                <el-input size="mini" type="text" number="positive" v-model="item.open_close_time.value"></el-input>
+                            </td>
+                            <td>
+                                <el-select class="assessment" size="mini" v-model="item.assessment.value">
+                                    <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i>
+                                        Pass</el-option>
+                                    <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
+                                </el-select>
+                                <span v-if="item.assessment.value === 'Pass'"
+                                    class="fa-solid fa-square-check pass icon-status"></span>
+                                <span v-else-if="item.assessment.value === 'Fail'"
+                                    class="fa-solid fa-xmark fail icon-status"></span>
+                            </td>
+                            <td>
+                                <el-select :class="nameColor(item.condition_indicator.value)" size="mini"
+                                    v-model="item.condition_indicator.value">
+                                    <el-option value="Good">Good</el-option>
+                                    <el-option value="Fair">Fair</el-option>
+                                    <el-option value="Poor">Poor</el-option>
+                                    <el-option value="Bad">Bad</el-option>
+                                </el-select>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -997,10 +1015,13 @@ export default {
                         for (let interruptIdx = 0; interruptIdx < numInterruptPhase; interruptIdx++) {
                             tableRow.push({
                                 phase: { mrid: '', value: phase[phaseIdx] || '', unit: '', type: 'string' },
+                                interrupter: { mrid: '', value: (interruptIdx + 1).toString(), unit: '', type: 'analog' },
                                 opening_time: { mrid: '', value: '', unit: 'm|s', type: 'analog' },
-                                opening_sync: { mrid: '', value: '', unit: 'm|s', type: 'analog' },
+                                opening_sync_between_phase: { mrid: '', value: '', unit: 'm|s', type: 'analog' },
+                                opening_sync_between_interrupter: { mrid: '', value: '', unit: 'm|s', type: 'analog' },
                                 closing_time: { mrid: '', value: '', unit: 'm|s', type: 'analog' },
-                                closing_sync: { mrid: '', value: '', unit: 'm|s', type: 'analog' },
+                                closing_sync_between_phase: { mrid: '', value: '', unit: 'm|s', type: 'analog' },
+                                closing_sync_between_interrupter: { mrid: '', value: '', unit: 'm|s', type: 'analog' },
                                 open_close_time: { mrid: '', value: '', unit: 'm|s', type: 'analog' },
                                 assessment: { mrid: '', value: '', unit: '', type: 'discrete' },
                                 condition_indicator: { mrid: '', value: '', unit: '', type: 'discrete' }
