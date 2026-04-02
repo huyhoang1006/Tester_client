@@ -8,14 +8,13 @@
             </div>
 
             <div class="center-bar">
-                <div v-if="user" class="search-wrapper" :class="{ collapsed: isSearchCollapsed }">
+                <!-- <div v-if="user" class="search-wrapper" :class="{ collapsed: isSearchCollapsed }">
                     <i class="fa-solid fa-magnifying-glass search-icon"></i>
                     <input v-if="!isSearchCollapsed" class="topbar-search" type="text" placeholder="Searching...">
-                </div>
+                </div> -->
             </div>
 
             <div class="right-bar">
-
                 <el-tooltip v-if="user" content="Notifications" placement="bottom" trigger="hover"
                     :append-to-body="true">
                     <div class="dropdown-trigger-wrapper" style="-webkit-app-region: no-drag;"
@@ -111,7 +110,7 @@
                                         Config server address
                                     </el-dropdown-item>
                                     <el-divider></el-divider>
-                                    <el-dropdown-item command="manage_user">
+                                    <!-- <el-dropdown-item command="manage_user">
                                         <i class="fas fa-user-cog"></i>
                                         User management
                                     </el-dropdown-item>
@@ -119,7 +118,7 @@
                                         <i class="fas fa-key"></i>
                                         Change password
                                     </el-dropdown-item>
-                                    <el-divider></el-divider>
+                                    <el-divider></el-divider> -->
                                     <el-dropdown-item command="log_out" class="danger-item">
                                         <i class="fas fa-sign-out-alt"></i>
                                         Log out
@@ -166,8 +165,13 @@
             append-to-body>
             <el-form :model="formConfig" :label-width="formLabelWidth" :label-position="'left'" size="small"
                 :rules="configRules" ref="formConfig">
-                <el-form-item label="Domain" prop="domain">
-                    <el-input type="text" v-model="formConfig.domain" placeholder="https://domain.com/api/"></el-input>
+                <el-form-item label="Login Domain" prop="loginDomain">
+                    <el-input type="text" v-model="formConfig.loginDomain"
+                        placeholder="https://login.domain.com"></el-input>
+                </el-form-item>
+                <el-form-item label="Service Domain" prop="serviceDomain">
+                    <el-input type="text" v-model="formConfig.serviceDomain"
+                        placeholder="https://service.domain.com"></el-input>
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer custom-footer">
@@ -202,7 +206,8 @@
                     </div>
                 </div>
                 <div v-if="updateInfo.isDownloading" class="download-progress">
-                    <el-progress :percentage="updateInfo.downloadProgress" :status="updateInfo.downloadProgress === 100 ? 'success' : undefined"></el-progress>
+                    <el-progress :percentage="updateInfo.downloadProgress"
+                        :status="updateInfo.downloadProgress === 100 ? 'success' : undefined"></el-progress>
                     <div class="progress-text">Downloading update... {{ updateInfo.downloadProgress }}%</div>
                 </div>
             </div>
@@ -210,7 +215,8 @@
                 <el-button class="footer-btn" size="small" @click="dismissUpdate" :disabled="updateInfo.isDownloading">
                     Not now
                 </el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleUpdate" :loading="updateInfo.isDownloading" :disabled="updateInfo.isDownloading">
+                <el-button class="footer-btn" size="small" type="primary" @click="handleUpdate"
+                    :loading="updateInfo.isDownloading" :disabled="updateInfo.isDownloading">
                     <i v-if="!updateInfo.isDownloading" class="fas fa-download"></i>
                     {{ updateInfo.isDownloading ? 'Downloading...' : 'Update Now' }}
                 </el-button>
@@ -248,7 +254,8 @@
                 <el-button class="footer-btn" size="small" @click="dialogNotificationDetail = false">
                     Close
                 </el-button>
-                <el-button class="footer-btn" size="small" type="danger" @click="deleteNotification(selectedNotification.mrid)">
+                <el-button class="footer-btn" size="small" type="danger"
+                    @click="deleteNotification(selectedNotification.mrid)">
                     <i class="fas fa-trash"></i> Delete
                 </el-button>
             </span>
@@ -274,16 +281,25 @@ export default {
                 newPassword: ''
             },
             formConfig: {
-                domain: ''
+                loginDomain: '',
+                serviceDomain: ''
             },
             formLabelWidth: '120px',
             configRules: {
-                domain: [
+                loginDomain: [
                     {
                         required: true,
                         pattern: /^https?:\/\//,
-                        message: 'Invalid domain',
-                        trigger: 'change'
+                        message: 'Invalid login domain',
+                        trigger: ['blur', 'change']
+                    }
+                ],
+                serviceDomain: [
+                    {
+                        required: true,
+                        pattern: /^https?:\/\//,
+                        message: 'Invalid service domain',
+                        trigger: ['blur', 'change']
                     }
                 ]
             },
@@ -309,7 +325,8 @@ export default {
         }
     },
     mounted() {
-        this.formConfig.domain = this.serverAddr
+        this.formConfig.loginDomain = this.loginAddr
+        this.formConfig.serviceDomain = this.serviceAddr
 
         if (window.electronAPI && window.electronAPI.onWindowStateChange) {
             window.electronAPI.onWindowStateChange((isMax) => {
@@ -375,7 +392,7 @@ export default {
     //     window.removeEventListener('resize', this.updateSearchState)
     // },
     computed: {
-        ...mapState(['user', 'serverAddr']),
+        ...mapState(['user', 'loginAddr', 'serviceAddr']),
         unreadCount() {
             return this.notifications.filter(n => n.status === 'unread').length
         },
@@ -431,7 +448,7 @@ export default {
                     this.dialogChangePw = true
                     break
                 case 'manage_user':
-                    this.$router.push({ path: '/manage-user' })
+                    // this.$router.push({ path: '/manage-user' })
                     break
                 case 'config':
                     this.dialogConfig = true
@@ -483,14 +500,14 @@ export default {
         getUpdateType(current, latest) {
             const c = this.parseVersion(current)
             const l = this.parseVersion(latest)
-            
+
             if (l[0] > c[0]) return 'major'
             if (l[1] > c[1]) return 'minor'
             return 'patch'
         },
         handleUpdate() {
             this.dialogUpdate = false
-            
+
             const loadingMessage = this.$message({
                 type: 'info',
                 message: 'Downloading update...',
@@ -538,7 +555,10 @@ export default {
         setServerAddr() {
             this.$refs.formConfig.validate((valid) => {
                 if (valid) {
-                    this.$helper.setServerAddr(this.formConfig.domain)
+                    this.$helper.setServerAddr({
+                        loginDomain: this.formConfig.loginDomain,
+                        serviceDomain: this.formConfig.serviceDomain
+                    })
                     this.dialogConfig = false
                     this.$message.success('Config successfully')
                     return
@@ -743,21 +763,21 @@ export default {
         },
         formatReleaseNotes(notes) {
             if (!notes) return 'No release notes available'
-            
+
             // Convert markdown-style lists to HTML
             let formatted = notes
                 .replace(/^- (.+)$/gm, '<li>$1</li>')
                 .replace(/^\* (.+)$/gm, '<li>$1</li>')
                 .replace(/^• (.+)$/gm, '<li>$1</li>')
-            
+
             // Wrap lists in ul tags
             if (formatted.includes('<li>')) {
                 formatted = '<ul>' + formatted + '</ul>'
             }
-            
+
             // Convert line breaks to <br>
             formatted = formatted.replace(/\n/g, '<br>')
-            
+
             return formatted
         }
     }
@@ -1285,7 +1305,7 @@ export default {
     line-height: 30px !important;
     padding: 2px 14px !important;
     margin: 0 !important;
-    border-radius: 8px;
+    border-radius: 6px;
     background: transparent;
     transition: background 0.2s ease;
     text-shadow: none !important;
@@ -1318,7 +1338,7 @@ export default {
     margin: 6px 0 0 0 !important;
     padding: 10px 14px !important;
     border: none !important;
-    border-radius: 8px !important;
+    border-radius: 6px !important;
     box-shadow: 0 4px 12px rgba(204, 5, 20, 0.4),
         0 2px 6px rgba(0, 0, 0, 0.2) !important;
     line-height: normal !important;
