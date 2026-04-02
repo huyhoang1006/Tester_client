@@ -7,7 +7,7 @@ module.exports = {
                 productName: 'AT Digital Tester',
                 publish: {
                     provider: 'generic',
-                    url: 'https://disparately-nonrationalistic-hope.ngrok-free.dev/'
+                    url: 'http://103.163.118.212:30151/tester-ied/tester/Tester_client/'
                 },
                 extraResources: ['./database/**', './icon/**', './attachment/**', './etrc-icon/**', './template/**', './extra_binaries/**'],
                 win: {

@@ -27,7 +27,7 @@ autoUpdater.autoDownload = false
 
 autoUpdater.setFeedURL({
     provider: "generic",
-    url: "https://disparately-nonrationalistic-hope.ngrok-free.dev"
+    url: "http://103.163.118.212:30151/tester-ied/tester/Tester_client/"
 })
 
 autoUpdater.on('download-progress', (progressObj) => {
