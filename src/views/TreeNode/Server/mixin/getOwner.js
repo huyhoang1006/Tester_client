@@ -21,10 +21,10 @@ export default {
                     })
                 } else {
                     this.ownerServerList = []
-                    this.$message.warning('Không tìm thấy dữ liệu tổ chức chủ sở hữu.')
+                    this.$message.warning('No owning organization data found.')
                 }
             } catch (error) {
-                this.$message.error('Có lỗi xảy ra khi lấy danh sách tổ chức chủ sở hữu.')
+                this.$message.error('An error occurred while retrieving the list of owning organizations.')
                 console.error('getOwnerLocation error:', error)
                 this.ownerServerList = []
             }

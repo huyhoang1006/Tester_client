@@ -555,10 +555,17 @@ export default {
         setServerAddr() {
             this.$refs.formConfig.validate((valid) => {
                 if (valid) {
+                    const cleanLoginDomain = this.formConfig.loginDomain.trim().replace(/\/+$/, '')
+                    const cleanServiceDomain = this.formConfig.serviceDomain.trim().replace(/\/+$/, '')
+
+                    this.formConfig.loginDomain = cleanLoginDomain
+                    this.formConfig.serviceDomain = cleanServiceDomain
+
                     this.$helper.setServerAddr({
                         loginDomain: this.formConfig.loginDomain,
                         serviceDomain: this.formConfig.serviceDomain
                     })
+                    
                     this.dialogConfig = false
                     this.$message.success('Config successfully')
                     return

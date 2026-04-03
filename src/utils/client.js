@@ -30,7 +30,7 @@ const refreshToken = () => {
         return Promise.reject(new Error('No refresh token available'))
     }
 
-    const domain = localStorage.getItem('SERVER_ADDR') || ''
+    const domain = localStorage.getItem('LOGIN_ADDR') || ''
     const refreshUrl = domain ? `${domain.replace(/\/$/, '')}/oauth/token` : '/oauth/token'
     const basicAuth = 'Basic ' + btoa('tester-client:tester-client')
 
@@ -60,7 +60,7 @@ const refreshToken = () => {
 client.interceptors.request.use(
     function (config) {
         // Logic cũ: Kiểm tra server address (giữ nguyên nếu bạn cần)
-        if (!store.state.serverAddr && !config.url.startsWith('http')) {
+        if (!store.state.serviceAddr && !config.url.startsWith('http')) {
             return Promise.reject(new Error('Server address not configured'))
         }
 

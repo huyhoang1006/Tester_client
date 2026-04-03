@@ -6,10 +6,14 @@ let interceptorAuthenticate = null
 
 export const initApp = () => {
     // 1. Khôi phục Server Address
-    const serverAddr = localStorage.getItem('SERVER_ADDR')
-    if (serverAddr) {
-        store.dispatch('setServerAddr', serverAddr)
-        client.defaults.baseURL = serverAddr
+    const serviceAddr = localStorage.getItem('SERVICE_ADDR')
+    if (serviceAddr) {
+        store.dispatch('setServiceAddr', serviceAddr)
+        client.defaults.baseURL = serviceAddr
+    }
+    const loginAddr = localStorage.getItem('LOGIN_ADDR')
+    if (loginAddr) {
+        store.dispatch('setLoginAddr', loginAddr)
     }
 
     // 2. Khôi phục thông tin User & Token từ LocalStorage
@@ -53,7 +57,7 @@ export const afterLogin = (remember, response) => {
     }
 
     // 2. Lưu vào LocalStorage (Nếu user chọn Remember hoặc mặc định lưu để F5 không mất session)
-    // Lưu ý: Token luôn cần lưu để F5 không bị logout, biến 'remember' thường chỉ dùng để quyết định thời gian lưu cookie, 
+    // Lưu ý: Token luôn cần lưu để F5 không bị logout, biến 'remember' thường chỉ dùng để quyết định thời gian lưu cookie,
     // nhưng với localStorage thì ta cứ lưu, logout thì xóa.
 
     /**
@@ -64,19 +68,21 @@ export const afterLogin = (remember, response) => {
 
     localStorage.setItem('token', accessToken)
     localStorage.setItem('refresh_token', refreshToken) // Lưu cái này để làm tính năng refresh token sau này
-    localStorage.setItem('user', JSON.stringify({
-        user_id: userInfo.id,
-        name: userInfo.username,
-        email: userInfo.email,
-        role: roleCode,
-        token_type: response.token_type,
-        refresh_token: refreshToken,
-        access_token: accessToken,
-        exp: response.expires_in,
-        name: userInfo.username
-    })) // Chỉ lưu phần info user, không lưu cả cục response to
+    localStorage.setItem(
+        'user',
+        JSON.stringify({
+            user_id: userInfo.id,
+            name: userInfo.username,
+            email: userInfo.email,
+            role: roleCode,
+            token_type: response.token_type,
+            refresh_token: refreshToken,
+            access_token: accessToken,
+            exp: response.expires_in,
+            name: userInfo.username
+        })
+    ) // Chỉ lưu phần info user, không lưu cả cục response to
     localStorage.setItem('role', roleCode)
-
 
     // 3. Cập nhật vào Store (Vuex)
     store.dispatch('setUser', {
@@ -118,10 +124,12 @@ export const afterLogout = () => {
     }
 }
 
-export const setServerAddr = (domain) => {
-    localStorage.setItem('SERVER_ADDR', domain)
-    store.dispatch('setServerAddr', domain)
-    client.defaults.baseURL = domain
+export const setServerAddr = ({loginDomain, serviceDomain}) => {
+    localStorage.setItem('LOGIN_ADDR', loginDomain)
+    localStorage.setItem('SERVICE_ADDR', serviceDomain)
+    store.dispatch('setLoginAddr', loginDomain)
+    store.dispatch('setServiceAddr', serviceDomain)
+    client.defaults.baseURL = serviceDomain
 }
 
 // Hàm phụ để cài đặt Interceptor (tránh lặp code giữa initApp và afterLogin)
