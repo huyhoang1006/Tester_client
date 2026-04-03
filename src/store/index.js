@@ -13,7 +13,8 @@ export default new Vuex.Store({
         token: null,
         role: null,
         user: null,
-        serverAddr: '',
+        loginAddr: '',
+        serviceAddr: '',
         selectedLocation: [],
         selectedAsset: [],
         selectedJob: [],
@@ -22,8 +23,8 @@ export default new Vuex.Store({
         selectedJobSync: [],
         // Timeout configuration for loading
         timeouts: {
-            default: 10000,  // 10 seconds for normal operations
-            heavy: 30000     // 30 seconds for heavy operations
+            default: 10000, // 10 seconds for normal operations
+            heavy: 30000 // 30 seconds for heavy operations
         }
     },
     getters: {
@@ -57,14 +58,17 @@ export default new Vuex.Store({
         getRole(state) {
             return state.role
         },
-        getServerAddr(state) {
-            return state.serverAddr
+        getLoginAddr(state) {
+            return state.loginAddr
         },
+        getServiceAddr(state) {
+            return state.serviceAddr
+        }
     },
     mutations: {
         SET_USER(state, user) {
             if (user !== null) {
-                state.user = { ...user }
+                state.user = {...user}
             } else {
                 state.user = null
             }
@@ -96,46 +100,52 @@ export default new Vuex.Store({
         SET_ROLE(state, role) {
             state.role = role
         },
-        SET_SERVER_ADDR(state, serverAddr) {
-            state.serverAddr = serverAddr
+        SET_LOGIN_ADDR(state, loginAddr) {
+            state.loginAddr = loginAddr
+        },
+        SET_SERVICE_ADDR(state, serviceAddr) {
+            state.serviceAddr = serviceAddr
         }
     },
     actions: {
-        removeUser({ commit }) {
+        removeUser({commit}) {
             commit('SET_USER', null)
         },
-        setUser({ commit }, user) {
+        setUser({commit}, user) {
             commit('SET_USER', user)
         },
-        setSelectedLocation({ commit }, selectedLocation) {
+        setSelectedLocation({commit}, selectedLocation) {
             commit('SET_SELECTED_LOCATION', selectedLocation)
         },
-        setSelectedAsset({ commit }, selectedAsset) {
+        setSelectedAsset({commit}, selectedAsset) {
             commit('SET_SELECTED_ASSET', selectedAsset)
         },
-        setSelectedJob({ commit }, selectedJob) {
+        setSelectedJob({commit}, selectedJob) {
             commit('SET_SELECTED_JOB', selectedJob)
         },
-        setSelectedLocationSync({ commit }, selectedLocationSync) {
+        setSelectedLocationSync({commit}, selectedLocationSync) {
             commit('SET_SELECTED_LOCATION_SYNC', selectedLocationSync)
         },
-        setSelectedAssetSync({ commit }, selectedAssetSync) {
+        setSelectedAssetSync({commit}, selectedAssetSync) {
             commit('SET_SELECTED_ASSET_SYNC', selectedAssetSync)
         },
-        setSelectedJobSync({ commit }, selectedJobSync) {
+        setSelectedJobSync({commit}, selectedJobSync) {
             commit('SET_SELECTED_JOB_SYNC', selectedJobSync)
         },
-        setIsAuthenticated({ commit }, isAuthenticated) {
+        setIsAuthenticated({commit}, isAuthenticated) {
             commit('SET_IS_AUTHENTICATED', isAuthenticated)
         },
-        setToken({ commit }, token) {
+        setToken({commit}, token) {
             commit('SET_TOKEN', token)
         },
-        setRole({ commit }, role) {
+        setRole({commit}, role) {
             commit('SET_ROLE', role)
         },
-        setServerAddr({ commit }, serverAddr) {
-            commit('SET_SERVER_ADDR', serverAddr)
+        setLoginAddr({commit}, loginAddr) {
+            commit('SET_LOGIN_ADDR', loginAddr)
+        },
+        setServiceAddr({commit}, serviceAddr) {
+            commit('SET_SERVICE_ADDR', serviceAddr)
         }
-    },
+    }
 })

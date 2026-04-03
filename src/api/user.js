@@ -5,10 +5,10 @@ import qs from 'qs'
 import store from '@/store'
 
 // Logic cũ: Set base URL cho client (Dùng cho các hàm getAll, signup...)
-const serverAddr = localStorage.getItem('SERVER_ADDR')
-if (serverAddr) {
-    store.dispatch('setServerAddr', serverAddr)
-    client.defaults.baseURL = serverAddr
+const loginAddr = localStorage.getItem('LOGIN_ADDR')
+if (loginAddr) {
+    store.dispatch('setLoginAddr', loginAddr)
+    client.defaults.baseURL = loginAddr
 }
 
 const CLIENT_ID = 'tester-client'
@@ -20,7 +20,7 @@ const RESOURCE = 'users'
 // --- HÀM LOGIN (ĐÃ SỬA) ---
 export const login = (data) => {
     // 1. Lấy Server Address trực tiếp tại thời điểm Login
-    let domain = localStorage.getItem('SERVER_ADDR') || ''
+    let domain = localStorage.getItem('LOGIN_ADDR') || ''
 
     // Xử lý bỏ dấu gạch chéo cuối nếu có (để tránh thành //oauth)
     if (domain.endsWith('/')) {

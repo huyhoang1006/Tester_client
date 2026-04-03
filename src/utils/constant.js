@@ -13,6 +13,5 @@ export default {
     FAIR : 'Fair',
     POOR : 'Poor',
     BAD : 'Bad',
-    API_BASE_URL: 'http://222.252.22.158:8087/api/',
     ROOT : '00000000-0000-0000-0000-000000000000'
 }
