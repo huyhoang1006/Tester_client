@@ -109,9 +109,9 @@ export default {
                 await close();
                 this.$message.error(error.message === 'Timeout' ? 'Save timed out' : 'Some error occur');
                 console.error(error);
+                this.isSaving = false;
                 return;
             } finally {
-                this.isSaving = false;
                 this.$message = originalMessage;
             }
 
@@ -130,9 +130,17 @@ export default {
                     this.resetFormAfterSave(bushingRef);
                 }
             }
+            setTimeout(() => {
+                this.isSaving = false;
+            }, 300);
         },
         handleBushingCancel() {
             this.signBushing = false
+            const dialogRef = this.$refs.bushingDialog
+            const bushing = dialogRef ? dialogRef.getBushingRef() : null
+            if (bushing) {
+                this.resetFormAfterSave(bushing)
+            }
             this.isEditMode = false
         },
 

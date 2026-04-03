@@ -11,7 +11,8 @@ export default {
                 this.parentOrganization = node
                 this.signBushing = true
                 this.$nextTick(() => {
-                    const bushing = this.$refs.bushing
+                    const dialogRef = this.$refs.bushingDialog
+                    const bushing = dialogRef ? dialogRef.getBushingRef() : null
                     if (bushing) {
                         bushing.resetForm()
                     }

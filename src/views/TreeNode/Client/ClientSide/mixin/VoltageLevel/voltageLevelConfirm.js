@@ -84,9 +84,9 @@ export default {
                 await close();
                 this.$message.error(error.message === 'Timeout' ? 'Save timed out' : 'Some error occur');
                 console.error(error);
+                this.isSaving = false;
                 return;
             } finally {
-                this.isSaving = false;
                 this.$message = originalMessage;
             }
 
@@ -104,9 +104,17 @@ export default {
                     this.resetFormAfterSave(voltageLevelRef);
                 }
             }
+            setTimeout(() => {
+                this.isSaving = false;
+            }, 300);
         },
         async handleVoltageLevelCancel() {
             this.signVoltageLevel = false
+            const dialogRef = this.$refs.voltageLevelDialog
+            const voltageLevel = dialogRef ? dialogRef.getVoltageLevelRef() : null
+            if (voltageLevel) {
+                this.resetFormAfterSave(voltageLevel)
+            }
         },
     }
 }

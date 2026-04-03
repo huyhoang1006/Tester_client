@@ -11,12 +11,7 @@ export default {
                 }
                 this.parentOrganization = node
                 this.signBay = true
-                this.$nextTick(() => {
-                    const bay = this.$refs.bay
-                    if (bay) {
-                        bay.resetForm()
-                    }
-                })
+               
             } catch (error) {
                 this.parentOrganization = null
                 this.$message.error('Some error occur')
