@@ -108,9 +108,9 @@ export default {
                 await close();
                 this.$message.error(error.message === 'Timeout' ? 'Save timed out' : 'Some error occur');
                 console.error(error);
+                this.isSaving = false;
                 return;
             } finally {
-                this.isSaving = false;
                 this.$message = originalMessage;
             }
 
@@ -129,9 +129,17 @@ export default {
                     this.resetFormAfterSave(rotatingRef);
                 }
             }
+            setTimeout(() => {
+                this.isSaving = false;
+            }, 300);
         },
         handleRotatingCancel() {
             this.signRotating = false
+            const dialogRef = this.$refs.rotatingMachineDialog
+            const ro = dialogRef ? dialogRef.getRotatingMachineRef() : null
+            if (ro) {
+                this.resetFormAfterSave(ro)
+            }
             this.isEditMode = false
         },
     }

@@ -108,9 +108,9 @@ export default {
                 await close();
                 this.$message.error(error.message === 'Timeout' ? 'Save timed out' : 'Some error occur');
                 console.error(error);
+                this.isSaving = false;
                 return;
             } finally {
-                this.isSaving = false;
                 this.$message = originalMessage;
             }
 
@@ -129,10 +129,18 @@ export default {
                     this.resetFormAfterSave(vtRef);
                 }
             }
+            setTimeout(() => {
+                this.isSaving = false;
+            }, 300);
         },
         handleVtCancel() {
             this.signVt = false
             this.isEditMode = false
+            const dialogRef = this.$refs.voltageTransformerDialog
+            const vt = dialogRef ? dialogRef.getVoltageTransformerRef() : null
+            if (vt) {
+                this.resetFormAfterSave(vt)
+            }
         },
     }
 }

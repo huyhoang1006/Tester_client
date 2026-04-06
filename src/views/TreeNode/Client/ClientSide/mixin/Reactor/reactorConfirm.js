@@ -108,9 +108,9 @@ export default {
                 await close();
                 this.$message.error(error.message === 'Timeout' ? 'Save timed out' : 'Some error occur');
                 console.error(error);
+                this.isSaving = false;
                 return;
             } finally {
-                this.isSaving = false;
                 this.$message = originalMessage;
             }
 
@@ -129,9 +129,17 @@ export default {
                     this.resetFormAfterSave(reactorRef);
                 }
             }
+            setTimeout(() => {
+                this.isSaving = false;
+            }, 300);
         },
         handleReactorCancel() {
             this.signReactor = false
+            const dialogRef = this.$refs.reactorDialog
+            const reactor = dialogRef ? dialogRef.getReactorRef() : null
+            if (reactor) {
+                this.resetFormAfterSave(reactor)
+            }
             this.isEditMode = false
         },
     }

@@ -108,9 +108,9 @@ export default {
                 await close();
                 this.$message.error(error.message === 'Timeout' ? 'Save timed out' : 'Some error occur');
                 console.error(error);
+                this.isSaving = false;
                 return;
             } finally {
-                this.isSaving = false;
                 this.$message = originalMessage;
             }
 
@@ -129,9 +129,17 @@ export default {
                     this.resetFormAfterSave(capacitorRef);
                 }
             }
+            setTimeout(() => {
+                this.isSaving = false;
+            }, 300);
         },
         handleCapacitorCancel() {
             this.signCapacitor = false
+            const dialogRef = this.$refs.capacitorDialog
+            const capacitor = dialogRef ? dialogRef.getCapacitorRef() : null
+            if (capacitor) {
+                this.resetFormAfterSave(capacitor)
+            }
             this.isEditMode = false
         },
     }

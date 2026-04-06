@@ -24,11 +24,11 @@ export default {
                 } else {
                     this.parentOrganization = null
                 }
-
                 this.organisationId = organisationId
                 this.signSubs = true
                 this.$nextTick(() => {
-                    const substation = this.$refs.substation
+                    const dialogRef = this.$refs.substationDialog
+                    const substation = dialogRef ? dialogRef.getSubstationRef() : null
                     if (substation) {
                         substation.resetForm()
                     }

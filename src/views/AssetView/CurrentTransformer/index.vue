@@ -18,6 +18,7 @@
 
 <script>
 import mixin from '../CurrentTransformer/mixin'
+import CurrentTransformerDto from '@/views/Dto/CurrentTransformer'
 import currentTransProperty from '../CurrentTransformer/components/properties.vue'
 import currentTransRating from '../CurrentTransformer/components/ratings.vue'
 import currentCTConfig from '../CurrentTransformer/components/CTConfiguration.vue'
@@ -110,7 +111,11 @@ export default {
         updateAttachment(attachment) {
             this.attachmentData = attachment
         },
-        async resetForm() { },
+        resetForm() {
+            this.currentTransformer = new CurrentTransformerDto()
+            this.old_data = new CurrentTransformerDto()
+            this.attachmentData = []
+        },
     }
 }
 </script>
