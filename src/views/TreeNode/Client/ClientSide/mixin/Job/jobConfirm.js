@@ -9,7 +9,7 @@ export default {
 
             const { close, timeoutValue } = startLoading(this, { 
                 action: 'add',
-                type: 'default' 
+                type: 'default'
             });
 
             const originalMessage = this.$message;
@@ -36,7 +36,7 @@ export default {
 
                     let result;
                     if (timeoutValue > 0) {
-                        const timeoutPromise = new Promise((_, reject) => 
+                        const timeoutPromise = new Promise((_, reject) =>
                             setTimeout(() => reject(new Error('Timeout')), timeoutValue)
                         );
                         result = await Promise.race([savePromise, timeoutPromise]);
@@ -49,7 +49,7 @@ export default {
 
                     if (success) {
                         saveSuccess = true;
-                        
+
                         let newRows = []
                         if (this.organisationClientList && this.organisationClientList.length > 0) {
                             let jobType = ''
@@ -70,7 +70,7 @@ export default {
                             } else {
                                 jobType = 'Job'
                             }
-                            
+
                             const jobData = data.oldWork || data.job || data
                             const newRow = {
                                 mrid: jobData.mrid,
@@ -95,9 +95,9 @@ export default {
                 await close();
                 this.$message.error(error.message === 'Timeout' ? 'Save timed out' : 'Some error occur');
                 console.error(error);
+                this.isSaving = false;
                 return;
             } finally {
-                this.isSaving = false;
                 this.$message = originalMessage;
             }
 
@@ -115,9 +115,17 @@ export default {
                     this.resetFormAfterSave(jobDataRef);
                 }
             }
+            setTimeout(() => {
+                this.isSaving = false;
+            }, 300);
         },
         handleJobCancel() {
             this.signJob = false
+            const dialogRef = this.$refs.jobDialog
+            const jobData = dialogRef ? dialogRef.getJobDataRef() : null
+            if (jobData) {
+                this.resetFormAfterSave(jobData)
+            }
         },
     }
 }

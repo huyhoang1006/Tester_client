@@ -108,9 +108,9 @@ export default {
                 await close();
                 this.$message.error(error.message === 'Timeout' ? 'Save timed out' : 'Some error occur');
                 console.error(error);
+                this.isSaving = false;
                 return;
             } finally {
-                this.isSaving = false;
                 this.$message = originalMessage;
             }
 
@@ -129,10 +129,18 @@ export default {
                     this.resetFormAfterSave(disconnectorRef);
                 }
             }
+            setTimeout(() => {
+                this.isSaving = false;
+            }, 300);
         },
         handleDisconnectorCancel() {
             this.signDisconnector = false
             this.isEditMode = false
+            const dialogRef = this.$refs.disconnectorDialog
+            const disconnector = dialogRef ? dialogRef.getDisconnectorRef() : null
+            if (disconnector) {
+                this.resetFormAfterSave(disconnector)
+            }
         },
     }
 }

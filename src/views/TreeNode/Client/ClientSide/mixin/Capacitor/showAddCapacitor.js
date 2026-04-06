@@ -10,12 +10,7 @@ export default {
                 }
                 this.parentOrganization = node
                 this.signCapacitor = true
-                this.$nextTick(() => {
-                    const capacitor = this.$refs.capacitor
-                    if (capacitor) {
-                        capacitor.resetForm()
-                    }
-                })
+                
             } catch (error) {
                 this.parentOrganization = null
                 this.$message.error('Some error occur')

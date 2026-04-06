@@ -105,9 +105,9 @@ export default {
                 await close();
                 this.$message.error(error.message === 'Timeout' ? 'Save timed out' : 'Some error occur');
                 console.error(error);
+                this.isSaving = false;
                 return;
             } finally {
-                this.isSaving = false;
                 this.$message = originalMessage;
             }
 
@@ -126,9 +126,17 @@ export default {
                     this.resetFormAfterSave(powerRef);
                 }
             }
+            setTimeout(() => {
+                this.isSaving = false;
+            }, 300);
         },
         handlePowerCancel() {
             this.signPower = false
+            const dialogRef = this.$refs.powerCableDialog
+            const pow = dialogRef ? dialogRef.getPowerCableRef() : null
+            if (pow) {
+                this.resetFormAfterSave(pow)
+            }
             this.isEditMode = false
         },
     }
