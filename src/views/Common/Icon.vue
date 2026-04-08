@@ -3,15 +3,19 @@
         <template v-if="mainIconInfo.type === 'image'">
             <img :src="mainIconInfo.src" :style="{ width: size, height: size }" class="main-icon" />
         </template>
-        <template v-else>
-            <i :class="['main-icon']"></i>
+        <template v-else-if="mainIconInfo.type === 'component'">
+            <component :is="mainIconInfo.component" :style="{ width: size, height: size }" />
         </template>
-        <i v-if="mainIconInfo.type !== 'image'" class="fa-regular fa-folder-open main-icon"></i>
-        <i v-if="mainIconInfo.type !== 'image'" :class="['badge', badgeIcon]"></i>
+        <template v-else>
+            <i class="fa-regular fa-folder-open main-icon"></i>
+            <i :class="['badge', badgeIcon]"></i>
+        </template>
     </div>
 </template>
   
 <script>
+import { IconVT, IconCB } from '@/views/TreeNode/dialogs/icons.js';
+
 export default {
     name: 'FolderIconWithBadge',
     props: {
@@ -85,6 +89,13 @@ export default {
                 }
 
                 if (this.folderType === 'asset') {
+                    if (this.assetDetail === 'Voltage transformer') {
+                        return { type: 'component', component: IconVT };
+                    }
+                    if (this.assetDetail === 'Circuit breaker' || this.assetDetail === 'Breaker') {
+                        return { type: 'component', component: IconCB };
+                    }
+
                     const assetMap = {
                         'Disconnector': 'Disconnector.png',
                         'Current transformer': 'Current Transformer.png',
