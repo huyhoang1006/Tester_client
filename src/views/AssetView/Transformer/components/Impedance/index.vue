@@ -117,7 +117,7 @@
                                         <el-select size="mini" v-model="item.oltc_position"
                                             v-if="tapChangers.mode === 'oltc'">
                                             <el-option v-for="(_item, _index) in tapChangers.voltage_table"
-                                                :key="_index" :label="_item.tap" :value="_item.mrid">
+                                                :key="_index" :label="_item.tap" :value="_item.tap">
                                             </el-option>
                                         </el-select>
                                         <el-select size="mini" v-model="item.oltc_position" v-else>
@@ -127,7 +127,7 @@
                                         <el-select size="mini" v-model="item.detc_position"
                                             v-if="tapChangers.mode === 'detc'">
                                             <el-option v-for="(_item, _index) in tapChangers.voltage_table"
-                                                :key="_index" :label="_item.tap" :value="_item.mrid"></el-option>
+                                                :key="_index" :label="_item.tap" :value="_item.tap"></el-option>
                                         </el-select>
                                         <el-select size="mini" v-model="item.detc_position" v-else>
                                         </el-select>
@@ -238,7 +238,7 @@
                                         <el-select size="mini" v-model="item.oltc_position"
                                             v-if="tapChangers.mode === 'oltc'">
                                             <el-option v-for="(_item, _index) in tapChangers.voltage_table"
-                                                :key="_index" :label="_item.tap" :value="_item.mrid"></el-option>
+                                                :key="_index" :label="_item.tap" :value="_item.tap"></el-option>
                                         </el-select>
                                         <el-select size="mini" v-model="item.oltc_position" v-else>
                                         </el-select>
@@ -247,7 +247,7 @@
                                         <el-select size="mini" v-model="item.detc_position"
                                             v-if="tapChangers.mode === 'detc'">
                                             <el-option v-for="(_item, _index) in tapChangers.voltage_table"
-                                                :key="_index" :label="_item.tap" :value="_item.mrid"></el-option>
+                                                :key="_index" :label="_item.tap" :value="_item.tap"></el-option>
                                         </el-select>
                                         <el-select size="mini" v-model="item.detc_position" v-else>
                                         </el-select>
@@ -358,7 +358,7 @@
                                         <el-select size="mini" v-model="item.oltc_position"
                                             v-if="tapChangers.mode === 'oltc'">
                                             <el-option v-for="(_item, _index) in tapChangers.voltage_table"
-                                                :key="_index" :label="_item.tap" :value="_item.mrid"></el-option>
+                                                :key="_index" :label="_item.tap" :value="_item.tap"></el-option>
                                         </el-select>
                                         <el-select size="mini" v-model="item.oltc_position" v-else>
                                         </el-select>
@@ -367,7 +367,7 @@
                                         <el-select size="mini" v-model="item.detc_position"
                                             v-if="tapChangers.mode === 'detc'">
                                             <el-option v-for="(_item, _index) in tapChangers.voltage_table"
-                                                :key="_index" :label="_item.tap" :value="_item.mrid"></el-option>
+                                                :key="_index" :label="_item.tap" :value="_item.tap"></el-option>
                                         </el-select>
                                         <el-select size="mini" v-model="item.detc_position" v-else>
                                         </el-select>

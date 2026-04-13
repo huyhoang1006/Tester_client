@@ -35,3 +35,11 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+.path-hover:hover {
+    color: black;
+    text-decoration: underline;
+    cursor: pointer;
+}
+</style>

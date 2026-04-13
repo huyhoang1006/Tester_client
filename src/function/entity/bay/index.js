@@ -2,7 +2,6 @@ import db from '../../datacontext/index.js'
 import { insertBayTransaction, getBayById, deleteBayByIdTransaction} from '@/function/cim/bay';
 
 export const insertBayEntity = async (entity) => {
-    console.log('insertBayEntity', entity);
     try {
         if(entity.mrid) {
             await runAsync('BEGIN TRANSACTION');

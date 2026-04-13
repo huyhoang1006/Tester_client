@@ -51,7 +51,6 @@ export const volDtoToVolEntity = (volDto) => {
 }
 
 export const volEntityToVolDto = (volEntity) => {
-    console.log("Mapping VoltageLevelEntity to VoltageLevelDto:", volEntity);
     const volDto = new VoltageLevelDto()
 
     // VoltageLevel

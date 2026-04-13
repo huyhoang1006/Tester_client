@@ -1,11 +1,11 @@
 import * as rootOrganisationFunc from './organisationRoot/index'
 import * as procedureFunc from './procedure/index'
+import * as databaseInitFunc from './database/init'
 import UpdateSchedulerService from '@/function/entity/update/UpdateSchedulerService'
 import { entityFunc } from '@/function'
 import db from '@/function/datacontext/index'
 import { app } from 'electron'
-import path from 'path'
-import fs from 'fs'
+import compareVersions from 'compare-versions';
 
 const schedulerService = new UpdateSchedulerService()
 const { checkForUpdates } = entityFunc.updateEntityFunc
@@ -23,37 +23,40 @@ export const createRootOrganisation = async () => {
     }
 }
 
-export const updateProcedure = async () => {
-    const currentVersionTest = 1
-    const nameProcedure = 'procedure.json'
-    const userDataPath = app.getPath('userData')
-    const procedurePath = path.join(userDataPath, nameProcedure)
-    if (!fs.existsSync(procedurePath)) {
+export const updateDatabase = async () => {
+    const LATEST_DB_VERSION = 1;
+    const oldVersion = await databaseInitFunc.getDbVersion(db)
+    if(!oldVersion) {
         try {
+            console.warn('No version found in database. Assuming first run. Setting version to current app version.')
+            await runAsync('BEGIN TRANSACTION', db);
+            await databaseInitFunc.initializeDatabaseFromSQL(db)
             await procedureFunc.createProcedure(db)
-            const defaultData = {
-                createdAt: new Date().toISOString(),
-                version: currentVersionTest
-            }
-            fs.writeFileSync(
-                procedurePath,
-                JSON.stringify(defaultData, null, 2),
-                'utf-8'
-            )
+            await databaseInitFunc.setDbVersion(db, LATEST_DB_VERSION) // Lưu version vào database
+            return runAsync('COMMIT', db);
         } catch (err) {
+            await runAsync('ROLLBACK', db);
             app.quit()
-            console.error('Error creating procedure file:', err)
+            console.error('Error initializing database on first run:', err)
         }
     } else {
-        const fileData = fs.readFileSync(procedurePath, 'utf-8')
-        const procedureData = JSON.parse(fileData)
-        if (procedureData.version === currentVersionTest) {
-            try {
-                await procedureFunc.createProcedure(db)
-            } catch (err) {
-                app.quit()
-                console.error('Error updating procedure:', err)
+        if(oldVersion && LATEST_DB_VERSION) {
+            if (compareVersions.compare(LATEST_DB_VERSION, oldVersion, '>')) {
+                try {
+                    console.log(`Updating database from version ${oldVersion} to ${LATEST_DB_VERSION}`)
+                    await runAsync('BEGIN TRANSACTION', db);
+                    await databaseInitFunc.updateDatabaseFromSQL(db, oldVersion, LATEST_DB_VERSION)
+                    await procedureFunc.updateProcedure(db)
+                    await databaseInitFunc.setDbVersion(db, LATEST_DB_VERSION) // Cập nhật version mới vào database
+                    return runAsync('COMMIT', db);
+                } catch (err) {
+                    await runAsync('ROLLBACK', db);
+                    app.quit()
+                    console.error('Error creating procedure file:', err)
+                }
             }
+        } else {
+            this.$message.error('Version information is missing. Skipping update and initialization')
         }
     }
 }
@@ -85,8 +88,8 @@ export const getSchedulerStatus = () => {
  * 🚀 ENTERPRISE STARTUP SEQUENCE
  */
 export const active = async () => {
+    await updateDatabase()
     await createRootOrganisation()
-    await updateProcedure()
 
     schedulerService.scheduleCheck(async () => {
         await checkForUpdates()
@@ -95,3 +98,12 @@ export const active = async () => {
         })
     })
 }
+
+const runAsync = (sql, dbsql, params = []) => {
+    return new Promise((resolve, reject) => {
+        dbsql.run(sql, params, function (err) {
+            if (err) reject(err);
+            else resolve();
+        });
+    });
+};

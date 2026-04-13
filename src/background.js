@@ -30,56 +30,6 @@ const isDevelopment = process.env.NODE_ENV !== 'development'
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: {secure: true, standard: true}}])
 
-function startPythonWorker() {
-    const isWin = process.platform === 'win32'
-    const exeName = isWin ? 'importer.exe' : 'importer'
-    const platformFolder = isWin ? 'importer_win' : 'importer_mac'
-
-    let exePath
-    if (app.isPackaged) {
-        // Khi build ra file cài đặt
-        exePath = path.join(process.resourcesPath, 'extra_binaries', 'importer', platformFolder, exeName)
-    } else {
-        // Khi đang code (npm run serve)
-        // Thường với vue-cli-electron-builder, __dirname sẽ trỏ vào dist_electron
-        exePath = path.join(process.cwd(), 'extra_binaries', 'importer', platformFolder, exeName)
-    }
-
-    if (!fs.existsSync(exePath)) {
-        console.error(`❌ KHÔNG TÌM THẤY FILE TẠI: ${exePath}`)
-        return // Dừng lại để app không bị crash (văng lỗi Uncaught Exception)
-    }
-
-    importerProcess = spawn(exePath)
-
-    const rl = readline.createInterface({
-        input: importerProcess.stdout,
-        terminal: false
-    })
-
-    rl.on('line', (line) => {
-        if (line === 'PYTHON_READY') {
-            console.log('💚 PYTHON ENGINE ĐÃ KHỞI ĐỘNG XONG VÀ SẴN SÀNG!')
-            return
-        }
-
-        try {
-            const response = JSON.parse(line)
-            if (response.id && pendingRequests.has(response.id)) {
-                const resolve = pendingRequests.get(response.id)
-                resolve(response)
-                pendingRequests.delete(response.id)
-            }
-        } catch (error) {
-            // Log nhưng không tính là lỗi fatal
-            console.log('🐍 Python Log:', line)
-        }
-    })
-
-    importerProcess.stderr.on('data', (data) => {
-        console.error(`[Python Log]: ${data.toString()}`)
-    })
-}
 
 function adjustWindowSize() {
     const primaryDisplay = screen.getPrimaryDisplay()
@@ -514,8 +464,6 @@ app.on('ready', async () => {
         })
         return await Promise.all(promises)
     })
-
-    startPythonWorker()
 
     await createWindow()
 

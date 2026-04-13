@@ -1,126 +1,305 @@
-import TransformerDto from "@/views/Dto/Transformer";
+/* eslint-disable */
+import TransformerDataDto from "@/views/Dto/Transformer";
+import uuid from "@/utils/uuid";
+
+// ─── Lookup maps ─────────────────────────────────────────────────────────────
+
+const ASSET_TYPE_MAP = {
+    'TWO_WINDING':       'Two-winding',
+    'THREE_WINDING':     'Three-winding',
+    'AUTO_WITH_TERT':    'Auto w/ tert',
+    'AUTO_WITHOUT_TERT': 'Auto w/o tert',
+}
+
+const PHASES_MAP = {
+    'THREE': '3',
+    'ONE':   '1',
+}
+
+const WINDING_MAP = {
+    'PRIM': 'Prim',
+    'SEC':  'Sec',
+    'TERT': 'Tert',
+}
+
+const TAP_TYPE_MAP = {
+    'OLTC': 'oltc',
+    'DETC': 'detc',
+}
+
+const TAP_SCHEME_MAP = {
+    'ONE_TO_THIRTYTHREE':    '1...33',
+    'THIRTYTHREE_TO_ONE':    '33...1',
+    'FREE':                  'Free',
+    'ONE_TO_N':              '1...N',
+    'N_TO_ONE':              'N...1',
+}
+
+const IMPEDANCE_TYPE_MAP = {
+    'PRIM_SEC':  'prim_sec',
+    'PRIM_TERT': 'prim_tert',
+    'SEC_TERT':  'sec_tert',
+}
+
+// "mVA" → "M|VA", "kVA" → "k|VA", "VA" → "VA"
+const mapPowerUnit = (unit) => {
+    if (!unit) return 'M|VA'
+    const u = unit.toLowerCase()
+    if (u === 'mva' || u === 'mva' || u === 'mvа') return 'M|VA'
+    if (u === 'kva') return 'k|VA'
+    return 'M|VA'
+}
+
+const mapVoltageUnit = (unit) => {
+    if (!unit) return 'k|V'
+    const u = unit.toLowerCase()
+    if (u === 'kv') return 'k|V'
+    if (u === 'v')  return 'V'
+    return 'k|V'
+}
+
+const str = (val) => (val !== null && val !== undefined) ? String(val) : ''
+
+const extractYear = (dateStr) => {
+    if (!dateStr) return ''
+    const match = String(dateStr).match(/^(\d{4})/)
+    return match ? match[1] : ''
+}
+
+// ─── Mapper ──────────────────────────────────────────────────────────────────
 
 export const mapServerToDto = (serverData) => {
-    const dto = new TransformerDto();
+    const dto = new TransformerDataDto();
     if (!serverData) return dto;
 
-    // Tự động bóc tách lớp "data" nếu API có bọc theo chuẩn Restful
-    const actualData = serverData.data && serverData.success !== undefined ? serverData.data : serverData;
+    const assetInfo  = serverData.assetInfo          || {};
+    const tr         = serverData.transformer        || {};
+    const voltageRatings       = serverData.voltageRatings        || [];
+    const powerRatings         = serverData.powerRatings          || [];
+    const shortCircuitImpedances = serverData.shortCircuitImpedances || [];
+    const tapChanger           = serverData.tapChanger             || {};
+    const tapChangerVoltage    = serverData.tapChangerVoltage      || [];
 
-    const info = actualData.assetInfo || {};
-    const trans = actualData.transformer || {};
-    const vRatings = actualData.voltageRatings || [];
-    const pRatings = actualData.powerRatings || [];
-    const impedances = actualData.shortCircuitImpedances || [];
-    const tapChanger = actualData.tapChanger || {};
-    const tapTable = actualData.tapChangerVoltage || [];
+    // ─── 1. IDs ───────────────────────────────────────────────────────────────
+    dto.oldPowerTransformerInfoId = uuid.newUuid()
+    dto.productAssetModelId       = uuid.newUuid()
+    dto.lifecycleDateId           = uuid.newUuid()
+    dto.assetPsrId                = uuid.newUuid()
 
-    // 1. Properties
-    dto.properties.mrid = trans.id ? String(trans.id) : '';
-    dto.properties.serial_no = info.serialNo || '';
-    dto.properties.apparatus_id = info.apparatusId || '';
-    dto.properties.manufacturer = info.manufacturerName || '';
-    dto.properties.manufacturer_type = info.manufacturerType || info.manufacturerName || '';
-    dto.properties.manufacturer_year = info.manufacturingYear || '';
-    dto.properties.country_of_origin = info.countryName || '';
-    dto.properties.type = trans.assetType || '';
-    dto.properties.kind = 'Transformer';
+    // ─── 2. Properties ────────────────────────────────────────────────────────
+    dto.properties.mrid              = null
+    dto.properties.kind              = 'Transformer'
+    dto.properties.type              = ASSET_TYPE_MAP[tr.assetType] || tr.assetType || ''
+    dto.properties.serial_no         = assetInfo.serialNo          || ''
+    dto.properties.manufacturer      = assetInfo.manufacturerName  || ''
+    dto.properties.manufacturer_type = ''
+    dto.properties.manufacturer_year = assetInfo.manufacturingYear
+        ? String(assetInfo.manufacturingYear)
+        : ''
+    dto.properties.country_of_origin = assetInfo.countryName  || ''
+    dto.properties.apparatus_id      = assetInfo.apparatusId  || ''
+    dto.properties.comment           = assetInfo.description  || ''
 
-    // 2. Winding Configuration
-    dto.winding_configuration.phases = trans.phases || '';
-    // FIX LỖI 1: Gán vào vector_group_data, không ghi đè object vector_group
-    dto.winding_configuration.vector_group_data = trans.vectorGroup || '';
+    // ─── 3. Winding configuration ─────────────────────────────────────────────
+    dto.winding_configuration.phases = PHASES_MAP[tr.phases] || ''
 
-    // 3. Ratings - Frequency & Short Circuit
-    dto.ratings.rated_frequency.value = trans.ratedFrequency !== null ? trans.ratedFrequency : '';
-    dto.ratings.rated_frequency.unit = trans.ratedFrequencyUnit || 'Hz';
+    // Server trả về vector group dạng string "Yna0d11"
+    // Không thể parse tự động → để vào unsupported_vector_group
+    if (tr.vectorGroup) {
+        dto.winding_configuration.unsupported_vector_group = tr.vectorGroup
+    }
 
-    dto.ratings.short_circuit.ka.value = trans.maxShortCircuitCurrent !== null ? trans.maxShortCircuitCurrent : '';
-    dto.ratings.short_circuit.ka.unit = trans.maxShortCircuitCurrentUnit || 'kA';
+    // ─── 4. Ratings ───────────────────────────────────────────────────────────
 
-    dto.ratings.short_circuit.s.value = trans.duration !== null ? trans.duration : '';
-    dto.ratings.short_circuit.s.unit = trans.durationUnit || 's';
+    // Rated frequency
+    const freqVal = str(tr.ratedFrequency)
+    dto.ratings.rated_frequency.mrid  = uuid.newUuid()
+    dto.ratings.rated_frequency.value = ['50', '60', '16.7'].includes(freqVal) ? freqVal : 'Custom'
+    dto.ratings.rated_frequency.unit  = tr.ratedFrequencyUnit || 'Hz'
+    if (!['50', '60', '16.7'].includes(freqVal)) {
+        dto.ratings.rated_frequency.custom_value = freqVal
+    }
 
-    // 4. Voltage Ratings
-    dto.ratings.voltage_ratings = vRatings.map(v => ({
-        mrid: String(v.id || ''),
-        winding: v.winding === 'PRIM' ? 'Prim' : (v.winding === 'SEC' ? 'Sec' : 'Tert'),
-        voltage_ll: { mrid: '', value: v.voltageLL !== null ? v.voltageLL : '', unit: v.voltageLLUnit || 'k|V' },
-        voltage_ln: { mrid: '', value: v.voltageLN !== null ? v.voltageLN : '', unit: v.voltageLNUnit || 'k|V' },
-        insul_level_ll: { mrid: '', value: v.insulLevelLL !== null ? v.insulLevelLL : '', unit: v.insulLevelLLUnit || 'k|V' },
-        voltage_regulation: v.regulation || '',
-        insulation_class: v.insulationClass || ''
-    }));
+    // Voltage ratings
+    dto.ratings.voltage_ratings = voltageRatings.map(vr => ({
+        mrid:       uuid.newUuid(),
+        winding:    WINDING_MAP[vr.winding] || vr.winding || '',
+        voltage_ll: {
+            mrid:  uuid.newUuid(),
+            value: str(vr.voltageLL),
+            unit:  mapVoltageUnit(vr.voltageLLUnit),
+        },
+        voltage_ln: {
+            mrid:  uuid.newUuid(),
+            value: str(vr.voltageLN),
+            unit:  mapVoltageUnit(vr.voltageLNUnit),
+        },
+        insul_level_ll: {
+            mrid:  uuid.newUuid(),
+            value: str(vr.insulLevelLL),
+            unit:  mapVoltageUnit(vr.insulLevelLLUnit),
+        },
+        insulation_class:   vr.insulationClass  || '',
+        voltage_regulation: str(vr.regulation),
+    }))
 
-    // 5. Power Ratings & Current Ratings
-    dto.ratings.power_ratings = pRatings.map(p => ({
-        mrid: String(p.id || ''),
-        rated_power: { mrid: '', value: p.ratedPower !== null ? p.ratedPower : '', unit: p.ratedPowerUnit || 'M|VA' },
-        cooling_class: p.coolingClass || '',
-        temp_rise_wind: { mrid: '', value: p.tempRiseWind !== null ? p.tempRiseWind : '', unit: '°C' }
-    }));
+    // Power ratings
+    dto.ratings.power_ratings = powerRatings.map(pr => ({
+        mrid:         uuid.newUuid(),
+        rated_power: {
+            mrid:  uuid.newUuid(),
+            value: str(pr.ratedPower),
+            unit:  mapPowerUnit(pr.ratedPowerUnit),
+        },
+        cooling_class: pr.coolingClass  || '',
+        temp_rise_wind: {
+            mrid:  uuid.newUuid(),
+            value: str(pr.tempRiseWind),
+            unit:  '°C',
+        },
+    }))
 
-    dto.ratings.current_ratings = pRatings.map(p => ({
-        mrid: String(p.id || ''),
-        prim: { mrid: '', data: { mrid: '', value: p.currentRatingPrim !== null ? p.currentRatingPrim : '', unit: p.currentRatingPrimUnit || 'A' } },
-        sec: { mrid: '', data: { mrid: '', value: p.currentRatingSec !== null ? p.currentRatingSec : '', unit: p.currentRatingSecUnit || 'A' } },
-        tert: { mrid: '', data: { mrid: '', value: '', unit: 'A' } }
-    }));
+    // Current ratings — từ powerRatings.currentRatingPrim / currentRatingSec
+    dto.ratings.current_ratings = powerRatings.map(pr => ({
+        mrid: uuid.newUuid(),
+        prim: {
+            mrid: uuid.newUuid(),
+            data: {
+                mrid:  uuid.newUuid(),
+                value: str(pr.currentRatingPrim),
+                unit:  pr.currentRatingPrimUnit || 'A',
+            },
+        },
+        sec: {
+            mrid: uuid.newUuid(),
+            data: {
+                mrid:  uuid.newUuid(),
+                value: str(pr.currentRatingSec),
+                unit:  pr.currentRatingSecUnit || 'A',
+            },
+        },
+        tert: {
+            mrid: uuid.newUuid(),
+            data: { mrid: uuid.newUuid(), value: '', unit: 'A' },
+        },
+    }))
 
-    // 6. Short Circuit Impedances
-    // FIX LỖI 2: Thêm lớp .data bên trong base_power và base_voltage
-    const mapImp = (imp) => ({
-        mrid: String(imp.id || ''),
+    // Short circuit rating
+    dto.ratings.short_circuit.mrid    = uuid.newUuid()
+    dto.ratings.short_circuit.ka.mrid = uuid.newUuid()
+    dto.ratings.short_circuit.ka.value = str(tr.maxShortCircuitCurrent)
+    dto.ratings.short_circuit.ka.unit  = tr.maxShortCircuitCurrentUnit
+        ? (tr.maxShortCircuitCurrentUnit === 'kA' ? 'k|A' : tr.maxShortCircuitCurrentUnit)
+        : 'k|A'
+    dto.ratings.short_circuit.s.mrid  = uuid.newUuid()
+    dto.ratings.short_circuit.s.value = str(tr.duration)
+    dto.ratings.short_circuit.s.unit  = tr.durationUnit || 's'
+
+    // ─── 5. Impedances ────────────────────────────────────────────────────────
+
+    // Ref temperature
+    dto.impedances.ref_temp.mrid  = uuid.newUuid()
+    dto.impedances.ref_temp.value = str(tr.refTemp)
+    dto.impedances.ref_temp.unit  = tr.refTempUnit || '°C'
+
+    // Build tap position lookup: tapChangerVoltage.id → tap number
+    const tapPosMap = {}
+    tapChangerVoltage.forEach(tv => {
+        tapPosMap[tv.id] = tv.tap
+    })
+
+    // Short circuit impedances → prim_sec / prim_tert / sec_tert
+    const mapImpedance = (sci) => ({
+        mrid: uuid.newUuid(),
+        short_circuit_impedances_uk: {
+            mrid:  uuid.newUuid(),
+            value: str(sci.impedance),
+            unit:  '%',
+        },
         base_power: {
-            mrid: '',
-            data: { mrid: '', value: imp.basePower !== null ? imp.basePower : '', unit: imp.basePowerUnit || 'M|VA' }
+            mrid: uuid.newUuid(),
+            data: {
+                mrid:  uuid.newUuid(),
+                value: str(sci.basePower),
+                unit:  mapPowerUnit(sci.basePowerUnit),
+            },
         },
         base_voltage: {
-            mrid: '',
-            data: { mrid: '', value: imp.baseVoltage !== null ? imp.baseVoltage : '', unit: imp.baseVoltageUnit || 'k|V' }
+            mrid: uuid.newUuid(),
+            data: {
+                mrid:  uuid.newUuid(),
+                value: str(sci.baseVoltage),
+                unit:  mapVoltageUnit(sci.baseVoltageUnit),
+            },
         },
-        short_circuit_impedances_uk: { mrid: '', value: imp.impedance !== null ? imp.impedance : '', unit: imp.impedanceUnit || '%' },
-        load_losses_pk: { mrid: '', value: imp.loadLoss !== null ? imp.loadLoss : '', unit: imp.loadLossUnit || 'kW' },
-        oltc_position: '',
-        detc_position: ''
-    });
+        load_losses_pk: {
+            mrid:  uuid.newUuid(),
+            value: str(sci.loadLoss),
+            unit:  'W',
+        },
+        oltc_position: tapPosMap[sci.tapChangerVoltageId] ?? '',
+        detc_position: '',
+    })
 
-    dto.impedances.prim_sec = impedances.filter(i => i.type === 'PRIM_SEC').map(mapImp);
-    dto.impedances.prim_tert = impedances.filter(i => i.type === 'PRIM_TERT').map(mapImp);
-    dto.impedances.sec_tert = impedances.filter(i => i.type === 'SEC_TERT').map(mapImp);
+    shortCircuitImpedances.forEach(sci => {
+        const key = IMPEDANCE_TYPE_MAP[sci.type]
+        if (key && dto.impedances[key]) {
+            dto.impedances[key].push(mapImpedance(sci))
+        }
+    })
 
-    // Set Zero Sequence Impedance if available in transformer root
-    dto.impedances.zero_sequence_impedance.base_power.data.value = trans.basePower !== null ? trans.basePower : '';
-    dto.impedances.zero_sequence_impedance.base_power.data.unit = trans.basePowerUnit || 'M|VA';
+    // Zero sequence impedance
+    dto.impedances.zero_sequence_impedance.mrid = uuid.newUuid()
+    dto.impedances.zero_sequence_impedance.base_power.mrid      = uuid.newUuid()
+    dto.impedances.zero_sequence_impedance.base_power.data.mrid = uuid.newUuid()
+    dto.impedances.zero_sequence_impedance.base_power.data.value = str(tr.basePower)
+    dto.impedances.zero_sequence_impedance.base_power.data.unit  = mapPowerUnit(tr.basePowerUnit)
 
-    dto.impedances.zero_sequence_impedance.base_voltage.data.value = trans.baseVoltage !== null ? trans.baseVoltage : '';
-    dto.impedances.zero_sequence_impedance.base_voltage.data.unit = trans.baseVoltageUnit || 'k|V';
+    dto.impedances.zero_sequence_impedance.base_voltage.mrid      = uuid.newUuid()
+    dto.impedances.zero_sequence_impedance.base_voltage.data.mrid = uuid.newUuid()
+    dto.impedances.zero_sequence_impedance.base_voltage.data.value = str(tr.baseVoltage)
+    dto.impedances.zero_sequence_impedance.base_voltage.data.unit  = mapVoltageUnit(tr.baseVoltageUnit)
 
-    dto.impedances.zero_sequence_impedance.zero_percent.prim.data.value = trans.primaryZeroSequence !== null ? trans.primaryZeroSequence : '';
-    dto.impedances.zero_sequence_impedance.zero_percent.prim.data.unit = trans.zeroSequenceUnit || '%';
+    // Zero percent
+    dto.impedances.zero_sequence_impedance.zero_percent.zero.mrid      = uuid.newUuid()
+    dto.impedances.zero_sequence_impedance.zero_percent.zero.data.mrid = uuid.newUuid()
+    dto.impedances.zero_sequence_impedance.zero_percent.zero.data.value = str(tr.zeroSequence)
+    dto.impedances.zero_sequence_impedance.zero_percent.zero.data.unit  = tr.zeroSequenceUnit || '%'
 
-    dto.impedances.zero_sequence_impedance.zero_percent.sec.data.value = trans.secondaryZeroSequence !== null ? trans.secondaryZeroSequence : '';
-    dto.impedances.zero_sequence_impedance.zero_percent.sec.data.unit = trans.zeroSequenceUnit || '%';
+    dto.impedances.zero_sequence_impedance.zero_percent.prim.mrid      = uuid.newUuid()
+    dto.impedances.zero_sequence_impedance.zero_percent.prim.data.mrid = uuid.newUuid()
+    dto.impedances.zero_sequence_impedance.zero_percent.prim.data.value = str(tr.primaryZeroSequence)
+    dto.impedances.zero_sequence_impedance.zero_percent.prim.data.unit  = tr.zeroSequenceUnit || '%'
 
-    // Reference Temperature
-    dto.impedances.ref_temp.value = trans.refTemp !== null ? trans.refTemp : '';
-    dto.impedances.ref_temp.unit = trans.refTempUnit || '°C';
+    dto.impedances.zero_sequence_impedance.zero_percent.sec.mrid      = uuid.newUuid()
+    dto.impedances.zero_sequence_impedance.zero_percent.sec.data.mrid = uuid.newUuid()
+    dto.impedances.zero_sequence_impedance.zero_percent.sec.data.value = str(tr.secondaryZeroSequence)
+    dto.impedances.zero_sequence_impedance.zero_percent.sec.data.unit  = tr.zeroSequenceUnit || '%'
 
-    // 7. Tap Changer
-    if (tapChanger.id) {
-        dto.tap_changers.mrid = String(tapChanger.id);
-        dto.tap_changers.mode = tapChanger.type || '';
-        dto.tap_changers.serial_no = tapChanger.serialNo || '';
-        dto.tap_changers.winding = tapChanger.winding === 'PRIM' ? 'Prim' : (tapChanger.winding === 'SEC' ? 'Sec' : 'Tert');
-        dto.tap_changers.tap_scheme = tapChanger.tabScheme || ''; // JSON trả về tabScheme
-        dto.tap_changers.no_of_taps = tapTable.length;
+    // ─── 6. Tap changer ───────────────────────────────────────────────────────
+    if (tapChanger.type) {
+        dto.tap_changers.mrid             = uuid.newUuid()
+        dto.tap_changers.assetInfoId      = uuid.newUuid()
+        dto.tap_changers.productAssetModelId = uuid.newUuid()
+        dto.tap_changers.mode             = TAP_TYPE_MAP[tapChanger.type] || tapChanger.type?.toLowerCase() || ''
+        dto.tap_changers.serial_no        = tapChanger.serialNo           || ''
+        dto.tap_changers.winding          = WINDING_MAP[tapChanger.winding] || tapChanger.winding || ''
+        dto.tap_changers.tap_scheme       = TAP_SCHEME_MAP[tapChanger.tabScheme] || tapChanger.tabScheme || ''
+        dto.tap_changers.no_of_taps       = String(tapChangerVoltage.length || 0)
 
-        dto.tap_changers.voltage_table = tapTable.map(t => ({
-            id: String(t.id || ''),
-            tap: t.tap,
-            voltage: { mrid: '', value: t.voltage !== null ? t.voltage : '', unit: t.voltageUnit || 'V' }
-        }));
+        dto.tap_changers.voltage_table = tapChangerVoltage.map(tv => ({
+            id:  String(tv.id),
+            tap: tv.tap,
+            voltage: {
+                mrid:  uuid.newUuid(),
+                value: tv.voltage !== null && tv.voltage !== undefined ? String(tv.voltage) : '0',
+                unit:  tv.voltageUnit || 'V',
+            },
+        }))
     }
+
+    // ─── 7. Others — server không trả về → giữ default ───────────────────────
+    dto.others.mrid = uuid.newUuid()
 
     return dto;
 };

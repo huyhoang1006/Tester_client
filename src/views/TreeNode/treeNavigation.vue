@@ -9,11 +9,11 @@
             <TopBarServer :pathMapServer="pathMapServer" @reset-all="resetAllServer" @path-click="resetPathServer" />
         </div>
         <!-- Tree Toolbar -->
-        <TreeToolbar :clientSlide="clientSlide" @add-command="handleAddCommand"
+        <TreeToolbar ref="treeToolBar"  :clientSlide="clientSlide" @add-command="handleAddCommand"
             @dropdown-visible-change="handleDropdownVisibleChange" @asset-command="handleAssetCommand"
             @open-import-dialog="handleOpenImportDialog" @export-command="handleCommand" @open-node="handleOpenNode"
             @duplicate="duplicateSelectedNodes" @upload="handleUploadNode" @download="handleDownloadNode"
-            @delete="handleDeleteNode" @fmeca="handleClickFmeca" @move="handleMoveNode" />
+            @delete="handleDeleteNode" @fmeca="handleClickFmeca" @move="handleMoveNode" @openDropdown="openDropdown" />
         <!-- Thanh điều hướng có thể kéo rộng/kéo hẹp -->
         <div class="resizable-sidebar">
             <ClientTreePanel ref="clientPanel" v-show="clientSlide" :organisationClientList="organisationClientList"
@@ -1472,12 +1472,6 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-.path-hover:hover {
-    color: black;
-    text-decoration: underline;
-    cursor: pointer;
 }
 </style>
 

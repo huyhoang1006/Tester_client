@@ -126,7 +126,23 @@
                 class="fa-solid fa-upload"></i>
         </div>
         <div v-if="!clientSlide">
-            <i @click="handleDownload" title="Download" style="font-size: 12px" class="fa-solid fa-download"></i>
+            <el-dropdown @command="handleDownloadCommand"  ref="downloadDropdown" trigger="manual">
+                <i @click="openDropdown" title="Download" style="font-size: 12px" class="fa-solid fa-download"></i>
+                <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item command="downloadOnlyNode">
+                        <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon>
+                        Download only node
+                    </el-dropdown-item>
+                    <el-dropdown-item command="downloadPathNode">
+                        <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon>
+                        Download path node
+                    </el-dropdown-item>
+                    <el-dropdown-item command="downloadEveryNode">
+                        <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon>
+                        Download every node
+                    </el-dropdown-item>
+                </el-dropdown-menu>
+            </el-dropdown>
         </div>
         <div>
             <i @click="handleDelete" title="Delete" style="font-size: 12px" class="fa-solid fa-trash"></i>
@@ -191,8 +207,33 @@ export default {
         handleUpload() {
             this.$emit('upload')
         },
-        handleDownload() {
+        handleDownloadCommand(command) {
+            if (command === "downloadOnlyNode") {
+                this.downloadOnlyNode()
+            }
+
+            if (command === "downloadPathNode") {
+                this.downloadPathNode()
+            }
+
+            if (command === "downloadEveryNode") {
+                this.downloadEveryNode()
+            }
+        },
+        openDropdown() {
+            this.$emit('openDropdown')
+        },
+        showDownloadDropdown() {
+            this.$refs.downloadDropdown.show()
+        },
+        downloadOnlyNode() {
+            this.$emit('download-only-node')
+        },
+        downloadPathNode() {
             this.$emit('download')
+        },
+        downloadEveryNode() {
+            this.$emit('download-every-node')
         },
         handleDelete() {
             this.$emit('delete')

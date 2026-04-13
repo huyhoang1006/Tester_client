@@ -1,67 +1,130 @@
-// File: src/services/download-services/voltageLevel.js
+/* eslint-disable */
 import * as demoAPI from '@/api/demo'
 import * as VoltageLevelServerMapper from '@/views/Mapping/ServerToDTO/VoltageLevel/index.js'
 import * as VoltageLevelMapper from '@/views/Mapping/VoltageLevel/index.js'
-import { processSubstationDownload } from './substation'
+import { fetchWithRetry } from './core-utils.js'
+import { detectConflicts, applyResolved, mergeWithoutSnapshot, VOLTAGE_LEVEL_FIELD_DEFS } from '@/utils/conflictUtils.js'
 
-export async function processVoltageLevelDownload(node, ctx) {
-    if (!node.mrid && !node.id) throw new Error('VoltageLevel ID not found')
-    if (!node.parentId) throw new Error('Parent substation not found')
-    ctx.$store.commit('loading/SET_CUSTOM_TEXT', 'Đang tải dữ liệu voltage level...');
+// ─── Step 1: fetch full info từ server ───────────────────────────────────────
+// Được gọi trong fetchFullInfoForChain
 
-    // 1. Kiểm tra xem Trạm cha đã có dưới Local chưa, chưa có thì nhờ tầng Sub tải
-    const existingSub = ctx.findNodeById(node.parentId, ctx.organisationClientList)
-    if (!existingSub) {
-        // Tìm node Trạm trong cây Server để truyền cho hàm tải
-        const parentSubNode = node.parentArr?.find(p => p.mode === 'substation') || { mrid: node.parentId, id: node.parentId, parentId: node.parentArr?.find(p=>p.mode==='organisation')?.mrid, parentArr: node.parentArr }
-        await processSubstationDownload(parentSubNode, ctx)
-    }
-
-    // 2. Tải Cấp điện áp
-    const { voltageLevel, parentSubId } = await prepareVoltageLevel(node)
-    await saveVoltageLevelToDb(voltageLevel, parentSubId, ctx)
-}
-
-async function prepareVoltageLevel(node) {
-    const vlId = node.mrid || node.id
-    let data = null
+export async function getVoltageLevelChain(id, parentId) {
     try {
-        const res = await demoAPI.getVoltageLevelBySubstationId(node.parentId)
-        if (Array.isArray(res)) data = res.find(vl => vl.mRID === vlId || vl.mrid === vlId)
-        else if (res && (res.mRID === vlId || res.mrid === vlId)) data = res
-    } catch (e) { throw new Error('Lỗi fetch API VoltageLevel') }
+        const data = await fetchWithRetry(() => demoAPI.getVoltageLevelById(id))
 
-    if (!data) data = { mRID: vlId, name: node.name, shortName: node.name }
-
-    return {
-        voltageLevel: {
-            id: vlId, mrid: String(vlId), name: data?.name || node.name || '',
-            aliasName: data?.shortName || data?.aliasName || node.name || '',
-            _type: 'voltageLevel', _serverData: data, parentId: node.parentId
-        },
-        parentSubId: node.parentId
+        return {
+            voltageLevel: {
+                id:          id,
+                mrid:        String(id),
+                name:        data?.name      || '',
+                aliasName:   data?.shortName || data?.aliasName || '',
+                parentId:    String(parentId),
+                _type:       'voltageLevel',
+                _serverData: data,
+            },
+            _type:       'voltageLevel',
+            parentSubId: String(parentId),
+        }
+    } catch (error) {
+        console.error(`Error fetching voltageLevel with id ${id}:`, error)
+        throw new Error(`Error fetching voltageLevel with id ${id}: ${error.message}`)
     }
 }
 
-async function saveVoltageLevelToDb(voltageLevel, parentSubId, ctx) {
-    const serverData = { ...voltageLevel._serverData, mRID: voltageLevel.mrid, substation: { mRID: parentSubId } }
-    const dto = VoltageLevelServerMapper.mapServerToDto(serverData)
-    dto.substationId = parentSubId
-    dto.userIdentifiedObjectId = ctx.generateUuid()
+// ─── Step 2: save to DB ───────────────────────────────────────────────────────
+// Được gọi trong downloadChainInfo
 
-    const entity = VoltageLevelMapper.volDtoToVolEntity(dto)
-    const insertResult = await window.electronAPI.insertVoltageLevelEntity(entity)
+export async function downloadVoltageLevelChain(data, ctx) {
+    const voltageLevel = data.voltageLevel
+    const serverData   = {
+        ...voltageLevel._serverData,
+        mRID:       voltageLevel.mrid,
+        substation: { mRID: data.parentSubId },
+    }
+
+    // 1. Map server → serverDto
+    const serverDto = VoltageLevelServerMapper.mapServerToDto(serverData)
+
+    // 2. Lấy client data cũ nếu đã tồn tại
+    const existingResult = await window.electronAPI.getVoltageLevelEntityByMrid(voltageLevel.mrid)
+    const clientDto = existingResult.success
+        ? VoltageLevelMapper.volEntityToVolDto(existingResult.data)
+        : null
+
+    // 3. Merge
+    let mergedDto
+
+    if (!clientDto) {
+        mergedDto = serverDto
+
+    } else {
+        const snapshotResult = await window.electronAPI.getEntitySnapshotByMrid(voltageLevel.mrid, 'voltageLevel')
+        const baseDto        = snapshotResult.success ? snapshotResult.data : null
+
+        if (!baseDto) {
+            mergedDto = mergeWithoutSnapshot(clientDto, serverDto, VOLTAGE_LEVEL_FIELD_DEFS)
+        } else {
+            const diffFields  = detectConflicts(baseDto, clientDto, serverDto, VOLTAGE_LEVEL_FIELD_DEFS)
+            const hasConflict = diffFields.some(f => f.status === 'conflict')
+
+            if (!hasConflict) {
+                mergedDto = applyResolved(diffFields, clientDto)
+            } else {
+                mergedDto = await new Promise((resolve, reject) => {
+                    ctx.$showConflictDialog({
+                        title:     `Data Conflict — ${voltageLevel.name}`,
+                        fields:    diffFields,
+                        onResolve: (resolvedFields) => resolve(applyResolved(resolvedFields, clientDto)),
+                        onCancel:  () => reject(new Error('CANCELED')),
+                    })
+                })
+            }
+        }
+
+        // Giữ lại các mrid cũ để tránh orphan records
+        mergedDto.voltageLevelId     = clientDto.voltageLevelId    || serverDto.voltageLevelId
+        mergedDto.baseVoltageId      = clientDto.baseVoltageId     || serverDto.baseVoltageId
+        mergedDto.nominalVoltageId   = clientDto.nominalVoltageId  || serverDto.nominalVoltageId
+        mergedDto.highVoltageLimitId = mergedDto.high_voltage_limit_value
+            ? (clientDto.highVoltageLimitId || serverDto.highVoltageLimitId)
+            : null
+        mergedDto.lowVoltageLimitId  = mergedDto.low_voltage_limit_value
+            ? (clientDto.lowVoltageLimitId  || serverDto.lowVoltageLimitId)
+            : null
+        mergedDto.locationId         = clientDto.locationId || serverDto.locationId
+    }
+
+    // 4. Set context IDs
+    mergedDto.voltageLevelId = voltageLevel.mrid
+    mergedDto.substationId   = data.parentSubId
+
+    // 5. Build entity từ mergedDto
+    const entity = VoltageLevelMapper.volDtoToVolEntity(mergedDto)
+
+    // 6. Insert DB + snapshot trong cùng 1 transaction
+    const insertResult = await window.electronAPI.insertVoltageLevelEntity(entity, serverDto)
     
-    if (!insertResult.success) throw new Error('Lỗi DB Insert VoltageLevel')
+    if (!insertResult.success) throw new Error(`Database Insert VoltageLevel Error: ${insertResult.message}`)
 
-    // Update UI
-    const parentNode = ctx.findNodeById(parentSubId, ctx.organisationClientList)
+    // 7. Update UI — chỉ sau khi DB thành công
+    const parentNode = ctx.findNodeById(data.parentSubId, ctx.organisationClientList)
     if (parentNode) {
-        if (!parentNode.children) parentNode.children =[]
-        const newNode = { mrid: voltageLevel.mrid, name: voltageLevel.name, aliasName: voltageLevel.aliasName, parentId: parentSubId, mode: 'voltageLevel' }
-        const idx = parentNode.children.findIndex(c => c.mrid === voltageLevel.mrid)
-        if (idx >= 0) parentNode.children[idx] = newNode
-        else parentNode.children.push(newNode)
-        ctx.$set(parentNode, 'expanded', true)
+        const newNode = {
+            mrid:      voltageLevel.mrid,
+            name:      voltageLevel.name,
+            aliasName: voltageLevel.aliasName,
+            parentId:  data.parentSubId,
+            mode:      'voltageLevel',
+        }
+
+        if (!parentNode.children) {
+            ctx.$set(parentNode, 'children', [newNode])
+        } else {
+            const idx = parentNode.children.findIndex(c => c.mrid === voltageLevel.mrid)
+            if (idx >= 0) parentNode.children.splice(idx, 1, newNode)
+            else parentNode.children.push(newNode)
+        }
+
+        if (!parentNode.expanded) ctx.$set(parentNode, 'expanded', true)
     }
 }

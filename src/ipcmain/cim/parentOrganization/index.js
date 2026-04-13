@@ -21,7 +21,6 @@ export const getParentOrganizationByMrid = () => {
                 }
             }
         } catch (error) {
-            console.log(error)
             return {
                 error: error,
                 success: false,
@@ -54,7 +53,6 @@ export const getParentOrganizationByParentMrid = () => {
                 }
             }
         } catch (error) {
-            console.log(error)
             return {
                 error: error,
                 success: false,
@@ -82,7 +80,6 @@ export const insertParentOrganization = () => {
                 }
             }
         } catch (error) {
-            console.log(error)
             return {
                 error: error,
                 success: false,
@@ -109,7 +106,6 @@ export const updateParentOrganizationByMrid = () => {
                 }
             }
         } catch (error) {
-            console.log(error)
             return {
                 error: error,
                 success: false,
@@ -136,7 +132,6 @@ export const deleteParentOrganizationByMrid = () => {
                 }
             }
         } catch (error) {
-            console.log(error)
             return {
                 error: error,
                 success: false,

@@ -30,6 +30,34 @@ export const insertParentOrganizationEntity = () => {
     })
 }
 
+export const insertParentOrganizationEntityFromServer = () => {
+    ipcMain.handle('insertParentOrganizationEntityFromServer', async function (event, data, serverData) {
+        const rs = await entityFunc.parentOrganizationEntityFunc.insertOrganisationEntityFromServer(data, serverData)
+        try {
+            if (rs.success == true) {
+                return {
+                    success: true,
+                    message: "Success",
+                    data : rs.data
+                }
+            }
+            else {
+                return {
+                    success: false,
+                    message: "fail",
+                }
+            }
+        } catch (error) {
+            console.log(error)
+            return {
+                error: error,
+                success: false,
+                message: (error && error.message) ? error.message : "Internal error",
+            }
+        }
+    })
+}
+
 export const getOrganisationEntityByMrid = () => {
     ipcMain.handle('getOrganisationEntityByMrid', async function (event, id) {
         const rs = await entityFunc.parentOrganizationEntityFunc.getOrganisationEntityById(id)
@@ -88,6 +116,7 @@ export const deleteParentOrganizationEntity = () => {
 
 export const active = () => {
     insertParentOrganizationEntity()
+    insertParentOrganizationEntityFromServer()
     getOrganisationEntityByMrid()
     deleteParentOrganizationEntity()
 }

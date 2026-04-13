@@ -11,6 +11,7 @@ import { insertConfigurationEventArrayTransaction, insertConfigurationEventTrans
 import ConfigurationEvent from '@/views/Cim/ConfigurationEvent'
 import { insertParentOrganizationTransaction, getParentOrganizationById, deleteParentOrganizationByIdTransaction } from '@/function/cim/parentOrganization'
 import { insertGeoMapArrayTransaction, getGeoMapByOrganisationId, deleteGeoMapByArrayMridTransaction } from '../geoMap'
+import {saveSnapshotTransaction} from '../entitySnapshot/index'
 import uuid from '@/utils/uuid'
 import path from 'path'
 
@@ -136,6 +137,120 @@ export const insertOrganisationEntity = async (entity) => {
     }
 }
 
+export const insertOrganisationEntityFromServer = async (entity, serverData) => {
+    // 1. Kiểm tra dữ liệu đầu vào (Không dùng ?.)
+    if (!entity || typeof entity !== 'object') {
+        return { success: false, error: new Error('Invalid entity data') };
+    } 
+    
+    if (!entity.organisation || !entity.organisation.mrid) {
+        return { success: false, error: new Error('Entity must have a valid MRID') };
+    }
+
+    const mrid = entity.organisation.mrid;
+    const hasAttachments = entity.attachment && entity.attachment.path && entity.attachment.path.length > 0;
+
+    try {
+        // 2. Xử lý file backup và sync
+        if (hasAttachments) {
+            backupAllFilesInDir(null, null, mrid);
+            const syncResult = syncFilesWithDeletion(JSON.parse(entity.attachment.path), null, mrid);
+            
+            if (!syncResult.success) {
+                restoreFiles(null, null, mrid);
+                return { 
+                    success: false, 
+                    error: syncResult.error, 
+                    message: 'Failed syncing files' 
+                };
+            }
+        }
+
+        // 3. Thực thi Database Transaction
+        try {
+            await runDbCommand(db, 'BEGIN TRANSACTION');
+            
+            if (entity.streetDetail && entity.streetDetail.mrid) await insertStreetDetailTransaction(entity.streetDetail, db);
+            if (entity.townDetail && entity.townDetail.mrid) await insertTownDetailTransaction(entity.townDetail, db);
+            if (entity.streetAddress && entity.streetAddress.mrid) await insertStreetAddressTransaction(entity.streetAddress, db);
+            if (entity.electronicAddress && entity.electronicAddress.mrid) await insertElectronicAddressTransaction(entity.electronicAddress, db);
+            if (entity.telephoneNumber && entity.telephoneNumber.mrid) await insertTelephoneNumberTransaction(entity.telephoneNumber, db);
+            if (entity.organisation && entity.organisation.mrid) await insertParentOrganizationTransaction(entity.organisation, db);
+            if (entity.positionPoints && entity.positionPoints.length > 0) await insertGeoMapArrayTransaction(entity.positionPoints, db);
+            
+            if (entity.attachment && entity.attachment.id) {
+                const pathData = JSON.parse(entity.attachment.path);
+                const newPath = pathData.map(item => ({
+                    ...item,
+                    path: path.join(attachmentContext.getAttachmentPath(mrid), path.basename(item.path))
+                }));
+                
+                entity.attachment.path = JSON.stringify(newPath);
+                await uploadAttachmentTransaction(entity.attachment, db);
+            }
+            
+            if (entity.configurationEvent && entity.configurationEvent.length > 0) {
+                await insertConfigurationEventArrayTransaction(entity.configurationEvent, db);
+            }
+
+            await saveSnapshotTransaction(serverData.organisationId, 'organisation', serverData, db);
+
+            await runDbCommand(db, 'COMMIT'); 
+            
+        } catch (txErr) {
+            await runDbCommand(db, 'ROLLBACK');
+            throw txErr; 
+        }
+
+        // 4. Dọn dẹp file backup
+        if (hasAttachments) {
+            deleteBackupFiles(null, mrid);
+        }
+
+        return { 
+            success: true, 
+            data: entity, 
+            error: null,
+            message: 'Insert ParentOrganisationEntity completed' 
+        };
+
+    } catch (err) {
+        console.error('Insert ParentOrganisationEntity failed:', err);
+
+        // 5. Khôi phục lại File
+        if (hasAttachments) {
+            try {
+                restoreFiles(null, null, mrid);
+                deleteBackupFiles(null, mrid);
+            } catch (restoreErr) {
+                console.error('Restore files failed:', restoreErr);
+            }
+        }
+
+        // 6. Ghi log cấu hình lỗi
+        const configEvent = new ConfigurationEvent();
+        configEvent.mrid = uuid.newUuid();
+        configEvent.name = 'Change organisation';
+        configEvent.effective_date_time = new Date().toISOString();
+        configEvent.user_name = (entity.user && entity.user.name) ? entity.user.name : 'Unknown';
+        configEvent.modified_by = (entity.user && entity.user.user_id) ? entity.user.user_id : 'Unknown';
+        configEvent.type = "ERROR";
+        configEvent.description = `Organisation changed of ${entity.organisation.name} failed`;
+
+        try {
+            await insertConfigurationEventTransaction(configEvent, db);
+        } catch (eventErr) {
+            console.error('Insert ConfigurationEvent failed:', eventErr);
+        }
+
+        return { 
+            success: false, 
+            error: err.message || err, 
+            message: 'Insert ParentOrganisationEntity failed and rollback executed' 
+        };
+    }
+}
+
 export const getOrganisationEntityById = async (id) => {
     try {
         if(!id) {
@@ -145,6 +260,8 @@ export const getOrganisationEntityById = async (id) => {
             const dataParentOrganization = await getParentOrganizationById(id);
             if (dataParentOrganization.success) {
                 orgEntity.organisation = dataParentOrganization.data
+            } else {
+                return { success: false, error: new Error('Organisation not found') };
             }
 
             const dataStreetAddress = await getStreetAddressById(orgEntity.organisation.street_address);
@@ -206,55 +323,43 @@ export const deleteOrganisationEntityById = async (data) => {
     };
 
     try {
-        console.log('STEP 1: BEGIN TRANSACTION');
         await runSQL('BEGIN TRANSACTION');
 
         if (data.organisation.mrid) {
-            console.log('STEP 2: deleteParentOrganization', data.organisation.mrid);
             await deleteParentOrganizationByIdTransaction(data.organisation.mrid, db);
         }
 
         if (data.streetAddress && data.streetAddress.mrid) {
-            console.log('STEP 3: deleteStreetAddress', data.streetAddress.mrid);
             await deleteStreetAddressByIdTransaction(data.streetAddress.mrid, db);
         }
 
         if (data.attachment && data.attachment.id) {
-            console.log('STEP 4: deleteAttachment', data.attachment.id);
             await deleteAttachmentByIdTransaction(data.attachment.id, db);
         }
 
         if (data.electronicAddress && data.electronicAddress.mrid) {
-            console.log('STEP 5: deleteElectronicAddress', data.electronicAddress.mrid);
             await deleteElectronicAddressByIdTransaction(data.electronicAddress.mrid, db);
         }
 
         if (data.telephoneNumber && data.telephoneNumber.mrid) {
-            console.log('STEP 6: deleteTelephoneNumber', data.telephoneNumber.mrid);
             await deleteTelephoneNumberByIdTransaction(data.telephoneNumber.mrid, db);
         }
 
         if (data.streetDetail && data.streetDetail.mrid) {
-            console.log('STEP 7: deleteStreetDetail', data.streetDetail.mrid);
             await deleteStreetDetailByIdTransaction(data.streetDetail.mrid, db);
         }
 
         if (data.townDetail && data.townDetail.mrid) {
-            console.log('STEP 8: deleteTownDetail', data.townDetail.mrid);
             await deleteTownDetailByIdTransaction(data.townDetail.mrid, db);
         }
 
-        console.log('STEP 9: COMMIT');
         await runSQL('COMMIT');
 
-        console.log('STEP 10: deleteDirectory');
         deleteDirectory(null, data.organisation.mrid);
 
-        console.log('DONE');
         return { success: true, data, message: 'Organisation deleted successfully' };
 
     } catch (error) {
-        console.error('❌ ERROR at step:', error);
         try {
             await runSQL('ROLLBACK');
         } catch (rollbackErr) {
@@ -264,3 +369,10 @@ export const deleteOrganisationEntityById = async (data) => {
     }
 
 };
+
+const runDbCommand = (db, query) => new Promise((resolve, reject) => {
+    db.run(query, function(err) {
+        if (err) reject(err);
+        else resolve(this);
+    });
+});

@@ -158,7 +158,6 @@ export const insertSubstationEntity = async (entity) => {
                 try {
                     restoreFiles(null, null, entity.substation.mrid);
                 } catch (err) {
-                    console.log('Error restoring files:', err);
                     console.error('Restore files failed:', err);
                     result.error = err.message;
                     result.message = 'Insert SubstationEntity failed and rollback executed';

@@ -15,11 +15,11 @@ autoUpdater.logger = {
     }
 }
 
-function sendToRenderer(...args) {
-    if (win && !win.isDestroyed()) {
-        win.webContents.send('auto-updater-log', args.join(' '))
-    }
-}
+// function sendToRenderer(...args) {
+//     if (win && !win.isDestroyed()) {
+//         win.webContents.send('auto-updater-log', args.join(' '))
+//     }
+// }
 autoUpdater.forceDevUpdateConfig = true
 
 // Set token trực tiếp trên autoUpdater
@@ -88,7 +88,7 @@ autoUpdater.on('update-not-available', (info) => {
 })
 
 autoUpdater.on('error', (err) => {
-    console.error('[AutoUpdater] Error:', err)
+    console.error('[AutoUpdater] Error IN autoUpdater.on')
     if (win && !win.isDestroyed()) {
         win.webContents.send('update-error', err)
     }
@@ -105,7 +105,7 @@ export const autoCheckForUpdates = () => {
         try {
             await autoUpdater.checkForUpdates()
         } catch (err) {
-            console.error('[AutoUpdater] Auto check failed:', err)
+            console.error('[AutoUpdater] Auto check failed')
         }
     }, 5000) // Wait 5 seconds for app to fully load
 }

@@ -28,12 +28,8 @@ class SubstationEntity {
         this.person = new Person
         this.personRole = new PersonRole
         this.user = new User
-        this.userIdentifiedObject = new UserIdentifiedObject
-        this.personSubstation = new PersonSubstation
         this.attachment = new Attachment
         this.positionPoint = []
-        this.userIdentifiedObject = new UserIdentifiedObject
-        this.organisationLocation = new OrganisationLocation
         this.userIdentifiedObject = new UserIdentifiedObject
         this.personSubstation = new PersonSubstation
         this.organisationLocation = new OrganisationLocation

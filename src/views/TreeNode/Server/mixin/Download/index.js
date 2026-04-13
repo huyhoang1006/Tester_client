@@ -1,9 +1,4 @@
-// File: src/services/download-services/index.js
-import { processOrganisationDownload } from './organisation'
-import { processSubstationDownload } from './substation'
-import { processVoltageLevelDownload } from './voltageLevel'
-import { processBayDownload } from './bay'
-import { processAssetDownload } from './asset'
+import * as coreUtils from './core-utils.js'
 
 export async function executeDownload(node, ctx) {
     // Gọi action 'start' để bật loading và kích hoạt Failsafe Timer
@@ -13,22 +8,10 @@ export async function executeDownload(node, ctx) {
     });
 
     try {
-        const strategies = {
-            'organisation': processOrganisationDownload,
-            'substation': processSubstationDownload,
-            'voltageLevel': processVoltageLevelDownload,
-            'bay': processBayDownload
-        }
-
-        const handler = strategies[node.mode]
-        if (handler) {
-            await handler(node, ctx)
-        } else {
-            await processAssetDownload(node, ctx)
-        }
-
-        await ctx.showLocationRoot()
-        ctx.$message.success(`${node.aliasName || 'Dữ liệu'} downloaded successfully!`)
+        const chain = await coreUtils.buildOrgAncestors(node)
+        const fullInfoChain = await coreUtils.fetchFullInfoForChain(chain)
+        await coreUtils.downloadChainInfo(fullInfoChain, ctx)
+        ctx.$message.success(`${node.aliasName || 'Data'} downloaded successfully!`)
 
     } catch (error) {
         if (error.message !== 'CANCELED') {

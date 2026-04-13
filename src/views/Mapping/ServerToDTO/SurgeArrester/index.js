@@ -1,77 +1,81 @@
-// File: src/views/Mapping/ServerToDTO/SurgeArrester/index.js
 import SurgeArresterDto from "@/views/Dto/SurgeAsset";
+import uuid from "@/utils/uuid";
+
+const str = (val) => (val !== null && val !== undefined) ? String(val) : ''
 
 export const mapServerToDto = (serverData) => {
     const dto = new SurgeArresterDto();
     if (!serverData) return dto;
 
-    const assetInfo = serverData.assetInfo || {};
-    const surgeArrester = serverData.surgeArrester || {};
-    const ratingsList = serverData.surgeArresterRatingList || [];
+    const assetInfo  = serverData.assetInfo          || {};
+    const sa         = serverData.surgeArrester       || {};
+    const ratingList = serverData.surgeArresterRatingList || [];
 
-    // 1. Map Properties
-    dto.properties.mrid = surgeArrester.id ? String(surgeArrester.id) : '';
-    dto.properties.serial_no = assetInfo.serialNo || '';
-    dto.properties.apparatus_id = assetInfo.apparatusId || '';
-    dto.properties.kind = 'Surge Arrester';
-    dto.properties.type = surgeArrester.assetType || '';
-    dto.properties.manufacturer = assetInfo.manufacturerName || '';
-    dto.properties.manufacturer_year = assetInfo.manufacturingYear || '';
-    dto.properties.country_of_origin = assetInfo.countryName || '';
-    dto.properties.comment = assetInfo.description || '';
+    // 1. IDs — không dùng integer ID từ server, luôn sinh UUID
+    dto.assetInfoId         = uuid.newUuid()
+    dto.psrId               = assetInfo.ownerId ? String(assetInfo.ownerId) : null
+    dto.productAssetModelId = uuid.newUuid()
+    dto.lifecycleDateId     = uuid.newUuid()
+    dto.assetPsrId          = uuid.newUuid()
 
-    // 2. Map Ratings
-    // Tính toán số lượng Unit Stack dựa trên độ dài của mảng rating
-    dto.ratings.unitStack = ratingsList.length > 0 ? ratingsList.length : 1;
+    // 2. Properties
+    dto.properties.mrid              = null
+    dto.properties.kind              = 'Surge Arrester'
+    dto.properties.type              = sa.assetType || ''
+    dto.properties.serial_no         = assetInfo.serialNo         || ''
+    dto.properties.manufacturer      = assetInfo.manufacturerName || ''
+    dto.properties.manufacturer_type = ''
+    dto.properties.manufacturer_year = assetInfo.manufacturingYear
+        ? String(assetInfo.manufacturingYear)
+        : ''
+    dto.properties.country_of_origin = assetInfo.countryName  || ''
+    dto.properties.apparatus_id      = assetInfo.apparatusId  || ''
+    dto.properties.comment           = assetInfo.description  || ''
 
-    // Map tableRating thành định dạng Object { mrid, value, unit } mà UI yêu cầu
-    dto.ratings.tableRating = ratingsList.map((rating, index) => ({
-        mrid: rating.id ? String(rating.id) : '',
-        assetInfoId: '',
-        position: rating.position || (index + 1),
-        serial: rating.serialNo || '',
+    // 3. Ratings
+    dto.ratings.unitStack  = ratingList.length || ''
+    dto.ratings.tableRating = ratingList.map(r => ({
+        mrid:        uuid.newUuid(),
+        assetInfoId: uuid.newUuid(),  // không dùng r.id từ server
+        position:    r.position || '',
+        serial:      r.serialNo || '',
+
         ratedVoltage: {
-            mrid: '',
-            value: rating.ratedVoltage !== null ? rating.ratedVoltage : '',
-            unit: 'k|V'
+            mrid:  uuid.newUuid(),
+            value: str(r.ratedVoltage),
+            unit:  'k|' + (r.voltageUnit || 'V'),
         },
         maximumVoltage: {
-            mrid: '',
-            value: rating.maxSystemVoltage !== null ? rating.maxSystemVoltage : '',
-            unit: 'k|V'
+            mrid:  uuid.newUuid(),
+            value: str(r.maxSystemVoltage),
+            unit:  'k|' + (r.voltageUnit || 'V'),
         },
         continousVoltage: {
-            mrid: '',
-            value: rating.continousOperatingVoltage !== null ? rating.continousOperatingVoltage : '',
-            unit: 'k|V'
+            mrid:  uuid.newUuid(),
+            value: str(r.continousOperatingVoltage),
+            unit:  'k|' + (r.voltageUnit || 'V'),
         },
         shortCurrent: {
-            mrid: '',
-            value: rating.shortTimeWithstandCurrent !== null ? rating.shortTimeWithstandCurrent : '',
-            unit: 'k|A'
+            mrid:  uuid.newUuid(),
+            value: str(r.shortTimeWithstandCurrent),
+            unit:  'k|' + (r.currentUnit || 'A'),
         },
         ratedCircuit: {
-            mrid: '',
-            value: rating.shortCircuitRatedDuration !== null ? rating.shortCircuitRatedDuration : '',
-            unit: 's'
+            mrid:  uuid.newUuid(),
+            value: str(r.shortCircuitRatedDuration),
+            unit:  r.ratedDurationUnit || 's',
         },
         polesVoltage: {
-            mrid: '',
-            value: rating.pfWithstandToEarthPoles !== null ? rating.pfWithstandToEarthPoles : '',
-            unit: 'k|V'
+            mrid:  uuid.newUuid(),
+            value: str(r.pfWithstandToEarthPoles),
+            unit:  'k|' + (r.voltageUnit || 'V'),
         },
         isoVoltage: {
-            mrid: '',
-            value: rating.pfWithstandIsolatingDistance !== null ? rating.pfWithstandIsolatingDistance : '',
-            unit: 'k|V'
-        }
-    }));
-
-    // 3. Generate IDs for relationships
-    dto.assetInfoId = assetInfo.id ? String(assetInfo.id) : '';
-    dto.productAssetModelId = '';
-    dto.lifecycleDateId = '';
-    dto.assetPsrId = surgeArrester.id ? String(surgeArrester.id) : '';
+            mrid:  uuid.newUuid(),
+            value: str(r.pfWithstandIsolatingDistance),
+            unit:  'k|' + (r.voltageUnit || 'V'),
+        },
+    }))
 
     return dto;
 };

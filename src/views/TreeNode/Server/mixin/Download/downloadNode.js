@@ -1,5 +1,4 @@
 /* eslint-disable */
-import Vue from 'vue'
 import { executeDownload } from './index.js'
 
 export default {
@@ -15,15 +14,21 @@ export default {
             this.selectedDownloadTargetNode = targetNode
         },
 
-        async handleDownloadNode() {
-            console.log(this.selectedNodes)
+        openDropdown() {
             if (!this.selectedNodes || this.selectedNodes.length === 0) {
-                return this.$message.warning('Vui lòng chọn 1 node để tải')
+                this.$message.warning('Please select a node to download')
+            } else {
+                this.$refs.treeToolBar.showDownloadDropdown()
+            }
+        },
+
+        async handleDownloadNode() {
+            if (!this.selectedNodes || this.selectedNodes.length === 0) {
+                return this.$message.warning('Please select a node to download')
             }
             const node = this.selectedNodes[this.selectedNodes.length - 1]
-
-            // Bùm! Xong chuyện!
-            await executeDownload(node, this)
+            
+            await executeDownload(node, this) 
         },
     }
 }

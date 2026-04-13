@@ -27,10 +27,6 @@ export const getVoltageLevelById = (voltageLevelId) => {
     return client.get(`/api/voltage-level/cim/${voltageLevelId}`)
 }
 
-// export const getBayById = (id) => {
-//     return client.get(`http://222.252.22.158:8087/api/bay/cim/${id}`)
-// }
-
 export const getTransformerById = (id) => {
     return client.get(`/api/transformer/${id}`)
 }

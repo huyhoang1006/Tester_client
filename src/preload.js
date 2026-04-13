@@ -74,6 +74,7 @@ const assetPsrAPI = entityPreload.assetPsrPreload.assetPsrPreload()
 const procedureAPI = cimPreload.procedurePreload.procedurePreload()
 const licenseAPI = cimPreload.licensePreload.licensePreload()
 const notificationEntityAPI = entityPreload.notificationEntityPreload.notificationEntityPreload()
+const entitySnapshotAPI = entityPreload.entitySnapshotPreload.entitySnapshotPreload()
 
 // Update API from entity preload
 const updateAPI = entityPreload.updateEntityPreload.updateEntityPreload()
@@ -143,6 +144,7 @@ const ipcMain = Object.assign(
     notificationEntityAPI,
     updateAPI,
     fileConverterAPI,
-    systemInfoAPI
+    systemInfoAPI,
+    entitySnapshotAPI
 )
 contextBridge.exposeInMainWorld('electronAPI', ipcMain)

@@ -1,0 +1,32 @@
+{
+  "testId": "950afb42-7080-4172-a689-c3023d61a583",
+  "testCode": "InsulationResistance",
+  "testName": "Insulation Resistance",
+  "columns": [
+    {
+      "mrid": "5f46c1b6-05d3-424c-b372-cdc8eb20ca62",
+      "code": "TestStandard",
+      "name": "Test Standard",
+      "columns" : [
+          {
+            "mrid": "6c9d0e1f-2a3b-4c13-9009-000000000017",
+            "code": "r60s",
+            "name": "R60s",
+            "type": "analog",
+            "unit": "m|Ω"
+          },
+          {
+            "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",
+            "code": "assessment",
+            "name": "Assessment",
+            "type": "discrete",
+            "valueAliasSetId": "40c60468-232a-4643-851f-50616900f601",
+            "options": [
+              { "value": 0, "alias": "Fail", "mrid": "d8858564-e438-4034-9273-030919163001" },
+              { "value": 1, "alias": "Pass", "mrid": "d8858564-e438-4034-9273-030919163002" }
+            ]
+          }
+      ]
+    }
+  ]
+}
