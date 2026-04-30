@@ -447,7 +447,7 @@ import {
 
 import mixinTreeNavigation from '@/views/TreeNode/Common/mixinTreeNavigation/mixin'
 import TopBarServer from './Server/TopBarServer/index.vue'
-import uploadNodeMixin from './mixin/Upload/index.js';
+import uploadNodeMixin from './Client/mixin/Upload/index.js';
 import downloadNode from './Server/mixin/Download/downloadNode.js';
 import ClientTreePanel from './Client/ClientTree/index.vue'
 import ServerTreePanel from './Server/ServerTree/index.vue'

@@ -23,7 +23,9 @@ class BushingJobDto {
         this.testingEquipmentData = [];
         this.listHealth = [];
         this.attachment = new Attachment();
-        this.bushingTestingEquipmentTestType = [];    }
+        this.bushingTestingEquipmentTestType = [];    
+        this.testStandardId = '';    
+    }
 }
 
 export default BushingJobDto;

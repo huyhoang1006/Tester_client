@@ -23,7 +23,9 @@ class DisconnectorJobDto {
         this.testingEquipmentData = [];
         this.listHealth = [];
         this.attachment = new Attachment();
-        this.disconnectorTestingEquipmentTestType = [];    }
+        this.disconnectorTestingEquipmentTestType = [];
+        this.testStandardId = '';
+    }
 }
 
 export default DisconnectorJobDto;

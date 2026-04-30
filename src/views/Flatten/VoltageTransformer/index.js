@@ -13,6 +13,7 @@ class VoltageTransformerEntity {
         this.voltage = []
         this.frequency = []
         this.apparentPower = []
+        this.capacitance = []
         this.lifecycleDate = new LifecycleDate()
         this.productAssetModel = new ProductAssetModel();
         this.assetPsr = new AssetPsr();

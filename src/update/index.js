@@ -5,7 +5,6 @@ import UpdateSchedulerService from '@/function/entity/update/UpdateSchedulerServ
 import { entityFunc } from '@/function'
 import db from '@/function/datacontext/index'
 import { app } from 'electron'
-import compareVersions from 'compare-versions';
 
 const schedulerService = new UpdateSchedulerService()
 const { checkForUpdates } = entityFunc.updateEntityFunc
@@ -41,7 +40,7 @@ export const updateDatabase = async () => {
         }
     } else {
         if(oldVersion && LATEST_DB_VERSION) {
-            if (compareVersions.compare(LATEST_DB_VERSION, oldVersion, '>')) {
+            if (LATEST_DB_VERSION > oldVersion) {
                 try {
                     console.log(`Updating database from version ${oldVersion} to ${LATEST_DB_VERSION}`)
                     await runAsync('BEGIN TRANSACTION', db);

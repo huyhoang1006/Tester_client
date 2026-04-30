@@ -1,5 +1,6 @@
 import Attachment from "@/views/Flatten/Attachment";
 
+import TestStandard from "@/views/Cim/TestStandard";
 class VoltageTransformerJobDto {
     constructor() {
         this.properties = {
@@ -23,7 +24,9 @@ class VoltageTransformerJobDto {
         this.testingEquipmentData = [];
         this.listHealth = [];
         this.attachment = new Attachment();
-        this.voltageTransformerTestingEquipmentTestType = [];    }
+        this.voltageTransformerTestingEquipmentTestType = [];
+        this.testStandard = new TestStandard()
+    }
 }
 
 export default VoltageTransformerJobDto;

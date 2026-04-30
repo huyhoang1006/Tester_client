@@ -23,7 +23,9 @@ class RotatingMachineJobDto {
         this.testingEquipmentData = [];
         this.listHealth = [];
         this.attachment = new Attachment();
-        this.rotatingMachineTestingEquipmentTestType = [];    }
+        this.rotatingMachineTestingEquipmentTestType = [];
+        this.testStandardId = '';
+    }
 }
 
 export default RotatingMachineJobDto;

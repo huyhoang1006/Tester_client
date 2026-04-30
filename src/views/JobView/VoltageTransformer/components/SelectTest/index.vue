@@ -117,6 +117,8 @@ export default {
             const initTest = await this.initTest(testType.alias_name, this.assetData)
             const initData = initTest.table
             const initCondition = initTest.rowDataExampleCondition
+            const initAssessment = initTest.rowDataAssessment
+            console.log(initAssessment)
             const name = count == 0 ? testType.name : `${testType.name} (${count})`
             const mrid = uuid.newUuid()
             this.testListData.push({
@@ -132,6 +134,9 @@ export default {
                     comment: "",
                     attachment : new Attachment(),
                     attachmentData : []
+                },
+                testAssessment : {
+                    assessment: initAssessment
                 },
                 worst_score: null,
                 worst_score_df: null,

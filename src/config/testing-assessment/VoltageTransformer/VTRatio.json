@@ -2,6 +2,34 @@
   "testId": "694a6ddb-ca9b-4948-8b14-6efdab7dd9ef",
   "testCode": "VTRatio",
   "testName": "VT Ratio",
-  "columns": [
+  "testStandard": [
+    {
+      "mrid": "08f76ede-82d5-43d0-95d8-19b60c1266af",
+      "code": "customized_vt_ratio_voltage_transformer",
+      "name": "Customized limit",
+      "testType" : "customized",
+      "columns" : [
+        {
+          "mrid": "1d510b78-7413-4777-a344-4b65d4e3e920",
+          "code": "ratio_dev",
+          "name": "Ratio dev",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",
+          "code": "assessment",
+          "name": "Assessment",
+          "type": "discrete",
+          "measurement_type": "test, assessment",
+          "valueAliasSetId": "40c60468-232a-4643-851f-50616900f601",
+          "options": [
+            { "value": 0, "alias": "Fail", "mrid": "d8858564-e438-4034-9273-030919163001" },
+            { "value": 1, "alias": "Pass", "mrid": "d8858564-e438-4034-9273-030919163002" }
+          ]
+        }
+      ]
+    }
   ]
 }

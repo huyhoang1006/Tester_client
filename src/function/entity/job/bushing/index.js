@@ -13,6 +13,7 @@ import { insertStringMeasurementValueTransaction, getStringMeasurementValueByTes
 import { insertDiscreteValueTransaction, getDiscreteValueByTestDataSetMrids, deleteDiscreteValueByIdTransaction } from '@/function/cim/discreteValue/index.js'
 import { insertProcedureDataSetMeasurementValueTransaction } from '@/function/cim/procedureDataSetMeasurementValue/index.js'
 import { insertProcedureAssetTransaction } from '@/function/cim/procedureAsset/index.js'
+import {insertTestStandardTransaction} from '@/function/cim/testStandard'
 
 export const insertBushingJobEntity = async (old_entity,entity) => {
     try {
@@ -55,6 +56,7 @@ export const insertBushingJobEntity = async (old_entity,entity) => {
             }
 
             await runAsync('BEGIN TRANSACTION');
+            await insertTestDataSetTransaction(entity.testStandard, db)
             await insertOldWorkTransaction(entity.oldWork, db);
             if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
                 const pathData = JSON.parse(entity.attachment.path);

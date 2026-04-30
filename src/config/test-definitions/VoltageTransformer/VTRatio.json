@@ -33,7 +33,9 @@
       "mrid": "1d510b78-7413-4777-a344-4b65d4e3e920",
       "code": "ratio_dev",
       "name": "Ratio dev",
-      "type": "string"
+      "type": "analog",
+      "unit": "%",
+      "measurement_type": "test, assessment"
     },
     {
       "mrid": "e6527699-a044-4633-8572-ac1f84fe78f6",
@@ -46,6 +48,7 @@
       "code": "assessment",
       "name": "Assessment",
       "type": "discrete",
+      "measurement_type": "test, assessment",
       "valueAliasSetId": "40c60468-232a-4643-851f-50616900f601",
       "options": [
         { "value": 0, "alias": "Fail", "mrid": "d8858564-e438-4034-9273-030919163001" },

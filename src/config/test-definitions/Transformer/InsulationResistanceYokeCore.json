@@ -14,7 +14,8 @@
             "code": "r60s",
             "name": "R60s",
             "type": "analog",
-            "unit": "m|Ω"
+            "unit": "m|Ω",
+            "measurement_type": "test, assessment"
         },
         {
             "mrid": "38b4b765-fdc1-4463-a44d-5babf5781002",
@@ -28,6 +29,7 @@
         "code": "assessment",
         "name": "Assessment",
         "type": "discrete",
+        "measurement_type": "test, assessment",
         "valueAliasSetId": "40c60468-232a-4643-851f-50616900f601",
         "options": [
             { "value": 0, "alias": "Fail", "mrid": "d8858564-e438-4034-9273-030919163001" },

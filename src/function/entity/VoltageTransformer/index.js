@@ -3,6 +3,7 @@ import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, re
 import { insertVoltageTransaction, getVoltageById, deleteVoltageByIdTransaction } from '@/function/cim/voltage'
 import { insertFrequencyTransaction, getFrequencyById, deleteFrequencyByIdTransaction } from '@/function/cim/frequency'
 import { insertApparentPowerTransaction, getApparentPowerById, deleteApparentPowerByIdTransaction } from '@/function/cim/apparentPower'
+import { insertCapacitanceTransaction, getCapacitanceById, deleteCapacitanceByIdTransaction } from '@/function/cim/capacitance'
 import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction } from '@/function/cim/lifecycleDate'
 import { insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction } from '@/function/cim/productAssetModel'
 import { insertAssetTransaction, getAssetById, deleteAssetByIdTransaction } from '@/function/cim/asset'
@@ -77,6 +78,19 @@ export const insertVoltageTransformerEntity = async (old_entity, entity) => {
                 await insertApparentPowerTransaction(apparentPower, db);
             }
 
+            //capacitance
+            const newCapacitanceIds = (entity.capacitance || []).map(c => c.mrid).filter(id => id);
+            const oldCapacitanceIds = (old_entity.capacitance || []).map(c => c.mrid).filter(id => id);
+            const toAddCapacitance = (entity.capacitance || []).filter(c => c.mrid && !oldCapacitanceIds.includes(c.mrid));
+            const toDeleteCapacitance = (old_entity.capacitance || []).filter(c => c.mrid && !newCapacitanceIds.includes(c.mrid));
+            const toUpdateCapacitance = (entity.capacitance || []).filter(c => c.mrid && oldCapacitanceIds.includes(c.mrid));
+            for (const capacitance of toAddCapacitance) {
+                await insertCapacitanceTransaction(capacitance, db);
+            }
+            for (const capacitance of toUpdateCapacitance) {
+                await insertCapacitanceTransaction(capacitance, db);
+            }
+
             //productAssetModel
             const productAssetModelResult = await insertProductAssetModelTransaction(entity.productAssetModel, db);
 
@@ -85,10 +99,6 @@ export const insertVoltageTransformerEntity = async (old_entity, entity) => {
 
             //lifecycleDate
             await insertLifecycleDateTransaction(entity.lifecycleDate, db);
-
-
-
-
 
             //asset
             await insertAssetTransaction(entity.asset, db);
@@ -103,6 +113,23 @@ export const insertVoltageTransformerEntity = async (old_entity, entity) => {
             //potentialTransformerTable
             for (const table of entity.potentialTransformerTable) {
                 await insertPotentialTransformerTable(table, db);
+            }
+
+            //delete voltage
+            for (const voltage of toDelete) {
+                await deleteVoltageByIdTransaction(voltage.mrid, db);
+            }
+            //delete frequency
+            for (const frequency of toDeleteFrequency) {
+                await deleteFrequencyByIdTransaction(frequency.mrid, db);
+            }
+            //delete apparent power            
+            for (const apparentPower of toDeleteApparentPower) {
+                await deleteApparentPowerByIdTransaction(apparentPower.mrid, db);
+            }
+            //delete capacitance
+            for (const capacitance of toDeleteCapacitance) {
+                await deleteCapacitanceByIdTransaction(capacitance.mrid, db);
             }
             await runAsync('COMMIT');
             deleteBackupFiles(null, entity.OldPotentialTransformerInfo.mrid);
@@ -168,6 +195,16 @@ export const getVoltageTransformerEntityById = async (id, psrId) => {
                 const dataFrequency = await getFrequencyById(entity.OldPotentialTransformerInfo.rated_frequency);
                 if (dataFrequency.success) {
                     entity.frequency.push(dataFrequency.data);
+                }
+
+                const dataC1 = await getCapacitanceById(entity.OldPotentialTransformerInfo.c1);
+                if (dataC1.success) {
+                    entity.capacitance.push(dataC1.data);
+                }
+
+                const dataC2 = await getCapacitanceById(entity.OldPotentialTransformerInfo.c2);
+                if (dataC2.success) {
+                    entity.capacitance.push(dataC2.data);
                 }
 
                 const dataPotentialTransformerTable = await getPotentialTransformerTableByPotentialTransformerInfoId(entity.OldPotentialTransformerInfo.mrid);

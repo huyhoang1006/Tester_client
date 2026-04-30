@@ -25,7 +25,7 @@ export const createProcedure = async (dbsql) => {
         await surgeArresterProcedureFunc.createProcedureSurgeArrester(dbsql, procedureDataMap, testDataMap, testConditionMap,
             getProcedureInfo, getTestDefinitionInfo, getTestConditionInfo)
         await voltageTransformerProcedureFunc.createProcedureVoltageTransformer(dbsql, procedureDataMap, testDataMap, testConditionMap,
-            getProcedureInfo, getTestDefinitionInfo, getTestConditionInfo)
+            testAssessmentMap, getProcedureInfo, getTestDefinitionInfo, getTestConditionInfo)
         await circuitBreakerProcedureFunc.createProcedureCircuitBreaker(dbsql, procedureDataMap, testDataMap, testConditionMap,
             getProcedureInfo, getTestDefinitionInfo, getTestConditionInfo)
         await currentTransformerProcedureFunc.createProcedureCurrentTransformer(dbsql, procedureDataMap, testDataMap, testConditionMap,
@@ -72,7 +72,7 @@ export const getTestDefinitionInfo = async (testDefinitions) => {
                 const { unit_symbol, unit_multiplier } = parseUnit(column.unit)
                 analogTest.unit_symbol = unit_symbol
                 analogTest.unit_multiplier = unit_multiplier
-                analogTest.measurement_type = "test"
+                analogTest.measurement_type = column.measurement_type || "test"
                 analogTests.push(analogTest)
             } else if (column.type === 'string') {
                 const stringMeasurementTest = new StringMeasurement()
@@ -82,7 +82,7 @@ export const getTestDefinitionInfo = async (testDefinitions) => {
                 const { unit_symbol, unit_multiplier } = parseUnit(column.unit)
                 stringMeasurementTest.unit_symbol = unit_symbol
                 stringMeasurementTest.unit_multiplier = unit_multiplier
-                stringMeasurementTest.measurement_type = "test"
+                stringMeasurementTest.measurement_type = column.measurement_type || "test"
                 stringMeasurementTests.push(stringMeasurementTest)
             } else if (column.type === 'discrete') {
                 const discreteTest = new Discrete()
@@ -90,7 +90,7 @@ export const getTestDefinitionInfo = async (testDefinitions) => {
                 discreteTest.name = column.name
                 discreteTest.alias_name = column.code
                 discreteTest.value_alias_set = column.valueAliasSetId
-                discreteTest.measurement_type = "test"
+                discreteTest.measurement_type = column.measurement_type || "test"
                 discreteTests.push(discreteTest)
                 const valueAliasSetTest = new ValueAliasSet()
                 valueAliasSetTest.mrid = column.valueAliasSetId
@@ -187,11 +187,17 @@ export const getTestConditionInfo = async (testConditions) => {
 
 export const getTestAssessmentInfo = async (testAssessments) => {
     const analogTests = []
+    const analogValueTests = []
     const stringMeasurementTests = []
+    const stringMeasurementValueTests = []
     const discreteTests = []
+    const discreteValueTests = []
     const valueToAliasTests = []
     const valueAliasSetTests = []
-    const measurementProcedureTests = []
+    const standard = []
+    const standardMeasurement = []
+    const standardProcedure = []
+
     for (const test of Object.values(testAssessments)) {
         for (const column of test.columns) {
             if (column.type === 'analog') {
@@ -202,7 +208,7 @@ export const getTestAssessmentInfo = async (testAssessments) => {
                 const { unit_symbol, unit_multiplier } = parseUnit(column.unit)
                 analogTest.unit_symbol = unit_symbol
                 analogTest.unit_multiplier = unit_multiplier
-                analogTest.measurement_type = "test"
+                analogTest.measurement_type = column.measurement_type || "assessment"
                 analogTests.push(analogTest)
             } else if (column.type === 'string') {
                 const stringMeasurementTest = new StringMeasurement()
@@ -212,7 +218,7 @@ export const getTestAssessmentInfo = async (testAssessments) => {
                 const { unit_symbol, unit_multiplier } = parseUnit(column.unit)
                 stringMeasurementTest.unit_symbol = unit_symbol
                 stringMeasurementTest.unit_multiplier = unit_multiplier
-                stringMeasurementTest.measurement_type = "test"
+                stringMeasurementTest.measurement_type = column.measurement_type || "assessment"
                 stringMeasurementTests.push(stringMeasurementTest)
             } else if (column.type === 'discrete') {
                 const discreteTest = new Discrete()
@@ -220,7 +226,7 @@ export const getTestAssessmentInfo = async (testAssessments) => {
                 discreteTest.name = column.name
                 discreteTest.alias_name = column.code
                 discreteTest.value_alias_set = column.valueAliasSetId
-                discreteTest.measurement_type = "test"
+                discreteTest.measurement_type = column.measurement_type || "assessment"
                 discreteTests.push(discreteTest)
                 const valueAliasSetTest = new ValueAliasSet()
                 valueAliasSetTest.mrid = column.valueAliasSetId

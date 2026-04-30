@@ -44,7 +44,8 @@ export const getDiscreteValueByTestDataSetMrids = async (mrids) => {
                 io.*,                 -- identified_object của measurement_value
                 iop.*, 
                 pdmv.procedure_dataset_id,
-
+                m.unit_symbol AS unit_symbol,
+                m.unit_multiplier AS unit_multiplier,
                 io_vta.alias_name AS vta_alias_name   -- alias_name của value_to_alias
 
             FROM procedure_dataset_measurement_value pdmv
@@ -57,7 +58,8 @@ export const getDiscreteValueByTestDataSetMrids = async (mrids) => {
 
             LEFT JOIN discrete d
                 ON d.mrid = dv.discrete
-
+            LEFT JOIN measurement m
+                ON m.mrid = d.mrid
             LEFT JOIN value_to_alias vta
                 ON vta.value_alias_set = d.value_alias_set
                AND vta.value = dv.value

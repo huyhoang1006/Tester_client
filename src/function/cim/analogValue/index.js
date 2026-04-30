@@ -42,13 +42,19 @@ export const getAnalogValueByTestDataSetMrids = async (mrids) => {
                 av.*, 
                 mv.*, 
                 io.*, 
-                iop.*, 
+                iop.*,
+                m.unit_symbol AS unit_symbol,
+                m.unit_multiplier AS unit_multiplier,
                 pdmv.procedure_dataset_id
             FROM procedure_dataset_measurement_value pdmv
             JOIN measurement_value mv 
                 ON mv.mrid = pdmv.measurement_value_id
             JOIN analog_value av 
                 ON av.mrid = mv.mrid
+            JOIN analog a
+                ON av.analog = a.mrid
+            LEFT JOIN measurement m
+                ON a.mrid = m.mrid
             LEFT JOIN iopoint iop
                 ON iop.mrid = mv.mrid
             LEFT JOIN identified_object io

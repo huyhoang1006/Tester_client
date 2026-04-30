@@ -41,7 +41,8 @@
             "code": "df_meas",
             "name": "DF meas",
             "type": "analog",
-            "unit": "%"
+            "unit": "%",
+            "measurement_type": "test, assessment"
         },
         {
             "mrid": "1d340ee5-9c57-422a-a049-ea57d2beedb7",
@@ -55,6 +56,7 @@
             "code": "assessment",
             "name": "Assessment",
             "type": "discrete",
+            "measurement_type": "test, assessment",
             "valueAliasSetId": "40c60468-232a-4643-851f-50616900f601",
             "options": [
                 { "value": 0, "alias": "Fail", "mrid": "d8858564-e438-4034-9273-030919163001" },

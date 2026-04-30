@@ -1385,9 +1385,11 @@ CREATE TABLE IF NOT EXISTS "old_work" (
 	"execution_date"	TEXT,
 	"test_method"	TEXT,
 	"asset_id"	TEXT,
+	"test_standard_id"	TEXT,
 	PRIMARY KEY("mrid"),
 	FOREIGN KEY("asset_id") REFERENCES "asset"("mrid"),
-	FOREIGN KEY("mrid") REFERENCES "work"("mrid") ON DELETE CASCADE
+	FOREIGN KEY("mrid") REFERENCES "work"("mrid") ON DELETE CASCADE,
+	FOREIGN KEY("test_standard_id") REFERENCES "test_standard"("mrid")
 );
 CREATE TABLE IF NOT EXISTS "online_monitor" (
 	"id"	TEXT NOT NULL,
@@ -1782,6 +1784,35 @@ CREATE TABLE IF NOT EXISTS "procedure_dataset_measurement_value" (
 	PRIMARY KEY("procedure_dataset_id","measurement_value_id"),
 	FOREIGN KEY("measurement_value_id") REFERENCES "measurement_value"("mrid") on delete cascade,
 	FOREIGN KEY("procedure_dataset_id") REFERENCES "procedure_dataset"("mrid") on delete cascade
+);
+CREATE TABLE IF NOT EXISTS "procedure_standard" (
+	"mrid"	TEXT NOT NULL,
+	"procedure_id"	TEXT,
+	"test_standard_astm"	TEXT,
+	"test_standard_cigre"	TEXT,
+	"test_standard_din"	TEXT,
+	"test_standard_doble"	TEXT,
+	"test_standard_epa"	TEXT,
+	"test_standard_iec"	TEXT,
+	"test_standard_ieee"	TEXT,
+	"test_standard_iso"	TEXT,
+	"test_standard_laborelec"	TEXT,
+	"test_standard_tappi"	TEXT,
+	"test_standard_ukministry_of_defence"	TEXT,
+	"test_standard_wep"	TEXT,
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("test_standard_astm") REFERENCES "astm_standard"("mrid"),
+	FOREIGN KEY("test_standard_cigre") REFERENCES "cigre_standard"("mrid"),
+	FOREIGN KEY("test_standard_din") REFERENCES "din_standard"("mrid"),
+	FOREIGN KEY("test_standard_doble") REFERENCES "doble_standard"("mrid"),
+	FOREIGN KEY("test_standard_epa") REFERENCES "epa_standard"("mrid"),
+	FOREIGN KEY("test_standard_iec") REFERENCES "iec_standard"("mrid"),
+	FOREIGN KEY("test_standard_ieee") REFERENCES "ieee_standard"("mrid"),
+	FOREIGN KEY("test_standard_iso") REFERENCES "iso_standard"("mrid"),
+	FOREIGN KEY("test_standard_laborelec") REFERENCES "laborelec_standard"("mrid"),
+	FOREIGN KEY("test_standard_tappi") REFERENCES "tappi_standard"("mrid"),
+	FOREIGN KEY("test_standard_ukministry_of_defence") REFERENCES "ukministry_of_defence_standard"("mrid"),
+	FOREIGN KEY("test_standard_wep") REFERENCES "wep_standard"("mrid")
 );
 CREATE TABLE IF NOT EXISTS "product_asset_model" (
 	"mrid"	TEXT NOT NULL,

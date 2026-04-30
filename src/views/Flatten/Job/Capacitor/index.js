@@ -1,5 +1,6 @@
 import OldWork from "@/views/Cim/OldWork/index";
 import Attachment from "../../Attachment";
+import TestStandard from "@/views/Cim/TestStandard"
 class CapacitorJobEntity {
     constructor() {
         this.oldWork = new OldWork();
@@ -14,6 +15,7 @@ class CapacitorJobEntity {
         this.capacitorTestingEquipmentTestType = []
         this.procedureAsset = []
         this.procedureDataSetMeasurementValue = []
+        this.testStandard = new TestStandard() 
     }
 }
 

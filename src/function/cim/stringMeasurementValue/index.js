@@ -42,13 +42,19 @@ export const getStringMeasurementValueByTestDataSetMrids = async (mrids) => {
                 smv.*, 
                 mv.*, 
                 io.*, 
-                iop.*, 
+                iop.*,
+                m.unit_symbol AS unit_symbol,
+                m.unit_multiplier AS unit_multiplier, 
                 pdmv.procedure_dataset_id
             FROM procedure_dataset_measurement_value pdmv
             JOIN measurement_value mv 
                 ON mv.mrid = pdmv.measurement_value_id
             JOIN string_measurement_value smv 
                 ON smv.mrid = mv.mrid
+            JOIN string_measurement sm
+                ON sm.mrid = smv.string_measurement
+            LEFT JOIN measurement m
+                ON m.mrid = sm.mrid
             LEFT JOIN iopoint iop
                 ON iop.mrid = mv.mrid
             LEFT JOIN identified_object io

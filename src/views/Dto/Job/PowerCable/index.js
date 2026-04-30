@@ -23,7 +23,9 @@ class PowerCableJobDto {
         this.testingEquipmentData = [];
         this.listHealth = [];
         this.attachment = new Attachment();
-        this.powerCableTestingEquipmentTestType = [];    }
+        this.powerCableTestingEquipmentTestType = [];
+        this.testStandardId = '';
+    }
 }
 
 export default PowerCableJobDto;

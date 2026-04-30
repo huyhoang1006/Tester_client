@@ -4,6 +4,7 @@ import Frequency from "@/views/Cim/Frequency";
 import Voltage from "@/views/Cim/Voltage";
 import PotentialTransformerTable from "@/views/Cim/PotentialTransformerTable";
 import ApparentPower from "@/views/Cim/ApparentPower";
+import Capacitance from "@/views/Cim/Capacitance";
 
 const mappingUnit = (map, unitDto) => {
     if (!map || !unitDto) return;
@@ -71,14 +72,14 @@ export function mapDtoToEntity(dto) {
     mappingUnit(newRatedVoltage, dto.ratings.rated_voltage);
     entity.voltage.push(newRatedVoltage);
     entity.OldPotentialTransformerInfo.windings = dto.vt_Configuration.windings || '';
-    // entity.OldPotentialTransformerInfo.c1 = dto.ratings.c1.value || '';
-    // const newC1 = new Voltage();
-    // mappingUnit(newC1, dto.ratings.c1);
-    // entity.voltage.push(newC1);
-    // entity.OldPotentialTransformerInfo.c2 = dto.ratings.c2.value || '';
-    // const newC2 = new Voltage();
-    // mappingUnit(newC2, dto.ratings.c2);
-    // entity.voltage.push(newC2);
+    entity.OldPotentialTransformerInfo.c1 = dto.ratings.c1.mrid || '';
+    const newC1 = new Capacitance();
+    mappingUnit(newC1, dto.ratings.c1);
+    entity.capacitance.push(newC1);
+    entity.OldPotentialTransformerInfo.c2 = dto.ratings.c2.mrid || '';
+    const newC2 = new Capacitance();
+    mappingUnit(newC2, dto.ratings.c2);
+    entity.capacitance.push(newC2);
     entity.OldPotentialTransformerInfo.upr_formula = dto.ratings.upr || '';
 
     mapDataVTtoArrayPotentialTransformerTable(dto, entity)
@@ -142,7 +143,7 @@ export function mapEntityToDto(entity) {
                 dto.ratings.rated_frequency.custom_value = frequency.value || '';
                 dto.ratings.rated_frequency_custom = frequency.value || '';
             }
-            dto.ratings.rated_frequency.unit = frequency.multiplier + '|' + frequency.unit || '';
+            dto.ratings.rated_frequency.unit = (frequency.multiplier ? (frequency.multiplier + '|' + frequency.unit) : frequency.unit) || '';
         }
     }
 
@@ -152,7 +153,23 @@ export function mapEntityToDto(entity) {
         if (voltage.mrid === entity.OldPotentialTransformerInfo.rated_voltage) {
             dto.ratings.rated_voltage.mrid = voltage.mrid || '';
             dto.ratings.rated_voltage.value = voltage.value || '';
-            dto.ratings.rated_voltage.unit = voltage.multiplier + '|' + voltage.unit || '';
+            dto.ratings.rated_voltage.unit = (voltage.multiplier ? (voltage.multiplier + '|' + voltage.unit) : voltage.unit) || '';
+        }
+    }
+
+    for (let capacitance of entity.capacitance) {
+        if (capacitance.mrid === entity.OldPotentialTransformerInfo.c1) {
+            dto.ratings.c1.mrid = capacitance.mrid || '';
+            dto.ratings.c1.value = capacitance.value || '';
+            dto.ratings.c1.unit = (capacitance.multiplier ? (capacitance.multiplier + '|' + capacitance.unit) : capacitance.unit) || '';
+        }
+    }
+
+    for (let capacitance of entity.capacitance) {
+        if (capacitance.mrid === entity.OldPotentialTransformerInfo.c2) {
+            dto.ratings.c2.mrid = capacitance.mrid || '';
+            dto.ratings.c2.value = capacitance.value || '';
+            dto.ratings.c2.unit = (capacitance.multiplier ? (capacitance.multiplier + '|' + capacitance.unit) : capacitance.unit) || '';
         }
     }
 
@@ -183,8 +200,7 @@ const mapDataVTRevert = (entity) => {
                 ? {
                     mrid: voltage.mrid,
                     value: voltage.value,
-                    unit: `${voltage.multiplier || "null"}|${voltage.unit || ""}`,
-                    multiplier: voltage.multiplier || ""
+                    unit: `${voltage.multiplier ? voltage.multiplier + '|' : ''}${voltage.unit || ""}`,
                 }
                 : null,
 
@@ -192,8 +208,7 @@ const mapDataVTRevert = (entity) => {
                 ? {
                     mrid: burden.mrid,
                     value: burden.value,
-                    unit: `${burden.multiplier || "null"}|${burden.unit || ""}`,
-                    multiplier: burden.multiplier || ""
+                    unit: `${burden.multiplier ? burden.multiplier + '|' : ''}${burden.unit || ""}`,
                 }
                 : null
         };

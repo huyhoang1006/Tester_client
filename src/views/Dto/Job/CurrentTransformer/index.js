@@ -23,7 +23,9 @@ class CurrentTransformerJobDto {
         this.testingEquipmentData = [];
         this.listHealth = [];
         this.attachment = new Attachment();
-        this.currentTransformerTestingEquipmentTestType = [];    }
+        this.currentTransformerTestingEquipmentTestType = [];
+        this.testStandardId = '';    
+    }
 }
 
 export default CurrentTransformerJobDto;

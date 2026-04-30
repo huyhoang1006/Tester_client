@@ -92,16 +92,44 @@
         </table>
 
         <!-- Assessment settings -->
-        <el-dialog title="Assessment settings" :visible.sync="openAssessmentDialog" width="860px">
+        <el-dialog :modal=true  title="Assessment settings" :visible.sync="openAssessmentDialog" width="860px" append-to-body>
+            <el-form style="width: 75%;" size="small" label-position="left" label-width="140px">
+                <el-form-item label="Option">
+                    <el-select size="mini" placeholder="please select" v-model="option">
+                        <el-option v-for="option in assessmentList" :key="option" :label="option" :value="option"></el-option>
+                    </el-select>
+                </el-form-item>
+            </el-form>
+            <table v-for="(element, index) in assessmentData" :key="index" style="width: 75%;" class="table-strip-input-data w-50">
+                <thead>
+                    <tr>
+                        <th colspan="2">Limit</th>
+                        <th>Assessment</th>
+                    </tr>
+                </thead>
+                <tbody v-if="element.type === option">
+                    <tr v-for="(record, recordIndex) in element.records" :key="'record' + recordIndex">
+                        <th v-html="record.label"></th>
+                        <td>{{ record.description }} <el-input style="width: 100px;" size="mini" v-model="record.r60s.value"></el-input></td>
+                        <th v-if="record.assessment.value === 'Pass'">
+                            <i class="fas fa-check-square pass"></i> {{ record.assessment.value }}
+                        </th>
+                        <th v-else-if="record.assessment.value === 'Fail'">
+                            <i class="fas fa-xmark fail"></i> {{ record.assessment.value }}
+                        </th>
+                    </tr>
+                </tbody>
+            </table>
         </el-dialog>
 
         <!-- Condition indicator settings -->
-        <el-dialog title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="860px">
+        <el-dialog :modal=false title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="860px">
         </el-dialog>
     </div>
 </template>
 
 <script>
+/* eslint-disable */
 import voltageTransformerTestMap from '@/config/test-definitions/VoltageTransformer'
 import * as common from '@/views/JobView/Common/index'
 
@@ -111,6 +139,7 @@ export default {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
+            option: null
         }
     },
     mounted() {
@@ -127,6 +156,10 @@ export default {
         asset: {
             type: Object,
             require: true
+        },
+        testAssessment: {
+            type: Object,
+            require: true
         }
     },
     computed: {
@@ -138,6 +171,12 @@ export default {
         },
         rowData() {
             return common.buildEmptyTestRow(voltageTransformerTestMap['InsulationResistance'].columns)
+        },
+        assessmentData() {
+            return this.testAssessment.assessment
+        },
+        assessmentList() {
+            return this.testAssessment.assessment.map(x => x.type)
         }
     },
     watch: {
@@ -156,6 +195,16 @@ export default {
                     this.$nextTick(() => {
                         this.initializeTable()
                     })
+                }
+            }
+        },
+        option : {
+            immediate : true,
+            handler: function (newVal) {
+                const standard = this.assessmentData.find(x => x.type === newVal)
+                if(standard) {
+                    const standard = this.assessmentData.find(x => x.type === newVal)
+                    this.$emit('update-standard', standard.mrid, standard.type)
                 }
             }
         }
@@ -200,7 +249,14 @@ export default {
             this.testData.table.table1.splice(index + 1, 0, data)
         },
         calculator() {
-            this.$message.success('Calculating successfully')
+            const standardRecord = this.assessmentData.find(x => x.type === this.option)
+            for(const row of this.testData.table.table1) {
+                for(const record of standardRecord.records) {
+                    if(common.compare(parseFloat(row.r60s.value), record.description, parseFloat(record.r60s.value))) {
+                        row.assessment.value = record.assessment.value
+                    }
+                }
+            }
         },
         clear() {
             if (!this.testData.table.table1) {

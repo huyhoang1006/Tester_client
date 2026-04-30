@@ -23,7 +23,9 @@ class CapacitorJobDto {
         this.testingEquipmentData = [];
         this.listHealth = [];
         this.attachment = new Attachment();
-        this.capacitorTestingEquipmentTestType = [];    }
+        this.capacitorTestingEquipmentTestType = [];    
+        this.testStandardId = '';    
+    }
 }
 
 export default CapacitorJobDto;

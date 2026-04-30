@@ -94,7 +94,8 @@
       "code": "r_dev",
       "name": "R dev",
       "type": "analog",
-      "unit": "%"
+      "unit": "%",
+      "measurement_type": "test, assessment"
     },
     {
       "mrid": "a7d78f25-725a-4777-831d-69e602537bd8",
@@ -156,7 +157,8 @@
       "code": "df_meas",
       "name": "DF meas",
       "type": "analog",
-      "unit": "%"
+      "unit": "%",
+      "measurement_type": "test, assessment"
     },
     {
       "mrid": "1d340ee5-9c57-422a-a049-ea57d2beedb7",
@@ -170,7 +172,8 @@
       "code": "delta_c_percent",
       "name": "△C cal",
       "type": "analog",
-      "unit": "%"
+      "unit": "%",
+      "measurement_type": "test, assessment"
     },
     {
       "mrid": "dcddcd9a-ff10-40b0-8baa-70962f587cbe",
@@ -189,7 +192,9 @@
       "mrid": "1d510b78-7413-4777-a344-4b65d4e3e920",
       "code": "ratio_dev",
       "name": "Ratio dev",
-      "type": "string"
+      "type": "analog",
+      "unit": "%",
+      "measurement_type": "test, assessment"
     },
     {
       "mrid": "e6527699-a044-4633-8572-ac1f84fe78f6",
@@ -215,7 +220,8 @@
       "code": "r60s",
       "name": "R60s",
       "type": "analog",
-      "unit": "m|Ω"
+      "unit": "m|Ω",
+      "measurement_type": "test, assessment"
     },
     {
       "mrid": "b1c2d3e4-f5a6-47b8-8c9d-0e1f2a3b4c5d",
@@ -320,6 +326,7 @@
       "code": "assessment",
       "name": "Assessment",
       "type": "discrete",
+      "measurement_type": "test, assessment",
       "valueAliasSetId": "40c60468-232a-4643-851f-50616900f601",
       "options": [
         { "value": 0, "alias": "Fail", "mrid": "d8858564-e438-4034-9273-030919163001" },

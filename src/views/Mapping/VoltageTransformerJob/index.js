@@ -14,6 +14,9 @@ import ProcedureDataSetMeasurementValue from "@/views/Cim/ProcedureDataSetMeasur
 import voltageTransformerConditionMap from '@/config/testing-condition/VoltageTransformer'
 import voltageTransformerTestMap from "@/config/testing-condition/VoltageTransformer";
 import * as commonFunc from '@/views/JobView/Common/index.js'
+import voltageTransformerAssessmentMap from '@/config/testing-assessment/VoltageTransformer'
+import {buildEmptyTestAssessment} from '@/views/JobView/Common'
+import {getUnitMeasurment} from '../Common/index'
 
 export const jobDtoToEntity = (dto) => {
     const entity = new VoltageTransformerJobEntity();
@@ -31,6 +34,10 @@ export const jobDtoToEntity = (dto) => {
     entity.oldWork.ref_standard = dto.properties.ref_standard || null;
     entity.oldWork.description = dto.properties.summary || null;
     entity.oldWork.asset_id = dto.properties.asset_id || dto.properties.mrid || null;
+    entity.oldWork.test_standard_id = dto.testStandard.mrid || null
+
+    //test standard
+    entity.testStandard = dto.testStandard
 
     //attachment
     entity.attachment.id = dto.attachmentId || null;
@@ -179,8 +186,12 @@ export const jobDtoToEntity = (dto) => {
                     entity.procedureDataSetMeasurementValue.push(procedureDataSetMeasurementValue);
                 } else if (value.type === 'discrete') {
                     const discreteValue = new DiscreteValue();
+                    if(key == 'assessment') {
+                        discreteValue.value = commonFunc.assessmentToValue(value.value) ?? null;
+                    } else if(key == 'condition_indicator') {
+                        discreteValue.value = commonFunc.conditionIndicatorToValue(value.value) ?? null;
+                    }
                     discreteValue.mrid = value.mrid || null;
-                    discreteValue.value = value.value || null;
                     discreteValue.vta_alias_name = value.value || null
                     discreteValue.alias_name = key || null;
                     discreteValue.procedure_dataset_id = testDataCondition.mrid
@@ -193,6 +204,66 @@ export const jobDtoToEntity = (dto) => {
                 }
             }
         }
+
+        for(const standard of item.testAssessment.assessment) {
+            for(const record of standard.records) {
+                const testAssessment = new TestDataSet();
+                testAssessment.mrid = record.mrid || null;
+                testAssessment.work_task = item.mrid || null;
+                testAssessment.type = 'assessment'
+                testAssessment.title = standard.type || null
+                testAssessment.procedure = item.testTypeId || null;
+                testAssessment.description = record.description || null;
+                entity.testDataSet.push(testAssessment);
+                for (const [key, value] of Object.entries(record)) {
+                    if (typeof value === 'object') {
+                        if (value.type === 'analog') {
+                            const analogValue = new AnalogValue();
+                            analogValue.mrid = value.mrid || null;
+                            analogValue.value = value.value || null;
+                            analogValue.alias_name = key || null;
+                            analogValue.analog = value['measurement_id'] ? value['measurement_id'] : null;
+                            analogValue.procedure_dataset_id = testAssessment.mrid
+                            entity.analogValues.push(analogValue);
+                            const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue();
+                            procedureDataSetMeasurementValue.procedure_dataset_id = testAssessment.mrid || null;
+                            procedureDataSetMeasurementValue.measurement_value_id = value.mrid || null;
+                            entity.procedureDataSetMeasurementValue.push(procedureDataSetMeasurementValue);
+                        } else if (value.type === 'string') {
+                            const stringValue = new StringMeaurementValue();
+                            stringValue.mrid = value.mrid || null;
+                            stringValue.value = value.value || null;
+                            stringValue.alias_name = key || null;
+                            stringValue.procedure_dataset_id = testAssessment.mrid
+                            stringValue.string_measurement = value['measurement_id'] ? value['measurement_id'] : null;
+                            entity.stringMeasurementValues.push(stringValue);
+                            const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue();
+                            procedureDataSetMeasurementValue.procedure_dataset_id = testAssessment.mrid || null;
+                            procedureDataSetMeasurementValue.measurement_value_id = value.mrid || null;
+                            entity.procedureDataSetMeasurementValue.push(procedureDataSetMeasurementValue);
+                        } else if (value.type === 'discrete') {
+                            const discreteValue = new DiscreteValue();
+                            discreteValue.mrid = value.mrid || null;
+                            if(key == 'assessment') {
+                                discreteValue.value = commonFunc.assessmentToValue(value.value) ?? null;
+                            } else if(key == 'condition_indicator') {
+                                discreteValue.value = commonFunc.conditionIndicatorToValue(value.value) ?? null;
+                            }
+                            discreteValue.vta_alias_name = value.value
+                            discreteValue.alias_name = key || null;
+                            discreteValue.procedure_dataset_id = testAssessment.mrid;
+                            discreteValue.discrete = value['measurement_id'] ? value['measurement_id'] : null;
+                            entity.discreteValues.push(discreteValue);
+                            const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue();
+                            procedureDataSetMeasurementValue.procedure_dataset_id = testAssessment.mrid || null;
+                            procedureDataSetMeasurementValue.measurement_value_id = value.mrid || null;
+                            entity.procedureDataSetMeasurementValue.push(procedureDataSetMeasurementValue);
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
     return entity;
@@ -213,6 +284,9 @@ export const JobEntityToDto = (entity) => {
     dto.properties.ref_standard = entity.oldWork.ref_standard || '';
     dto.properties.summary = entity.oldWork.description || '';
     dto.properties.asset_id = entity.oldWork.asset_id || '';
+
+    //test standard
+    dto.testStandard = entity.testStandard
 
     //attachment
     dto.attachmentId = entity.attachment.id || '';
@@ -266,6 +340,9 @@ export const JobEntityToDto = (entity) => {
                 comment: '',
                 attachment : new Attachment(),
                 attachmentData : [],
+            },
+            testAssessment: {
+                assessment : []
             },
             data : {
                 table : {
@@ -389,13 +466,52 @@ export const JobEntityToDto = (entity) => {
                     mrid: dv.mrid,
                     type: "discrete",
                     unit: "",
-                    value: dv.value || "",
+                    value: dv.vta_alias_name || "",
                     measurement_id: dv.discrete || ''
                 };
             }
             testTemplate.testCondition.condition = rowData;
         }
 
+        testTemplate.testAssessment.assessment = buildEmptyTestAssessment(voltageTransformerAssessmentMap[testTemplate.testTypeCode].testStandard)
+        const testDataAssessmentList = entity.testDataSet.filter(x => x.work_task === item.mrid && x.type === 'assessment');
+        for(const standard of testTemplate.testAssessment.assessment) {
+            const testDataAssessmentSpecific = testDataAssessmentList.filter(x => x.title == standard.type)
+            for(const record of standard.records) {
+                for(const testDataAssessment of testDataAssessmentSpecific) {
+                    if(record.description == testDataAssessment.description) {
+                        record.mrid = testDataAssessment.mrid || ''
+                        for(const [key, value] of Object.entries(record)) {
+                            if(value.type == 'analog') {
+                                const analogValueData = entity.analogValues.filter(x => x.procedure_dataset_id === testDataAssessment.mrid);
+                                for(const analog of analogValueData) {
+                                    if(analog.alias_name === key) {
+                                        record[key].mrid = analog.mrid || ''
+                                        record[key].value = analog.value ?? ''
+                                    }
+                                }
+                            } else if(value.type == 'discrete') {
+                                const discreteValueData = entity.discreteValues.filter(x => x.procedure_dataset_id === testDataAssessment.mrid);
+                                for(const discrete of discreteValueData) {
+                                    if(discrete.alias_name === key) {
+                                        record[key].mrid = discrete.mrid || ''
+                                        record[key].value = discrete.vta_alias_name ?? ''
+                                    }
+                                }
+                            } else if(value.type == 'string') {
+                                const stringMeasutementValueData = entity.stringMeasurementValues.filter(x => x.procedure_dataset_id === testDataAssessment.mrid);
+                                for(const stringMeasurement of stringMeasutementValueData) {
+                                    if(stringMeasurement.alias_name === key) {
+                                        record[key].mrid = stringMeasurement.mrid || ''
+                                        record[key].value = stringMeasurement.value ?? ''
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
         dto.testList.push(testTemplate);
     }
     return dto;

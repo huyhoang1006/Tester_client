@@ -117,13 +117,13 @@ export default {
                         usr_rated_voltage: {
                             mrid: '',
                             value: '',
-                            unit: '',
+                            unit: 'V',
                             multiplier: ''
                         },      // default empty
                         rated_burden: {
                             mrid: '',
                             value: '',
-                            unit: '',
+                            unit: 'VA',
                             multiplier: ''
                         },           // default empty
                         rated_power_factor: ''

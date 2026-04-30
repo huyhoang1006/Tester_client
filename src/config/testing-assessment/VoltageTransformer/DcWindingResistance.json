@@ -2,6 +2,34 @@
   "testId": "cf3a06a1-11ee-43f1-b2ce-cfd61f26a6f9",
   "testCode": "DcWindingResistance",
   "testName": "DC Winding resistance",
-  "columns": [
+  "testStandard": [
+    {
+      "mrid": "e3b97d7c-6b4f-4230-b4b0-0dbd4952a160",
+      "code": "customized_dc_winding_resistance_voltage_transformer",
+      "name": "Customized limit",
+      "testType" : "customized",
+      "columns" : [
+        {
+          "mrid": "494cc6d4-e98f-4895-84cc-03322b5bc610",
+          "code": "r_dev",
+          "name": "R dev",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",
+          "code": "assessment",
+          "name": "Assessment",
+          "type": "discrete",
+          "measurement_type": "test, assessment",
+          "valueAliasSetId": "40c60468-232a-4643-851f-50616900f601",
+          "options": [
+            { "value": 0, "alias": "Fail", "mrid": "d8858564-e438-4034-9273-030919163001" },
+            { "value": 1, "alias": "Pass", "mrid": "d8858564-e438-4034-9273-030919163002" }
+          ]
+        }
+      ]
+    }
   ]
 }

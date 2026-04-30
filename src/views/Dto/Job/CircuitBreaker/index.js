@@ -23,7 +23,9 @@ class CircuitBreakerJobDto {
         this.testingEquipmentData = [];
         this.listHealth = [];
         this.attachment = new Attachment();
-        this.circuitBreakerTestingEquipmentTestType = [];    }
+        this.circuitBreakerTestingEquipmentTestType = [];    
+        this.testStandardId = '';
+    }
 }
 
 export default CircuitBreakerJobDto;

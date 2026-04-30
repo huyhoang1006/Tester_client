@@ -1,195 +1,392 @@
-/* eslint-disable */
 import CurrentTransformerDto from "@/views/Dto/CurrentTransformer";
-import CoreDto from "@/views/Dto/CurrentTransformer/CTConfiguration/CoreDto";
-import TableDto from "@/views/Dto/CurrentTransformer/CTConfiguration/TableDto";
-import ClassRatingDto from "@/views/Dto/CurrentTransformer/CTConfiguration/ClassRatingDto";
-import ClassRatingSmallDto from "@/views/Dto/CurrentTransformer/CTConfiguration/ClassRatingSmallDto";
 import uuid from "@/utils/uuid";
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Download maps (server → client) ─────────────────────────────────────────
 
 const ASSET_TYPE_MAP = {
     'INDUCTIVE': 'inductive',
     'ROGOWSKI':  'rogowski',
 }
 
-// "_0_5" → "0.5", "_5P" → "5P"
-const convertClass = (classStr) => {
-    if (!classStr) return ''
-    return classStr.replace(/^_/, '').replace(/_(?=\d)/g, '.')
+// ─── Reverse maps (client → server) ──────────────────────────────────────────
+
+const ASSET_TYPE_TO_SERVER = {
+    'inductive': 'INDUCTIVE',
+    'rogowski':  'ROGOWSKI',
 }
 
-const str = (val) => (val !== null && val !== undefined) ? String(val) : ''
+const STANDARD_TO_SERVER = {
+    'IEC60044':  'IEC_60044',
+    'IEC61869':  'IEC_61869',
+    'IEEEC5713': 'IEEE_C57_13',
+}
 
-const makeVoltage = (val, unit) => ({
-    mrid:  uuid.newUuid(),
-    value: str(val),
-    unit:  unit || 'kV',
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const num = (val) => (val !== null && val !== undefined && val !== '')
+    ? parseFloat(val)
+    : null
+
+const str = (val) => (val !== null && val !== undefined && val !== '')
+    ? String(val)
+    : null
+
+// flat number + unit → DTO object {mrid, value, unit}
+const mapFlat = (value, unit, mrid) => ({
+    mrid:  mrid || uuid.newUuid(),
+    value: value ?? null,
+    unit:  unit  || null,
 })
 
-const makeCurrent = (val) => ({
-    mrid:  uuid.newUuid(),
-    value: str(val),
-    unit:  'A',
+// DTO object → server payload {mrid, value, unit}
+const mapBurden = (obj) => ({
+    mrid:  obj?.mrid  || null,
+    value: num(obj?.value),
+    unit:  obj?.unit  || null,
 })
 
-const makeVA = (val, unit) => ({
-    mrid:  uuid.newUuid(),
-    value: str(val),
-    unit:  unit || 'VA',
+const mapTapTable = (table) => ({
+    mrid:   table?.mrid   || null,
+    isShow: table?.isShow ?? false,
+    name:   table?.name   || null,
+    ipn: {
+        mrid:  table?.ipn?.mrid  || null,
+        value: num(table?.ipn?.value),
+        unit:  table?.ipn?.unit  || null,
+    },
+    isn: {
+        mrid:  table?.isn?.mrid  || null,
+        value: num(table?.isn?.value),
+        unit:  table?.isn?.unit  || null,
+    },
+    inUse: table?.inUse ?? false,
+    type:  table?.type  || null,
 })
 
-// ─── Mapper ──────────────────────────────────────────────────────────────────
+const mapSmallClassRating = (cr) => ({
+    mrid:               cr?.mrid || null,
+    rated_burden:       mapBurden(cr?.rated_burden),
+    extended_burden:    cr?.extended_burden ?? false,
+    burden:             mapBurden(cr?.burden),
+    burdenCos:          str(cr?.burdenCos),
+    operatingBurden:    mapBurden(cr?.operatingBurden),
+    operatingBurdenCos: str(cr?.operatingBurdenCos),
+})
+
+// ─── Mapper: server response → DTO (download) ────────────────────────────────
 
 export const mapServerToDto = (serverData) => {
     const dto = new CurrentTransformerDto();
     if (!serverData) return dto;
 
-    const assetInfo  = serverData.assetInfo                      || {};
-    const core       = serverData.currentTransformerCoreResponse || {};
-    const tapsList   = serverData.currentTransformerTapsResponses || [];
+    const assetInfo = serverData.assetInfo                      || {};
+    const core      = serverData.currentTransformerCoreResponse || {};
+    const taps      = serverData.currentTransformerTapsResponses || [];
 
-    // 1. IDs
-    dto.assetInfoId         = assetInfo.id     ? String(assetInfo.id)       : uuid.newUuid()
+    // ─── IDs ─────────────────────────────────────────────────────────────────
+    // Tất cả IDs phải có giá trị hợp lệ — nếu server không trả về thì tạo UUID mới
+    // tránh FK constraint violation khi insert vào DB
+    const ctMrid            = core.id      ? String(core.id)      : uuid.newUuid()
+    dto.assetInfoId         = assetInfo.id ? String(assetInfo.id) : uuid.newUuid()
     dto.psrId               = assetInfo.ownerId ? String(assetInfo.ownerId) : null
     dto.productAssetModelId = uuid.newUuid()
     dto.lifecycleDateId     = uuid.newUuid()
     dto.assetPsrId          = uuid.newUuid()
 
-    // 2. Properties
-    dto.properties.mrid               = null
+    // ─── Properties ──────────────────────────────────────────────────────────
+    // mrid dùng làm PK cho asset — phải có giá trị, không được null
+    dto.properties.mrid               = ctMrid
     dto.properties.asset_type         = ASSET_TYPE_MAP[core.assetType] || (core.assetType || '').toLowerCase()
     dto.properties.type               = dto.properties.asset_type
-    dto.properties.manufacturer_type  = ''
     dto.properties.kind               = 'Current transformer'
     dto.properties.serial_no          = assetInfo.serialNo         || ''
     dto.properties.manufacturer       = assetInfo.manufacturerName || ''
+    dto.properties.manufacturer_type  = ''
     dto.properties.country_of_origin  = assetInfo.countryName      || ''
     dto.properties.apparatus_id       = assetInfo.apparatusId      || ''
     dto.properties.comment            = assetInfo.description      || ''
-    dto.properties.manufacturing_year = assetInfo.manufacturingYear ? String(assetInfo.manufacturingYear) : ''
+    dto.properties.manufacturing_year = assetInfo.manufacturingYear
+        ? String(assetInfo.manufacturingYear)
+        : ''
 
-    // 3. Ratings
-    dto.ratings.standard = { mrid: '', value: (core.standard || '').replace(/_/g, ''), unit: 'string' }
+    // ─── Ratings ─────────────────────────────────────────────────────────────
+    dto.ratings.standard = {
+        mrid:  uuid.newUuid(),
+        value: core.standard || null,
+        unit:  null,
+    }
 
-    const freqValue = str(core.ratedFrequency)
     dto.ratings.rated_frequency = {
         mrid:  uuid.newUuid(),
-        value: ['50', '60', '16.7'].includes(freqValue) ? freqValue : 'Custom',
+        value: str(core.ratedFrequency),
         unit:  core.ratedFrequencyUnit || 'Hz',
-    }
-    if (!['50', '60', '16.7'].includes(freqValue)) {
-        dto.ratings.rated_frequency_custom = freqValue
     }
 
     dto.ratings.primary_winding_count = str(core.primaryWinding)
-    dto.ratings.um_rms                = makeVoltage(core.um,                core.uUnit)
-    dto.ratings.u_withstand_rms       = makeVoltage(core.uWithstand,        core.uUnit)
-    dto.ratings.u_lightning_peak      = makeVoltage(core.uLightning,        core.uUnit)
-    dto.ratings.icth                  = { mrid: uuid.newUuid(), value: str(core.icth),   unit: core.icthUnit || 'A' }
-    dto.ratings.idyn_peak             = { mrid: uuid.newUuid(), value: str(core.idyn),   unit: core.iUnit    || 'A' }
-    dto.ratings.ith_rms               = { mrid: uuid.newUuid(), value: str(core.ith),    unit: core.iUnit    || 'A' }
-    dto.ratings.ith_duration          = { mrid: uuid.newUuid(), value: str(core.duration), unit: core.durationUnit || 's' }
-    dto.ratings.system_voltage        = makeVoltage(core.systemVoltage,     core.uUnit)
-    dto.ratings.system_voltage_type   = { mrid: '', value: '', unit: 'string' }
-    dto.ratings.bil                   = makeVoltage(core.ratedInsulationlevel, core.uUnit)
-    dto.ratings.rating_factor         = str(core.ratingFactor)
-    dto.ratings.rating_factor_temp    = { mrid: uuid.newUuid(), value: '', unit: 'degC' }
 
-    // 4. CT Configuration
-    const numberCore = core.numberCore || 1
-    dto.ctConfiguration.cores  = String(numberCore)
+    dto.ratings.um_rms          = mapFlat(core.um,           core.uUnit)
+    dto.ratings.u_withstand_rms = mapFlat(core.uWithstand,   core.uWithstandUnit)
+    dto.ratings.u_lightning_peak = mapFlat(core.uLightning,  core.uLightningUnit)
+    dto.ratings.icth             = mapFlat(core.icth,         core.icthUnit)
+    dto.ratings.idyn_peak        = mapFlat(core.idyn,         core.idynUnit)
+    dto.ratings.ith_rms          = mapFlat(core.ith,          core.ithUnit)
+    dto.ratings.ith_duration     = mapFlat(core.duration,     core.durationUnit)
+    dto.ratings.system_voltage   = mapFlat(core.systemVoltage, core.systemVoltageUnit)
+
+    dto.ratings.system_voltage_type = {
+        mrid:  uuid.newUuid(),
+        value: core.systemVoltageType || null,
+        unit:  null,
+    }
+
+    dto.ratings.bil                = mapFlat(core.ratedInsulationlevel, core.ratedInsulationlevelUnit)
+    dto.ratings.rating_factor      = str(core.ratingFactor)
+    dto.ratings.rating_factor_temp = mapFlat(core.ratingFactorTemp, core.ratingFactorTempUnit)
+
+    // ─── CT Configuration ─────────────────────────────────────────────────────
+    const numberCore = core.numberCore || 0
+    dto.ctConfiguration.cores = str(numberCore)
     dto.ctConfiguration.dataCT = []
 
-    const tapsPerCore = Math.ceil(tapsList.length / numberCore)
-
+    // Group taps by core index
     for (let coreIdx = 0; coreIdx < numberCore; coreIdx++) {
-        const coreTaps = tapsList.slice(coreIdx * tapsPerCore, (coreIdx + 1) * tapsPerCore)
-        const coreDto  = new CoreDto()
-        coreDto.mrid   = uuid.newUuid()
+        const coreNumber = coreIdx + 1
+        const coreTaps   = taps.filter(t => t.core === coreNumber)
 
-        const fullTaps = coreTaps.filter(t => t.type === 'Full tap')
-        const mainTaps = coreTaps.filter(t => t.type === 'Main tap')
+        const fullTap  = coreTaps.find(t => t.type === 'Full tap'  || t.type === 'fulltap')
+        const mainTaps = coreTaps.filter(t => t.type === 'Main tap' || t.type === 'maintap')
+        const interTaps = coreTaps.filter(t => t.type === 'Inter tap' || t.type === 'intertap')
 
-        const tapsCount   = Math.min(mainTaps.length + 2, 6)
-        coreDto.taps      = String(tapsCount)
-        coreDto.commonTap = '1'
-
-        // ─── Full tap ───────────────────────────────────────────────────────
-        if (fullTaps.length > 0) {
-            const ft = fullTaps[0]
-
-            // ✅ Luôn sinh UUID nếu server trả về null
-            coreDto.fullTap.table.mrid  = ft.id ? String(ft.id) : uuid.newUuid()
-            coreDto.fullTap.table.name  = ft.name  || ''
-            coreDto.fullTap.table.inUse = ft.inUse ?? true
-            coreDto.fullTap.table.type  = 'fulltap'
-            coreDto.fullTap.table.ipn   = makeCurrent(ft.ipn)
-            coreDto.fullTap.table.isn   = makeCurrent(ft.isn)
-
-            // ✅ lowercase để match UI options
-            coreDto.fullTap.classRating.mrid            = uuid.newUuid()
-            coreDto.fullTap.classRating.app             = (ft.application || '').toLowerCase() || 'chooseApp'
-            coreDto.fullTap.classRating.class           = convertClass(ft.class_)
-            coreDto.fullTap.classRating.fs              = str(ft.fs)
-            coreDto.fullTap.classRating.alf             = str(ft.alf)
-            coreDto.fullTap.classRating.ts              = str(ft.ts)
-            coreDto.fullTap.classRating.ek              = str(ft.ek)
-            coreDto.fullTap.classRating.le              = str(ft.le)
-            coreDto.fullTap.classRating.e1              = str(ft.e1)
-            coreDto.fullTap.classRating.le1             = str(ft.le1)
-            coreDto.fullTap.classRating.val             = str(ft.val)
-            coreDto.fullTap.classRating.lal             = str(ft.lal)
-            coreDto.fullTap.classRating.tp              = str(ft.tp)
-            coreDto.fullTap.classRating.ktd             = str(ft.ktd)
-            coreDto.fullTap.classRating.duty            = ft.duty     || ''
-            coreDto.fullTap.classRating.kx              = str(ft.kx)
-            coreDto.fullTap.classRating.k               = str(ft.k)
-            coreDto.fullTap.classRating.kssc            = str(ft.kssc)
-            coreDto.fullTap.classRating.vk              = str(ft.vk)
-            coreDto.fullTap.classRating.lk              = str(ft.lk)
-            coreDto.fullTap.classRating.vk1             = str(ft.vk1)
-            coreDto.fullTap.classRating.lk1             = str(ft.lk1)
-            coreDto.fullTap.classRating.t1              = str(ft.t1)
-            coreDto.fullTap.classRating.tal1            = str(ft.tal1)
-            coreDto.fullTap.classRating.extended_burden = ft.extendedBurden ?? false
-            coreDto.fullTap.classRating.burdenCos       = str(ft.burdenCos)
-            coreDto.fullTap.classRating.operatingBurdenCos = str(ft.operatingBurdenCos)
-            coreDto.fullTap.classRating.core_index      = coreIdx + 1
-            coreDto.fullTap.classRating.wr  = { mrid: uuid.newUuid(), value: str(ft.re),  unit: ft.reUnit   || 'Ω'  }
-            coreDto.fullTap.classRating.vb  = { mrid: uuid.newUuid(), value: str(ft.vb),  unit: ft.vbUnit   || 'V'  }
-            coreDto.fullTap.classRating.rated_burden     = makeVA(ft.ratedBurden,    ft.burdenUnit)
-            coreDto.fullTap.classRating.burden           = makeVA(ft.burden,         ft.burdenUnit)
-            coreDto.fullTap.classRating.operatingBurden  = makeVA(ft.operatingBurden, ft.burdenUnit)
-        }
-
-        // ─── Main taps ──────────────────────────────────────────────────────
-        coreDto.mainTap.data = mainTaps.map(mt => {
-            const table     = new TableDto()
-            table.mrid      = mt.id ? String(mt.id) : uuid.newUuid()  // ✅ sinh UUID nếu null
-            table.name      = mt.name  || ''
-            table.inUse     = mt.inUse ?? false
-            table.type      = 'maintap'
-            table.ipn       = makeCurrent(mt.ipn)
-            table.isn       = makeCurrent(mt.isn)
-
-            const classRating               = new ClassRatingSmallDto()
-            classRating.mrid                = uuid.newUuid()
-            classRating.rated_burden        = makeVA(mt.ratedBurden,    mt.burdenUnit)
-            classRating.burden              = makeVA(mt.burden,         mt.burdenUnit)
-            classRating.burdenCos           = str(mt.burdenCos)
-            classRating.operatingBurden     = makeVA(mt.operatingBurden, mt.burdenUnit)
-            classRating.operatingBurdenCos  = str(mt.operatingBurdenCos)
-            classRating.extended_burden     = mt.extendedBurden ?? false
-
-            return { table, classRating }
+        const mapTableFromTap = (tap) => ({
+            mrid:   uuid.newUuid(),
+            isShow: false,
+            name:   tap.name   || null,
+            ipn: mapFlat(tap.ipn, tap.ipnUnit),
+            isn: mapFlat(tap.isn, tap.isnUnit),
+            inUse: tap.inUse ?? false,
+            type:  tap.type || null,
         })
 
-        // ─── Inter taps — server không trả về ──────────────────────────────
-        coreDto.interTap.data = []
+        const mapFullClassRating = (tap) => ({
+            mrid:               uuid.newUuid(),
+            app:                tap.application   || null,
+            class:              tap.class_        || null,
+            wr:                 mapFlat(tap.windingResistance, tap.windingResistanceUnit),
+            kx:                 str(tap.kx),
+            k:                  str(tap.k),
+            fs:                 str(tap.fs),
+            kssc:               str(tap.kssc),
+            ktd:                str(tap.ktd),
+            duty:               tap.duty          || null,
+            vb:                 mapFlat(tap.vb,   tap.vbUnit),
+            alf:                str(tap.alf),
+            ts:                 str(tap.ts),
+            ek:                 str(tap.ek),
+            e1:                 str(tap.e1),
+            le:                 str(tap.le),
+            le1:                str(tap.le1),
+            val:                null,
+            lal:                null,
+            t1:                 str(tap.t1),
+            tal1:               str(tap.tal1),
+            tp:                 str(tap.tp),
+            tpts:               str(tap.tpts),
+            vk:                 str(tap.vk),
+            lk:                 str(tap.lk),
+            vk1:                str(tap.vk1),
+            lk1:                str(tap.lk1),
+            rated_burden:       mapFlat(tap.ratedBurden,      tap.burdenUnit),
+            extended_burden:    tap.extendedBurden ?? false,
+            burden:             mapFlat(tap.burden,           tap.burdenUnit),
+            burdenCos:          str(tap.burdenCos),
+            operatingBurden:    mapFlat(tap.operatingBurden,  tap.burdenUnit),
+            operatingBurdenCos: str(tap.operatingBurdenCos),
+            core_index:         coreNumber,
+            ratio_error:        mapFlat(tap.re, tap.reUnit),
+        })
 
-        dto.ctConfiguration.dataCT.push(coreDto)
+        const mapSmallClassRatingFromTap = (tap) => ({
+            mrid:               uuid.newUuid(),
+            rated_burden:       mapFlat(tap.ratedBurden,     tap.burdenUnit),
+            extended_burden:    tap.extendedBurden ?? false,
+            burden:             mapFlat(tap.burden,          tap.burdenUnit),
+            burdenCos:          str(tap.burdenCos),
+            operatingBurden:    mapFlat(tap.operatingBurden, tap.burdenUnit),
+            operatingBurdenCos: str(tap.operatingBurdenCos),
+        })
+
+        dto.ctConfiguration.dataCT.push({
+            mrid:      uuid.newUuid(),
+            taps:      str(fullTap?.numberTap || mainTaps.length + 1),
+            commonTap: str(fullTap?.commonTap),
+
+            fullTap: {
+                table:       fullTap ? mapTableFromTap(fullTap)      : {},
+                classRating: fullTap ? mapFullClassRating(fullTap)   : {},
+            },
+
+            mainTap: {
+                data: mainTaps.map(tap => ({
+                    table:       mapTableFromTap(tap),
+                    classRating: mapSmallClassRatingFromTap(tap),
+                })),
+            },
+
+            interTap: {
+                data: interTaps.map(tap => ({
+                    table:       mapTableFromTap(tap),
+                    classRating: mapSmallClassRatingFromTap(tap),
+                })),
+            },
+        })
     }
 
     return dto;
-};
+}
+
+// ─── Mapper: DTO → server JSON (push) ────────────────────────────────────────
+
+export const mapDtoToServer = (dto) => {
+    if (!dto) return null
+
+    const ctConfig = dto.ctConfiguration || {}
+    const ratings  = dto.ratings         || {}
+
+    return {
+        CurrentTransformer: {
+            properties: {
+                mrid:              dto.properties?.mrid              || null,
+                type:              ASSET_TYPE_TO_SERVER[dto.properties?.asset_type]
+                    || dto.properties?.type
+                    || null,
+                kind:              dto.properties?.kind              || null,
+                serial_no:         dto.properties?.serial_no         || null,
+                manufacturer:      dto.properties?.manufacturer      || null,
+                manufacturer_type: dto.properties?.manufacturer_type || null,
+                manufacturer_year: dto.properties?.manufacturing_year
+                    || dto.properties?.manufacturer_year
+                    || null,
+                country_of_origin: dto.properties?.country_of_origin || null,
+                apparatus_id:      dto.properties?.apparatus_id      || null,
+                comment:           dto.properties?.comment           || null,
+            },
+
+            ratings: {
+                standard: {
+                    mrid:  ratings.standard?.mrid || null,
+                    value: (() => {
+                        const raw = typeof ratings.standard === 'string'
+                            ? ratings.standard
+                            : (ratings.standard?.value || null)
+                        return STANDARD_TO_SERVER[raw] || raw || null
+                    })(),
+                    unit: ratings.standard?.unit || null,
+                },
+
+                rated_frequency_custom: ratings.rated_frequency_custom || null,
+
+                rated_frequency: {
+                    mrid:  ratings.rated_frequency?.mrid || null,
+                    value: num(ratings.rated_frequency?.value),
+                    unit:  ratings.rated_frequency?.unit || null,
+                },
+
+                primary_winding_count: str(ratings.primary_winding_count),
+
+                um_rms:           mapBurden(ratings.um_rms),
+                u_withstand_rms:  mapBurden(ratings.u_withstand_rms),
+                u_lightning_peak: mapBurden(ratings.u_lightning_peak),
+                icth:             mapBurden(ratings.icth),
+                idyn_peak:        mapBurden(ratings.idyn_peak),
+                ith_rms:          mapBurden(ratings.ith_rms),
+                ith_duration:     mapBurden(ratings.ith_duration),
+                system_voltage:   mapBurden(ratings.system_voltage),
+
+                system_voltage_type: ratings.system_voltage_type?.value
+                    || ratings.system_voltage_type
+                    || null,
+
+                bil:               mapBurden(ratings.bil),
+                rating_factor:     str(ratings.rating_factor),
+                rating_factor_temp: mapBurden(ratings.rating_factor_temp),
+            },
+
+            ctConfiguration: {
+                cores: str(ctConfig.cores),
+                dataCT: (ctConfig.dataCT || []).map(core => {
+                    const ft   = core.fullTap?.table       || {}
+                    const ftCR = core.fullTap?.classRating || {}
+
+                    return {
+                        mrid:      core.mrid      || null,
+                        taps:      str(core.taps),
+                        commonTap: str(core.commonTap),
+
+                        fullTap: {
+                            table: mapTapTable(ft),
+                            classRating: {
+                                mrid:               ftCR.mrid  || null,
+                                app:                ftCR.app   || null,
+                                class:              ftCR.class || null,
+                                wr:                 mapBurden(ftCR.wr),
+                                kx:                 str(ftCR.kx),
+                                k:                  str(ftCR.k),
+                                fs:                 str(ftCR.fs),
+                                kssc:               str(ftCR.kssc),
+                                ktd:                str(ftCR.ktd),
+                                duty:               ftCR.duty  || null,
+                                vb:                 mapBurden(ftCR.vb),
+                                alf:                str(ftCR.alf),
+                                ts:                 str(ftCR.ts),
+                                ek:                 str(ftCR.ek),
+                                e1:                 str(ftCR.e1),
+                                le:                 str(ftCR.le),
+                                le1:                str(ftCR.le1),
+                                val:                str(ftCR.val),
+                                lal:                str(ftCR.lal),
+                                t1:                 str(ftCR.t1),
+                                tal1:               str(ftCR.tal1),
+                                tp:                 str(ftCR.tp),
+                                tpts:               str(ftCR.tpts),
+                                vk:                 str(ftCR.vk),
+                                lk:                 str(ftCR.lk),
+                                vk1:                str(ftCR.vk1),
+                                lk1:                str(ftCR.lk1),
+                                rated_burden:       mapBurden(ftCR.rated_burden),
+                                extended_burden:    ftCR.extended_burden ?? false,
+                                burden:             mapBurden(ftCR.burden),
+                                burdenCos:          str(ftCR.burdenCos),
+                                operatingBurden:    mapBurden(ftCR.operatingBurden),
+                                operatingBurdenCos: str(ftCR.operatingBurdenCos),
+                                core_index:         ftCR.core_index ?? null,
+                                ratio_error:        mapBurden(ftCR.ratio_error),
+                            },
+                        },
+
+                        mainTap: {
+                            data: (core.mainTap?.data || []).map(mt => ({
+                                table:       mapTapTable(mt.table),
+                                classRating: mapSmallClassRating(mt.classRating),
+                            })),
+                        },
+
+                        interTap: {
+                            data: (core.interTap?.data || []).map(it => ({
+                                table:       mapTapTable(it.table),
+                                classRating: mapSmallClassRating(it.classRating),
+                            })),
+                        },
+                    }
+                }),
+            },
+
+            locationId:          dto.locationId          || null,
+            psrId:               dto.psrId               || null,
+            assetPsrId:          dto.assetPsrId          || null,
+            assetInfoId:         dto.assetInfoId         || null,
+            productAssetModelId: dto.productAssetModelId || null,
+            lifecycleDateId:     dto.lifecycleDateId     || null,
+            attachmentId:        dto.attachmentId        || null,
+        },
+    }
+}

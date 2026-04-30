@@ -1,6 +1,7 @@
 /* eslint-disable */
 import voltageTransformerTestMap from '@/config/test-definitions/VoltageTransformer'
 import voltageTransformerConditionMap from '@/config/testing-condition/VoltageTransformer'
+import voltageTransformerAssessmentMap from '@/config/testing-assessment/VoltageTransformer'
 import * as common from '../../../../Common/index.js'
 export default {
     data() {
@@ -31,7 +32,7 @@ export default {
         async initInsulationResistance(testTypeCode, assetData) {
             const rowDataExample = common.buildEmptyTestRow(voltageTransformerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(voltageTransformerConditionMap[testTypeCode].columns)
-            
+            const rowDataAssessment = common.buildEmptyTestAssessment(voltageTransformerAssessmentMap[testTypeCode].testStandard)
             const row1 = JSON.parse(JSON.stringify(rowDataExample))
             row1.measurement.value = 'Prim - (Sec + GND)'
             let insulation = [row1]
@@ -50,6 +51,7 @@ export default {
             
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     "table1": insulation
                 }

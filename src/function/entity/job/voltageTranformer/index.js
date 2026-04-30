@@ -13,6 +13,7 @@ import { insertStringMeasurementValueTransaction, getStringMeasurementValueByTes
 import { insertDiscreteValueTransaction, getDiscreteValueByTestDataSetMrids, deleteDiscreteValueByIdTransaction } from '@/function/cim/discreteValue/index.js'
 import { insertProcedureDataSetMeasurementValueTransaction } from '@/function/cim/procedureDataSetMeasurementValue/index.js'
 import { insertProcedureAssetTransaction } from '@/function/cim/procedureAsset/index.js'
+import {insertTestStandardTransaction, getTestStandardById} from '@/function/cim/testStandard'
 
 export const insertVoltageTransformerJobEntity = async (old_entity,entity) => {
     try {
@@ -55,6 +56,7 @@ export const insertVoltageTransformerJobEntity = async (old_entity,entity) => {
             }
 
             await runAsync('BEGIN TRANSACTION');
+            await insertTestStandardTransaction(entity.testStandard, db)
             await insertOldWorkTransaction(entity.oldWork, db);
             if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
                 const pathData = JSON.parse(entity.attachment.path);
@@ -274,6 +276,11 @@ export const getVoltageTransformerJobEntity = async (id) => {
                 const dataAttachment = await getAttachmentByForeignIdAndType(entity.oldWork.mrid, 'job');
                 if(dataAttachment.success) {
                     entity.attachment = dataAttachment.data;
+                }
+
+                const dataTestStandard = await getTestStandardById(entity.oldWork.test_standard_id)
+                if(dataTestStandard.success) {
+                    entity.testStandard = dataTestStandard.data
                 }
 
                 const dataTestingEquipment = await getTestingEquipmentByWorkId(entity.oldWork.mrid);

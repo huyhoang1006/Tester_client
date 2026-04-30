@@ -8,8 +8,8 @@ class RatingDto {
         this.rated_frequency = { mrid: '', value: '', unit: UnitSymbol.Hz };
         this.uprRatio = { mrid: '', value: '', unit: 'string' };
         this.upr = '';
-        this.c1 = { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.F };
-        this.c2 = { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.F };
+        this.c1 = { mrid: '', value: '', unit: UnitMultiplier.p + '|' + UnitSymbol.F };
+        this.c2 = { mrid: '', value: '', unit: UnitMultiplier.p + '|' + UnitSymbol.F };
         this.rated_voltage = { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.V };
     }
 }

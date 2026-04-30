@@ -23,7 +23,9 @@ class ReactorJobDto {
         this.testingEquipmentData = [];
         this.listHealth = [];
         this.attachment = new Attachment();
-        this.reactorTestingEquipmentTestType = [];    }
+        this.reactorTestingEquipmentTestType = [];
+        this.testStandardId = '';
+    }
 }
 
 export default ReactorJobDto;
