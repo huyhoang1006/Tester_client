@@ -168,6 +168,78 @@ export default {
                     this.$nextTick(() => {
                         this.$refs.jobDialog.$refs.jobData.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
                     })
+                } else if (node.asset == 'Bushing') {
+                    const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Bushing")
+                    const dataBushingEntity = await window.electronAPI.getBushingEntityByMrid(node.mrid)
+                    if (dataBushingEntity.success) {
+                        this.assetData = dataBushingEntity.data
+                    } else {
+                        this.assetData = {}
+                    }
+                    if (dataTestType.success) {
+                        this.testTypeListData = dataTestType.data
+                    } else {
+                        this.testTypeListData = []
+                    }
+                    this.checkJobType = 'JobBushing'
+                    this.signJob = true
+                    this.$nextTick(() => {
+                        this.$refs.jobDialog.$refs.jobData.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
+                    })
+                } else if (node.asset == 'Capacitor') {
+                    const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Capacitor")
+                    const dataCapacitorEntity = await window.electronAPI.getCapacitorEntityByMrid(node.mrid)
+                    if (dataCapacitorEntity.success) {
+                        this.assetData = dataCapacitorEntity.data
+                    } else {
+                        this.assetData = {}
+                    }
+                    if (dataTestType.success) {
+                        this.testTypeListData = dataTestType.data
+                    } else {
+                        this.testTypeListData = []
+                    }
+                    this.checkJobType = 'JobCapacitor'
+                    this.signJob = true
+                    this.$nextTick(() => {
+                        this.$refs.jobDialog.$refs.jobData.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
+                    })
+                } else if (node.asset == 'Reactor') {
+                    const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Reactor")
+                    const dataReactorEntity = await window.electronAPI.getReactorEntityByMrid(node.mrid)
+                    if (dataReactorEntity.success) {
+                        this.assetData = dataReactorEntity.data
+                    } else {
+                        this.assetData = {}
+                    }
+                    if (dataTestType.success) {
+                        this.testTypeListData = dataTestType.data
+                    } else {
+                        this.testTypeListData = []
+                    }
+                    this.checkJobType = 'JobReactor'
+                    this.signJob = true
+                    this.$nextTick(() => {
+                        this.$refs.jobDialog.$refs.jobData.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
+                    })
+                } else if (node.asset == 'Rotating machine') {
+                    const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Rotating machine")
+                    const dataRotatingMachineEntity = await window.electronAPI.getRotatingMachineEntityByMrid(node.mrid)
+                    if (dataRotatingMachineEntity.success) {
+                        this.assetData = dataRotatingMachineEntity.data
+                    } else {
+                        this.assetData = {}
+                    }
+                    if (dataTestType.success) {
+                        this.testTypeListData = dataTestType.data
+                    } else {
+                        this.testTypeListData = []
+                    }
+                    this.checkJobType = 'JobRotatingMachine'
+                    this.signJob = true
+                    this.$nextTick(() => {
+                        this.$refs.jobDialog.$refs.jobData.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
+                    })
                 } else {
                     this.$message.error('This asset type not support for job')
                 }

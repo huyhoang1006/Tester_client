@@ -17,6 +17,8 @@ class TestStandard extends IdentifiedObject {
         this.test_standard_ukministry_of_defence = null; // Test Description
         this.test_standard_wep = null; // Test Name
         this.test_variant = null; // Test Description
+        this.test_standard_customize = null;
+        this.work_task_id = null
     }
 }
 export default TestStandard;

@@ -1,0 +1,111 @@
+{
+  "testId": "9ef9e0da-0bc7-44ed-91b9-9656bd696342",
+  "testCode": "CTExcitation",
+  "testName": "CT Excitation",
+  "testStandard": [
+    {
+      "mrid": "36116f8b-4ad9-4b16-8c14-5391d1ccc091",
+      "code": "customized_ct_excitation_current_transformer",
+      "name": "Customized limit",
+      "type": "customized",
+      "standard_edition": "",
+      "standard_number": "",
+      "columns": [
+        {
+          "mrid": "c15b48fc-d387-44c1-9b00-4c92092b5fdf",
+          "code": "i_knee",
+          "name": "I knee",
+          "type": "analog",
+          "unit": "A",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "9924d58c-26a7-4642-aebb-aabc2006029f",
+          "code": "v_knee",
+          "name": "V knee",
+          "type": "analog",
+          "unit": "V",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "rule-pass-001",
+          "standard_id": "36116f8b-4ad9-4b16-8c14-5391d1ccc091",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "rule-fail-001",
+          "standard_id": "36116f8b-4ad9-4b16-8c14-5391d1ccc091",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "group-pass-root-1",
+          "rule_id": "rule-pass-001",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "group-pass-root-2",
+          "rule_id": "",
+          "parent_id": "group-pass-root-1",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "group-pass-root-3",
+          "rule_id": "",
+          "parent_id": "group-pass-root-1",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "group-fail-default",
+          "rule_id": "rule-fail-001",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "mrid": "",
+          "group_id": "group-pass-root-2",
+          "measurement_id": "c15b48fc-d387-44c1-9b00-4c92092b5fdf",
+          "operator": "≥",
+          "threshold": "",
+          "label": "I knee min (A)"
+        },
+        {
+          "mrid": "",
+          "group_id": "group-pass-root-2",
+          "measurement_id": "c15b48fc-d387-44c1-9b00-4c92092b5fdf",
+          "operator": "≤",
+          "threshold": "",
+          "label": "I knee max (A)"
+        },
+        {
+          "mrid": "",
+          "group_id": "group-pass-root-3",
+          "measurement_id": "9924d58c-26a7-4642-aebb-aabc2006029f",
+          "operator": "≥",
+          "threshold": "",
+          "label": "V knee min (A)"
+        },
+        {
+          "mrid": "",
+          "group_id": "group-pass-root-3",
+          "measurement_id": "9924d58c-26a7-4642-aebb-aabc2006029f",
+          "operator": "≤",
+          "threshold": "",
+          "label": "V knee max (A)"
+        }
+      ]
+    }
+  ]
+}

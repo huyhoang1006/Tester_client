@@ -30,6 +30,10 @@ import JobCurrentTransformer from '@/views/JobView/CurrentTransformer/index.vue'
 import JobVoltageTransformer from '@/views/JobView/VoltageTransformer/index.vue'
 import JobCircuitBreaker from '@/views/JobView/CircuitBreaker/index.vue'
 import JobTransformer from '@/views/JobView/Transformer/index.vue'
+import JobBushing from '@/views/JobView/Bushing/index.vue'
+import JobCapacitor from '@/views/JobView/Capacitor/index.vue'
+import JobReactor from '@/views/JobView/Reactor/index.vue'
+import JobRotatingMachine from '@/views/JobView/RotatingMachine/index.vue'
 
 export default {
     name: 'JobDialog',
@@ -41,7 +45,11 @@ export default {
         JobCurrentTransformer,
         JobVoltageTransformer,
         JobCircuitBreaker,
-        JobTransformer
+        JobTransformer,
+        JobBushing,
+        JobCapacitor,
+        JobReactor,
+        JobRotatingMachine,
     },
     props: {
         visible: {

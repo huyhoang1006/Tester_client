@@ -59,16 +59,15 @@ export const insertOldWorkTransaction = async (oldWork, dbsql) => {
             }
             dbsql.run(
                 `INSERT INTO old_work(
-                    mrid, approval_date, tested_by, ref_standard, execution_date, test_method, asset_id, test_standard_id
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    mrid, approval_date, tested_by, ref_standard, execution_date, test_method, asset_id
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(mrid) DO UPDATE SET
                     approval_date = excluded.approval_date,
                     tested_by = excluded.tested_by,
                     ref_standard = excluded.ref_standard,
                     execution_date = excluded.execution_date,
                     test_method = excluded.test_method,
-                    asset_id = excluded.asset_id,
-                    test_standard_id = excluded.test_standard_id
+                    asset_id = excluded.asset_id
                 `,
                 [
                     oldWork.mrid,
@@ -77,8 +76,7 @@ export const insertOldWorkTransaction = async (oldWork, dbsql) => {
                     oldWork.ref_standard,
                     oldWork.execution_date,
                     oldWork.test_method,
-                    oldWork.asset_id,
-                    oldWork.test_standard_id
+                    oldWork.asset_id
                 ],
                 function (err) {
                     if (err) return reject({ success: false, err, message: 'Insert oldWork failed' })
@@ -107,8 +105,7 @@ export const updateOldWorkByIdTransaction = async (mrid, oldWork, dbsql) => {
                     ref_standard = ?,
                     execution_date = ?,
                     test_method = ?,
-                    asset_id = ?,
-                    test_standard_id = ?
+                    asset_id = ?
                 WHERE mrid = ?`,
                 [
                     oldWork.approval_date,
@@ -117,7 +114,6 @@ export const updateOldWorkByIdTransaction = async (mrid, oldWork, dbsql) => {
                     oldWork.execution_date,
                     oldWork.test_method,
                     oldWork.asset_id,
-                    oldWork.test_standard_id,
                     mrid
                 ],
                 function (err) {

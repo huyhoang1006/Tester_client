@@ -1,6 +1,5 @@
 import OldWork from "@/views/Cim/OldWork/index";
 import Attachment from "../../Attachment";
-import TestStandard from "@/views/Cim/TestStandard"
 class PowerCableJobEntity {
     constructor() {
         this.oldWork = new OldWork();
@@ -15,7 +14,11 @@ class PowerCableJobEntity {
         this.powerCableTestingEquipmentTestType = []
         this.procedureAsset = []
         this.procedureDataSetMeasurementValue = []
-        this.testStandard = new TestStandard()
+        this.testStandard = []
+        this.assessment = []
+        this.assessment_group = []
+        this.assessment_rule = []
+        this.standardCustomized = []
     }
 }
 

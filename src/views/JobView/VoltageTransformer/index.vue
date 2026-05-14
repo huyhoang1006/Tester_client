@@ -45,7 +45,6 @@
                                     :asset="assetData"
                                     :testCondition="item.testCondition"
                                     :testAssessment="item.testAssessment"
-                                    @update-standard="updateTestStandard"
                                     >
                                 </component>
                             </el-tab-pane>

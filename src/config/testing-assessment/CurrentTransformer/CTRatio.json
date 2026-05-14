@@ -1,0 +1,71 @@
+{
+  "testId": "f6c60697-396c-4167-8000-fcf529434b29",
+  "testCode": "CTRatio",
+  "testName": "CT ratio",
+  "testStandard": [
+    {
+      "mrid": "36116f8b-4ad9-4b16-8c14-5391d1ccc091",
+      "code": "customized_ct_ratio_current_transformer",
+      "name": "Customized limit",
+      "type" : "customized",
+      "standard_edition": "",
+      "standard_number": "",
+      "columns" : [
+        {
+          "mrid": "1d510b78-7413-4777-a344-4b65d4e3e920",
+          "code": "ratio_dev",
+          "name": "Ratio dev",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule" : [
+        {
+          "mrid" : "0d8ad280-06f3-45f7-b776-2af384a9dded",
+          "standard_id" : "36116f8b-4ad9-4b16-8c14-5391d1ccc091",
+          "result" : "Pass",
+          "priority" : ""
+        },
+        {
+          "mrid" : "777cdda2-97dd-4a5d-a925-d6a50f8228fb",
+          "standard_id" : "36116f8b-4ad9-4b16-8c14-5391d1ccc091",
+          "result" : "Fail",
+          "priority" : ""
+        }
+      ],
+      "assessment_group" : [
+        {
+          "mrid": "9b43d2c2-b6d1-45b9-9643-0ff871e5b4f3",
+          "rule_id": "0d8ad280-06f3-45f7-b776-2af384a9dded",
+          "parent_id": "",
+          "logic": ""
+        },
+        {
+          "mrid": "a0e38dc0-f279-473b-bb5b-7eeba0dde5c1",
+          "rule_id": "777cdda2-97dd-4a5d-a925-d6a50f8228fb",
+          "parent_id": "",
+          "logic": ""
+        }
+      ],
+      "assessment" : [
+        {
+          "label": "Ratio dev (%)",
+          "mrid": "",
+          "group_id": "9b43d2c2-b6d1-45b9-9643-0ff871e5b4f3",
+          "measurement_id" : "1d510b78-7413-4777-a344-4b65d4e3e920",
+          "operator" : "≥",
+          "threshold" : ""
+        },
+        {
+          "label": "Ratio dev (%)",
+          "mrid": "",
+          "group_id": "a0e38dc0-f279-473b-bb5b-7eeba0dde5c1",
+          "measurement_id" : "1d510b78-7413-4777-a344-4b65d4e3e920",
+          "operator" : "<",
+          "threshold" : ""
+        }
+      ]
+    }
+  ]
+}

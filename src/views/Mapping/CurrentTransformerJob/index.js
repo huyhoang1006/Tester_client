@@ -13,17 +13,19 @@ import ProcedureAsset from "@/views/Cim/ProcedureAsset";
 import ProcedureDataSetMeasurementValue from "@/views/Cim/ProcedureDataSetMeasurementValue";
 import currentTransformerConditionMap from '@/config/testing-condition/CurrentTransformer'
 import currentTransformerTestMap from "@/config/testing-condition/CurrentTransformer";
+import currentTransformerAssessmentMap from "@/config/testing-assessment/CurrentTransformer";
 import * as commonFunc from '@/views/JobView/Common/index.js'
+import TestStandard from "@/views/Cim/TestStandard";
 
 export const jobDtoToEntity = (dto) => {
-    
-    
+
+
     try {
         const entity = new CurrentTransformerJobEntity();
-      
+
 
         //job properties
-       
+
         entity.oldWork.mrid = dto.properties.mrid || null;
         entity.oldWork.name = dto.properties.name || null;
         entity.oldWork.type = dto.properties.type || null;
@@ -36,14 +38,14 @@ export const jobDtoToEntity = (dto) => {
         entity.oldWork.ref_standard = dto.properties.ref_standard || null;
         entity.oldWork.description = dto.properties.summary || null;
         entity.oldWork.asset_id = dto.properties.asset_id || null;
-        
+
 
         //attachment
-       
+
         entity.attachment.id = dto.attachmentId || null;
         entity.attachment = dto.attachment || null;
-       
-        for(const equipment of dto.testingEquipmentData) {
+
+        for (const equipment of dto.testingEquipmentData) {
             const data = new TestingEquipment();
             data.mrid = equipment.mrid || null;
             data.model = equipment.model || null;
@@ -52,32 +54,32 @@ export const jobDtoToEntity = (dto) => {
             data.calibration_date = equipment.calibration_date || null;
             entity.testingEquipment.push(data);
         }
-        
 
-        
-        for(const currentTransformerTestingEquipmentTestType of dto.currentTransformerTestingEquipmentTestType) {
+
+
+        for (const currentTransformerTestingEquipmentTestType of dto.currentTransformerTestingEquipmentTestType) {
             const data = new CurrentTransformerTestingEquipmentTestType();
             data.mrid = currentTransformerTestingEquipmentTestType.mrid || null;
             data.testing_equipment_id = currentTransformerTestingEquipmentTestType.testing_equipment_id || null;
             data.test_type_id = currentTransformerTestingEquipmentTestType.test_type_id || null;
             entity.currentTransformerTestingEquipmentTestType.push(data);
         }
-       
 
-        
-        for(const procedureAsset of dto.procedureAsset) {
+
+
+        for (const procedureAsset of dto.procedureAsset) {
             const procedureAssetEntity = new ProcedureAsset();
             procedureAssetEntity.mrid = procedureAsset.mrid || null;
             procedureAssetEntity.procedure_id = procedureAsset.procedure_id || null;
             procedureAssetEntity.asset_id = procedureAsset.asset_id || null;
             entity.procedureAsset.push(procedureAssetEntity);
         }
-        
+
 
         //test list
-        
+
         for (const item of dto.testList) {
-            
+
 
             const workTask = new WorkTask();
 
@@ -93,10 +95,10 @@ export const jobDtoToEntity = (dto) => {
             //attachment
             entity.attachmentTest.push(item.testCondition.attachment);
 
-           
+
             // Hỗ trợ cả cấu trúc cũ (array) và mới (object với nhiều table)
             const tableData = item.data.table;
-            
+
             // Nếu là object (cấu trúc mới với nhiều table)
             if (tableData && typeof tableData === 'object' && !Array.isArray(tableData)) {
                 for (const key in tableData) {
@@ -141,9 +143,9 @@ export const jobDtoToEntity = (dto) => {
                                     } else if (value.type === 'discrete') {
                                         const discreteValue = new DiscreteValue();
                                         discreteValue.mrid = value.mrid || null;
-                                        if(fieldKey == 'assessment') {
+                                        if (fieldKey == 'assessment') {
                                             discreteValue.value = commonFunc.assessmentToValue(value.value) ?? null;
-                                        } else if(fieldKey == 'condition_indicator') {
+                                        } else if (fieldKey == 'condition_indicator') {
                                             discreteValue.value = commonFunc.conditionIndicatorToValue(value.value) ?? null;
                                         }
                                         discreteValue.vta_alias_name = value.value
@@ -201,9 +203,9 @@ export const jobDtoToEntity = (dto) => {
                             } else if (value.type === 'discrete') {
                                 const discreteValue = new DiscreteValue();
                                 discreteValue.mrid = value.mrid || null;
-                                if(key == 'assessment') {
+                                if (key == 'assessment') {
                                     discreteValue.value = commonFunc.assessmentToValue(value.value) ?? null;
-                                } else if(key == 'condition_indicator') {
+                                } else if (key == 'condition_indicator') {
                                     discreteValue.value = commonFunc.conditionIndicatorToValue(value.value) ?? null;
                                 }
                                 discreteValue.vta_alias_name = value.value
@@ -221,7 +223,7 @@ export const jobDtoToEntity = (dto) => {
                 }
             }
 
-           
+
             const testDataCondition = new TestDataSet();
             testDataCondition.mrid = item.testCondition.mrid || null;
             testDataCondition.work_task = item.mrid || null;
@@ -270,14 +272,28 @@ export const jobDtoToEntity = (dto) => {
                     }
                 }
             }
+
+            const standardArr = commonFunc.buildConfigFromAssessmentTree(item.testAssessment.assessment)
+            for (const standard of standardArr) {
+                if (standard.type == 'customized') {
+                    entity.assessment = entity.assessment.concat(standard.assessment)
+                    entity.assessment_group = entity.assessment_group.concat(standard.assessment_group)
+                    entity.assessment_rule = entity.assessment_rule.concat(standard.assessment_rule)
+                    const standardData = {
+                        mrid: standard.mrid || null
+                    }
+                    entity.standardCustomized.push(standardData)
+                }
+            }
+            entity.testStandard.push(item.testAssessment.testStandard)
         }
 
-       
+
         return entity;
     } catch (error) {
-        
+
         console.error('Error stack:', error.stack);
-        
+
         throw error;
     }
 }
@@ -301,14 +317,14 @@ export const JobEntityToDto = (entity) => {
     //attachment
     dto.attachmentId = entity.attachment.id || '';
     dto.attachment = entity.attachment;
-    if(dto.attachment && dto.attachment.path) {
+    if (dto.attachment && dto.attachment.path) {
         dto.attachmentData = JSON.parse(dto.attachment.path)
     } else {
         dto.attachmentData = []
     }
 
     //testing equipment
-    for(const testingEquipment of entity.testingEquipment) {
+    for (const testingEquipment of entity.testingEquipment) {
         const data = new TestingEquipment();
         data.mrid = testingEquipment.mrid || '';
         data.model = testingEquipment.model || '';
@@ -316,8 +332,8 @@ export const JobEntityToDto = (entity) => {
         data.work_id = testingEquipment.work_id || '';
         data.calibration_date = testingEquipment.calibration_date || '';
         data.test_type_current_transformer_id = [];
-        for(const currentTransformerTestingEquipmentTestType of entity.currentTransformerTestingEquipmentTestType) {
-            if(currentTransformerTestingEquipmentTestType.testing_equipment_id === data.mrid) {
+        for (const currentTransformerTestingEquipmentTestType of entity.currentTransformerTestingEquipmentTestType) {
+            if (currentTransformerTestingEquipmentTestType.testing_equipment_id === data.mrid) {
                 data.test_type_current_transformer_id.push(currentTransformerTestingEquipmentTestType.test_type_id);
             }
         }
@@ -328,6 +344,53 @@ export const JobEntityToDto = (entity) => {
     //test list
     for (const item of entity.workTasks) {
         let condition = commonFunc.buildEmptyTestCondition(currentTransformerConditionMap[item.type]?.columns || []);
+        const testAssessmentList = JSON.parse(JSON.stringify(currentTransformerAssessmentMap[item.type].testStandard || []));
+        const testStandardData = entity.testStandard.find(x => x.work_task_id === item.mrid);
+        let standardCustomized = null
+        if(testStandardData) {
+            standardCustomized = entity.standardCustomized.find(x => x.mrid === testStandardData.test_standard_customize)
+        }
+        
+        let assessmentRule = []
+        if(standardCustomized) {
+            assessmentRule = entity.assessment_rule.filter(x => x.standard_id === standardCustomized.mrid)
+        }
+
+        let assessmentGroup = []
+        for(const rule of assessmentRule) {
+            const fullGroup = commonFunc.getFullAssessmentGroupByRuleId(entity.assessment_group, rule.mrid);
+            assessmentGroup = assessmentGroup.concat(fullGroup);
+        }
+
+        let assessmentData = []
+        for(const assessment of entity.assessment) {
+            for(const group of assessmentGroup) {
+                if(assessment.group_id === group.mrid) {
+                    assessmentData.push(assessment)
+                }
+            }
+        }
+
+
+        assessmentData = commonFunc.uniqueByMrid(assessmentData)
+
+        for(const testAssessment of testAssessmentList) {
+            if(testAssessment.type == 'customized') {
+                testAssessment.mrid = standardCustomized?.mrid || ''
+                testAssessment.assessment_rule = assessmentRule
+                testAssessment.assessment_group = assessmentGroup
+                for(const asm of testAssessment.assessment) {
+                    for(const ad of assessmentData) {
+                        if(asm.measurement_id === ad.measurement_id) {
+                            ad.label = asm.label
+                        }
+                    }
+                }
+                testAssessment.assessment = assessmentData
+            }
+        }
+        
+        let assessment = commonFunc.buildEmptyTestAssessmentOriginal(testAssessmentList) || [];
         let testTemplate = {
             mrid: item.mrid || '',
             name: item.name || '',
@@ -348,20 +411,24 @@ export const JobEntityToDto = (entity) => {
                 mrid: '',
                 condition: condition,
                 comment: '',
-                attachment : new Attachment(),
-                attachmentData : [],
+                attachment: new Attachment(),
+                attachmentData: [],
             },
-            data : {
-                table : {}, // Đổi từ array sang object để hỗ trợ nhiều table
+            testAssessment: {
+                testStandard : testStandardData || new TestStandard(),
+                assessment : assessment,
+            },
+            data: {
+                table: {}, // Đổi từ array sang object để hỗ trợ nhiều table
             }
         }
         testTemplate.testCondition.comment = item.comment || '';
         testTemplate.testTypeId = currentTransformerTestMap[item.type].testId || ''
 
-        for(const attachment of entity.attachmentTest) {
-            if(attachment.id_foreign === item.mrid) {
+        for (const attachment of entity.attachmentTest) {
+            if (attachment.id_foreign === item.mrid) {
                 testTemplate.testCondition.attachment = attachment;
-                if(attachment && attachment.path) {
+                if (attachment && attachment.path) {
                     testTemplate.testCondition.attachmentData = JSON.parse(attachment.path)
                 } else {
                     testTemplate.testCondition.attachmentData = []
@@ -371,7 +438,7 @@ export const JobEntityToDto = (entity) => {
         }
 
         const testData = entity.testDataSet.filter(x => x.work_task === item.mrid && x.type === 'test');
-        
+
         // Group theo title để hỗ trợ nhiều table
         const grouped = {};
         testData.forEach(test => {
@@ -381,12 +448,12 @@ export const JobEntityToDto = (entity) => {
             }
             grouped[tableKey].push(test);
         });
-        
+
         // Xử lý từng table
         for (const tableKey in grouped) {
             testTemplate.data.table[tableKey] = [];
-            
-            for(const test of grouped[tableKey]) {
+
+            for (const test of grouped[tableKey]) {
                 const rowData = {};
                 rowData.mrid = test.mrid || '';
                 const stringMeasutementValueData = entity.stringMeasurementValues.filter(x => x.procedure_dataset_id == test.mrid);
@@ -418,7 +485,7 @@ export const JobEntityToDto = (entity) => {
                 const discreteValueData = entity.discreteValues.filter(x => x.procedure_dataset_id === test.mrid);
                 for (const dv of discreteValueData) {
                     const key = dv.alias_name; // vd: "assessment"
-                    if(key == 'assessment') {
+                    if (key == 'assessment') {
                         rowData[key] = {
                             mrid: dv.mrid,
                             type: "discrete",
@@ -426,7 +493,7 @@ export const JobEntityToDto = (entity) => {
                             value: dv.vta_alias_name || "",
                             measurement_id: dv.discrete || ''
                         };
-                    } else if(key == 'condition_indicator') {
+                    } else if (key == 'condition_indicator') {
                         rowData[key] = {
                             mrid: dv.mrid,
                             type: "discrete",
@@ -440,7 +507,7 @@ export const JobEntityToDto = (entity) => {
                 testTemplate.data.table[tableKey].push(rowData);
             }
         }
-        
+
         // Backward compatibility: Nếu không có table nào, tạo table1 rỗng
         if (Object.keys(testTemplate.data.table).length === 0) {
             testTemplate.data.table['table1'] = [];

@@ -1,6 +1,7 @@
 /* eslint-disable */
 import reactorTestMap from '@/config/test-definitions/Reactor'
 import reactorConditionMap from '@/config/testing-condition/Reactor'
+import reactorAssessmentMap from '@/config/testing-assessment/Reactor'
 import * as common from '../../../../Common/index.js'
 export default {
     methods: {
@@ -23,8 +24,9 @@ export default {
             return data
         },
         async initInsulationResistance(testTypeCode) {
-            const rowDataExample = common.buildEmptyTestRow(surgeArresterTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(surgeArresterConditionMap[testTypeCode].columns)
+            const rowDataExample = common.buildEmptyTestRow(reactorTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(reactorConditionMap[testTypeCode].columns || [])
+            const rowDataAssessment = common.buildEmptyTestAssessment(reactorAssessmentMap[testTypeCode].testStandard || [])
             const row1 = JSON.parse(JSON.stringify(rowDataExample))
             row1.measurement.value = 'Phase A - B'
             const row2 = JSON.parse(JSON.stringify(rowDataExample))
@@ -41,6 +43,7 @@ export default {
             ]
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table,
             }
         },
@@ -48,8 +51,9 @@ export default {
             let units = assetData.unit_count || 0
             let phase = ["A", "B", "C"]
             let table = []
-            const rowDataExample = common.buildEmptyTestRow(surgeArresterTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(surgeArresterConditionMap[testTypeCode].columns)
+            const rowDataExample = common.buildEmptyTestRow(reactorTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(reactorConditionMap[testTypeCode].columns || [])
+            const rowDataAssessment = common.buildEmptyTestAssessment(reactorAssessmentMap[testTypeCode].testStandard || [])
             for (let i in phase) {
                 for (let j = 1; j <= units; j++) {
                     let data = JSON.parse(JSON.stringify(rowDataExample))
@@ -60,6 +64,7 @@ export default {
             }
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table
             }
         },
@@ -67,8 +72,9 @@ export default {
             let units = assetData.unit_count || 0
             let phase = ["A", "B", "C"]
             let table = []
-            const rowDataExample = common.buildEmptyTestRow(surgeArresterTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(surgeArresterConditionMap[testTypeCode].columns)
+            const rowDataExample = common.buildEmptyTestRow(reactorTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(reactorConditionMap[testTypeCode].columns || [])
+            const rowDataAssessment = common.buildEmptyTestAssessment(reactorAssessmentMap[testTypeCode].testStandard || [])
             for (let i in phase) {
                 for (let j = 1; j <= units; j++) {
                     let data = JSON.parse(JSON.stringify(rowDataExample))
@@ -79,13 +85,15 @@ export default {
             }
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table
             }
         },
         async initGeneralInspection(testTypeCode) {
             let table = []
-            const rowDataExample = common.buildEmptyTestRow(surgeArresterTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(surgeArresterConditionMap[testTypeCode].columns)
+            const rowDataExample = common.buildEmptyTestRow(reactorTestMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(reactorConditionMap[testTypeCode].columns || [])
+            const rowDataAssessment = common.buildEmptyTestAssessment(reactorAssessmentMap[testTypeCode].testStandard || [])
             const data = ['Nameplate', 'Installation check', 'Grounding check', 'Discharge counter check']
             data.forEach(element => {
                 const rowData = JSON.parse(JSON.stringify(rowDataExample))
@@ -94,6 +102,7 @@ export default {
             })
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table
             }
         }

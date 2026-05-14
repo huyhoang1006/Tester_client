@@ -97,7 +97,39 @@
         </table>
 
         <!-- Assessment settings -->
-        <el-dialog title="Assessment settings" :visible.sync="openAssessmentDialog" width="860px">
+        <el-dialog :modal=true title="Assessment settings" :visible.sync="openAssessmentDialog" width="860px"
+            append-to-body>
+            <el-form style="width: 75%;" size="small" label-position="left" label-width="140px">
+                <el-form-item label="Option">
+                    <el-select size="mini" placeholder="please select" v-model="option">
+                        <el-option v-for="option in assessmentList" :key="option" :label="option"
+                            :value="option"></el-option>
+                    </el-select>
+                </el-form-item>
+            </el-form>
+            <div v-for="element in filteredAssessmentData" :key="element.mrid" class="assessment-container">
+
+                <!-- HEADER -->
+                <div class="assessment-header">
+                    <div class="limit-col">Limit</div>
+                    <div class="result-col">Assessment</div>
+                </div>
+
+                <!-- BODY -->
+                <div class="assessment-body">
+
+                    <!-- LIMIT -->
+                    <div class="limit-col">
+                        <GroupNode v-for="(node, i) in element.tree || []" :key="i" :node="node" mode="limit" />
+                    </div>
+
+                    <!-- RESULT -->
+                    <div class="result-col">
+                        <GroupNode v-for="(node, i) in element.tree || []" :key="'rs' + i" :node="node" mode="result" />
+                    </div>
+
+                </div>
+            </div>
         </el-dialog>
 
         <!-- Condition indicator settings -->
@@ -109,13 +141,19 @@
 <script>
 import voltageTransformerTestMap from '@/config/test-definitions/VoltageTransformer'
 import * as common from '@/views/JobView/Common/index'
+import GroupNode from '../../Common/GroupNode.vue'
+import { changeTestStandard } from '../../Common'
 
 export default {
     name: "VTRatio",
+    components: {
+        GroupNode
+    },
     data() {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
+            option: null,
         }
     },
     mounted() {
@@ -132,6 +170,18 @@ export default {
         asset: {
             type: Object,
             require: true
+        },
+        testCondition: {
+            type: Object,
+            require: true
+        },
+        testAssessment: {
+            type: Object,
+            require: true
+        },
+        testStandard : {
+            type: Object,
+            require: true
         }
     },
     computed: {
@@ -143,6 +193,19 @@ export default {
         },
         rowData() {
             return common.buildEmptyTestRow(voltageTransformerTestMap['VTRatio'].columns)
+        },
+        assessmentData() {
+            return this.testAssessment.assessment
+        },
+        assessmentList() {
+            return this.testAssessment.assessment.map(x => x.type)
+        },
+        filteredAssessmentData() {
+            if (!this.option) return [] // 👈 fix ở đây
+            return (this.assessmentData || []).filter(e => e.type === this.option)
+        },
+        testStandardData() {
+            return this.testAssessment.testStandard
         }
     },
     watch: {
@@ -163,10 +226,25 @@ export default {
                     })
                 }
             }
+        },
+        'option' : {
+            immediate : true,
+            handler: async function (newVal) {
+                const standard = this.filteredAssessmentData.find(x => x.type === newVal)
+                if(standard) {
+                    await changeTestStandard(standard.mrid, newVal, this.testStandardData)
+                }
+            }
+        },
+        'testStandardData': {
+            immediate: true,
+            handler: async function (newVal) {
+                this.option = common.testStandardDataToOption(newVal)
+            }
         }
     },
     methods: {
-        initializeTable() {
+        async initializeTable() {
             if (!this.testData.table) {
                 this.$set(this.testData, 'table', {})
             }
@@ -180,9 +258,9 @@ export default {
                 this.$set(this.testData.table, 'table1', [])
             }
         },
-        add() {
+        async add() {
             if (!this.testData.table.table1) {
-                this.initializeTable()
+                await this.initializeTable()
             }
             this.testData.table.table1.push(
                 JSON.parse(JSON.stringify(this.rowData))
@@ -223,12 +301,13 @@ export default {
             })
         },
 
-        calculator() {
-            this.calcRdev()
+        async calculator() {
+            await this.calcRdev()
+            await this.calcAssessment()
             this.$message.success('Calculating successfully')
         },
 
-        calcRdev() {
+        async calcRdev() {
             if (!this.testData.table.table1) {
                 this.initializeTable()
                 return
@@ -243,6 +322,111 @@ export default {
                 }
             })
         },
+
+        async calcAssessment() {
+            const assessmentStandard = this.filteredAssessmentData.find(x => x.type === this.option)
+            if (!assessmentStandard) {
+                this.$message.error('Please select an assessment standard')
+                return
+            }
+
+            for (const row of this.testData.table.table1) {
+                const measurementMap = {}
+                Object.keys(row).forEach(key => {
+                    const item = row[key]
+                    if (!item || typeof item !== 'object') return
+                    if (item.measurement_id) {
+                        measurementMap[item.measurement_id] = item.value
+                    }
+                })
+
+                // ===== collect tất cả root pass =====
+                const passedResults = []
+
+                for (const root of assessmentStandard.tree) {
+                    const pass = this.evaluateGroup(root, measurementMap)
+                    if (pass) {
+                        passedResults.push(root.result)
+                    }
+                }
+
+                // ===== kết luận =====
+                // Ưu tiên: Fail > Pass > ''
+                if (passedResults.includes('Fail')) {
+                    row.assessment.value = 'Fail'
+                } else if (passedResults.includes('Pass')) {
+                    row.assessment.value = 'Pass'
+                } else {
+                    row.assessment.value = ''
+                }
+            }
+        },
+
+        evaluateGroup(group, measurementMap) {
+
+            const results = []
+
+            // ===== evaluate conditions =====
+
+            for (const condition of (group.conditions || [])) {
+
+                const value = measurementMap[
+                    condition.measurement_id
+                ]
+
+                if (
+                    value === null ||
+                    value === undefined ||
+                    value === ''
+                ) {
+                    return null
+                }
+
+                const pass = common.compare(
+                    Math.abs(value),
+                    condition.operator,
+                    condition.threshold
+                )
+
+                results.push(pass)
+            }
+
+            // ===== evaluate children =====
+
+            for (const child of (group.children || [])) {
+
+                const childPass = this.evaluateGroup(
+                    child,
+                    measurementMap
+                )
+
+                // child chưa đủ data
+                if (childPass === null) {
+                    return null
+                }
+
+                results.push(childPass)
+            }
+
+            // ===== empty =====
+
+            if (results.length === 0) {
+                return false
+            }
+
+            // ===== logic =====
+
+            const logic = (group.logic || 'AND')
+                .toUpperCase()
+
+            if (logic === 'OR') {
+
+                return results.some(x => x)
+            }
+
+            return results.every(x => x)
+        },
+
         clear() {
             if (!this.testData.table.table1) {
                 this.initializeTable()
@@ -309,5 +493,46 @@ tr {
 
 .Bad input {
     background: #ff3300;
+}
+
+.assessment-container {
+  width: 75%;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.assessment-header {
+  display: flex;
+  background: #f5f7fa;
+  font-weight: bold;
+  padding: 8px;
+}
+
+.assessment-body {
+  display: flex;
+  padding: 10px;
+}
+
+.limit-col {
+  flex: 2;
+  padding-right: 10px;
+  border-right: 1px solid #eee;
+}
+
+.result-col {
+  flex: 1;
+  padding-left: 10px;
+}
+
+.pass {
+  color: #67C23A;
+  font-weight: bold;
+}
+
+.fail {
+  color: #F56C6C;
+  font-weight: bold;
 }
 </style>

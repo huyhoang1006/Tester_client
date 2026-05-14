@@ -13,7 +13,11 @@ import { insertStringMeasurementValueTransaction, getStringMeasurementValueByTes
 import { insertDiscreteValueTransaction, getDiscreteValueByTestDataSetMrids, deleteDiscreteValueByIdTransaction } from '@/function/cim/discreteValue/index.js'
 import { insertProcedureDataSetMeasurementValueTransaction } from '@/function/cim/procedureDataSetMeasurementValue/index.js'
 import { insertProcedureAssetTransaction } from '@/function/cim/procedureAsset/index.js'
-import {insertTestStandardTransaction, getTestStandardById} from '@/function/cim/testStandard'
+import {insertCustomizedStandardTransaction, deleteCustomizedStandardByIdTransaction, getCustomizedStandardById} from '@/function/cim/customizedStandard/index.js'
+import {insertTestStandardTransaction, deleteTestStandardByIdTransaction, getTestStandardByWorkTaskId} from '@/function/cim/testStandard/index.js'
+import {insertAssessmentTransaction, deleteAssessmentByIdTransaction, getAssessmentInGroupIds} from '@/function/cim/assessment/index.js'
+import {insertAssessmentGroupTransaction, deleteAssessmentGroupByIdTransaction, getAssessmentGroupByParentId, getAssessmentGroupByRuleId} from '@/function/cim/assessmentGroup/index.js'
+import {insertAssessmentRuleTransaction, deleteAssessmentRuleByIdTransaction, getAssessmentRuleByStandardId} from '@/function/cim/assessmentRule/index.js'
 
 export const insertVoltageTransformerJobEntity = async (old_entity,entity) => {
     try {
@@ -56,7 +60,6 @@ export const insertVoltageTransformerJobEntity = async (old_entity,entity) => {
             }
 
             await runAsync('BEGIN TRANSACTION');
-            await insertTestStandardTransaction(entity.testStandard, db)
             await insertOldWorkTransaction(entity.oldWork, db);
             if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
                 const pathData = JSON.parse(entity.attachment.path);
@@ -104,6 +107,20 @@ export const insertVoltageTransformerJobEntity = async (old_entity,entity) => {
                 await insertVoltageTransformerTestingEquipmentTestTypeTransaction(equipmentTestType, db);
             }
 
+            //customized standard
+            const newCustomizedIds = entity.standardCustomized.map(v => v.mrid).filter(id => id); // bỏ null/empty
+            const oldCustomizedIds = old_entity.standardCustomized.map(v => v.mrid).filter(id => id);
+
+            const toAddCustomized = entity.standardCustomized.filter(v => v.mrid && !oldCustomizedIds.includes(v.mrid));
+            const toDeleteCustomized = old_entity.standardCustomized.filter(v => v.mrid && !newCustomizedIds.includes(v.mrid));
+            const toUpdateCustomized = entity.standardCustomized.filter(v => v.mrid && oldCustomizedIds.includes(v.mrid));
+            for (const customized of toAddCustomized) {
+                await insertCustomizedStandardTransaction(customized, db);
+            }
+            for (const customized of toUpdateCustomized) {
+                await insertCustomizedStandardTransaction(customized, db);
+            }
+
             //insert work tasks
             const newIdsWorkTask = entity.workTasks.map(v => v.mrid).filter(id => id); // bỏ null/empty
             const oldIdsWorkTask = old_entity.workTasks.map(v => v.mrid).filter(id => id);
@@ -146,6 +163,63 @@ export const insertVoltageTransformerJobEntity = async (old_entity,entity) => {
                     attachment.path = JSON.stringify(newPath);
                     await uploadAttachmentTransaction(attachment, db);
                 }
+            }
+
+            //test standard
+            const newTestStandardIds = entity.testStandard.map(v => v.mrid).filter(id => id); // bỏ null/empty
+            const oldTestStandardIds = old_entity.testStandard.map(v => v.mrid).filter(id => id);
+
+            const toAddTestStandard = entity.testStandard.filter(v => v.mrid && !oldTestStandardIds.includes(v.mrid));
+            const toDeleteTestStandard = old_entity.testStandard.filter(v => v.mrid && !newTestStandardIds.includes(v.mrid));
+            const toUpdateTestStandard = entity.testStandard.filter(v => v.mrid && oldTestStandardIds.includes(v.mrid));
+            for (const testStandard of toAddTestStandard) {
+                await insertTestStandardTransaction(testStandard, db);
+            }
+            for (const testStandard of toUpdateTestStandard) {
+                await insertTestStandardTransaction(testStandard, db);
+            }
+
+            //assessment rule
+            const newAssessmentRuleIds = entity.assessment_rule.map(v => v.mrid).filter(id => id); // bỏ null/empty
+            const oldAssessmentRuleIds = old_entity.assessment_rule.map(v => v.mrid).filter(id => id);
+
+            const toAddAssessmentRule = entity.assessment_rule.filter(v => v.mrid && !oldAssessmentRuleIds.includes(v.mrid));
+            const toDeleteAssessmentRule = old_entity.assessment_rule.filter(v => v.mrid && !newAssessmentRuleIds.includes(v.mrid));
+            const toUpdateAssessmentRule = entity.assessment_rule.filter(v => v.mrid && oldAssessmentRuleIds.includes(v.mrid));
+
+            for (const assessmentRule of toAddAssessmentRule) {
+                await insertAssessmentRuleTransaction(assessmentRule, db);
+            }
+
+            for (const assessmentRule of toUpdateAssessmentRule) {
+                await insertAssessmentRuleTransaction(assessmentRule, db);
+            }
+
+            //assessment group
+            const newAssessmentGroupIds = entity.assessment_group.map(v => v.mrid).filter(id => id); // bỏ null/empty
+            const oldAssessmentGroupIds = old_entity.assessment_group.map(v => v.mrid).filter(id => id);
+
+            const toAddAssessmentGroup = entity.assessment_group.filter(v => v.mrid && !oldAssessmentGroupIds.includes(v.mrid));
+            const toDeleteAssessmentGroup = old_entity.assessment_group.filter(v => v.mrid && !newAssessmentGroupIds.includes(v.mrid));
+            const toUpdateAssessmentGroup = entity.assessment_group.filter(v => v.mrid && oldAssessmentGroupIds.includes(v.mrid));
+            for (const assessmentGroup of toAddAssessmentGroup) {
+                await insertAssessmentGroupTransaction(assessmentGroup, db);
+            }
+            for (const assessmentGroup of toUpdateAssessmentGroup) {
+                await insertAssessmentGroupTransaction(assessmentGroup, db);
+            }
+
+            //assessment
+            const newAssessmentIds = entity.assessment.map(v => v.mrid).filter(id => id); // bỏ null/empty
+            const oldAssessmentIds = old_entity.assessment.map(v => v.mrid).filter(id => id);
+            const toAddAssessment = entity.assessment.filter(v => v.mrid && !oldAssessmentIds.includes(v.mrid));
+            const toDeleteAssessment = old_entity.assessment.filter(v => v.mrid && !newAssessmentIds.includes(v.mrid));
+            const toUpdateAssessment = entity.assessment.filter(v => v.mrid && oldAssessmentIds.includes(v.mrid));
+            for (const assessment of toAddAssessment) {
+                await insertAssessmentTransaction(assessment, db);
+            }
+            for (const assessment of toUpdateAssessment) {
+                await insertAssessmentTransaction(assessment, db);
             }
 
             //testdataset
@@ -242,6 +316,26 @@ export const insertVoltageTransformerJobEntity = async (old_entity,entity) => {
                 await deleteWorkTaskByIdTransaction(workTask.mrid, db);
             }
 
+            for(const assessment of toDeleteAssessment) {
+                await deleteAssessmentByIdTransaction(assessment.mrid, db);
+            }
+
+            for(const assessmentGroup of toDeleteAssessmentGroup) {
+                await deleteAssessmentGroupByIdTransaction(assessmentGroup.mrid, db);
+            }
+
+            for(const assessmentRule of toDeleteAssessmentRule) {
+                await deleteAssessmentRuleByIdTransaction(assessmentRule.mrid, db);
+            }
+
+            for(const testStandard of toDeleteTestStandard) {
+                await deleteTestStandardByIdTransaction(testStandard.mrid, db);
+            }
+
+            for (const customized of toDeleteCustomized) {
+                await deleteCustomizedStandardByIdTransaction(customized.mrid, db);
+            }
+
             await runAsync('COMMIT');
             deleteBackupFiles(null, entity.oldWork.mrid);
             for(const attachment of entity.attachmentTest) {
@@ -278,11 +372,6 @@ export const getVoltageTransformerJobEntity = async (id) => {
                     entity.attachment = dataAttachment.data;
                 }
 
-                const dataTestStandard = await getTestStandardById(entity.oldWork.test_standard_id)
-                if(dataTestStandard.success) {
-                    entity.testStandard = dataTestStandard.data
-                }
-
                 const dataTestingEquipment = await getTestingEquipmentByWorkId(entity.oldWork.mrid);
                 if(dataTestingEquipment.success) {
                     entity.testingEquipment = dataTestingEquipment.data;
@@ -310,6 +399,37 @@ export const getVoltageTransformerJobEntity = async (id) => {
                     const dataAttachmentTest = await getAttachmentByForeignIdAndType(workTask.mrid, 'test');
                     if(dataAttachmentTest.success) {
                         entity.attachmentTest.push(dataAttachmentTest.data);
+                    }
+
+                    const dataTestStandard = await getTestStandardByWorkTaskId(workTask.mrid);
+                    if(dataTestStandard.success) {
+                        entity.testStandard = entity.testStandard.concat(dataTestStandard.data);
+                    }
+
+                    if(dataTestStandard.data) {
+                        if(dataTestStandard.data.test_standard_customize) {
+                            const customizedStandard = await getCustomizedStandardById(dataTestStandard.data.test_standard_customize);
+                            if(customizedStandard.success) {
+                                entity.standardCustomized = entity.standardCustomized.concat(customizedStandard.data);
+                                const assessmentRule = await getAssessmentRuleByStandardId(customizedStandard.data.mrid);
+                                if(assessmentRule.success) {
+                                    entity.assessment_rule = entity.assessment_rule.concat(assessmentRule.data);
+                                    for(const rule of assessmentRule.data) {
+                                        const assessmentGroupParent = await getAssessmentGroupByRuleId(rule.mrid);
+                                        if(assessmentGroupParent.success) {
+                                            entity.assessment_group.push(assessmentGroupParent.data);
+                                            await getAssessmentGroupChild(assessmentGroupParent.data, entity.assessment_group);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+
+                    const dataAssessment = await getAssessmentInGroupIds(entity.assessment_group.map(g => g.mrid));
+                    if(dataAssessment.success) {
+                        entity.assessment = entity.assessment.concat(dataAssessment.data);
                     }
 
                     const dataTestDataSet = await getTestDataSetByWorkTaskId(workTask.mrid)
@@ -391,6 +511,36 @@ export const deleteVoltageTransformerJobEntity = async (entity) => {
             }
         }
 
+        if(entity.testStandard && entity.testStandard.length > 0) {
+            for(const item of entity.testStandard) {
+                await deleteTestStandardByIdTransaction(item.mrid, db);
+            }
+        }
+
+        if(entity.assessment && entity.assessment.length > 0) {
+            for(const item of entity.assessment) {
+                await deleteAssessmentByIdTransaction(item.mrid, db);
+            }
+        }
+
+        if(entity.assessment_group && entity.assessment_group.length > 0) {
+            for(const item of entity.assessment_group) {
+                await deleteAssessmentGroupByIdTransaction(item.mrid, db);
+            }
+        }
+
+        if(entity.assessment_rule && entity.assessment_rule.length > 0) {
+            for(const item of entity.assessment_rule) {
+                await deleteAssessmentRuleByIdTransaction(item.mrid, db);
+            }
+        }
+
+        if(entity.standardCustomized && entity.standardCustomized.length > 0) {
+            for(const item of entity.standardCustomized) {
+                await deleteCustomizedStandardByIdTransaction(item.mrid, db);
+            }
+        }
+
         // 5. Xóa Work Tasks
         if (entity.workTasks && entity.workTasks.length > 0) {
             for (const item of entity.workTasks) {
@@ -456,3 +606,13 @@ const runAsync = (sql, params = []) => {
         });
     });
 };
+
+const getAssessmentGroupChild = async (parentData, assessmentGroupList) => {
+    const child = await getAssessmentGroupByParentId(parentData.mrid)
+    if(child.success && child.data.length > 0) {
+        for(const group of child.data) {
+            assessmentGroupList.push(group)  // ✅ push từng item, mutate trực tiếp
+            await getAssessmentGroupChild(group, assessmentGroupList)
+        }
+    }
+}

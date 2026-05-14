@@ -9,7 +9,6 @@ class OldWork extends Work {
         this.execution_date = null; // Work location
         this.test_method = null; // Work type
         this.asset_id = null; // Work description
-        this.test_standard_id = null
     }
 }
 export default OldWork;

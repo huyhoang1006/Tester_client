@@ -24,6 +24,20 @@ export const getTestStandardById = async (mrid) => {
     }
 }
 
+export const getTestStandardByWorkTaskId = async (workTaskId) => {
+    return new Promise((resolve, reject) => {
+        db.get(
+            `SELECT * FROM test_standard s JOIN identified_object io ON s.mrid = io.mrid WHERE s.work_task_id=?`,
+            [workTaskId],
+            (err, row) => {
+                if (err) return reject({ success: false, err, message: 'Get testStandard by id failed' })
+                if (!row) return resolve({ success: false, data: null, message: 'TestStandard not found' })
+                return resolve({ success: true, data: row, message: 'Get testStandard by id completed' })
+            }
+        )
+    })
+}
+
 // Thêm mới testStandard
 export const insertTestStandardTransaction = async (testStandard, dbsql) => {
     return new Promise(async (resolve, reject) => {
@@ -38,8 +52,8 @@ export const insertTestStandardTransaction = async (testStandard, dbsql) => {
                     mrid, test_method, test_standard_astm, test_standard_cigre, test_standard_din,
                     test_standard_doble, test_standard_epa, test_standard_iec, test_standard_ieee,
                     test_standard_iso, test_standard_laborelec, test_standard_tappi,
-                    test_standard_ukministry_of_defence, test_standard_wep, test_variant
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    test_standard_ukministry_of_defence, test_standard_wep, test_variant, test_standard_customize, work_task_id
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(mrid) DO UPDATE SET
                     test_method = excluded.test_method,
                     test_standard_astm = excluded.test_standard_astm,
@@ -54,7 +68,9 @@ export const insertTestStandardTransaction = async (testStandard, dbsql) => {
                     test_standard_tappi = excluded.test_standard_tappi,
                     test_standard_ukministry_of_defence = excluded.test_standard_ukministry_of_defence,
                     test_standard_wep = excluded.test_standard_wep,
-                    test_variant = excluded.test_variant
+                    test_variant = excluded.test_variant,
+                    test_standard_customize = excluded.test_standard_customize,
+                    work_task_id = excluded.work_task_id
                 `,
                 [
                     testStandard.mrid,
@@ -71,7 +87,9 @@ export const insertTestStandardTransaction = async (testStandard, dbsql) => {
                     testStandard.test_standard_tappi,
                     testStandard.test_standard_ukministry_of_defence,
                     testStandard.test_standard_wep,
-                    testStandard.test_variant
+                    testStandard.test_variant,
+                    testStandard.test_standard_customize,
+                    testStandard.work_task_id
                 ],
                 function (err) {
                     if (err) return reject({ success: false, err, message: 'Insert testStandard failed' })
@@ -108,7 +126,9 @@ export const updateTestStandardByIdTransaction = async (mrid, testStandard, dbsq
                     test_standard_tappi = ?,
                     test_standard_ukministry_of_defence = ?,
                     test_standard_wep = ?,
-                    test_variant = ?
+                    test_variant = ?,
+                    test_standard_customize = ?,
+                    work_task_id = ?
                 WHERE mrid = ?`,
                 [
                     testStandard.test_method,
@@ -125,6 +145,8 @@ export const updateTestStandardByIdTransaction = async (mrid, testStandard, dbsq
                     testStandard.test_standard_ukministry_of_defence,
                     testStandard.test_standard_wep,
                     testStandard.test_variant,
+                    testStandard.test_standard_customize,
+                    testStandard.work_task_id,
                     mrid
                 ],
                 function (err) {

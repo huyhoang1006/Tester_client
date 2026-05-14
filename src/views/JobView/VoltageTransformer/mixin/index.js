@@ -3,7 +3,6 @@ import uuid from "@/utils/uuid";
 import * as voltageTransformerJobMapping from "@/views/Mapping/VoltageTransformerJob/index"
 import VoltageTransformerJobDto from "@/views/Dto/Job/VoltageTransformer/index";
 import mixins from '../components/SelectTest/mixin'
-import {traverseAndFillMrid, changeTestStandard} from "../../Common"
 
 export default {
     mixins: [mixins],
@@ -74,15 +73,10 @@ export default {
             this.locationData = locationData
         },
 
-        async updateTestStandard(standardMrid, standardType) {
-            changeTestStandard(standardMrid, standardType, this.voltageTransformerJobDto.testStandard)
-        },
-
         async checkJob(data) {
             this.checkProperties(data);
             this.checkAssetId(data);
             this.checkAttachment(data);
-            this.checkTestStandard(data)
             this.checkTestingEquipment(data);
             await this.checkDataMeasurement(data);
             return data;
@@ -154,12 +148,6 @@ export default {
             );
         },
 
-        checkTestStandard(data) {
-            if(data.testStandard.mrid === null || data.testStandard.mrid === '') {
-                data.testStandard.mrid = uuid.newUuid();
-            }
-        },
-
         async checkDataMeasurement(data) {
             for (const test of data.testList) {
                 if (test.testCondition.mrid === null || test.testCondition.mrid === '') {
@@ -180,10 +168,6 @@ export default {
                     }
                 } else {
                     test.testCondition.attachment.path = JSON.stringify(test.testCondition.attachmentData)
-                }
-
-                for(const assessment of test.testAssessment.assessment) {
-                    await traverseAndFillMrid(assessment.records);
                 }
 
                 for (const key in test.data.table) {
@@ -215,6 +199,12 @@ export default {
                         asset_id: this.assetData.properties?.mrid || this.assetData.asset?.mrid || this.assetData.mrid 
                     });
                 }
+
+                if(test.testAssessment.testStandard.mrid == '' || test.testAssessment.testStandard.mrid == null) {
+                    test.testAssessment.testStandard.mrid = uuid.newUuid()
+                }
+
+                test.testAssessment.testStandard.work_task_id = test.mrid
             }
         },
     }

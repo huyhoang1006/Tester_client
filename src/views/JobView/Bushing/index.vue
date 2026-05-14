@@ -5,25 +5,24 @@
                 <!-- Overview -->
                 <el-tab-pane style="width: 100%;">
                     <span slot="label"><i class="fa-solid fa-book"></i> Overview</span>
-                    <overview :data="bushingJobDto.properties" @update-attachment="updateAttachmentOverView"
-                        :attachment.sync="bushingJobDto.attachmentData" :locationData="locationData"
-                        :assetData="assetData" :productAssetModelData="productAssetModelData"
-                        :parentOrganization="parentOrganization"></overview>
+                    <overview :data="bushingJobDto.properties" @update-attachment="updateAttachmentOverView" :attachment.sync="bushingJobDto.attachmentData" :locationData="locationData" :assetData="assetData" :productAssetModelData="productAssetModelData" :parentOrganization="parentOrganization"></overview>
                 </el-tab-pane>
 
                 <!-- Select test -->
                 <el-tab-pane>
                     <span slot="label"><i class="fa-solid fa-list-check"></i> Test settings</span>
-                    <select-test style="width: 100%;" :data="bushingJobDto.testList"
-                        :testTypeListData="testTypeListData" :assetData="assetData"
-                        :obj-active-name="objActiveName"></select-test>
+                    <select-test style="width: 100%;"
+                        :data="bushingJobDto.testList"
+                        :testTypeListData="testTypeListData"
+                        :assetData="assetData"
+                        :obj-active-name="objActiveName"
+                        ></select-test>
                 </el-tab-pane>
 
                 <el-tab-pane>
                     <span slot="label"><i class="fa-solid fa-list-check"></i> Testing equipment</span>
                     <div>
-                        <testing-equipment :data="bushingJobDto.testingEquipmentData"
-                            :testTypeListData="testTypeListData"></testing-equipment>
+                        <testing-equipment :data="bushingJobDto.testingEquipmentData" :testTypeListData="testTypeListData"></testing-equipment>
                     </div>
                 </el-tab-pane>
 
@@ -32,12 +31,20 @@
                     <span slot="label"><i class="fa-solid fa-calculator"></i> Test data</span>
                     <div id="tests" style="width: 100%;">
                         <el-tabs v-model="objActiveName.activeName" type="card" class="w-100 h-100">
-                            <el-tab-pane v-for="(item, index) in bushingJobDto.testList" :key="index" :label="item.name"
-                                :name="item.name + index">
-                                <test-information :title="item.name" :data="item.testCondition" :assetData="assetData"
+                            <el-tab-pane v-for="(item, index) in bushingJobDto.testList" :key="index" :label="item.name" :name="item.name + index">
+                                <test-information
+                                    :title="item.name"
+                                    :data="item.testCondition"
+                                    :assetData="assetData"
                                     :attachment="item.testCondition.attachmentData">
                                 </test-information>
-                                <component :is="item.testTypeCode" :data="item.data" :asset="assetData">
+                                <component
+                                    :is="item.testTypeCode" 
+                                    :data="item.data" 
+                                    :asset="assetData"
+                                    :testCondition="item.testCondition"
+                                    :testAssessment="item.testAssessment"
+                                    >
                                 </component>
                             </el-tab-pane>
                         </el-tabs>
@@ -56,22 +63,13 @@ import SelectTest from './components/SelectTest'
 import testInformation from '@/views/Common/TestInformation.vue'
 import testingEquipment from './components/TestingEquipment/index.vue'
 
-import InsulationResistance from './components/InsulationResistance.vue'
-import GeneralInspection from './components/GeneralInspection.vue'
-import LeakageCurrent from './components/LeakageCurrent.vue'
-import PowerFrequency from './components/PowerFrequency.vue'
-
 export default {
     name: 'JobViewBushing',
     components: {
         overview,
         SelectTest,
         testInformation,
-        InsulationResistance,
-        GeneralInspection,
         testingEquipment,
-        LeakageCurrent,
-        PowerFrequency
     },
     props: {
         

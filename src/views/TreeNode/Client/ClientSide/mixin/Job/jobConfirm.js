@@ -67,6 +67,14 @@ export default {
                                 jobType = 'Circuit breaker'
                             } else if (this.checkJobType === 'JobTransformer') {
                                 jobType = 'Transformer'
+                            } else if (this.checkJobType === 'JobBushing') {
+                                jobType = 'Bushing'
+                            } else if (this.checkJobType === 'JobCapacitor') {
+                                jobType = 'Capacitor'
+                            } else if (this.checkJobType === 'JobReactor') {
+                                jobType = 'Reactor'
+                            } else if(this.checkJobType === 'JobRotatingMachine') {
+                                jobType = 'Rotating machine'
                             } else {
                                 jobType = 'Job'
                             }

@@ -43,6 +43,7 @@
                                     :data="item.data" 
                                     :asset="assetData"
                                     :testCondition="item.testCondition"
+                                    :testAssessment="item.testAssessment"
                                     >
                                 </component>
                             </el-tab-pane>

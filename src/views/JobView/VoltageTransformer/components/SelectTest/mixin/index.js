@@ -60,6 +60,8 @@ export default {
         async initVTRatio(testTypeCode, assetData) {
             const rowDataExample = common.buildEmptyTestRow(voltageTransformerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(voltageTransformerConditionMap[testTypeCode].columns)
+            const rowDataAssessment = common.buildEmptyTestAssessment(voltageTransformerAssessmentMap[testTypeCode].testStandard)
+
             let table = []
 
             function uprData(uprRatio, upr) {
@@ -139,6 +141,7 @@ export default {
 
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     "table1": table
                 }
@@ -147,6 +150,7 @@ export default {
         async initDcWindingResistance(testTypeCode, assetData) {
             const rowDataExample = common.buildEmptyTestRow(voltageTransformerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(voltageTransformerConditionMap[testTypeCode].columns)
+            const rowDataAssessment = common.buildEmptyTestAssessment(voltageTransformerAssessmentMap[testTypeCode].testStandard)
 
             let table = []
             
@@ -167,6 +171,7 @@ export default {
             }
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     "table1": table
                 }
@@ -175,6 +180,7 @@ export default {
         async initVTDfcap(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(voltageTransformerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(voltageTransformerConditionMap[testTypeCode].columns)
+            const rowDataAssessment = common.buildEmptyTestAssessment(voltageTransformerAssessmentMap[testTypeCode].testStandard)
 
             let table = []
             const row = JSON.parse(JSON.stringify(rowDataExample))
@@ -193,6 +199,7 @@ export default {
 
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     "table1": table // Changed to use table1 structure
                 }
@@ -201,6 +208,7 @@ export default {
         async initGeneralInspection(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(voltageTransformerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(voltageTransformerConditionMap[testTypeCode].columns)
+            const rowDataAssessment = common.buildEmptyTestAssessment(voltageTransformerAssessmentMap[testTypeCode].testStandard || [])
 
             let table = []
             const data = ['Nameplate', 'Installation check', 'Insulation surface', 'Ground frame', 'Terminal box', 'Marking of terminals', 'Oil check']
@@ -222,6 +230,7 @@ export default {
             })
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     "table1": table // Changed to use table1 structure
                 }

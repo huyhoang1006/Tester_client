@@ -1,6 +1,7 @@
 /* eslint-disable */
 import capacitorTestMap from '@/config/test-definitions/Capacitor'
 import capacitorConditionMap from '@/config/testing-condition/Capacitor'
+import capacitorAssessmentMap from '@/config/testing-assessment/Capacitor'
 import * as common from '../../../../Common/index.js'
 export default {
     methods: {
@@ -24,7 +25,8 @@ export default {
         },
         async initInsulationResistance(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(capacitorTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(capacitorConditionMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(capacitorConditionMap[testTypeCode].columns || [])
+            const rowDataAssessment = common.buildEmptyTestAssessment(capacitorAssessmentMap[testTypeCode].testStandard || [])
             const row1 = JSON.parse(JSON.stringify(rowDataExample))
             row1.measurement.value = 'Phase A - B'
             const row2 = JSON.parse(JSON.stringify(rowDataExample))
@@ -41,6 +43,7 @@ export default {
             ]
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table,
             }
         },
@@ -49,7 +52,8 @@ export default {
             let phase = ["A", "B", "C"]
             let table = []
             const rowDataExample = common.buildEmptyTestRow(capacitorTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(capacitorConditionMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(capacitorConditionMap[testTypeCode].columns || [])
+            const rowDataAssessment = common.buildEmptyTestAssessment(capacitorAssessmentMap[testTypeCode].testStandard || [])
             for (let i in phase) {
                 for (let j = 1; j <= units; j++) {
                     let data = JSON.parse(JSON.stringify(rowDataExample))
@@ -60,6 +64,7 @@ export default {
             }
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table
             }
         },
@@ -68,7 +73,8 @@ export default {
             let phase = ["A", "B", "C"]
             let table = []
             const rowDataExample = common.buildEmptyTestRow(capacitorTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(capacitorConditionMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(capacitorConditionMap[testTypeCode].columns || [])
+            const rowDataAssessment = common.buildEmptyTestAssessment(capacitorAssessmentMap[testTypeCode].testStandard || [])
             for (let i in phase) {
                 for (let j = 1; j <= units; j++) {
                     let data = JSON.parse(JSON.stringify(rowDataExample))
@@ -79,13 +85,15 @@ export default {
             }
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table
             }
         },
         async initGeneralInspection(testTypeCode) {
             let table = []
             const rowDataExample = common.buildEmptyTestRow(capacitorTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(capacitorConditionMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(capacitorConditionMap[testTypeCode].columns || [])
+            const rowDataAssessment = common.buildEmptyTestAssessment(capacitorAssessmentMap[testTypeCode].testStandard || [])
             const data = ['Nameplate', 'Installation check', 'Grounding check', 'Discharge counter check']
             data.forEach(element => {
                 const rowData = JSON.parse(JSON.stringify(rowDataExample))
@@ -94,6 +102,7 @@ export default {
             })
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table
             }
         }

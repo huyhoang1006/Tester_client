@@ -14,6 +14,8 @@ import ProcedureDataSetMeasurementValue from "@/views/Cim/ProcedureDataSetMeasur
 import surgeArresterConditionMap from '@/config/testing-condition/SurgeArrester'
 import surgeArresterTestMap from "@/config/testing-condition/SurgeArrester";
 import * as commonFunc from '@/views/JobView/Common/index.js'
+import surgeArresterAssessmentMap from "@/config/testing-assessment/SurgeArrester";
+import TestStandard from "@/views/Cim/TestStandard";
 
 export const jobDtoToEntity = (dto) => {
     const entity = new SurgeArresterJobEntity();
@@ -188,6 +190,20 @@ export const jobDtoToEntity = (dto) => {
                 }
             }
         }
+
+        const standardArr = commonFunc.buildConfigFromAssessmentTree(item.testAssessment.assessment)
+        for (const standard of standardArr) {
+            if (standard.type == 'customized') {
+                entity.assessment = entity.assessment.concat(standard.assessment)
+                entity.assessment_group = entity.assessment_group.concat(standard.assessment_group)
+                entity.assessment_rule = entity.assessment_rule.concat(standard.assessment_rule)
+                const standardData = {
+                    mrid: standard.mrid || null
+                }
+                entity.standardCustomized.push(standardData)
+            }
+        }
+        entity.testStandard.push(item.testAssessment.testStandard)
     }
 
     return entity;
@@ -239,6 +255,53 @@ export const JobEntityToDto = (entity) => {
     //test list
     for (const item of entity.workTasks) {
         let condition = commonFunc.buildEmptyTestCondition(surgeArresterConditionMap[item.type]?.columns || []);
+        const testAssessmentList = JSON.parse(JSON.stringify(capacitorAssessmentMap[item.type].testStandard || []));
+        const testStandardData = entity.testStandard.find(x => x.work_task_id === item.mrid);
+        let standardCustomized = null
+        if(testStandardData) {
+            standardCustomized = entity.standardCustomized.find(x => x.mrid === testStandardData.test_standard_customize)
+        }
+        
+        let assessmentRule = []
+        if(standardCustomized) {
+            assessmentRule = entity.assessment_rule.filter(x => x.standard_id === standardCustomized.mrid)
+        }
+
+        let assessmentGroup = []
+        for(const rule of assessmentRule) {
+            const fullGroup = commonFunc.getFullAssessmentGroupByRuleId(entity.assessment_group, rule.mrid);
+            assessmentGroup = assessmentGroup.concat(fullGroup);
+        }
+
+        let assessmentData = []
+        for(const assessment of entity.assessment) {
+            for(const group of assessmentGroup) {
+                if(assessment.group_id === group.mrid) {
+                    assessmentData.push(assessment)
+                }
+            }
+        }
+
+
+        assessmentData = commonFunc.uniqueByMrid(assessmentData)
+
+        for(const testAssessment of testAssessmentList) {
+            if(testAssessment.type == 'customized') {
+                testAssessment.mrid = standardCustomized?.mrid || ''
+                testAssessment.assessment_rule = assessmentRule
+                testAssessment.assessment_group = assessmentGroup
+                for(const asm of testAssessment.assessment) {
+                    for(const ad of assessmentData) {
+                        if(asm.measurement_id === ad.measurement_id) {
+                            ad.label = asm.label
+                        }
+                    }
+                }
+                testAssessment.assessment = assessmentData
+            }
+        }
+        
+        let assessment = commonFunc.buildEmptyTestAssessmentOriginal(testAssessmentList) || [];
         let testTemplate = {
             mrid: item.mrid || '',
             name: item.name || '',
@@ -261,6 +324,10 @@ export const JobEntityToDto = (entity) => {
                 comment: '',
                 attachment : new Attachment(),
                 attachmentData : [],
+            },
+            testAssessment: {
+                testStandard : testStandardData || new TestStandard(),
+                assessment : assessment,
             },
             data : {
                 table : {

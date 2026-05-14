@@ -18,62 +18,52 @@
           "type": "analog",
           "unit": "m|Ω",
           "measurement_type": "test, assessment"
-        },
-        {
-          "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",
-          "code": "assessment",
-          "name": "Assessment",
-          "type": "discrete",
-          "measurement_type": "test, assessment",
-          "valueAliasSetId": "40c60468-232a-4643-851f-50616900f601",
-          "options": [
-            { "value": 0, "alias": "Fail", "mrid": "d8858564-e438-4034-9273-030919163001" },
-            { "value": 1, "alias": "Pass", "mrid": "d8858564-e438-4034-9273-030919163002" }
-          ]
         }
       ],
-      "record": [
+      "assessment_rule" : [
         {
-          "mrid": "",
-          "label": "R<sub>60s</sub>",
-          "r60s": {
-            "mrid": "",
-            "code": "r60s",
-            "value": "",
-            "unit": "m|Ω",
-            "type": "analog",
-            "measurement_id": "6c9d0e1f-2a3b-4c13-9009-000000000017"
-          },
-          "assessment": {
-            "mrid": "",
-            "code": "assessment",
-            "value": "Pass",
-            "unit": "",
-            "type": "discrete",
-            "measurement_id": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001"
-          },
-          "description": "≥"
+          "mrid" : "0d8ad280-06f3-45f7-b776-2af384a9dded",
+          "standard_id" : "36116f8b-4ad9-4b16-8c14-5391d1ccc091",
+          "result" : "Pass",
+          "priority" : ""
         },
         {
-          "mrid": "",
+          "mrid" : "777cdda2-97dd-4a5d-a925-d6a50f8228fb",
+          "standard_id" : "36116f8b-4ad9-4b16-8c14-5391d1ccc091",
+          "result" : "Fail",
+          "priority" : ""
+        }
+      ],
+      "assessment_group" : [
+        {
+          "mrid": "9b43d2c2-b6d1-45b9-9643-0ff871e5b4f3",
+          "rule_id": "0d8ad280-06f3-45f7-b776-2af384a9dded",
+          "parent_id": "",
+          "logic": ""
+        },
+        {
+          "mrid": "a0e38dc0-f279-473b-bb5b-7eeba0dde5c1",
+          "rule_id": "777cdda2-97dd-4a5d-a925-d6a50f8228fb",
+          "parent_id": "",
+          "logic": ""
+        }
+      ],
+      "assessment" : [
+        {
           "label": "R<sub>60s</sub>",
-          "r60s": {
-            "mrid": "",
-            "code": "r60s",
-            "value": "",
-            "unit": "m|Ω",
-            "type": "analog",
-            "measurement_id": "6c9d0e1f-2a3b-4c13-9009-000000000017"
-          },
-          "assessment": {
-            "mrid": "",
-            "code": "assessment",
-            "value": "Fail",
-            "unit": "",
-            "type": "discrete",
-            "measurement_id": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001"
-          },
-          "description": "<"
+          "mrid": "",
+          "group_id": "9b43d2c2-b6d1-45b9-9643-0ff871e5b4f3",
+          "measurement_id" : "6c9d0e1f-2a3b-4c13-9009-000000000017",
+          "operator" : "≥",
+          "threshold" : ""
+        },
+        {
+          "label": "R<sub>60s</sub>",
+          "mrid": "",
+          "group_id": "a0e38dc0-f279-473b-bb5b-7eeba0dde5c1",
+          "measurement_id" : "6c9d0e1f-2a3b-4c13-9009-000000000017",
+          "operator" : "<",
+          "threshold" : ""
         }
       ]
     }

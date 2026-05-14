@@ -1,4 +1,6 @@
+import * as standardFunc from '../standard/index.js';
 import db from '../../datacontext/index'
+import { runPromise } from '../common/index.js'
 
 // Lấy cigreStandard theo mrid
 export const getCigreStandardById = async (mrid) => {
@@ -16,57 +18,44 @@ export const getCigreStandardById = async (mrid) => {
 }
 
 // Thêm mới cigreStandard
-export const insertCigreStandardTransaction = async (cigreStandard, dbsql) => {
-    return new Promise((resolve, reject) => {
-        dbsql.run(
-            `INSERT INTO cigre_standard(
-                mrid, standard_edition, standard_number
-            ) VALUES (?, ?, ?)
-            ON CONFLICT(mrid) DO UPDATE SET
-                standard_edition = excluded.standard_edition,
-                standard_number = excluded.standard_number
-            `,
-            [
-                cigreStandard.mrid,
-                cigreStandard.standard_edition,
-                cigreStandard.standard_number
-            ],
-            function (err) {
-                if (err) return reject({ success: false, err, message: 'Insert cigreStandard failed' })
-                return resolve({ success: true, data: cigreStandard, message: 'Insert cigreStandard completed' })
-            }
-        )
-    })
-}
+export const insertCigreStandardTransaction = async (data, dbsql) => {
 
-// Cập nhật cigreStandard
-export const updateCigreStandardByIdTransaction = async (mrid, cigreStandard, dbsql) => {
-    return new Promise((resolve, reject) => {
-        dbsql.run(
-            `UPDATE cigre_standard SET
-                standard_edition = ?,
-                standard_number = ?
-            WHERE mrid = ?`,
-            [
-                cigreStandard.standard_edition,
-                cigreStandard.standard_number,
-                mrid
-            ],
-            function (err) {
-                if (err) return reject({ success: false, err, message: 'Update cigreStandard failed' })
-                return resolve({ success: true, data: cigreStandard, message: 'Update cigreStandard completed' })
-            }
-        )
-    })
-}
+    // 1. insert standard
+    const result = await standardFunc.insertStandardTransaction(data, dbsql)
 
+    if (!result.success) {
+        throw new Error('Insert standard failed')
+    }
+
+    // 2. upsert cigre_standard
+    await runPromise(
+        dbsql,
+        `INSERT INTO cigre_standard (mrid, standard_edition, standard_number)
+     VALUES (?, ?, ?)
+     ON CONFLICT(mrid) DO UPDATE SET
+       standard_edition = excluded.standard_edition,
+       standard_number = excluded.standard_number`,
+        [data.mrid, data.standard_edition, data.standard_number]
+    )
+
+    return { success: true }
+}
 // Xóa cigreStandard
 export const deleteCigreStandardByIdTransaction = async (mrid, dbsql) => {
-    return new Promise((resolve, reject) => {
-        dbsql.run("DELETE FROM cigre_standard WHERE mrid=?", [mrid], function (err) {
-            if (err) return reject({ success: false, err, message: 'Delete cigreStandard failed' })
-            if (this.changes === 0) return resolve({ success: false, data: null, message: 'CigreStandard not found' })
-            return resolve({ success: true, data: null, message: 'Delete cigreStandard completed' })
-        })
-    })
+
+    // optional → không cần check
+    await runPromise(
+        dbsql,
+        "DELETE FROM cigre_standard WHERE mrid=?",
+        [mrid]
+    )
+
+    // core → phải check
+    const result = await standardFunc.deleteStandardByIdTransaction(mrid, dbsql)
+
+    if (!result.success) {
+        throw new Error('Delete related standard failed')
+    }
+
+    return { success: true }
 }

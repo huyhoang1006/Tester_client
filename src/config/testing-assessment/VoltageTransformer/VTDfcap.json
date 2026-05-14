@@ -4,10 +4,12 @@
   "testName": "VT DF & CAP",
   "testStandard": [
     {
-      "mrid": "d024cf99-4b47-491e-a8f9-f05b67621254",
-      "code": "customized_vt_df_cap_voltage_transformer",
+      "mrid": "36116f8b-4ad9-4b16-8c14-5391d1ccc091",
+      "code": "customized_dc_winding_resistance_voltage_transformer",
       "name": "Customized limit",
-      "testType" : "customized",
+      "type" : "customized",
+      "standard_edition": "",
+      "standard_number": "",
       "columns" : [
         {
           "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
@@ -24,18 +26,92 @@
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule" : [
+        {
+          "mrid" : "4c296cac-1860-4a10-bc54-103885b11193",
+          "standard_id" : "36116f8b-4ad9-4b16-8c14-5391d1ccc091",
+          "result" : "Pass",
+          "priority" : ""
         },
         {
-          "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",
-          "code": "assessment",
-          "name": "Assessment",
-          "type": "discrete",
-          "measurement_type": "test, assessment",
-          "valueAliasSetId": "40c60468-232a-4643-851f-50616900f601",
-          "options": [
-            { "value": 0, "alias": "Fail", "mrid": "d8858564-e438-4034-9273-030919163001" },
-            { "value": 1, "alias": "Pass", "mrid": "d8858564-e438-4034-9273-030919163002" }
-          ]
+          "mrid" : "864031ea-3267-47f1-b46a-00c19cf6a11f",
+          "standard_id" : "36116f8b-4ad9-4b16-8c14-5391d1ccc091",
+          "result" : "Pass",
+          "priority" : ""
+        },
+        {
+          "mrid" : "e87ebe93-3cd1-4f4a-974a-0c3146486970",
+          "standard_id" : "36116f8b-4ad9-4b16-8c14-5391d1ccc091",
+          "result" : "Fail",
+          "priority" : ""
+        },
+        {
+          "mrid" : "c0a03a8d-ef18-473a-bc6c-20e02b25f955",
+          "standard_id" : "36116f8b-4ad9-4b16-8c14-5391d1ccc091",
+          "result" : "Fail",
+          "priority" : ""
+        }
+      ],
+      "assessment_group" : [
+        {
+          "mrid": "9b43d2c2-b6d1-45b9-9643-0ff871e5b4f3",
+          "rule_id": "4c296cac-1860-4a10-bc54-103885b11193",
+          "parent_id": "",
+          "logic": ""
+        },
+        {
+          "mrid": "a0e38dc0-f279-473b-bb5b-7eeba0dde5c1",
+          "rule_id": "864031ea-3267-47f1-b46a-00c19cf6a11f",
+          "parent_id": "",
+          "logic": ""
+        },
+        {
+          "mrid": "d8b3a6f9-d081-4bec-baf1-120cbff41d62",
+          "rule_id": "e87ebe93-3cd1-4f4a-974a-0c3146486970",
+          "parent_id": "",
+          "logic": ""
+        },
+        {
+          "mrid": "b05fa6ed-c61b-417a-92e0-295a62088191",
+          "rule_id": "c0a03a8d-ef18-473a-bc6c-20e02b25f955",
+          "parent_id": "",
+          "logic": ""
+        }
+      ],
+      "assessment" : [
+        {
+          "label": "DF meas (%)",
+          "mrid": "",
+          "group_id": "9b43d2c2-b6d1-45b9-9643-0ff871e5b4f3",
+          "measurement_id" : "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "operator" : "≤",
+          "threshold" : ""
+        },
+        {
+          "label": "△C cal (%)",
+          "mrid": "",
+          "group_id": "a0e38dc0-f279-473b-bb5b-7eeba0dde5c1",
+          "measurement_id" : "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "operator" : "≤",
+          "threshold" : ""
+        },
+        {
+          "label": "DF meas (%)",
+          "mrid": "",
+          "group_id": "d8b3a6f9-d081-4bec-baf1-120cbff41d62",
+          "measurement_id" : "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "operator" : ">",
+          "threshold" : ""
+        },
+        {
+          "label": "△C cal (%)",
+          "mrid": "",
+          "group_id": "b05fa6ed-c61b-417a-92e0-295a62088191",
+          "measurement_id" : "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "operator" : ">",
+          "threshold" : ""
         }
       ]
     }

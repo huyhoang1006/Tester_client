@@ -23,7 +23,6 @@ export default {
                     const entity = currentTransformerJobMapping.jobDtoToEntity(resultDto);
                     const old_entity = currentTransformerJobMapping.jobDtoToEntity(this.currentTransformerJobDtoOld);
                     const rs = await window.electronAPI.insertCurrentTransformerJob(old_entity, entity);
-            
                     if (rs.success) {                        
                         return {
                             success: true,
@@ -78,7 +77,6 @@ export default {
             this.checkProperties(data);
             this.checkAssetId(data);
             this.checkAttachment(data);
-            this.checkTestStandard(data);
             this.checkTestingEquipment(data);
             await this.checkDataMeasurement(data);
             return data;
@@ -117,12 +115,6 @@ export default {
             } else {
                 data.attachment.path = JSON.stringify(data.attachmentData);
                 
-            }
-        },
-
-        checkTestStandard(data) {
-            if(data.testStandardId === '' || data.testStandardId === null) {
-                data.testStandardId = uuid.newUuid();
             }
         },
 
@@ -231,6 +223,11 @@ export default {
                         asset_id: this.assetData.properties?.mrid || this.assetData.asset?.mrid || this.assetData.mrid
                     });
                 }
+
+                if(test.testAssessment.testStandard.mrid == '' || test.testAssessment.testStandard.mrid == null) {
+                    test.testAssessment.testStandard.mrid = uuid.newUuid()
+                }
+                test.testAssessment.testStandard.work_task_id = test.mrid
             }
         },
     }

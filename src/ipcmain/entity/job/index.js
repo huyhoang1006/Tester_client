@@ -8,6 +8,7 @@ import * as ipcTransformerJob from './transformer/index.js'
 import * as ipcCircuitBreakerJob from './circuitBreaker/index.js'
 import * as ipcDisconnectorJob from './disconnector/index.js'
 import * as ipcReactorJob from './reactor/index.js'
+import * as ipcBushingJob from './bushing/index.js'
 
 export const active = () => {
     ipcSurgeArresterJob.active()
@@ -20,4 +21,5 @@ export const active = () => {
     ipcCircuitBreakerJob.active()
     ipcDisconnectorJob.active()
     ipcReactorJob.active()
+    ipcBushingJob.active()
 }

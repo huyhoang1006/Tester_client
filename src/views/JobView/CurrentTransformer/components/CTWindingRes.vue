@@ -91,22 +91,64 @@
         </table>
 
         <!-- Assessment settings -->
-        <el-dialog title="Assessment settings" :visible.sync="openAssessmentDialog" width="860px">
+        <el-dialog :modal=true title="Assessment settings" :visible.sync="openAssessmentDialog" width="860px"
+            append-to-body>
+            <el-form style="width: 75%;" size="small" label-position="left" label-width="140px">
+                <el-form-item label="Option">
+                    <el-select size="mini" placeholder="please select" v-model="option">
+                        <el-option v-for="option in assessmentList" :key="option" :label="option"
+                            :value="option"></el-option>
+                    </el-select>
+                </el-form-item>
+            </el-form>
+            <div v-for="element in filteredAssessmentData" :key="element.mrid" class="assessment-container">
+
+                <!-- HEADER -->
+                <div class="assessment-header">
+                    <div class="limit-col">Limit</div>
+                    <div class="result-col">Assessment</div>
+                </div>
+
+                <!-- BODY -->
+                <div class="assessment-body">
+                    <div v-for="(node, i) in element.tree" :key="i" class="tree-row">
+                        <div class="limit-col">
+                            <GroupNode :node="node" mode="limit" />
+                        </div>
+                        <div class="result-col">
+                            <span v-if="node.result === 'Pass'" class="pass">✔ Pass</span>
+                            <span v-else-if="node.result === 'Fail'" class="fail">✖ Fail</span>
+                            <span v-else>—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </el-dialog>
 
         <!-- Condition indicator settings -->
-        <el-dialog title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="860px">
+        <el-dialog :modal=true title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog"
+            width="860px" append-to-body>
         </el-dialog>
     </div>
 </template>
 
 <script>
+/* eslint-disable */
+import currentTransformerTestMap from '@/config/test-definitions/CurrentTransformer'
+import * as common from '../../Common/index'
+import GroupNode from '../../Common/GroupNode.vue'
+import { changeTestStandard } from '../../Common'
+
 export default {
     name: "CTWindingResistance",
+    components: {
+        GroupNode
+    },
     data() {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
+            option: null
         }
     },
     mounted() {
@@ -127,6 +169,14 @@ export default {
         testCondition: {
             type: Object,
             require: true
+        },
+        testAssessment: {
+            type: Object,
+            require: true
+        },
+        testStandard: {
+            type: Object,
+            require: true
         }
     },
     computed: {
@@ -138,6 +188,22 @@ export default {
         },
         testConditionData() {
             return this.testCondition
+        },
+        rowData() {
+            return common.buildEmptyTestRow(currentTransformerTestMap['InsulationResistance'].columns)
+        },
+        assessmentData() {
+            return this.testAssessment.assessment
+        },
+        assessmentList() {
+            return this.testAssessment.assessment.map(x => x.type)
+        },
+        filteredAssessmentData() {
+            if (!this.option) return [] // 👈 fix ở đây
+            return (this.assessmentData || []).filter(e => e.type === this.option)
+        },
+        testStandardData() {
+            return this.testAssessment.testStandard
         }
     },
     watch: {
@@ -157,6 +223,21 @@ export default {
                         this.initializeTable()
                     })
                 }
+            }
+        },
+        'option': {
+            immediate: true,
+            handler: async function (newVal) {
+                const standard = this.filteredAssessmentData.find(x => x.type === newVal)
+                if (standard) {
+                    await changeTestStandard(standard.mrid, newVal, this.testStandardData)
+                }
+            }
+        },
+        'testStandardData': {
+            immediate: true,
+            handler: async function (newVal) {
+                this.option = common.testStandardDataToOption(newVal)
             }
         }
     },
@@ -285,13 +366,14 @@ export default {
             }
             this.testData.table.table1.splice(index + 1, 0, data)
         },
-        calculator() {
+        async calculator() {
+            await this.calcRcorr()
+            await this.calcRdev()
+            await this.calcAssessment()
             this.$message.success('Calculating successfully')
-            this.calcRcorr()
-            this.calcRdev()
         },
 
-        calcRcorr() {
+        async calcRcorr() {
             if (!this.testData.table.table1) {
                 return
             }
@@ -312,7 +394,7 @@ export default {
                 }
             })
         },
-        calcRdev() {
+        async calcRdev() {
             if (!this.testData.table.table1) {
                 return
             }
@@ -323,6 +405,93 @@ export default {
                 }
             })
         },
+
+        async calcAssessment() {
+            const assessmentStandard = this.filteredAssessmentData.find(x => x.type === this.option)
+            if (!assessmentStandard) {
+                this.$message.error('Please select an assessment standard')
+                return
+            }
+
+            for (const row of this.testData.table.table1) {
+                const measurementMap = {}
+                Object.keys(row).forEach(key => {
+                    const item = row[key]
+                    if (!item || typeof item !== 'object') return
+                    if (item.measurement_id) {
+                        measurementMap[item.measurement_id] = item.value
+                    }
+                })
+
+                // ===== collect =====
+                const passedResults = []
+                let hasNull = false
+
+                for (const root of assessmentStandard.tree) {
+                    const pass = this.evaluateGroup(root, measurementMap)
+
+                    if (pass === null) {
+                        hasNull = true
+                    } else if (pass === true) {
+                        passedResults.push(root.result)  // chỉ push khi root thực sự pass
+                    }
+                    // pass === false → bỏ qua hoàn toàn
+                }
+
+                // ===== kết luận =====
+                if (hasNull) {
+                    row.assessment.value = ''
+                } else if (passedResults.includes('Fail')) {
+                    row.assessment.value = 'Fail'
+                } else if (passedResults.includes('Pass')) {
+                    row.assessment.value = 'Pass'
+                } else {
+                    row.assessment.value = ''
+                }
+            }
+        },
+
+        evaluateGroup(group, measurementMap) {
+
+            // ===== check đủ data trước, nếu thiếu 1 cái → null ngay =====
+            for (const condition of (group.conditions || [])) {
+                const value = measurementMap[condition.measurement_id]
+
+                if (value === null || value === undefined || value === '') {
+                    return null
+                }
+
+                if (condition.threshold === null || condition.threshold === undefined || condition.threshold === '') {
+                    return null
+                }
+            }
+
+            for (const child of (group.children || [])) {
+                const childPass = this.evaluateGroup(child, measurementMap)
+                if (childPass === null) return null  // child thiếu data → null ngay
+            }
+
+            // ===== đủ data rồi, mới so sánh =====
+            const results = []
+
+            for (const condition of (group.conditions || [])) {
+                const value = measurementMap[condition.measurement_id]
+                const pass = common.compare(Math.abs(value), condition.operator, condition.threshold)
+                results.push(pass)
+            }
+
+            for (const child of (group.children || [])) {
+                const childPass = this.evaluateGroup(child, measurementMap)
+                results.push(childPass)
+            }
+
+            if (results.length === 0) return null
+
+            const logic = (group.logic || 'AND').toUpperCase()
+            if (logic === 'OR') return results.some(x => x)
+            return results.every(x => x)
+        },
+
         clear() {
             if (!this.testData.table.table1) {
                 this.initializeTable()
@@ -390,5 +559,63 @@ tr {
 
 .Bad input {
     background: #ff3300;
+}
+
+.assessment-container {
+    border: 1px solid #ebeef5;
+    border-radius: 4px;
+    margin-bottom: 12px;
+}
+
+.assessment-header {
+    display: flex;
+    background: #f5f7fa;
+    font-weight: bold;
+    font-size: 13px;
+    border-bottom: 1px solid #ebeef5;
+}
+
+.assessment-body {
+    display: flex;
+    flex-direction: column;
+    /* ← quan trọng, xếp các tree-row theo chiều dọc */
+}
+
+.tree-row {
+    display: flex;
+    flex-direction: row;
+    /* ← limit và result nằm ngang */
+    align-items: stretch;
+    border-bottom: 1px solid #ebeef5;
+    min-height: 40px;
+    width: 100%;
+}
+
+.tree-row:last-child {
+    border-bottom: none;
+}
+
+.limit-col {
+    flex: 1;
+    padding: 8px 12px;
+}
+
+.result-col {
+    flex-shrink: 0;
+    width: 100px;
+    border-left: 1px solid #ebeef5;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* header cũng dùng chung limit-col / result-col */
+.assessment-header .limit-col {
+    padding: 8px 12px;
+}
+
+.assessment-header .result-col {
+    padding: 8px 12px;
 }
 </style>

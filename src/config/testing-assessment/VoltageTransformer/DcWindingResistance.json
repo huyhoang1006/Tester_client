@@ -4,10 +4,12 @@
   "testName": "DC Winding resistance",
   "testStandard": [
     {
-      "mrid": "e3b97d7c-6b4f-4230-b4b0-0dbd4952a160",
+      "mrid": "36116f8b-4ad9-4b16-8c14-5391d1ccc091",
       "code": "customized_dc_winding_resistance_voltage_transformer",
       "name": "Customized limit",
-      "testType" : "customized",
+      "type" : "customized",
+      "standard_edition": "",
+      "standard_number": "",
       "columns" : [
         {
           "mrid": "494cc6d4-e98f-4895-84cc-03322b5bc610",
@@ -16,18 +18,52 @@
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule" : [
+        {
+          "mrid" : "0d8ad280-06f3-45f7-b776-2af384a9dded",
+          "standard_id" : "36116f8b-4ad9-4b16-8c14-5391d1ccc091",
+          "result" : "Pass",
+          "priority" : ""
         },
         {
-          "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",
-          "code": "assessment",
-          "name": "Assessment",
-          "type": "discrete",
-          "measurement_type": "test, assessment",
-          "valueAliasSetId": "40c60468-232a-4643-851f-50616900f601",
-          "options": [
-            { "value": 0, "alias": "Fail", "mrid": "d8858564-e438-4034-9273-030919163001" },
-            { "value": 1, "alias": "Pass", "mrid": "d8858564-e438-4034-9273-030919163002" }
-          ]
+          "mrid" : "777cdda2-97dd-4a5d-a925-d6a50f8228fb",
+          "standard_id" : "36116f8b-4ad9-4b16-8c14-5391d1ccc091",
+          "result" : "Fail",
+          "priority" : ""
+        }
+      ],
+      "assessment_group" : [
+        {
+          "mrid": "9b43d2c2-b6d1-45b9-9643-0ff871e5b4f3",
+          "rule_id": "0d8ad280-06f3-45f7-b776-2af384a9dded",
+          "parent_id": "",
+          "logic": ""
+        },
+        {
+          "mrid": "a0e38dc0-f279-473b-bb5b-7eeba0dde5c1",
+          "rule_id": "777cdda2-97dd-4a5d-a925-d6a50f8228fb",
+          "parent_id": "",
+          "logic": ""
+        }
+      ],
+      "assessment" : [
+        {
+          "label": "R dev (%)",
+          "mrid": "",
+          "group_id": "9b43d2c2-b6d1-45b9-9643-0ff871e5b4f3",
+          "measurement_id" : "494cc6d4-e98f-4895-84cc-03322b5bc610",
+          "operator" : "≥",
+          "threshold" : ""
+        },
+        {
+          "label": "R dev (%)",
+          "mrid": "",
+          "group_id": "a0e38dc0-f279-473b-bb5b-7eeba0dde5c1",
+          "measurement_id" : "494cc6d4-e98f-4895-84cc-03322b5bc610",
+          "operator" : "<",
+          "threshold" : ""
         }
       ]
     }

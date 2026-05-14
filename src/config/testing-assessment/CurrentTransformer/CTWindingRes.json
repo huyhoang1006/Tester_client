@@ -1,0 +1,71 @@
+{
+  "testId": "f1ec4c35-428a-49ce-8d9b-502f1cc7acbd",
+  "testCode": "CTWindingRes",
+  "testName": "CT Winding resistance",
+  "testStandard": [
+    {
+      "mrid": "36116f8b-4ad9-4b16-8c14-5391d1ccc091",
+      "code": "customized_ct_winding_resistance_current_transformer",
+      "name": "Customized limit",
+      "type" : "customized",
+      "standard_edition": "",
+      "standard_number": "",
+      "columns" : [
+        {
+          "mrid": "494cc6d4-e98f-4895-84cc-03322b5bc610",
+          "code": "r_dev",
+          "name": "R dev",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule" : [
+        {
+          "mrid" : "0d8ad280-06f3-45f7-b776-2af384a9dded",
+          "standard_id" : "36116f8b-4ad9-4b16-8c14-5391d1ccc091",
+          "result" : "Pass",
+          "priority" : ""
+        },
+        {
+          "mrid" : "777cdda2-97dd-4a5d-a925-d6a50f8228fb",
+          "standard_id" : "36116f8b-4ad9-4b16-8c14-5391d1ccc091",
+          "result" : "Fail",
+          "priority" : ""
+        }
+      ],
+      "assessment_group" : [
+        {
+          "mrid": "9b43d2c2-b6d1-45b9-9643-0ff871e5b4f3",
+          "rule_id": "0d8ad280-06f3-45f7-b776-2af384a9dded",
+          "parent_id": "",
+          "logic": ""
+        },
+        {
+          "mrid": "a0e38dc0-f279-473b-bb5b-7eeba0dde5c1",
+          "rule_id": "777cdda2-97dd-4a5d-a925-d6a50f8228fb",
+          "parent_id": "",
+          "logic": ""
+        }
+      ],
+      "assessment" : [
+        {
+          "label": "R dev (%)",
+          "mrid": "",
+          "group_id": "9b43d2c2-b6d1-45b9-9643-0ff871e5b4f3",
+          "measurement_id" : "494cc6d4-e98f-4895-84cc-03322b5bc610",
+          "operator" : "≤",
+          "threshold" : ""
+        },
+        {
+          "label": "R dev (%)",
+          "mrid": "",
+          "group_id": "a0e38dc0-f279-473b-bb5b-7eeba0dde5c1",
+          "measurement_id" : "494cc6d4-e98f-4895-84cc-03322b5bc610",
+          "operator" : ">",
+          "threshold" : ""
+        }
+      ]
+    }
+  ]
+}
