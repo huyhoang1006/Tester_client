@@ -266,8 +266,6 @@ export default {
                         this.option = standardChosen.code
                     }
                 }
-                
-                
             }
         }
     },

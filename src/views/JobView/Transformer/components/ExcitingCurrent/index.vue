@@ -183,8 +183,14 @@ export default {
         },
         'testStandardData': {
             immediate: true,
-            handler: async function(newVal) {
-                this.option = common.testStandardDataToOption(newVal)
+            handler: async function (newVal) {
+                const optionData = common.testStandardDataToOption(newVal)
+                if(optionData && optionData.mrid) {
+                    const standardChosen = this.assessmentData.find(x => x.mrid === optionData.mrid)
+                    if(standardChosen) {
+                        this.option = standardChosen.code
+                    }
+                }
             }
         }
     },
