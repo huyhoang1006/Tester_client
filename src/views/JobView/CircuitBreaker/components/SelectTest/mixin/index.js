@@ -82,8 +82,7 @@ export default {
         },
         async initMotorCurrent(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
-
+            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns || [])
             const motorChar = {
                 limits: 'Absolute',
                 abs: [{}, {}, {}, {}],
@@ -104,7 +103,7 @@ export default {
         },
         async initCTiming(testTypeCode, assetData) {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns || [])
 
             const {circuitBreaker, operating} = assetData
 
@@ -140,7 +139,7 @@ export default {
             const tableObj = {}
             table.forEach((coilTable, idx) => {
                 tableObj[`table${idx + 1}`] = coilTable
-            }) 
+            })
 
             return {
                 rowDataExampleCondition,
@@ -172,80 +171,73 @@ export default {
         },
         async initOTiming(testTypeCode, assetData) {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns || [])
 
-            const {circuitBreaker, operating} = assetData
+            const { circuitBreaker, operating } = assetData
 
-            const tripCoilsCount = parseInt(operating?.numberTripCoil || 1)
-            const phaseCount = parseInt(circuitBreaker?.numberOfPhase || 3)
+            // ✅ Dùng trip coils + đủ fallback
+            const tripCoilsCount = parseInt(operating?.numberTripCoil || operating?.number_of_trip_coil || 1)
+            const phaseCount     = parseInt(circuitBreaker?.numberOfPhase || circuitBreaker?.numberOfPhases || 3)
             const interruptCount = parseInt(circuitBreaker?.numberOfInterruptPhase || circuitBreaker?.interruptersPerPhase || 1)
 
-            let table = []
-            let phaseNames = ['A', 'B', 'C']
+            const phaseNames = ['A', 'B', 'C']
+            const table = []
 
             for (let t = 0; t < tripCoilsCount; t++) {
-                let coilTable = []
+                const coilTable = []
 
                 for (let i = 0; i < phaseCount; i++) {
                     for (let j = 0; j < interruptCount; j++) {
                         const row = JSON.parse(JSON.stringify(rowDataExample))
 
+                        // ✅ Giống CTiming — set phase và interrupter
                         if (row.phase) {
                             row.phase.value = phaseNames[i] || `P${i + 1}`
-                        } else if (row.name) {
-                            row.name.value = phaseNames[i] || `P${i + 1}`
+                        }
+                        if (row.interrupter) {
+                            row.interrupter.value = (j + 1).toString()
                         }
 
-                        if (interruptCount > 1) {
-                            if (row.interrupt_no) {
-                                row.interrupt_no.value = (j + 1).toString()
-                            } else {
-                                row.interrupt_no = {mrid: '', value: (j + 1).toString(), unit: '', type: 'string'}
-                            }
-                        }
                         coilTable.push(row)
                     }
                 }
+
                 table.push(coilTable)
             }
 
+            // ✅ Build table object giống CTiming
             const tableObj = {}
             table.forEach((coilTable, idx) => {
                 tableObj[`table${idx + 1}`] = coilTable
             })
 
+            console.log('tableObj', tableObj)
+
             return {
                 rowDataExampleCondition,
                 limits: 'Absolute',
                 openTime: {
-                    abs: [{}, {}, {}, {}, {}, {}, {}, {}, {}],
-                    rel: [{}, {}, {}, {}, {}, {}, {}, {}, {}]
+                    abs: Array(9).fill(null).map(() => ({})),
+                    rel: Array(9).fill(null).map(() => ({}))
                 },
                 auxContact: {
-                    abs: {
-                        trip: [{}, {}, {}, {}, {}, {}],
-                        close: [{}, {}, {}, {}, {}, {}]
-                    },
-                    rel: {
-                        trip: [{}, {}, {}, {}, {}, {}],
-                        close: [{}, {}, {}, {}, {}, {}]
-                    }
+                    abs: { trip: Array(6).fill(null).map(() => ({})), close: Array(6).fill(null).map(() => ({})) },
+                    rel: { trip: Array(6).fill(null).map(() => ({})), close: Array(6).fill(null).map(() => ({})) }
                 },
                 miscell: {
-                    abs: [{}, {}, {}, {}],
-                    rel: [{}, {}, {}, {}]
+                    abs: Array(4).fill(null).map(() => ({})),
+                    rel: Array(4).fill(null).map(() => ({}))
                 },
                 coilCharacter: {
-                    abs: [{}, {}, {}, {}, {}, {}, {}, {}],
-                    rel: [{}, {}, {}, {}, {}, {}, {}, {}]
+                    abs: Array(8).fill(null).map(() => ({})),
+                    rel: Array(8).fill(null).map(() => ({}))
                 },
                 table: tableObj
             }
         },
         async initOCTiming(testTypeCode, assetData) {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
-
+            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns || [])
             const {circuitBreaker, operating} = assetData
 
             const tripCoilsCount = parseInt(operating?.number_of_trip_coil || 1)
@@ -309,7 +301,7 @@ export default {
         },
         async initCOTiming(testTypeCode, assetData) {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns || [])
 
             const {circuitBreaker, operating} = assetData
 
@@ -334,10 +326,10 @@ export default {
                         }
 
                         if (interruptCount > 1) {
-                            if (row.interrupt_no) {
-                                row.interrupt_no.value = (j + 1).toString()
+                            if (row.interrupter) {
+                                row.interrupter.value = (j + 1).toString()
                             } else {
-                                row.interrupt_no = {mrid: '', value: (j + 1).toString(), unit: '', type: 'string'}
+                                row.interrupter = {mrid: '', value: (j + 1).toString(), unit: '', type: 'string'}
                             }
                         }
 
@@ -383,7 +375,7 @@ export default {
         },
         async initOCOTiming(testTypeCode, assetData) {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns || [])
 
             const {circuitBreaker, operating} = assetData
 
@@ -408,10 +400,10 @@ export default {
                         }
 
                         if (interruptCount > 1) {
-                            if (row.interrupt_no) {
-                                row.interrupt_no.value = (j + 1).toString()
+                            if (row.interrupter) {
+                                row.interrupter.value = (j + 1).toString()
                             } else {
-                                row.interrupt_no = {mrid: '', value: (j + 1).toString(), unit: '', type: 'string'}
+                                row.interrupter = {mrid: '', value: (j + 1).toString(), unit: '', type: 'string'}
                             }
                         }
 
@@ -456,7 +448,7 @@ export default {
             }
         },
         async initCOCOTiming(testTypeCode, assetData) {
-            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns || [])
 
             const {circuitBreaker, operating} = assetData
 
@@ -508,7 +500,7 @@ export default {
             }
         },
         async initOCOCOTiming(testTypeCode, assetData) {
-            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns || [])
 
             const {circuitBreaker, operating} = assetData
 
@@ -561,7 +553,7 @@ export default {
         },
         async initContactResistance(testTypeCode, assetData) {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns || [])
 
             let table1 = []
             let phase = ['A', 'B', 'C']
@@ -577,10 +569,10 @@ export default {
                     }
 
                     if (assetData.circuitBreaker.interruptersPerPhase > 1) {
-                        if (row.interrupt_no) {
-                            row.interrupt_no.value = (j + 1).toString()
+                        if (row.interrupter) {
+                            row.interrupter.value = (j + 1).toString()
                         } else {
-                            row.interrupt_no = {
+                            row.interrupter = {
                                 mrid: '',
                                 value: (j + 1).toString(),
                                 unit: '',
@@ -602,7 +594,7 @@ export default {
         },
         async initMinimumPickup(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns || [])
 
             let table = []
 
@@ -623,7 +615,7 @@ export default {
         },
         async initDCWindingTripCoil(testTypeCode, assetData) {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns || [])
 
             const {operating} = assetData
 
@@ -653,7 +645,7 @@ export default {
         },
         async initDCWindingCloseCoil(testTypeCode, assetData) {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns || [])
 
             const {operating} = assetData
 
@@ -683,7 +675,7 @@ export default {
         },
         async initDCWindingMotor(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns || [])
 
             let table = []
 
@@ -700,7 +692,7 @@ export default {
         },
         async initInsulationResistanceCircuit(testTypeCode, assetData) {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns || [])
 
             const {circuitBreaker} = assetData
             const phaseCount = parseInt(circuitBreaker?.numberOfPhase || circuitBreaker?.numberOfPhases || 3)
@@ -744,7 +736,7 @@ export default {
         },
         async initInsulationResistanceTripCoil(testTypeCode, assetData) {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns || [])
 
             const {operating} = assetData
 
@@ -778,7 +770,7 @@ export default {
         },
         async initInsulationResistanceCloseCoil(testTypeCode, assetData) {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns || [])
 
             const {operating} = assetData
 
@@ -812,7 +804,7 @@ export default {
         },
         async initInsulationResistanceMotor(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns || [])
 
             let table = []
 
@@ -833,7 +825,7 @@ export default {
         },
         async initSF6MoiturePurity(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns || [])
 
             let moitureTable = []
             let purityTable = []
@@ -859,7 +851,7 @@ export default {
         },
         async initSF6GasAnalysis(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns || [])
 
             let decomSf6Table = []
             let so2Sof2Table = []
@@ -890,7 +882,7 @@ export default {
         },
         async initPressureGauge(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns || [])
 
             let table = []
 
@@ -907,8 +899,7 @@ export default {
         },
         async initOverCurrentRelease(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
-
+            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns || [])
             let table = []
 
             const row = JSON.parse(JSON.stringify(rowDataExample))
@@ -923,7 +914,7 @@ export default {
         },
         async initUnderVoltageRelease(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns || [])
 
             let table1 = []
 
@@ -939,7 +930,7 @@ export default {
         },
         async initGeneralInspection(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns)
+            const rowDataExampleCondition = common.buildEmptyTestCondition(circuitBreakerConditionMap[testTypeCode].columns || [])
 
             let table1 = []
 

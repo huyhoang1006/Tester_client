@@ -405,7 +405,6 @@ export function mapDtoToEntity(dto) {
 }
 
 export function mapEntityToDto(entity) {
-    console.log('Entity to DTO: ', entity);
     const dto = new PowerCableDTO();
 
     // ================== properties ==================

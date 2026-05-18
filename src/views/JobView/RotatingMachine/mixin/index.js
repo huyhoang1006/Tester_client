@@ -14,44 +14,44 @@ export default {
     },
     methods: {
         async saveJob() {
-            try {
-                if (!this.rotatingMachineJobDto.properties.name || this.rotatingMachineJobDto.properties.name === '') {
+            try { 
+                if (!this.rotatingMachineJobDto.properties.name || this.rotatingMachineJobDto.properties.name === '') {              
                     this.$message.error('Name is required');
                 } else {
-                    const dto = JSON.parse(JSON.stringify(this.rotatingMachineJobDto));
+                    const dto = JSON.parse(JSON.stringify(this.rotatingMachineJobDto));      
                     const resultDto = await this.checkJob(dto);
                     const entity = rotatingMachineJobMapping.jobDtoToEntity(resultDto);
                     const old_entity = rotatingMachineJobMapping.jobDtoToEntity(this.rotatingMachineJobDtoOld);
-                    const rs = await window.electronAPI.insertRotatingMachineJob(old_entity, entity)
-                    if (rs.success) {
+                    const rs = await window.electronAPI.insertRotatingMachineJob(old_entity, entity);
+                    if (rs.success) {                        
                         return {
                             success: true,
                             data: rs.data,
                             message: 'Job saved successfully'
                         }
-                    } else {
+                    } else {                      
                         return {
                             success: false,
-                            message: 'Failed to save job'
+                            message: rs.message || 'Failed to save job'
                         }
                     }
                 }
             } catch (error) {
-                console.error('Error saving job:', error);
+                
                 return {
                     success: false,
                     data: null,
-                    message: 'Failed to save job'
+                    message: 'Failed to save job: ' + error.message
                 }
             }
         },
 
         async saveCtrS() {
-            const result = await this.saveJob()
+            const result = await this.saveJob()        
             if (result.success) {
-                const dto = rotatingMachineJobMapping.JobEntityToDto(result.data);
-                this.loadData(dto);
-                this.$message.success(result.message);
+            const dto = rotatingMachineJobMapping.JobEntityToDto(result.data);
+            this.loadData(dto);
+            this.$message.success(result.message);
             } else {
                 this.$message.error(result.message);
             }
@@ -77,43 +77,44 @@ export default {
             this.checkProperties(data);
             this.checkAssetId(data);
             this.checkAttachment(data);
-            this.checkTestStandard(data);
             this.checkTestingEquipment(data);
             await this.checkDataMeasurement(data);
             return data;
         },
 
         checkProperties(data) {
+            
             if (data.properties.mrid === '' || data.properties.mrid === null) {
-                data.properties.mrid = uuid.newUuid();
+                const newMrid = uuid.newUuid();
+                
+                data.properties.mrid = newMrid;
             }
+            
         },
 
         checkAssetId(data) {
             if (data.properties.asset_id === '' || data.properties.asset_id === null) {
-                // Xử lý cả Entity (mrid), DTO (properties.mrid), và flat object (mrid)
-                data.properties.asset_id = this.assetData.properties?.mrid || this.assetData.mrid;
+                // Xử lý cả Entity (asset.mrid), DTO (properties.mrid), và flat object (mrid)
+                data.properties.asset_id = this.assetData.properties?.mrid || this.assetData.asset?.mrid || this.assetData.mrid;
             }
         },
 
         checkAttachment(data) {
             if (data.attachmentId === null || data.attachmentId === '') {
                 if (data.attachmentData.length > 0) {
-                    data.attachmentId = uuid.newUuid()
-                    data.attachment.id = data.attachmentId
-                    data.attachment.name = null
-                    data.attachment.path = JSON.stringify(data.attachmentData)
-                    data.attachment.type = 'job'
-                    data.attachment.id_foreign = data.properties.mrid
+                    const newAttachmentId = uuid.newUuid();
+                    
+                    data.attachmentId = newAttachmentId;
+                    data.attachment.id = data.attachmentId;
+                    data.attachment.name = null;
+                    data.attachment.path = JSON.stringify(data.attachmentData);
+                    data.attachment.type = 'job';
+                    data.attachment.id_foreign = data.properties.mrid;
+                   
                 }
             } else {
-                data.attachment.path = JSON.stringify(data.attachmentData)
-            }
-        },
-
-        checkTestStandard(data) {
-            if(data.testStandardId === '' || data.testStandardId === null) {
-                data.testStandardId = uuid.newUuid();
+                data.attachment.path = JSON.stringify(data.attachmentData);
+                
             }
         },
 
@@ -134,23 +135,23 @@ export default {
             }
 
             // Thêm các phần tử mới vào data.rotatingMachineTestingEquipmentTestType nếu chưa có
-            for (const current of arr) {
+            for (const rotatingMachine of arr) {
                 const existed = data.rotatingMachineTestingEquipmentTestType.some(
                     old =>
-                        old.testing_equipment_id === current.testing_equipment_id &&
-                        old.test_type_id === current.test_type_id
+                        old.testing_equipment_id === rotatingMachine.testing_equipment_id &&
+                        old.test_type_id === rotatingMachine.test_type_id
                 );
                 if (!existed) {
-                    data.rotatingMachineTestingEquipmentTestType.push(current);
+                    data.rotatingMachineTestingEquipmentTestType.push(rotatingMachine);
                 }
             }
 
             // Xóa các phần tử quá khứ không còn trong hiện tại
             data.rotatingMachineTestingEquipmentTestType = data.rotatingMachineTestingEquipmentTestType.filter(
                 old => arr.some(
-                    current =>
-                        old.testing_equipment_id === current.testing_equipment_id &&
-                        old.test_type_id === current.test_type_id
+                    rotatingMachine =>
+                        old.testing_equipment_id === rotatingMachine.testing_equipment_id &&
+                        old.test_type_id === rotatingMachine.test_type_id
                 )
             );
         },
@@ -176,24 +177,59 @@ export default {
                 } else {
                     test.testCondition.attachment.path = JSON.stringify(test.testCondition.attachmentData)
                 }
-                for (const row of test.data.table) {
-                    if (row.mrid === '' || row.mrid === null) {
-                        row.mrid = uuid.newUuid();
-                        Object.keys(row).forEach(key => {
-                            if(row[key] && row[key].mrid === '' || row[key].mrid === null) {
-                                row[key].mrid = uuid.newUuid();
-                            }
-                        })
+                
+                // Hỗ trợ cả cấu trúc cũ (array) và mới (object với nhiều table)
+                const tableData = test.data.table;
+                
+                // Nếu là object (cấu trúc mới với nhiều table)
+                if (tableData && typeof tableData === 'object' && !Array.isArray(tableData)) {
+                    for (const key in tableData) {
+                        const rows = tableData[key];
+                        if (Array.isArray(rows)) {
+                            rows.forEach(row => {
+                                if (!row.mrid) {
+                                    row.mrid = uuid.newUuid();
+                                }
+                                
+                                Object.keys(row).forEach(field => {
+                                    const value = row[field];
+                                    if (value && typeof value === 'object') {
+                                        if (!value.mrid) {
+                                            value.mrid = uuid.newUuid();
+                                        }
+                                    }
+                                });
+                            });
+                        }
+                    }
+                }
+                // Nếu là array (cấu trúc cũ - backward compatibility)
+                else if (Array.isArray(tableData)) {
+                    for (const row of tableData) {
+                        if (row.mrid === '' || row.mrid === null) {
+                            row.mrid = uuid.newUuid();
+                            Object.keys(row).forEach(key => {
+                                if(row[key] && row[key].mrid === '' || row[key].mrid === null) {
+                                    row[key].mrid = uuid.newUuid();
+                                }
+                            })
+                        }
                     }
                 }
 
                 if(data.procedureAsset.map(x => x.procedure_id).indexOf(test.testTypeId) === -1) {
                     data.procedureAsset.push({
                         procedure_id: test.testTypeId,
-                        asset_id: this.assetData.properties?.mrid || this.assetData.mrid
+                        asset_id: this.assetData.properties?.mrid || this.assetData.asset?.mrid || this.assetData.mrid
                     });
                 }
+
+                if(test.testAssessment.testStandard.mrid == '' || test.testAssessment.testStandard.mrid == null) {
+                    test.testAssessment.testStandard.mrid = uuid.newUuid()
+                }
+                test.testAssessment.testStandard.work_task_id = test.mrid
             }
         },
     }
 }
+

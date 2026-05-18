@@ -38,7 +38,7 @@
                                 <test-information :title="item.name" :data="item.testCondition" :assetData="assetData"
                                     :attachment="item.testCondition.attachmentData">
                                 </test-information>
-                                <component :is="item.testTypeCode" :data="item.data" :asset="assetData">
+                                <component :is="item.testTypeCode" :data="item.data" :asset="assetData" :testAssessment="item.testAssessment">
                                 </component>
                             </el-tab-pane>
                         </el-tabs>

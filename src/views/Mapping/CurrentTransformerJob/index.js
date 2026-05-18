@@ -12,7 +12,7 @@ import DiscreteValue from "@/views/Cim/DiscreteValue";
 import ProcedureAsset from "@/views/Cim/ProcedureAsset";
 import ProcedureDataSetMeasurementValue from "@/views/Cim/ProcedureDataSetMeasurementValue";
 import currentTransformerConditionMap from '@/config/testing-condition/CurrentTransformer'
-import currentTransformerTestMap from "@/config/testing-condition/CurrentTransformer";
+import currentTransformerTestMap from "@/config/test-definitions/CurrentTransformer";
 import currentTransformerAssessmentMap from "@/config/testing-assessment/CurrentTransformer";
 import * as commonFunc from '@/views/JobView/Common/index.js'
 import TestStandard from "@/views/Cim/TestStandard";
@@ -144,9 +144,9 @@ export const jobDtoToEntity = (dto) => {
                                         const discreteValue = new DiscreteValue();
                                         discreteValue.mrid = value.mrid || null;
                                         if (fieldKey == 'assessment') {
-                                            discreteValue.value = commonFunc.assessmentToValue(value.value) ?? null;
+                                            var _asVal = commonFunc.assessmentToValue(value.value); discreteValue.value = (_asVal !== null && _asVal !== undefined) ? _asVal : null;
                                         } else if (fieldKey == 'condition_indicator') {
-                                            discreteValue.value = commonFunc.conditionIndicatorToValue(value.value) ?? null;
+                                            var _ciVal = commonFunc.conditionIndicatorToValue(value.value); discreteValue.value = (_ciVal !== null && _ciVal !== undefined) ? _ciVal : null;
                                         }
                                         discreteValue.vta_alias_name = value.value
                                         discreteValue.alias_name = fieldKey || null;
@@ -204,9 +204,9 @@ export const jobDtoToEntity = (dto) => {
                                 const discreteValue = new DiscreteValue();
                                 discreteValue.mrid = value.mrid || null;
                                 if (key == 'assessment') {
-                                    discreteValue.value = commonFunc.assessmentToValue(value.value) ?? null;
+                                    var _asVal = commonFunc.assessmentToValue(value.value); discreteValue.value = (_asVal !== null && _asVal !== undefined) ? _asVal : null;
                                 } else if (key == 'condition_indicator') {
-                                    discreteValue.value = commonFunc.conditionIndicatorToValue(value.value) ?? null;
+                                    var _ciVal = commonFunc.conditionIndicatorToValue(value.value); discreteValue.value = (_ciVal !== null && _ciVal !== undefined) ? _ciVal : null;
                                 }
                                 discreteValue.vta_alias_name = value.value
                                 discreteValue.alias_name = key || null;
@@ -343,7 +343,7 @@ export const JobEntityToDto = (entity) => {
 
     //test list
     for (const item of entity.workTasks) {
-        let condition = commonFunc.buildEmptyTestCondition(currentTransformerConditionMap[item.type]?.columns || []);
+        let condition = commonFunc.buildEmptyTestCondition((currentTransformerConditionMap[item.type] ? currentTransformerConditionMap[item.type].columns : null) || []);
         const testAssessmentList = JSON.parse(JSON.stringify(currentTransformerAssessmentMap[item.type].testStandard || []));
         const testStandardData = entity.testStandard.find(x => x.work_task_id === item.mrid);
         let standardCustomized = null
@@ -376,7 +376,7 @@ export const JobEntityToDto = (entity) => {
 
         for(const testAssessment of testAssessmentList) {
             if(testAssessment.type == 'customized') {
-                testAssessment.mrid = standardCustomized?.mrid || ''
+                testAssessment.mrid = (standardCustomized && standardCustomized.mrid) ? standardCustomized.mrid : ''
                 testAssessment.assessment_rule = assessmentRule
                 testAssessment.assessment_group = assessmentGroup
                 for(const asm of testAssessment.assessment) {

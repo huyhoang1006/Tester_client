@@ -5,20 +5,16 @@ import * as discreteFunc from '@/function/cim/discrete/index'
 import * as valueAliasSet from '@/function/cim/valueAliasSet/index'
 import * as valueToAliasFunc from '@/function/cim/valueToAlias/index'
 import * as measurementProcedureFunc from '@/function/cim/measurementProcedure/index'
-export const createProcedureVoltageTransformer = async (dbsql, procedureDataMap, testDataMap, testConditionMap, testAssessmentMap,
-    getProcedureInfo, getTestDefinitionInfo, getTestConditionInfo, getTestAssessmentInfo
+export const createProcedureVoltageTransformer = async (dbsql, procedureDataMap, testDataMap, testConditionMap,
+    getProcedureInfo, getTestDefinitionInfo, getTestConditionInfo
 ) => {
     const voltageTransformerProcedureInfo = procedureDataMap['VoltageTransformer'];
     const voltageTransformerTestDefinitionInfo = testDataMap['VoltageTransformer'];
     const voltageTransformerTestingConditionInfo = testConditionMap['VoltageTransformer'];
-    const voltageTransformerTestAssessmentMap = testAssessmentMap['VoltageTransformer']
-    console.log('voltageTransformerTestAssessmentMap: ', voltageTransformerTestAssessmentMap)
 
     const voltageTransformerProcedure = await getProcedureInfo(voltageTransformerProcedureInfo)
     const voltageTransformerTestDefinitions = await getTestDefinitionInfo(voltageTransformerTestDefinitionInfo)
     const voltageTransformerTestingConditions = await getTestConditionInfo(voltageTransformerTestingConditionInfo)
-    const voltageTransformerTestAssessments = await getTestAssessmentInfo(voltageTransformerTestAssessmentMap)
-    console.log('voltageTransformerTestAssessments: ', voltageTransformerTestAssessments)
     for (const procedure of voltageTransformerProcedure) {
         // Insert Procedure
         await procedureFunc.insertProcedureTransaction(procedure, dbsql)

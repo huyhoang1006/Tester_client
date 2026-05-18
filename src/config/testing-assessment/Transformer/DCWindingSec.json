@@ -1,0 +1,212 @@
+{
+  "testCode": "DCWindingSec",
+  "testName": "DC Winding Resistance - Sec",
+  "testStandard": [
+    {
+      "mrid": "30409f76-7e59-4ef6-8dbc-aa585291c20a",
+      "code": "ieee_c57_152_dcwindingsec",
+      "name": "IEEE C57.152 (2013)",
+      "type": "ieee",
+      "standard_number": "C57.152",
+      "standard_edition": "2013",
+      "columns": [
+        {
+          "mrid": "59459bfe-10d4-4cda-b6fc-ad67a18e172a",
+          "code": "dev_phase",
+          "name": "Dev within phases (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "e88770e2-9cdc-4d6f-a9c1-695fcf668702",
+          "standard_id": "30409f76-7e59-4ef6-8dbc-aa585291c20a",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "3e9dd279-931e-49b7-9d47-7cce28f766e8",
+          "standard_id": "30409f76-7e59-4ef6-8dbc-aa585291c20a",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "6a1e0881-5578-42e5-9bc0-0a124e2219a4",
+          "rule_id": "e88770e2-9cdc-4d6f-a9c1-695fcf668702",
+          "parent_id": "",
+          "logic": "",
+          "is_default": false
+        },
+        {
+          "mrid": "70d9c9cc-43ed-442b-8b59-8e3609e64234",
+          "rule_id": "3e9dd279-931e-49b7-9d47-7cce28f766e8",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "|Dev within phases| (%)",
+          "mrid": "735b0974-5e24-4f7b-8281-d7ba59599218",
+          "group_id": "6a1e0881-5578-42e5-9bc0-0a124e2219a4",
+          "measurement_id": "59459bfe-10d4-4cda-b6fc-ad67a18e172a",
+          "operator": "≤",
+          "threshold": "2"
+        }
+      ]
+    },
+    {
+      "mrid": "c494bd0a-1a06-429e-af6a-d9c0235257e3",
+      "code": "cigre_445_dcwindingsec",
+      "name": "CIGRE 445",
+      "type": "cigre",
+      "standard_number": "445",
+      "standard_edition": "2010",
+      "columns": [
+        {
+          "mrid": "32d5115d-c712-408f-8392-0b1641474cc7",
+          "code": "dev_r_ref",
+          "name": "Dev R ref (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "59459bfe-10d4-4cda-b6fc-ad67a18e172a",
+          "code": "dev_phase",
+          "name": "Dev within phases (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "7bdc41c4-9542-421e-b981-59f2f1d502e0",
+          "standard_id": "c494bd0a-1a06-429e-af6a-d9c0235257e3",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "66a6fda1-cee9-495e-8ac3-94185d260c73",
+          "standard_id": "c494bd0a-1a06-429e-af6a-d9c0235257e3",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "b379489b-10e2-47b3-ba47-fc10b7134776",
+          "rule_id": "7bdc41c4-9542-421e-b981-59f2f1d502e0",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "3f67588e-85b4-4c91-b6a3-56904a96cde1",
+          "rule_id": "66a6fda1-cee9-495e-8ac3-94185d260c73",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "|Dev R ref| (%)",
+          "mrid": "b51e5e5b-3d81-44b4-8f3f-aeeab2cff249",
+          "group_id": "b379489b-10e2-47b3-ba47-fc10b7134776",
+          "measurement_id": "32d5115d-c712-408f-8392-0b1641474cc7",
+          "operator": "≤",
+          "threshold": "1"
+        },
+        {
+          "label": "|Dev within phases| (%)",
+          "mrid": "328a2a83-8a6b-4286-b8ee-20cf352ed1cf",
+          "group_id": "b379489b-10e2-47b3-ba47-fc10b7134776",
+          "measurement_id": "59459bfe-10d4-4cda-b6fc-ad67a18e172a",
+          "operator": "≤",
+          "threshold": "2"
+        }
+      ]
+    },
+    {
+      "mrid": "e287890a-d7af-4e9f-b4ae-0736aba14ed3",
+      "code": "customized_dcwindingsec_transformer",
+      "name": "Customized limit",
+      "type": "customized",
+      "standard_number": "",
+      "standard_edition": "",
+      "columns": [
+        {
+          "mrid": "32d5115d-c712-408f-8392-0b1641474cc7",
+          "code": "dev_r_ref",
+          "name": "Dev R ref (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "59459bfe-10d4-4cda-b6fc-ad67a18e172a",
+          "code": "dev_phase",
+          "name": "Dev within phases (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "95421de5-18eb-4991-b8ac-f3296657fd3b",
+          "standard_id": "e287890a-d7af-4e9f-b4ae-0736aba14ed3",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "c24b436d-894c-415a-b004-d947cde9cb46",
+          "standard_id": "e287890a-d7af-4e9f-b4ae-0736aba14ed3",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "ea7af512-24d3-4233-a912-05639073f55a",
+          "rule_id": "95421de5-18eb-4991-b8ac-f3296657fd3b",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "45cf5802-8f8d-4bae-814d-daa31324c07b",
+          "rule_id": "c24b436d-894c-415a-b004-d947cde9cb46",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "|Dev R ref| (%)",
+          "mrid": "589ccb2b-87dd-4c28-87a2-0923df5fbfe7",
+          "group_id": "ea7af512-24d3-4233-a912-05639073f55a",
+          "measurement_id": "32d5115d-c712-408f-8392-0b1641474cc7",
+          "operator": "≤",
+          "threshold": ""
+        },
+        {
+          "label": "|Dev within phases| (%)",
+          "mrid": "f2dc7787-4b4c-4a55-9efa-1375cfd19a17",
+          "group_id": "ea7af512-24d3-4233-a912-05639073f55a",
+          "measurement_id": "59459bfe-10d4-4cda-b6fc-ad67a18e172a",
+          "operator": "≤",
+          "threshold": ""
+        }
+      ]
+    }
+  ]
+}

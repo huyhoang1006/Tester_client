@@ -5,26 +5,24 @@
                 <!-- Overview -->
                 <el-tab-pane style="width: 100%;">
                     <span slot="label"><i class="fa-solid fa-book"></i> Overview</span>
-                    <overview :data="circuitBreakerJobDto.properties" @update-attachment="updateAttachmentOverView"
-                        :attachment.sync="circuitBreakerJobDto.attachmentData" :locationData="locationData"
-                        :assetData="assetData" :productAssetModelData="productAssetModelData"
-                        :parentOrganization="parentOrganization"></overview>
+                    <overview :data="circuitBreakerJobDto.properties" @update-attachment="updateAttachmentOverView" :attachment.sync="circuitBreakerJobDto.attachmentData" :locationData="locationData" :assetData="assetData" :productAssetModelData="productAssetModelData" :parentOrganization="parentOrganization"></overview>
                 </el-tab-pane>
 
                 <!-- Select test -->
                 <el-tab-pane>
-                    <span slot="label"><i class="fa-solid fa-list-check"></i> Select test</span>
-                    <select-test style="width: 100%;" :data="circuitBreakerJobDto.testList"
-                        :testTypeListData="testTypeListData" :assetData="assetData"
-                        :obj-active-name="objActiveName"></select-test>
+                    <span slot="label"><i class="fa-solid fa-list-check"></i> Test settings</span>
+                    <select-test style="width: 100%;"
+                        :data="circuitBreakerJobDto.testList"
+                        :testTypeListData="testTypeListData"
+                        :assetData="assetData"
+                        :obj-active-name="objActiveName"
+                        ></select-test>
                 </el-tab-pane>
 
-                <!-- Testing equipment -->
                 <el-tab-pane>
                     <span slot="label"><i class="fa-solid fa-list-check"></i> Testing equipment</span>
                     <div>
-                        <testing-equipment :data="circuitBreakerJobDto.testingEquipmentData"
-                            :testTypeListData="testTypeListData"></testing-equipment>
+                        <testing-equipment :data="circuitBreakerJobDto.testingEquipmentData" :testTypeListData="testTypeListData"></testing-equipment>
                     </div>
                 </el-tab-pane>
 
@@ -33,12 +31,20 @@
                     <span slot="label"><i class="fa-solid fa-calculator"></i> Test data</span>
                     <div id="tests" style="width: 100%;">
                         <el-tabs v-model="objActiveName.activeName" type="card" class="w-100 h-100">
-                            <el-tab-pane v-for="(item, index) in circuitBreakerJobDto.testList" :key="index"
-                                :label="item.name" :name="item.name + index">
-                                <test-information :title="item.name" :data="item.testCondition" :assetData="assetData"
+                            <el-tab-pane v-for="(item, index) in circuitBreakerJobDto.testList" :key="index" :label="item.name" :name="item.name + index">
+                                <test-information
+                                    :title="item.name"
+                                    :data="item.testCondition"
+                                    :assetData="assetData"
                                     :attachment="item.testCondition.attachmentData">
                                 </test-information>
-                                <component :is="item.testTypeCode" :data="item.data" :asset="assetData">
+                                <component
+                                    :is="item.testTypeCode" 
+                                    :data="item.data" 
+                                    :asset="assetData"
+                                    :testCondition="item.testCondition"
+                                    :testAssessment="item.testAssessment"
+                                    >
                                 </component>
                             </el-tab-pane>
                         </el-tabs>

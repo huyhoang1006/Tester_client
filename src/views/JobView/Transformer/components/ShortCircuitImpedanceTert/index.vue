@@ -367,251 +367,212 @@
 </template>
 
 <script>
-import TransformerTestMap from '@/config/test-definitions/Transformer'
-import * as common from '../../../Common/index'
+/* eslint-disable */
+import transformerTestMap from '@/config/test-definitions/Transformer'
+import * as common from '../../../Common/index.js'
+import GroupNode from '../../../Common/GroupNode.vue'
+import { changeTestStandard } from '../../../Common'
+
 export default {
-    name: 'ShortCircuitImpedanceTert',
+    name: "ShortCircuitImpedanceTert",
+    components: { GroupNode },
     data() {
         return {
+            currentOption: 'threePhase',
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
-            currentOption: 'threePhase'
+            option: null
         }
     },
     props: {
-        data: {
-            type: Object,
-            require: true
-        }
+        data:           { type: Object, require: true },
+        asset:          { type: Object, require: true },
+        testAssessment: { type: Object, require: true },
+        testCondition:  { type: Object, default: function() { return { condition: {} } } }
     },
     computed: {
-        testData() {
-            return this.data
+        testData()     { return this.data },
+        assetData()    { return this.asset },
+        conditions()   { return (this.testCondition && this.testCondition.condition) ? this.testCondition.condition : {} },
+        rowData()      { return common.buildEmptyTestRow(transformerTestMap['ShortCircuitImpedanceTert'].columns) },
+        assessmentData()        { return this.testAssessment ? this.testAssessment.assessment : [] },
+        assessmentList() {
+            return (this.assessmentData || []).map(function(x) {
+                return { code: x.code, name: x.name, type: x.type, mrid: x.mrid }
+            })
         },
-        assessmentSetting() {
-            return this.data.assessment_setting
+        filteredAssessmentData() {
+            if (!this.option) return []
+            return (this.assessmentData || []).filter(function(e) { return e.code === this.option }.bind(this))
         },
-        conditionIndicatorSetting() {
-            return this.data.condition_indicator
-        },
-        rowData() {
-            return common.buildEmptyTestRow(TransformerTestMap['ShortCircuitImpedanceTert'].columns)
-        }
+        testStandardData() { return this.testAssessment ? this.testAssessment.testStandard : null }
     },
     watch: {
-        'assessmentSetting.option': {
-            handler: function () {
-                this.testData.table.forEach(element => {
-                    element.assessment = ''
-                })
+        'option': {
+            immediate: true,
+            handler: async function (newVal) {
+                const standard = this.filteredAssessmentData.find(x => x.code === newVal)
+                if (standard) await changeTestStandard(standard.mrid, standard.type, this.testStandardData)
+            }
+        },
+        'testStandardData': {
+            immediate: true,
+            handler: async function(newVal) {
+                this.option = common.testStandardDataToOption(newVal)
             }
         }
     },
     methods: {
+        add() {
+            if (!this.testData.table) this.$set(this.testData, 'table', {})
+            if (!this.testData.table.table1) this.$set(this.testData.table, 'table1', [])
+            this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
+        },
+        removeAll() {
+            this.$confirm('Delete all?', 'Warning', { confirmButtonText: 'OK', cancelButtonText: 'Cancel', type: 'warning' })
+                .then(function() { if (this.testData.table) this.testData.table.table1 = [] }.bind(this))
+                .catch(function() {})
+        },
+        deleteTest(index) {
+            if (this.testData.table && this.testData.table.table1)
+                this.testData.table.table1.splice(index, 1)
+        },
+        addTest(index) {
+            var data = JSON.parse(JSON.stringify(this.rowData))
+            if (this.testData.table && this.testData.table.table1)
+                this.testData.table.table1.splice(index + 1, 0, data)
+        },
         async calculator() {
-            // await this.CalUkCal()
-            // await this.CalUkDev()
-            // await this.ukassessment()
-
+            this.computeFields()
+            await this.calcAssessment()
             this.$message.success('Calculating successfully')
         },
-        // async ukassessment() {
-        //     if (this.assessmentSetting.option === "CIGRE") {
-        //         if (this.testData.option === 'threePhase') {
-        //             this.testData.table.forEach((element, index) => {
-        //                 if (!isNaN(parseFloat(element.ukDev))) {
-        //                     if (index % 3 == 0) {
-        //                         if (Math.abs(element.ukDev) <= this.assessmentSetting.data.cigre[this.testData.option].ukDev) {
-        //                             element.assessment = "Pass"
-        //                             this.testData.table[index + 1].assessment = "Pass"
-        //                             this.testData.table[index + 2].assessment = "Pass"
-        //                         } else {
-        //                             element.assessment = "Fail"
-        //                             this.testData.table[index + 1].assessment = "Fail"
-        //                             this.testData.table[index + 2].assessment = "Fail"
-        //                         }
-        //                     }
-        //                 }
-        //             })
-        //         } else {
-        //             this.testData.table.forEach((element) => {
-        //                 if (!isNaN(parseFloat(element.ukDev))) {
-        //                     if (element.ukDev <= this.assessmentSetting.data.cigre[this.testData.option].ukDev) {
-        //                         element.assessment = "Pass"
-        //                     } else {
-        //                         element.assessment = "Fail"
-        //                     }
-        //                 }
-        //             })
-        //         }
-        //     } else if (this.assessmentSetting.option === "IEEE") {
-        //         if (this.testData.option === 'threePhase') {
-        //             this.testData.table.forEach((element, index) => {
-        //                 if (!isNaN(parseFloat(element.ukDev))) {
-        //                     if (index % 3 == 0) {
-        //                         if (Math.abs(element.ukDev) <= this.assessmentSetting.data.ieee[this.testData.option].ukDev) {
-        //                             element.assessment = "Pass"
-        //                             this.testData.table[index + 1].assessment = "Pass"
-        //                             this.testData.table[index + 2].assessment = "Pass"
-        //                         } else {
-        //                             element.assessment = "Fail"
-        //                             this.testData.table[index + 1].assessment = "Fail"
-        //                             this.testData.table[index + 2].assessment = "Fail"
-        //                         }
-        //                     }
-        //                 }
-        //             })
-        //         } else {
-        //             this.testData.table.forEach((element) => {
-        //                 if (!isNaN(parseFloat(element.ukDev))) {
-        //                     if (element.ukDev <= this.assessmentSetting.data.ieee[this.testData.option].ukDev) {
-        //                         element.assessment = "Pass"
-        //                     } else {
-        //                         element.assessment = "Fail"
-        //                     }
-        //                 }
-        //             })
-        //         }
-        //     } else {
-        //         if (this.testData.option === 'threePhase') {
-        //             this.testData.table.forEach((element, index) => {
-        //                 if (!isNaN(parseFloat(element.ukDev))) {
-        //                     if (index % 3 == 0) {
-        //                         if (Math.abs(element.ukDev) <= this.assessmentSetting.data.custom[this.testData.option].ukDev) {
-        //                             element.assessment = "Pass"
-        //                             this.testData.table[index + 1].assessment = "Pass"
-        //                             this.testData.table[index + 2].assessment = "Pass"
-        //                         } else {
-        //                             element.assessment = "Fail"
-        //                             this.testData.table[index + 1].assessment = "Fail"
-        //                             this.testData.table[index + 2].assessment = "Fail"
-        //                         }
-        //                     }
-        //                 }
-        //             })
-        //         } else {
-        //             this.testData.table.forEach((element) => {
-        //                 if (!isNaN(parseFloat(element.ukDev))) {
-        //                     if (element.ukDev <= this.assessmentSetting.data.custom[this.testData.option].ukDev) {
-        //                         element.assessment = "Pass"
-        //                     } else {
-        //                         element.assessment = "Fail"
-        //                     }
-        //                 }
-        //             })
-        //         }
-        //     }
-        // },
-        // async CalUkCal() {
-        //     if (this.testData.option == "threePhase") {
-        //         const data = JSON.parse(this.$store.state.selectedAsset[0].prim_tert)
-        //         data.forEach(element => {
-        //             if (!isNaN(parseFloat(element.base_power.value))) {
-        //                 if (!isNaN(parseFloat(element.base_voltage.value))) {
-        //                     if (element.base_voltage.value != 0) {
-        //                         this.testData.table.forEach((cell, index) => {
-        //                             if (!isNaN(parseFloat(cell.zk)) && cell.tap == element[this.testData.mode]) {
-        //                                 if (index % 3 == 0) {
-        //                                     let temp = parseFloat(this.testData.table[index].zk) + parseFloat(this.testData.table[index + 1].zk) + parseFloat(this.testData.table[index + 2].zk)
-        //                                     if (!isNaN(temp)) {
-        //                                         cell.ukCal = temp / 3 * (parseFloat(element.base_power.value) / (Math.pow(parseFloat(element.base_voltage.value), 2)))
-        //                                         cell.ukCal = cell.ukCal * 100
-        //                                         cell.ukCal = cell.ukCal.toFixed(4)
-        //                                     }
+        computeFields() {
+            var rows = this.testData.table.table1
+            if (!rows || rows.length === 0) return
+            var props = this.assetData && this.assetData.properties ? this.assetData.properties : {}
+            var basePower   = parseFloat(props.rated_power   || props.base_power)   // MVA
+            var baseVoltage = parseFloat(props.rated_voltage  || props.base_voltage) // kV
+            var ukNominal   = parseFloat(props.short_circuit_impedance || props.uk_percent)
+            var hasBase = !isNaN(basePower) && !isNaN(baseVoltage) && baseVoltage !== 0
 
-        //                                 }
-        //                             }
-        //                         })
-        //                     }
-        //                 }
-        //             }
-        //         })
-        //     } else {
-        //         const data = JSON.parse(this.$store.state.selectedAsset[0].prim_tert)
-        //         data.forEach(element => {
-        //             if (!isNaN(parseFloat(element.base_power.value))) {
-        //                 if (!isNaN(parseFloat(element.base_voltage.value))) {
-        //                     if (element.base_voltage.value != 0) {
-        //                         this.testData.table.forEach(cell => {
-        //                             if (!isNaN(parseFloat(cell.zk)) && cell.tap == element[this.testData.mode]) {
-        //                                 cell.ukCal = cell.zk * (parseFloat(element.base_power.value) / (Math.pow(parseFloat(element.base_voltage.value), 2)))
-        //                                 cell.ukCal = cell.ukCal * 100
-        //                                 cell.ukCal = cell.ukCal.toFixed(4)
-        //                             }
-        //                         })
-        //                     }
-        //                 }
-        //             }
-        //         })
-        //     }
-        // },
-        // async CalUkDev() {
-        //     if (this.testData.option == "threePhase") {
-        //         const data = JSON.parse(this.$store.state.selectedAsset[0].prim_tert)
-        //         data.forEach(element => {
-        //             if (!isNaN(parseFloat(element.short_circuit_impedances_uk))) {
-        //                 if (element.short_circuit_impedances_uk != 0) {
-        //                     this.testData.table.forEach((cell, index) => {
-        //                         if (!isNaN(parseFloat(cell.ukCal)) && cell.tap == element[this.testData.mode]) {
-        //                             if (index % 3 == 0) {
-        //                                 cell.ukDev = 100 * (cell.ukCal - element.short_circuit_impedances_uk) / element.short_circuit_impedances_uk
-        //                             }
-        //                         }
-        //                     })
-        //                 }
-        //             }
-        //         })
-        //     } else {
-        //         const data = JSON.parse(this.$store.state.selectedAsset[0].prim_tert)
-        //         data.forEach(element => {
-        //             if (!isNaN(parseFloat(element.short_circuit_impedances_uk))) {
-        //                 if (element.short_circuit_impedances_uk != 0) {
-        //                     let temp = 0
-        //                     this.testData.table.forEach((cell, index) => {
-        //                         if (!isNaN(parseFloat(cell.ukCal)) && cell.tap == element[this.testData.mode]) {
-        //                             if (index % 3 == 0) {
-        //                                 temp = parseFloat(this.testData.table[index].ukCal) + parseFloat(this.testData.table[index + 1].ukCal) + parseFloat(this.testData.table[index + 2].ukCal)
-        //                             }
-        //                             if (!isNaN(temp) && temp != 0) {
-        //                                 cell.ukDev = 100 * (cell.ukCal - (temp / 3)) / (temp / 3)
-        //                             }
-        //                         }
-        //                     })
-        //                 }
-        //             }
-        //         })
-        //     }
-        // },
-        clear() {
-            Object.values(this.testData.table).forEach(subTable => {
-                if (Array.isArray(subTable)) {
-                    subTable.forEach(row => {
-                        Object.keys(row).forEach(key => {
-                            if (key === "mrid") return;
-                            if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
-                                row[key].value = "";
-                            }
-                        });
-                    });
+            for (var i = 0; i < rows.length; i++) {
+                var row = rows[i]
+                // zk = sqrt(rk^2 + xk^2)
+                var rk = parseFloat(row.rk && row.rk.value)
+                var xk = parseFloat(row.xk && row.xk.value)
+                if (!isNaN(rk) && !isNaN(xk)) {
+                    var zk = Math.sqrt(rk * rk + xk * xk)
+                    if (!row.zk.value) row.zk.value = String(Math.round(zk * 1000000) / 1000000)
                 }
-            });
+            }
+            // uk_cal per group of 3 (three-phase)
+            for (var g = 0; g < rows.length; g += 3) {
+                var groupFirstRow = rows[g]
+                if (!hasBase) continue
+                var zkVals = []
+                for (var j = g; j < Math.min(g + 3, rows.length); j++) {
+                    var zkV = parseFloat(rows[j].zk && rows[j].zk.value)
+                    if (!isNaN(zkV)) zkVals.push(zkV)
+                }
+                if (zkVals.length === 3) {
+                    // Three-phase formula
+                    var zkAvg = (zkVals[0] + zkVals[1] + zkVals[2]) / 3
+                    var ukCal = zkAvg * (basePower * 1e6) / Math.pow(baseVoltage * 1000, 2) * 100
+                    groupFirstRow.uk_cal.value = String(Math.round(ukCal * 10000) / 10000)
+                    if (!isNaN(ukNominal) && ukNominal !== 0) {
+                        groupFirstRow.uk_dev.value = String(Math.round(100 * (ukCal - ukNominal) / ukNominal * 10000) / 10000)
+                    }
+                } else if (zkVals.length === 1) {
+                    // Per-phase fallback
+                    var ukCalPerPhase = zkVals[0] * (basePower * 1e6) / Math.pow(baseVoltage * 1000, 2) * 100
+                    groupFirstRow.uk_cal.value = String(Math.round(ukCalPerPhase * 10000) / 10000)
+                    if (!isNaN(ukNominal) && ukNominal !== 0) {
+                        groupFirstRow.uk_dev.value = String(Math.round(100 * (ukCalPerPhase - ukNominal) / ukNominal * 10000) / 10000)
+                    }
+                }
+            }
+        },
+        async calcAssessment() {
+            var assessmentStandard = this.filteredAssessmentData.find(function(x) { return x.code === this.option }.bind(this))
+            if (!assessmentStandard) { this.$message.error('Please select an assessment standard'); return }
+            var rows = this.testData.table.table1
+            for (var i = 0; i < rows.length; i++) {
+                var row = rows[i]
+                var measurementMap = {}
+                Object.keys(row).forEach(function(key) {
+                    var item = row[key]
+                    if (!item || typeof item !== 'object') return
+                    if (item.measurement_id) measurementMap[item.measurement_id] = item.value
+                })
+                // uk_dev rowspan=3 → lấy từ row đầu nhóm
+                var groupFirstRow = rows[Math.floor(i / 3) * 3]
+                if (groupFirstRow && groupFirstRow.uk_dev && groupFirstRow.uk_dev.measurement_id) {
+                    measurementMap[groupFirstRow.uk_dev.measurement_id] = groupFirstRow.uk_dev.value
+                }
+                if (row.uk_dev && row.uk_dev.measurement_id !== undefined) {
+                    var _abs_uk_dev = parseFloat(measurementMap[row.uk_dev.measurement_id])
+                    if (!isNaN(_abs_uk_dev)) measurementMap[row.uk_dev.measurement_id] = Math.abs(_abs_uk_dev)
+                }
+                var passedResults = []
+                var hasNull = false
+                var defaultResult = null
+                for (var ri = 0; ri < assessmentStandard.tree.length; ri++) {
+                    var root = assessmentStandard.tree[ri]
+                    if (root.is_default) { defaultResult = root.result; continue }
+                    var pass = this.evaluateGroup(root, measurementMap)
+                    if (pass === null) hasNull = true
+                    else if (pass === true) passedResults.push(root.result)
+                }
+                var finalResult
+                if (hasNull && passedResults.length === 0) finalResult = ''
+                else if (passedResults.includes('Fail'))  finalResult = 'Fail'
+                else if (passedResults.includes('Pass'))  finalResult = 'Pass'
+                else if (defaultResult === 'Pass')        finalResult = 'Pass'
+                else if (defaultResult)                   finalResult = 'Fail'
+                else                                      finalResult = ''
+                row.assessment.value = finalResult
+            }
+        },
+        evaluateGroup(group, measurementMap) {
+            for (var ci = 0; ci < (group.conditions || []).length; ci++) {
+                var cond = group.conditions[ci]
+                var value = measurementMap[cond.measurement_id]
+                if (value === null || value === undefined || value === '') return null
+                if (cond.threshold === null || cond.threshold === undefined || cond.threshold === '') return null
+            }
+            for (var chi = 0; chi < (group.children || []).length; chi++) {
+                if (this.evaluateGroup(group.children[chi], measurementMap) === null) return null
+            }
+            var results = []
+            for (var ci2 = 0; ci2 < (group.conditions || []).length; ci2++) {
+                var cond2 = group.conditions[ci2]
+                results.push(common.compare(measurementMap[cond2.measurement_id], cond2.operator, cond2.threshold))
+            }
+            for (var chi2 = 0; chi2 < (group.children || []).length; chi2++) {
+                results.push(this.evaluateGroup(group.children[chi2], measurementMap))
+            }
+            if (results.length === 0) return null
+            var logic = (group.logic || 'AND').toUpperCase()
+            if (logic === 'OR') return results.some(function(x) { return x })
+            return results.every(function(x) { return x })
+        },
+        clear() {
+            if (this.testData.table && this.testData.table.table1) {
+                this.testData.table.table1.forEach(function(row) {
+                    Object.keys(row).forEach(function(key) {
+                        if (key === 'mrid') return
+                        if (row[key] && typeof row[key] === 'object' && 'value' in row[key]) row[key].value = ''
+                    })
+                })
+            }
         },
         nameColor(data) {
-            if (data === this.$constant.GOOD) {
-                return 'Good'
-            }
-            else if (data === this.$constant.FAIR) {
-                return 'Fair'
-            }
-            else if (data === this.$constant.POOR) {
-                return 'Poor'
-            }
-            else if (data === this.$constant.BAD) {
-                return 'Bad'
-            }
-            else {
-                return;
-            }
+            if (data === this.$constant.GOOD) return 'Good'
+            else if (data === this.$constant.FAIR) return 'Fair'
+            else if (data === this.$constant.POOR) return 'Poor'
+            else if (data === this.$constant.BAD) return 'Bad'
+            else return
         }
     }
 }
@@ -637,4 +598,16 @@ export default {
 .bad {
     background: #FF0000;
 }
+
+.assessment-container { width: 75%; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 16px; overflow: hidden; }
+.assessment-header { display: flex; background: #f5f7fa; font-weight: bold; padding: 8px; }
+.assessment-body { display: flex; flex-direction: column; border: 1px solid #ebeef5; border-radius: 4px; }
+.tree-row { display: flex; align-items: center; border-bottom: 1px solid #ebeef5; min-height: 40px; padding: 8px 0; width: 100%; }
+.tree-row:last-child { border-bottom: none; }
+.limit-col { flex: 1; padding: 0 12px; }
+.result-col { flex-shrink: 0; width: 100px; text-align: center; border-left: 1px solid #ebeef5; padding: 0 12px; align-self: stretch; display: flex; align-items: center; justify-content: center; }
+.tree-row-default { background: #fafafa; }
+.default-label { font-style: italic; color: #909399; font-size: 13px; }
+.pass { color: #67C23A; font-weight: bold; }
+.fail { color: #F56C6C; font-weight: bold; }
 </style>

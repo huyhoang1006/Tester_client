@@ -77,7 +77,6 @@ export default {
             this.checkProperties(data);
             this.checkAssetId(data);
             this.checkAttachment(data);
-            this.checkTestStandard(data);
             this.checkTestingEquipment(data);
             await this.checkDataMeasurement(data);
             return data;
@@ -111,12 +110,6 @@ export default {
             }
         },
 
-        checkTestStandard(data) {
-            if(data.testStandardId === '' || data.testStandardId === null) {
-                data.testStandardId = uuid.newUuid();
-            }
-        },
-
         checkTestingEquipment(data) {
             const arr = [];
             for (const item of data.testingEquipmentData) {
@@ -134,23 +127,23 @@ export default {
             }
 
             // Thêm các phần tử mới vào data.surgeArresterTestingEquipmentTestType nếu chưa có
-            for (const current of arr) {
+            for (const surge of arr) {
                 const existed = data.surgeArresterTestingEquipmentTestType.some(
                     old =>
-                        old.testing_equipment_id === current.testing_equipment_id &&
-                        old.test_type_id === current.test_type_id
+                        old.testing_equipment_id === surge.testing_equipment_id &&
+                        old.test_type_id === surge.test_type_id
                 );
                 if (!existed) {
-                    data.surgeArresterTestingEquipmentTestType.push(current);
+                    data.surgeArresterTestingEquipmentTestType.push(surge);
                 }
             }
 
             // Xóa các phần tử quá khứ không còn trong hiện tại
             data.surgeArresterTestingEquipmentTestType = data.surgeArresterTestingEquipmentTestType.filter(
                 old => arr.some(
-                    current =>
-                        old.testing_equipment_id === current.testing_equipment_id &&
-                        old.test_type_id === current.test_type_id
+                    surge =>
+                        old.testing_equipment_id === surge.testing_equipment_id &&
+                        old.test_type_id === surge.test_type_id
                 )
             );
         },
@@ -206,6 +199,11 @@ export default {
                         asset_id: this.assetData.properties?.mrid || this.assetData.mrid
                     });
                 }
+
+                if(test.testAssessment.testStandard.mrid == '' || test.testAssessment.testStandard.mrid == null) {
+                    test.testAssessment.testStandard.mrid = uuid.newUuid()
+                }
+                test.testAssessment.testStandard.work_task_id = test.mrid
             }
         },
     }

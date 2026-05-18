@@ -13,11 +13,15 @@ export const getStandardById = async (mrid) => {
 export const insertStandard = async (standard) => {
     return new Promise((resolve, reject) => {
         db.run(
-            `INSERT INTO standard(mrid)
-             VALUES (?)
-             ON CONFLICT(mrid) DO NOTHING`,
+            `INSERT INTO standard(mrid, name, code)
+             VALUES (?, ?, ?)
+             ON CONFLICT(mrid) DO UPDATE SET
+                name = excluded.name,
+                code = excluded.code`,
             [
-                standard.mrid
+                standard.mrid,
+                standard.name,
+                standard.code
             ],
             function (err) {
                 if (err) return reject({ success: false, err, message: 'Insert standard failed' })
@@ -30,11 +34,15 @@ export const insertStandard = async (standard) => {
 export const insertStandardTransaction = async (standard, dbsql) => {
     return new Promise((resolve, reject) => {
         dbsql.run(
-            `INSERT INTO standard(mrid)
-             VALUES (?)
-             ON CONFLICT(mrid) DO NOTHING`,
+            `INSERT INTO standard(mrid, name, code)
+             VALUES (?, ?, ?)
+             ON CONFLICT(mrid) DO UPDATE SET
+                name = excluded.name,
+                code = excluded.code`,
             [
-                standard.mrid
+                standard.mrid,
+                standard.name,
+                standard.code
             ],
             function (err) {
                 if (err) return reject({ success: false, err, message: 'Insert standard failed' })

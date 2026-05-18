@@ -1,0 +1,1131 @@
+{
+  "testId": "pc-tdvlf-001",
+  "testCode": "TandeltaVlfSource",
+  "testName": "Tan delta measurement with VLF source",
+  "testStandard": [
+    {
+      "mrid": "e11f3530-bc15-43fe-b534-98d35ea485f1",
+      "code": "ieee_400_2_new_pe_based",
+      "name": "IEEE 400.2 (2013) - New cable systems - PE-based insulations (XLPE and TRXLPE)",
+      "type": "ieee",
+      "standard_number": "400.2",
+      "standard_edition": "2013",
+      "columns": [
+        {
+          "mrid": "57da765a-b970-4272-884e-e2a204af1510",
+          "code": "mtd",
+          "name": "MTD [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
+          "code": "tan_delta_dtd",
+          "name": "DTD [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "code": "tan_delta_tdts",
+          "name": "TDTS [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "f3d860d8-2d74-4892-ba04-886e86c01309",
+          "standard_id": "e11f3530-bc15-43fe-b534-98d35ea485f1",
+          "result": "Acceptable",
+          "priority": ""
+        },
+        {
+          "mrid": "0f030d62-d4f4-4da1-9827-11d68d5c84db",
+          "standard_id": "e11f3530-bc15-43fe-b534-98d35ea485f1",
+          "result": "Further study advised",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "7d110934-f92c-4642-9676-a56a212635dc",
+          "rule_id": "f3d860d8-2d74-4892-ba04-886e86c01309",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "96fe9fe5-cdb7-4834-be8f-9b552a52f1b2",
+          "rule_id": "0f030d62-d4f4-4da1-9827-11d68d5c84db",
+          "parent_id": "",
+          "logic": "OR",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "TDTS [10⁻³]",
+          "mrid": "0a6b7ba1-593a-4277-877a-ccbf2b982cbc",
+          "group_id": "7d110934-f92c-4642-9676-a56a212635dc",
+          "measurement_id": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "operator": "<",
+          "threshold": "0.1"
+        },
+        {
+          "label": "DTD [10⁻³]",
+          "mrid": "ad9525dc-3402-4b1a-a99a-757d8bc1ae1a",
+          "group_id": "7d110934-f92c-4642-9676-a56a212635dc",
+          "measurement_id": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
+          "operator": "<",
+          "threshold": "0.8"
+        },
+        {
+          "label": "MTD [10⁻³]",
+          "mrid": "9827ef3c-1246-4a76-b1f1-73d6feff9d3f",
+          "group_id": "7d110934-f92c-4642-9676-a56a212635dc",
+          "measurement_id": "57da765a-b970-4272-884e-e2a204af1510",
+          "operator": "<",
+          "threshold": "1.0"
+        },
+        {
+          "label": "TDTS [10⁻³]",
+          "mrid": "c1a23129-8b30-4f1b-a271-2c1726cc4026",
+          "group_id": "96fe9fe5-cdb7-4834-be8f-9b552a52f1b2",
+          "measurement_id": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "operator": "≥",
+          "threshold": "0.1"
+        }
+      ]
+    },
+    {
+      "mrid": "2dc19516-c640-4391-a081-880a3fa627a6",
+      "code": "ieee_400_2_new_epr",
+      "name": "IEEE 400.2 (2013) - New cable systems - Conventional mineral-filled EPR",
+      "type": "ieee",
+      "standard_number": "400.2",
+      "standard_edition": "2013",
+      "columns": [
+        {
+          "mrid": "57da765a-b970-4272-884e-e2a204af1510",
+          "code": "mtd",
+          "name": "MTD [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
+          "code": "tan_delta_dtd",
+          "name": "DTD [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "code": "tan_delta_tdts",
+          "name": "TDTS [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "235a938d-b92c-45c3-b6b4-4cfaee5df369",
+          "standard_id": "2dc19516-c640-4391-a081-880a3fa627a6",
+          "result": "Acceptable",
+          "priority": ""
+        },
+        {
+          "mrid": "d19685f3-8872-42af-813e-b11065636e86",
+          "standard_id": "2dc19516-c640-4391-a081-880a3fa627a6",
+          "result": "Further study advised",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "fa167570-479d-4b0d-859d-2c8bdaf2e414",
+          "rule_id": "235a938d-b92c-45c3-b6b4-4cfaee5df369",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "14996d91-56c0-4924-a9bb-017e4910f018",
+          "rule_id": "d19685f3-8872-42af-813e-b11065636e86",
+          "parent_id": "",
+          "logic": "OR",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "TDTS [10⁻³]",
+          "mrid": "c5e70950-1925-4dd1-844c-5ef298c805f1",
+          "group_id": "fa167570-479d-4b0d-859d-2c8bdaf2e414",
+          "measurement_id": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "operator": "<",
+          "threshold": "0.1"
+        },
+        {
+          "label": "DTD [10⁻³]",
+          "mrid": "51734e3d-a0b6-4002-92a9-27cb923b2473",
+          "group_id": "fa167570-479d-4b0d-859d-2c8bdaf2e414",
+          "measurement_id": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
+          "operator": "<",
+          "threshold": "5"
+        },
+        {
+          "label": "MTD [10⁻³]",
+          "mrid": "95f5adba-d092-41f8-938a-92d60626e8dc",
+          "group_id": "fa167570-479d-4b0d-859d-2c8bdaf2e414",
+          "measurement_id": "57da765a-b970-4272-884e-e2a204af1510",
+          "operator": "<",
+          "threshold": "10"
+        },
+        {
+          "label": "TDTS [10⁻³]",
+          "mrid": "3d8c9665-3f68-4163-a53a-8ecd17264c35",
+          "group_id": "14996d91-56c0-4924-a9bb-017e4910f018",
+          "measurement_id": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "operator": "≥",
+          "threshold": "0.1"
+        }
+      ]
+    },
+    {
+      "mrid": "77665d79-fd83-4b22-b540-892bbec279e0",
+      "code": "ieee_400_2_aged_pe",
+      "name": "IEEE 400.2 (2013) - Service-aged PE-based insulations (XLPE and TRXLPE) using 0.1 Hz",
+      "type": "ieee",
+      "standard_number": "400.2",
+      "standard_edition": "2013",
+      "columns": [
+        {
+          "mrid": "57da765a-b970-4272-884e-e2a204af1510",
+          "code": "mtd",
+          "name": "MTD [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
+          "code": "tan_delta_dtd",
+          "name": "DTD [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "code": "tan_delta_tdts",
+          "name": "TDTS [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "e8b5a249-b017-421e-b0a3-ddc31ec24b8c",
+          "standard_id": "77665d79-fd83-4b22-b540-892bbec279e0",
+          "result": "Acceptable",
+          "priority": ""
+        },
+        {
+          "mrid": "2a2c084e-b328-401a-afbc-58b76303fd70",
+          "standard_id": "77665d79-fd83-4b22-b540-892bbec279e0",
+          "result": "Further study advised",
+          "priority": ""
+        },
+        {
+          "mrid": "4dbfac7d-c4f4-4cba-b73f-6e6eb3aed52a",
+          "standard_id": "77665d79-fd83-4b22-b540-892bbec279e0",
+          "result": "Action Required",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "d5d5214f-82a5-469a-a45c-7894986f5ff7",
+          "rule_id": "e8b5a249-b017-421e-b0a3-ddc31ec24b8c",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "16cdb0e4-cdf3-473f-85c0-9819d100e2be",
+          "rule_id": "2a2c084e-b328-401a-afbc-58b76303fd70",
+          "parent_id": "",
+          "logic": "OR",
+          "is_default": false
+        },
+        {
+          "mrid": "8cc23793-e343-4f07-be31-a19cb86de722",
+          "rule_id": "4dbfac7d-c4f4-4cba-b73f-6e6eb3aed52a",
+          "parent_id": "",
+          "logic": "OR",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "TDTS [10⁻³]",
+          "mrid": "42dc2d71-262c-4c1f-b291-27be9f2a843f",
+          "group_id": "d5d5214f-82a5-469a-a45c-7894986f5ff7",
+          "measurement_id": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "operator": "<",
+          "threshold": "0.1"
+        },
+        {
+          "label": "DTD [10⁻³]",
+          "mrid": "0397dc10-695d-4023-9646-fac51d5d0165",
+          "group_id": "d5d5214f-82a5-469a-a45c-7894986f5ff7",
+          "measurement_id": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
+          "operator": "<",
+          "threshold": "5"
+        },
+        {
+          "label": "MTD [10⁻³]",
+          "mrid": "1b83ff80-53b9-41ac-bf8f-cf3387eb26bf",
+          "group_id": "d5d5214f-82a5-469a-a45c-7894986f5ff7",
+          "measurement_id": "57da765a-b970-4272-884e-e2a204af1510",
+          "operator": "<",
+          "threshold": "4"
+        },
+        {
+          "label": "TDTS [10⁻³]",
+          "mrid": "ae7d20da-41b7-47a5-9411-9ae605ff6235",
+          "group_id": "16cdb0e4-cdf3-473f-85c0-9819d100e2be",
+          "measurement_id": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "operator": "≥",
+          "threshold": "0.1"
+        },
+        {
+          "label": "TDTS [10⁻³]",
+          "mrid": "11b24e35-66a2-4214-8236-92050a83fa03",
+          "group_id": "8cc23793-e343-4f07-be31-a19cb86de722",
+          "measurement_id": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "operator": ">",
+          "threshold": "0.5"
+        }
+      ]
+    },
+    {
+      "mrid": "c6df976c-7766-47e7-bb93-3af1618a8ed5",
+      "code": "ieee_400_2_aged_filled",
+      "name": "IEEE 400.2 (2013) - Service-aged filled insulations (not possible to identify) using 0.1 Hz",
+      "type": "ieee",
+      "standard_number": "400.2",
+      "standard_edition": "2013",
+      "columns": [
+        {
+          "mrid": "57da765a-b970-4272-884e-e2a204af1510",
+          "code": "mtd",
+          "name": "MTD [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
+          "code": "tan_delta_dtd",
+          "name": "DTD [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "code": "tan_delta_tdts",
+          "name": "TDTS [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "f02e635e-b0d1-43ba-836f-32494b0f807e",
+          "standard_id": "c6df976c-7766-47e7-bb93-3af1618a8ed5",
+          "result": "Acceptable",
+          "priority": ""
+        },
+        {
+          "mrid": "f8e22eef-921c-4649-adf7-343ce70a3a6b",
+          "standard_id": "c6df976c-7766-47e7-bb93-3af1618a8ed5",
+          "result": "Further study advised",
+          "priority": ""
+        },
+        {
+          "mrid": "a74e56d6-83ed-45e7-bad6-7a9f6ba49b81",
+          "standard_id": "c6df976c-7766-47e7-bb93-3af1618a8ed5",
+          "result": "Action Required",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "6f9be1a3-afab-4317-98e7-9f3233cb463c",
+          "rule_id": "f02e635e-b0d1-43ba-836f-32494b0f807e",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "d41fab83-1673-41a8-8ba0-349e4c7b981a",
+          "rule_id": "f8e22eef-921c-4649-adf7-343ce70a3a6b",
+          "parent_id": "",
+          "logic": "OR",
+          "is_default": false
+        },
+        {
+          "mrid": "837e113e-e827-4cda-975d-607d67e42168",
+          "rule_id": "a74e56d6-83ed-45e7-bad6-7a9f6ba49b81",
+          "parent_id": "",
+          "logic": "OR",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "TDTS [10⁻³]",
+          "mrid": "85c3f67d-e113-4699-b012-3f54bc8fd4ce",
+          "group_id": "6f9be1a3-afab-4317-98e7-9f3233cb463c",
+          "measurement_id": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "operator": "<",
+          "threshold": "0.1"
+        },
+        {
+          "label": "DTD [10⁻³]",
+          "mrid": "b66f14b4-86f8-4431-afa4-3a8a82e38b9a",
+          "group_id": "6f9be1a3-afab-4317-98e7-9f3233cb463c",
+          "measurement_id": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
+          "operator": "<",
+          "threshold": "5"
+        },
+        {
+          "label": "MTD [10⁻³]",
+          "mrid": "72718e39-d451-4871-9e23-91a015601c70",
+          "group_id": "6f9be1a3-afab-4317-98e7-9f3233cb463c",
+          "measurement_id": "57da765a-b970-4272-884e-e2a204af1510",
+          "operator": "<",
+          "threshold": "35"
+        },
+        {
+          "label": "TDTS [10⁻³]",
+          "mrid": "6c4725db-e979-4ea7-9ec9-957bcc644f27",
+          "group_id": "d41fab83-1673-41a8-8ba0-349e4c7b981a",
+          "measurement_id": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "operator": "≥",
+          "threshold": "0.1"
+        },
+        {
+          "label": "TDTS [10⁻³]",
+          "mrid": "31bc6424-017f-4580-ac0b-507f4554acfb",
+          "group_id": "837e113e-e827-4cda-975d-607d67e42168",
+          "measurement_id": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "operator": ">",
+          "threshold": "1.3"
+        }
+      ]
+    },
+    {
+      "mrid": "1aa648ca-c03c-4905-b939-6790a96a7ac5",
+      "code": "ieee_400_2_black_epr",
+      "name": "IEEE 400.2 (2013) - Service-aged filled insulations (Carbon-filled Black EPR) using 0.1 Hz",
+      "type": "ieee",
+      "standard_number": "400.2",
+      "standard_edition": "2013",
+      "columns": [
+        {
+          "mrid": "57da765a-b970-4272-884e-e2a204af1510",
+          "code": "mtd",
+          "name": "MTD [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
+          "code": "tan_delta_dtd",
+          "name": "DTD [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "code": "tan_delta_tdts",
+          "name": "TDTS [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "f092084a-a019-4e67-9d27-aa8438ea8c4a",
+          "standard_id": "1aa648ca-c03c-4905-b939-6790a96a7ac5",
+          "result": "Acceptable",
+          "priority": ""
+        },
+        {
+          "mrid": "b6d7859a-9fac-439e-952c-7b294eb084d9",
+          "standard_id": "1aa648ca-c03c-4905-b939-6790a96a7ac5",
+          "result": "Further study advised",
+          "priority": ""
+        },
+        {
+          "mrid": "2822787b-961a-4761-a551-3bc3a6b2d35f",
+          "standard_id": "1aa648ca-c03c-4905-b939-6790a96a7ac5",
+          "result": "Action Required",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "e11da5ea-0d66-4713-8cd1-31e8b04066ca",
+          "rule_id": "f092084a-a019-4e67-9d27-aa8438ea8c4a",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "7db82541-f665-4c3d-82b5-6cf275e8d917",
+          "rule_id": "b6d7859a-9fac-439e-952c-7b294eb084d9",
+          "parent_id": "",
+          "logic": "OR",
+          "is_default": false
+        },
+        {
+          "mrid": "574b0fa9-366c-4526-a13c-6118482c2bea",
+          "rule_id": "2822787b-961a-4761-a551-3bc3a6b2d35f",
+          "parent_id": "",
+          "logic": "OR",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "TDTS [10⁻³]",
+          "mrid": "75f70921-65bc-4ae7-a191-86cd6a8d0f9f",
+          "group_id": "e11da5ea-0d66-4713-8cd1-31e8b04066ca",
+          "measurement_id": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "operator": "<",
+          "threshold": "0.1"
+        },
+        {
+          "label": "DTD [10⁻³]",
+          "mrid": "944162a3-3239-4a52-abd9-9a2a66d2e20b",
+          "group_id": "e11da5ea-0d66-4713-8cd1-31e8b04066ca",
+          "measurement_id": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
+          "operator": "<",
+          "threshold": "2"
+        },
+        {
+          "label": "MTD [10⁻³]",
+          "mrid": "ea4e7ffc-196c-41e5-bb1c-a4f2395d915b",
+          "group_id": "e11da5ea-0d66-4713-8cd1-31e8b04066ca",
+          "measurement_id": "57da765a-b970-4272-884e-e2a204af1510",
+          "operator": "<",
+          "threshold": "20"
+        },
+        {
+          "label": "TDTS [10⁻³]",
+          "mrid": "6cbfa568-6fe1-4ddc-83dd-877ef58e33eb",
+          "group_id": "7db82541-f665-4c3d-82b5-6cf275e8d917",
+          "measurement_id": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "operator": "≥",
+          "threshold": "0.1"
+        },
+        {
+          "label": "TDTS [10⁻³]",
+          "mrid": "5f58c440-ce3d-4d0f-ae6b-5d4e27263dec",
+          "group_id": "574b0fa9-366c-4526-a13c-6118482c2bea",
+          "measurement_id": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "operator": ">",
+          "threshold": "2.7"
+        }
+      ]
+    },
+    {
+      "mrid": "dcd9ba5a-2f1d-443b-b631-dcf546e2e209",
+      "code": "ieee_400_2_pink_epr",
+      "name": "IEEE 400.2 (2013) - Service-aged filled insulations (Mineral-filled Pink EPR) using 0.1 Hz",
+      "type": "ieee",
+      "standard_number": "400.2",
+      "standard_edition": "2013",
+      "columns": [
+        {
+          "mrid": "57da765a-b970-4272-884e-e2a204af1510",
+          "code": "mtd",
+          "name": "MTD [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
+          "code": "tan_delta_dtd",
+          "name": "DTD [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "code": "tan_delta_tdts",
+          "name": "TDTS [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "9c45c513-1df7-4dc8-85cb-d54d2cc9d225",
+          "standard_id": "dcd9ba5a-2f1d-443b-b631-dcf546e2e209",
+          "result": "Acceptable",
+          "priority": ""
+        },
+        {
+          "mrid": "09776066-f1b6-4d37-8266-8d0bacfe7a26",
+          "standard_id": "dcd9ba5a-2f1d-443b-b631-dcf546e2e209",
+          "result": "Further study advised",
+          "priority": ""
+        },
+        {
+          "mrid": "3e1d7c1b-234a-4a4c-98cb-63e2b6942ef9",
+          "standard_id": "dcd9ba5a-2f1d-443b-b631-dcf546e2e209",
+          "result": "Action Required",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "33688129-de6d-4381-ad26-e129903de06e",
+          "rule_id": "9c45c513-1df7-4dc8-85cb-d54d2cc9d225",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "36b8e9f2-dfa1-4345-916b-83544b540ca4",
+          "rule_id": "09776066-f1b6-4d37-8266-8d0bacfe7a26",
+          "parent_id": "",
+          "logic": "OR",
+          "is_default": false
+        },
+        {
+          "mrid": "5a3d8825-d7ef-44f4-9fab-73e702e19dae",
+          "rule_id": "3e1d7c1b-234a-4a4c-98cb-63e2b6942ef9",
+          "parent_id": "",
+          "logic": "OR",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "TDTS [10⁻³]",
+          "mrid": "df37c60d-9a6d-477c-bd08-2eebc8192c1b",
+          "group_id": "33688129-de6d-4381-ad26-e129903de06e",
+          "measurement_id": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "operator": "<",
+          "threshold": "0.1"
+        },
+        {
+          "label": "DTD [10⁻³]",
+          "mrid": "9e3e542e-ebb0-427b-9b3f-4c9b13f241b6",
+          "group_id": "33688129-de6d-4381-ad26-e129903de06e",
+          "measurement_id": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
+          "operator": "<",
+          "threshold": "4"
+        },
+        {
+          "label": "MTD [10⁻³]",
+          "mrid": "2c6be689-e9d6-45e4-b822-c4d3757f3d7f",
+          "group_id": "33688129-de6d-4381-ad26-e129903de06e",
+          "measurement_id": "57da765a-b970-4272-884e-e2a204af1510",
+          "operator": "<",
+          "threshold": "20"
+        },
+        {
+          "label": "TDTS [10⁻³]",
+          "mrid": "7b1aa0ed-9ca9-4d4f-bdd8-78c7ec17bd43",
+          "group_id": "36b8e9f2-dfa1-4345-916b-83544b540ca4",
+          "measurement_id": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "operator": "≥",
+          "threshold": "0.1"
+        },
+        {
+          "label": "TDTS [10⁻³]",
+          "mrid": "895b5eab-24f3-451e-95a5-8076e91058d6",
+          "group_id": "5a3d8825-d7ef-44f4-9fab-73e702e19dae",
+          "measurement_id": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "operator": ">",
+          "threshold": "1"
+        }
+      ]
+    },
+    {
+      "mrid": "2bd7f77b-5825-4ef1-aad7-bdc8f86c548e",
+      "code": "ieee_400_2_dr_epr",
+      "name": "IEEE 400.2 (2013) - Service-aged filled insulations (Discharge resistant EPR) using 0.1 Hz",
+      "type": "ieee",
+      "standard_number": "400.2",
+      "standard_edition": "2013",
+      "columns": [
+        {
+          "mrid": "57da765a-b970-4272-884e-e2a204af1510",
+          "code": "mtd",
+          "name": "MTD [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
+          "code": "tan_delta_dtd",
+          "name": "DTD [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "code": "tan_delta_tdts",
+          "name": "TDTS [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "5670e70f-cd2a-4514-a719-55b62b8c1c46",
+          "standard_id": "2bd7f77b-5825-4ef1-aad7-bdc8f86c548e",
+          "result": "Acceptable",
+          "priority": ""
+        },
+        {
+          "mrid": "b690248e-d0fc-4f76-8d5d-869d9885a095",
+          "standard_id": "2bd7f77b-5825-4ef1-aad7-bdc8f86c548e",
+          "result": "Further study advised",
+          "priority": ""
+        },
+        {
+          "mrid": "c68010ce-3415-491d-a295-2d17cbc81ba7",
+          "standard_id": "2bd7f77b-5825-4ef1-aad7-bdc8f86c548e",
+          "result": "Action Required",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "04c8d32e-beeb-4007-9aa2-fe4ac512b960",
+          "rule_id": "5670e70f-cd2a-4514-a719-55b62b8c1c46",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "de9632ad-a987-4541-8ca3-9119d5f756e8",
+          "rule_id": "b690248e-d0fc-4f76-8d5d-869d9885a095",
+          "parent_id": "",
+          "logic": "OR",
+          "is_default": false
+        },
+        {
+          "mrid": "99aa81da-ef37-4eca-a157-d5a807e791bd",
+          "rule_id": "c68010ce-3415-491d-a295-2d17cbc81ba7",
+          "parent_id": "",
+          "logic": "OR",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "TDTS [10⁻³]",
+          "mrid": "71737bd2-933f-40ea-a99a-c093e71d77e6",
+          "group_id": "04c8d32e-beeb-4007-9aa2-fe4ac512b960",
+          "measurement_id": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "operator": "<",
+          "threshold": "0.1"
+        },
+        {
+          "label": "DTD [10⁻³]",
+          "mrid": "05ba27b8-a659-4edf-a4ec-e55344dcd3d5",
+          "group_id": "04c8d32e-beeb-4007-9aa2-fe4ac512b960",
+          "measurement_id": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
+          "operator": "<",
+          "threshold": "6"
+        },
+        {
+          "label": "MTD [10⁻³]",
+          "mrid": "1d9c06ee-64f2-4062-8682-aa753d122fc0",
+          "group_id": "04c8d32e-beeb-4007-9aa2-fe4ac512b960",
+          "measurement_id": "57da765a-b970-4272-884e-e2a204af1510",
+          "operator": "<",
+          "threshold": "100"
+        },
+        {
+          "label": "TDTS [10⁻³]",
+          "mrid": "cd8500ec-17cc-41f4-9224-79af7dac4abc",
+          "group_id": "de9632ad-a987-4541-8ca3-9119d5f756e8",
+          "measurement_id": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "operator": "≥",
+          "threshold": "0.1"
+        },
+        {
+          "label": "TDTS [10⁻³]",
+          "mrid": "39f67662-e069-4b9e-a53f-f77f2c9e19eb",
+          "group_id": "99aa81da-ef37-4eca-a157-d5a807e791bd",
+          "measurement_id": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "operator": ">",
+          "threshold": "1"
+        }
+      ]
+    },
+    {
+      "mrid": "02716035-e5f5-4777-8761-ffc9e4aac281",
+      "code": "ieee_400_2_mf_xlpe",
+      "name": "IEEE 400.2 (2013) - Service-aged filled insulations (Mineral-filled XLPE) using 0.1 Hz",
+      "type": "ieee",
+      "standard_number": "400.2",
+      "standard_edition": "2013",
+      "columns": [
+        {
+          "mrid": "57da765a-b970-4272-884e-e2a204af1510",
+          "code": "mtd",
+          "name": "MTD [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
+          "code": "tan_delta_dtd",
+          "name": "DTD [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "code": "tan_delta_tdts",
+          "name": "TDTS [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "c5bfb2f0-a5cc-4daa-a3c4-02702bf5ed6f",
+          "standard_id": "02716035-e5f5-4777-8761-ffc9e4aac281",
+          "result": "Acceptable",
+          "priority": ""
+        },
+        {
+          "mrid": "783050ae-2246-4842-83fb-ab2c52a704f0",
+          "standard_id": "02716035-e5f5-4777-8761-ffc9e4aac281",
+          "result": "Further study advised",
+          "priority": ""
+        },
+        {
+          "mrid": "aea0c920-f160-4742-a84d-0c86ff790a7e",
+          "standard_id": "02716035-e5f5-4777-8761-ffc9e4aac281",
+          "result": "Action Required",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "8ab65fd9-9762-40a4-8c0f-bb2607087517",
+          "rule_id": "c5bfb2f0-a5cc-4daa-a3c4-02702bf5ed6f",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "9af9a01f-65f2-4f6f-986f-40fe4a21b57c",
+          "rule_id": "783050ae-2246-4842-83fb-ab2c52a704f0",
+          "parent_id": "",
+          "logic": "OR",
+          "is_default": false
+        },
+        {
+          "mrid": "60917094-b644-4952-abce-f3d0b36e7845",
+          "rule_id": "aea0c920-f160-4742-a84d-0c86ff790a7e",
+          "parent_id": "",
+          "logic": "OR",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "MTD [10⁻³]",
+          "mrid": "64171d9f-f73d-41be-8a9f-831648d812f3",
+          "group_id": "8ab65fd9-9762-40a4-8c0f-bb2607087517",
+          "measurement_id": "57da765a-b970-4272-884e-e2a204af1510",
+          "operator": "<",
+          "threshold": "100"
+        },
+        {
+          "label": "MTD [10⁻³]",
+          "mrid": "18d7b367-f2e2-481e-b185-f82d6652edd7",
+          "group_id": "9af9a01f-65f2-4f6f-986f-40fe4a21b57c",
+          "measurement_id": "57da765a-b970-4272-884e-e2a204af1510",
+          "operator": "≥",
+          "threshold": "100"
+        },
+        {
+          "label": "MTD [10⁻³]",
+          "mrid": "1891f1e0-af41-4aa4-924f-c18b2922cd9d",
+          "group_id": "60917094-b644-4952-abce-f3d0b36e7845",
+          "measurement_id": "57da765a-b970-4272-884e-e2a204af1510",
+          "operator": ">",
+          "threshold": "350"
+        }
+      ]
+    },
+    {
+      "mrid": "370047d5-f137-4497-be89-f384e034b708",
+      "code": "ieee_400_2_pilc",
+      "name": "IEEE 400.2 (2013) - Service-aged paper insulations (PILC) using 0.1 Hz",
+      "type": "ieee",
+      "standard_number": "400.2",
+      "standard_edition": "2013",
+      "columns": [
+        {
+          "mrid": "57da765a-b970-4272-884e-e2a204af1510",
+          "code": "mtd",
+          "name": "MTD [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
+          "code": "tan_delta_dtd",
+          "name": "DTD [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "code": "tan_delta_tdts",
+          "name": "TDTS [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "a3c5379e-38c7-41e1-9c2a-2946128b3342",
+          "standard_id": "370047d5-f137-4497-be89-f384e034b708",
+          "result": "Acceptable",
+          "priority": ""
+        },
+        {
+          "mrid": "f4b92117-4a8d-442a-a8e9-d5fccc0eb13e",
+          "standard_id": "370047d5-f137-4497-be89-f384e034b708",
+          "result": "Further study advised",
+          "priority": ""
+        },
+        {
+          "mrid": "d3dccaf8-0a52-4e78-b3c1-549a13600176",
+          "standard_id": "370047d5-f137-4497-be89-f384e034b708",
+          "result": "Action Required",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "a4d7d3a0-2de8-4e57-821b-4516352e2ebc",
+          "rule_id": "a3c5379e-38c7-41e1-9c2a-2946128b3342",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "83fded4d-af9e-4ab4-b1a5-bc68b0c85393",
+          "rule_id": "f4b92117-4a8d-442a-a8e9-d5fccc0eb13e",
+          "parent_id": "",
+          "logic": "OR",
+          "is_default": false
+        },
+        {
+          "mrid": "00b5ecc4-1e0f-466c-abda-2b45521ae9be",
+          "rule_id": "d3dccaf8-0a52-4e78-b3c1-549a13600176",
+          "parent_id": "",
+          "logic": "OR",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "TDTS [10⁻³]",
+          "mrid": "2b3ef76a-b021-4230-955d-ad03ea4d4046",
+          "group_id": "a4d7d3a0-2de8-4e57-821b-4516352e2ebc",
+          "measurement_id": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "operator": "<",
+          "threshold": "0.1"
+        },
+        {
+          "label": "MTD [10⁻³]",
+          "mrid": "b50be36b-ff2f-4c52-ba8f-cef28232d15d",
+          "group_id": "a4d7d3a0-2de8-4e57-821b-4516352e2ebc",
+          "measurement_id": "57da765a-b970-4272-884e-e2a204af1510",
+          "operator": "<",
+          "threshold": "85"
+        },
+        {
+          "label": "TDTS [10⁻³]",
+          "mrid": "5ffd2a4e-404d-4f9f-a641-e57efba1a129",
+          "group_id": "83fded4d-af9e-4ab4-b1a5-bc68b0c85393",
+          "measurement_id": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "operator": "≥",
+          "threshold": "0.1"
+        },
+        {
+          "label": "TDTS [10⁻³]",
+          "mrid": "4a0c6afd-359e-4c15-a922-fef8553e3924",
+          "group_id": "00b5ecc4-1e0f-466c-abda-2b45521ae9be",
+          "measurement_id": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "operator": ">",
+          "threshold": "0.4"
+        }
+      ]
+    },
+    {
+      "mrid": "39f2bd05-ae1a-43ce-b887-f0ba4b87450e",
+      "code": "customized_tan_delta_vlf_power_cable",
+      "name": "Customized limit",
+      "type": "customized",
+      "standard_number": "",
+      "standard_edition": "",
+      "columns": [
+        {
+          "mrid": "57da765a-b970-4272-884e-e2a204af1510",
+          "code": "mtd",
+          "name": "MTD [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
+          "code": "tan_delta_dtd",
+          "name": "DTD [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "code": "tan_delta_tdts",
+          "name": "TDTS [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "bd417239-1569-493e-9e54-79e68b934a37",
+          "standard_id": "39f2bd05-ae1a-43ce-b887-f0ba4b87450e",
+          "result": "Acceptable",
+          "priority": ""
+        },
+        {
+          "mrid": "7a170ea4-85bf-4827-a267-023acf0fd4ad",
+          "standard_id": "39f2bd05-ae1a-43ce-b887-f0ba4b87450e",
+          "result": "Further study advised",
+          "priority": ""
+        },
+        {
+          "mrid": "a6c0b2dc-7059-4564-b98d-d18fd28c4277",
+          "standard_id": "39f2bd05-ae1a-43ce-b887-f0ba4b87450e",
+          "result": "Action Required",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "a58d6ee0-1976-48f8-860b-336642ffa31b",
+          "rule_id": "bd417239-1569-493e-9e54-79e68b934a37",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "b6b52559-655c-445f-9c3a-697c9bdbda1a",
+          "rule_id": "7a170ea4-85bf-4827-a267-023acf0fd4ad",
+          "parent_id": "",
+          "logic": "OR",
+          "is_default": false
+        },
+        {
+          "mrid": "25d214d3-1294-4f32-bbe5-e9c12afb14e1",
+          "rule_id": "a6c0b2dc-7059-4564-b98d-d18fd28c4277",
+          "parent_id": "",
+          "logic": "OR",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "TDTS [10⁻³]",
+          "mrid": "04f17e3f-f24d-46cf-b51d-3c076aacb751",
+          "group_id": "a58d6ee0-1976-48f8-860b-336642ffa31b",
+          "measurement_id": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "operator": "<",
+          "threshold": ""
+        },
+        {
+          "label": "DTD [10⁻³]",
+          "mrid": "9e55c187-faa1-4cc6-be2d-98fc4a1a5cb7",
+          "group_id": "a58d6ee0-1976-48f8-860b-336642ffa31b",
+          "measurement_id": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
+          "operator": "<",
+          "threshold": ""
+        },
+        {
+          "label": "MTD [10⁻³]",
+          "mrid": "93ec8365-4983-45b9-b15b-8a169a5250e9",
+          "group_id": "a58d6ee0-1976-48f8-860b-336642ffa31b",
+          "measurement_id": "57da765a-b970-4272-884e-e2a204af1510",
+          "operator": "<",
+          "threshold": ""
+        },
+        {
+          "label": "TDTS [10⁻³]",
+          "mrid": "8543dbf4-875c-491e-a168-1c45dcfa8ebb",
+          "group_id": "b6b52559-655c-445f-9c3a-697c9bdbda1a",
+          "measurement_id": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "operator": "≥",
+          "threshold": ""
+        },
+        {
+          "label": "TDTS [10⁻³]",
+          "mrid": "c06137c4-d36d-4497-83d4-d463ce46d24c",
+          "group_id": "25d214d3-1294-4f32-bbe5-e9c12afb14e1",
+          "measurement_id": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
+          "operator": ">",
+          "threshold": ""
+        }
+      ]
+    }
+  ]
+}

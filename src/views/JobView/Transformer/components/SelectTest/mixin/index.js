@@ -2,6 +2,7 @@
 import transformerTestMap from '@/config/test-definitions/Transformer'
 import transformerConditionMap from '@/config/testing-condition/Transformer/index.js'
 import * as common from '../../../../Common/index.js'
+import transformerAssessmentMap from '@/config/testing-assessment/Transformer'
 
 export default {
     methods: {
@@ -148,8 +149,10 @@ export default {
                 table1.push(row)
             })
 
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1
                 }
@@ -199,8 +202,10 @@ export default {
                 table1.push(row)
             })
 
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1
                 }
@@ -210,7 +215,7 @@ export default {
             const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
 
-            let tapChangers = assetData?.tap_changers || {}
+            let tapChangers = (assetData ? assetData.tap_changers : null) || {}
             if (typeof tapChangers === 'string') {
                 try {
                     tapChangers = JSON.parse(tapChangers)
@@ -239,8 +244,10 @@ export default {
                 })
             })
 
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1
                 }
@@ -253,7 +260,7 @@ export default {
             const asset = assetData || []
             const tapChangers = asset.tap_changers || {}
 
-            if (!tapChangers.mode || !tapChangers.winding || !tapChangers.tap_scheme || !tapChangers.no_of_taps) {
+            if (!(tapChangers ? tapChangers.mode : null) || !tapChangers.winding || !tapChangers.tap_scheme || !tapChangers.no_of_taps) {
                 return {
                     rowDataExampleCondition,
                     table: {
@@ -279,8 +286,10 @@ export default {
                 })
             })
 
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1
                 }
@@ -290,7 +299,7 @@ export default {
             const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
 
-            let tapChangers = assetData?.tap_changers || {}
+            let tapChangers = (assetData ? assetData.tap_changers : null) || {}
 
             if (typeof tapChangers === 'string') {
                 try {
@@ -303,7 +312,7 @@ export default {
             let table1 = []
             const phases = ['A', 'B', 'C']
 
-            if (tapChangers.mode && tapChangers.winding === this.$constant.PRIM && tapChangers.tap_scheme && tapChangers.no_of_taps) {
+            if ((tapChangers ? tapChangers.mode : null) && tapChangers.winding === this.$constant.PRIM && tapChangers.tap_scheme && tapChangers.no_of_taps) {
                 const voltage_table = tapChangers.voltage_table || []
                 voltage_table.forEach((element) => {
                     const tap = element.tap
@@ -321,8 +330,10 @@ export default {
                     table1.push(row)
                 })
             }
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1
                 }
@@ -332,7 +343,7 @@ export default {
             const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
 
-            let tapChangers = assetData?.tap_changers || {}
+            let tapChangers = (assetData ? assetData.tap_changers : null) || {}
 
             if (typeof tapChangers === 'string') {
                 try {
@@ -345,7 +356,7 @@ export default {
             let table1 = []
             const phases = ['A', 'B', 'C']
 
-            if (tapChangers.mode && tapChangers.winding === this.$constant.SEC && tapChangers.tap_scheme && tapChangers.no_of_taps) {
+            if ((tapChangers ? tapChangers.mode : null) && tapChangers.winding === this.$constant.SEC && tapChangers.tap_scheme && tapChangers.no_of_taps) {
                 const voltage_table = tapChangers.voltage_table || []
                 voltage_table.forEach((element) => {
                     const tap = element.tap
@@ -363,8 +374,10 @@ export default {
                     table1.push(row)
                 })
             }
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1
                 }
@@ -374,7 +387,7 @@ export default {
             const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
 
-            let tapChangers = assetData?.tap_changers || {}
+            let tapChangers = (assetData ? assetData.tap_changers : null) || {}
 
             if (typeof tapChangers === 'string') {
                 try {
@@ -387,7 +400,7 @@ export default {
             let table1 = []
             const phases = ['A', 'B', 'C']
 
-            if (tapChangers.mode && tapChangers.winding === this.$constant.TERT && tapChangers.tap_scheme && tapChangers.no_of_taps) {
+            if ((tapChangers ? tapChangers.mode : null) && tapChangers.winding === this.$constant.TERT && tapChangers.tap_scheme && tapChangers.no_of_taps) {
                 const voltage_table = tapChangers.voltage_table || []
                 voltage_table.forEach((element) => {
                     const tap = element.tap
@@ -405,8 +418,10 @@ export default {
                     table1.push(row)
                 })
             }
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1
                 }
@@ -428,8 +443,10 @@ export default {
                 table1.push(row)
             })
 
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1
                 }
@@ -451,8 +468,10 @@ export default {
                 table1.push(row)
             })
 
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1
                 }
@@ -474,8 +493,10 @@ export default {
                 table1.push(row)
             })
 
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1
                 }
@@ -497,8 +518,10 @@ export default {
                 table1.push(row)
             })
 
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1
                 }
@@ -513,8 +536,10 @@ export default {
             const row = JSON.parse(JSON.stringify(rowDataExample))
             table1.push(row)
 
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1
                 }
@@ -529,8 +554,10 @@ export default {
             const row = JSON.parse(JSON.stringify(rowDataExample))
             table1.push(row)
 
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1
                 }
@@ -545,8 +572,10 @@ export default {
             const row = JSON.parse(JSON.stringify(rowDataExample))
             table1.push(row)
 
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1
                 }
@@ -561,8 +590,10 @@ export default {
             const row = JSON.parse(JSON.stringify(rowDataExample))
             table1.push(row)
 
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1
                 }
@@ -609,8 +640,10 @@ export default {
                 table1.push(row)
             })
 
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1
                 }
@@ -635,8 +668,10 @@ export default {
                 })
             }
 
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1
                 }
@@ -661,8 +696,10 @@ export default {
                 })
             }
 
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1
                 }
@@ -687,8 +724,10 @@ export default {
                 })
             }
 
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1
                 }
@@ -713,8 +752,10 @@ export default {
                 })
             }
 
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1
                 }
@@ -739,8 +780,10 @@ export default {
                 })
             }
 
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1
                 }
@@ -765,8 +808,10 @@ export default {
                 })
             }
 
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1
                 }
@@ -781,8 +826,10 @@ export default {
             const row = JSON.parse(JSON.stringify(rowDataExample))
             table1.push(row)
 
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1
                 }
@@ -797,8 +844,10 @@ export default {
             const row = JSON.parse(JSON.stringify(rowDataExample))
             table1.push(row)
 
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1
                 }
@@ -813,8 +862,10 @@ export default {
             const row = JSON.parse(JSON.stringify(rowDataExample))
             table1.push(row)
 
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1
                 }
@@ -847,8 +898,10 @@ export default {
                 })
             }
 
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1,
                     table2: table2
@@ -882,8 +935,10 @@ export default {
                 })
             }
 
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1,
                     table2: table2
@@ -917,8 +972,10 @@ export default {
                 })
             }
 
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table: {
                     table1: table1,
                     table2: table2

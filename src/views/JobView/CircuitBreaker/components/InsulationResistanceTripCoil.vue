@@ -4,7 +4,7 @@
         <div style="position: sticky; left: 0; display: inline-block;">
             <el-row class="mgb-10">
                 <el-col>
-                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
+                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentSettings()">
                         <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
                     </el-button>
                     <el-button class="btn-action" size="mini" type="success"
@@ -85,22 +85,13 @@
             </tbody>
         </table>
 
-        <!-- Assessment settings -->
-        <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog"
-            width="50%">
-            <!-- <el-radio-group v-model="assetData.assessmentLimits.limits">
-                <el-radio label="Absolute" value="Absolute"></el-radio>
-                <el-radio label="Relative" value="Relative"></el-radio>
-            </el-radio-group>
-            <br /><br /><br />
-            <br />
-            <template #footer>
-                <span style="margin-top: 20px; width: 100%; position: absolute; right: 10px; bottom: 10px"
-                    class="dialog-footer">
-                    <el-button @click="resetAssessment">Cancel</el-button>
-                    <el-button type="primary" @click="updateAssessment"> Confirm </el-button>
+        <el-dialog append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="400px">
+            <el-alert type="warning" title="Insulation resistance assessment limits have not been configured in the asset view yet." :closable="false"/>
+            <template v-slot:footer>
+                <span style="position:absolute;right:10px;bottom:10px;">
+                    <el-button @click="openAssessmentDialog = false">Close</el-button>
                 </span>
-            </template> -->
+            </template>
         </el-dialog>
     </div>
 </template>
@@ -108,11 +99,14 @@
 <script>
 import CircuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
 import * as common from '../../Common/index'
+import assessmentMixin from './assessmentMixin'
 export default {
+    mixins: [assessmentMixin],
     name: 'InsulationResistanceTripCoil',
     data() {
         return {
             openAssessmentDialog: false,
+            backupLimits: null,
             openConditionIndicatorDialog: false,
         }
     },
@@ -162,51 +156,8 @@ export default {
         }
     },
     methods: {
-        async updateAssessment() {
-            // Sync testData.limits to asset_ if testData.limits exists
-            if (this.testData && this.testData.limits) {
-                if (!this.asset_) {
-                    this.asset_ = {}
-                }
-                this.asset_.limits = this.testData.limits
-            }
-            const asset = {
-                id: this.asset.id,
-                assessmentLimits: this.asset_
-            }
-            const data = await window.electronAPI.updateCircuitAssessmentLimits(asset)
-            if (data.success) {
-                this.$message.success('Update successfully')
-                this.openAssessmentDialog = false
-            } else {
-                this.$message.error("Update cannot complete")
-                this.openAssessmentDialog = false
-            }
-        },
-        resetAssessment() {
-            if (!this.asset || !this.asset.assessmentLimits) {
-                this.asset_ = {}
-                this.openAssessmentDialog = false
-                return
-            }
-            try {
-                if (typeof this.asset.assessmentLimits === 'string') {
-                    this.asset_ = JSON.parse(this.asset.assessmentLimits)
-                } else if (typeof this.asset.assessmentLimits === 'object') {
-                    this.asset_ = JSON.parse(JSON.stringify(this.asset.assessmentLimits))
-                } else {
-                    this.asset_ = {}
-                }
-                // Sync limits back to testData after reset
-                if (this.asset_ && this.asset_.limits && this.testData) {
-                    this.$set(this.testData, 'limits', this.asset_.limits)
-                }
-            } catch (error) {
-                console.error('Error parsing assessmentLimits in resetAssessment:', error)
-                this.asset_ = {}
-            }
-            this.openAssessmentDialog = false
-        },
+
+
         add() {
             this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
         },
@@ -227,7 +178,8 @@ export default {
             this.testData.table.table1.splice(index + 1, 0, data)
         },
         calculator() {
-            this.$message.success('Calculating successfully')
+            this.testData.table.table1.forEach(function(item) { item.assessment.value = '' })
+            this.$message.warning('Assessment limits for insulation resistance not yet configured in asset')
         },
 
         clear() {

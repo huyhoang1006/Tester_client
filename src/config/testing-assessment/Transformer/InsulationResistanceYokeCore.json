@@ -1,0 +1,180 @@
+{
+  "testCode": "InsulationResistanceYokeCore",
+  "testName": "Insulation resistance of yoke and core",
+  "testStandard": [
+    {
+      "mrid": "4e84d1e8-9181-448a-8d2b-b4a92d22c856",
+      "code": "cigre_445_insulationresistanceyokecore_hv",
+      "name": "CIGRE 445 - High voltage (VPrim > 69kV)",
+      "type": "cigre",
+      "standard_number": "445",
+      "standard_edition": "2010",
+      "columns": [
+        {
+          "mrid": "6c9d0e1f-2a3b-4c13-9009-000000000017",
+          "code": "r60s",
+          "name": "R60s",
+          "type": "analog",
+          "unit": "m|Ω",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "a2c64f61-8bdc-425c-91f8-f0252071e589",
+          "standard_id": "4e84d1e8-9181-448a-8d2b-b4a92d22c856",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "5e21e84e-5c6d-449e-bfe9-db0d07570279",
+          "standard_id": "4e84d1e8-9181-448a-8d2b-b4a92d22c856",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "eeed02e3-d3e6-4710-b158-7da3b219c943",
+          "rule_id": "a2c64f61-8bdc-425c-91f8-f0252071e589",
+          "parent_id": "",
+          "logic": "",
+          "is_default": false
+        },
+        {
+          "mrid": "d0d4c4b7-7d83-476b-bbed-4521b2f5b3c6",
+          "rule_id": "5e21e84e-5c6d-449e-bfe9-db0d07570279",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "R60s (MΩ)",
+          "mrid": "e6b2b150-f6b1-4b1e-9a11-b96817db9661",
+          "group_id": "eeed02e3-d3e6-4710-b158-7da3b219c943",
+          "measurement_id": "6c9d0e1f-2a3b-4c13-9009-000000000017",
+          "operator": "≥",
+          "threshold": "1000"
+        }
+      ]
+    },
+    {
+      "mrid": "a66c4e27-4c83-4073-b5f0-77629aaf3b24",
+      "code": "cigre_445_insulationresistanceyokecore_lv",
+      "name": "CIGRE 445 - Low voltage (VPrim ≤ 69kV)",
+      "type": "cigre",
+      "standard_number": "445",
+      "standard_edition": "2010",
+      "columns": [
+        {
+          "mrid": "6c9d0e1f-2a3b-4c13-9009-000000000017",
+          "code": "r60s",
+          "name": "R60s",
+          "type": "analog",
+          "unit": "m|Ω",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "59adc0e3-bb9c-434e-b054-7d580641f9a4",
+          "standard_id": "a66c4e27-4c83-4073-b5f0-77629aaf3b24",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "39b29f91-e83d-4010-98cd-5f4100718407",
+          "standard_id": "a66c4e27-4c83-4073-b5f0-77629aaf3b24",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "030c2673-25f6-43ff-9ff0-4a71f4b5d199",
+          "rule_id": "59adc0e3-bb9c-434e-b054-7d580641f9a4",
+          "parent_id": "",
+          "logic": "",
+          "is_default": false
+        },
+        {
+          "mrid": "075a24cc-32e3-4bb7-9cf5-e8c22189d819",
+          "rule_id": "39b29f91-e83d-4010-98cd-5f4100718407",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "R60s (MΩ)",
+          "mrid": "7e7b76b2-f87e-4dfd-a743-4c768d6656f6",
+          "group_id": "030c2673-25f6-43ff-9ff0-4a71f4b5d199",
+          "measurement_id": "6c9d0e1f-2a3b-4c13-9009-000000000017",
+          "operator": "≥",
+          "threshold": "500"
+        }
+      ]
+    },
+    {
+      "mrid": "f29bf418-2a85-4c23-bdda-04b9166c6553",
+      "code": "customized_insulationresistanceyokecore_transformer",
+      "name": "Customized limit",
+      "type": "customized",
+      "standard_number": "",
+      "standard_edition": "",
+      "columns": [
+        {
+          "mrid": "6c9d0e1f-2a3b-4c13-9009-000000000017",
+          "code": "r60s",
+          "name": "R60s",
+          "type": "analog",
+          "unit": "m|Ω",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "821c5eed-0ac5-4a3b-ad28-24167a6534be",
+          "standard_id": "f29bf418-2a85-4c23-bdda-04b9166c6553",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "0ab2c66c-d470-40ef-83ec-c124c0f84dd0",
+          "standard_id": "f29bf418-2a85-4c23-bdda-04b9166c6553",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "4a915fa1-3dae-4ac0-805d-c89e62a76946",
+          "rule_id": "821c5eed-0ac5-4a3b-ad28-24167a6534be",
+          "parent_id": "",
+          "logic": "",
+          "is_default": false
+        },
+        {
+          "mrid": "a2efd8be-2c3d-45be-8df8-d88df0a98616",
+          "rule_id": "0ab2c66c-d470-40ef-83ec-c124c0f84dd0",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "R60s (MΩ)",
+          "mrid": "372148e4-b7b3-4ac4-8710-acc74e3af11a",
+          "group_id": "4a915fa1-3dae-4ac0-805d-c89e62a76946",
+          "measurement_id": "6c9d0e1f-2a3b-4c13-9009-000000000017",
+          "operator": "≥",
+          "threshold": ""
+        }
+      ]
+    }
+  ]
+}

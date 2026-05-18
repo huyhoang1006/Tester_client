@@ -1,0 +1,6 @@
+{
+  "testId": "pc-avi-001",
+  "testCode": "AcVoltageInsulation",
+  "testName": "AC voltage test of the insulation",
+  "testStandard": []
+}

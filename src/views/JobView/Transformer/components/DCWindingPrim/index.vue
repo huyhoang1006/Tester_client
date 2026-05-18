@@ -110,101 +110,40 @@
         </table>
 
         <!-- Assessment settings -->
-        <el-dialog append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px">
-            <!-- <el-form size="small" label-position="left" label-width="140px">
+        <!-- Assessment settings -->
+        <el-dialog title="Assessment settings" :visible.sync="openAssessmentDialog" width="860px" append-to-body>
+            <el-form style="width:75%;" size="small" label-position="left" label-width="140px">
                 <el-form-item label="Option">
-                    <el-select class="w-100" placeholder="please select" v-model="assessmentSetting.option.value">
-                        <el-option label="IEEE C57.152 (2013)" value="IEEE"></el-option>
-                        <el-option label="CIGRE 445" value="CIGRE"></el-option>
-                        <el-option label="Customized limit" value="Custom"></el-option>
+                    <el-select size="mini" placeholder="please select" v-model="option">
+                        <el-option v-for="opt in assessmentList" :key="opt.mrid" :label="opt.name" :value="opt.code"></el-option>
                     </el-select>
                 </el-form-item>
             </el-form>
-
-            <table v-if="assessmentSetting.option.value === 'IEEE'" class="table-strip-input-data">
-                <thead>
-                    <tr>
-                        <th colspan="2">Limit</th>
-                        <th>Assessment</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <th>Dev within phases (%)</th>
-                        <td> ≤ {{ assessmentSetting.data.ieee.error_between_phase.value }}</td>
-                        <th><i class="fas fa-check-square pass"></i> Pass</th>
-                    </tr>
-                    <tr>
-                        <th>Dev within phases (%)</th>
-                        <td> > {{ assessmentSetting.data.ieee.error_between_phase.value }}</td>
-                        <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
-                    </tr>
-                </tbody>
-            </table>
-
-            <table v-else-if="assessmentSetting.option.value === 'CIGRE'" class="table-strip-input-data">
-                <thead>
-                    <tr>
-                        <th colspan="2">Limit</th>
-                        <th>Assessment</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <th>Dev with R ref (%)</th>
-                        <td> ≤ {{ assessmentSetting.data.cigre.error_r_ref.value }}</td>
-                        <th><i class="fas fa-check-square pass"></i> Pass</th>
-                    </tr>
-                    <tr>
-                        <th>Dev with R ref (%)</th>
-                        <td> > {{ assessmentSetting.data.cigre.error_r_ref.value }}</td>
-                        <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
-                    </tr>
-                </tbody>
-            </table>
-
-            <table v-else-if="assessmentSetting.option.value === 'Custom'" class="table-strip-input-data">
-                <thead>
-                    <tr>
-                        <th colspan="2">Limit</th>
-                        <th>Assessment</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <th>Dev within phases (%)</th>
-                        <td>
-                            ≤ <el-input style="width: 100px;" size="mini"
-                                v-model="assessmentSetting.data.custom.error_between_phase.value"></el-input>
-                        </td>
-                        <th><i class="fas fa-check-square pass"></i> Pass</th>
-                    </tr>
-                    <tr>
-                        <th>Dev within phases (%)</th>
-                        <td>
-                            > <el-input style="width: 100px;" size="mini"
-                                v-model="assessmentSetting.data.custom.error_between_phase.value"></el-input>
-                        </td>
-                        <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
-                    </tr>
-                    <tr>
-                        <th>Dev with R ref (%)</th>
-                        <td>
-                            ≤ <el-input style="width: 100px;" size="mini"
-                                v-model="assessmentSetting.data.custom.error_r_ref.value"></el-input>
-                        </td>
-                        <th><i class="fas fa-check-square pass"></i> Pass</th>
-                    </tr>
-                    <tr>
-                        <th>Dev with R ref (%)</th>
-                        <td>
-                            > <el-input style="width: 100px;" size="mini"
-                                v-model="assessmentSetting.data.custom.error_r_ref.value"></el-input>
-                        </td>
-                        <th><i class="fa-solid fa-xmark fail"></i> Fail</th>
-                    </tr>
-                </tbody>
-            </table> -->
+            <div v-for="element in filteredAssessmentData" :key="element.mrid" class="assessment-container">
+                <div class="assessment-header">
+                    <div class="limit-col">Limit</div>
+                    <div class="result-col">Assessment</div>
+                </div>
+                <div class="assessment-body">
+                    <template v-for="(node, i) in element.tree">
+                        <div v-if="!node.is_default" :key="'node-' + i" class="tree-row">
+                            <div class="limit-col"><GroupNode :node="node" mode="limit" /></div>
+                            <div class="result-col">
+                                <span v-if="node.result === 'Pass'" class="pass">✔ Pass</span>
+                                <span v-else-if="node.result === 'Fail'" class="fail">✖ Fail</span>
+                                <span v-else>—</span>
+                            </div>
+                        </div>
+                        <div v-else :key="'default-' + i" class="tree-row tree-row-default">
+                            <div class="limit-col default-label">All other cases</div>
+                            <div class="result-col">
+                                <span v-if="node.result === 'Pass'" class="pass">✔ Pass</span>
+                                <span v-else-if="node.result === 'Fail'" class="fail">✖ Fail</span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
         </el-dialog>
 
         <!-- Condition indicator settings -->
@@ -268,213 +207,205 @@
 </template>
 
 <script>
-import TransformerTestMap from '@/config/test-definitions/Transformer'
-import * as common from '../../../Common/index'
+/* eslint-disable */
+import transformerTestMap from '@/config/test-definitions/Transformer'
+import * as common from '../../../Common/index.js'
+import GroupNode from '../../../Common/GroupNode.vue'
+import { changeTestStandard } from '../../../Common'
+
 export default {
-    name: 'DCWindingPrim',
+    name: "DCWindingPrim",
+    components: { GroupNode },
     data() {
         return {
             openAssessmentDialog: false,
-            openConditionIndicatorDialog: false
+            openConditionIndicatorDialog: false,
+            option: null
         }
     },
     props: {
-        data: {
-            type: Object,
-            require: true
-        },
-        asset: {
-            type: Object,
-            required: false,
-        }
+        data:           { type: Object, require: true },
+        asset:          { type: Object, require: true },
+        testAssessment: { type: Object, require: true },
+        testCondition:  { type: Object, default: function() { return { condition: {} } } }
     },
     computed: {
-        testData() {
-            return this.data
-        },
-        assetData() {
-            return this.asset
-        },
-        rowData() {
-            return common.buildEmptyTestRow(TransformerTestMap['DCWindingPrim'].columns)
-        },
-        assessmentSetting() {
-            return this.data.assessment_setting
-        },
-        conditionIndicatorSetting() {
-            return this.data.condition_indicator_setting
-        },
-        error_between_phase() {
-            let length = this.testData.table.length
-            var index = [...Array(length).keys()].filter((item) => item % 3 == 0)
-            var arr = []
-            function filter_index(item, index, arr) {
-                if (index % 3 == 0) {
-                    arr.push(item)
-                }
-            }
-            this.testData.table.table1.forEach((item, index_) => filter_index(item, index_, arr))
-            return { index: index, value: arr }
-        }
-    },
-    // watch: {
-    //     error_between_phase: {
-    //         handler: function () {
-    //             var index = this.error_between_phase.index
-    //             var value = this.error_between_phase.value
-    //             index.forEach((item, index) => {
-    //                 this.testData.table[item + 1].error_between_phase = value[index].error_between_phase
-    //                 this.testData.table[item + 2].error_between_phase = value[index].error_between_phase
-    //             })
-    //         },
-    //         deep: true,
-    //         immediate: true
-    //     }
-    // },
-    methods: {
-        async calculator() {
-            // let data = this.testCondition.condition
-            // if (!isNaN(parseFloat(data.winding_temperature)) && !isNaN(parseFloat(data.reference_temperature))) {
-            //     await this.CalRcorr()
-            // } else {
-            //     await this.CalRcorrWithoutTem()
-            // }
-            // await this.CalDevWithRref()
-            // await this.CalDevWithPhase()
-            // await this.CalAssessment()
-
-            this.$message.success('Calculating successfully')
-        },
-        // async CalRcorr() {
-        // let data = this.testCondition.condition
-        // const winding = JSON.parse(this.$store.state.selectedAsset[0].winding)
-        // if (winding.sec === "Copper") {
-        //     this.testData.table.forEach((element) => {
-        //         if (!isNaN(parseFloat(element.r_meas))) {
-        //             if (!isNaN(parseFloat(data.winding_temperature))) {
-        //                 if (!isNaN(parseFloat(data.reference_temperature))) {
-        //                     element.r_corr = parseFloat(parseFloat(element.r_meas) * (235 + parseFloat(data.reference_temperature)) / (235 + parseFloat(data.winding_temperature)))
-        //                     if (element.r_corr != null) {
-        //                         element.r_corr = element.r_corr.toFixed(4)
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     })
-        // } else {
-        //     this.testData.table.forEach((element) => {
-        //         if (!isNaN(element.r_meas)) {
-        //             if (!isNaN(data.winding_temperature)) {
-        //                 if (!isNaN(data.reference_temperature)) {
-        //                     element.r_corr = parseFloat(parseFloat(element.r_meas) * (225 + parseFloat(data.reference_temperature)) / (225 + parseFloat(data.winding_temperature))).toFixed(4)
-        //                 }
-        //             }
-        //         }
-        //     })
-        // }
-        // },
-        // async CalRcorrWithoutTem() {
-        // this.testData.table.forEach((element) => {
-        //     if (!isNaN(parseFloat(element.r_meas))) {
-        //         element.r_corr = element.r_meas
-        //     }
-        // })
-        // },
-        // async CalDevWithRref() {
-        //     this.testData.table.forEach((element) => {
-        //         if (!isNaN(parseFloat(element.r_ref))) {
-        //             if (parseFloat(element.r_ref) != 0) {
-        //                 if (!isNaN(parseFloat(element.r_corr))) {
-        //                     element.error_r_ref = ((parseFloat(element.r_corr) - parseFloat(element.r_ref)) / parseFloat(element.r_ref)) * 100
-        //                     element.error_r_ref = element.error_r_ref.toFixed(4)
-        //                 }
-        //             }
-        //         }
-        //     })
-        // },
-        // async CalDevWithPhase() {
-        //     this.testData.table.forEach((element, index) => {
-        //         if (index % 3 == 0) {
-        //             if (!isNaN(parseFloat(this.testData.table[index].r_corr)) && !isNaN(parseFloat(this.testData.table[index + 1].r_corr)) && !isNaN(parseFloat(this.testData.table[index + 2].r_corr))) {
-        //                 let arr = [this.testData.table[index].r_corr, this.testData.table[index + 1].r_corr, this.testData.table[index + 2].r_corr]
-        //                 let max_r_max = Math.max(...arr)
-        //                 let min_r_min = Math.min(...arr)
-        //                 if (parseFloat(min_r_min) != 0) {
-        //                     this.testData.table[index].error_between_phase = 100 * (parseFloat(max_r_max) - parseFloat(min_r_min)) / parseFloat(min_r_min)
-        //                     this.testData.table[index + 1].error_between_phase = 100 * (parseFloat(max_r_max) - parseFloat(min_r_min)) / parseFloat(min_r_min)
-        //                     this.testData.table[index + 2].error_between_phase = 100 * (parseFloat(max_r_max) - parseFloat(min_r_min)) / parseFloat(min_r_min)
-        //                 }
-        //             }
-        //         }
-        //     })
-        // },
-        // async CalAssessment() {
-        //     if (this.assessmentSetting.option === "IEEE") {
-        //         this.testData.table.forEach((element) => {
-        //             if (!isNaN(parseFloat(element.error_between_phase))) {
-        //                 if (Math.abs(element.error_between_phase) <= this.assessmentSetting.data.ieee.error_between_phase) {
-        //                     element.assessment = "Pass"
-        //                 } else {
-        //                     element.assessment = "Fail"
-        //                 }
-        //             }
-        //         })
-        //     } else if (this.assessmentSetting.option === "CIGRE") {
-        //         this.testData.table.forEach((element) => {
-        //             if (!isNaN(parseFloat(element.error_r_ref))) {
-        //                 if (Math.abs(element.error_r_ref) <= this.assessmentSetting.data.cigre.error_r_ref) {
-        //                     element.assessment = "Pass"
-        //                 } else {
-        //                     element.assessment = "Fail"
-        //                 }
-        //             }
-        //         })
-        //     } else {
-        //         this.testData.table.forEach((element) => {
-        //             if (!isNaN(parseFloat(element.error_r_ref))) {
-        //                 if (Math.abs(element.error_r_ref) <= this.assessmentSetting.data.custom.error_r_ref) {
-        //                     element.assessment = "Pass"
-        //                 } else {
-        //                     element.assessment = "Fail"
-        //                 }
-        //             } else {
-        //                 if (!isNaN(parseFloat(element.error_between_phase))) {
-        //                     if (Math.abs(element.error_between_phase) <= this.assessmentSetting.data.custom.error_between_phase) {
-        //                         element.assessment = "Pass"
-        //                     } else {
-        //                         element.assessment = "Fail"
-        //                     }
-        //                 }
-        //             }
-        //         })
-        //     }
-        // },
-        clear() {
-            this.testData.table.table1.forEach(row => {
-                Object.keys(row).forEach(key => {
-                    if (key === "mrid" || key === "tap" || key === "name") return;
-                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
-                        row[key].value = ""
-                    }
-                })
+        testData()     { return this.data },
+        assetData()    { return this.asset },
+        conditions()   { return (this.testCondition && this.testCondition.condition) ? this.testCondition.condition : {} },
+        rowData()      { return common.buildEmptyTestRow(transformerTestMap['DCWindingPrim'].columns) },
+        assessmentData()        { return this.testAssessment ? this.testAssessment.assessment : [] },
+        assessmentList() {
+            return (this.assessmentData || []).map(function(x) {
+                return { code: x.code, name: x.name, type: x.type, mrid: x.mrid }
             })
         },
+        filteredAssessmentData() {
+            if (!this.option) return []
+            return (this.assessmentData || []).filter(function(e) { return e.code === this.option }.bind(this))
+        },
+        testStandardData() { return this.testAssessment ? this.testAssessment.testStandard : null }
+    },
+    watch: {
+        'option': {
+            immediate: true,
+            handler: async function (newVal) {
+                const standard = this.filteredAssessmentData.find(x => x.code === newVal)
+                if (standard) await changeTestStandard(standard.mrid, standard.type, this.testStandardData)
+            }
+        },
+        'testStandardData': {
+            immediate: true,
+            handler: async function(newVal) {
+                this.option = common.testStandardDataToOption(newVal)
+            }
+        }
+    },
+    methods: {
+        add() {
+            if (!this.testData.table) this.$set(this.testData, 'table', {})
+            if (!this.testData.table.table1) this.$set(this.testData.table, 'table1', [])
+            this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
+        },
+        removeAll() {
+            this.$confirm('Delete all?', 'Warning', { confirmButtonText: 'OK', cancelButtonText: 'Cancel', type: 'warning' })
+                .then(function() { if (this.testData.table) this.testData.table.table1 = [] }.bind(this))
+                .catch(function() {})
+        },
+        deleteTest(index) {
+            if (this.testData.table && this.testData.table.table1)
+                this.testData.table.table1.splice(index, 1)
+        },
+        addTest(index) {
+            var data = JSON.parse(JSON.stringify(this.rowData))
+            if (this.testData.table && this.testData.table.table1)
+                this.testData.table.table1.splice(index + 1, 0, data)
+        },
+        async calculator() {
+            this.computeFields()
+            await this.calcAssessment()
+            this.$message.success('Calculating successfully')
+        },
+        computeFields() {
+            var rows = this.testData.table.table1
+            if (!rows || rows.length === 0) return
+            var cond = this.conditions
+            var tMeas = parseFloat(cond.winding_temp   && cond.winding_temp.value)   || 0
+            var tRef  = parseFloat(cond.reference_temp && cond.reference_temp.value) || 75
+            // conductor_material: Copper → 235, Aluminum → 225
+            var props = this.assetData && this.assetData.properties ? this.assetData.properties : {}
+            var K = (props.conductor_material === 'Aluminum' || props.conductor_material === 'AL') ? 225 : 235
+
+            for (var i = 0; i < rows.length; i++) {
+                var row = rows[i]
+                var rMeas = parseFloat(row.r_meas && row.r_meas.value)
+                if (!isNaN(rMeas) && tMeas !== 0) {
+                    var rCorr = rMeas * (K + tRef) / (K + tMeas)
+                    row.r_corr.value = String(Math.round(rCorr * 1000000) / 1000000)
+                }
+                // dev_r_ref = 100*(r_corr - r_ref) / r_ref
+                var rCorr2 = parseFloat(row.r_corr && row.r_corr.value)
+                var rRef   = parseFloat(row.r_ref  && row.r_ref.value)
+                if (!isNaN(rCorr2) && !isNaN(rRef) && rRef !== 0) {
+                    row.dev_r_ref.value = String(Math.round(100 * (rCorr2 - rRef) / rRef * 10000) / 10000)
+                }
+            }
+            // dev_phase per group of 3: 100*(max_r_corr - min_r_corr) / min_r_corr
+            for (var g = 0; g < rows.length; g += 3) {
+                var group = rows.slice(g, g + 3)
+                var rCorrVals = group.map(function(r) { return parseFloat(r.r_corr && r.r_corr.value) }).filter(function(v) { return !isNaN(v) })
+                if (rCorrVals.length > 0) {
+                    var maxV = Math.max.apply(null, rCorrVals)
+                    var minV = Math.min.apply(null, rCorrVals)
+                    var devPhase = minV !== 0 ? 100 * (maxV - minV) / minV : 0
+                    rows[g].dev_phase.value = String(Math.round(devPhase * 10000) / 10000)
+                }
+            }
+        },
+        async calcAssessment() {
+            var assessmentStandard = this.filteredAssessmentData.find(function(x) { return x.code === this.option }.bind(this))
+            if (!assessmentStandard) { this.$message.error('Please select an assessment standard'); return }
+            var rows = this.testData.table.table1
+            for (var i = 0; i < rows.length; i++) {
+                var row = rows[i]
+                var measurementMap = {}
+                Object.keys(row).forEach(function(key) {
+                    var item = row[key]
+                    if (!item || typeof item !== 'object') return
+                    if (item.measurement_id) measurementMap[item.measurement_id] = item.value
+                })
+                // dev_phase rowspan=3 → lấy từ row đầu nhóm
+                var groupFirstRow = rows[Math.floor(i / 3) * 3]
+                if (groupFirstRow && groupFirstRow.dev_phase && groupFirstRow.dev_phase.measurement_id) {
+                    measurementMap[groupFirstRow.dev_phase.measurement_id] = groupFirstRow.dev_phase.value
+                }
+                if (row.dev_r_ref && row.dev_r_ref.measurement_id !== undefined) {
+                    var _abs_dev_r_ref = parseFloat(measurementMap[row.dev_r_ref.measurement_id])
+                    if (!isNaN(_abs_dev_r_ref)) measurementMap[row.dev_r_ref.measurement_id] = Math.abs(_abs_dev_r_ref)
+                }
+                if (row.dev_phase && row.dev_phase.measurement_id !== undefined) {
+                    var _abs_dev_phase = parseFloat(measurementMap[row.dev_phase.measurement_id])
+                    if (!isNaN(_abs_dev_phase)) measurementMap[row.dev_phase.measurement_id] = Math.abs(_abs_dev_phase)
+                }
+                var passedResults = []
+                var hasNull = false
+                var defaultResult = null
+                for (var ri = 0; ri < assessmentStandard.tree.length; ri++) {
+                    var root = assessmentStandard.tree[ri]
+                    if (root.is_default) { defaultResult = root.result; continue }
+                    var pass = this.evaluateGroup(root, measurementMap)
+                    if (pass === null) hasNull = true
+                    else if (pass === true) passedResults.push(root.result)
+                }
+                var finalResult
+                if (hasNull && passedResults.length === 0) finalResult = ''
+                else if (passedResults.includes('Fail'))  finalResult = 'Fail'
+                else if (passedResults.includes('Pass'))  finalResult = 'Pass'
+                else if (defaultResult === 'Pass')        finalResult = 'Pass'
+                else if (defaultResult)                   finalResult = 'Fail'
+                else                                      finalResult = ''
+                row.assessment.value = finalResult
+            }
+        },
+        evaluateGroup(group, measurementMap) {
+            for (var ci = 0; ci < (group.conditions || []).length; ci++) {
+                var cond = group.conditions[ci]
+                var value = measurementMap[cond.measurement_id]
+                if (value === null || value === undefined || value === '') return null
+                if (cond.threshold === null || cond.threshold === undefined || cond.threshold === '') return null
+            }
+            for (var chi = 0; chi < (group.children || []).length; chi++) {
+                if (this.evaluateGroup(group.children[chi], measurementMap) === null) return null
+            }
+            var results = []
+            for (var ci2 = 0; ci2 < (group.conditions || []).length; ci2++) {
+                var cond2 = group.conditions[ci2]
+                results.push(common.compare(measurementMap[cond2.measurement_id], cond2.operator, cond2.threshold))
+            }
+            for (var chi2 = 0; chi2 < (group.children || []).length; chi2++) {
+                results.push(this.evaluateGroup(group.children[chi2], measurementMap))
+            }
+            if (results.length === 0) return null
+            var logic = (group.logic || 'AND').toUpperCase()
+            if (logic === 'OR') return results.some(function(x) { return x })
+            return results.every(function(x) { return x })
+        },
+        clear() {
+            if (this.testData.table && this.testData.table.table1) {
+                this.testData.table.table1.forEach(function(row) {
+                    Object.keys(row).forEach(function(key) {
+                        if (key === 'mrid') return
+                        if (row[key] && typeof row[key] === 'object' && 'value' in row[key]) row[key].value = ''
+                    })
+                })
+            }
+        },
         nameColor(data) {
-            if (data === this.$constant.GOOD) {
-                return 'Good'
-            }
-            else if (data === this.$constant.FAIR) {
-                return 'Fair'
-            }
-            else if (data === this.$constant.POOR) {
-                return 'Poor'
-            }
-            else if (data === this.$constant.BAD) {
-                return 'Bad'
-            }
-            else {
-                return;
-            }
+            if (data === this.$constant.GOOD) return 'Good'
+            else if (data === this.$constant.FAIR) return 'Fair'
+            else if (data === this.$constant.POOR) return 'Poor'
+            else if (data === this.$constant.BAD) return 'Bad'
+            else return
         }
     }
 }
@@ -500,4 +431,16 @@ export default {
 .Bad {
     background: #FF0000;
 }
+
+.assessment-container { width: 75%; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 16px; overflow: hidden; }
+.assessment-header { display: flex; background: #f5f7fa; font-weight: bold; padding: 8px; }
+.assessment-body { display: flex; flex-direction: column; border: 1px solid #ebeef5; border-radius: 4px; }
+.tree-row { display: flex; align-items: center; border-bottom: 1px solid #ebeef5; min-height: 40px; padding: 8px 0; width: 100%; }
+.tree-row:last-child { border-bottom: none; }
+.limit-col { flex: 1; padding: 0 12px; }
+.result-col { flex-shrink: 0; width: 100px; text-align: center; border-left: 1px solid #ebeef5; padding: 0 12px; align-self: stretch; display: flex; align-items: center; justify-content: center; }
+.tree-row-default { background: #fafafa; }
+.default-label { font-style: italic; color: #909399; font-size: 13px; }
+.pass { color: #67C23A; font-weight: bold; }
+.fail { color: #F56C6C; font-weight: bold; }
 </style>

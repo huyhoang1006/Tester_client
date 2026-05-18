@@ -217,7 +217,7 @@ export default {
         'testStandardData': {
             immediate: true,
             handler: async function (newVal) {
-                this.option = common.testStandardDataToOption(newVal)
+                this.option = common.testStandardDataToOption(newVal)?.type || null
             }
         },
     },

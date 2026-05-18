@@ -1,0 +1,37 @@
+{
+  "testId": "15c95a31-5cbc-4204-8ebf-4676ef40ed33",
+  "testCode": "PowerFrequency",
+  "testName": "Power frequency voltage at reference current",
+  "testStandard": [
+    {
+      "mrid": "36116f8b-sa03-4ad9-4b16-8c14-pf01-sa001",
+      "code": "customized_power_frequency_surge_arrester",
+      "name": "Customized limit",
+      "type": "customized",
+      "standard_edition": "",
+      "standard_number": "",
+      "columns": [
+        {
+          "mrid": "1d4e5f6a-7b8c-4d9e-9004-000000000012",
+          "code": "v_meas",
+          "name": "V meas",
+          "type": "analog",
+          "unit": "k|V",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        { "mrid": "rule-sa-pf-pass-0001", "standard_id": "36116f8b-sa03-4ad9-4b16-8c14-pf01-sa001", "result": "Pass", "priority": "" },
+        { "mrid": "rule-sa-pf-fail-0001", "standard_id": "36116f8b-sa03-4ad9-4b16-8c14-pf01-sa001", "result": "Fail", "priority": "" }
+      ],
+      "assessment_group": [
+        { "mrid": "group-sa-pf-pass-root", "rule_id": "rule-sa-pf-pass-0001", "parent_id": "", "logic": "AND", "is_default": false },
+        { "mrid": "group-sa-pf-fail-root", "rule_id": "rule-sa-pf-fail-0001", "parent_id": "", "logic": "", "is_default": true }
+      ],
+      "assessment": [
+        { "label": "V meas min (kV)", "mrid": "", "group_id": "group-sa-pf-pass-root", "measurement_id": "1d4e5f6a-7b8c-4d9e-9004-000000000012", "operator": "≥", "threshold": "" },
+        { "label": "V meas max (kV)", "mrid": "", "group_id": "group-sa-pf-pass-root", "measurement_id": "1d4e5f6a-7b8c-4d9e-9004-000000000012", "operator": "≤", "threshold": "" }
+      ]
+    }
+  ]
+}

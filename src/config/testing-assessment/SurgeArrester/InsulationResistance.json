@@ -1,0 +1,37 @@
+{
+  "testId": "847b9f63-a309-4a8b-a253-9f9a161c3179",
+  "testCode": "InsulationResistance",
+  "testName": "Insulation resistance",
+  "testStandard": [
+    {
+      "mrid": "36116f8b-sa01-4ad9-4b16-8c14-ir01-sa001",
+      "code": "customized_insulation_resistance_surge_arrester",
+      "name": "Customized limit",
+      "type": "customized",
+      "standard_edition": "",
+      "standard_number": "",
+      "columns": [
+        {
+          "mrid": "6c9d0e1f-2a3b-4c13-9009-000000000017",
+          "code": "r60s",
+          "name": "R60s",
+          "type": "analog",
+          "unit": "m|Ω",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        { "mrid": "rule-sa-ir-pass-0001", "standard_id": "36116f8b-sa01-4ad9-4b16-8c14-ir01-sa001", "result": "Pass", "priority": "" },
+        { "mrid": "rule-sa-ir-fail-0001", "standard_id": "36116f8b-sa01-4ad9-4b16-8c14-ir01-sa001", "result": "Fail", "priority": "" }
+      ],
+      "assessment_group": [
+        { "mrid": "group-sa-ir-pass-0001", "rule_id": "rule-sa-ir-pass-0001", "parent_id": "", "logic": "", "is_default": false },
+        { "mrid": "group-sa-ir-fail-0001", "rule_id": "rule-sa-ir-fail-0001", "parent_id": "", "logic": "", "is_default": true }
+      ],
+      "assessment": [
+        { "label": "R<sub>60s</sub> (MΩ)", "mrid": "", "group_id": "group-sa-ir-pass-0001", "measurement_id": "6c9d0e1f-2a3b-4c13-9009-000000000017", "operator": "≥", "threshold": "" },
+        { "label": "R<sub>60s</sub> (MΩ)", "mrid": "", "group_id": "group-sa-ir-fail-0001", "measurement_id": "6c9d0e1f-2a3b-4c13-9009-000000000017", "operator": "<", "threshold": "" }
+      ]
+    }
+  ]
+}

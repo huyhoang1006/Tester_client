@@ -4,7 +4,7 @@
         <div style="position: sticky; left: 0; display: inline-block;">
             <el-row class="mgb-10">
                 <el-col>
-                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
+                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentSettings()">
                         <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
                     </el-button>
                     <el-button class="btn-action" size="mini" type="success"
@@ -82,87 +82,28 @@
             </tbody>
         </table>
 
-        <!-- Assessment settings -->
-        <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog"
-            width="50%">
-            <!-- <el-radio-group v-model="testData.limits">
-                <el-radio label="Absolute" value="Absolute"></el-radio>
-                <el-radio label="Relative" value="Relative"></el-radio>
+        <el-dialog append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="500px">
+            <el-radio-group v-model="assetData.assessmentLimits.limits" style="margin-bottom:16px;">
+                <el-radio label="Absolute">Absolute limits</el-radio>
+                <el-radio label="Relative">Relative limits</el-radio>
             </el-radio-group>
-
-            <transition>
-                <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>Minimum</th>
-                            <th>Maximum</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(item, index) in coilCharacteristics" :key="index">
-                            <td>{{ item }}</td>
-                            <td>
-                                <el-input size="mini" v-model="asset_.coilCharacter.abs[index].min">
-                                    <template v-if="index <= 3" slot="append">A</template>
-<template v-else-if="3 < index && index <= 5" slot="append">V</template>
-<template v-else slot="append">&#8486;</template>
-</el-input>
-</td>
-<td>
-    <el-input size="mini" v-model="asset_.coilCharacter.abs[index].max">
-        <template v-if="index <= 3" slot="append">A</template>
-        <template v-else-if="3 < index && index <= 5" slot="append">V</template>
-        <template v-else slot="append">&#8486;</template>
-    </el-input>
-</td>
-</tr>
-</tbody>
-</table>
-<table class="table-strip-input-data" v-if="testData.limits === 'Relative'">
-    <thead>
-        <tr>
-            <th></th>
-            <th>Reference</th>
-            <th>- Deviation</th>
-            <th>+ Deviation</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr v-for="(item, index) in coilCharacteristics" :key="index">
-            <td>{{ item }}</td>
-            <el-input size="mini" v-model="asset_.coilCharacter.rel[index].ref">
-                <template v-if="index <= 3" slot="append">A</template>
-                <template v-else-if="3 < index && index <= 5" slot="append">V</template>
-                <template v-else slot="append">&#8486;</template>
-            </el-input>
-            <td>
-                <el-input size="mini" v-model="asset_.coilCharacter.rel[index].devZ">
-                    <template v-if="index <= 3" slot="append">A</template>
-                    <template v-else-if="3 < index && index <= 5" slot="append">V</template>
-                    <template v-else slot="append">&#8486;</template>
-                </el-input>
-            </td>
-            <td>
-                <el-input size="mini" v-model="asset_.coilCharacter.rel[index].devN">
-                    <template v-if="index <= 3" slot="append">A</template>
-                    <template v-else-if="3 < index && index <= 5" slot="append">V</template>
-                    <template v-else slot="append">&#8486;</template>
-                </el-input>
-            </td>
-        </tr>
-    </tbody>
-</table>
-</transition>
-
-<br />
-<template #footer>
-                <span style="margin-top: 20px; width: 100%; position: absolute; right: 10px; bottom: 10px"
-                    class="dialog-footer">
+            <el-form size="small" label-position="left" label-width="140px">
+                <template v-if="assetData.assessmentLimits.limits === 'Absolute'">
+                    <el-form-item label="Minimum (Ω)"><el-input v-model="assetData.assessmentLimits.coil_characteristics.abs.close_coil_resistance.min.value"/></el-form-item>
+                    <el-form-item label="Maximum (Ω)"><el-input v-model="assetData.assessmentLimits.coil_characteristics.abs.close_coil_resistance.max.value"/></el-form-item>
+                </template>
+                <template v-else>
+                    <el-form-item label="Reference (Ω)"><el-input v-model="assetData.assessmentLimits.coil_characteristics.rel.close_coil_resistance.ref.value"/></el-form-item>
+                    <el-form-item label="- Deviation (Ω)"><el-input v-model="assetData.assessmentLimits.coil_characteristics.rel.close_coil_resistance.minus_dev.value"/></el-form-item>
+                    <el-form-item label="+ Deviation (Ω)"><el-input v-model="assetData.assessmentLimits.coil_characteristics.rel.close_coil_resistance.plus_dev.value"/></el-form-item>
+                </template>
+            </el-form>
+            <template v-slot:footer>
+                <span style="position:absolute;right:10px;bottom:10px;">
                     <el-button @click="resetAssessment">Cancel</el-button>
-                    <el-button type="primary" @click="updateAssessment"> Confirm </el-button>
+                    <el-button type="primary" @click="updateAssessment">OK</el-button>
                 </span>
-            </template> -->
+            </template>
         </el-dialog>
     </div>
 </template>
@@ -170,11 +111,16 @@
 <script>
 import CircuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
 import * as common from '../../Common/index'
+import assessmentMixin from './assessmentMixin'
 export default {
+    mixins: [assessmentMixin],
     name: 'DCWindingCloseCoil',
     data() {
         return {
             openAssessmentDialog: false,
+            backupLimits: null,
+            assessmentIpcChannel: 'updateCoilCharacteristicsLimits',
+            assessmentSectionKeys: ['close_coil_resistance'],
             openConditionIndicatorDialog: false,
             asset_: {
                 coilCharacter: {
@@ -393,34 +339,8 @@ export default {
 
             return normalized
         },
-        async updateAssessment() {
-            // Sync testData.limits to asset_.limits before saving
-            if (this.testData.limits) {
-                this.asset_.limits = this.testData.limits
-            }
-            const asset = {
-                id: this.asset.id,
-                assessmentLimits: this.asset_
-            }
-            const data = await window.electronAPI.updateCircuitAssessmentLimits(asset)
-            const dataTemp = JSON.parse(JSON.stringify(asset))
-            this.back_asset = dataTemp.assessmentLimits
-            if (data.success) {
-                this.$message.success('Update successfully')
-                this.openAssessmentDialog = false
-            } else {
-                this.$message.error("Update cannot complete")
-                this.openAssessmentDialog = false
-            }
-        },
-        resetAssessment() {
-            this.asset_ = JSON.parse(JSON.stringify(this.back_asset))
-            // Sync limits back to testData after reset
-            if (this.asset_.limits && this.testData) {
-                this.$set(this.testData, 'limits', this.asset_.limits)
-            }
-            this.openAssessmentDialog = false
-        },
+
+
         add() {
             this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
         },
@@ -441,46 +361,20 @@ export default {
             this.testData.table.table1.splice(index + 1, 0, data)
         },
         calculator() {
-            this.testData.table.forEach((item) => {
-                console.log(this.testData.limits)
-                //console.log(item.rmeas);
-                //console.log(this.asset_.coilCharacter.abs)
-                //console.log(this.asset_.coilCharacter.abs[6].max)
-                if (this.testData.limits === 'Absolute') {
-                    if ((parseFloat(item.rmeas) >= parseFloat(this.asset_.coilCharacter.abs[6].min)) && (parseFloat(item.rmeas) <= parseFloat(this.asset_.coilCharacter.abs[6].max))) {
-                        item.assessment = 'Pass';
-                        console.log('Pass 1')
-                    }
-                    else {
-                        item.assessment = 'Fail';
-                        console.log('Fail 1')
-                    }
-
+            var limits = this.assetData && this.assetData.assessmentLimits ? this.assetData.assessmentLimits : null
+            if (!limits) { this.$message.error('Assessment limits not configured'); return }
+            var cc   = limits.coil_characteristics
+            var mode = limits.limits
+            this.testData.table.table1.forEach(function(item) {
+                var value = item.r_meas ? item.r_meas.value : ''
+                var result
+                if (mode === 'Absolute') {
+                    result = this.assessAbsolute(value, cc.abs.close_coil_resistance.min, cc.abs.close_coil_resistance.max)
+                } else {
+                    result = this.assessRelativeAsym(value, cc.rel.close_coil_resistance.ref, cc.rel.close_coil_resistance.minus_dev, cc.rel.close_coil_resistance.plus_dev)
                 }
-                if (this.testData.limits === 'Relative') {
-                    if (parseFloat(item.rmeas) <= parseFloat(this.asset_.coilCharacter.rel[6].ref)) {
-                        if (parseFloat(item.rmeas) >= (parseFloat(this.asset_.coilCharacter.rel[6].ref) - parseFloat(this.asset_.coilCharacter.rel[6].devZ))) {
-                            item.assessment = 'Pass';
-                            console.log('Pass 2');
-                        }
-                        else {
-                            item.assessment = 'Fail';
-                            console.log('Fail 2')
-                        }
-
-                    }
-                    else if (parseFloat(item.rmeas) > parseFloat(this.asset_.coilCharacter.rel[6].ref)) {
-                        if (parseFloat(item.rmeas) <= (parseFloat(this.asset_.coilCharacter.rel[6].ref) + parseFloat(this.asset_.coilCharacter.rel[6].devN))) {
-                            item.assessment = 'Pass';
-                            console.log('Pass 3')
-                        }
-                        else {
-                            item.assessment = 'Fail';
-                            console.log('Fail 3')
-                        }
-                    }
-                }
-            })
+                item.assessment.value = result
+            }.bind(this))
             this.$message.success('Calculating successfully')
         },
         clear() {

@@ -257,7 +257,7 @@ export const JobEntityToDto = (entity) => {
     //test list
     for (const item of entity.workTasks) {
         let condition = commonFunc.buildEmptyTestCondition(transformerConditionMap[item.type]?.columns || [])
-        const testAssessmentList = JSON.parse(JSON.stringify(capacitorAssessmentMap[item.type].testStandard || []));
+        const testAssessmentList = JSON.parse(JSON.stringify(transformerAssessmentMap[item.type].testStandard || []));
         const testStandardData = entity.testStandard.find(x => x.work_task_id === item.mrid);
         let standardCustomized = null
         if(testStandardData) {

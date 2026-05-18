@@ -1,0 +1,180 @@
+{
+  "testCode": "ShortCircuitImpedanceSec",
+  "testName": "Short circuit impedance - ec",
+  "testStandard": [
+    {
+      "mrid": "18ebdc22-1acb-421e-9429-17539c5f23e8",
+      "code": "ieee_c57_152_shortcircuitimpedancesec",
+      "name": "IEEE C57.152 (2013)",
+      "type": "ieee",
+      "standard_number": "C57.152",
+      "standard_edition": "2013",
+      "columns": [
+        {
+          "mrid": "68ebea17-7af1-4438-87bf-cf7bda61e691",
+          "code": "uk_dev",
+          "name": "Uk dev (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "e8794072-6cfe-4177-bc9f-d326b5003251",
+          "standard_id": "18ebdc22-1acb-421e-9429-17539c5f23e8",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "37666b9a-e1ce-4042-9594-85684cd2ea06",
+          "standard_id": "18ebdc22-1acb-421e-9429-17539c5f23e8",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "c89295cb-52d9-4d61-a958-806056c60b20",
+          "rule_id": "e8794072-6cfe-4177-bc9f-d326b5003251",
+          "parent_id": "",
+          "logic": "",
+          "is_default": false
+        },
+        {
+          "mrid": "f0e2b8aa-09b7-4f07-84b2-f21d80ee8b8c",
+          "rule_id": "37666b9a-e1ce-4042-9594-85684cd2ea06",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "|Uk dev| (%)",
+          "mrid": "c025a449-f3ca-4dd6-a92a-feba6500f9f4",
+          "group_id": "c89295cb-52d9-4d61-a958-806056c60b20",
+          "measurement_id": "68ebea17-7af1-4438-87bf-cf7bda61e691",
+          "operator": "≤",
+          "threshold": "3"
+        }
+      ]
+    },
+    {
+      "mrid": "798341af-92b8-4197-8227-40f073e9ab08",
+      "code": "cigre_445_shortcircuitimpedancesec",
+      "name": "CIGRE 445",
+      "type": "cigre",
+      "standard_number": "445",
+      "standard_edition": "2010",
+      "columns": [
+        {
+          "mrid": "68ebea17-7af1-4438-87bf-cf7bda61e691",
+          "code": "uk_dev",
+          "name": "Uk dev (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "73b4e35c-be41-4494-a33a-1e15949c9188",
+          "standard_id": "798341af-92b8-4197-8227-40f073e9ab08",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "37bbd51b-09b4-435f-8fd6-9aed02929e3f",
+          "standard_id": "798341af-92b8-4197-8227-40f073e9ab08",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "ea843d13-05c1-427f-8c2b-ef3db61c7079",
+          "rule_id": "73b4e35c-be41-4494-a33a-1e15949c9188",
+          "parent_id": "",
+          "logic": "",
+          "is_default": false
+        },
+        {
+          "mrid": "f9295998-347f-44db-8927-9fb679276429",
+          "rule_id": "37bbd51b-09b4-435f-8fd6-9aed02929e3f",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "|Uk dev| (%)",
+          "mrid": "c14c415b-a036-46e1-b825-bbf51e48d43a",
+          "group_id": "ea843d13-05c1-427f-8c2b-ef3db61c7079",
+          "measurement_id": "68ebea17-7af1-4438-87bf-cf7bda61e691",
+          "operator": "≤",
+          "threshold": "2"
+        }
+      ]
+    },
+    {
+      "mrid": "0f2e9763-cabe-4523-889e-6ffb195767a0",
+      "code": "customized_shortcircuitimpedancesec_transformer",
+      "name": "Customized limit",
+      "type": "customized",
+      "standard_number": "",
+      "standard_edition": "",
+      "columns": [
+        {
+          "mrid": "68ebea17-7af1-4438-87bf-cf7bda61e691",
+          "code": "uk_dev",
+          "name": "Uk dev (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "c15d098a-168a-4505-8e2e-6afe452843e3",
+          "standard_id": "0f2e9763-cabe-4523-889e-6ffb195767a0",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "98df5e1d-cc19-4c2f-811e-b850dd66e1e9",
+          "standard_id": "0f2e9763-cabe-4523-889e-6ffb195767a0",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "4bfb80a0-57a2-46ab-b46c-cab7eb751008",
+          "rule_id": "c15d098a-168a-4505-8e2e-6afe452843e3",
+          "parent_id": "",
+          "logic": "",
+          "is_default": false
+        },
+        {
+          "mrid": "f677b762-ec46-41c2-bcad-aa3c18354ba7",
+          "rule_id": "98df5e1d-cc19-4c2f-811e-b850dd66e1e9",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "|Uk dev| (%)",
+          "mrid": "94c23fcc-835d-4896-8740-23aa9fe0d16f",
+          "group_id": "4bfb80a0-57a2-46ab-b46c-cab7eb751008",
+          "measurement_id": "68ebea17-7af1-4438-87bf-cf7bda61e691",
+          "operator": "≤",
+          "threshold": ""
+        }
+      ]
+    }
+  ]
+}

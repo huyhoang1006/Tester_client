@@ -3,6 +3,7 @@ import db from '../../datacontext/index'
 import path from 'path'
 import * as attachmentContext from '../../attachmentcontext/index'
 import circuitBreakerEntity from '@/views/Flatten/CircuitBreaker'
+import * as breaker_constant from '@/views/AssetView/CircuitBreaker/components/assessment'
 import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, deleteDirectory } from '@/function/entity/attachment'
 import { insertVoltageTransaction, getVoltageByIds, deleteVoltageByIdTransaction } from '@/function/cim/voltage';
 import { insertCurrentFlowTransaction, getCurrentFlowByIds, deleteCurrentFlowByIdTransaction } from '@/function/cim/currentFlow';
@@ -215,6 +216,401 @@ export const insertBreakerEntity = async (old_entity, entity) => {
         await runAsync('ROLLBACK');
         console.error(error);
         return { success: false, error, message: `Error saving breaker entity: ${error.message || 'Unknown error'}` };
+    }
+}
+
+// Lấy assessmentLimitBreakerInfoId từ assetId
+const getLimitId = async (assetId) => {
+    const assetRes = await getAssetById(assetId)
+    if (!assetRes.success) throw new Error('Asset not found: ' + assetId)
+    const breakerInfoId = assetRes.data.asset_info
+    if (!breakerInfoId) throw new Error('Asset has no asset_info')
+    const limitRes = await getAssessmentLimitBreakerInfoByBreakerInfoId(breakerInfoId)
+    if (!limitRes.success || !limitRes.data) throw new Error('AssessmentLimitBreakerInfo not found')
+    return { assessmentLimitBreakerInfoId: limitRes.data.mrid, breakerInfoId }
+}
+
+// Update limit_type
+const updateLimitType = async (assessmentLimitBreakerInfoId, breakerInfoId, limitType) => {
+    await insertAssessmentLimitBreakerInfoTransaction({
+        mrid:            assessmentLimitBreakerInfoId,
+        breaker_info_id: breakerInfoId,
+        limit_type:      limitType || null,
+    }, db)
+}
+
+// ─── 1. Motor Characteristics (MotorCurrent) ──────────────────────────────────
+export const updateMotorCharacteristicsLimits = async (assetId, assessmentLimits) => {
+    try {
+        await runAsync('BEGIN TRANSACTION')
+        const { assessmentLimitBreakerInfoId, breakerInfoId } = await getLimitId(assetId)
+        await updateLimitType(assessmentLimitBreakerInfoId, breakerInfoId, assessmentLimits.limits)
+
+        const mc = assessmentLimits.motor_characteristics
+        for (const item of breaker_constant.motor_characteristics) {
+            const key = item.value
+            const abs = mc.abs[key]
+            const rel = mc.rel[key]
+            await upsertUnit(insertQuantityValueTransaction, abs.min)
+            await upsertUnit(insertQuantityValueTransaction, abs.max)
+            await upsertUnit(insertQuantityValueTransaction, rel.ref)
+            await upsertUnit(insertQuantityValueTransaction, rel.dev)
+            await insertMotorCharacteristicsBreakerInfoTransaction({
+                mrid:                             abs.mrid || null,
+                parameter_name:                   item.label,
+                assessment_limit_breaker_info_id: assessmentLimitBreakerInfoId,
+                min: abs.min.mrid || null,
+                max: abs.max.mrid || null,
+                ref: rel.ref.mrid || null,
+                dev: rel.dev.mrid || null,
+            }, db)
+        }
+
+        await runAsync('COMMIT')
+        return { success: true, message: 'Motor characteristics limits updated' }
+    } catch (error) {
+        await runAsync('ROLLBACK')
+        console.error('updateMotorCharacteristicsLimits error:', error)
+        return { success: false, message: error.message }
+    }
+}
+
+// ─── 2. Contact Resistance ────────────────────────────────────────────────────
+export const updateContactResistanceLimits = async (assetId, assessmentLimits) => {
+    try {
+        await runAsync('BEGIN TRANSACTION')
+        const { assessmentLimitBreakerInfoId, breakerInfoId } = await getLimitId(assetId)
+        await updateLimitType(assessmentLimitBreakerInfoId, breakerInfoId, assessmentLimits.limits)
+
+        const cr = assessmentLimits.contact_resistance
+        await upsertUnit(insertResistanceTransaction, cr.abs.r_min)
+        await upsertUnit(insertResistanceTransaction, cr.abs.r_max)
+        await upsertUnit(insertResistanceTransaction, cr.rel.r_ref)
+        await upsertUnit(insertResistanceTransaction, cr.rel.r_dev)
+        await insertContactResistanceBreakerInfoTransaction({
+            mrid:                             cr.mrid || null,
+            parameter_name:                   cr.name || null,
+            assessment_limit_breaker_info_id: assessmentLimitBreakerInfoId,
+            r_min: cr.abs.r_min.mrid || null,
+            r_max: cr.abs.r_max.mrid || null,
+            r_ref: cr.rel.r_ref.mrid || null,
+            r_dev: cr.rel.r_dev.mrid || null,
+        }, db)
+
+        await runAsync('COMMIT')
+        return { success: true, message: 'Contact resistance limits updated' }
+    } catch (error) {
+        await runAsync('ROLLBACK')
+        console.error('updateContactResistanceLimits error:', error)
+        return { success: false, message: error.message }
+    }
+}
+
+// ─── 3. Coil Characteristics (DCWindingTripCoil, DCWindingCloseCoil, Timing) ──
+// sectionKeys: array key cần update, vd ['trip_coil_resistance'] hoặc ['close_coil_resistance']
+// Để trống = update toàn bộ coil_characteristics
+export const updateCoilCharacteristicsLimits = async (assetId, assessmentLimits, sectionKeys) => {
+    try {
+        await runAsync('BEGIN TRANSACTION')
+        const { assessmentLimitBreakerInfoId, breakerInfoId } = await getLimitId(assetId)
+        await updateLimitType(assessmentLimitBreakerInfoId, breakerInfoId, assessmentLimits.limits)
+
+        const cc = assessmentLimits.coil_characteristics
+        const items = sectionKeys
+            ? breaker_constant.coil_characteristics.filter(function(i) { return sectionKeys.indexOf(i.value) !== -1 })
+            : breaker_constant.coil_characteristics
+
+        for (const item of items) {
+            const key = item.value
+            const abs = cc.abs[key]
+            const rel = cc.rel[key]
+            await upsertUnit(insertQuantityValueTransaction, abs.min)
+            await upsertUnit(insertQuantityValueTransaction, abs.max)
+            await upsertUnit(insertQuantityValueTransaction, rel.ref)
+            await upsertUnit(insertQuantityValueTransaction, rel.minus_dev)
+            await upsertUnit(insertQuantityValueTransaction, rel.plus_dev)
+            await insertCoilCharacteristicsBreakerInfoTransaction({
+                mrid:                             abs.mrid || null,
+                parameter_name:                   item.label,
+                assessment_limit_breaker_info_id: assessmentLimitBreakerInfoId,
+                min:          abs.min.mrid       || null,
+                max:          abs.max.mrid       || null,
+                ref:          rel.ref.mrid       || null,
+                dev_negative: rel.minus_dev.mrid || null,
+                dev_positive: rel.plus_dev.mrid  || null,
+            }, db)
+        }
+
+        await runAsync('COMMIT')
+        return { success: true, message: 'Coil characteristics limits updated' }
+    } catch (error) {
+        await runAsync('ROLLBACK')
+        console.error('updateCoilCharacteristicsLimits error:', error)
+        return { success: false, message: error.message }
+    }
+}
+
+// ─── 4. Pickup Voltage (MinimumPickup) ───────────────────────────────────────
+export const updatePickupVoltageLimits = async (assetId, assessmentLimits) => {
+    try {
+        await runAsync('BEGIN TRANSACTION')
+        const { assessmentLimitBreakerInfoId, breakerInfoId } = await getLimitId(assetId)
+        await updateLimitType(assessmentLimitBreakerInfoId, breakerInfoId, assessmentLimits.limits)
+
+        const pv = assessmentLimits.pickup_voltage
+        for (const item of breaker_constant.pickup_voltage) {
+            const key = item.value
+            const abs = pv.abs[key]
+            const rel = pv.rel[key]
+            await upsertUnit(insertVoltageTransaction, abs.v_min)
+            await upsertUnit(insertVoltageTransaction, abs.v_max)
+            await upsertUnit(insertVoltageTransaction, rel.v_ref)
+            await upsertUnit(insertVoltageTransaction, rel.v_dev)
+            await insertPickupVoltageBreakerInfoTransaction({
+                mrid:                             abs.mrid || null,
+                parameter_name:                   item.label,
+                assessment_limit_breaker_info_id: assessmentLimitBreakerInfoId,
+                v_min: abs.v_min.mrid || null,
+                v_max: abs.v_max.mrid || null,
+                v_ref: rel.v_ref.mrid || null,
+                v_dev: rel.v_dev.mrid || null,
+            }, db)
+        }
+
+        await runAsync('COMMIT')
+        return { success: true, message: 'Pickup voltage limits updated' }
+    } catch (error) {
+        await runAsync('ROLLBACK')
+        console.error('updatePickupVoltageLimits error:', error)
+        return { success: false, message: error.message }
+    }
+}
+
+// ─── 5. Under-Voltage Release ─────────────────────────────────────────────────
+export const updateUnderVoltageReleaseLimits = async (assetId, assessmentLimits) => {
+    try {
+        await runAsync('BEGIN TRANSACTION')
+        const { assessmentLimitBreakerInfoId, breakerInfoId } = await getLimitId(assetId)
+        await updateLimitType(assessmentLimitBreakerInfoId, breakerInfoId, assessmentLimits.limits)
+
+        const uvr = assessmentLimits.under_voltage_release
+        await upsertUnit(insertVoltageTransaction, uvr.abs.uv_coil_trip_voltage.min)
+        await upsertUnit(insertVoltageTransaction, uvr.abs.uv_coil_trip_voltage.max)
+        await upsertUnit(insertVoltageTransaction, uvr.rel.uv_coil_trip_voltage.ref)
+        await upsertUnit(insertVoltageTransaction, uvr.rel.uv_coil_trip_voltage.dev)
+        await insertUnderVoltageReleaseBreakerInfoTransaction({
+            mrid:                             uvr.mrid || null,
+            parameter_name:                   uvr.name || null,
+            assessment_limit_breaker_info_id: assessmentLimitBreakerInfoId,
+            min: uvr.abs.uv_coil_trip_voltage.min.mrid || null,
+            max: uvr.abs.uv_coil_trip_voltage.max.mrid || null,
+            ref: uvr.rel.uv_coil_trip_voltage.ref.mrid || null,
+            dev: uvr.rel.uv_coil_trip_voltage.dev.mrid || null,
+        }, db)
+
+        await runAsync('COMMIT')
+        return { success: true, message: 'Under-voltage release limits updated' }
+    } catch (error) {
+        await runAsync('ROLLBACK')
+        console.error('updateUnderVoltageReleaseLimits error:', error)
+        return { success: false, message: error.message }
+    }
+}
+
+// ─── 6. Overcurrent Release ───────────────────────────────────────────────────
+export const updateOvercurrentReleaseLimits = async (assetId, assessmentLimits) => {
+    try {
+        await runAsync('BEGIN TRANSACTION')
+        const { assessmentLimitBreakerInfoId, breakerInfoId } = await getLimitId(assetId)
+        await updateLimitType(assessmentLimitBreakerInfoId, breakerInfoId, assessmentLimits.limits)
+
+        const ocr = assessmentLimits.overcurrent_release
+        await upsertUnit(insertCurrentFlowTransaction, ocr.abs.oc_replay_trip_current.min)
+        await upsertUnit(insertCurrentFlowTransaction, ocr.abs.oc_replay_trip_current.max)
+        await upsertUnit(insertCurrentFlowTransaction, ocr.rel.oc_replay_trip_current.ref)
+        await upsertUnit(insertCurrentFlowTransaction, ocr.rel.oc_replay_trip_current.dev)
+        await insertOvercurrentReleaseBreakerInfoTransaction({
+            mrid:                             ocr.mrid || null,
+            parameter_name:                   ocr.name || null,
+            assessment_limit_breaker_info_id: assessmentLimitBreakerInfoId,
+            min: ocr.abs.oc_replay_trip_current.min.mrid || null,
+            max: ocr.abs.oc_replay_trip_current.max.mrid || null,
+            ref: ocr.rel.oc_replay_trip_current.ref.mrid || null,
+            dev: ocr.rel.oc_replay_trip_current.dev.mrid || null,
+        }, db)
+
+        await runAsync('COMMIT')
+        return { success: true, message: 'Overcurrent release limits updated' }
+    } catch (error) {
+        await runAsync('ROLLBACK')
+        console.error('updateOvercurrentReleaseLimits error:', error)
+        return { success: false, message: error.message }
+    }
+}
+
+// ─── 7. Operating Time (Timing tests) ────────────────────────────────────────
+export const updateOperatingTimeLimits = async (assetId, assessmentLimits) => {
+    try {
+        await runAsync('BEGIN TRANSACTION')
+        const { assessmentLimitBreakerInfoId, breakerInfoId } = await getLimitId(assetId)
+        await updateLimitType(assessmentLimitBreakerInfoId, breakerInfoId, assessmentLimits.limits)
+
+        for (const item of breaker_constant.opening_times) {
+            const key = item.value
+            const abs = assessmentLimits.operating_time.abs[key]
+            const rel = assessmentLimits.operating_time.rel[key]
+            await upsertUnit(insertSecondsTransaction, abs.t_min)
+            await upsertUnit(insertSecondsTransaction, abs.t_max)
+            await upsertUnit(insertSecondsTransaction, rel.t_ref)
+            await upsertUnit(insertSecondsTransaction, rel.plus_t_dev)
+            await upsertUnit(insertSecondsTransaction, rel.minus_t_dev)
+            await insertOperatingTimeBreakerInfoTransaction({
+                mrid:                             abs.mrid || null,
+                parameter_name:                   item.label,
+                assessment_limit_breaker_info_id: assessmentLimitBreakerInfoId,
+                t_min:          abs.t_min.mrid      || null,
+                t_max:          abs.t_max.mrid      || null,
+                t_ref:          rel.t_ref.mrid      || null,
+                t_dev_position: rel.plus_t_dev.mrid  || null,
+                t_dev_negative: rel.minus_t_dev.mrid || null,
+            }, db)
+        }
+
+        await runAsync('COMMIT')
+        return { success: true, message: 'Operating time limits updated' }
+    } catch (error) {
+        await runAsync('ROLLBACK')
+        console.error('updateOperatingTimeLimits error:', error)
+        return { success: false, message: error.message }
+    }
+}
+
+// ─── 8. Auxiliary Contacts (Trip + Close operation) ───────────────────────────
+export const updateAuxContactsLimits = async (assetId, assessmentLimits) => {
+    try {
+        var _a = await getLimitId(assetId)
+        var assessmentLimitBreakerInfoId = _a.assessmentLimitBreakerInfoId
+        var breakerInfoId = _a.breakerInfoId
+
+        var auxRes = await getAuxiliaryContactsBreakerInfoByAssessmentLimitId(assessmentLimitBreakerInfoId)
+        if (!auxRes.success || !auxRes.data) throw new Error('AuxiliaryContactsBreakerInfo not found')
+        var auxList = Array.isArray(auxRes.data) ? auxRes.data : [auxRes.data]
+        var auxiliaryContactsBreakerInfoId = auxList[0] ? auxList[0].mrid : null
+
+        await runAsync('BEGIN TRANSACTION')
+        await updateLimitType(assessmentLimitBreakerInfoId, breakerInfoId, assessmentLimits.limits)
+
+        await insertAuxiliaryContactsBreakerInfoTransaction({
+            mrid:                             auxiliaryContactsBreakerInfoId,
+            assessment_limit_breaker_info_id: assessmentLimitBreakerInfoId,
+        }, db)
+
+        var al = assessmentLimits
+        for (var i = 0; i < breaker_constant.auxiliary_contact.length; i++) {
+            var item = breaker_constant.auxiliary_contact[i]
+            var key  = item.value
+            var absT = al.auxiliary_contacts.trip_operation.abs[key]
+            var relT = al.auxiliary_contacts.trip_operation.rel[key]
+            var absC = al.auxiliary_contacts.close_operation.abs[key]
+            var relC = al.auxiliary_contacts.close_operation.rel[key]
+
+            await upsertUnit(insertSecondsTransaction, absT.t_min)
+            await upsertUnit(insertSecondsTransaction, absT.t_max)
+            await upsertUnit(insertSecondsTransaction, relT.t_ref)
+            await upsertUnit(insertSecondsTransaction, relT.t_dev)
+            await insertTripOperationTransaction({
+                mrid:                               absT.mrid || null,
+                parameter_name:                     item.label,
+                auxiliary_contacts_breaker_info_id: auxiliaryContactsBreakerInfoId,
+                t_min: absT.t_min.mrid || null,
+                t_max: absT.t_max.mrid || null,
+                t_ref: relT.t_ref.mrid || null,
+                t_dev: relT.t_dev.mrid || null,
+            }, db)
+
+            await upsertUnit(insertSecondsTransaction, absC.t_min)
+            await upsertUnit(insertSecondsTransaction, absC.t_max)
+            await upsertUnit(insertSecondsTransaction, relC.t_ref)
+            await upsertUnit(insertSecondsTransaction, relC.t_dev)
+            await insertCloseOperationTransaction({
+                mrid:                               absC.mrid || null,
+                parameter_name:                     item.label,
+                auxiliary_contacts_breaker_info_id: auxiliaryContactsBreakerInfoId,
+                t_min: absC.t_min.mrid || null,
+                t_max: absC.t_max.mrid || null,
+                t_ref: relC.t_ref.mrid || null,
+                t_dev: relC.t_dev.mrid || null,
+            }, db)
+        }
+
+        await runAsync('COMMIT')
+        return { success: true, message: 'Auxiliary contacts limits updated' }
+    } catch (error) {
+        await runAsync('ROLLBACK')
+        console.error('updateAuxContactsLimits error:', error)
+        return { success: false, message: error.message }
+    }
+}
+
+// ─── 9. Miscellaneous ─────────────────────────────────────────────────────────
+export const updateMiscellaneousLimits = async (assetId, assessmentLimits) => {
+    try {
+        var _a = await getLimitId(assetId)
+        var assessmentLimitBreakerInfoId = _a.assessmentLimitBreakerInfoId
+        var breakerInfoId = _a.breakerInfoId
+
+        await runAsync('BEGIN TRANSACTION')
+        await updateLimitType(assessmentLimitBreakerInfoId, breakerInfoId, assessmentLimits.limits)
+
+        var al = assessmentLimits
+        for (var i = 0; i < breaker_constant.miscellaneous.length; i++) {
+            var item = breaker_constant.miscellaneous[i]
+            var key  = item.value
+            var abs  = al.miscellaneous.abs[key]
+            var rel  = al.miscellaneous.rel[key]
+            await upsertUnit(insertQuantityValueTransaction, abs.min)
+            await upsertUnit(insertQuantityValueTransaction, abs.max)
+            await upsertUnit(insertQuantityValueTransaction, rel.ref)
+            await upsertUnit(insertQuantityValueTransaction, rel.dev)
+            await insertMiscellaneousBreakerInfoTransaction({
+                mrid:                             abs.mrid || null,
+                parameter_name:                   item.label,
+                assessment_limit_breaker_info_id: assessmentLimitBreakerInfoId,
+                min: abs.min.mrid || null,
+                max: abs.max.mrid || null,
+                ref: rel.ref.mrid || null,
+                dev: rel.dev.mrid || null,
+            }, db)
+        }
+
+        await runAsync('COMMIT')
+        return { success: true, message: 'Miscellaneous limits updated' }
+    } catch (error) {
+        await runAsync('ROLLBACK')
+        console.error('updateMiscellaneousLimits error:', error)
+        return { success: false, message: error.message }
+    }
+}
+
+// ─── 10. Combined Timing update (operating_time + aux_contacts + misc + coil) ─
+export const updateTimingAssessmentLimits = async (assetId, assessmentLimits) => {
+    try {
+        var r1 = await updateOperatingTimeLimits(assetId, assessmentLimits)
+        if (!r1.success) throw new Error('updateOperatingTimeLimits failed: ' + r1.message)
+
+        var r2 = await updateAuxContactsLimits(assetId, assessmentLimits)
+        if (!r2.success) throw new Error('updateAuxContactsLimits failed: ' + r2.message)
+
+        var r3 = await updateMiscellaneousLimits(assetId, assessmentLimits)
+        if (!r3.success) throw new Error('updateMiscellaneousLimits failed: ' + r3.message)
+
+        var r4 = await updateCoilCharacteristicsLimits(assetId, assessmentLimits, null)
+        if (!r4.success) throw new Error('updateCoilCharacteristicsLimits failed: ' + r4.message)
+
+        return { success: true, message: 'Timing assessment limits updated' }
+    } catch (error) {
+        console.error('updateTimingAssessmentLimits error:', error)
+        return { success: false, message: error.message }
     }
 }
 
@@ -1107,4 +1503,15 @@ const runAsync = (sql, params = []) => {
             else resolve();
         });
     });
-}; 
+};
+
+const upsertUnit = async (insertFn, unitObj) => {
+    if (!unitObj || !unitObj.mrid) return
+    const parts = (unitObj.unit || '').split('|')
+    await insertFn({
+        mrid:       unitObj.mrid,
+        value: unitObj.value !== undefined && unitObj.value !== null ? unitObj.value : null,
+        multiplier: parts.length > 1 ? parts[0] : null,
+        unit:       parts.length > 1 ? parts[1] : (parts[0] || null),
+    }, db)
+}

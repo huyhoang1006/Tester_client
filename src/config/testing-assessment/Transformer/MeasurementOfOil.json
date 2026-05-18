@@ -1,0 +1,180 @@
+{
+  "testCode": "MeasurementOfOil",
+  "testName": "Oil breakdown voltage",
+  "testStandard": [
+    {
+      "mrid": "9a8a2d8f-3985-4e66-a3c8-ca53717bd9fa",
+      "code": "iec_oil_breakdown_transformer",
+      "name": "Based on IEC",
+      "type": "iec",
+      "standard_number": "",
+      "standard_edition": "",
+      "columns": [
+        {
+          "mrid": "ce359094-2214-4fc5-8c29-42a3611a82f4",
+          "code": "result",
+          "name": "Breakdown voltage",
+          "type": "analog",
+          "unit": "k|V",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "c58ad07c-b5db-4fe4-a6ee-b59af7d24a77",
+          "standard_id": "9a8a2d8f-3985-4e66-a3c8-ca53717bd9fa",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "b2a0f9a2-acd5-47cf-8d05-18041b179f3b",
+          "standard_id": "9a8a2d8f-3985-4e66-a3c8-ca53717bd9fa",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "6bc8e966-70ff-4ded-a525-e436babe7673",
+          "rule_id": "c58ad07c-b5db-4fe4-a6ee-b59af7d24a77",
+          "parent_id": "",
+          "logic": "",
+          "is_default": false
+        },
+        {
+          "mrid": "ec045cff-b157-4fb7-a6ca-8bcad7caa479",
+          "rule_id": "b2a0f9a2-acd5-47cf-8d05-18041b179f3b",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "Breakdown voltage (kV)",
+          "mrid": "ae2bc802-25ec-4d0a-b242-f98011bf82db",
+          "group_id": "6bc8e966-70ff-4ded-a525-e436babe7673",
+          "measurement_id": "ce359094-2214-4fc5-8c29-42a3611a82f4",
+          "operator": "≥",
+          "threshold": ""
+        }
+      ]
+    },
+    {
+      "mrid": "79605b01-e81f-41ce-9901-08dd24173751",
+      "code": "ieee_oil_breakdown_transformer",
+      "name": "Based on IEEE",
+      "type": "ieee",
+      "standard_number": "",
+      "standard_edition": "",
+      "columns": [
+        {
+          "mrid": "ce359094-2214-4fc5-8c29-42a3611a82f4",
+          "code": "result",
+          "name": "Breakdown voltage",
+          "type": "analog",
+          "unit": "k|V",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "cac1914b-e1ac-4c33-9b6b-687f37536edf",
+          "standard_id": "79605b01-e81f-41ce-9901-08dd24173751",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "ec43cb66-b048-49ab-837b-49d2bf1d9a4e",
+          "standard_id": "79605b01-e81f-41ce-9901-08dd24173751",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "50cac7a0-cd9e-40bf-9d59-294c5c5b3d40",
+          "rule_id": "cac1914b-e1ac-4c33-9b6b-687f37536edf",
+          "parent_id": "",
+          "logic": "",
+          "is_default": false
+        },
+        {
+          "mrid": "c974f44a-2684-40b6-9109-9397501b81b1",
+          "rule_id": "ec43cb66-b048-49ab-837b-49d2bf1d9a4e",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "Breakdown voltage (kV)",
+          "mrid": "7d0a734c-2cc1-4c24-a177-4d98bb0a6487",
+          "group_id": "50cac7a0-cd9e-40bf-9d59-294c5c5b3d40",
+          "measurement_id": "ce359094-2214-4fc5-8c29-42a3611a82f4",
+          "operator": "≥",
+          "threshold": ""
+        }
+      ]
+    },
+    {
+      "mrid": "4e43c873-ed3f-4ecc-b947-a72a84e091a2",
+      "code": "customized_oil_breakdown_transformer",
+      "name": "Customized limit",
+      "type": "customized",
+      "standard_number": "",
+      "standard_edition": "",
+      "columns": [
+        {
+          "mrid": "ce359094-2214-4fc5-8c29-42a3611a82f4",
+          "code": "result",
+          "name": "Breakdown voltage",
+          "type": "analog",
+          "unit": "k|V",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "02044403-9802-4bd1-9bec-9c0ee03fa5a6",
+          "standard_id": "4e43c873-ed3f-4ecc-b947-a72a84e091a2",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "32f699bd-cbea-474d-88bb-ddca24442f8d",
+          "standard_id": "4e43c873-ed3f-4ecc-b947-a72a84e091a2",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "b48b1573-cb7d-4405-9ebe-91e20125a30a",
+          "rule_id": "02044403-9802-4bd1-9bec-9c0ee03fa5a6",
+          "parent_id": "",
+          "logic": "",
+          "is_default": false
+        },
+        {
+          "mrid": "ef7c9c2c-1266-4769-ada0-43ea475adf70",
+          "rule_id": "32f699bd-cbea-474d-88bb-ddca24442f8d",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "Breakdown voltage (kV)",
+          "mrid": "a6b6278b-7d47-49dd-905d-1d137ebfe31b",
+          "group_id": "b48b1573-cb7d-4405-9ebe-91e20125a30a",
+          "measurement_id": "ce359094-2214-4fc5-8c29-42a3611a82f4",
+          "operator": "≥",
+          "threshold": ""
+        }
+      ]
+    }
+  ]
+}

@@ -4,7 +4,7 @@
             <!-- Cấu hình -->
             <el-row class="mgb-10">
                 <el-col>
-                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
+                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentSettings()">
                         <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
                     </el-button>
                     <el-button class="btn-action" size="mini" type="success"
@@ -92,88 +92,60 @@
             </tbody>
         </table>
 
-        <!-- Assessment settings -->
-        <!-- <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog"
-            width="600px">
-
-            <el-radio-group v-model="testData.limits">
-                <el-radio label="Absolute" value="Absolute"></el-radio>
-                <el-radio label="Relative" value="Relative"></el-radio>
+        <el-dialog append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="560px">
+            <el-radio-group v-model="assetData.assessmentLimits.limits" style="margin-bottom:16px;">
+                <el-radio label="Absolute">Absolute limits</el-radio>
+                <el-radio label="Relative">Relative limits</el-radio>
             </el-radio-group>
-
-            <transition>
-                <table v-if="testData.limits === 'Absolute'" class="table-strip-input-data">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>V min</th>
-                            <th>V max</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(item, index) in pickupVoltage" :key="index">
-                            <td>{{ item }}</td>
-                            <td>
-                                <el-input size="mini" v-model="asset_.pickupVol.abs[index].vmin">
-                                    <template slot="append">V</template>
-</el-input>
-</td>
-<td>
-    <el-input size="mini" v-model="asset_.pickupVol.abs[index].vmax">
-        <template slot="append">V</template>
-    </el-input>
-</td>
-</tr>
-</tbody>
-</table>
-<table v-if="testData.limits === 'Relative'" class="table-strip-input-data">
-    <thead>
-        <tr>
-            <th></th>
-            <th>V ref</th>
-            <th>V dev</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr v-for="(item, index) in pickupVoltage" :key="index">
-            <td>{{ item }}</td>
-            <td>
-                <el-input size="mini" v-model="asset_.pickupVol.rel[index].vref">
-                    <template slot="append">V</template>
-                </el-input>
-            </td>
-            <td>
-                <el-input size="mini" v-model="asset_.pickupVol.rel[index].vdev">
-                    <template slot="append">V</template>
-                </el-input>
-            </td>
-        </tr>
-    </tbody>
-</table>
-</transition>
-
-<br>
-<template #footer>
-                <span style=" margin-top: 20px; width:100%; position: absolute; right: 10px; bottom: 10px;"
-                    class="dialog-footer">
+            <table class="table-strip-input-data" style="width:100%;font-size:12px;">
+                <thead>
+                    <tr>
+                        <th>Operation</th>
+                        <th v-if="assetData.assessmentLimits.limits === 'Absolute'">V min (V)</th>
+                        <th v-if="assetData.assessmentLimits.limits === 'Absolute'">V max (V)</th>
+                        <th v-if="assetData.assessmentLimits.limits !== 'Absolute'">V ref (V)</th>
+                        <th v-if="assetData.assessmentLimits.limits !== 'Absolute'">V dev (V)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Close</td>
+                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.pickup_voltage.abs.min_pickup_voltage_close.v_min.value"/></td>
+                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.pickup_voltage.abs.min_pickup_voltage_close.v_max.value"/></td>
+                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.pickup_voltage.rel.min_pickup_voltage_close.v_ref.value"/></td>
+                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.pickup_voltage.rel.min_pickup_voltage_close.v_dev.value"/></td>
+                    </tr>
+                    <tr>
+                        <td>Trip</td>
+                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.pickup_voltage.abs.min_pickup_voltage_trip.v_min.value"/></td>
+                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.pickup_voltage.abs.min_pickup_voltage_trip.v_max.value"/></td>
+                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.pickup_voltage.rel.min_pickup_voltage_trip.v_ref.value"/></td>
+                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.pickup_voltage.rel.min_pickup_voltage_trip.v_dev.value"/></td>
+                    </tr>
+                </tbody>
+            </table>
+            <template v-slot:footer>
+                <span style="position:absolute;right:10px;bottom:10px;">
                     <el-button @click="resetAssessment">Cancel</el-button>
-                    <el-button type="primary" @click="updateAssessment">
-                        Confirm
-                    </el-button>
+                    <el-button type="primary" @click="updateAssessment">OK</el-button>
                 </span>
             </template>
-</el-dialog> -->
+        </el-dialog>
     </div>
 </template>
 
 <script>
 import CircuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
 import * as common from '../../Common/index'
+import assessmentMixin from './assessmentMixin'
 export default {
+    mixins: [assessmentMixin],
     name: "MinimumPickup",
     data() {
         return {
             openAssessmentDialog: false,
+            backupLimits: null,
+            assessmentIpcChannel: 'updatePickupVoltageLimits',
             openConditionIndicatorDialog: false,
         }
     },
@@ -644,34 +616,8 @@ export default {
 
             return normalized
         },
-        async updateAssessment() {
-            // Sync testData.limits to asset_.limits before saving
-            if (this.testData.limits) {
-                this.asset_.limits = this.testData.limits
-            }
-            const asset = {
-                id: this.asset.id,
-                assessmentLimits: this.asset_
-            }
-            const data = await window.electronAPI.updateCircuitAssessmentLimits(asset)
-            const dataTemp = JSON.parse(JSON.stringify(asset))
-            this.back_asset = dataTemp.assessmentLimits
-            if (data.success) {
-                this.$message.success('Update successfully')
-                this.openAssessmentDialog = false
-            } else {
-                this.$message.error("Update cannot complete")
-                this.openAssessmentDialog = false
-            }
-        },
-        resetAssessment() {
-            this.asset_ = JSON.parse(JSON.stringify(this.back_asset))
-            // Sync limits back to testData after reset
-            if (this.asset_.limits && this.testData) {
-                this.$set(this.testData, 'limits', this.asset_.limits)
-            }
-            this.openAssessmentDialog = false
-        },
+
+
         add() {
             this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
         },
@@ -692,50 +638,26 @@ export default {
             this.testData.table.table1.splice(index + 1, 0, data)
         },
         calculator() {
-            if (!this.asset_ || !this.asset_.pickupVol) {
-                this.$message.error('Assessment limits not configured')
-                return
-            }
+            var limits = this.assetData && this.assetData.assessmentLimits ? this.assetData.assessmentLimits : null
+            if (!limits) { this.$message.error('Assessment limits not configured'); return }
+            var pv   = limits.pickup_voltage
+            var mode = limits.limits
+            this.testData.table.table1.forEach(function(item) {
+                var value     = item.v_pickup ? item.v_pickup.value : ''
+                var operation = item.operation ? item.operation.value : ''
+                var limitKey
+                if (operation === 'Close')     limitKey = 'min_pickup_voltage_close'
+                else if (operation === 'Trip') limitKey = 'min_pickup_voltage_trip'
+                else { item.assessment.value = ''; return }
+                var result
+                if (mode === 'Absolute') {
+                    result = this.assessAbsolute(value, pv.abs[limitKey].v_min, pv.abs[limitKey].v_max)
+                } else {
+                    result = this.assessRelative(value, pv.rel[limitKey].v_ref, pv.rel[limitKey].v_dev)
+                }
+                item.assessment.value = result
+            }.bind(this))
             this.$message.success('Calculating successfully')
-            this.testData.table.forEach(item => {
-                console.log(this.testData.limits)
-                console.log(item.operation)
-                console.log(item.vPickup)
-                if (this.testData.limits === 'Absolute') {
-                    if (item.operation === 'Trip') {
-                        if (this.asset_.pickupVol.abs && this.asset_.pickupVol.abs[1] &&
-                            parseFloat(item.vPickup) >= parseFloat(this.asset_.pickupVol.abs[1].vmin) &&
-                            parseFloat(item.vPickup) <= parseFloat(this.asset_.pickupVol.abs[1].vmax)) {
-                            item.assessment = 'Pass';
-                        }
-                        else item.assessment = 'Fail';
-                    }
-                    if (item.operation === 'Close') {
-                        if (this.asset_.pickupVol.abs && this.asset_.pickupVol.abs[0] &&
-                            parseFloat(item.vPickup) >= parseFloat(this.asset_.pickupVol.abs[0].vmin) &&
-                            parseFloat(item.vPickup) <= parseFloat(this.asset_.pickupVol.abs[0].vmax)) {
-                            item.assessment = 'Pass';
-                        }
-                        else item.assessment = 'Fail';
-                    }
-                }
-                if (this.testData.limits === 'Relative') {
-                    if (item.operation === 'Trip') {
-                        if (this.asset_.pickupVol.rel && this.asset_.pickupVol.rel[1] &&
-                            Math.abs(parseFloat(this.asset_.pickupVol.rel[1].vref) - parseFloat(item.vPickup)) <= parseFloat(this.asset_.pickupVol.rel[1].vdev)) {
-                            item.assessment = 'Pass';
-                        }
-                        else item.assessment = 'Fail';
-                    }
-                    if (item.operation === 'Close') {
-                        if (this.asset_.pickupVol.rel && this.asset_.pickupVol.rel[0] &&
-                            Math.abs(parseFloat(this.asset_.pickupVol.rel[0].vref) - parseFloat(item.vPickup)) <= parseFloat(this.asset_.pickupVol.rel[0].vdev)) {
-                            item.assessment = 'Pass';
-                        }
-                        else item.assessment = 'Fail';
-                    }
-                }
-            })
         },
 
         clear() {

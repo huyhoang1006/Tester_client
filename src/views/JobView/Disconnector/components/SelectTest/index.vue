@@ -11,12 +11,12 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(item, index) in testTypeList" :key="index">
+                        <tr v-for="(item, index) in testTypeListData" :key="index">
                             <td style="font-weight: bold;">{{ index + 1 }}</td>
                             <td class="ellipsis-cell" style="font-weight: bold;">
                                 {{ item.name }}
                             </td>
-                            <td>
+                            <td style="">
                                 <el-button size="mini" type="primary" style="width: 25px; display: flex; align-items: center; justify-content: center;" @click="addTest(item)">
                                     <i class="fas fa-plus"></i>
                                 </el-button>
@@ -64,6 +64,7 @@ import { UnitMultiplier } from '@/views/Enum/UnitMultiplier'
 import { UnitSymbol } from '@/views/Enum/UnitSymbol'
 import mixin from './mixin'
 import uuid from "@/utils/uuid";
+import TestStandard from '@/views/Cim/TestStandard';
 
 export default {
     mixins: [mixin],
@@ -82,15 +83,8 @@ export default {
         },
         testTypeListData: {
             type: Array,
+            required: true,
             default: () => []
-        },
-        objActiveName: {
-            type: Object,
-            default() {
-                return {
-                    activeName: null
-                }
-            }
         }
     },
     data() {
@@ -100,7 +94,6 @@ export default {
             unitSymbol: UnitSymbol,
         }
     },
-    mounted() {},
     computed: {
         testListData: function () {
             return this.data
@@ -125,6 +118,7 @@ export default {
             const initTest = await this.initTest(testType.alias_name, this.assetData)
             const initData = initTest.table
             const initCondition = initTest.rowDataExampleCondition
+            const initAssessment = initTest.rowDataAssessment
             const name = count == 0 ? testType.name : `${testType.name} (${count})`
             const mrid = uuid.newUuid()
             this.testListData.push({
@@ -140,6 +134,10 @@ export default {
                     comment: "",
                     attachment : new Attachment(),
                     attachmentData : []
+                },
+                testAssessment : {
+                    testStandard : new TestStandard(),
+                    assessment: initAssessment
                 },
                 worst_score: null,
                 worst_score_df: null,

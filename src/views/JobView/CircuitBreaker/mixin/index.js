@@ -77,7 +77,6 @@ export default {
             this.checkProperties(data)
             this.checkAssetId(data)
             this.checkAttachment(data)
-            this.checkTestStandard(data)
             this.checkTestingEquipment(data)
             await this.checkDataMeasurement(data)
             return data
@@ -107,12 +106,6 @@ export default {
                 }
             } else {
                 data.attachment.path = JSON.stringify(data.attachmentData)
-            }
-        },
-
-        checkTestStandard(data) {
-            if(data.testStandardId === '' || data.testStandardId === null) {
-                data.testStandardId = uuid.newUuid();
             }
         },
 
@@ -201,6 +194,11 @@ export default {
                         asset_id: this.assetData.properties.mrid
                     })
                 }
+
+                if(test.testAssessment.testStandard.mrid == '' || test.testAssessment.testStandard.mrid == null) {
+                    test.testAssessment.testStandard.mrid = uuid.newUuid()
+                }
+                test.testAssessment.testStandard.work_task_id = test.mrid
             }
         }
     }

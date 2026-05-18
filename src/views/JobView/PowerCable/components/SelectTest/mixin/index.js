@@ -3,6 +3,7 @@
 import powerCableTestMap from '@/config/test-definitions/PowerCable'
 import powerCableConditionMap from '@/config/testing-condition/PowerCable'
 import * as common from '../../../../Common/index.js'
+import powerCableAssessmentMap from '@/config/testing-assessment/PowerCable'
 export default {
     methods: {
         async initTest(testTypeCode) {
@@ -43,6 +44,8 @@ export default {
             // Sử dụng nested table structure như SurgeArrester
             const rowDataExample = common.buildEmptyTestRow(powerCableTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(powerCableConditionMap[testTypeCode].columns)
+            const rowDataAssessment = common.buildEmptyTestAssessment(powerCableAssessmentMap[testTypeCode]?.testStandard || [])
+
             const row1 = JSON.parse(JSON.stringify(rowDataExample))
             row1.measurement.value = 'Phase A - B'
             const row2 = JSON.parse(JSON.stringify(rowDataExample))
@@ -62,6 +65,7 @@ export default {
             }
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table,
             }
         },
@@ -69,6 +73,7 @@ export default {
             let table1 = []
             const rowDataExample = common.buildEmptyTestRow(powerCableTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(powerCableConditionMap[testTypeCode].columns)
+            const rowDataAssessment = common.buildEmptyTestAssessment(powerCableAssessmentMap[testTypeCode]?.testStandard || [])
             
             // PowerCable specific measurements
             const measurements = ['Phase A-(B+C+GND)', 'Phase B-(A+C+GND)', 'Phase C-(A+B+GND)']
@@ -83,6 +88,7 @@ export default {
             }
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table
             }
         },
@@ -90,6 +96,7 @@ export default {
             let table1 = []
             const rowDataExample = common.buildEmptyTestRow(powerCableTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(powerCableConditionMap[testTypeCode].columns)
+            const rowDataAssessment = common.buildEmptyTestAssessment(powerCableAssessmentMap[testTypeCode]?.testStandard || [])
             
             // PowerCable specific measurements
             const measurements = ['Phase A-(B+C+GND)', 'Phase B-(A+C+GND)', 'Phase C-(A+B+GND)']
@@ -104,6 +111,7 @@ export default {
             }
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table
             }
         },
@@ -111,6 +119,7 @@ export default {
             let table1 = []
             const rowDataExample = common.buildEmptyTestRow(powerCableTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(powerCableConditionMap[testTypeCode].columns)
+            const rowDataAssessment = common.buildEmptyTestAssessment(powerCableAssessmentMap[testTypeCode]?.testStandard || [])
             
             // PowerCable specific measurements
             const measurements = ['Phase A-(B+C+GND)', 'Phase B-(A+C+GND)', 'Phase C-(A+B+GND)']
@@ -125,6 +134,7 @@ export default {
             }
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table
             }
         },
@@ -132,6 +142,7 @@ export default {
             let table1 = []
             const rowDataExample = common.buildEmptyTestRow(powerCableTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(powerCableConditionMap[testTypeCode].columns)
+            const rowDataAssessment = common.buildEmptyTestAssessment(powerCableAssessmentMap[testTypeCode]?.testStandard || [])
             
             // PowerCable specific measurements
             const measurements = ['Phase A-(B+C+GND)', 'Phase B-(A+C+GND)', 'Phase C-(A+B+GND)']
@@ -146,6 +157,7 @@ export default {
             }
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 vlfSetting: {
                     frequency: '',
                     waveForm: '',
@@ -159,6 +171,7 @@ export default {
             let table1 = []
             const rowDataExample = common.buildEmptyTestRow(powerCableTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(powerCableConditionMap[testTypeCode].columns)
+            const rowDataAssessment = common.buildEmptyTestAssessment(powerCableAssessmentMap[testTypeCode]?.testStandard || [])
             
             // TandeltaVlfSource creates 9 rows (3 measurements × 3 voltage levels each)
             const measurements = ['Phase A-(B+C+GND)', 'Phase B-(A+C+GND)', 'Phase C-(A+B+GND)']
@@ -184,6 +197,7 @@ export default {
             }
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 vlfSetting: {
                     frequency: '',
                     waveForm: '',
@@ -197,6 +211,7 @@ export default {
             let table1 = []
             const rowDataExample = common.buildEmptyTestRow(powerCableTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(powerCableConditionMap[testTypeCode].columns)
+            const rowDataAssessment = common.buildEmptyTestAssessment(powerCableAssessmentMap[testTypeCode]?.testStandard || [])
             
             // PowerCable specific measurements
             const measurements = ['Phase A-(B+C+GND)', 'Phase B-(A+C+GND)', 'Phase C-(A+B+GND)']
@@ -211,6 +226,7 @@ export default {
             }
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table
             }
         },
@@ -218,6 +234,7 @@ export default {
                     let table1 = []
                     const rowDataExample = common.buildEmptyTestRow(powerCableTestMap[testTypeCode].columns)
                     const rowDataExampleCondition = common.buildEmptyTestCondition(powerCableConditionMap[testTypeCode].columns)
+                    const rowDataAssessment = common.buildEmptyTestAssessment(powerCableAssessmentMap[testTypeCode]?.testStandard || [])
 
                     // PowerCable specific measurements
                     const measurements = ['Phase A-(B+C+GND)', 'Phase B-(A+C+GND)', 'Phase C-(A+B+GND)']
@@ -232,6 +249,7 @@ export default {
                     }
                     return {
                         rowDataExampleCondition,
+                        rowDataAssessment,
                         table
                     }
                 }
@@ -240,6 +258,7 @@ export default {
             let table1 = []
             const rowDataExample = common.buildEmptyTestRow(powerCableTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(powerCableConditionMap[testTypeCode].columns)
+            const rowDataAssessment = common.buildEmptyTestAssessment(powerCableAssessmentMap[testTypeCode]?.testStandard || [])
             // PowerCable specific items (không có 'Discharge counter check' như SurgeArrester)
             const data = ['Nameplate', 'Installation check', 'Grounding check']
             data.forEach(element => {
@@ -252,6 +271,7 @@ export default {
             }
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table
             }
         }

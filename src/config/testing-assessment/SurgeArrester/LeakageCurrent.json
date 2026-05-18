@@ -1,0 +1,37 @@
+{
+  "testId": "69cadbec-f5d9-447d-9827-0f16d14244fc",
+  "testCode": "LeakageCurrent",
+  "testName": "Leakage current at continuous operating voltage",
+  "testStandard": [
+    {
+      "mrid": "36116f8b-sa02-4ad9-4b16-8c14-lc01-sa001",
+      "code": "customized_leakage_current_surge_arrester",
+      "name": "Customized limit",
+      "type": "customized",
+      "standard_edition": "",
+      "standard_number": "",
+      "columns": [
+        {
+          "mrid": "3f6a7b8c-9d0e-4f10-9006-000000000014",
+          "code": "i_meas",
+          "name": "I meas",
+          "type": "analog",
+          "unit": "m|A",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        { "mrid": "rule-sa-lc-pass-0001", "standard_id": "36116f8b-sa02-4ad9-4b16-8c14-lc01-sa001", "result": "Pass", "priority": "" },
+        { "mrid": "rule-sa-lc-fail-0001", "standard_id": "36116f8b-sa02-4ad9-4b16-8c14-lc01-sa001", "result": "Fail", "priority": "" }
+      ],
+      "assessment_group": [
+        { "mrid": "group-sa-lc-pass-0001", "rule_id": "rule-sa-lc-pass-0001", "parent_id": "", "logic": "", "is_default": false },
+        { "mrid": "group-sa-lc-fail-0001", "rule_id": "rule-sa-lc-fail-0001", "parent_id": "", "logic": "", "is_default": true }
+      ],
+      "assessment": [
+        { "label": "I meas (mA)", "mrid": "", "group_id": "group-sa-lc-pass-0001", "measurement_id": "3f6a7b8c-9d0e-4f10-9006-000000000014", "operator": "≤", "threshold": "" },
+        { "label": "I meas (mA)", "mrid": "", "group_id": "group-sa-lc-fail-0001", "measurement_id": "3f6a7b8c-9d0e-4f10-9006-000000000014", "operator": ">", "threshold": "" }
+      ]
+    }
+  ]
+}

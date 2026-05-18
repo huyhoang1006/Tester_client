@@ -2,16 +2,15 @@
 import {mapState} from 'vuex'
 import disconnectorTestMap from '@/config/test-definitions/Disconnector'
 import disconnectorConditionMap from '@/config/testing-condition/Disconnector'
+import disconnectorAssessmentsMap from '@/config/testing-assessment/Disconnector'
 import * as common from '@/views/JobView/Common/index'
 
 export default {
     data() {
         return {}
     },
-    computed: mapState(['selectedAsset', 'selectedJob']),
-    async beforeMount() {},
     methods: {
-        async initTest(testTypeCode, assetData) {
+        async initTest(testTypeCode) {
             let data = null
             switch (testTypeCode) {
                 case 'InsulationResistance':
@@ -42,6 +41,7 @@ export default {
         async initInsulationResistance(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(disconnectorTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(disconnectorConditionMap[testTypeCode].columns)
+            const rowDataAssessment = common.buildEmptyTestAssessment(disconnectorAssessmentsMap[testTypeCode]?.testStandard || [])
 
             const row1 = JSON.parse(JSON.stringify(rowDataExample))
             row1.measurement.value = 'Phase A-(B+C+GND)'
@@ -55,12 +55,14 @@ export default {
 
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table
             }
         },
         async initContactResistance(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(disconnectorTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(disconnectorConditionMap[testTypeCode].columns)
+            const rowDataAssessment = common.buildEmptyTestAssessment(disconnectorAssessmentsMap[testTypeCode]?.testStandard || [])
 
             const row1 = JSON.parse(JSON.stringify(rowDataExample))
             row1.measurement.value = 'Main contact'
@@ -72,6 +74,7 @@ export default {
 
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table
             }
         },
@@ -79,17 +82,20 @@ export default {
         async initInsulationResMotor(testTypeCode) {
             const rowDataExampleCondition = common.buildEmptyTestCondition(disconnectorConditionMap[testTypeCode].columns)
             const rowDataExample = common.buildEmptyTestRow(disconnectorTestMap[testTypeCode].columns)
+            const rowDataAssessment = common.buildEmptyTestAssessment(disconnectorAssessmentsMap[testTypeCode]?.testStandard || [])
             const row1 = JSON.parse(JSON.stringify(rowDataExample))
             const table1 = [row1] // Hoặc có thể tạo nhiều rows
             const table = {table1}
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table
             }
         },
         async initDcWindingMotor(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(disconnectorTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(disconnectorConditionMap[testTypeCode].columns)
+            const rowDataAssessment = common.buildEmptyTestAssessment(disconnectorAssessmentsMap[testTypeCode]?.testStandard || [])
 
             // Tạo ít nhất 1 row với cấu trúc đúng
             const row1 = JSON.parse(JSON.stringify(rowDataExample))
@@ -99,12 +105,14 @@ export default {
 
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table
             }
         },
         async initOperatingTest(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(disconnectorTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(disconnectorConditionMap[testTypeCode].columns)
+            const rowDataAssessment = common.buildEmptyTestAssessment(disconnectorAssessmentsMap[testTypeCode]?.testStandard || [])
 
             const row1 = JSON.parse(JSON.stringify(rowDataExample))
             row1.measurement.value = 'Main contact'
@@ -116,12 +124,14 @@ export default {
 
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table
             }
         },
         async initControlCheck(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(disconnectorTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(disconnectorConditionMap[testTypeCode].columns)
+            const rowDataAssessment = common.buildEmptyTestAssessment(disconnectorAssessmentsMap[testTypeCode]?.testStandard || [])
 
             // Create default rows based on config
             const defaultItems = ['Control circuit A', 'Control circuit B', 'Control circuit C', 'Auxiliary circuit', 'Heater circuit']
@@ -138,12 +148,14 @@ export default {
 
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table
             }
         },
         async initGeneralInspection(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(disconnectorTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(disconnectorConditionMap[testTypeCode].columns)
+            const rowDataAssessment = common.buildEmptyTestAssessment(disconnectorAssessmentsMap[testTypeCode]?.testStandard || [])
             const defaultItems = disconnectorTestMap[testTypeCode].defaultRows.map((x) => x.item)
 
             const table1 = defaultItems.map((itemValue) => {
@@ -157,6 +169,7 @@ export default {
             const table = {table1}
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table
             }
         }

@@ -1,0 +1,37 @@
+{
+  "testId": "94914852-02f6-4bf2-8e19-cf9d66ba4a1e",
+  "testCode": "OperatingTest",
+  "testName": "Operating test",
+  "testStandard": [
+    {
+      "mrid": "36116f8b-dcl5-4ad9-4b16-8c14-ot01-dcl01",
+      "code": "customized_operating_test_disconnector",
+      "name": "Customized limit",
+      "type": "customized",
+      "standard_edition": "",
+      "standard_number": "",
+      "columns": [
+        {
+          "mrid": "9f2a3b4c-5d6e-4f16-9012-000000000020",
+          "code": "working_time",
+          "name": "Working time",
+          "type": "analog",
+          "unit": "s",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        { "mrid": "rule-dcl-ot-pass-0001", "standard_id": "36116f8b-dcl5-4ad9-4b16-8c14-ot01-dcl01", "result": "Pass", "priority": "" },
+        { "mrid": "rule-dcl-ot-fail-0001", "standard_id": "36116f8b-dcl5-4ad9-4b16-8c14-ot01-dcl01", "result": "Fail", "priority": "" }
+      ],
+      "assessment_group": [
+        { "mrid": "group-dcl-ot-pass-root", "rule_id": "rule-dcl-ot-pass-0001", "parent_id": "", "logic": "AND" },
+        { "mrid": "group-dcl-ot-fail-root", "rule_id": "rule-dcl-ot-fail-0001", "parent_id": "", "logic": "", "is_default": true }
+      ],
+      "assessment": [
+        { "label": "Working time min (s)", "mrid": "", "group_id": "group-dcl-ot-pass-root", "measurement_id": "9f2a3b4c-5d6e-4f16-9012-000000000020", "operator": "≥", "threshold": "" },
+        { "label": "Working time max (s)", "mrid": "", "group_id": "group-dcl-ot-pass-root", "measurement_id": "9f2a3b4c-5d6e-4f16-9012-000000000020", "operator": "≤", "threshold": "" }
+      ]
+    }
+  ]
+}

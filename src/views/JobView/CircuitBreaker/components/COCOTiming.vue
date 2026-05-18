@@ -4,7 +4,7 @@
         <div style="position: sticky; left: 0; display: inline-block;">
             <el-row class="mgb-10">
                 <el-col>
-                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
+                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentSettings()">
                         <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
                     </el-button>
                     <el-button class="btn-action" size="mini" type="success"
@@ -82,14 +82,14 @@
         </div>
 
         <!-- Assessment settings -->
-        <!-- <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog" width="75%">
+        <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog" width="75%">
             <el-radio-group v-model="testData.limits" style="margin-bottom: 20px">
                 <el-radio label="Absolute" value="Absolute"></el-radio>
                 <el-radio label="Relative" value="Relative"></el-radio>
-            </el-radio-group> -->
+            </el-radio-group>
 
         <!-- opening_times -->
-        <!-- <transition>
+            <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
                         <tr>
@@ -144,10 +144,10 @@
         </tr>
     </tbody>
 </table>
-</transition> -->
+            </transition>
 
         <!-- Auxiliary_contact -->
-        <!-- <transition>
+            <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
                         <tr>
@@ -212,10 +212,10 @@
                         </tr>
                     </tbody>
                 </table>
-            </transition> -->
+            </transition>
 
         <!-- //miscellaneous -->
-        <!-- <transition>
+            <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
                         <tr>
@@ -268,10 +268,10 @@
                         </tr>
                     </tbody>
                 </table>
-            </transition> -->
+            </transition>
 
         <!-- //coilCharacteristics -->
-        <!-- <transition>
+            <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
                         <tr>
@@ -342,12 +342,14 @@
                     <el-button type="primary" @click="updateAssessment"> Confirm </el-button>
                 </span>
             </template>
-        </el-dialog> -->
+        </el-dialog>
     </div>
 </template>
 
 <script>
+import timingMixin from './timingMixin'
 export default {
+    mixins: [timingMixin],
     name: "COCOTiming",
     data() {
         return {
@@ -967,46 +969,59 @@ export default {
 
             return normalized
         },
-        resetAssessment() {
-            this.asset_ = JSON.parse(JSON.stringify(this.back_asset))
-            // Sync limits back to testData after reset
-            if (this.asset_.limits && this.testData) {
-                this.$set(this.testData, 'limits', this.asset_.limits)
-            }
-            this.openAssessmentDialog = false
+
+
+        getCircuitBreakerConfig() {
+            var iPerPhase = 1
+            var nPhases   = 3
+            try {
+                if (this.assetData && this.assetData.operating) {
+                    var p = parseInt(this.assetData.operating.numberOfInterruptPhase || this.assetData.operating.number_of_interrupt_phase || 1)
+                    if (!isNaN(p) && p > 0) iPerPhase = p
+                    var n = parseInt(this.assetData.operating.numberOfPhase || this.assetData.operating.number_of_phases || 3)
+                    if (!isNaN(n) && n > 0) nPhases = n
+                }
+            } catch(e) { /* ignore */ }
+            return { interruptersPerPhase: iPerPhase, numberOfPhases: nPhases }
         },
-        async updateAssessment() {
-            // Sync testData.limits to asset_.limits before saving
-            if (this.testData.limits) {
-                this.asset_.limits = this.testData.limits
-            }
-            const asset = {
-                id: this.asset.id,
-                assessmentLimits: this.asset_
-            }
-            const data = await window.electronAPI.updateCircuitAssessmentLimits(asset)
-            if (data.success) {
-                this.$message.success('Update successfully')
-                this.openAssessmentDialog = false
-            } else {
-                this.$message.error('Update cannot complete')
-                this.openAssessmentDialog = false
-            }
-        },
+
         calculator() {
+            var entries = this.getTableEntries()
+            var cb = this.getCircuitBreakerConfig()
+            var iPerPhase  = cb.interruptersPerPhase
+            var nPhases    = cb.numberOfPhases
+
+            entries.forEach(function(entry) {
+                var tableKey = entry.key
+                var rows     = entry.rows
+                rows.forEach(function(e, index) {
+                    var result = 'Pass'
+                    if (index % (iPerPhase * nPhases) === 0) {
+                        var r1 = this.assessTiming(e.opening_sync_between_phase ? e.opening_sync_between_phase.value : '', 2)
+                        if (r1 === 'Fail') { result = 'Fail' }
+                        else if (r1 === null) { result = '' }
+                    }
+                    if (result !== 'Fail') {
+                        var r2 = this.assessTiming(e.opening_time ? e.opening_time.value : '', 0)
+                        if (r2 === 'Fail') { result = 'Fail' }
+                        else if (r2 === null && result === 'Pass') { result = '' }
+                    }
+                    this.testData.table[tableKey][index].assessment.value = result
+                }.bind(this))
+            }.bind(this))
             this.$message.success('Calculating successfully')
         },
 
         clear() {
-            this.testData.table.forEach((element) => {
-                element.forEach((ele) => {
-                    Object.keys(ele).forEach((key) => {
+            this.getTableEntries().forEach(function(entry) {
+                entry.rows.forEach(function(ele) {
+                    Object.keys(ele).forEach(function(key) {
                         if (ele[key] && typeof ele[key] === 'object' && ele[key].value !== undefined) {
                             ele[key].value = ''
                         }
                     })
                 })
-            })
+            }.bind(this))
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) {

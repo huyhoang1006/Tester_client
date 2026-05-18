@@ -10,9 +10,9 @@
       "type": "string"
     },
     {
-      "mrid": "d935a88e-ae9e-47a8-8c90-a8de26d4a5ed",
-      "code": "interrupt_no",
-      "name": "Interrupter No.",
+      "mrid": "cbf48165-6f7a-4716-8258-bb4eae410b3b",
+      "code": "interrupter",
+      "name": "Interrupter",
       "type": "string"
     },
     {

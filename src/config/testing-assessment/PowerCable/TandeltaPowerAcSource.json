@@ -1,0 +1,73 @@
+{
+  "testId": "pc-tdac-001",
+  "testCode": "TandeltaPowerAcSource",
+  "testName": "Tan delta measurement with power frequency AC source",
+  "testStandard": [
+    {
+      "mrid": "36116f8b-pc07-4ad9-4b16-8c14-tda1-pc001",
+      "code": "customized_tan_delta_ac_power_cable",
+      "name": "Customized limit",
+      "type": "customized",
+      "standard_edition": "",
+      "standard_number": "",
+      "columns": [
+        {
+          "mrid": "9c0b757c-3829-4842-9c9c-8d16863bf4b6",
+          "code": "tan_delta",
+          "name": "Tan delta [10⁻³]",
+          "type": "analog",
+          "unit": "m|''",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "rule-pc-tdac-pass-001",
+          "standard_id": "36116f8b-pc07-4ad9-4b16-8c14-tda1-pc001",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "rule-pc-tdac-fail-001",
+          "standard_id": "36116f8b-pc07-4ad9-4b16-8c14-tda1-pc001",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "group-pc-tdac-pass-001",
+          "rule_id": "rule-pc-tdac-pass-001",
+          "parent_id": "",
+          "logic": "",
+          "is_default": false
+        },
+        {
+          "mrid": "group-pc-tdac-fail-001",
+          "rule_id": "rule-pc-tdac-fail-001",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "Tan delta [10⁻³]",
+          "mrid": "",
+          "group_id": "group-pc-tdac-pass-001",
+          "measurement_id": "9c0b757c-3829-4842-9c9c-8d16863bf4b6",
+          "operator": "≤",
+          "threshold": ""
+        },
+        {
+          "label": "Tan delta [10⁻³]",
+          "mrid": "",
+          "group_id": "group-pc-tdac-fail-001",
+          "measurement_id": "9c0b757c-3829-4842-9c9c-8d16863bf4b6",
+          "operator": ">",
+          "threshold": ""
+        }
+      ]
+    }
+  ]
+}

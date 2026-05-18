@@ -4,7 +4,7 @@
         <div style="position: sticky; left: 0; display: inline-block;">
             <el-row class="mgb-10">
                 <el-col>
-                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
+                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentSettings()">
                         <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
                     </el-button>
                     <el-button class="btn-action" size="mini" type="success"
@@ -392,7 +392,9 @@
 </template>
 
 <script>
+import timingMixin from './timingMixin'
 export default {
+    mixins: [timingMixin],
     name: "OCOTiming",
     data() {
         return {
@@ -1033,33 +1035,61 @@ export default {
                 this.$set(this.data, 'table', newTable)
             }
         },
-        resetAssessment() {
-            this.asset_ = JSON.parse(JSON.stringify(this.back_asset))
-            // Sync limits back to testData after reset
-            if (this.asset_.limits && this.testData) {
-                this.$set(this.testData, 'limits', this.asset_.limits)
-            }
-            this.openAssessmentDialog = false
+
+
+        getCircuitBreakerConfig() {
+            var iPerPhase = 1
+            var nPhases   = 3
+            try {
+                if (this.assetData && this.assetData.operating) {
+                    var p = parseInt(this.assetData.operating.numberOfInterruptPhase || this.assetData.operating.number_of_interrupt_phase || 1)
+                    if (!isNaN(p) && p > 0) iPerPhase = p
+                    var n = parseInt(this.assetData.operating.numberOfPhase || this.assetData.operating.number_of_phases || 3)
+                    if (!isNaN(n) && n > 0) nPhases = n
+                }
+            } catch(e) { /* ignore */ }
+            return { interruptersPerPhase: iPerPhase, numberOfPhases: nPhases }
         },
-        async updateAssessment() {
-            // Sync testData.limits to asset_.limits before saving
-            if (this.testData.limits) {
-                this.asset_.limits = this.testData.limits
-            }
-            const asset = {
-                id: this.asset.id,
-                assessmentLimits: this.asset_
-            }
-            const data = await window.electronAPI.updateCircuitAssessmentLimits(asset)
-            if (data.success) {
-                this.$message.success('Update successfully')
-                this.openAssessmentDialog = false
-            } else {
-                this.$message.error('Update cannot complete')
-                this.openAssessmentDialog = false
-            }
-        },
+
         calculator() {
+            var entries = this.getTableEntries()
+            var cb = this.getCircuitBreakerConfig()
+            var iPerPhase  = cb.interruptersPerPhase
+            var nPhases    = cb.numberOfPhases
+
+            entries.forEach(function(entry) {
+                var tableKey = entry.key
+                var rows     = entry.rows
+                rows.forEach(function(e, index) {
+                    var result = 'Pass'
+                    if (index % (iPerPhase * nPhases) === 0) {
+                        var r1 = this.assessTiming(e.opening_sync_between_phase ? e.opening_sync_between_phase.value : '', 2)
+                        if (r1 === 'Fail') { result = 'Fail' }
+                        else if (r1 === null) { result = '' }
+                    }
+                    if (result !== 'Fail' && iPerPhase > 1 && index % iPerPhase === 0) {
+                        var r2 = this.assessTiming(e.opening_sync_between_interrupter ? e.opening_sync_between_interrupter.value : '', 1)
+                        if (r2 === 'Fail') { result = 'Fail' }
+                        else if (r2 === null && result === 'Pass') { result = '' }
+                    }
+                    if (result !== 'Fail') {
+                        var r3 = this.assessTiming(e.opening_time ? e.opening_time.value : '', 0)
+                        if (r3 === 'Fail') { result = 'Fail' }
+                        else if (r3 === null && result === 'Pass') { result = '' }
+                    }
+                    if (result !== 'Fail') {
+                        var r4 = this.assessTiming(e.open_close_time ? e.open_close_time.value : '', 7)
+                        if (r4 === 'Fail') { result = 'Fail' }
+                        else if (r4 === null && result === 'Pass') { result = '' }
+                    }
+                    if (result !== 'Fail') {
+                        var r5 = this.assessTiming(e.closing_time ? e.closing_time.value : '', 3)
+                        if (r5 === 'Fail') { result = 'Fail' }
+                        else if (r5 === null && result === 'Pass') { result = '' }
+                    }
+                    this.testData.table[tableKey][index].assessment.value = result
+                }.bind(this))
+            }.bind(this))
             this.$message.success('Calculating successfully')
         },
 

@@ -4,7 +4,7 @@
             <!-- Cấu hình -->
             <el-row class="mgb-10">
                 <el-col>
-                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
+                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentSettings()">
                         <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
                     </el-button>
                     <el-button class="btn-action" size="mini" type="success"
@@ -83,8 +83,27 @@
             </tbody>
         </table>
 
-        <!-- Assessment settings -->
-        <el-dialog append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px">
+        <el-dialog append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="500px">
+            <el-radio-group v-model="assetData.assessmentLimits.limits" style="margin-bottom:16px;">
+                <el-radio label="Absolute">Absolute limits</el-radio>
+                <el-radio label="Relative">Relative limits</el-radio>
+            </el-radio-group>
+            <el-form size="small" label-position="left" label-width="160px">
+                <template v-if="assetData.assessmentLimits.limits === 'Absolute'">
+                    <el-form-item label="Min trip voltage (V)"><el-input v-model="assetData.assessmentLimits.under_voltage_release.abs.uv_coil_trip_voltage.min.value"/></el-form-item>
+                    <el-form-item label="Max trip voltage (V)"><el-input v-model="assetData.assessmentLimits.under_voltage_release.abs.uv_coil_trip_voltage.max.value"/></el-form-item>
+                </template>
+                <template v-else>
+                    <el-form-item label="Ref trip voltage (V)"><el-input v-model="assetData.assessmentLimits.under_voltage_release.rel.uv_coil_trip_voltage.ref.value"/></el-form-item>
+                    <el-form-item label="Dev trip voltage (V)"><el-input v-model="assetData.assessmentLimits.under_voltage_release.rel.uv_coil_trip_voltage.dev.value"/></el-form-item>
+                </template>
+            </el-form>
+            <template v-slot:footer>
+                <span style="position:absolute;right:10px;bottom:10px;">
+                    <el-button @click="resetAssessment">Cancel</el-button>
+                    <el-button type="primary" @click="updateAssessment">OK</el-button>
+                </span>
+            </template>
         </el-dialog>
     </div>
 </template>
@@ -92,11 +111,15 @@
 <script>
 import CircuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
 import * as common from '../../Common/index'
+import assessmentMixin from './assessmentMixin'
 export default {
+    mixins: [assessmentMixin],
     name: "UnderVoltageRelease",
     data() {
         return {
             openAssessmentDialog: false,
+            backupLimits: null,
+            assessmentIpcChannel: 'updateUnderVoltageReleaseLimits',
             openConditionIndicatorDialog: false
         }
     },
@@ -104,11 +127,18 @@ export default {
         data: {
             type: Object,
             require: true
+        },
+        asset: {
+            type: Object,
+            default: function() { return {} }
         }
     },
     computed: {
         testData() {
             return this.data
+        },
+        assetData() {
+            return this.asset
         },
         assessmentSetting() {
             return this.data.assessment_setting
@@ -141,6 +171,20 @@ export default {
             this.testData.table.table1.splice(index + 1, 0, data)
         },
         calculator() {
+            var limits = this.assetData && this.assetData.assessmentLimits ? this.assetData.assessmentLimits : null
+            if (!limits) { this.$message.error('Assessment limits not configured'); return }
+            var uvr  = limits.under_voltage_release
+            var mode = limits.limits
+            this.testData.table.table1.forEach(function(item) {
+                var value = item.trip_voltage ? item.trip_voltage.value : ''
+                var result
+                if (mode === 'Absolute') {
+                    result = this.assessAbsolute(value, uvr.abs.uv_coil_trip_voltage.min, uvr.abs.uv_coil_trip_voltage.max)
+                } else {
+                    result = this.assessRelative(value, uvr.rel.uv_coil_trip_voltage.ref, uvr.rel.uv_coil_trip_voltage.dev)
+                }
+                item.assessment.value = result
+            }.bind(this))
             this.$message.success('Calculating successfully')
         },
         clear() {

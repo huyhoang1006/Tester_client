@@ -4,7 +4,7 @@
         <div style="position: sticky; left: 0; display: inline-block;">
             <el-row class="mgb-10">
                 <el-col>
-                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
+                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentSettings()">
                         <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
                     </el-button>
                     <el-button class="btn-action" size="mini" type="success"
@@ -85,75 +85,56 @@
             </tbody>
         </table>
 
-        <!-- Assessment settings -->
-        <el-dialog class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog" width="600px"
-            append-to-body>
-            <el-radio-group v-model="assetData.assessmentLimits.limits">
-                <el-radio label="Absolute" value="Absolute"></el-radio>
-                <el-radio label="Relative" value="Relative"></el-radio>
+        <el-dialog append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="700px">
+            <el-radio-group v-model="assetData.assessmentLimits.limits" style="margin-bottom:16px;">
+                <el-radio label="Absolute">Absolute limits</el-radio>
+                <el-radio label="Relative">Relative limits</el-radio>
             </el-radio-group>
-
-            <transition>
-                <table v-if="assetData.assessmentLimits.limits === 'Absolute'" class="table-strip-input-data">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>Minimum</th>
-                            <th>Maximum</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(item, index) in motorCharacteristics" :key="index">
-                            <td>{{ item.label }}</td>
-                            <td>
-                                <el-input size="mini"
-                                    v-model="assetData.assessmentLimits.motor_characteristics.abs[item.key].min.value">
-                                    <template slot="append">{{ item.unit }}</template>
-                                </el-input>
-                            </td>
-                            <td>
-                                <el-input size="mini"
-                                    v-model="assetData.assessmentLimits.motor_characteristics.abs[item.key].max.value">
-                                    <template slot="append">{{ item.unit }}</template>
-                                </el-input>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <table v-if="assetData.assessmentLimits.limits === 'Relative'" class="table-strip-input-data">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>Reference</th>
-                            <th>Deviation</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(item, index) in motorCharacteristics" :key="index">
-                            <td>{{ item.label }}</td>
-                            <td>
-                                <el-input size="mini"
-                                    v-model="assetData.assessmentLimits.motor_characteristics.rel[item.key].ref.value">
-                                    <template slot="append">{{ item.unit }}</template>
-                                </el-input>
-                            </td>
-                            <td>
-                                <el-input size="mini"
-                                    v-model="assetData.assessmentLimits.motor_characteristics.rel[item.key].dev.value">
-                                    <template slot="append">{{ item.unit }}</template>
-                                </el-input>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </transition>
-
-            <br>
-            <template #footer>
-                <span style=" margin-top: 20px; width:100%; position: absolute; right: 10px; bottom: 10px;"
-                    class="dialog-footer">
+            <table class="table-strip-input-data" style="width:100%;font-size:12px;">
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th v-if="assetData.assessmentLimits.limits === 'Absolute'">Minimum</th>
+                        <th v-if="assetData.assessmentLimits.limits === 'Absolute'">Maximum</th>
+                        <th v-if="assetData.assessmentLimits.limits !== 'Absolute'">Reference</th>
+                        <th v-if="assetData.assessmentLimits.limits !== 'Absolute'">Deviation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Inrush current</td>
+                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.abs.inrush_current.min.value"/></td>
+                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.abs.inrush_current.max.value"/></td>
+                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.rel.inrush_current.ref.value"/></td>
+                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.rel.inrush_current.dev.value"/></td>
+                    </tr>
+                    <tr>
+                        <td>Charging time</td>
+                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.abs.charging_time.min.value"/></td>
+                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.abs.charging_time.max.value"/></td>
+                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.rel.charging_time.ref.value"/></td>
+                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.rel.charging_time.dev.value"/></td>
+                    </tr>
+                    <tr>
+                        <td>Charging current</td>
+                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.abs.charging_current.min.value"/></td>
+                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.abs.charging_current.max.value"/></td>
+                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.rel.charging_current.ref.value"/></td>
+                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.rel.charging_current.dev.value"/></td>
+                    </tr>
+                    <tr>
+                        <td>Minimum voltage</td>
+                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.abs.minimum_voltage.min.value"/></td>
+                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.abs.minimum_voltage.max.value"/></td>
+                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.rel.minimum_voltage.ref.value"/></td>
+                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.rel.minimum_voltage.dev.value"/></td>
+                    </tr>
+                </tbody>
+            </table>
+            <template v-slot:footer>
+                <span style="position:absolute;right:10px;bottom:10px;">
                     <el-button @click="resetAssessment">Cancel</el-button>
-                    <el-button type="primary" @click="updateAssessment" :disabled="true">Confirm</el-button>
+                    <el-button type="primary" @click="updateAssessment">Confirm</el-button>
                 </span>
             </template>
         </el-dialog>
@@ -167,11 +148,15 @@
 <script>
 import CircuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
 import * as common from '../../Common/index'
+import assessmentMixin from './assessmentMixin'
 export default {
+    mixins: [assessmentMixin],
     name: "MotorCurrent",
     data() {
         return {
             openAssessmentDialog: false,
+            backupLimits: null,
+            assessmentIpcChannel: 'updateMotorCharacteristicsLimits',
             openConditionIndicatorDialog: false,
             motorCharacteristics: [
                 { label: "Inrush current", key: "inrush_current", unit: "A" },
@@ -203,34 +188,8 @@ export default {
         }
     },
     methods: {
-        async updateAssessment() {
-            // Sync testData.limits to asset_.limits before saving
-            if (this.testData.limits) {
-                this.asset_.limits = this.testData.limits
-            }
-            const asset = {
-                id: this.asset.id,
-                assessmentLimits: this.asset_
-            }
-            const data = await window.electronAPI.updateCircuitAssessmentLimits(asset)
-            const dataTemp = JSON.parse(JSON.stringify(asset))
-            this.back_asset = dataTemp.assessmentLimits
-            if (data.success) {
-                this.$message.success('Update successfully')
-                this.openAssessmentDialog = false
-            } else {
-                this.$message.error("Update cannot complete")
-                this.openAssessmentDialog = false
-            }
-        },
-        resetAssessment() {
-            this.asset_ = JSON.parse(JSON.stringify(this.back_asset))
-            // Sync limits back to testData after reset
-            if (this.asset_.limits && this.testData) {
-                this.$set(this.testData, 'limits', this.asset_.limits)
-            }
-            this.openAssessmentDialog = false
-        },
+
+
         add() {
             this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
         },
@@ -251,42 +210,28 @@ export default {
             this.testData.table.table1.splice(index + 1, 0, data)
         },
         calculator() {
-            this.testData.table.forEach(item => {
-                if (this.testData.limits === 'Absolute') {
-                    if (
-                        //first item
-                        parseFloat(item.inrush_current) >= parseFloat(this.asset_.motorChar.abs[0].min)
-                        && parseFloat(item.inrush_current) <= parseFloat(this.asset_.motorChar.abs[0].max)
-                        //second item
-                        && parseFloat(item.charging) >= parseFloat(this.asset_.motorChar.abs[1].min)
-                        && parseFloat(item.charging) <= parseFloat(this.asset_.motorChar.abs[1].max)
-                        //third item
-                        && parseFloat(item.charging_current) >= parseFloat(this.asset_.motorChar.abs[2].min)
-                        && parseFloat(item.charging_current) <= parseFloat(this.asset_.motorChar.abs[2].max)
-                        //Fourth item
-                        && parseFloat(item.mini_voltage) >= parseFloat(this.asset_.motorChar.abs[3].min)
-                        && parseFloat(item.mini_voltage) <= parseFloat(this.asset_.motorChar.abs[3].max)
-                    ) {
-                        item.assessment = 'Pass';
+            var limits = this.assetData && this.assetData.assessmentLimits ? this.assetData.assessmentLimits : null
+            if (!limits) { this.$message.error('Assessment limits not configured'); return }
+            var mc   = limits.motor_characteristics
+            var mode = limits.limits
+            var fieldMap = [
+                { field: 'inrush_current',   key: 'inrush_current'  },
+                { field: 'charging',         key: 'charging_time'   },
+                { field: 'charging_current', key: 'charging_current' },
+                { field: 'mini_voltage',     key: 'minimum_voltage' },
+            ]
+            this.testData.table.table1.forEach(function(item) {
+                var results = fieldMap.map(function(f) {
+                    var value = item[f.field] ? item[f.field].value : ''
+                    if (mode === 'Absolute') {
+                        return this.assessAbsolute(value, mc.abs[f.key].min, mc.abs[f.key].max)
+                    } else {
+                        return this.assessRelative(value, mc.rel[f.key].ref, mc.rel[f.key].dev)
                     }
-                    else { item.assessment = 'Fail'; }
-                }
-                if (this.testData.limits === 'Relative') {
-                    if (
-                        //first item
-                        Math.abs(parseFloat(item.inrush_current) - parseFloat(this.asset_.motorChar.rel[0].ref)) <= parseFloat(this.asset_.motorChar.rel[0].dev)
-                        //second item
-                        && Math.abs(parseFloat(item.charging) - parseFloat(this.asset_.motorChar.rel[1].ref)) <= parseFloat(this.asset_.motorChar.rel[1].dev)
-                        //third item
-                        && Math.abs(parseFloat(item.charging_current) - parseFloat(this.asset_.motorChar.rel[2].ref)) <= parseFloat(this.asset_.motorChar.rel[2].dev)
-                        //Fourth item
-                        && Math.abs(parseFloat(item.mini_voltage) - parseFloat(this.asset_.motorChar.rel[3].ref)) <= parseFloat(this.asset_.motorChar.rel[3].dev)
-                    ) {
-                        item.assessment = 'Pass';
-                    }
-                    else { item.assessment = 'Fail'; }
-                }
-            })
+                }.bind(this))
+                item.assessment.value = this.assessRow(results)
+            }.bind(this))
+            this.$message.success('Calculating successfully')
         },
         clear() {
             this.testData.table.forEach((element) => {

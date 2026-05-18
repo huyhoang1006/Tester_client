@@ -1,0 +1,72 @@
+{
+  "testId": "2456d847-c65f-4b0b-bb34-3f90b8f971ef",
+  "testCode": "ContactResistance",
+  "testName": "Contact resistance",
+  "testStandard": [
+    {
+      "mrid": "36116f8b-dcl2-4ad9-4b16-8c14-cr01-dcl01",
+      "code": "customized_contact_resistance_disconnector",
+      "name": "Customized limit",
+      "type": "customized",
+      "standard_edition": "",
+      "standard_number": "",
+      "columns": [
+        {
+          "mrid": "d24f5034-3d7d-4bb2-9788-86405874a2e4",
+          "code": "contact_resistance",
+          "name": "Contact resistance",
+          "type": "analog",
+          "unit": "µ|Ω",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "rule-dcl-cr-pass-0001",
+          "standard_id": "36116f8b-dcl2-4ad9-4b16-8c14-cr01-dcl01",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "rule-dcl-cr-fail-0001",
+          "standard_id": "36116f8b-dcl2-4ad9-4b16-8c14-cr01-dcl01",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "group-dcl-cr-pass-root",
+          "rule_id": "rule-dcl-cr-pass-0001",
+          "parent_id": "",
+          "logic": "AND"
+        },
+        {
+          "mrid": "group-dcl-cr-fail-root",
+          "rule_id": "rule-dcl-cr-fail-0001",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "Contact resistance min (μΩ)",
+          "mrid": "",
+          "group_id": "group-dcl-cr-pass-root",
+          "measurement_id": "d24f5034-3d7d-4bb2-9788-86405874a2e4",
+          "operator": "≥",
+          "threshold": ""
+        },
+        {
+          "label": "Contact resistance max (μΩ)",
+          "mrid": "",
+          "group_id": "group-dcl-cr-pass-root",
+          "measurement_id": "d24f5034-3d7d-4bb2-9788-86405874a2e4",
+          "operator": "≤",
+          "threshold": ""
+        }
+      ]
+    }
+  ]
+}

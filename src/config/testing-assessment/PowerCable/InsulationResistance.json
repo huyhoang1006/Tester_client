@@ -1,0 +1,73 @@
+{
+  "testId": "pc-ir-001",
+  "testCode": "InsulationResistance",
+  "testName": "Insulation resistance",
+  "testStandard": [
+    {
+      "mrid": "36116f8b-pc01-4ad9-4b16-8c14-ir01-pc001",
+      "code": "customized_insulation_resistance_power_cable",
+      "name": "Customized limit",
+      "type": "customized",
+      "standard_edition": "",
+      "standard_number": "",
+      "columns": [
+        {
+          "mrid": "7213c077-fd8a-4f12-888c-1263570aa8d6",
+          "code": "r_meas",
+          "name": "R meas",
+          "type": "analog",
+          "unit": "Ω",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "rule-pc-ir-pass-001",
+          "standard_id": "36116f8b-pc01-4ad9-4b16-8c14-ir01-pc001",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "rule-pc-ir-fail-001",
+          "standard_id": "36116f8b-pc01-4ad9-4b16-8c14-ir01-pc001",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "group-pc-ir-pass-001",
+          "rule_id": "rule-pc-ir-pass-001",
+          "parent_id": "",
+          "logic": "",
+          "is_default": false
+        },
+        {
+          "mrid": "group-pc-ir-fail-001",
+          "rule_id": "rule-pc-ir-fail-001",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "R meas (MΩ)",
+          "mrid": "",
+          "group_id": "group-pc-ir-pass-001",
+          "measurement_id": "7213c077-fd8a-4f12-888c-1263570aa8d6",
+          "operator": "≥",
+          "threshold": ""
+        },
+        {
+          "label": "R meas (MΩ)",
+          "mrid": "",
+          "group_id": "group-pc-ir-fail-001",
+          "measurement_id": "7213c077-fd8a-4f12-888c-1263570aa8d6",
+          "operator": "<",
+          "threshold": ""
+        }
+      ]
+    }
+  ]
+}

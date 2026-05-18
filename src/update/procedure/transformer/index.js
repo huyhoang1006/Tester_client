@@ -1,3 +1,4 @@
+/* eslint-disable */
 import * as procedureFunc from '@/function/cim/procedure/index'
 import * as analogFunc from '@/function/cim/analog/index'
 import * as stringMeasurementFunc from '@/function/cim/stringMeasurement/index'
@@ -5,17 +6,22 @@ import * as discreteFunc from '@/function/cim/discrete/index'
 import * as valueAliasSet from '@/function/cim/valueAliasSet/index'
 import * as valueToAliasFunc from '@/function/cim/valueToAlias/index'
 import * as measurementProcedureFunc from '@/function/cim/measurementProcedure/index'
+import * as common from '../common/index'
+import testAssessmentMap from '@/config/testing-assessment/index.js'
+
 export const createProcedureTransformer = async (dbsql, procedureDataMap, testDataMap, testConditionMap,
     getProcedureInfo, getTestDefinitionInfo, getTestConditionInfo
 ) => {
     const transformerProcedureInfo = procedureDataMap['Transformer'];
     const transformerTestDefinitionInfo = testDataMap['Transformer'];
     const transformerTestingConditionInfo = testConditionMap['Transformer'];
+    const transformerAssessmentInfo = testAssessmentMap ? testAssessmentMap['Transformer'] : null
+
     const transformerProcedure = await getProcedureInfo(transformerProcedureInfo)
     const transformerTestDefinitions = await getTestDefinitionInfo(transformerTestDefinitionInfo)
     const transformerTestingConditions = await getTestConditionInfo(transformerTestingConditionInfo)
+
     for (const procedure of transformerProcedure) {
-        // Insert Procedure
         await procedureFunc.insertProcedureTransaction(procedure, dbsql)
     }
     // Insert Testing Definitions
@@ -55,5 +61,18 @@ export const createProcedureTransformer = async (dbsql, procedureDataMap, testDa
     }
     for(const measurementProcedure of transformerTestingConditions.measurementProcedure){
         await measurementProcedureFunc.insertMeasurementProcedureTransaction(measurementProcedure, dbsql)
+    }
+
+    // Seed pre-defined standards vào DB (IEEE C57.152, IEC 60076-1, CIGRE 445...)
+    // Customized được bỏ qua trong seedStandard (tạo per-job)
+    if (transformerAssessmentInfo) {
+        var testKeys = Object.keys(transformerAssessmentInfo)
+        for (var ti = 0; ti < testKeys.length; ti++) {
+            var testEntry = transformerAssessmentInfo[testKeys[ti]]
+            var testStandards = testEntry && testEntry.testStandard ? testEntry.testStandard : []
+            for (var si = 0; si < testStandards.length; si++) {
+                await common.seedStandard(testStandards[si], dbsql)
+            }
+        }
     }
 }

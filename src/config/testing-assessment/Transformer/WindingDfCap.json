@@ -1,0 +1,968 @@
+{
+  "testCode": "WindingDfCap",
+  "testName": "Winding DF & CAP",
+  "testStandard": [
+    {
+      "mrid": "b1bceae9-da83-47b5-a89e-0ca35df79c43",
+      "code": "ieee_c57_new_mineral_25",
+      "name": "IEEE C57.152 (2013) - New - Mineral oil (25°C)",
+      "type": "ieee",
+      "standard_number": "C57.152",
+      "standard_edition": "2013",
+      "columns": [
+        {
+          "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "code": "df_meas",
+          "name": "DF meas (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "code": "delta_c_percent",
+          "name": "ΔC cal (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "6e6ee0af-5f40-40b1-afd8-c4eeb9a17cd2",
+          "standard_id": "b1bceae9-da83-47b5-a89e-0ca35df79c43",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "e99fc448-cb42-4235-8e2d-36fb3dcd87c3",
+          "standard_id": "b1bceae9-da83-47b5-a89e-0ca35df79c43",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "01e93bd6-c130-4a7a-8930-7c05b8361142",
+          "rule_id": "6e6ee0af-5f40-40b1-afd8-c4eeb9a17cd2",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "34d2f81d-af3b-4c99-8c1d-529a5b05e82a",
+          "rule_id": "e99fc448-cb42-4235-8e2d-36fb3dcd87c3",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "DF meas (%)",
+          "mrid": "0b98f2de-bc4b-42c5-b662-7abef08aea3c",
+          "group_id": "01e93bd6-c130-4a7a-8930-7c05b8361142",
+          "measurement_id": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "operator": "≤",
+          "threshold": "0.05"
+        },
+        {
+          "label": "ΔC cal (%)",
+          "mrid": "9e1eacc4-71b5-47b1-bc36-d47df257f850",
+          "group_id": "01e93bd6-c130-4a7a-8930-7c05b8361142",
+          "measurement_id": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "operator": "≤",
+          "threshold": "5"
+        }
+      ]
+    },
+    {
+      "mrid": "318ac4f0-a742-4edf-9f65-b0b65be2be53",
+      "code": "ieee_c57_new_mineral_100",
+      "name": "IEEE C57.152 (2013) - New - Mineral oil (100°C)",
+      "type": "ieee",
+      "standard_number": "C57.152",
+      "standard_edition": "2013",
+      "columns": [
+        {
+          "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "code": "df_meas",
+          "name": "DF meas (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "code": "delta_c_percent",
+          "name": "ΔC cal (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "9d0365d8-1f5b-4d27-9b0f-b91c13d5e8df",
+          "standard_id": "318ac4f0-a742-4edf-9f65-b0b65be2be53",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "705abad5-7eab-42d4-902c-f984644a6a20",
+          "standard_id": "318ac4f0-a742-4edf-9f65-b0b65be2be53",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "bbdcc565-f68e-4df5-a537-5709ffe2a268",
+          "rule_id": "9d0365d8-1f5b-4d27-9b0f-b91c13d5e8df",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "a2b41843-22bd-42cd-8e56-a5a2f720ec37",
+          "rule_id": "705abad5-7eab-42d4-902c-f984644a6a20",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "DF meas (%)",
+          "mrid": "addfef3e-dece-4b3e-85a2-f02f25a11331",
+          "group_id": "bbdcc565-f68e-4df5-a537-5709ffe2a268",
+          "measurement_id": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "operator": "≤",
+          "threshold": "0.4"
+        },
+        {
+          "label": "ΔC cal (%)",
+          "mrid": "9bc4212a-e043-4e70-9052-90dd3e448456",
+          "group_id": "bbdcc565-f68e-4df5-a537-5709ffe2a268",
+          "measurement_id": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "operator": "≤",
+          "threshold": "5"
+        }
+      ]
+    },
+    {
+      "mrid": "0a52e85b-de65-4369-8f60-9afcc159a514",
+      "code": "ieee_c57_new_lfh_25",
+      "name": "IEEE C57.152 (2013) - New - LFH (25°C)",
+      "type": "ieee",
+      "standard_number": "C57.152",
+      "standard_edition": "2013",
+      "columns": [
+        {
+          "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "code": "df_meas",
+          "name": "DF meas (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "code": "delta_c_percent",
+          "name": "ΔC cal (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "6477b797-130b-4014-84ad-bdf00d548453",
+          "standard_id": "0a52e85b-de65-4369-8f60-9afcc159a514",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "42c743cd-8738-483f-9025-b431e7ee028a",
+          "standard_id": "0a52e85b-de65-4369-8f60-9afcc159a514",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "cc76c97e-4ad9-4b43-9102-a11ba1ea5f78",
+          "rule_id": "6477b797-130b-4014-84ad-bdf00d548453",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "94cc5d1c-91eb-4ebf-ac4e-b093e769b7d7",
+          "rule_id": "42c743cd-8738-483f-9025-b431e7ee028a",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "DF meas (%)",
+          "mrid": "7d96d493-0157-4498-8b93-f3445e8ea9a0",
+          "group_id": "cc76c97e-4ad9-4b43-9102-a11ba1ea5f78",
+          "measurement_id": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "operator": "≤",
+          "threshold": "0.1"
+        },
+        {
+          "label": "ΔC cal (%)",
+          "mrid": "882ec9b0-cb24-43e4-9763-1fd853b2dd34",
+          "group_id": "cc76c97e-4ad9-4b43-9102-a11ba1ea5f78",
+          "measurement_id": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "operator": "≤",
+          "threshold": "5"
+        }
+      ]
+    },
+    {
+      "mrid": "74edd133-3f94-4b23-9b24-b84d60be7568",
+      "code": "ieee_c57_new_lfh_100",
+      "name": "IEEE C57.152 (2013) - New - LFH (100°C)",
+      "type": "ieee",
+      "standard_number": "C57.152",
+      "standard_edition": "2013",
+      "columns": [
+        {
+          "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "code": "df_meas",
+          "name": "DF meas (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "code": "delta_c_percent",
+          "name": "ΔC cal (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "9566c57b-fed6-4d90-b8b3-15166be73395",
+          "standard_id": "74edd133-3f94-4b23-9b24-b84d60be7568",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "7aed5948-b798-4650-8b8e-eb57f711227c",
+          "standard_id": "74edd133-3f94-4b23-9b24-b84d60be7568",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "68f78200-5b8c-4f10-b5b8-6a3c65773d29",
+          "rule_id": "9566c57b-fed6-4d90-b8b3-15166be73395",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "ec86b2b4-43fc-4efc-b1c3-4db4e110f544",
+          "rule_id": "7aed5948-b798-4650-8b8e-eb57f711227c",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "DF meas (%)",
+          "mrid": "3991310b-98df-415a-9250-ac6be05fae55",
+          "group_id": "68f78200-5b8c-4f10-b5b8-6a3c65773d29",
+          "measurement_id": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "operator": "≤",
+          "threshold": "1"
+        },
+        {
+          "label": "ΔC cal (%)",
+          "mrid": "ad3f4035-7f90-461f-8788-3fa05b923ded",
+          "group_id": "68f78200-5b8c-4f10-b5b8-6a3c65773d29",
+          "measurement_id": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "operator": "≤",
+          "threshold": "5"
+        }
+      ]
+    },
+    {
+      "mrid": "2fd0a2d9-9b91-4cd4-aca3-10cd6c7a7428",
+      "code": "ieee_c57_new_silicone_25",
+      "name": "IEEE C57.152 (2013) - New - Silicone (25°C)",
+      "type": "ieee",
+      "standard_number": "C57.152",
+      "standard_edition": "2013",
+      "columns": [
+        {
+          "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "code": "df_meas",
+          "name": "DF meas (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "code": "delta_c_percent",
+          "name": "ΔC cal (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "2db96a59-5350-4159-a8d9-80210dbd3a5e",
+          "standard_id": "2fd0a2d9-9b91-4cd4-aca3-10cd6c7a7428",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "9ff2adac-e22f-4ce8-a518-16ba77afc64b",
+          "standard_id": "2fd0a2d9-9b91-4cd4-aca3-10cd6c7a7428",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "fc2ad172-3a84-44f3-a6d4-f1a35169b45a",
+          "rule_id": "2db96a59-5350-4159-a8d9-80210dbd3a5e",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "df13991d-9588-47e5-aa43-234fc4171c8d",
+          "rule_id": "9ff2adac-e22f-4ce8-a518-16ba77afc64b",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "DF meas (%)",
+          "mrid": "96548b64-1922-4c3f-83ff-8fa376c9e0fd",
+          "group_id": "fc2ad172-3a84-44f3-a6d4-f1a35169b45a",
+          "measurement_id": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "operator": "≤",
+          "threshold": "0.1"
+        },
+        {
+          "label": "ΔC cal (%)",
+          "mrid": "db0ecfe9-9755-4e47-bd9d-6158c0273291",
+          "group_id": "fc2ad172-3a84-44f3-a6d4-f1a35169b45a",
+          "measurement_id": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "operator": "≤",
+          "threshold": "5"
+        }
+      ]
+    },
+    {
+      "mrid": "25cae31f-1f54-4165-bc4d-f4f3e7620c5f",
+      "code": "ieee_c57_new_natural_25",
+      "name": "IEEE C57.152 (2013) - New - Natural ester (25°C)",
+      "type": "ieee",
+      "standard_number": "C57.152",
+      "standard_edition": "2013",
+      "columns": [
+        {
+          "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "code": "df_meas",
+          "name": "DF meas (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "code": "delta_c_percent",
+          "name": "ΔC cal (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "164233f7-32c6-4e7a-864a-a0afaf5d2c6a",
+          "standard_id": "25cae31f-1f54-4165-bc4d-f4f3e7620c5f",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "3ae67056-61dc-4aab-8a89-60a9ec37b3b7",
+          "standard_id": "25cae31f-1f54-4165-bc4d-f4f3e7620c5f",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "534389e1-8205-45b6-b39a-baf3e7b03869",
+          "rule_id": "164233f7-32c6-4e7a-864a-a0afaf5d2c6a",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "2471005e-d503-48c7-a942-a8226e45aea8",
+          "rule_id": "3ae67056-61dc-4aab-8a89-60a9ec37b3b7",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "DF meas (%)",
+          "mrid": "f3972676-eae0-495a-82d3-403820f04d77",
+          "group_id": "534389e1-8205-45b6-b39a-baf3e7b03869",
+          "measurement_id": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "operator": "≤",
+          "threshold": "0.5"
+        },
+        {
+          "label": "ΔC cal (%)",
+          "mrid": "9f2a01e5-6907-44f9-8b44-e23cc23b64b8",
+          "group_id": "534389e1-8205-45b6-b39a-baf3e7b03869",
+          "measurement_id": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "operator": "≤",
+          "threshold": "5"
+        }
+      ]
+    },
+    {
+      "mrid": "d6215235-1097-4d26-b958-37d657dc9495",
+      "code": "ieee_c57_aged_mineral_25",
+      "name": "IEEE C57.152 (2013) - Service-aged - Mineral oil (25°C)",
+      "type": "ieee",
+      "standard_number": "C57.152",
+      "standard_edition": "2013",
+      "columns": [
+        {
+          "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "code": "df_meas",
+          "name": "DF meas (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "code": "delta_c_percent",
+          "name": "ΔC cal (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "488009a9-27b9-4ebd-b60a-40f85176ce71",
+          "standard_id": "d6215235-1097-4d26-b958-37d657dc9495",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "bd207c4e-32d1-4174-a324-c06ee1427ced",
+          "standard_id": "d6215235-1097-4d26-b958-37d657dc9495",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "ddabf782-747d-4de1-b03a-453c3ac773cd",
+          "rule_id": "488009a9-27b9-4ebd-b60a-40f85176ce71",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "8309d471-9a68-4726-b7f1-40c80c1e24cf",
+          "rule_id": "bd207c4e-32d1-4174-a324-c06ee1427ced",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "DF meas (%)",
+          "mrid": "01077633-e419-4818-b72e-061b91eb230d",
+          "group_id": "ddabf782-747d-4de1-b03a-453c3ac773cd",
+          "measurement_id": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "operator": "≤",
+          "threshold": "0.5"
+        },
+        {
+          "label": "ΔC cal (%)",
+          "mrid": "5b71bb92-14c7-404d-b4f0-163f17c5a407",
+          "group_id": "ddabf782-747d-4de1-b03a-453c3ac773cd",
+          "measurement_id": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "operator": "≤",
+          "threshold": "5"
+        }
+      ]
+    },
+    {
+      "mrid": "e90b8d57-ff37-46c9-9e8e-39704a425a81",
+      "code": "ieee_c57_aged_mineral_100",
+      "name": "IEEE C57.152 (2013) - Service-aged - Mineral oil (100°C)",
+      "type": "ieee",
+      "standard_number": "C57.152",
+      "standard_edition": "2013",
+      "columns": [
+        {
+          "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "code": "df_meas",
+          "name": "DF meas (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "code": "delta_c_percent",
+          "name": "ΔC cal (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "6a94d998-2517-4b34-81bb-21d74d633a0a",
+          "standard_id": "e90b8d57-ff37-46c9-9e8e-39704a425a81",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "5d2d44c3-7249-4783-9172-f04b46434796",
+          "standard_id": "e90b8d57-ff37-46c9-9e8e-39704a425a81",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "a12d35ac-343f-4d97-8ec4-304b67302c03",
+          "rule_id": "6a94d998-2517-4b34-81bb-21d74d633a0a",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "c7c6e982-8f8b-42f1-a9f1-ddf6309a490b",
+          "rule_id": "5d2d44c3-7249-4783-9172-f04b46434796",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "DF meas (%)",
+          "mrid": "c95435ea-e2cb-4d9f-a083-eb3a2f503782",
+          "group_id": "a12d35ac-343f-4d97-8ec4-304b67302c03",
+          "measurement_id": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "operator": "≤",
+          "threshold": "5"
+        },
+        {
+          "label": "ΔC cal (%)",
+          "mrid": "43798b5f-cd79-4f13-b023-150cf3f83dd0",
+          "group_id": "a12d35ac-343f-4d97-8ec4-304b67302c03",
+          "measurement_id": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "operator": "≤",
+          "threshold": "5"
+        }
+      ]
+    },
+    {
+      "mrid": "38c508e0-c1fd-4c5c-852a-7683e3684f35",
+      "code": "ieee_c57_aged_lfh_25",
+      "name": "IEEE C57.152 (2013) - Service-aged - LFH (25°C)",
+      "type": "ieee",
+      "standard_number": "C57.152",
+      "standard_edition": "2013",
+      "columns": [
+        {
+          "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "code": "df_meas",
+          "name": "DF meas (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "code": "delta_c_percent",
+          "name": "ΔC cal (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "5b58f98c-9b53-4f5d-8485-29a1d2bc0bf7",
+          "standard_id": "38c508e0-c1fd-4c5c-852a-7683e3684f35",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "b0fa1aed-1462-499d-ad29-fcd821ecec1a",
+          "standard_id": "38c508e0-c1fd-4c5c-852a-7683e3684f35",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "281d3e00-7b8f-47cd-b166-6a828b361a77",
+          "rule_id": "5b58f98c-9b53-4f5d-8485-29a1d2bc0bf7",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "bf96e60e-2af2-4be1-9904-9bacdf88a8a8",
+          "rule_id": "b0fa1aed-1462-499d-ad29-fcd821ecec1a",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "DF meas (%)",
+          "mrid": "7a4afdae-76e2-4609-a2b1-e5ac9442fa24",
+          "group_id": "281d3e00-7b8f-47cd-b166-6a828b361a77",
+          "measurement_id": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "operator": "≤",
+          "threshold": "1"
+        },
+        {
+          "label": "ΔC cal (%)",
+          "mrid": "e8cb1ce8-e142-4376-9d42-245e0ec85c28",
+          "group_id": "281d3e00-7b8f-47cd-b166-6a828b361a77",
+          "measurement_id": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "operator": "≤",
+          "threshold": "5"
+        }
+      ]
+    },
+    {
+      "mrid": "6a27d0c1-1078-4be5-8bff-c6830554baba",
+      "code": "ieee_c57_aged_silicone_25",
+      "name": "IEEE C57.152 (2013) - Service-aged - Silicone (25°C)",
+      "type": "ieee",
+      "standard_number": "C57.152",
+      "standard_edition": "2013",
+      "columns": [
+        {
+          "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "code": "df_meas",
+          "name": "DF meas (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "code": "delta_c_percent",
+          "name": "ΔC cal (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "82a1527f-26f4-422c-bb3a-f9aeac5dff31",
+          "standard_id": "6a27d0c1-1078-4be5-8bff-c6830554baba",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "436e4196-777d-4e6c-b7eb-9e140cfb0b8a",
+          "standard_id": "6a27d0c1-1078-4be5-8bff-c6830554baba",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "4f258303-104d-4be3-9342-405240ee5e58",
+          "rule_id": "82a1527f-26f4-422c-bb3a-f9aeac5dff31",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "ae58b6be-05e5-4d62-9ee6-9f54c6f5ef4e",
+          "rule_id": "436e4196-777d-4e6c-b7eb-9e140cfb0b8a",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "DF meas (%)",
+          "mrid": "c592feed-1073-4ca2-946f-a17c4164d2eb",
+          "group_id": "4f258303-104d-4be3-9342-405240ee5e58",
+          "measurement_id": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "operator": "≤",
+          "threshold": "0.2"
+        },
+        {
+          "label": "ΔC cal (%)",
+          "mrid": "44ab1816-73ab-445b-a75b-b503f1663d33",
+          "group_id": "4f258303-104d-4be3-9342-405240ee5e58",
+          "measurement_id": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "operator": "≤",
+          "threshold": "5"
+        }
+      ]
+    },
+    {
+      "mrid": "87e2fce9-176c-4ad8-ba0d-2d76bab2d7af",
+      "code": "ieee_c57_aged_natural_25",
+      "name": "IEEE C57.152 (2013) - Service-aged - Natural ester (25°C)",
+      "type": "ieee",
+      "standard_number": "C57.152",
+      "standard_edition": "2013",
+      "columns": [
+        {
+          "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "code": "df_meas",
+          "name": "DF meas (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "code": "delta_c_percent",
+          "name": "ΔC cal (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "7326fe99-a19d-4ef5-ac69-8755b4b2d3a0",
+          "standard_id": "87e2fce9-176c-4ad8-ba0d-2d76bab2d7af",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "f65969dd-51b4-453c-a6bf-3083ecd93388",
+          "standard_id": "87e2fce9-176c-4ad8-ba0d-2d76bab2d7af",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "96b5a768-5297-4941-b179-eaffe196b9e2",
+          "rule_id": "7326fe99-a19d-4ef5-ac69-8755b4b2d3a0",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "2f2e7c3d-d0cc-4b5c-a239-48af39b36c96",
+          "rule_id": "f65969dd-51b4-453c-a6bf-3083ecd93388",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "DF meas (%)",
+          "mrid": "452766cc-f798-4f51-8a04-e8547331972a",
+          "group_id": "96b5a768-5297-4941-b179-eaffe196b9e2",
+          "measurement_id": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "operator": "≤",
+          "threshold": "0.5"
+        },
+        {
+          "label": "ΔC cal (%)",
+          "mrid": "cf2f62d3-629c-43eb-b806-4a80ba1c421c",
+          "group_id": "96b5a768-5297-4941-b179-eaffe196b9e2",
+          "measurement_id": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "operator": "≤",
+          "threshold": "5"
+        }
+      ]
+    },
+    {
+      "mrid": "712cf597-7e66-4903-a398-c4f58426cb48",
+      "code": "cigre_445_winding_dfcap",
+      "name": "CIGRE 445",
+      "type": "cigre",
+      "standard_number": "445",
+      "standard_edition": "2010",
+      "columns": [
+        {
+          "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "code": "df_meas",
+          "name": "DF meas (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "code": "delta_c_percent",
+          "name": "ΔC cal (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "3aa49b54-a08f-4ebf-831d-db89c4e10240",
+          "standard_id": "712cf597-7e66-4903-a398-c4f58426cb48",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "98ff6828-e7c4-430e-837f-7bb35366d552",
+          "standard_id": "712cf597-7e66-4903-a398-c4f58426cb48",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "328a706f-6952-4a22-a488-befcc0855740",
+          "rule_id": "3aa49b54-a08f-4ebf-831d-db89c4e10240",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "333ef3e3-b9fc-417c-9fbd-0b2bf6ebaeaa",
+          "rule_id": "98ff6828-e7c4-430e-837f-7bb35366d552",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "DF meas (%)",
+          "mrid": "64e9cb43-4e79-47ab-80f3-8f9c05802029",
+          "group_id": "328a706f-6952-4a22-a488-befcc0855740",
+          "measurement_id": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "operator": "≤",
+          "threshold": "0.5"
+        },
+        {
+          "label": "ΔC cal (%)",
+          "mrid": "971548f1-4c65-4e72-beb1-35bbd52210a3",
+          "group_id": "328a706f-6952-4a22-a488-befcc0855740",
+          "measurement_id": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "operator": "≤",
+          "threshold": "5"
+        }
+      ]
+    },
+    {
+      "mrid": "cf3895b9-ad9c-4be0-a516-95e721a50262",
+      "code": "customized_winding_dfcap_transformer",
+      "name": "Customized limit",
+      "type": "customized",
+      "standard_number": "",
+      "standard_edition": "",
+      "columns": [
+        {
+          "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "code": "df_meas",
+          "name": "DF meas (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        },
+        {
+          "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "code": "delta_c_percent",
+          "name": "ΔC cal (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "7ffaea3a-0ab8-4203-a047-2bd71b6239c6",
+          "standard_id": "cf3895b9-ad9c-4be0-a516-95e721a50262",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "c4ab2afb-a6cd-464b-a0f5-84eb1117e0cf",
+          "standard_id": "cf3895b9-ad9c-4be0-a516-95e721a50262",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "68ab4c41-9e49-408d-9ed8-803b62abcd09",
+          "rule_id": "7ffaea3a-0ab8-4203-a047-2bd71b6239c6",
+          "parent_id": "",
+          "logic": "AND",
+          "is_default": false
+        },
+        {
+          "mrid": "873e8cce-f11e-4da6-bdfd-d57284689738",
+          "rule_id": "c4ab2afb-a6cd-464b-a0f5-84eb1117e0cf",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "DF meas (%)",
+          "mrid": "9bbc2659-cd30-491d-979a-886b1e66a4ca",
+          "group_id": "68ab4c41-9e49-408d-9ed8-803b62abcd09",
+          "measurement_id": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
+          "operator": "≤",
+          "threshold": ""
+        },
+        {
+          "label": "ΔC cal (%)",
+          "mrid": "206fc3e5-688e-49d8-a7e0-961625732140",
+          "group_id": "68ab4c41-9e49-408d-9ed8-803b62abcd09",
+          "measurement_id": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
+          "operator": "≤",
+          "threshold": "5"
+        }
+      ]
+    }
+  ]
+}

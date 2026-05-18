@@ -64,6 +64,7 @@ import { UnitMultiplier } from '@/views/Enum/UnitMultiplier'
 import { UnitSymbol } from '@/views/Enum/UnitSymbol'
 import mixin from './mixin'
 import uuid from "@/utils/uuid";
+import TestStandard from '@/views/Cim/TestStandard';
 
 export default {
     mixins: [mixin],
@@ -117,6 +118,7 @@ export default {
             const initTest = await this.initTest(testType.alias_name, this.assetData)
             const initData = initTest.table
             const initCondition = initTest.rowDataExampleCondition
+            const initAssessment = initTest.rowDataAssessment
             const name = count == 0 ? testType.name : `${testType.name} (${count})`
             const mrid = uuid.newUuid()
             this.testListData.push({
@@ -132,6 +134,10 @@ export default {
                     comment: "",
                     attachment : new Attachment(),
                     attachmentData : []
+                },
+                testAssessment : {
+                    testStandard : new TestStandard(),
+                    assessment: initAssessment
                 },
                 worst_score: null,
                 worst_score_df: null,

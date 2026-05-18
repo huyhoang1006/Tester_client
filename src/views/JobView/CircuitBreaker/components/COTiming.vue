@@ -4,7 +4,7 @@
         <div style="position: sticky; left: 0; display: inline-block;">
             <el-row class="mgb-10">
                 <el-col>
-                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
+                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentSettings()">
                         <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
                     </el-button>
                     <el-button class="btn-action" size="mini" type="success"
@@ -161,14 +161,14 @@
         </div>
 
         <!-- Assessment settings -->
-        <!-- <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog" width="75%">
+        <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog" width="75%">
             <el-radio-group v-model="testData.limits" style="margin-bottom: 20px">
                 <el-radio label="Absolute" value="Absolute"></el-radio>
                 <el-radio label="Relative" value="Relative"></el-radio>
-            </el-radio-group> -->
+            </el-radio-group>
 
         <!-- opening_times -->
-        <!-- <transition>
+            <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
                         <tr>
@@ -223,10 +223,10 @@
         </tr>
     </tbody>
 </table>
-</transition> -->
+            </transition>
 
         <!-- //coilCharacteristics -->
-        <!-- <transition>
+            <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
                         <tr>
@@ -297,12 +297,14 @@
                     <el-button type="primary" @click="updateAssessment"> Confirm </el-button>
                 </span>
             </template>
-        </el-dialog> -->
+        </el-dialog>
     </div>
 </template>
 
 <script>
+import timingMixin from './timingMixin'
 export default {
+    mixins: [timingMixin],
     name: 'COTiming',
     data() {
         return {
@@ -751,200 +753,73 @@ export default {
                 this.$set(this.data, 'table', newTable)
             }
         },
-        resetAssessment() {
-            this.asset_ = JSON.parse(JSON.stringify(this.back_asset))
-            // Sync limits back to testData after reset
-            if (this.asset_.limits && this.testData) {
-                this.$set(this.testData, 'limits', this.asset_.limits)
-            }
-            this.openAssessmentDialog = false
+
+
+        getCircuitBreakerConfig() {
+            var iPerPhase = 1
+            var nPhases   = 3
+            try {
+                if (this.assetData && this.assetData.operating) {
+                    var p = parseInt(this.assetData.operating.numberOfInterruptPhase || this.assetData.operating.number_of_interrupt_phase || 1)
+                    if (!isNaN(p) && p > 0) iPerPhase = p
+                    var n = parseInt(this.assetData.operating.numberOfPhase || this.assetData.operating.number_of_phases || 3)
+                    if (!isNaN(n) && n > 0) nPhases = n
+                }
+            } catch(e) { /* ignore */ }
+            return { interruptersPerPhase: iPerPhase, numberOfPhases: nPhases }
         },
-        async updateAssessment() {
-            // Sync testData.limits to asset_.limits before saving
-            if (this.testData.limits) {
-                this.asset_.limits = this.testData.limits
-            }
-            const asset = {
-                id: this.asset.id,
-                assessmentLimits: this.asset_
-            }
-            const data = await window.electronAPI.updateCircuitAssessmentLimits(asset)
-            if (data.success) {
-                this.$message.success('Update successfully')
-                this.openAssessmentDialog = false
-            } else {
-                this.$message.error('Update cannot complete')
-                this.openAssessmentDialog = false
-            }
-        },
+
         calculator() {
-            /* eslint-disable */
-            let circuitBreaker_ = {
-                interruptersPerPhase: this.getInterruptersPerPhase(),
-                numberOfPhases: this.getNumberOfPhases()
-            }
-            
-            if (this.$store.state.selectedAsset && this.$store.state.selectedAsset[0] && this.$store.state.selectedAsset[0].circuitBreaker) {
-                const cb = this.$store.state.selectedAsset[0].circuitBreaker
-                if (typeof cb === 'string') {
-                    try {
-                        const parsed = JSON.parse(cb)
-                        circuitBreaker_.interruptersPerPhase = parsed.interruptersPerPhase || parsed.numberOfInterruptPhase || parsed.number_of_interrupt_phase || circuitBreaker_.interruptersPerPhase
-                        circuitBreaker_.numberOfPhases = parsed.numberOfPhases || parsed.numberOfPhase || parsed.number_of_phases || circuitBreaker_.numberOfPhases
-                    } catch (e) {
-                        console.warn('Failed to parse circuitBreaker from store:', e)
+            var entries = this.getTableEntries()
+            var cb = this.getCircuitBreakerConfig()
+            var iPerPhase  = cb.interruptersPerPhase
+            var nPhases    = cb.numberOfPhases
+
+            entries.forEach(function(entry) {
+                var tableKey = entry.key
+                var rows     = entry.rows
+                rows.forEach(function(e, index) {
+                    var result = 'Pass'
+                    // closing_sync_between_phase [5]
+                    if (index % (iPerPhase * nPhases) === 0) {
+                        var r1 = this.assessTiming(e.closing_sync_between_phase ? e.closing_sync_between_phase.value : '', 5)
+                        if (r1 === 'Fail') { result = 'Fail' }
+                        else if (r1 === null) { result = '' }
                     }
-                } else if (cb) {
-                    circuitBreaker_.interruptersPerPhase = cb.interruptersPerPhase || cb.numberOfInterruptPhase || cb.number_of_interrupt_phase || circuitBreaker_.interruptersPerPhase
-                    circuitBreaker_.numberOfPhases = cb.numberOfPhases || cb.numberOfPhase || cb.number_of_phases || circuitBreaker_.numberOfPhases
-                }
-            }
-            this.testData.table.forEach((element, i) => {
-                if (this.testData.limits === 'Absolute') {
-                    element.forEach((e, index) => {
-                        //Closing Sync between phase la [5]
-                        if (index % (circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases) == 0) {
-                            const syncValue = parseFloat(e.closing_sync_between_phase.value)
-                            const minValue = parseFloat(this.asset_.openTime.abs[5].tmin)
-                            const maxValue = parseFloat(this.asset_.openTime.abs[5].tmax)
-                            
-                            if (syncValue < minValue || syncValue > maxValue) {
-                                for (let j = 0; j < circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases; j++) {
-                                    this.testData.table[i][index + j].assessment.value = 'Fail'
-                                }
-                            }
-                            else {
-                                for (let j = 0; j < circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases; j++) {
-                                    this.testData.table[i][index + j].assessment.value = 'Pass'
-                                }
-                            }
-                        }
-                        //Closing Sync between interrupter la [4]
-                        if (e.assessment.value !== 'Fail' && circuitBreaker_.interruptersPerPhase > 1) {
-                            if (index % (circuitBreaker_.interruptersPerPhase) == 0) {
-                                const syncValue = parseFloat(e.closing_sync_between_interrupter.value)
-                                const minValue = parseFloat(this.asset_.openTime.abs[4].tmin)
-                                const maxValue = parseFloat(this.asset_.openTime.abs[4].tmax)
-                                
-                                if (syncValue < minValue || syncValue > maxValue) {
-                                    for (let j = 0; j < circuitBreaker_.interruptersPerPhase; j++) {
-                                        this.testData.table[i][index + j].assessment.value = 'Fail'
-                                    }
-                                }
-                            }
-                        }
-                        //Closing Time [3]
-                        if (e.assessment.value !== 'Fail') {
-                            const closingValue = parseFloat(e.closing_time.value)
-                            const minValue = parseFloat(this.asset_.openTime.abs[3].tmin)
-                            const maxValue = parseFloat(this.asset_.openTime.abs[3].tmax)
-                            
-                            if (closingValue < minValue || closingValue > maxValue) {
-                                e.assessment.value = 'Fail'
-                            }
-                            else {
-                                e.assessment.value = 'Pass'
-                            }
-                        }
-                    })
-                }
-                else if (this.testData.limits === 'Relative') {
-                    element.forEach((e, index) => {
-                        //Closing Sync between phase la [5]
-                        if (index % (circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases) == 0) {
-                            const syncValue = parseFloat(e.closing_sync_between_phase.value)
-                            const refValue = parseFloat(this.asset_.openTime.rel[5].rref)
-                            const devZ = parseFloat(this.asset_.openTime.rel[5].tdevZ)
-                            const devN = parseFloat(this.asset_.openTime.rel[5].tdevN)
-                            
-                            if (syncValue < refValue) {
-                                if (syncValue < (refValue - devZ)) {
-                                    for (let j = 0; j < circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases; j++) {
-                                        this.testData.table[i][index + j].assessment.value = 'Fail'
-                                    }
-                                }
-                                else {
-                                    for (let j = 0; j < circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases; j++) {
-                                        this.testData.table[i][index + j].assessment.value = 'Pass'
-                                    }
-                                }
-                            }
-                            else if (syncValue >= refValue) {
-                                if (syncValue > (refValue + devN)) {
-                                    for (let j = 0; j < circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases; j++) {
-                                        this.testData.table[i][index + j].assessment.value = 'Fail'
-                                    }
-                                }
-                                else {
-                                    for (let j = 0; j < circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases; j++) {
-                                        this.testData.table[i][index + j].assessment.value = 'Pass'
-                                    }
-                                }
-                            }
-                        }
-                        //Closing Sync between interrupter la [4]
-                        if (e.assessment.value !== 'Fail' && circuitBreaker_.interruptersPerPhase > 1) {
-                            if (index % (circuitBreaker_.interruptersPerPhase) == 0) {
-                                const syncValue = parseFloat(e.closing_sync_between_interrupter.value)
-                                const refValue = parseFloat(this.asset_.openTime.rel[4].rref)
-                                const devZ = parseFloat(this.asset_.openTime.rel[4].tdevZ)
-                                const devN = parseFloat(this.asset_.openTime.rel[4].tdevN)
-                                
-                                if (syncValue < refValue) {
-                                    if (syncValue < (refValue - devZ)) {
-                                        for (let j = 0; j < circuitBreaker_.interruptersPerPhase; j++) {
-                                            this.testData.table[i][index + j].assessment.value = 'Fail'
-                                        }
-                                    }
-                                }
-                                else if (syncValue >= refValue) {
-                                    if (syncValue > (refValue + devN)) {
-                                        for (let j = 0; j < circuitBreaker_.interruptersPerPhase; j++) {
-                                            this.testData.table[i][index + j].assessment.value = 'Fail'
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        // Closing Time [3]
-                        if (e.assessment.value !== 'Fail') {
-                            const closingValue = parseFloat(e.closing_time.value)
-                            const refValue = parseFloat(this.asset_.openTime.rel[3].rref)
-                            const devZ = parseFloat(this.asset_.openTime.rel[3].tdevZ)
-                            const devN = parseFloat(this.asset_.openTime.rel[3].tdevN)
-                            
-                            if (closingValue < refValue) {
-                                if (closingValue < (refValue - devZ)) {
-                                    e.assessment.value = 'Fail'
-                                }
-                                else {
-                                    e.assessment.value = 'Pass'
-                                }
-                            }
-                            else if (closingValue >= refValue) {
-                                if (closingValue > (refValue + devN)) {
-                                    e.assessment.value = 'Fail'
-                                }
-                                else {
-                                    e.assessment.value = 'Pass'
-                                }
-                            }
-                        }
-                    })
-                }
-            })
+                    // closing_sync_between_interrupter [4]
+                    if (result !== 'Fail' && iPerPhase > 1 && index % iPerPhase === 0) {
+                        var r2 = this.assessTiming(e.closing_sync_between_interrupter ? e.closing_sync_between_interrupter.value : '', 4)
+                        if (r2 === 'Fail') { result = 'Fail' }
+                        else if (r2 === null && result === 'Pass') { result = '' }
+                    }
+                    // closing_time [3]
+                    if (result !== 'Fail') {
+                        var r3 = this.assessTiming(e.closing_time ? e.closing_time.value : '', 3)
+                        if (r3 === 'Fail') { result = 'Fail' }
+                        else if (r3 === null && result === 'Pass') { result = '' }
+                    }
+                    // close_open_time [8]
+                    if (result !== 'Fail') {
+                        var r4 = this.assessTiming(e.close_open_time ? e.close_open_time.value : '', 8)
+                        if (r4 === 'Fail') { result = 'Fail' }
+                        else if (r4 === null && result === 'Pass') { result = '' }
+                    }
+                    this.testData.table[tableKey][index].assessment.value = result
+                }.bind(this))
+            }.bind(this))
+            this.$message.success('Calculating successfully')
         },
 
         clear() {
-            this.testData.table.forEach((element) => {
-                element.forEach((ele) => {
-                    Object.keys(ele).forEach((key) => {
+            this.getTableEntries().forEach(function(entry) {
+                entry.rows.forEach(function(ele) {
+                    Object.keys(ele).forEach(function(key) {
                         if (ele[key] && typeof ele[key] === 'object' && ele[key].value !== undefined) {
                             ele[key].value = ''
                         }
                     })
                 })
-            })
+            }.bind(this))
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) {

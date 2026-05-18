@@ -1,0 +1,73 @@
+{
+  "testId": "pc-dvi-001",
+  "testCode": "DcVoltageInsulation",
+  "testName": "DC voltage test of the insulation",
+  "testStandard": [
+    {
+      "mrid": "36116f8b-pc04-4ad9-4b16-8c14-dvi1-pc001",
+      "code": "customized_dc_voltage_insulation_power_cable",
+      "name": "Customized limit",
+      "type": "customized",
+      "standard_edition": "",
+      "standard_number": "",
+      "columns": [
+        {
+          "mrid": "f6f2b092-1c9e-49e8-b4a7-2c81f0310fdc",
+          "code": "leakage_current",
+          "name": "Leakage current",
+          "type": "analog",
+          "unit": "m|A",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "rule-pc-dvi-pass-001",
+          "standard_id": "36116f8b-pc04-4ad9-4b16-8c14-dvi1-pc001",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "rule-pc-dvi-fail-001",
+          "standard_id": "36116f8b-pc04-4ad9-4b16-8c14-dvi1-pc001",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "group-pc-dvi-pass-001",
+          "rule_id": "rule-pc-dvi-pass-001",
+          "parent_id": "",
+          "logic": "",
+          "is_default": false
+        },
+        {
+          "mrid": "group-pc-dvi-fail-001",
+          "rule_id": "rule-pc-dvi-fail-001",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "Leakage current (mA)",
+          "mrid": "",
+          "group_id": "group-pc-dvi-pass-001",
+          "measurement_id": "f6f2b092-1c9e-49e8-b4a7-2c81f0310fdc",
+          "operator": "≤",
+          "threshold": ""
+        },
+        {
+          "label": "Leakage current (mA)",
+          "mrid": "",
+          "group_id": "group-pc-dvi-fail-001",
+          "measurement_id": "f6f2b092-1c9e-49e8-b4a7-2c81f0310fdc",
+          "operator": ">",
+          "threshold": ""
+        }
+      ]
+    }
+  ]
+}

@@ -86,6 +86,8 @@ export const buildEmptyTestAssessment = (standardArr) => {
     workingStandard.assessment_group.forEach(g => {
       groupNodeMap[g.mrid] = {
         ...g,
+        // Normalize is_default: SQLite returns "0"/"1" strings, convert to boolean
+        is_default: g.is_default === true || g.is_default === 1 || g.is_default === '1',
         children: [],
         conditions: []
       }
@@ -94,7 +96,7 @@ export const buildEmptyTestAssessment = (standardArr) => {
     // build tree
     workingStandard.assessment_group.forEach(g => {
       if (g.parent_id) {
-        groupNodeMap[g.parent_id]?.children.push(groupNodeMap[g.mrid])
+        if (groupNodeMap[g.parent_id]) { groupNodeMap[g.parent_id].children.push(groupNodeMap[g.mrid]) }
       } else {
         roots.push(groupNodeMap[g.mrid])
       }
@@ -147,6 +149,8 @@ export const buildEmptyTestAssessmentOriginal = (standardArr) => {
     workingStandard.assessment_group.forEach(g => {
       groupNodeMap[g.mrid] = {
         ...g,
+        // Normalize is_default: SQLite returns "0"/"1" strings, convert to boolean
+        is_default: g.is_default === true || g.is_default === 1 || g.is_default === '1',
         children: [],
         conditions: []
       }
@@ -155,7 +159,7 @@ export const buildEmptyTestAssessmentOriginal = (standardArr) => {
     // build tree
     workingStandard.assessment_group.forEach(g => {
       if (g.parent_id) {
-        groupNodeMap[g.parent_id]?.children.push(groupNodeMap[g.mrid])
+        if (groupNodeMap[g.parent_id]) { groupNodeMap[g.parent_id].children.push(groupNodeMap[g.mrid]) }
       } else {
         roots.push(groupNodeMap[g.mrid])
       }
@@ -361,6 +365,7 @@ export const traverseAndFillMrid = async (obj) => {
 }
 
 export const changeTestStandard = async (id, type, testStandard) => {
+  console.log(id, type, testStandard)
   const typeToColumn = {
     astm: 'test_standard_astm',
     cigre: 'test_standard_cigre',
@@ -435,7 +440,10 @@ export const testStandardDataToOption = (testStandardData) => {
     }
     for(const [column, type] of Object.entries(columnToType)) {
       if(testStandardData[column]) {
-          return type
+          return {
+            type : type,
+            mrid : testStandardData[column]
+          }
       }
     }
     return null

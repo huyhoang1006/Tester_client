@@ -1,0 +1,180 @@
+{
+  "testCode": "RatioPrimSec",
+  "testName": "Ratio Prim/Sec",
+  "testStandard": [
+    {
+      "mrid": "e6db7f8a-b860-477e-bbb0-07ac295cf983",
+      "code": "iec_60076_1_ratio_primsec",
+      "name": "IEC 60076-1 (2011)",
+      "type": "iec",
+      "standard_number": "60076-1",
+      "standard_edition": "2011",
+      "columns": [
+        {
+          "mrid": "1d510b78-7413-4777-a344-4b65d4e3e920",
+          "code": "ratio_dev",
+          "name": "Ratio dev (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "a1de29d5-d4d7-4762-8a09-c74fcf4ff123",
+          "standard_id": "e6db7f8a-b860-477e-bbb0-07ac295cf983",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "42c22559-9c5f-4651-885e-70b856316dd1",
+          "standard_id": "e6db7f8a-b860-477e-bbb0-07ac295cf983",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "3bf3d4b7-4415-4088-8f31-1d7ac327b2cd",
+          "rule_id": "a1de29d5-d4d7-4762-8a09-c74fcf4ff123",
+          "parent_id": "",
+          "logic": "",
+          "is_default": false
+        },
+        {
+          "mrid": "35b462d5-c4ee-4f26-a704-a479f22e600b",
+          "rule_id": "42c22559-9c5f-4651-885e-70b856316dd1",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "|Ratio dev| (%)",
+          "mrid": "ce21af8b-9481-4ac3-974c-eac8806cce36",
+          "group_id": "3bf3d4b7-4415-4088-8f31-1d7ac327b2cd",
+          "measurement_id": "1d510b78-7413-4777-a344-4b65d4e3e920",
+          "operator": "≤",
+          "threshold": "0.5"
+        }
+      ]
+    },
+    {
+      "mrid": "69afd811-d561-4b0c-ae90-13117ede5ecb",
+      "code": "ieee_c57_152_ratio_primsec",
+      "name": "IEEE C57.152 (2013)",
+      "type": "ieee",
+      "standard_number": "C57.152",
+      "standard_edition": "2013",
+      "columns": [
+        {
+          "mrid": "1d510b78-7413-4777-a344-4b65d4e3e920",
+          "code": "ratio_dev",
+          "name": "Ratio dev (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "6521f7ed-c810-432c-a42e-232bd5a1357f",
+          "standard_id": "69afd811-d561-4b0c-ae90-13117ede5ecb",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "9af9d2b3-511b-4b14-b8df-3dd8733242be",
+          "standard_id": "69afd811-d561-4b0c-ae90-13117ede5ecb",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "f3a179e4-1936-471a-9b56-42be0f198fed",
+          "rule_id": "6521f7ed-c810-432c-a42e-232bd5a1357f",
+          "parent_id": "",
+          "logic": "",
+          "is_default": false
+        },
+        {
+          "mrid": "91136516-c2f7-4a20-b499-b111d86b27cf",
+          "rule_id": "9af9d2b3-511b-4b14-b8df-3dd8733242be",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "|Ratio dev| (%)",
+          "mrid": "74e6237b-040f-4e85-b131-d4a6c3c379c6",
+          "group_id": "f3a179e4-1936-471a-9b56-42be0f198fed",
+          "measurement_id": "1d510b78-7413-4777-a344-4b65d4e3e920",
+          "operator": "≤",
+          "threshold": "0.5"
+        }
+      ]
+    },
+    {
+      "mrid": "07ad372e-3557-4fca-90b5-d8187a862e13",
+      "code": "customized_ratio_primsec_transformer",
+      "name": "Customized limit",
+      "type": "customized",
+      "standard_number": "",
+      "standard_edition": "",
+      "columns": [
+        {
+          "mrid": "1d510b78-7413-4777-a344-4b65d4e3e920",
+          "code": "ratio_dev",
+          "name": "Ratio dev (%)",
+          "type": "analog",
+          "unit": "%",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        {
+          "mrid": "dbf589db-b231-4623-b08d-8a0bb3e14a39",
+          "standard_id": "07ad372e-3557-4fca-90b5-d8187a862e13",
+          "result": "Pass",
+          "priority": ""
+        },
+        {
+          "mrid": "f36e14dc-4eb3-4138-860d-4dede4a67d70",
+          "standard_id": "07ad372e-3557-4fca-90b5-d8187a862e13",
+          "result": "Fail",
+          "priority": ""
+        }
+      ],
+      "assessment_group": [
+        {
+          "mrid": "50562482-8159-4925-90b0-c3640011b233",
+          "rule_id": "dbf589db-b231-4623-b08d-8a0bb3e14a39",
+          "parent_id": "",
+          "logic": "",
+          "is_default": false
+        },
+        {
+          "mrid": "e4861d1b-cd69-4889-bd93-72c0363f4e49",
+          "rule_id": "f36e14dc-4eb3-4138-860d-4dede4a67d70",
+          "parent_id": "",
+          "logic": "",
+          "is_default": true
+        }
+      ],
+      "assessment": [
+        {
+          "label": "|Ratio dev| (%)",
+          "mrid": "fa537f11-e6bf-44f7-bbee-a5092af5e755",
+          "group_id": "50562482-8159-4925-90b0-c3640011b233",
+          "measurement_id": "1d510b78-7413-4777-a344-4b65d4e3e920",
+          "operator": "≤",
+          "threshold": ""
+        }
+      ]
+    }
+  ]
+}

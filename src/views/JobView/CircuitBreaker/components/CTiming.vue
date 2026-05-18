@@ -4,7 +4,7 @@
         <div style="position: sticky; left: 0; display: inline-block;">
             <el-row class="mgb-10">
                 <el-col>
-                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
+                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentSettings()">
                         <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
                     </el-button>
                     <el-button class="btn-action" size="mini" type="success"
@@ -175,13 +175,13 @@
         <!-- Assessment settings -->
         <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog"
             width="75%">
-            <!-- <el-radio-group v-model="testData.limits" style="margin-bottom: 20px">
-                <el-radio label="Absolute" value="Absolute"></el-radio>
-                <el-radio label="Relative" value="Relative"></el-radio>
-            </el-radio-group> -->
+            <el-radio-group v-model="testData.limits" style="margin-bottom: 20px">
+                <el-radio label="Absolute">Absolute</el-radio>
+                <el-radio label="Relative">Relative</el-radio>
+            </el-radio-group>
 
             <!-- opening_times -->
-            <!-- <transition>
+            <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
                         <tr>
@@ -236,10 +236,10 @@
                         </tr>
                     </tbody>
                 </table>
-            </transition> -->
+            </transition>
 
             <!-- Auxiliary_contact -->
-            <!-- <transition>
+            <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
                         <tr>
@@ -304,10 +304,10 @@
                         </tr>
                     </tbody>
                 </table>
-            </transition> -->
+            </transition>
 
             <!-- //miscellaneous -->
-            <!-- <transition>
+            <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
                         <tr>
@@ -364,10 +364,10 @@
                         </tr>
                     </tbody>
                 </table>
-            </transition> -->
+            </transition>
 
             <!-- //coilCharacteristics -->
-            <!-- <transition>
+            <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
                         <tr>
@@ -436,15 +436,17 @@
                 <span style="margin-top: 20px; width: 100%; position: absolute; right: 10px; bottom: 10px"
                     class="dialog-footer">
                     <el-button @click="resetAssessment">Cancel</el-button>
-                    <el-button type="primary" @click="updateAssessment"> Confirm </el-button>
+                    <el-button type="primary" @click="updateAssessment">Confirm</el-button>
                 </span>
-            </template> -->
+            </template>
         </el-dialog>
     </div>
 </template>
 
 <script>
+import timingMixin from './timingMixin'
 export default {
+    mixins: [timingMixin],
     name: 'CTiming',
     data() {
         return {
@@ -1190,153 +1192,66 @@ export default {
             // Default to 3 if not set or invalid
             return 3
         },
-        resetAssessment() {
-            this.asset_ = JSON.parse(JSON.stringify(this.back_asset))
-            // Sync limits back to testData after reset
-            if (this.asset_.limits && this.testData) {
-                this.$set(this.testData, 'limits', this.asset_.limits)
-            }
-            this.openAssessmentDialog = false
+
+
+        getCircuitBreakerConfig() {
+            var iPerPhase = 1
+            var nPhases   = 3
+            try {
+                if (this.assetData && this.assetData.operating) {
+                    var p = parseInt(this.assetData.operating.numberOfInterruptPhase || this.assetData.operating.number_of_interrupt_phase || 1)
+                    if (!isNaN(p) && p > 0) iPerPhase = p
+                    var n = parseInt(this.assetData.operating.numberOfPhase || this.assetData.operating.number_of_phases || 3)
+                    if (!isNaN(n) && n > 0) nPhases = n
+                }
+            } catch(e) { /* ignore */ }
+            return { interruptersPerPhase: iPerPhase, numberOfPhases: nPhases }
         },
-        async updateAssessment() {
-            // Sync testData.limits to asset_.limits before saving
-            if (this.testData.limits) {
-                this.asset_.limits = this.testData.limits
-            }
-            const asset = {
-                id: this.asset.id,
-                assessmentLimits: this.asset_
-            }
-            const data = await window.electronAPI.updateCircuitAssessmentLimits(asset)
-            const dataTemp = JSON.parse(JSON.stringify(asset))
-            this.back_asset = dataTemp.assessmentLimits
-            if (data.success) {
-                this.$message.success('Update successfully')
-                this.openAssessmentDialog = false
-            } else {
-                this.$message.error('Update cannot complete')
-                this.openAssessmentDialog = false
-            }
-        },
+
         calculator() {
-            /* eslint-disable */
-            const circuitBreaker_ = JSON.parse(this.$store.state.selectedAsset[0].circuitBreaker)
-            
-            this.testData.table.forEach((element, tableIndex) => {
-                if (this.testData.limits === 'Absolute') {
-                    element.forEach((e, index) => {
-                        //Closing Sync Phase la [5]
-                        if (index % (circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases) == 0) {
-                            if (parseFloat(e.closing_sync_between_phase.value) < parseFloat(this.asset_.openTime.abs[5].tmin) || parseFloat(e.closing_sync_between_phase.value) > parseFloat(this.asset_.openTime.abs[5].tmax) && e.closing_sync_between_phase.value) {
-                                for (let j = 0; j < circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases; j++) {
-                                    this.testData.table[tableIndex][index + j].assessment.value = 'Fail'
-                                }
-                            }
-                            else {
-                                for (let j = 0; j < circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases; j++) {
-                                    this.testData.table[tableIndex][index + j].assessment.value = 'Pass'
-                                }
-                            }
-                        }
-                        //Closing Interrupt la [4]
-                        if (e.assessment.value !== 'Fail') {
-                            if (index % (circuitBreaker_.interruptersPerPhase) == 0) {
-                                if (parseFloat(e.closing_sync_between_interrupter.value) < parseFloat(this.asset_.openTime.abs[4].tmin) || parseFloat(e.closing_sync_between_interrupter.value) > parseFloat(this.asset_.openTime.abs[4].tmax)) {
-                                    for (let j = 0; j < circuitBreaker_.interruptersPerPhase; j++) {
-                                        this.testData.table[tableIndex][index + j].assessment.value = 'Fail'
-                                    }
-                                }
-                            }
-                            //Closing Time
-                            if (e.assessment.value !== 'Fail') {
-                                if (parseFloat(e.closing_time.value) < parseFloat(this.asset_.openTime.abs[3].tmin) || parseFloat(e.closing_time.value) > parseFloat(this.asset_.openTime.abs[3].tmax)) {
-                                    e.assessment.value = 'Fail'
-                                }
-                                else if (e.closing_time.value !== '') {
-                                    e.assessment.value = 'Pass'
-                                }
-                            }
-                        }
-                    })
-                }
-                // --------------------------- RELATIVE ------------------------------
-                else if (this.testData.limits === 'Relative') {
-                    element.forEach((e, index) => {
-                        //Closing Sync la [5]
-                        if (index % (circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases) == 0) {
-                            if (parseFloat(e.closing_sync_between_phase.value) < parseFloat(this.asset_.openTime.rel[5].rref)) {
-                                if (parseFloat(e.closing_sync_between_phase.value) < (parseFloat(this.asset_.openTime.rel[5].rref) - parseFloat(this.asset_.openTime.rel[5].tdevZ))) {
-                                    for (let j = 0; j < circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases; j++) {
-                                        this.testData.table[tableIndex][index + j].assessment.value = 'Fail'
-                                    }
-                                }
-                                else {
-                                    for (let j = 0; j < circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases; j++) {
-                                        this.testData.table[tableIndex][index + j].assessment.value = 'Pass'
-                                    }
-                                }
-                            }
-                            else if (parseFloat(e.closing_sync_between_phase.value) >= parseFloat(this.asset_.openTime.rel[5].rref)) {
-                                if (parseFloat(e.closing_sync_between_phase.value) > (parseFloat(this.asset_.openTime.rel[5].rref) + parseFloat(this.asset_.openTime.rel[5].tdevN))) {
-                                    for (let j = 0; j < circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases; j++) {
-                                        this.testData.table[tableIndex][index + j].assessment.value = 'Fail'
-                                    }
-                                }
-                                else {
-                                    for (let j = 0; j < circuitBreaker_.interruptersPerPhase * circuitBreaker_.numberOfPhases; j++) {
-                                        this.testData.table[tableIndex][index + j].assessment.value = 'Pass'
-                                    }
-                                }
-                            }
-                        }
-                        //Closing Interrupt la [4]
-                        if (e.assessment.value !== 'Fail') {
-                            if (index % (circuitBreaker_.interruptersPerPhase) == 0) {
-                                if (parseFloat(e.closing_sync_between_interrupter.value) < parseFloat(this.asset_.openTime.rel[4].rref)) {
-                                    if (parseFloat(e.closing_sync_between_interrupter.value) < (parseFloat(this.asset_.openTime.rel[4].rref) - parseFloat(this.asset_.openTime.rel[4].tdevZ))) {
-                                        for (let j = 0; j < circuitBreaker_.interruptersPerPhase; j++) {
-                                            this.testData.table[tableIndex][index + j].assessment.value = 'Fail'
-                                        }
-                                    }
-                                }
-                                else if (parseFloat(e.closing_sync_between_interrupter.value) >= parseFloat(this.asset_.openTime.rel[4].rref)) {
-                                    if (parseFloat(e.closing_sync_between_interrupter.value) > (parseFloat(this.asset_.openTime.rel[4].rref) + parseFloat(this.asset_.openTime.rel[4].tdevN))) {
-                                        for (let j = 0; j < circuitBreaker_.interruptersPerPhase; j++) {
-                                            this.testData.table[tableIndex][index + j].assessment.value = 'Fail'
-                                        }
-                                    }
-                                }
-                            }
-                            //Closing Time
-                            if (e.assessment.value !== 'Fail') {
-                                if (parseFloat(e.closing_time.value) < parseFloat(this.asset_.openTime.rel[3].rref)) {
-                                    if (parseFloat(e.closing_time.value) < (parseFloat(this.asset_.openTime.rel[3].rref) - parseFloat(this.asset_.openTime.rel[3].tdevZ))) {
-                                        e.assessment.value = 'Fail'
-                                    }
-                                    else e.assessment.value = 'Pass'
-                                }
-                                else if (parseFloat(e.closing_time.value) >= parseFloat(this.asset_.openTime.rel[3].rref)) {
-                                    if (parseFloat(e.closing_time.value) > (parseFloat(this.asset_.openTime.rel[3].rref) + parseFloat(this.asset_.openTime.rel[3].tdevN))) {
-                                        e.assessment.value = 'Fail'
-                                    }
-                                    else e.assessment.value = 'Pass'
-                                }
-                            }
-                        }
-                    })
-                }
-            })
+            var entries = this.getTableEntries()
+            var cb = this.getCircuitBreakerConfig()
+            var iPerPhase  = cb.interruptersPerPhase
+            var nPhases    = cb.numberOfPhases
+
+            entries.forEach(function(entry) {
+                var tableKey = entry.key
+                var rows     = entry.rows
+                rows.forEach(function(e, index) {
+                    var result = 'Pass'
+                    // closing_sync_between_phase [5] — only first row of each phase group
+                    if (index % (iPerPhase * nPhases) === 0) {
+                        var r1 = this.assessTiming(e.closing_sync_between_phase ? e.closing_sync_between_phase.value : '', 5)
+                        if (r1 === 'Fail') { result = 'Fail' }
+                        else if (r1 === null) { result = '' }
+                    }
+                    // closing_sync_between_interrupter [4]
+                    if (result !== 'Fail' && iPerPhase > 1 && index % iPerPhase === 0) {
+                        var r2 = this.assessTiming(e.closing_sync_between_interrupter ? e.closing_sync_between_interrupter.value : '', 4)
+                        if (r2 === 'Fail') { result = 'Fail' }
+                        else if (r2 === null && result === 'Pass') { result = '' }
+                    }
+                    // closing_time [3]
+                    if (result !== 'Fail') {
+                        var r3 = this.assessTiming(e.closing_time ? e.closing_time.value : '', 3)
+                        if (r3 === 'Fail') { result = 'Fail' }
+                        else if (r3 === null && result === 'Pass') { result = '' }
+                    }
+                    this.testData.table[tableKey][index].assessment.value = result
+                }.bind(this))
+            }.bind(this))
+            this.$message.success('Calculating successfully')
         },
         clear() {
-            this.testData.table.forEach((element) => {
-                element.forEach((ele) => {
-                    Object.keys(ele).forEach((key) => {
+            this.getTableEntries().forEach(function(entry) {
+                entry.rows.forEach(function(ele) {
+                    Object.keys(ele).forEach(function(key) {
                         if (ele[key] && typeof ele[key] === 'object' && ele[key].value !== undefined) {
                             ele[key].value = ''
                         }
                     })
                 })
-            })
+            }.bind(this))
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) {

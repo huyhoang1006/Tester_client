@@ -193,7 +193,7 @@ export const jobDtoToEntity = (dto) => {
             }
         }
 
-        const standardArr = commonFunc.buildConfigFromAssessmentTree(item.testAssessment.assessment)
+        const standardArr = commonFunc.buildConfigFromAssessmentTree(item.testAssessment?.assessment || [])
         for (const standard of standardArr) {
             if (standard.type == 'customized') {
                 entity.assessment = entity.assessment.concat(standard.assessment)
@@ -205,7 +205,7 @@ export const jobDtoToEntity = (dto) => {
                 entity.standardCustomized.push(standardData)
             }
         }
-        entity.testStandard.push(item.testAssessment.testStandard)
+        entity.testStandard.push(item.testAssessment?.testStandard)
     }
 
     return entity
@@ -257,7 +257,7 @@ export const JobEntityToDto = (entity) => {
     //test list
     for (const item of entity.workTasks) {
         let condition = commonFunc.buildEmptyTestCondition(circuitBreakerConditionMap[item.type]?.columns || [])
-        const testAssessmentList = JSON.parse(JSON.stringify(circuitBreakerAssessmentMap[item.type].testStandard || []));
+        const testAssessmentList = JSON.parse(JSON.stringify(circuitBreakerAssessmentMap[item.type]?.testStandard || []));
         const testStandardData = entity.testStandard.find(x => x.work_task_id === item.mrid);
         let standardCustomized = null
         if(testStandardData) {

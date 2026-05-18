@@ -2,6 +2,7 @@
 import surgeArresterTestMap from '@/config/test-definitions/SurgeArrester'
 import surgeArresterConditionMap from '@/config/testing-condition/SurgeArrester'
 import * as common from '../../../../Common/index.js'
+import surgeArresterAssessmentMap from '@/config/testing-assessment/SurgeArrester'
 export default {
     methods: {
         async initTest(testTypeCode, assetData) {
@@ -25,6 +26,8 @@ export default {
         async initInsulationResistance(testTypeCode) {
             const rowDataExample = common.buildEmptyTestRow(surgeArresterTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(surgeArresterConditionMap[testTypeCode].columns)
+            const rowDataAssessment = common.buildEmptyTestAssessment(surgeArresterAssessmentMap[testTypeCode]?.testStandard || [])
+
             const row1 = JSON.parse(JSON.stringify(rowDataExample))
             row1.measurement.value = 'Phase A - B'
             const row2 = JSON.parse(JSON.stringify(rowDataExample))
@@ -44,6 +47,7 @@ export default {
             }
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table,
             }
         },
@@ -53,6 +57,7 @@ export default {
             let table1 = []
             const rowDataExample = common.buildEmptyTestRow(surgeArresterTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(surgeArresterConditionMap[testTypeCode].columns)
+            const rowDataAssessment = common.buildEmptyTestAssessment(surgeArresterAssessmentMap[testTypeCode]?.testStandard || [])
             for (let i in phase) {
                 for (let j = 1; j <= units; j++) {
                     let data = JSON.parse(JSON.stringify(rowDataExample))
@@ -68,6 +73,7 @@ export default {
             
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table
             }
         },
@@ -77,6 +83,7 @@ export default {
             let table1 = []
             const rowDataExample = common.buildEmptyTestRow(surgeArresterTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(surgeArresterConditionMap[testTypeCode].columns)
+            const rowDataAssessment = common.buildEmptyTestAssessment(surgeArresterAssessmentMap[testTypeCode]?.testStandard || [])
             for (let i in phase) {
                 for (let j = 1; j <= units; j++) {
                     let data = JSON.parse(JSON.stringify(rowDataExample))
@@ -90,6 +97,7 @@ export default {
             }
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table
             }
         },
@@ -97,6 +105,7 @@ export default {
             let table1 = []
             const rowDataExample = common.buildEmptyTestRow(surgeArresterTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(surgeArresterConditionMap[testTypeCode].columns)
+            const rowDataAssessment = common.buildEmptyTestAssessment(surgeArresterAssessmentMap[testTypeCode]?.testStandard || [])
             const data = ['Nameplate', 'Installation check', 'Grounding check', 'Discharge counter check']
             data.forEach(element => {
                 const rowData = JSON.parse(JSON.stringify(rowDataExample))
@@ -108,6 +117,7 @@ export default {
             }
             return {
                 rowDataExampleCondition,
+                rowDataAssessment,
                 table
             }
         }

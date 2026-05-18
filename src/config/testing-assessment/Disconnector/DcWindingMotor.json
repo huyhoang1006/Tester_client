@@ -1,0 +1,37 @@
+{
+  "testId": "ede47d51-0630-4f85-82af-3733474a9681",
+  "testCode": "DcWindingMotor",
+  "testName": "DC winding resistance of motor",
+  "testStandard": [
+    {
+      "mrid": "36116f8b-dcl4-4ad9-4b16-8c14-dwm1-dcl01",
+      "code": "customized_dc_winding_motor_disconnector",
+      "name": "Customized limit",
+      "type": "customized",
+      "standard_edition": "",
+      "standard_number": "",
+      "columns": [
+        {
+          "mrid": "7213c077-fd8a-4f12-888c-1263570aa8d6",
+          "code": "r_meas",
+          "name": "Rmeas",
+          "type": "analog",
+          "unit": "Ω",
+          "measurement_type": "test, assessment"
+        }
+      ],
+      "assessment_rule": [
+        { "mrid": "rule-dcl-dwm-pass-0001", "standard_id": "36116f8b-dcl4-4ad9-4b16-8c14-dwm1-dcl01", "result": "Pass", "priority": "" },
+        { "mrid": "rule-dcl-dwm-fail-0001", "standard_id": "36116f8b-dcl4-4ad9-4b16-8c14-dwm1-dcl01", "result": "Fail", "priority": "" }
+      ],
+      "assessment_group": [
+        { "mrid": "group-dcl-dwm-pass-root", "rule_id": "rule-dcl-dwm-pass-0001", "parent_id": "", "logic": "AND" },
+        { "mrid": "group-dcl-dwm-fail-root", "rule_id": "rule-dcl-dwm-fail-0001", "parent_id": "", "logic": "", "is_default": true }
+      ],
+      "assessment": [
+        { "label": "Rmeas min (Ω)", "mrid": "", "group_id": "group-dcl-dwm-pass-root", "measurement_id": "7213c077-fd8a-4f12-888c-1263570aa8d6", "operator": "≥", "threshold": "" },
+        { "label": "Rmeas max (Ω)", "mrid": "", "group_id": "group-dcl-dwm-pass-root", "measurement_id": "7213c077-fd8a-4f12-888c-1263570aa8d6", "operator": "≤", "threshold": "" }
+      ]
+    }
+  ]
+}

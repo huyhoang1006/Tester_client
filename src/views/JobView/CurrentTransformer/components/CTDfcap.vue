@@ -273,8 +273,7 @@ export default {
         'testStandardData': {
             immediate: true,
             handler: async function (newVal) {
-                console.log('test standard data', newVal)
-                this.option = common.testStandardDataToOption(newVal)
+                this.option = common.testStandardDataToOption(newVal)?.type || null
             }
         }
     },
@@ -486,7 +485,7 @@ export default {
                 } else if (passedResults.includes('Pass')) {
                     row.assessment.value = 'Pass'
                 } else {
-                    row.assessment.value = defaultResult ?? ''  // dùng fallback nếu có
+                    row.assessment.value = (defaultResult !== null && defaultResult !== undefined) ? defaultResult : ''  // dùng fallback nếu có
                 }
             }
         },

@@ -5,7 +5,7 @@
         <div style="position: sticky; left: 0; display: inline-block;">
             <el-row class="mgb-10">
                 <el-col>
-                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
+                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentSettings()">
                         <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
                     </el-button>
                     <el-button class="btn-action" size="mini" type="success"
@@ -96,15 +96,15 @@
         </table>
 
         <!-- Assessment settings -->
-        <!-- <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog"
+        <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog"
             width="75%">
             <el-radio-group v-model="testData.limits" style="margin-bottom: 20px">
                 <el-radio label="Absolute" value="Absolute"></el-radio>
                 <el-radio label="Relative" value="Relative"></el-radio>
-            </el-radio-group> -->
+            </el-radio-group>
 
         <!-- opening_times -->
-        <!-- <transition>
+            <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
                         <tr>
@@ -159,10 +159,10 @@
         </tr>
     </tbody>
 </table>
-</transition> -->
+            </transition>
 
         <!-- Auxiliary_contact -->
-        <!-- <transition>
+            <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
                         <tr>
@@ -227,10 +227,10 @@
                         </tr>
                     </tbody>
                 </table>
-            </transition> -->
+            </transition>
 
         <!-- //miscellaneous -->
-        <!-- <transition>
+            <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
                         <tr>
@@ -287,10 +287,10 @@
                         </tr>
                     </tbody>
                 </table>
-            </transition> -->
+            </transition>
 
         <!-- //coilCharacteristics -->
-        <!-- <transition>
+            <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
                         <tr>
@@ -362,14 +362,16 @@
                     <el-button type="primary" @click="updateAssessment"> Confirm </el-button>
                 </span>
             </template>
-        </el-dialog> -->
+        </el-dialog>
     </div>
 </template>
 
 <script>
 import CircuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
 import * as common from '../../Common/index'
+import timingMixin from './timingMixin'
 export default {
+    mixins: [timingMixin],
     name: "OCOCOTiming",
     data() {
         return {
@@ -825,32 +827,8 @@ export default {
 
             return normalized
         },
-        resetAssessment() {
-            this.asset_ = JSON.parse(JSON.stringify(this.back_asset))
-            // Sync limits back to testData after reset
-            if (this.asset_.limits && this.testData) {
-                this.$set(this.testData, 'limits', this.asset_.limits)
-            }
-            this.openAssessmentDialog = false
-        },
-        async updateAssessment() {
-            // Sync testData.limits to asset_.limits before saving
-            if (this.testData.limits) {
-                this.asset_.limits = this.testData.limits
-            }
-            const asset = {
-                id: this.asset.id,
-                assessmentLimits: this.asset_
-            }
-            const data = await window.electronAPI.updateCircuitAssessmentLimits(asset)
-            if (data.success) {
-                this.$message.success('Update successfully')
-                this.openAssessmentDialog = false
-            } else {
-                this.$message.error('Update cannot complete')
-                this.openAssessmentDialog = false
-            }
-        },
+
+
         add() {
             this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
         },
@@ -871,14 +849,24 @@ export default {
             this.testData.table.table1.splice(index + 1, 0, data)
         },
         calculator() {
+            var rows = this.testData && this.testData.table && this.testData.table.table1
+                ? this.testData.table.table1 : []
+            rows.forEach(function(e) {
+                var result = 'Pass'
+                var r1 = this.assessTiming(e.opening_time ? e.opening_time.value : '', 0)
+                if (r1 === 'Fail') { result = 'Fail' }
+                else if (r1 === null) { result = '' }
+                e.assessment.value = result
+            }.bind(this))
             this.$message.success('Calculating successfully')
         },
         clear() {
-            this.testData.table.table1.forEach(row => {
-                Object.keys(row).forEach(key => {
-                    if (key === "mrid") return;
-                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
-                        row[key].value = ""
+            var rows = this.testData && this.testData.table && this.testData.table.table1 ? this.testData.table.table1 : []
+            rows.forEach(function(row) {
+                Object.keys(row).forEach(function(key) {
+                    if (key === 'mrid') return
+                    if (row[key] && typeof row[key] === 'object' && 'value' in row[key]) {
+                        row[key].value = ''
                     }
                 })
             })

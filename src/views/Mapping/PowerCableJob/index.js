@@ -218,6 +218,7 @@ export const jobDtoToEntity = (dto) => {
 }
 
 export const JobEntityToDto = (entity) => {
+    console.log(entity)
     const dto = new PowerCableJobDto();
     //job properties
     dto.properties.mrid = entity.oldWork.mrid || '';
@@ -263,7 +264,7 @@ export const JobEntityToDto = (entity) => {
     //test list
     for (const item of entity.workTasks) {
         let condition = commonFunc.buildEmptyTestCondition(powerCableConditionMap[item.type]?.columns || []);
-        const testAssessmentList = JSON.parse(JSON.stringify(powerCableAssessmentMap[item.type].testStandard || []));
+        const testAssessmentList = JSON.parse(JSON.stringify(powerCableAssessmentMap[item.type]?.testStandard || []));
         const testStandardData = entity.testStandard.find(x => x.work_task_id === item.mrid);
         let standardCustomized = null
         if(testStandardData) {

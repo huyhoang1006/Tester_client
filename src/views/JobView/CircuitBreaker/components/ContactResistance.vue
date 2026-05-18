@@ -4,7 +4,7 @@
         <div style="position: sticky; left: 0; display: inline-block;">
             <el-row class="mgb-10">
                 <el-col>
-                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
+                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentSettings()">
                         <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
                     </el-button>
                     <el-button class="btn-action" size="mini" type="success"
@@ -111,7 +111,7 @@
                             </div>
                         </td>
                         <td>
-                            <el-input size="mini" v-model="item.interrupt_no.value"></el-input>
+                            <el-input size="mini" v-model="item.interrupter.value"></el-input>
                         </td>
                         <td>
                             <el-input size="mini" v-model="item.i_test.value"></el-input>
@@ -153,85 +153,41 @@
             </table>
         </div>
 
-        <!-- Assessment settings -->
-        <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog"
-            width="75%">
-            <!-- <el-radio-group v-model="assetData.assessmentLimits.limits" style="margin-bottom: 20px">
-                <el-radio label="Absolute" value="Absolute"></el-radio>
-                <el-radio label="Relative" value="Relative"></el-radio>
+        <el-dialog append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="500px">
+            <el-radio-group v-model="assetData.assessmentLimits.limits" style="margin-bottom:16px;">
+                <el-radio label="Absolute">Absolute limits</el-radio>
+                <el-radio label="Relative">Relative limits</el-radio>
             </el-radio-group>
-            <transition>
-                <table class="table-strip-input-data" v-if="assetData.assessmentLimits.limits === 'Absolute'">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>R min</th>
-                            <th>R max</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Contact resistance</td>
-                            <td>
-                                <el-input size="mini"
-                                    v-model="assetData.assessmentLimits.contact_resistance.abs.r_min.value">
-                                    <template slot="append">&#181;&#8486;</template>
-                                </el-input>
-                            </td>
-                            <td>
-                                <el-input size="mini"
-                                    v-model="assetData.assessmentLimits.contact_resistance.abs.r_max.value">
-                                    <template slot="append">&#181;&#8486;</template>
-                                </el-input>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <table class="table-strip-input-data" v-if="assetData.assessmentLimits.limits === 'Relative'">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>R ref</th>
-                            <th>R dev</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Contact resistance</td>
-                            <td>
-                                <el-input size="mini"
-                                    v-model="assetData.assessmentLimits.contact_resistance.rel.r_ref.value">
-                                    <template slot="append">&#181;&#8486;</template>
-                                </el-input>
-                            </td>
-                            <td>
-                                <el-input size="mini"
-                                    v-model="assetData.assessmentLimits.contact_resistance.rel.r_dev.value">
-                                    <template slot="append">&#181;&#8486;</template>
-                                </el-input>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </transition>
-            <br />
-            <template #footer>
-                <span style="margin-top: 20px; width: 100%; position: absolute; right: 10px; bottom: 10px"
-                    class="dialog-footer">
+            <el-form size="small" label-position="left" label-width="120px">
+                <template v-if="assetData.assessmentLimits.limits === 'Absolute'">
+                    <el-form-item label="R min (μΩ)"><el-input v-model="assetData.assessmentLimits.contact_resistance.abs.r_min.value"/></el-form-item>
+                    <el-form-item label="R max (μΩ)"><el-input v-model="assetData.assessmentLimits.contact_resistance.abs.r_max.value"/></el-form-item>
+                </template>
+                <template v-else>
+                    <el-form-item label="R ref (μΩ)"><el-input v-model="assetData.assessmentLimits.contact_resistance.rel.r_ref.value"/></el-form-item>
+                    <el-form-item label="R dev (μΩ)"><el-input v-model="assetData.assessmentLimits.contact_resistance.rel.r_dev.value"/></el-form-item>
+                </template>
+            </el-form>
+            <template v-slot:footer>
+                <span style="position:absolute;right:10px;bottom:10px;">
                     <el-button @click="resetAssessment">Cancel</el-button>
-                    <el-button type="primary" @click="updateAssessment" disabled> Confirm </el-button>
+                    <el-button type="primary" @click="updateAssessment">OK</el-button>
                 </span>
-            </template> -->
+            </template>
         </el-dialog>
     </div>
 </template>
 
 <script>
+import assessmentMixin from './assessmentMixin'
 export default {
+    mixins: [assessmentMixin],
     name: "ContactResistance",
     data() {
         return {
             openAssessmentDialog: false,
+            backupLimits: null,
+            assessmentIpcChannel: 'updateContactResistanceLimits',
             openConditionIndicatorDialog: false,
             asset_: {
                 contactSys: {
@@ -395,62 +351,30 @@ export default {
 
             return normalized
         },
-        resetAssessment() {
-            this.asset_ = JSON.parse(JSON.stringify(this.back_asset))
-            // Sync limits back to testData after reset
-            if (this.asset_.limits && this.testData) {
-                this.$set(this.testData, 'limits', this.asset_.limits)
-            }
-            this.openAssessmentDialog = false
-        },
-        async updateAssessment() {
-            // Sync testData.limits to asset_.limits before saving
-            if (this.testData.limits) {
-                this.asset_.limits = this.testData.limits
-            }
-            const asset = {
-                id: this.asset.id,
-                assessmentLimits: this.asset_
-            }
-            const data = await window.electronAPI.updateCircuitAssessmentLimits(asset)
-            const dataTemp = JSON.parse(JSON.stringify(asset))
-            this.back_asset = dataTemp.assessmentLimits
-            if (data.success) {
-                this.$message.success('Update successfully')
-                this.openAssessmentDialog = false
-            } else {
-                this.$message.error('Update cannot complete')
-                this.openAssessmentDialog = false
-            }
-        },
+
+
         calculator() {
+            var limits = this.assetData && this.assetData.assessmentLimits ? this.assetData.assessmentLimits : null
+            if (!limits) { this.$message.error('Assessment limits not configured'); return }
+            var cr   = limits.contact_resistance
+            var mode = limits.limits
+            this.testData.table.table1.forEach(function(item) {
+                var value = item.contact_resistance ? item.contact_resistance.value : ''
+                var result
+                if (mode === 'Absolute') {
+                    result = this.assessAbsolute(value, cr.abs.r_min, cr.abs.r_max)
+                } else {
+                    result = this.assessRelative(value, cr.rel.r_ref, cr.rel.r_dev)
+                }
+                item.assessment.value = result
+            }.bind(this))
             this.$message.success('Calculating successfully')
-            this.testData.table.forEach(item => {
-                if (this.testData.limits === 'Absolute') {
-                    if (parseFloat(item.contactResistance) >= parseFloat(this.asset_.contactSys.abs.rmin) &&
-                        parseFloat(item.contactResistance) <= parseFloat(this.asset_.contactSys.abs.rmax)) {
-                        item.assessment = 'Pass'
-                    }
-                    else {
-                        item.assessment = 'Fail'
-                    }
-                }
-                if (this.testData.limits === 'Relative') {
-                    if (parseFloat(item.contactResistance) >= parseFloat(this.asset_.contactSys.rel.rref) - parseFloat(this.asset_.contactSys.rel.rdev) &&
-                        parseFloat(item.contactResistance) <= parseFloat(this.asset_.contactSys.rel.rref) + parseFloat(this.asset_.contactSys.rel.rdev)) {
-                        item.assessment = 'Pass'
-                    }
-                    else {
-                        item.assessment = 'Fail'
-                    }
-                }
-            })
         },
 
         clear() {
             this.testData.table.forEach((element) => {
                 Object.keys(element).forEach((key) => {
-                    if (key !== "mrid" && key !== "phase" && key !== "interrupt_no") {
+                    if (key !== "mrid" && key !== "phase" && key !== "interrupter") {
                         element[key].value = ''
                     }
                 })

@@ -72,12 +72,40 @@ CREATE TABLE IF NOT EXISTS "area" (
 	"multiplier"	TEXT,
 	PRIMARY KEY("mrid")
 );
+CREATE TABLE IF NOT EXISTS "assessment" (
+	"mrid"	TEXT NOT NULL,
+	"group_id"	TEXT,
+	"measurement_id"	TEXT,
+	"operator"	TEXT,
+	"threshold"	TEXT,
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("group_id") REFERENCES "assessment_group"("mrid"),
+	FOREIGN KEY("measurement_id") REFERENCES "measurement"("mrid")
+);
+CREATE TABLE IF NOT EXISTS "assessment_group" (
+	"mrid"	TEXT NOT NULL,
+	"rule_id"	TEXT,
+	"parent_id"	TEXT,
+	"logic"	TEXT,
+	"is_default"	TEXT,
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("parent_id") REFERENCES "assessment_group"("mrid"),
+	FOREIGN KEY("rule_id") REFERENCES "assessment_rule"("mrid")
+);
 CREATE TABLE IF NOT EXISTS "assessment_limit_breaker_info" (
 	"mrid"	TEXT NOT NULL,
 	"breaker_info_id"	TEXT,
 	"limit_type"	TEXT,
 	PRIMARY KEY("mrid"),
 	FOREIGN KEY("breaker_info_id") REFERENCES "breaker_info"("mrid")
+);
+CREATE TABLE IF NOT EXISTS "assessment_rule" (
+	"mrid"	TEXT NOT NULL,
+	"standard_id"	TEXT,
+	"result"	TEXT,
+	"priority"	TEXT,
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("standard_id") REFERENCES "standard"("mrid")
 );
 CREATE TABLE IF NOT EXISTS "asset" (
 	"mrid"	TEXT NOT NULL,
@@ -227,7 +255,8 @@ CREATE TABLE IF NOT EXISTS "astm_standard" (
 	"mrid"	TEXT NOT NULL,
 	"standard_edition"	TEXT,
 	"standard_number"	TEXT,
-	PRIMARY KEY("mrid")
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("mrid") REFERENCES "standard"("mrid") on delete cascade
 );
 CREATE TABLE IF NOT EXISTS "attachment" (
 	"path"	TEXT,
@@ -441,7 +470,8 @@ CREATE TABLE IF NOT EXISTS "cigre_standard" (
 	"mrid"	TEXT NOT NULL,
 	"standard_edition"	TEXT,
 	"standard_number"	TEXT,
-	PRIMARY KEY("mrid")
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("mrid") REFERENCES "standard"("mrid") on delete cascade
 );
 CREATE TABLE IF NOT EXISTS "circuit_breaker_testing_equipment_test_type" (
 	"mrid"	TEXT NOT NULL,
@@ -495,6 +525,13 @@ CREATE TABLE IF NOT EXISTS "concentric_neutral_cable_info" (
 	FOREIGN KEY("mrid") REFERENCES "cable_info"("mrid") on delete cascade,
 	FOREIGN KEY("neutral_strand_gmr") REFERENCES "length"("mrid"),
 	FOREIGN KEY("neutral_strand_radius") REFERENCES "length"("mrid")
+);
+CREATE TABLE IF NOT EXISTS "condition_indicator" (
+	"mrid"	TEXT NOT NULL,
+	"data"	TEXT,
+	"procedure_id"	TEXT,
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("procedure_id") REFERENCES "procedure"("mrid")
 );
 CREATE TABLE IF NOT EXISTS "conducting_equipment" (
 	"mrid"	TEXT NOT NULL,
@@ -704,11 +741,17 @@ CREATE TABLE IF NOT EXISTS "current_voltage" (
 	PRIMARY KEY("id"),
 	FOREIGN KEY("location_id") REFERENCES "locations"("id") ON DELETE CASCADE
 );
+CREATE TABLE IF NOT EXISTS "customized_standard" (
+	"mrid"	TEXT NOT NULL,
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("mrid") REFERENCES "standard"("mrid")
+);
 CREATE TABLE IF NOT EXISTS "din_standard" (
 	"mrid"	TEXT NOT NULL,
 	"standard_edition"	TEXT,
 	"standard_number"	TEXT,
-	PRIMARY KEY("mrid")
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("mrid") REFERENCES "standard"("mrid") on delete cascade
 );
 CREATE TABLE IF NOT EXISTS "disconnector" (
 	"id"	TEXT NOT NULL,
@@ -769,7 +812,8 @@ CREATE TABLE IF NOT EXISTS "doble_standard" (
 	"mrid"	TEXT NOT NULL,
 	"standard_edition"	TEXT,
 	"standard_number"	TEXT,
-	PRIMARY KEY("mrid")
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("mrid") REFERENCES "standard"("mrid") on delete cascade
 );
 CREATE TABLE IF NOT EXISTS "document" (
 	"mrid"	TEXT NOT NULL,
@@ -822,7 +866,8 @@ CREATE TABLE IF NOT EXISTS "epa_standard" (
 	"mrid"	TEXT NOT NULL,
 	"standard_edition"	TEXT,
 	"standard_number"	TEXT,
-	PRIMARY KEY("mrid")
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("mrid") REFERENCES "standard"("mrid") on delete cascade
 );
 CREATE TABLE IF NOT EXISTS "equipment" (
 	"mrid"	TEXT NOT NULL,
@@ -875,13 +920,15 @@ CREATE TABLE IF NOT EXISTS "iec_standard" (
 	"mrid"	TEXT NOT NULL,
 	"standard_edition"	TEXT,
 	"standard_number"	TEXT,
-	PRIMARY KEY("mrid")
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("mrid") REFERENCES "standard"("mrid") on delete cascade
 );
 CREATE TABLE IF NOT EXISTS "ieee_standard" (
 	"mrid"	TEXT NOT NULL,
 	"standard_edition"	TEXT,
 	"standard_number"	TEXT,
-	PRIMARY KEY("mrid")
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("mrid") REFERENCES "standard"("mrid") on delete cascade
 );
 CREATE TABLE IF NOT EXISTS "impedance" (
 	"mrid"	TEXT NOT NULL,
@@ -927,7 +974,8 @@ CREATE TABLE IF NOT EXISTS "iso_standard" (
 	"mrid"	TEXT NOT NULL,
 	"standard_edition"	TEXT,
 	"standard_number"	TEXT,
-	PRIMARY KEY("mrid")
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("mrid") REFERENCES "standard"("mrid") on delete cascade
 );
 CREATE TABLE IF NOT EXISTS "joint_cable_info" (
 	"mrid"	TEXT NOT NULL,
@@ -953,7 +1001,8 @@ CREATE TABLE IF NOT EXISTS "laborelec_standard" (
 	"mrid"	TEXT NOT NULL,
 	"standard_edition"	TEXT,
 	"standard_number"	TEXT,
-	PRIMARY KEY("mrid")
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("mrid") REFERENCES "standard"("mrid") on delete cascade
 );
 CREATE TABLE IF NOT EXISTS "length" (
 	"mrid"	TEXT NOT NULL,
@@ -1385,11 +1434,9 @@ CREATE TABLE IF NOT EXISTS "old_work" (
 	"execution_date"	TEXT,
 	"test_method"	TEXT,
 	"asset_id"	TEXT,
-	"test_standard_id"	TEXT,
 	PRIMARY KEY("mrid"),
 	FOREIGN KEY("asset_id") REFERENCES "asset"("mrid"),
-	FOREIGN KEY("mrid") REFERENCES "work"("mrid") ON DELETE CASCADE,
-	FOREIGN KEY("test_standard_id") REFERENCES "test_standard"("mrid")
+	FOREIGN KEY("mrid") REFERENCES "work"("mrid") ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS "online_monitor" (
 	"id"	TEXT NOT NULL,
@@ -2011,6 +2058,12 @@ CREATE TABLE IF NOT EXISTS "short_circuit_test_transformer_end_info" (
 	FOREIGN KEY("short_circuit_test_id") REFERENCES "short_circuit_test"("mrid") ON DELETE CASCADE,
 	FOREIGN KEY("transformer_end_info_id") REFERENCES "transformer_end_info"("mrid") ON DELETE CASCADE
 );
+CREATE TABLE IF NOT EXISTS "standard" (
+	"mrid"	TEXT NOT NULL,
+	"name"	TEXT,
+	"code"	TEXT,
+	PRIMARY KEY("mrid")
+);
 CREATE TABLE IF NOT EXISTS "state_variable" (
 	"mrid"	TEXT NOT NULL,
 	PRIMARY KEY("mrid")
@@ -2202,7 +2255,8 @@ CREATE TABLE IF NOT EXISTS "tappi_standard" (
 	"mrid"	TEXT NOT NULL,
 	"standard_edition"	TEXT,
 	"standard_number"	TEXT,
-	PRIMARY KEY("mrid")
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("mrid") REFERENCES "standard"("mrid") on delete cascade
 );
 CREATE TABLE IF NOT EXISTS "telephone_number" (
 	"mrid"	TEXT NOT NULL,
@@ -2268,10 +2322,13 @@ CREATE TABLE IF NOT EXISTS "test_standard" (
 	"test_standard_ukministry_of_defence"	TEXT,
 	"test_standard_wep"	TEXT,
 	"test_variant"	TEXT,
+	"test_standard_customize"	TEXT,
+	"work_task_id"	TEXT,
 	PRIMARY KEY("mrid"),
 	FOREIGN KEY("mrid") REFERENCES "identified_object"("mrid") ON DELETE CASCADE,
 	FOREIGN KEY("test_standard_astm") REFERENCES "astm_standard"("mrid"),
 	FOREIGN KEY("test_standard_cigre") REFERENCES "cigre_standard"("mrid"),
+	FOREIGN KEY("test_standard_customize") REFERENCES "customized_standard"("mrid"),
 	FOREIGN KEY("test_standard_din") REFERENCES "din_standard"("mrid"),
 	FOREIGN KEY("test_standard_doble") REFERENCES "doble_standard"("mrid"),
 	FOREIGN KEY("test_standard_epa") REFERENCES "epa_standard"("mrid"),
@@ -2281,7 +2338,8 @@ CREATE TABLE IF NOT EXISTS "test_standard" (
 	FOREIGN KEY("test_standard_laborelec") REFERENCES "laborelec_standard"("mrid"),
 	FOREIGN KEY("test_standard_tappi") REFERENCES "tappi_standard"("mrid"),
 	FOREIGN KEY("test_standard_ukministry_of_defence") REFERENCES "ukministry_of_defence_standard"("mrid"),
-	FOREIGN KEY("test_standard_wep") REFERENCES "wep_standard"("mrid")
+	FOREIGN KEY("test_standard_wep") REFERENCES "wep_standard"("mrid"),
+	FOREIGN KEY("work_task_id") REFERENCES "work_task"("mrid")
 );
 CREATE TABLE IF NOT EXISTS "testing_condition" (
 	"condition"	TEXT,
@@ -2438,7 +2496,8 @@ CREATE TABLE IF NOT EXISTS "ukministry_of_defence_standard" (
 	"mrid"	TEXT NOT NULL,
 	"standard_edition"	TEXT,
 	"standard_number"	TEXT,
-	PRIMARY KEY("mrid")
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("mrid") REFERENCES "standard"("mrid") on delete cascade
 );
 CREATE TABLE IF NOT EXISTS "under_voltage_release_breaker_info" (
 	"mrid"	TEXT NOT NULL,
@@ -2559,7 +2618,8 @@ CREATE TABLE IF NOT EXISTS "wep_standard" (
 	"mrid"	TEXT NOT NULL,
 	"standard_edition"	TEXT,
 	"standard_number"	TEXT,
-	PRIMARY KEY("mrid")
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("mrid") REFERENCES "standard"("mrid") on delete cascade
 );
 CREATE TABLE IF NOT EXISTS "wire_info" (
 	"mrid"	TEXT NOT NULL,

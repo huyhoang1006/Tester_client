@@ -1,3 +1,4 @@
+/* eslint-disable */
 import procedureDataMap from '@/config/procedures/index.js'
 import testDataMap from '@/config/test-definitions/index.js'
 import testConditionMap from '@/config/testing-condition/index.js'
@@ -25,7 +26,7 @@ export const createProcedure = async (dbsql) => {
         await surgeArresterProcedureFunc.createProcedureSurgeArrester(dbsql, procedureDataMap, testDataMap, testConditionMap,
             getProcedureInfo, getTestDefinitionInfo, getTestConditionInfo)
         await voltageTransformerProcedureFunc.createProcedureVoltageTransformer(dbsql, procedureDataMap, testDataMap, testConditionMap,
-            testAssessmentMap, getProcedureInfo, getTestDefinitionInfo, getTestConditionInfo)
+            getProcedureInfo, getTestDefinitionInfo, getTestConditionInfo)
         await circuitBreakerProcedureFunc.createProcedureCircuitBreaker(dbsql, procedureDataMap, testDataMap, testConditionMap,
             getProcedureInfo, getTestDefinitionInfo, getTestConditionInfo)
         await currentTransformerProcedureFunc.createProcedureCurrentTransformer(dbsql, procedureDataMap, testDataMap, testConditionMap,
@@ -63,6 +64,7 @@ export const getTestDefinitionInfo = async (testDefinitions) => {
     const valueAliasSetTests = []
     const measurementProcedureTests = []
     for (const test of Object.values(testDefinitions)) {
+        if (!test || !test.columns) continue
         for (const column of test.columns) {
             if (column.type === 'analog') {
                 const analogTest = new Analog()
@@ -128,6 +130,7 @@ export const getTestConditionInfo = async (testConditions) => {
     const valueAliasSetTests = []
     const measurementProcedureTests = []
     for (const test of Object.values(testConditions)) {
+        if (!test || !test.columns) continue
         for (const column of test.columns) {
             if (column.type === 'analog') {
                 const analogTest = new Analog()
@@ -185,67 +188,71 @@ export const getTestConditionInfo = async (testConditions) => {
     }
 }
 
+/**
+ * getTestAssessmentInfo — fixed: iterate qua testStandard[].columns
+ * (version gốc bị lỗi vì gọi test.columns trực tiếp)
+ */
 export const getTestAssessmentInfo = async (testAssessments) => {
     const analogTests = []
-    const analogValueTests = []
     const stringMeasurementTests = []
-    const stringMeasurementValueTests = []
     const discreteTests = []
-    const discreteValueTests = []
     const valueToAliasTests = []
     const valueAliasSetTests = []
-    const standard = []
-    const standardMeasurement = []
-    const standardProcedure = []
+    const measurementProcedureTests = []
 
     for (const test of Object.values(testAssessments)) {
-        for (const column of test.columns) {
-            if (column.type === 'analog') {
-                const analogTest = new Analog()
-                analogTest.mrid = column.mrid
-                analogTest.name = column.name
-                analogTest.alias_name = column.code
-                const { unit_symbol, unit_multiplier } = parseUnit(column.unit)
-                analogTest.unit_symbol = unit_symbol
-                analogTest.unit_multiplier = unit_multiplier
-                analogTest.measurement_type = column.measurement_type || "assessment"
-                analogTests.push(analogTest)
-            } else if (column.type === 'string') {
-                const stringMeasurementTest = new StringMeasurement()
-                stringMeasurementTest.mrid = column.mrid
-                stringMeasurementTest.name = column.name
-                stringMeasurementTest.alias_name = column.code
-                const { unit_symbol, unit_multiplier } = parseUnit(column.unit)
-                stringMeasurementTest.unit_symbol = unit_symbol
-                stringMeasurementTest.unit_multiplier = unit_multiplier
-                stringMeasurementTest.measurement_type = column.measurement_type || "assessment"
-                stringMeasurementTests.push(stringMeasurementTest)
-            } else if (column.type === 'discrete') {
-                const discreteTest = new Discrete()
-                discreteTest.mrid = column.mrid
-                discreteTest.name = column.name
-                discreteTest.alias_name = column.code
-                discreteTest.value_alias_set = column.valueAliasSetId
-                discreteTest.measurement_type = column.measurement_type || "assessment"
-                discreteTests.push(discreteTest)
-                const valueAliasSetTest = new ValueAliasSet()
-                valueAliasSetTest.mrid = column.valueAliasSetId
-                valueAliasSetTests.push(valueAliasSetTest)
-                for (const valueAlias of column.options) {
-                    const valueToAliasTest = new ValueToAlias()
-                    valueToAliasTest.mrid = valueAlias.mrid
-                    valueToAliasTest.value_alias_set = column.valueAliasSetId
-                    valueToAliasTest.alias_name = valueAlias.alias
-                    valueToAliasTest.value = valueAlias.value
-                    valueToAliasTests.push(valueToAliasTest)
+        const testStandards = test.testStandard || []
+        for (const standard of testStandards) {
+            const columns = standard.columns || []
+            for (const column of columns) {
+                if (column.type === 'analog') {
+                    const analogTest = new Analog()
+                    analogTest.mrid = column.mrid
+                    analogTest.name = column.name
+                    analogTest.alias_name = column.code
+                    const { unit_symbol, unit_multiplier } = parseUnit(column.unit)
+                    analogTest.unit_symbol = unit_symbol
+                    analogTest.unit_multiplier = unit_multiplier
+                    analogTest.measurement_type = column.measurement_type || "test, assessment"
+                    analogTests.push(analogTest)
+                } else if (column.type === 'string') {
+                    const sm = new StringMeasurement()
+                    sm.mrid = column.mrid
+                    sm.name = column.name
+                    sm.alias_name = column.code
+                    const { unit_symbol, unit_multiplier } = parseUnit(column.unit)
+                    sm.unit_symbol = unit_symbol
+                    sm.unit_multiplier = unit_multiplier
+                    sm.measurement_type = column.measurement_type || "test, assessment"
+                    stringMeasurementTests.push(sm)
+                } else if (column.type === 'discrete') {
+                    const d = new Discrete()
+                    d.mrid = column.mrid
+                    d.name = column.name
+                    d.alias_name = column.code
+                    d.value_alias_set = column.valueAliasSetId
+                    d.measurement_type = column.measurement_type || "test, assessment"
+                    discreteTests.push(d)
+                    const vas = new ValueAliasSet()
+                    vas.mrid = column.valueAliasSetId
+                    valueAliasSetTests.push(vas)
+                    for (const valueAlias of (column.options || [])) {
+                        const vta = new ValueToAlias()
+                        vta.mrid = valueAlias.mrid
+                        vta.value_alias_set = column.valueAliasSetId
+                        vta.alias_name = valueAlias.alias
+                        vta.value = valueAlias.value
+                        valueToAliasTests.push(vta)
+                    }
                 }
+                const mp = new MeasurementProcedure()
+                mp.measurement_id = column.mrid
+                mp.procedure_id = test.testId
+                measurementProcedureTests.push(mp)
             }
-            const measurementProcedure = new MeasurementProcedure()
-            measurementProcedure.measurement_id = column.mrid
-            measurementProcedure.procedure_id = test.testId
-            measurementProcedureTests.push(measurementProcedure)
         }
     }
+
     return {
         analog: uniqueBy(analogTests, x => x.mrid),
         stringMeasurement: uniqueBy(stringMeasurementTests, x => x.mrid),
@@ -259,55 +266,33 @@ export const getTestAssessmentInfo = async (testAssessments) => {
 const runAsync = (sql, dbsql, params = []) => {
     return new Promise((resolve, reject) => {
         dbsql.run(sql, params, function (err) {
-            if (err) reject(err);
-            else resolve();
-        });
-    });
-};
+            if (err) reject(err)
+            else resolve()
+        })
+    })
+}
 
 function uniqueBy(arr, keyFn) {
     const map = new Map()
     for (const item of arr) {
         const key = keyFn(item)
-        if (!map.has(key)) {
-            map.set(key, item)
-        }
+        if (!map.has(key)) map.set(key, item)
     }
     return Array.from(map.values())
 }
 
 function uniqueMeasurementProcedure(arr) {
     const map = new Map()
-
     for (const item of arr) {
-        const key = `${item.measurement_id}__${item.procedure_id}`
-        if (!map.has(key)) {
-            map.set(key, item)
-        }
+        const key = item.measurement_id + '__' + item.procedure_id
+        if (!map.has(key)) map.set(key, item)
     }
-
     return Array.from(map.values())
 }
 
-function parseUnit(unitStr = "") {
-    if (!unitStr) {
-        return { unit_symbol: "", unit_multiplier: "" }
-    }
-
-    // Ví dụ: "M|Ω" → ["M", "Ω"]
+function parseUnit(unitStr) {
+    if (!unitStr) return { unit_symbol: "", unit_multiplier: "" }
     const parts = unitStr.split("|")
-
-    if (parts.length === 2) {
-        return {
-            unit_multiplier: parts[0],
-            unit_symbol: parts[1]
-        }
-    }
-
-    // Nếu không có |, coi như chỉ là symbol
-    return {
-        unit_multiplier: "",
-        unit_symbol: unitStr
-    }
+    if (parts.length === 2) return { unit_multiplier: parts[0], unit_symbol: parts[1] }
+    return { unit_multiplier: "", unit_symbol: unitStr }
 }
-

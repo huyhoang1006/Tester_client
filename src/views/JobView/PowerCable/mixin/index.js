@@ -77,7 +77,6 @@ export default {
             this.checkProperties(data);
             this.checkAssetId(data);
             this.checkAttachment(data);
-            this.checkTestStandard(data);
             this.checkTestingEquipment(data);
             await this.checkDataMeasurement(data);
             return data;
@@ -111,12 +110,6 @@ export default {
             }
         },
 
-        checkTestStandard(data) {
-            if(data.testStandardId === '' || data.testStandardId === null) {
-                data.testStandardId = uuid.newUuid();
-            }
-        },
-
         checkTestingEquipment(data) {
             const arr = [];
             for (const item of data.testingEquipmentData) {
@@ -134,29 +127,28 @@ export default {
             }
 
             // Thêm các phần tử mới vào data.powerCableTestingEquipmentTestType nếu chưa có
-            for (const current of arr) {
+            for (const powerCable of arr) {
                 const existed = data.powerCableTestingEquipmentTestType.some(
                     old =>
-                        old.testing_equipment_id === current.testing_equipment_id &&
-                        old.test_type_id === current.test_type_id
+                        old.testing_equipment_id === powerCable.testing_equipment_id &&
+                        old.test_type_id === powerCable.test_type_id
                 );
                 if (!existed) {
-                    data.powerCableTestingEquipmentTestType.push(current);
+                    data.powerCableTestingEquipmentTestType.push(powerCable);
                 }
             }
 
             // Xóa các phần tử quá khứ không còn trong hiện tại
             data.powerCableTestingEquipmentTestType = data.powerCableTestingEquipmentTestType.filter(
                 old => arr.some(
-                    current =>
-                        old.testing_equipment_id === current.testing_equipment_id &&
-                        old.test_type_id === current.test_type_id
+                    powerCable =>
+                        old.testing_equipment_id === powerCable.testing_equipment_id &&
+                        old.test_type_id === powerCable.test_type_id
                 )
             );
         },
 
         async checkDataMeasurement(data) {
-            console.log(data.testList)
             for (const test of data.testList) {
                 if (test.testCondition.mrid === null || test.testCondition.mrid === '') {
                     test.testCondition.mrid = uuid.newUuid();
@@ -207,7 +199,13 @@ export default {
                         asset_id: this.assetData.properties?.mrid || this.assetData.mrid
                     });
                 }
+
+                if(test.testAssessment.testStandard.mrid == '' || test.testAssessment.testStandard.mrid == null) {
+                    test.testAssessment.testStandard.mrid = uuid.newUuid()
+                }
+                test.testAssessment.testStandard.work_task_id = test.mrid
             }
         },
     }
 }
+
