@@ -21,6 +21,8 @@ import * as ipcImport from './import/index.js'
 import * as ipcNotification from './notification/index.js'
 import * as ipcUpdate from './update/index.js'
 import * as ipcEntitySnapshot from './entitySnapshot/index.js'
+import * as ipcTemplate from './template/index.js'
+
 
 export const active = () => {
     ipcSubstation.active()
@@ -46,4 +48,5 @@ export const active = () => {
     ipcNotification.active()
     ipcUpdate.active()
     ipcEntitySnapshot.active()
+    ipcTemplate.active()
 }

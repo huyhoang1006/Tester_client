@@ -20,6 +20,7 @@ import * as assetPsrPreload from './assetPsr/index.js'
 import * as notificationEntityPreload from './notification/index.js'
 import * as updateEntityPreload from './update/index.js'
 import * as entitySnapshotPreload from './entitySnapshot/index.js'
+import * as templatePreload from './template/index.js'
 
 
 export {
@@ -28,5 +29,5 @@ export {
     jobEntityPreload, powerCableEntityPreload, voltageTransformerEntityPreload, updateEntityPreload,
     bushingEntityPreload, disconnectorEntityPreload, rotatingMachineEntityPreload, currentTransformerEntityPreload,
     capacitorEntityPreload, breakerEntityPreload, reactorEntityPreload, exportPreload, assetPsrPreload, notificationEntityPreload,
-    entitySnapshotPreload
+    entitySnapshotPreload, templatePreload
 }

@@ -27,6 +27,8 @@ import * as assetPsrFunc from "./assetPsr/index"
 import * as notificationEntityFunc from "./notification/index"
 import * as updateEntityFunc from "./update/index"
 import * as entitySnapshotFunc from "./entitySnapshot/index"
+import * as templateFunc from "./template/index"
+
 
 export {
     attachmentFunc, fileFunc, organisationLocationFunc, personSubstationFunc,
@@ -34,5 +36,7 @@ export {
     organisationPsrFunc, geoMapFunc, parentOrganizationEntityFunc, voltageLevelEntityFunc,
     bayEntityFunc, surgeArresterEntityFunc, transformerEntityFunc, jobEntityFunc, powerCableEntityFunc,
     capacitorEntityFunc, breakerEntityFunc, updateEntityFunc, entitySnapshotFunc,
-    voltageTransformerEntityFunc, bushingEntityFunc, disconnectorEntityFunc, rotatingMachineEntityFunc, currentTransformerEntityFunc, reactorEntityFunc, assetPsrFunc, notificationEntityFunc
+    voltageTransformerEntityFunc, bushingEntityFunc, disconnectorEntityFunc, rotatingMachineEntityFunc, 
+    currentTransformerEntityFunc, reactorEntityFunc, assetPsrFunc, notificationEntityFunc, templateFunc
+
 }

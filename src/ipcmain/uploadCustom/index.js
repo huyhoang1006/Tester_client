@@ -1,6 +1,5 @@
 'use strict'
 import {ipcMain} from 'electron'
-import { NIL as EMPTY } from 'uuid'
 import { uploadFunc } from '../../function';
 const { dialog } = require('electron')
 import { locationUploadFunc } from '../../function';

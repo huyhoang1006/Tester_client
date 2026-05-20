@@ -413,7 +413,6 @@ import JobCircuitBreaker from '@/views/JobView/CircuitBreaker/index.vue'
 import JobTransformer from '@/views/JobView/Transformer/index.vue'
 
 import mixin from './Common'
-import Attachment from '../Common/Attachment.vue'
 import Icon from '@/views/Common/Icon.vue'
 import Fmeca from '@/views/Fmeca'
 import Export from '@/views/Export/index.vue'
