@@ -157,6 +157,17 @@ import { mapEntityToDto as rotatingEntityToDto }    from '@/views/Mapping/Rotati
 import { disconnectorEntityToDto }                  from '@/views/Mapping/Disconnector/index.js'
 import { capacitorEntityToDto }                     from '@/views/Mapping/Capacitor/index.js'
 import { bushingEntityToDto }                       from '@/views/Mapping/Bushing/index.js'
+import { JobEntityToDto as transformerJobEntityToDto }    from '@/views/Mapping/TransformerJob/index.js'
+import { JobEntityToDto as vtJobEntityToDto }             from '@/views/Mapping/VoltageTransformerJob/index.js'
+import { JobEntityToDto as ctJobEntityToDto }             from '@/views/Mapping/CurrentTransformerJob/index.js'
+import { JobEntityToDto as breakerJobEntityToDto }        from '@/views/Mapping/CircuitBreakerJob/index.js'
+import { JobEntityToDto as cableJobEntityToDto }          from '@/views/Mapping/PowerCableJob/index.js'
+import { JobEntityToDto as saJobEntityToDto }             from '@/views/Mapping/SurgerArresterJob/index.js'
+import { JobEntityToDto as reactorJobEntityToDto }        from '@/views/Mapping/ReactorJob/index.js'
+import { JobEntityToDto as rotatingJobEntityToDto }       from '@/views/Mapping/RotatingMachineJob/index.js'
+import { JobEntityToDto as capacitorJobEntityToDto }      from '@/views/Mapping/CapacitorJob/index.js'
+import { JobEntityToDto as disconnectorJobEntityToDto }   from '@/views/Mapping/DisconnectorJob/index.js'
+import { JobEntityToDto as bushingJobEntityToDto }        from '@/views/Mapping/BushingJob/index.js'
 
 const v = (obj) => (obj && obj.value !== undefined) ? String(obj.value ?? '') : String(obj ?? '')
 
@@ -1196,9 +1207,10 @@ export default {
             }}
           }}
         }}
-,
+
+        ,
         Job: { label: 'Job', children: {
-          TransformerJobDto: { label: 'Transformer Job', children: {
+          Job_TransformerJobDto: { label: 'Transformer Job', children: {
             PropertiesDto: { label: 'Properties', children: {
                 name:          { label: 'Job name',          value: 'job_name' },
                 job_type:      { label: 'Job type',          value: 'job_type' },
@@ -1210,9 +1222,288 @@ export default {
                 test_method:   { label: 'Test method',       value: 'test_method' },
                 ref_standard:  { label: 'Reference standard',value: 'ref_standard' },
                 summary:       { label: 'Summary',           value: 'summary' }
+              } },
+            Tests: { label: 'Test results', children: {
+              BushingPrimC1: { label: 'Bushing Prim DF & CAP C1', children: {
+                measurement: { label: 'Measurement', value: 'BushingPrimC1_measurement' },
+                test_mode: { label: 'Test mode', value: 'BushingPrimC1_test_mode' },
+                test_voltage: { label: 'Test voltage', value: 'BushingPrimC1_test_voltage' },
+                df_ref: { label: 'DF ref', value: 'BushingPrimC1_df_ref' },
+                c_ref: { label: 'C ref', value: 'BushingPrimC1_c_ref' },
+                df_meas: { label: 'DF meas', value: 'BushingPrimC1_df_meas' },
+                c_meas: { label: 'C meas', value: 'BushingPrimC1_c_meas' },
+                df_change: { label: 'DF change', value: 'BushingPrimC1_df_change' },
+                delta_c_percent: { label: '△C cal', value: 'BushingPrimC1_delta_c_percent' },
+                assessment: { label: 'Assessment', value: 'BushingPrimC1_assessment' },
+                condition_indicator_df: { label: 'Condition indicator DF', value: 'BushingPrimC1_condition_indicator_df' },
+                condition_indicator_c: { label: 'Condition indicator C', value: 'BushingPrimC1_condition_indicator_c' }
+              }},
+              BushingPrimC2: { label: 'Bushing Prim C2', children: {
+                measurement: { label: 'Measurement', value: 'BushingPrimC2_measurement' },
+                test_mode: { label: 'Test mode', value: 'BushingPrimC2_test_mode' },
+                test_voltage: { label: 'Test voltage', value: 'BushingPrimC2_test_voltage' },
+                df_ref: { label: 'DF ref', value: 'BushingPrimC2_df_ref' },
+                c_ref: { label: 'C ref', value: 'BushingPrimC2_c_ref' },
+                df_meas: { label: 'DF meas', value: 'BushingPrimC2_df_meas' },
+                c_meas: { label: 'C meas', value: 'BushingPrimC2_c_meas' },
+                df_change: { label: 'DF change', value: 'BushingPrimC2_df_change' },
+                delta_c_percent: { label: '△C cal', value: 'BushingPrimC2_delta_c_percent' },
+                assessment: { label: 'Assessment', value: 'BushingPrimC2_assessment' },
+                condition_indicator_df: { label: 'Condition indicator DF', value: 'BushingPrimC2_condition_indicator_df' },
+                condition_indicator_c: { label: 'Condition indicator C', value: 'BushingPrimC2_condition_indicator_c' }
+              }},
+              BushingSecC1: { label: 'Bushing Sec DF & CAP C1', children: {
+                measurement: { label: 'Measurement', value: 'BushingSecC1_measurement' },
+                test_mode: { label: 'Test mode', value: 'BushingSecC1_test_mode' },
+                test_voltage: { label: 'Test voltage', value: 'BushingSecC1_test_voltage' },
+                df_ref: { label: 'DF ref', value: 'BushingSecC1_df_ref' },
+                c_ref: { label: 'C ref', value: 'BushingSecC1_c_ref' },
+                df_meas: { label: 'DF meas', value: 'BushingSecC1_df_meas' },
+                c_meas: { label: 'C meas', value: 'BushingSecC1_c_meas' },
+                df_change: { label: 'DF change', value: 'BushingSecC1_df_change' },
+                delta_c_percent: { label: '△C cal', value: 'BushingSecC1_delta_c_percent' },
+                assessment: { label: 'Assessment', value: 'BushingSecC1_assessment' },
+                condition_indicator_df: { label: 'Condition indicator DF', value: 'BushingSecC1_condition_indicator_df' },
+                condition_indicator_c: { label: 'Condition indicator C', value: 'BushingSecC1_condition_indicator_c' }
+              }},
+              BushingSecC2: { label: 'Bushing Sec DF & CAP C2', children: {
+                measurement: { label: 'Measurement', value: 'BushingSecC2_measurement' },
+                test_mode: { label: 'Test mode', value: 'BushingSecC2_test_mode' },
+                test_voltage: { label: 'Test voltage', value: 'BushingSecC2_test_voltage' },
+                df_ref: { label: 'DF ref', value: 'BushingSecC2_df_ref' },
+                c_ref: { label: 'C ref', value: 'BushingSecC2_c_ref' },
+                df_meas: { label: 'DF meas', value: 'BushingSecC2_df_meas' },
+                c_meas: { label: 'C meas', value: 'BushingSecC2_c_meas' },
+                assessment: { label: 'Assessment', value: 'BushingSecC2_assessment' },
+                condition_indicator_df: { label: 'Condition indicator DF', value: 'BushingSecC2_condition_indicator_df' },
+                condition_indicator_c: { label: 'Condition indicator C', value: 'BushingSecC2_condition_indicator_c' }
+              }},
+              BushingTertC1: { label: 'Bushing Tert DF & CAP C1', children: {
+                measurement: { label: 'Measurement', value: 'BushingTertC1_measurement' },
+                test_mode: { label: 'Test mode', value: 'BushingTertC1_test_mode' },
+                test_voltage: { label: 'Test voltage', value: 'BushingTertC1_test_voltage' },
+                df_ref: { label: 'DF ref', value: 'BushingTertC1_df_ref' },
+                c_ref: { label: 'C ref', value: 'BushingTertC1_c_ref' },
+                df_meas: { label: 'DF meas', value: 'BushingTertC1_df_meas' },
+                c_meas: { label: 'C meas', value: 'BushingTertC1_c_meas' },
+                df_change: { label: 'DF change', value: 'BushingTertC1_df_change' },
+                delta_c_percent: { label: '△C cal', value: 'BushingTertC1_delta_c_percent' },
+                assessment: { label: 'Assessment', value: 'BushingTertC1_assessment' },
+                condition_indicator_df: { label: 'Condition indicator DF', value: 'BushingTertC1_condition_indicator_df' },
+                condition_indicator_c: { label: 'Condition indicator C', value: 'BushingTertC1_condition_indicator_c' }
+              }},
+              BushingTertC2: { label: 'Bushing Tert DF & CAP C2', children: {
+                measurement: { label: 'Measurement', value: 'BushingTertC2_measurement' },
+                test_mode: { label: 'Test mode', value: 'BushingTertC2_test_mode' },
+                test_voltage: { label: 'Test voltage', value: 'BushingTertC2_test_voltage' },
+                df_ref: { label: 'DF ref', value: 'BushingTertC2_df_ref' },
+                c_ref: { label: 'C ref', value: 'BushingTertC2_c_ref' },
+                df_meas: { label: 'DF meas', value: 'BushingTertC2_df_meas' },
+                c_meas: { label: 'C meas', value: 'BushingTertC2_c_meas' },
+                df_change: { label: 'DF change', value: 'BushingTertC2_df_change' },
+                delta_c_percent: { label: '△C cal', value: 'BushingTertC2_delta_c_percent' },
+                assessment: { label: 'Assessment', value: 'BushingTertC2_assessment' },
+                condition_indicator_df: { label: 'Condition indicator DF', value: 'BushingTertC2_condition_indicator_df' },
+                condition_indicator_c: { label: 'Condition indicator C', value: 'BushingTertC2_condition_indicator_c' }
+              }},
+              DCWindingPrim: { label: 'DC Winding resistance Prim', children: {
+                tap: { label: 'Tap', value: 'DCWindingPrim_tap' },
+                name: { label: 'Name', value: 'DCWindingPrim_name' },
+                r_meas: { label: 'R meas', value: 'DCWindingPrim_r_meas' },
+                r_ref: { label: 'R ref', value: 'DCWindingPrim_r_ref' },
+                r_corr: { label: 'R corr', value: 'DCWindingPrim_r_corr' },
+                dev_r_ref: { label: 'Dev with R ref (%)', value: 'DCWindingPrim_dev_r_ref' },
+                dev_phase: { label: 'Dev within phases (%)', value: 'DCWindingPrim_dev_phase' },
+                assessment: { label: 'Assessment', value: 'DCWindingPrim_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'DCWindingPrim_condition_indicator' }
+              }},
+              DCWindingSec: { label: 'DC Winding resistance Sec', children: {
+                tap: { label: 'Tap', value: 'DCWindingSec_tap' },
+                name: { label: 'Name', value: 'DCWindingSec_name' },
+                r_meas: { label: 'R meas', value: 'DCWindingSec_r_meas' },
+                r_ref: { label: 'R ref', value: 'DCWindingSec_r_ref' },
+                r_corr: { label: 'R corr', value: 'DCWindingSec_r_corr' },
+                dev_r_ref: { label: 'Dev with R ref (%)', value: 'DCWindingSec_dev_r_ref' },
+                dev_phase: { label: 'Dev within phases (%)', value: 'DCWindingSec_dev_phase' },
+                assessment: { label: 'Assessment', value: 'DCWindingSec_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'DCWindingSec_condition_indicator' }
+              }},
+              DCWindingTert: { label: 'DC Winding resistance Tert', children: {
+                tap: { label: 'Tap', value: 'DCWindingTert_tap' },
+                name: { label: 'Name', value: 'DCWindingTert_name' },
+                r_meas: { label: 'R meas', value: 'DCWindingTert_r_meas' },
+                r_ref: { label: 'R ref', value: 'DCWindingTert_r_ref' },
+                r_corr: { label: 'R corr', value: 'DCWindingTert_r_corr' },
+                dev_r_ref: { label: 'Dev with R ref (%)', value: 'DCWindingTert_dev_r_ref' },
+                dev_phase: { label: 'Dev within phases (%)', value: 'DCWindingTert_dev_phase' },
+                assessment: { label: 'Assessment', value: 'DCWindingTert_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'DCWindingTert_condition_indicator' }
+              }},
+              Dga: { label: 'DGA', children: {
+                h2: { label: 'H2', value: 'Dga_h2' },
+                ch4: { label: 'CH4', value: 'Dga_ch4' },
+                c2h2: { label: 'C2H2', value: 'Dga_c2h2' },
+                c2h4: { label: 'C2H4', value: 'Dga_c2h4' },
+                c2h6: { label: 'C2H6', value: 'Dga_c2h6' },
+                co: { label: 'CO', value: 'Dga_co' },
+                co2: { label: 'CO2', value: 'Dga_co2' },
+                tdcg: { label: 'TDCG', value: 'Dga_tdcg' },
+                status: { label: 'Status', value: 'Dga_status' },
+                condition_indicator: { label: 'Condition indicator', value: 'Dga_condition_indicator' }
+              }},
+              DimensionWeight: { label: 'Dimension Weight', children: {
+                a: { label: 'A', value: 'DimensionWeight_a' },
+                b: { label: 'B', value: 'DimensionWeight_b' },
+                c: { label: 'C', value: 'DimensionWeight_c' },
+                n: { label: 'N', value: 'DimensionWeight_n' },
+                oil: { label: 'Oil', value: 'DimensionWeight_oil' },
+                active_part: { label: 'Active part', value: 'DimensionWeight_active_part' },
+                total: { label: 'Total', value: 'DimensionWeight_total' }
+              }},
+              EnergyEfficiency: { label: 'Energy Efficiency', children: {
+                name: { label: 'Name', value: 'EnergyEfficiency_name' },
+                e50: { label: 'E50', value: 'EnergyEfficiency_e50' },
+                standard: { label: 'Standard', value: 'EnergyEfficiency_standard' },
+                assessment: { label: 'Assessment', value: 'EnergyEfficiency_assessment' }
+              }},
+              ExcitingCurrent: { label: 'Exciting Current', children: {
+                tap: { label: 'Tap', value: 'ExcitingCurrent_tap' },
+                phase: { label: 'Phase', value: 'ExcitingCurrent_phase' },
+                i_out: { label: 'I Out', value: 'ExcitingCurrent_i_out' },
+                watt_losses: { label: 'Watt losses', value: 'ExcitingCurrent_watt_losses' },
+                i_ref: { label: 'I Ref', value: 'ExcitingCurrent_i_ref' },
+                i_dev: { label: 'I Dev', value: 'ExcitingCurrent_i_dev' },
+                assessment: { label: 'Assessment', value: 'ExcitingCurrent_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'ExcitingCurrent_condition_indicator' }
+              }},
+              GasChromatography: { label: 'Gas Chromatography', children: {
+                name: { label: 'Name', value: 'GasChromatography_name' },
+                method: { label: 'Method', value: 'GasChromatography_method' },
+                result: { label: 'Result', value: 'GasChromatography_result' },
+                assessment: { label: 'Assessment', value: 'GasChromatography_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'GasChromatography_condition_indicator' }
+              }},
+              GeneralInspection: { label: 'General inspection', children: {
+                item: { label: 'Item', value: 'GeneralInspection_item' },
+                assessment: { label: 'Assessment', value: 'GeneralInspection_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'GeneralInspection_condition_indicator' }
+              }},
+              InducedAcVoltageTest: { label: 'Induced AC Voltage Test', children: {
+                applied_terminal: { label: 'Applied Terminal', value: 'InducedAcVoltageTest_applied_terminal' },
+                rated_voltage: { label: 'Rated Voltage', value: 'InducedAcVoltageTest_rated_voltage' },
+                lv_terminal: { label: 'LV Terminal', value: 'InducedAcVoltageTest_lv_terminal' },
+                lv_tested_voltage: { label: 'LV Tested Voltage', value: 'InducedAcVoltageTest_lv_tested_voltage' },
+                hv_terminal: { label: 'HV Terminal', value: 'InducedAcVoltageTest_hv_terminal' },
+                hv_tested_voltage: { label: 'HV Tested Voltage', value: 'InducedAcVoltageTest_hv_tested_voltage' },
+                assessment: { label: 'Assessment', value: 'InducedAcVoltageTest_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'InducedAcVoltageTest_condition_indicator' }
+              }},
+              InsulationResistance: { label: 'Insulation resistance of winding', children: {
+                measurement: { label: 'Measurement', value: 'InsulationResistance_measurement' },
+                type: { label: 'Type', value: 'InsulationResistance_type' },
+                r15s: { label: 'R15s', value: 'InsulationResistance_r15s' },
+                r60s: { label: 'R60s', value: 'InsulationResistance_r60s' },
+                r_10m: { label: 'R10m', value: 'InsulationResistance_r_10m' },
+                dar: { label: 'DAR', value: 'InsulationResistance_dar' },
+                pi: { label: 'PI', value: 'InsulationResistance_pi' },
+                assessment: { label: 'Assessment', value: 'InsulationResistance_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistance_condition_indicator' }
+              }},
+              InsulationResistanceYokeCore: { label: 'Insulation resistance of yoke and core', children: {
+                measurement: { label: 'Measurement', value: 'InsulationResistanceYokeCore_measurement' },
+                r60s: { label: 'R60s', value: 'InsulationResistanceYokeCore_r60s' },
+                r60s_ref: { label: 'R60s ref', value: 'InsulationResistanceYokeCore_r60s_ref' },
+                assessment: { label: 'Assessment', value: 'InsulationResistanceYokeCore_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistanceYokeCore_condition_indicator' }
+              }},
+              MeasurementOfNoLoad: { label: 'No-load Test', children: {
+                name: { label: 'Name', value: 'MeasurementOfNoLoad_name' },
+                result: { label: 'Result', value: 'MeasurementOfNoLoad_result' },
+                standard: { label: 'Standard', value: 'MeasurementOfNoLoad_standard' },
+                assessment: { label: 'Assessment', value: 'MeasurementOfNoLoad_assessment' }
+              }},
+              MeasurementOfOil: { label: 'Oil breakdown voltage', children: {
+                type: { label: 'Type', value: 'MeasurementOfOil_type' },
+                electrode_gap_spacing: { label: 'Electrode gap spacing', value: 'MeasurementOfOil_electrode_gap_spacing' },
+                result: { label: 'Result', value: 'MeasurementOfOil_result' },
+                assessment: { label: 'Assessment', value: 'MeasurementOfOil_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'MeasurementOfOil_condition_indicator' }
+              }},
+              MeasurementOfShortCircuit: { label: 'Short-circuit Test', children: {
+                name: { label: 'Name', value: 'MeasurementOfShortCircuit_name' },
+                result: { label: 'Result', value: 'MeasurementOfShortCircuit_result' },
+                standard: { label: 'Standard', value: 'MeasurementOfShortCircuit_standard' },
+                assessment: { label: 'Assessment', value: 'MeasurementOfShortCircuit_assessment' }
+              }},
+              RatioPrimSec: { label: 'Ratio Prim/Sec', children: {
+                tap: { label: 'Tap', value: 'RatioPrimSec_tap' },
+                phase: { label: 'Phase', value: 'RatioPrimSec_phase' },
+                voltage_prim: { label: 'Primary Voltage', value: 'RatioPrimSec_voltage_prim' },
+                voltage_sec: { label: 'Secondary Voltage', value: 'RatioPrimSec_voltage_sec' },
+                nominal_ratio: { label: 'Nominal Ratio', value: 'RatioPrimSec_nominal_ratio' },
+                ratio_meas: { label: 'Ratio meas', value: 'RatioPrimSec_ratio_meas' },
+                ratio_dev: { label: 'Ratio dev', value: 'RatioPrimSec_ratio_dev' },
+                assessment: { label: 'Assessment', value: 'RatioPrimSec_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'RatioPrimSec_condition_indicator' }
+              }},
+              SeparateSourceAc: { label: 'Separate Source AC Voltage Test', children: {
+                applied_terminal: { label: 'Applied Terminal', value: 'SeparateSourceAc_applied_terminal' },
+                test_voltage: { label: 'Test voltage', value: 'SeparateSourceAc_test_voltage' },
+                assessment: { label: 'Assessment', value: 'SeparateSourceAc_assessment' }
+              }},
+              ShortCircuitImpedancePrim: { label: 'Short-circuit impedance prim', children: {
+                tap: { label: 'Tap', value: 'ShortCircuitImpedancePrim_tap' },
+                phase: { label: 'Phase', value: 'ShortCircuitImpedancePrim_phase' },
+                rk: { label: 'Rk', value: 'ShortCircuitImpedancePrim_rk' },
+                xk: { label: 'Xk', value: 'ShortCircuitImpedancePrim_xk' },
+                zk: { label: 'Zk', value: 'ShortCircuitImpedancePrim_zk' },
+                uk_cal: { label: 'Uk cal', value: 'ShortCircuitImpedancePrim_uk_cal' },
+                uk_dev: { label: 'Uk dev', value: 'ShortCircuitImpedancePrim_uk_dev' },
+                assessment: { label: 'Assessment', value: 'ShortCircuitImpedancePrim_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'ShortCircuitImpedancePrim_condition_indicator' }
+              }},
+              ShortCircuitImpedanceSec: { label: 'Short-circuit impedance sec', children: {
+                tap: { label: 'Tap', value: 'ShortCircuitImpedanceSec_tap' },
+                phase: { label: 'Phase', value: 'ShortCircuitImpedanceSec_phase' },
+                rk: { label: 'Rk', value: 'ShortCircuitImpedanceSec_rk' },
+                xk: { label: 'Xk', value: 'ShortCircuitImpedanceSec_xk' },
+                zk: { label: 'Zk', value: 'ShortCircuitImpedanceSec_zk' },
+                uk_cal: { label: 'Uk cal', value: 'ShortCircuitImpedanceSec_uk_cal' },
+                uk_dev: { label: 'Uk dev', value: 'ShortCircuitImpedanceSec_uk_dev' },
+                assessment: { label: 'Assessment', value: 'ShortCircuitImpedanceSec_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'ShortCircuitImpedanceSec_condition_indicator' }
+              }},
+              ShortCircuitImpedanceTert: { label: 'Short-circuit impedance tert', children: {
+                tap: { label: 'Tap', value: 'ShortCircuitImpedanceTert_tap' },
+                phase: { label: 'Phase', value: 'ShortCircuitImpedanceTert_phase' },
+                rk: { label: 'Rk', value: 'ShortCircuitImpedanceTert_rk' },
+                xk: { label: 'Xk', value: 'ShortCircuitImpedanceTert_xk' },
+                zk: { label: 'Zk', value: 'ShortCircuitImpedanceTert_zk' },
+                uk_cal: { label: 'Uk cal', value: 'ShortCircuitImpedanceTert_uk_cal' },
+                uk_dev: { label: 'Uk dev', value: 'ShortCircuitImpedanceTert_uk_dev' },
+                assessment: { label: 'Assessment', value: 'ShortCircuitImpedanceTert_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'ShortCircuitImpedanceTert_condition_indicator' }
+              }},
+              TestingInstruments: { label: 'Testing Instruments', children: {
+                item: { label: 'Item', value: 'TestingInstruments_item' },
+                type: { label: 'Type', value: 'TestingInstruments_type' }
+              }},
+              WindingDfCap: { label: 'Winding DF & CAP', children: {
+                measurement: { label: 'Measurement', value: 'WindingDfCap_measurement' },
+                test_mode: { label: 'Test mode', value: 'WindingDfCap_test_mode' },
+                test_voltage: { label: 'Test voltage', value: 'WindingDfCap_test_voltage' },
+                df_ref: { label: 'DF ref', value: 'WindingDfCap_df_ref' },
+                c_ref: { label: 'C ref', value: 'WindingDfCap_c_ref' },
+                df_meas: { label: 'DF meas', value: 'WindingDfCap_df_meas' },
+                c_meas: { label: 'C meas', value: 'WindingDfCap_c_meas' },
+                delta_c_percent: { label: '△C cal', value: 'WindingDfCap_delta_c_percent' },
+                assessment: { label: 'Assessment', value: 'WindingDfCap_assessment' },
+                condition_indicator_df: { label: 'Condition indicator DF', value: 'WindingDfCap_condition_indicator_df' },
+                condition_indicator_c: { label: 'Condition indicator C', value: 'WindingDfCap_condition_indicator_c' }
+              }}
             }}
           }},
-          VoltageTransformerJobDto: { label: 'VT Job', children: {
+          Job_VoltageTransformerJobDto: { label: 'VT Job', children: {
             PropertiesDto: { label: 'Properties', children: {
                 name:          { label: 'Job name',          value: 'job_name' },
                 job_type:      { label: 'Job type',          value: 'job_type' },
@@ -1224,9 +1515,54 @@ export default {
                 test_method:   { label: 'Test method',       value: 'test_method' },
                 ref_standard:  { label: 'Reference standard',value: 'ref_standard' },
                 summary:       { label: 'Summary',           value: 'summary' }
+              } },
+            Tests: { label: 'Test results', children: {
+              DcWindingResistance: { label: 'DC Winding resistance', children: {
+                name: { label: 'Name', value: 'DcWindingResistance_name' },
+                r_meas: { label: 'R meas', value: 'DcWindingResistance_r_meas' },
+                r_ref: { label: 'R ref', value: 'DcWindingResistance_r_ref' },
+                r_corr: { label: 'R corr', value: 'DcWindingResistance_r_corr' },
+                r_dev: { label: 'R dev', value: 'DcWindingResistance_r_dev' },
+                assessment: { label: 'Assessment', value: 'DcWindingResistance_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'DcWindingResistance_condition_indicator' }
+              }},
+              GeneralInspection: { label: 'General inspection', children: {
+                item: { label: 'Item', value: 'GeneralInspection_item' },
+                assessment: { label: 'Assessment', value: 'GeneralInspection_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'GeneralInspection_condition_indicator' }
+              }},
+              InsulationResistance: { label: 'Insulation Resistance', children: {
+                measurement: { label: 'Measurement', value: 'InsulationResistance_measurement' },
+                test_voltage: { label: 'Test voltage', value: 'InsulationResistance_test_voltage' },
+                r60s: { label: 'R60s', value: 'InsulationResistance_r60s' },
+                assessment: { label: 'Assessment', value: 'InsulationResistance_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistance_condition_indicator' }
+              }},
+              VTDfcap: { label: 'VT DF & CAP', children: {
+                measurement: { label: 'Measurement', value: 'VTDfcap_measurement' },
+                test_mode: { label: 'Test mode', value: 'VTDfcap_test_mode' },
+                test_voltage: { label: 'Test voltage', value: 'VTDfcap_test_voltage' },
+                df_ref: { label: 'DF ref', value: 'VTDfcap_df_ref' },
+                c_ref: { label: 'C ref', value: 'VTDfcap_c_ref' },
+                df_meas: { label: 'DF meas', value: 'VTDfcap_df_meas' },
+                c_meas: { label: 'C meas', value: 'VTDfcap_c_meas' },
+                delta_c_percent: { label: '△C cal', value: 'VTDfcap_delta_c_percent' },
+                assessment: { label: 'Assessment', value: 'VTDfcap_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'VTDfcap_condition_indicator' }
+              }},
+              VTRatio: { label: 'VT Ratio', children: {
+                name: { label: 'Name', value: 'VTRatio_name' },
+                upr: { label: 'UPR', value: 'VTRatio_upr' },
+                usr: { label: 'USR', value: 'VTRatio_usr' },
+                ratio_meas: { label: 'Ratio meas', value: 'VTRatio_ratio_meas' },
+                ratio_dev: { label: 'Ratio dev', value: 'VTRatio_ratio_dev' },
+                polarity: { label: 'Polarity', value: 'VTRatio_polarity' },
+                assessment: { label: 'Assessment', value: 'VTRatio_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'VTRatio_condition_indicator' }
+              }}
             }}
           }},
-          CurrentTransformerJobDto: { label: 'CT Job', children: {
+          Job_CurrentTransformerJobDto: { label: 'CT Job', children: {
             PropertiesDto: { label: 'Properties', children: {
                 name:          { label: 'Job name',          value: 'job_name' },
                 job_type:      { label: 'Job type',          value: 'job_type' },
@@ -1238,9 +1574,61 @@ export default {
                 test_method:   { label: 'Test method',       value: 'test_method' },
                 ref_standard:  { label: 'Reference standard',value: 'ref_standard' },
                 summary:       { label: 'Summary',           value: 'summary' }
+              } },
+            Tests: { label: 'Test results', children: {
+              CTDfcap: { label: 'CT DF & CAP', children: {
+                measurement: { label: 'Measurement', value: 'CTDfcap_measurement' },
+                test_mode: { label: 'Test mode', value: 'CTDfcap_test_mode' },
+                test_voltage: { label: 'Test voltage', value: 'CTDfcap_test_voltage' },
+                df_ref: { label: 'DF ref', value: 'CTDfcap_df_ref' },
+                c_ref: { label: 'C ref', value: 'CTDfcap_c_ref' },
+                df_meas: { label: 'DF meas', value: 'CTDfcap_df_meas' },
+                c_meas: { label: 'C meas', value: 'CTDfcap_c_meas' },
+                delta_c_percent: { label: '△C cal', value: 'CTDfcap_delta_c_percent' },
+                assessment: { label: 'Assessment', value: 'CTDfcap_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'CTDfcap_condition_indicator' }
+              }},
+              CTExcitation: { label: 'CT Excitation', children: {
+                name: { label: 'Name', value: 'CTExcitation_name' },
+                i_knee: { label: 'I knee', value: 'CTExcitation_i_knee' },
+                v_knee: { label: 'V knee', value: 'CTExcitation_v_knee' },
+                assessment: { label: 'Assessment', value: 'CTExcitation_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'CTExcitation_condition_indicator' }
+              }},
+              CTRatio: { label: 'CT ratio', children: {
+                name: { label: 'Name', value: 'CTRatio_name' },
+                ipr: { label: 'IPR', value: 'CTRatio_ipr' },
+                isr: { label: 'ISR', value: 'CTRatio_isr' },
+                ratio_meas: { label: 'Ratio meas', value: 'CTRatio_ratio_meas' },
+                ratio_dev: { label: 'Ratio dev', value: 'CTRatio_ratio_dev' },
+                polarity: { label: 'Polarity', value: 'CTRatio_polarity' },
+                assessment: { label: 'Assessment', value: 'CTRatio_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'CTRatio_condition_indicator' }
+              }},
+              CTWindingRes: { label: 'CT Winding resistance', children: {
+                name: { label: 'Name', value: 'CTWindingRes_name' },
+                r_meas: { label: 'R meas', value: 'CTWindingRes_r_meas' },
+                r_ref: { label: 'R ref', value: 'CTWindingRes_r_ref' },
+                r_corr: { label: 'R corr', value: 'CTWindingRes_r_corr' },
+                r_dev: { label: 'R dev', value: 'CTWindingRes_r_dev' },
+                assessment: { label: 'Assessment', value: 'CTWindingRes_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'CTWindingRes_condition_indicator' }
+              }},
+              GeneralInspection: { label: 'General inspection', children: {
+                item: { label: 'Item', value: 'GeneralInspection_item' },
+                assessment: { label: 'Assessment', value: 'GeneralInspection_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'GeneralInspection_condition_indicator' }
+              }},
+              InsulationResistance: { label: 'Insulation resistance', children: {
+                measurement: { label: 'Measurement', value: 'InsulationResistance_measurement' },
+                test_voltage: { label: 'Test voltage', value: 'InsulationResistance_test_voltage' },
+                r60s: { label: 'R60s', value: 'InsulationResistance_r60s' },
+                assessment: { label: 'Assessment', value: 'InsulationResistance_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistance_condition_indicator' }
+              }}
             }}
           }},
-          CircuitBreakerJobDto: { label: 'Breaker Job', children: {
+          Job_CircuitBreakerJobDto: { label: 'Circuit Breaker Job', children: {
             PropertiesDto: { label: 'Properties', children: {
                 name:          { label: 'Job name',          value: 'job_name' },
                 job_type:      { label: 'Job type',          value: 'job_type' },
@@ -1252,9 +1640,185 @@ export default {
                 test_method:   { label: 'Test method',       value: 'test_method' },
                 ref_standard:  { label: 'Reference standard',value: 'ref_standard' },
                 summary:       { label: 'Summary',           value: 'summary' }
+              } },
+            Tests: { label: 'Test results', children: {
+              COCOTiming: { label: 'CO-CO Timing', children: {
+                phase: { label: 'Phase', value: 'COCOTiming_phase' },
+                trip_coil: { label: 'Trip coil', value: 'COCOTiming_trip_coil' },
+                interrupter: { label: 'Interrupter', value: 'COCOTiming_interrupter' },
+                opening_time: { label: 'Opening time', value: 'COCOTiming_opening_time' },
+                opening_sync_between_phase: { label: 'Opening sync. between phase (ms)', value: 'COCOTiming_opening_sync_between_phase' },
+                assessment: { label: 'Assessment', value: 'COCOTiming_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'COCOTiming_condition_indicator' }
+              }},
+              COTiming: { label: 'CO Timing', children: {
+                phase: { label: 'Phase', value: 'COTiming_phase' },
+                closing_time: { label: 'Closing time', value: 'COTiming_closing_time' },
+                interrupter: { label: 'Interrupter', value: 'COTiming_interrupter' },
+                closing_sync_between_phase: { label: 'Closing sync. between phase (ms)', value: 'COTiming_closing_sync_between_phase' },
+                closing_sync_between_interrupter: { label: 'Closing sync. between interrupter (ms)', value: 'COTiming_closing_sync_between_interrupter' },
+                close_open_time: { label: 'Close-Open time', value: 'COTiming_close_open_time' },
+                assessment: { label: 'Assessment', value: 'COTiming_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'COTiming_condition_indicator' }
+              }},
+              CTiming: { label: 'C Timing', children: {
+                phase: { label: 'Phase', value: 'CTiming_phase' },
+                closing_time: { label: 'Closing time', value: 'CTiming_closing_time' },
+                interrupter: { label: 'Interrupter', value: 'CTiming_interrupter' },
+                closing_sync_between_phase: { label: 'Closing sync. between phase (ms)', value: 'CTiming_closing_sync_between_phase' },
+                closing_sync_between_interrupter: { label: 'Closing sync. between interrupter (ms)', value: 'CTiming_closing_sync_between_interrupter' },
+                assessment: { label: 'Assessment', value: 'CTiming_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'CTiming_condition_indicator' }
+              }},
+              ContactResistance: { label: 'Contact Resistance', children: {
+                phase: { label: 'Phase', value: 'ContactResistance_phase' },
+                interrupter: { label: 'Interrupter', value: 'ContactResistance_interrupter' },
+                i_test: { label: 'I test', value: 'ContactResistance_i_test' },
+                contact_resistance: { label: 'Contact resistance', value: 'ContactResistance_contact_resistance' },
+                assessment: { label: 'Assessment', value: 'ContactResistance_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'ContactResistance_condition_indicator' }
+              }},
+              DCWindingCloseCoil: { label: 'DC winding resistance of close coil', children: {
+                close_coil_no: { label: 'Close Coil No', value: 'DCWindingCloseCoil_close_coil_no' },
+                r_meas: { label: 'R meas', value: 'DCWindingCloseCoil_r_meas' },
+                assessment: { label: 'Assessment', value: 'DCWindingCloseCoil_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'DCWindingCloseCoil_condition_indicator' }
+              }},
+              DCWindingMotor: { label: 'DC winding resistance of motor', children: {
+                r_meas: { label: 'R meas', value: 'DCWindingMotor_r_meas' },
+                assessment: { label: 'Assessment', value: 'DCWindingMotor_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'DCWindingMotor_condition_indicator' }
+              }},
+              DCWindingTripCoil: { label: 'DC winding resistance of trip coil', children: {
+                trip_coil_no: { label: 'Trip Coil No', value: 'DCWindingTripCoil_trip_coil_no' },
+                r_meas: { label: 'R meas', value: 'DCWindingTripCoil_r_meas' },
+                assessment: { label: 'Assessment', value: 'DCWindingTripCoil_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'DCWindingTripCoil_condition_indicator' }
+              }},
+              GeneralInspection: { label: 'General inspection', children: {
+                item: { label: 'Item', value: 'GeneralInspection_item' },
+                assessment: { label: 'Assessment', value: 'GeneralInspection_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'GeneralInspection_condition_indicator' }
+              }},
+              InsulationResistanceCircuit: { label: 'Insulation resistance of circuit breaker', children: {
+                measurement: { label: 'Measurement', value: 'InsulationResistanceCircuit_measurement' },
+                test_voltage: { label: 'Test voltage', value: 'InsulationResistanceCircuit_test_voltage' },
+                r60s: { label: 'R60s', value: 'InsulationResistanceCircuit_r60s' },
+                assessment: { label: 'Assessment', value: 'InsulationResistanceCircuit_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistanceCircuit_condition_indicator' }
+              }},
+              InsulationResistanceCloseCoil: { label: 'Insulation resistance of close coil', children: {
+                close_coil_no: { label: 'Close Coil No', value: 'InsulationResistanceCloseCoil_close_coil_no' },
+                test_voltage: { label: 'Test voltage', value: 'InsulationResistanceCloseCoil_test_voltage' },
+                r60s: { label: 'R60s', value: 'InsulationResistanceCloseCoil_r60s' },
+                assessment: { label: 'Assessment', value: 'InsulationResistanceCloseCoil_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistanceCloseCoil_condition_indicator' }
+              }},
+              InsulationResistanceMotor: { label: 'Insulation resistance of motor', children: {
+                test_voltage: { label: 'Test voltage', value: 'InsulationResistanceMotor_test_voltage' },
+                r60s: { label: 'R60s', value: 'InsulationResistanceMotor_r60s' },
+                assessment: { label: 'Assessment', value: 'InsulationResistanceMotor_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistanceMotor_condition_indicator' }
+              }},
+              InsulationResistanceTripCoil: { label: 'Insulation resistance of trip coil', children: {
+                trip_coil_no: { label: 'Trip Coil No', value: 'InsulationResistanceTripCoil_trip_coil_no' },
+                test_voltage: { label: 'Test voltage', value: 'InsulationResistanceTripCoil_test_voltage' },
+                r60s: { label: 'R60s', value: 'InsulationResistanceTripCoil_r60s' },
+                assessment: { label: 'Assessment', value: 'InsulationResistanceTripCoil_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistanceTripCoil_condition_indicator' }
+              }},
+              MinimumPickup: { label: 'Minimum pick up', children: {
+                operation: { label: 'Operation', value: 'MinimumPickup_operation' },
+                trip_coil_no: { label: 'Trip Coil No', value: 'MinimumPickup_trip_coil_no' },
+                close_coil_no: { label: 'Close Coil No', value: 'MinimumPickup_close_coil_no' },
+                v_pickup: { label: 'V pickup', value: 'MinimumPickup_v_pickup' },
+                assessment: { label: 'Assessment', value: 'MinimumPickup_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'MinimumPickup_condition_indicator' }
+              }},
+              MotorCurrent: { label: 'Motor current', children: {
+                inrush_current: { label: 'Inrush current', value: 'MotorCurrent_inrush_current' },
+                charging: { label: 'Charging', value: 'MotorCurrent_charging' },
+                charging_current: { label: 'Charging current', value: 'MotorCurrent_charging_current' },
+                mini_voltage: { label: 'Minimum voltage', value: 'MotorCurrent_mini_voltage' },
+                assessment: { label: 'Assessment', value: 'MotorCurrent_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'MotorCurrent_condition_indicator' }
+              }},
+              OCOCOTiming: { label: 'O-CO-CO Timing', children: {
+                phase: { label: 'Phase', value: 'OCOCOTiming_phase' },
+                trip_coil: { label: 'Trip coil', value: 'OCOCOTiming_trip_coil' },
+                interrupter: { label: 'Interrupter', value: 'OCOCOTiming_interrupter' },
+                opening_time: { label: 'Opening time', value: 'OCOCOTiming_opening_time' },
+                opening_sync_between_phase: { label: 'Opening sync. between phase (ms)', value: 'OCOCOTiming_opening_sync_between_phase' },
+                assessment: { label: 'Assessment', value: 'OCOCOTiming_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'OCOCOTiming_condition_indicator' }
+              }},
+              OCOTiming: { label: 'O-CO Timing', children: {
+                phase: { label: 'Phase', value: 'OCOTiming_phase' },
+                interrupter: { label: 'Interrupter', value: 'OCOTiming_interrupter' },
+                opening_time: { label: 'Opening time', value: 'OCOTiming_opening_time' },
+                opening_sync_between_phase: { label: 'Opening sync. between phase (ms)', value: 'OCOTiming_opening_sync_between_phase' },
+                opening_sync_between_interrupter: { label: 'Opening sync. between interrupter (ms)', value: 'OCOTiming_opening_sync_between_interrupter' },
+                closing_time: { label: 'Closing time', value: 'OCOTiming_closing_time' },
+                closing_sync_between_phase: { label: 'Closing sync. between phase (ms)', value: 'OCOTiming_closing_sync_between_phase' },
+                closing_sync_between_interrupter: { label: 'Closing sync. between interrupter (ms)', value: 'OCOTiming_closing_sync_between_interrupter' },
+                open_close_time: { label: 'Open-Close time', value: 'OCOTiming_open_close_time' },
+                assessment: { label: 'Assessment', value: 'OCOTiming_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'OCOTiming_condition_indicator' }
+              }},
+              OCTiming: { label: 'OC Timing', children: {
+                phase: { label: 'Phase', value: 'OCTiming_phase' },
+                opening_time: { label: 'Opening time', value: 'OCTiming_opening_time' },
+                interrupter: { label: 'Interrupter', value: 'OCTiming_interrupter' },
+                opening_sync_between_interrupter: { label: 'Opening sync. between interrupter (ms)', value: 'OCTiming_opening_sync_between_interrupter' },
+                opening_sync_between_phase: { label: 'Opening sync. between phase (ms)', value: 'OCTiming_opening_sync_between_phase' },
+                open_close_time: { label: 'Open-Close time', value: 'OCTiming_open_close_time' },
+                assessment: { label: 'Assessment', value: 'OCTiming_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'OCTiming_condition_indicator' }
+              }},
+              OTiming: { label: 'O Timing', children: {
+                phase: { label: 'Phase', value: 'OTiming_phase' },
+                opening_time: { label: 'Opening time', value: 'OTiming_opening_time' },
+                interrupter: { label: 'Interrupter', value: 'OTiming_interrupter' },
+                opening_sync_between_phase: { label: 'Opening sync. between phase (ms)', value: 'OTiming_opening_sync_between_phase' },
+                opening_sync_between_interrupter: { label: 'Opening sync. between interrupter (ms)', value: 'OTiming_opening_sync_between_interrupter' },
+                assessment: { label: 'Assessment', value: 'OTiming_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'OTiming_condition_indicator' }
+              }},
+              OverCurrentRelease: { label: 'Overcurrent release', children: {
+                trip_coil_no: { label: 'Trip Coil No', value: 'OverCurrentRelease_trip_coil_no' },
+                trip_current: { label: 'Trip current', value: 'OverCurrentRelease_trip_current' },
+                assessment: { label: 'Assessment', value: 'OverCurrentRelease_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'OverCurrentRelease_condition_indicator' }
+              }},
+              PressureGauge: { label: 'Pressure gauge', children: {
+                sf6_pressure: { label: 'SF6 pressure', value: 'PressureGauge_sf6_pressure' },
+                alarm: { label: 'Alarm', value: 'PressureGauge_alarm' },
+                lockout: { label: 'Lockout', value: 'PressureGauge_lockout' },
+                assessment: { label: 'Assessment', value: 'PressureGauge_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'PressureGauge_condition_indicator' }
+              }},
+              SF6GasAnalysis: { label: 'SF6 gas analysis', children: {
+                decom_sf6: { label: 'Decomposition of SF6', value: 'SF6GasAnalysis_decom_sf6' },
+                so2_sof2: { label: 'SO2 + SOF2', value: 'SF6GasAnalysis_so2_sof2' },
+                hf: { label: 'HF', value: 'SF6GasAnalysis_hf' },
+                assessment: { label: 'Assessment', value: 'SF6GasAnalysis_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'SF6GasAnalysis_condition_indicator' }
+              }},
+              SF6MoiturePurity: { label: 'SF6 gas moiture and purity', children: {
+                moiture: { label: 'Moiture', value: 'SF6MoiturePurity_moiture' },
+                purity: { label: 'Purity', value: 'SF6MoiturePurity_purity' },
+                assessment: { label: 'Assessment', value: 'SF6MoiturePurity_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'SF6MoiturePurity_condition_indicator' }
+              }},
+              UnderVoltageRelease: { label: 'Under-voltage release', children: {
+                trip_coil_no: { label: 'Trip Coil No', value: 'UnderVoltageRelease_trip_coil_no' },
+                trip_voltage: { label: 'Trip voltage', value: 'UnderVoltageRelease_trip_voltage' },
+                assessment: { label: 'Assessment', value: 'UnderVoltageRelease_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'UnderVoltageRelease_condition_indicator' }
+              }}
             }}
           }},
-          PowerCableJobDto: { label: 'Power Cable Job', children: {
+          Job_PowerCableJobDto: { label: 'Power Cable Job', children: {
             PropertiesDto: { label: 'Properties', children: {
                 name:          { label: 'Job name',          value: 'job_name' },
                 job_type:      { label: 'Job type',          value: 'job_type' },
@@ -1266,9 +1830,80 @@ export default {
                 test_method:   { label: 'Test method',       value: 'test_method' },
                 ref_standard:  { label: 'Reference standard',value: 'ref_standard' },
                 summary:       { label: 'Summary',           value: 'summary' }
+              } },
+            Tests: { label: 'Test results', children: {
+              AcVoltageInsulation: { label: 'AC voltage test of the insulation', children: {
+                measurement: { label: 'Measurement', value: 'AcVoltageInsulation_measurement' },
+                test_voltage: { label: 'Test voltage', value: 'AcVoltageInsulation_test_voltage' },
+                frequency: { label: 'Frequency', value: 'AcVoltageInsulation_frequency' },
+                duration: { label: 'Test duration', value: 'AcVoltageInsulation_duration' },
+                assessment: { label: 'Assessment', value: 'AcVoltageInsulation_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'AcVoltageInsulation_condition_indicator' }
+              }},
+              DcVoltageInsulation: { label: 'DC voltage test of the insulation', children: {
+                measurement: { label: 'Measurement', value: 'DcVoltageInsulation_measurement' },
+                test_voltage: { label: 'Test voltage', value: 'DcVoltageInsulation_test_voltage' },
+                leakage_current: { label: 'Leakage current', value: 'DcVoltageInsulation_leakage_current' },
+                assessment: { label: 'Assessment', value: 'DcVoltageInsulation_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'DcVoltageInsulation_condition_indicator' }
+              }},
+              DcVoltageOverSheath: { label: 'DC voltage test of oversheath', children: {
+                measurement: { label: 'Measurement', value: 'DcVoltageOverSheath_measurement' },
+                test_voltage: { label: 'Test voltage', value: 'DcVoltageOverSheath_test_voltage' },
+                duration: { label: 'Test duration', value: 'DcVoltageOverSheath_duration' },
+                assessment: { label: 'Assessment', value: 'DcVoltageOverSheath_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'DcVoltageOverSheath_condition_indicator' }
+              }},
+              GeneralInspection: { label: 'General inspection', children: {
+                item: { label: 'Item', value: 'GeneralInspection_item' },
+                assessment: { label: 'Assessment', value: 'GeneralInspection_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'GeneralInspection_condition_indicator' }
+              }},
+              InsulationResistance: { label: 'Insulation Resistance', children: {
+                measurement: { label: 'Measurement', value: 'InsulationResistance_measurement' },
+                test_voltage: { label: 'Test voltage', value: 'InsulationResistance_test_voltage' },
+                r_meas: { label: 'R meas', value: 'InsulationResistance_r_meas' },
+                assessment: { label: 'Assessment', value: 'InsulationResistance_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistance_condition_indicator' }
+              }},
+              ParticalDischarge: { label: 'Partial discharge measurement', children: {
+                measurement: { label: 'Measurement', value: 'ParticalDischarge_measurement' },
+                test_voltage: { label: 'Test voltage', value: 'ParticalDischarge_test_voltage' },
+                r60s: { label: 'R60s', value: 'ParticalDischarge_r60s' },
+                assessment: { label: 'Assessment', value: 'ParticalDischarge_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'ParticalDischarge_condition_indicator' }
+              }},
+              TandeltaPowerAcSource: { label: 'Tan delta measurement with power frequency AC source', children: {
+                measurement: { label: 'Measurement', value: 'TandeltaPowerAcSource_measurement' },
+                test_voltage: { label: 'Test voltage', value: 'TandeltaPowerAcSource_test_voltage' },
+                frequency: { label: 'Frequency', value: 'TandeltaPowerAcSource_frequency' },
+                duration: { label: 'Test duration', value: 'TandeltaPowerAcSource_duration' },
+                tan_delta: { label: 'Tan delta [10⁻³]', value: 'TandeltaPowerAcSource_tan_delta' },
+                assessment: { label: 'Assessment', value: 'TandeltaPowerAcSource_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'TandeltaPowerAcSource_condition_indicator' }
+              }},
+              TandeltaVlfSource: { label: 'Tan delta measurement with VLF source', children: {
+                measurement: { label: 'Measurement', value: 'TandeltaVlfSource_measurement' },
+                test_voltage: { label: 'Test voltage', value: 'TandeltaVlfSource_test_voltage' },
+                ref_test_voltage: { label: 'Reference test voltage', value: 'TandeltaVlfSource_ref_test_voltage' },
+                capacitance: { label: 'Capacitance', value: 'TandeltaVlfSource_capacitance' },
+                mtd: { label: 'MTD', value: 'TandeltaVlfSource_mtd' },
+                delta_td_each_step: { label: 'ΔTD [10⁻³] (each step)', value: 'TandeltaVlfSource_delta_td_each_step' },
+                tan_delta_dtd: { label: 'DTD [10⁻³] (0.5 U₀ & 1.5 U₀)', value: 'TandeltaVlfSource_tan_delta_dtd' },
+                tan_delta_tdts: { label: 'TDTS [10⁻³]', value: 'TandeltaVlfSource_tan_delta_tdts' },
+                assessment: { label: 'Assessment', value: 'TandeltaVlfSource_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'TandeltaVlfSource_condition_indicator' }
+              }},
+              VlfTest: { label: 'VLF Test', children: {
+                measurement: { label: 'Measurement', value: 'VlfTest_measurement' },
+                test_voltage: { label: 'Test voltage', value: 'VlfTest_test_voltage' },
+                leakage_current: { label: 'Leakage current', value: 'VlfTest_leakage_current' },
+                assessment: { label: 'Assessment', value: 'VlfTest_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'VlfTest_condition_indicator' }
+              }}
             }}
           }},
-          SurgeArresterJobDto: { label: 'Surge Arrester Job', children: {
+          Job_SurgeArresterJobDto: { label: 'Surge Arrester Job', children: {
             PropertiesDto: { label: 'Properties', children: {
                 name:          { label: 'Job name',          value: 'job_name' },
                 job_type:      { label: 'Job type',          value: 'job_type' },
@@ -1280,9 +1915,39 @@ export default {
                 test_method:   { label: 'Test method',       value: 'test_method' },
                 ref_standard:  { label: 'Reference standard',value: 'ref_standard' },
                 summary:       { label: 'Summary',           value: 'summary' }
+              } },
+            Tests: { label: 'Test results', children: {
+              GeneralInspection: { label: 'General inspection', children: {
+                item: { label: 'Item', value: 'GeneralInspection_item' },
+                assessment: { label: 'Assessment', value: 'GeneralInspection_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'GeneralInspection_condition_indicator' }
+              }},
+              InsulationResistance: { label: 'Insulation resistance', children: {
+                measurement: { label: 'Measurement', value: 'InsulationResistance_measurement' },
+                test_voltage: { label: 'Test voltage', value: 'InsulationResistance_test_voltage' },
+                r60s: { label: 'R60s', value: 'InsulationResistance_r60s' },
+                assessment: { label: 'Assessment', value: 'InsulationResistance_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistance_condition_indicator' }
+              }},
+              LeakageCurrent: { label: 'Leakage current at continuous operating voltage', children: {
+                phase: { label: 'Phase', value: 'LeakageCurrent_phase' },
+                unit_no: { label: 'Unit number', value: 'LeakageCurrent_unit_no' },
+                test_voltage: { label: 'Test voltage', value: 'LeakageCurrent_test_voltage' },
+                i_meas: { label: 'I measurement', value: 'LeakageCurrent_i_meas' },
+                assessment: { label: 'Assessment', value: 'LeakageCurrent_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'LeakageCurrent_condition_indicator' }
+              }},
+              PowerFrequency: { label: 'Power frequency voltage at reference current', children: {
+                phase: { label: 'Phase', value: 'PowerFrequency_phase' },
+                unit_no: { label: 'Unit number', value: 'PowerFrequency_unit_no' },
+                ref_current: { label: 'Reference current', value: 'PowerFrequency_ref_current' },
+                v_meas: { label: 'V measurement', value: 'PowerFrequency_v_meas' },
+                assessment: { label: 'Assessment', value: 'PowerFrequency_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'PowerFrequency_condition_indicator' }
+              }}
             }}
           }},
-          ReactorJobDto: { label: 'Reactor Job', children: {
+          Job_ReactorJobDto: { label: 'Reactor Job', children: {
             PropertiesDto: { label: 'Properties', children: {
                 name:          { label: 'Job name',          value: 'job_name' },
                 job_type:      { label: 'Job type',          value: 'job_type' },
@@ -1294,9 +1959,80 @@ export default {
                 test_method:   { label: 'Test method',       value: 'test_method' },
                 ref_standard:  { label: 'Reference standard',value: 'ref_standard' },
                 summary:       { label: 'Summary',           value: 'summary' }
+              } }
+          }},
+          Job_CapacitorJobDto: { label: 'Capacitor Job', children: {
+            PropertiesDto: { label: 'Properties', children: {
+                name:          { label: 'Job name',          value: 'job_name' },
+                job_type:      { label: 'Job type',          value: 'job_type' },
+                creation_date: { label: 'Creation date',     value: 'creation_date' },
+                execution_date:{ label: 'Execution date',    value: 'execution_date' },
+                tested_by:     { label: 'Tested by',         value: 'tested_by' },
+                approved_by:   { label: 'Approved by',       value: 'approved_by' },
+                approval_date: { label: 'Approval date',     value: 'approval_date' },
+                test_method:   { label: 'Test method',       value: 'test_method' },
+                ref_standard:  { label: 'Reference standard',value: 'ref_standard' },
+                summary:       { label: 'Summary',           value: 'summary' }
+              } }
+          }},
+          Job_DisconnectorJobDto: { label: 'Disconnector Job', children: {
+            PropertiesDto: { label: 'Properties', children: {
+                name:          { label: 'Job name',          value: 'job_name' },
+                job_type:      { label: 'Job type',          value: 'job_type' },
+                creation_date: { label: 'Creation date',     value: 'creation_date' },
+                execution_date:{ label: 'Execution date',    value: 'execution_date' },
+                tested_by:     { label: 'Tested by',         value: 'tested_by' },
+                approved_by:   { label: 'Approved by',       value: 'approved_by' },
+                approval_date: { label: 'Approval date',     value: 'approval_date' },
+                test_method:   { label: 'Test method',       value: 'test_method' },
+                ref_standard:  { label: 'Reference standard',value: 'ref_standard' },
+                summary:       { label: 'Summary',           value: 'summary' }
+              } },
+            Tests: { label: 'Test results', children: {
+              ContactResistance: { label: 'Contact resistance', children: {
+                measurement: { label: 'Measurement', value: 'ContactResistance_measurement' },
+                i_test: { label: 'I test', value: 'ContactResistance_i_test' },
+                contact_resistance: { label: 'Contact resistance', value: 'ContactResistance_contact_resistance' },
+                assessment: { label: 'Assessment', value: 'ContactResistance_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'ContactResistance_condition_indicator' }
+              }},
+              ControlCheck: { label: 'Control cabinet check', children: {
+                item: { label: 'Item', value: 'ControlCheck_item' },
+                assessment: { label: 'Assessment', value: 'ControlCheck_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'ControlCheck_condition_indicator' }
+              }},
+              DcWindingMotor: { label: 'DC winding resistance of motor', children: {
+                r_meas: { label: 'R meas', value: 'DcWindingMotor_r_meas' },
+                assessment: { label: 'Assessment', value: 'DcWindingMotor_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'DcWindingMotor_condition_indicator' }
+              }},
+              GeneralInspection: { label: 'General inspection', children: {
+                item: { label: 'Item', value: 'GeneralInspection_item' },
+                assessment: { label: 'Assessment', value: 'GeneralInspection_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'GeneralInspection_condition_indicator' }
+              }},
+              InsulationResMotor: { label: 'Insulation resistance of motor', children: {
+                test_voltage: { label: 'Test voltage', value: 'InsulationResMotor_test_voltage' },
+                r60s: { label: 'R60s', value: 'InsulationResMotor_r60s' },
+                assessment: { label: 'Assessment', value: 'InsulationResMotor_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'InsulationResMotor_condition_indicator' }
+              }},
+              InsulationResistance: { label: 'Insulation resistance', children: {
+                measurement: { label: 'Measurement', value: 'InsulationResistance_measurement' },
+                test_voltage: { label: 'Test voltage', value: 'InsulationResistance_test_voltage' },
+                r60s: { label: 'R60s', value: 'InsulationResistance_r60s' },
+                assessment: { label: 'Assessment', value: 'InsulationResistance_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistance_condition_indicator' }
+              }},
+              OperatingTest: { label: 'Operating test', children: {
+                measurement: { label: 'Measurement', value: 'OperatingTest_measurement' },
+                working_time: { label: 'Working time', value: 'OperatingTest_working_time' },
+                assessment: { label: 'Assessment', value: 'OperatingTest_assessment' },
+                condition_indicator: { label: 'Condition indicator', value: 'OperatingTest_condition_indicator' }
+              }}
             }}
           }},
-          CapacitorJobDto: { label: 'Capacitor Job', children: {
+          Job_RotatingMachineJobDto: { label: 'Rotating Machine Job', children: {
             PropertiesDto: { label: 'Properties', children: {
                 name:          { label: 'Job name',          value: 'job_name' },
                 job_type:      { label: 'Job type',          value: 'job_type' },
@@ -1308,9 +2044,9 @@ export default {
                 test_method:   { label: 'Test method',       value: 'test_method' },
                 ref_standard:  { label: 'Reference standard',value: 'ref_standard' },
                 summary:       { label: 'Summary',           value: 'summary' }
-            } }
+              } }
           }},
-          DisconnectorJobDto: { label: 'Disconnector Job', children: {
+          Job_BushingJobDto: { label: 'Bushing Job', children: {
             PropertiesDto: { label: 'Properties', children: {
                 name:          { label: 'Job name',          value: 'job_name' },
                 job_type:      { label: 'Job type',          value: 'job_type' },
@@ -1322,21 +2058,7 @@ export default {
                 test_method:   { label: 'Test method',       value: 'test_method' },
                 ref_standard:  { label: 'Reference standard',value: 'ref_standard' },
                 summary:       { label: 'Summary',           value: 'summary' }
-            }}
-          }},
-          RotatingMachineJobDto: { label: 'Rotating Machine Job', children: {
-            PropertiesDto: { label: 'Properties', children: {
-                name:          { label: 'Job name',          value: 'job_name' },
-                job_type:      { label: 'Job type',          value: 'job_type' },
-                creation_date: { label: 'Creation date',     value: 'creation_date' },
-                execution_date:{ label: 'Execution date',    value: 'execution_date' },
-                tested_by:     { label: 'Tested by',         value: 'tested_by' },
-                approved_by:   { label: 'Approved by',       value: 'approved_by' },
-                approval_date: { label: 'Approval date',     value: 'approval_date' },
-                test_method:   { label: 'Test method',       value: 'test_method' },
-                ref_standard:  { label: 'Reference standard',value: 'ref_standard' },
-                summary:       { label: 'Summary',           value: 'summary' }
-            }}
+              } }
           }}
         }}
       }
@@ -1565,11 +2287,19 @@ export default {
     async doExport() {
       this.exportLoading = true
       try {
-        const dto = {}
+        // codeMap: { code: [val0, val1, ...] } — array per code for occurrence-based Excel fill
+        const codeMap = {}
         const partials = await Promise.all(this.exportCategories.map(cat => this.buildDtoForCat(cat)))
-        for (const p of partials) { if (p) Object.assign(dto, p) }
+        for (const p of partials) {
+          if (!p) continue
+          for (const [code, vals] of Object.entries(p)) {
+            if (!codeMap[code]) codeMap[code] = []
+            // vals is already an array from extractFromMaps
+            codeMap[code].push(...(Array.isArray(vals) ? vals : [vals]))
+          }
+        }
         const tmpl = this.templateList.find(t => t.name === this.selectedTemplateName)
-        const rs = await window.electronAPI.exportTemplateWithData({ templatePath: this.currentFilePath, variables: tmpl?.variable||[], dto })
+        const rs = await window.electronAPI.exportTemplateWithData({ templatePath: this.currentFilePath, variables: tmpl?.variable||[], codeMap })
         if (rs.canceled) return
         if (rs.success) { this.showExportDialog = false; this.$message.success('Exported: ' + rs.filePath) }
         else this.$message.error(rs.message || 'Export failed')
@@ -1578,6 +2308,60 @@ export default {
     mapProps(p) {
       if (!p) return {}
       return { type: p.type||'', kind: p.kind||'', serial_no: p.serial_no||'', manufacturer: p.manufacturer||'', manufacturer_type: p.manufacturer_type||'', manufacturer_year: p.manufacturer_year||'', model: p.model||'', country_of_origin: p.country_of_origin||'', apparatus_id: p.apparatus_id||'', comment: p.comment||'' }
+    },
+    // Build arrayMap from dto.testList for job export.
+    // Row value structure from mapping: { mrid, value, unit, type, measurement_id }
+    //   - analog/string: value = raw string/number
+    //   - discrete:      value = alias string e.g. 'Pass'/'Fail'/'Good'/'Poor'
+    //
+    // For single-table tests:  arrayMap['CTRatio_ratio_dev'] = [row0, row1, ...]
+    // For multi-table tests:   arrayMap['DCWindingPrim_table1_r_meas'] = [...]
+    //                          arrayMap['DCWindingPrim_table2_r_meas'] = [...]
+    buildTestArrayMap(testList) {
+      const arrayMap = {}
+      if (!testList) return arrayMap
+
+      for (const test of testList) {
+        const tc = test.testTypeCode
+        if (!tc || !test.data?.table) continue
+
+        const tables = test.data.table
+        const tableKeys = Object.keys(tables)
+        const isMultiTable = tableKeys.length > 1
+
+        for (const tableKey of tableKeys) {
+          const rows = tables[tableKey] || []
+          if (!rows.length) continue
+
+          // Collect all column codes from all rows of this table
+          const colCodes = new Set()
+          rows.forEach(row =>
+            Object.keys(row)
+              .filter(k => k !== 'mrid')
+              .forEach(k => colCodes.add(k))
+          )
+
+          colCodes.forEach(col => {
+            // Key format:
+            //   single table → 'TestCode_colCode'
+            //   multi table  → 'TestCode_tableKey_colCode'
+            const key = isMultiTable ? `${tc}_${tableKey}_${col}` : `${tc}_${col}`
+
+            arrayMap[key] = rows.map(row => {
+              const cell = row[col]
+              if (cell === undefined || cell === null) return ''
+              // Cell is always { value, type, unit, mrid, measurement_id }
+              if (typeof cell === 'object' && 'value' in cell) {
+                const v = cell.value
+                return (v !== null && v !== undefined) ? String(v) : ''
+              }
+              // Fallback for plain values
+              return String(cell)
+            })
+          })
+        }
+      }
+      return arrayMap
     },
     // Get nodeId from selectedNodeContext based on category
     getNodeIdForCat(catKey) {
@@ -1594,7 +2378,8 @@ export default {
       }
       if (catKey.startsWith('Job_')) {
         if (!ctx.job) return null
-        // Job type matching: extract asset type from catKey
+        // Normalize double prefix: "Job_Job_VoltageTransformerJobDto" → "Job_VoltageTransformerJobDto"
+        const jobKey = catKey.startsWith('Job_Job_') ? catKey.slice(4) : catKey
         const jobTypeMap = {
           'Job_TransformerJobDto': 'Transformer', 'Job_VoltageTransformerJobDto': 'Voltage transformer',
           'Job_CurrentTransformerJobDto': 'Current transformer', 'Job_CircuitBreakerJobDto': 'Circuit breaker',
@@ -1603,7 +2388,7 @@ export default {
           'Job_DisconnectorJobDto': 'Disconnector', 'Job_RotatingMachineJobDto': 'Rotating machine',
           'Job_BushingJobDto': 'Bushing',
         }
-        const expectedAsset = jobTypeMap[catKey]
+        const expectedAsset = jobTypeMap[jobKey]
         return ctx.job.assetType === expectedAsset ? ctx.job.mrid : null
       }
       return null
@@ -2001,63 +2786,75 @@ export default {
         }
 
         else if (cat.key.startsWith('Job_')) {
-          const jobApiMap = {
-            'Job_TransformerJobDto':        () => window.electronAPI.getTransformerJobByMrid(nodeId),
-            'Job_VoltageTransformerJobDto': () => window.electronAPI.getVoltageTransformerJobByMrid(nodeId),
-            'Job_CurrentTransformerJobDto': () => window.electronAPI.getCurrentTransformerJobByMrid(nodeId),
-            'Job_CircuitBreakerJobDto':     () => window.electronAPI.getCircuitBreakerJobByMrid(nodeId),
-            'Job_PowerCableJobDto':         () => window.electronAPI.getPowerCableJobByMrid(nodeId),
-            'Job_SurgeArresterJobDto':      () => window.electronAPI.getSurgeArresterJobByMrid(nodeId),
-            'Job_ReactorJobDto':            () => window.electronAPI.getReactorJobByMrid(nodeId),
-            'Job_CapacitorJobDto':          () => window.electronAPI.getCapacitorJobByMrid(nodeId),
-            'Job_DisconnectorJobDto':       () => window.electronAPI.getDisconnectorJobByMrid(nodeId),
-            'Job_RotatingMachineJobDto':    () => window.electronAPI.getRotatingMachineJobByMrid(nodeId),
+          // Normalize double prefix: "Job_Job_VTJobDto" → "Job_VTJobDto"
+          const jobKey = cat.key.startsWith('Job_Job_') ? cat.key.slice(4) : cat.key
+          // Map normalized key → { api fn, EntityToDto mapping fn }
+          const jobMap = {
+            'Job_TransformerJobDto':        { api: () => window.electronAPI.getTransformerJobByMrid(nodeId),        map: transformerJobEntityToDto },
+            'Job_VoltageTransformerJobDto': { api: () => window.electronAPI.getVoltageTransformerJobByMrid(nodeId), map: vtJobEntityToDto },
+            'Job_CurrentTransformerJobDto': { api: () => window.electronAPI.getCurrentTransformerJobByMrid(nodeId), map: ctJobEntityToDto },
+            'Job_CircuitBreakerJobDto':     { api: () => window.electronAPI.getCircuitBreakerJobByMrid(nodeId),     map: breakerJobEntityToDto },
+            'Job_PowerCableJobDto':         { api: () => window.electronAPI.getPowerCableJobByMrid(nodeId),         map: cableJobEntityToDto },
+            'Job_SurgeArresterJobDto':      { api: () => window.electronAPI.getSurgeArresterJobByMrid(nodeId),      map: saJobEntityToDto },
+            'Job_ReactorJobDto':            { api: () => window.electronAPI.getReactorJobByMrid(nodeId),            map: reactorJobEntityToDto },
+            'Job_CapacitorJobDto':          { api: () => window.electronAPI.getCapacitorJobByMrid(nodeId),          map: capacitorJobEntityToDto },
+            'Job_DisconnectorJobDto':       { api: () => window.electronAPI.getDisconnectorJobByMrid(nodeId),       map: disconnectorJobEntityToDto },
+            'Job_RotatingMachineJobDto':    { api: () => window.electronAPI.getRotatingMachineJobByMrid(nodeId),    map: rotatingJobEntityToDto },
+            'Job_BushingJobDto':            { api: () => window.electronAPI.getBushingJobByMrid(nodeId),            map: bushingJobEntityToDto },
           }
-          const fn = jobApiMap[cat.key]; if (!fn) return {}
-          const rs = await fn(); if (!rs?.success || !rs.data) return {}
-          const p = rs.data.properties || rs.data
+          const entry = jobMap[jobKey]
+          if (!entry) return {}
+          const rs = await entry.api()
+          if (!rs?.success || !rs.data) return {}
+          // Convert entity → DTO using the job mapping function
+          const dto = entry.map(rs.data)
+          const p = dto.properties || {}
           flatMap = {
-            job_name:      p.name          || '',
-            job_type:      p.type          || '',
-            creation_date: p.creation_date || '',
-            execution_date:p.execution_date|| '',
-            tested_by:     p.tested_by     || '',
-            approved_by:   p.approved_by   || '',
-            approval_date: p.approval_date || '',
-            test_method:   p.test_method   || '',
-            ref_standard:  p.ref_standard  || '',
-            summary:       p.summary       || ''
+            job_name:      p.name           || '',
+            job_type:      p.type || p.job_type || '',
+            creation_date: p.creation_date  || p.created_date_time || '',
+            execution_date:p.execution_date || '',
+            tested_by:     p.tested_by      || '',
+            approved_by:   p.approved_by    || p.approver || '',
+            approval_date: p.approval_date  || '',
+            test_method:   p.test_method    || '',
+            ref_standard:  p.ref_standard   || '',
+            summary:       p.summary || p.description || ''
           }
+          // Build arrayMap from testList (occurrence-based, per test row)
+          // Cell structure: { value, type:'analog'|'string'|'discrete', unit, mrid, measurement_id }
+          // Discrete cells: value is already the alias string ('Pass','Fail','Good','Poor')
+          arrayMap = this.buildTestArrayMap(dto.testList)
         }
         return this.extractFromMaps(cat, flatMap, arrayMap)
       } catch(e) { console.error('buildDtoForCat error:', cat.key, e); return {} }
     },
-    // extractFromMaps:
-    // - Scalar fields (flatMap only): luôn trả cùng 1 giá trị, không đếm occurrence
-    // - Table/array fields (arrayMap): code lần 1 → [0], lần 2 → [1], ...
-    //   out-of-bounds (bảng 6 dòng mà xuất hiện lần 7) → '' (rỗng)
+    // extractFromMaps — returns { code: [v0, v1, ...] }
+    //
+    // Occurrence-based fill is at COORDINATE level (Excel cells), not template row level.
+    // One template row → code A2 at Excel coordinates [B1, C1] → B1=values[0], C1=values[1]
+    //
+    // Array field  (arrayMap): result[code] = full array → ipcmain: coords[i] = values[i]
+    //   e.g. r_meas=[3333,4444], coords=[B1,C1] → B1=3333, C1=4444
+    // Scalar field (flatMap):  result[code] = [sameVal] → ipcmain: all coords = values[0]
     extractFromMaps(cat, flatMap, arrayMap) {
       const result = {}
-      const occurrences = {}  // chỉ đếm cho array fields
       for (const row of this.tableData) {
         if (!row.code || row.category !== cat.category) continue
         if (cat.assetType && row.featureLevels?.[0]?.key !== cat.assetType) continue
         const leafValue = this.getLeafValue(row.featureLevels, row.category)
         if (!leafValue) continue
 
-        let val
         if (arrayMap && leafValue in arrayMap) {
-          // ── table data: occurrence-based ─────────────────────────────
-          const idx = occurrences[leafValue] ?? 0
-          occurrences[leafValue] = idx + 1          // tăng CHỈ cho array field
-          const arr = arrayMap[leafValue]
-          val = idx < arr.length ? arr[idx] : ''    // out-of-bounds → '' (không phải null/0)
+          // Array field: return full array — ipcmain indexes per coordinate
+          result[row.code] = arrayMap[leafValue].map(v =>
+            (v !== undefined && v !== null) ? String(v) : ''
+          )
         } else {
-          // ── scalar: không đếm occurrence, luôn cùng giá trị ─────────
-          val = flatMap[leafValue]
+          // Scalar: single-element array → all coordinates get values[0]
+          const val = flatMap[leafValue]
+          result[row.code] = [(val !== undefined && val !== null) ? String(val) : '']
         }
-
-        result[row.code] = (val !== undefined && val !== null) ? String(val) : ''
       }
       return result
     },

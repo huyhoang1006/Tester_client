@@ -356,47 +356,67 @@ export const saveTemplateWithScan = () => {
 // ═════════════════════════════════════════════════════════════════════════════
 
 export const exportTemplateWithData = () => {
-    ipcMain.handle('exportTemplateWithData', async function (event, { templatePath, variables, dto }) {
+    ipcMain.handle('exportTemplateWithData', async function (event, payload) {
         try {
+            const { templatePath, variables, codeMap: rawCodeMap, dto } = payload || {}
+
+            // Support both old format (dto: {code: value}) and new format (codeMap: {code: [v0,v1,...]})
+            let codeMap = rawCodeMap
+            if (!codeMap && dto) {
+                // Backward compat: wrap dto single values into arrays
+                codeMap = {}
+                for (const [k, v] of Object.entries(dto)) {
+                    codeMap[k] = [v !== null && v !== undefined ? String(v) : '']
+                }
+            }
+            if (!codeMap) codeMap = {}
+
             if (!templatePath || !fs.existsSync(templatePath)) {
-                return { success: false, message: 'Template file not found' }
+                return { success: false, message: 'Template file not found: ' + templatePath }
             }
 
             const XlsxPopulate = require('xlsx-populate')
-
-            // Đọc file template — giữ nguyên style/format/merge cells/logo
             const workbook = await XlsxPopulate.fromFileAsync(templatePath)
+
+            // codeMap[code] = [v0, v1, ...]
+            // coordinates[i] → codeMap[code][i]  (occurrence-based)
+            // values.length === 1 (scalar) → all coordinates get same value
+            // values.length > 1  (array)  → each coordinate gets its indexed value, OOB → ''
 
             for (const variable of (variables || [])) {
                 const { code, coordinates } = variable
                 if (!code || !coordinates || !coordinates.length) continue
 
-                const fillValue = (dto[code] !== undefined && dto[code] !== null)
-                    ? String(dto[code])
-                    : ''
+                const rawVals = codeMap[code]
+                const values = Array.isArray(rawVals) ? rawVals
+                             : rawVals !== undefined   ? [String(rawVals)]
+                             : []
 
-                for (const coord of coordinates) {
-                    // coord format: "Sheet1!B3"
+                coordinates.forEach((coord, coordIdx) => {
+                    const fillValue = values.length <= 1
+                        ? (values[0] !== undefined && values[0] !== null ? values[0] : '')                                   // scalar: same for all
+                        : (coordIdx < values.length ? values[coordIdx] : '')  // array: indexed, OOB → ''
+
                     const bangIdx = coord.indexOf('!')
-                    if (bangIdx === -1) continue
+                    if (bangIdx === -1) return
 
                     const sheetName = coord.substring(0, bangIdx)
                     const cellAddr  = coord.substring(bangIdx + 1)
 
                     const sheet = workbook.sheet(sheetName)
-                    if (!sheet) continue
+                    if (!sheet) return
 
                     const cell = sheet.cell(cellAddr)
                     const currentValue = cell.value()
-                    if (currentValue === null || currentValue === undefined) continue
+                    if (currentValue === null || currentValue === undefined) return
 
                     const currentStr = String(currentValue)
                     if (currentStr.includes(code)) {
-                        // Replace code trong chuỗi, giữ phần text còn lại
-                        // vd: "Tên đơn vị: A1" → "Tên đơn vị: Công ty ABC"
+                        // Replace code placeholder, keep surrounding text
+                        // e.g. "Unit: A1" → "Unit: EVN"
                         cell.value(currentStr.replace(code, fillValue))
                     }
-                }
+                })
             }
 
             // Hỏi user nơi lưu file output
@@ -417,6 +437,7 @@ export const exportTemplateWithData = () => {
         }
     })
 }
+
 
 export const active = () => {
     getAllTemplates()
