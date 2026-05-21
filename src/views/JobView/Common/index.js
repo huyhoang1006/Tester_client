@@ -451,3 +451,28 @@ export const testStandardDataToOption = (testStandardData) => {
     return null
   }
 }
+
+/**
+ * Ensure assessment data exists for a given option type.
+ * Called when user selects an option in the Assessment dialog but no data exists yet
+ * (e.g. job was saved without choosing an assessment standard).
+ *
+ * @param {Object} testAssessment  - reactive testAssessment object (has .assessment array)
+ * @param {String} type            - selected option e.g. 'customized', 'iec'
+ * @param {Object} assessmentMapEntry - e.g. currentTransformerAssessmentMap['CTRatio']
+ */
+export const ensureAssessmentData = (testAssessment, type, assessmentMapEntry) => {
+    if (!type || !testAssessment) return
+    // Check if data already exists for this type
+    const existing = (testAssessment.assessment || []).find(x => x.type === type)
+    if (existing) return   // already initialized — nothing to do
+
+    // No data yet → build fresh assessment from the config map
+    const allStandards = assessmentMapEntry?.testStandard || []
+    const standardsForType = allStandards.filter(s => s.type === type)
+    if (standardsForType.length === 0) return
+
+    const newItems = buildEmptyTestAssessment(standardsForType)
+    if (!testAssessment.assessment) testAssessment.assessment = []
+    newItems.forEach(item => testAssessment.assessment.push(item))
+}

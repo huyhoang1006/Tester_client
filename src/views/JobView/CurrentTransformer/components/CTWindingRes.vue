@@ -135,6 +135,7 @@
 <script>
 /* eslint-disable */
 import currentTransformerTestMap from '@/config/test-definitions/CurrentTransformer'
+import currentTransformerAssessmentMap from '@/config/testing-assessment/CurrentTransformer'
 import * as common from '../../Common/index'
 import GroupNode from '../../Common/GroupNode.vue'
 import { changeTestStandard } from '../../Common'
@@ -190,7 +191,7 @@ export default {
             return this.testCondition
         },
         rowData() {
-            return common.buildEmptyTestRow(currentTransformerTestMap['InsulationResistance'].columns)
+            return common.buildEmptyTestRow(currentTransformerTestMap['CTWindingRes'].columns)
         },
         assessmentData() {
             return this.testAssessment.assessment
@@ -228,6 +229,14 @@ export default {
         'option': {
             immediate: true,
             handler: async function (newVal) {
+                if (!newVal) return
+                // Lazy-init: nếu chưa có assessment data cho option này thì build mới
+                common.ensureAssessmentData(
+                    this.testAssessment,
+                    newVal,
+                    currentTransformerAssessmentMap['CTWindingRes']  // ← đổi testCode theo từng file
+                )
+                // Sau khi đảm bảo có data, tìm và ghi testStandard
                 const standard = this.filteredAssessmentData.find(x => x.type === newVal)
                 if (standard) {
                     await changeTestStandard(standard.mrid, newVal, this.testStandardData)

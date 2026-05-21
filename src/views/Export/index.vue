@@ -26,6 +26,7 @@
           <th style="width:140px;">Category</th>
           <th>Feature</th>
           <th style="width:190px;">Coordinates</th>
+
           <th style="width:50px;"><el-button @click="addRow()" size="mini" type="primary"><i class="fa-solid fa-plus"></i></el-button></th>
           <th style="width:50px;"><el-button @click="clearAll" size="mini" type="danger"><i class="fa-solid fa-trash"></i></el-button></th>
         </tr></thead>
@@ -52,6 +53,7 @@
               </template>
               <span v-else style="color:#C0C4CC;font-size:11px;">not found</span>
             </td>
+
             <td><el-button @click="addRow(index)" type="primary" size="mini" style="width:100%"><i class="fa-solid fa-plus"></i></el-button></td>
             <td><el-button @click="removeRow(index)" type="danger" size="mini" style="width:100%"><i class="fa-solid fa-trash"></i></el-button></td>
           </tr>
@@ -83,19 +85,46 @@
   <el-dialog title="Select data to export" :visible.sync="showExportDialog" width="520px" append-to-body>
     <div v-if="exportCategories.length === 0" style="color:#909399;padding:20px 0;">No categories in template rows.</div>
     <div v-else>
-      <!-- Node picker -->
-      <div style="margin-bottom:12px;">
-        <div style="font-size:12px;color:#909399;margin-bottom:6px;">Select a node to export data:</div>
-        <el-button size="small" icon="el-icon-share" @click="nodePickerVisible = true">
-          {{ selectedNodeLabel || 'Select node from tree...' }}
+      <!-- Add node button -->
+      <div style="margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+        <el-button size="small" type="primary" plain icon="el-icon-plus" @click="nodePickerVisible = true">
+          Add asset / job
         </el-button>
-        <el-button v-if="selectedNodeLabel" size="small" icon="el-icon-close" circle @click="clearSelectedNode" />
+        <span style="font-size:11px;color:#909399;">Each item can be used as data source for different codes in the template</span>
       </div>
-      <div v-if="selectedNodeLabel" style="font-size:11px;color:#67C23A;padding:4px 8px;background:#f0f9eb;border-radius:4px;">
-        <i class="el-icon-check"></i> {{ selectedNodeLabel }}
+
+      <!-- Selected items list -->
+      <div v-if="selectedItems.length > 0">
+        <div
+          v-for="(item, idx) in selectedItems"
+          :key="item.id"
+          style="display:flex;align-items:center;gap:6px;padding:5px 8px;margin-bottom:4px;background:#f5f7fa;border-radius:4px;border:1px solid #EBEEF5;"
+        >
+          <span style="font-size:11px;color:#fff;background:#409EFF;border-radius:3px;padding:1px 6px;min-width:54px;text-align:center;">
+            Sheet {{ idx + 1 }}
+          </span>
+          <i :class="itemIcon(item)" style="font-size:12px;color:#606266;"></i>
+          <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="item.label">
+            {{ item.label }}
+          </span>
+          <el-input
+            v-model="item.sheetName"
+            size="mini"
+            placeholder="Sheet name"
+            style="width:120px;"
+            :maxlength="31"
+          />
+          <el-button size="mini" type="danger" plain icon="el-icon-delete" circle @click="removeSelectedItem(item.id)" />
+        </div>
       </div>
-      <div v-else style="font-size:11px;color:#E6A23C;padding:4px 8px;background:#fdf6ec;border-radius:4px;">
-        <i class="el-icon-warning-outline"></i> No node selected — categories without a match will be skipped
+      <div v-else style="font-size:11px;color:#E6A23C;padding:6px 10px;background:#fdf6ec;border-radius:4px;">
+        <i class="el-icon-warning-outline"></i> No selection yet — click "Add asset / job" to begin
+      </div>
+
+      <!-- Summary -->
+      <div v-if="selectedItems.length > 0" style="margin-top:8px;font-size:11px;color:#909399;">
+        {{ selectedItems.length }} source{{ selectedItems.length > 1 ? 's' : '' }} selected.
+        Each template row can pull data from a different source.
       </div>
     </div>
     <div slot="footer">
@@ -106,10 +135,14 @@
 
   <!-- ── Tree Node Picker Dialog ──────────────────────────────── -->
   <el-dialog title="Select Node" :visible.sync="nodePickerVisible" width="540px" :append-to-body="true">
-    <div style="margin-bottom:8px;font-size:12px;color:#909399;">
-      Navigate the tree: Organisation → Substation → VoltageLevel → Bay → Asset → Job
+    <div style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:12px;color:#909399;">
+        Navigate the tree: Organisation → Substation → VoltageLevel → Bay → Asset → Job
+      </span>
+      <el-button size="mini" icon="el-icon-refresh" @click="refreshPickerTree" style="padding:4px 8px;">Refresh</el-button>
     </div>
     <el-tree
+      :key="pickerTreeKey"
       ref="pickerTree"
       :props="{ label: 'displayName', children: 'children', isLeaf: 'pickerIsLeaf' }"
       :load="loadPickerNode"
@@ -132,9 +165,18 @@
       <strong>{{ pickerTempSelected.displayName }}</strong>
       <span style="color:#909399;margin-left:4px;">({{ pickerModeLabel(pickerTempSelected.mode) }})</span>
     </div>
-    <span slot="footer">
-      <el-button size="small" @click="nodePickerVisible = false">Cancel</el-button>
-      <el-button size="small" type="primary" :disabled="!pickerTempSelected" @click="confirmPickerSelection">Confirm</el-button>
+    <span slot="footer" style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:11px;color:#909399;">
+        {{ selectedItems.length }} item{{ selectedItems.length !== 1 ? 's' : '' }} in list
+      </span>
+      <span>
+        <el-button size="small" @click="nodePickerVisible = false">Done</el-button>
+        <el-button size="small" type="primary" icon="el-icon-plus"
+          :disabled="!pickerTempSelected"
+          @click="addPickerSelectionToList">
+          Add to list
+        </el-button>
+      </span>
     </span>
   </el-dialog>
 
@@ -195,12 +237,12 @@ export default {
         'Disconnector': 'Asset_DisconnectorDTO',
         'Rotating machine': 'Asset_RotatingMachineDTO',
       },
-      // Node picker (tree-based)
+      // Node picker — multi-selection ────────────────────────────────
       nodePickerVisible: false,
-      pickerTempSelected: null,     // node đang hover/click trong picker
-      selectedNode: null,           // node đã confirm
-      selectedNodeLabel: '',        // label hiển thị
-      selectedNodeContext: {},      // { organisation, substation, voltageLevel, bay, asset, job }
+      pickerTempSelected: null,
+      pickerTreeKey: 0,        // increment to force el-tree remount (refresh)   // node đang hover/click trong picker (temp)
+      // Multi-selection list: mỗi item = 1 sheet trong Excel output
+      selectedItems: [],          // [{ id, label, sheetName, context:{org,sub,vl,bay,asset,job} }]
       categoryOptions: [
         { label: 'Organisation',  value: 'OrgEntityToOrgDto' },
         { label: 'Substation',    value: 'SubstationDto' },
@@ -1236,7 +1278,14 @@ export default {
                 delta_c_percent: { label: '△C cal', value: 'BushingPrimC1_delta_c_percent' },
                 assessment: { label: 'Assessment', value: 'BushingPrimC1_assessment' },
                 condition_indicator_df: { label: 'Condition indicator DF', value: 'BushingPrimC1_condition_indicator_df' },
-                condition_indicator_c: { label: 'Condition indicator C', value: 'BushingPrimC1_condition_indicator_c' }
+                condition_indicator_c: { label: 'Condition indicator C', value: 'BushingPrimC1_condition_indicator_c' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'BushingPrimC1_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'BushingPrimC1_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'BushingPrimC1_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'BushingPrimC1_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'BushingPrimC1_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'BushingPrimC1_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'BushingPrimC1_cond_weather' }
               }},
               BushingPrimC2: { label: 'Bushing Prim C2', children: {
                 measurement: { label: 'Measurement', value: 'BushingPrimC2_measurement' },
@@ -1250,7 +1299,14 @@ export default {
                 delta_c_percent: { label: '△C cal', value: 'BushingPrimC2_delta_c_percent' },
                 assessment: { label: 'Assessment', value: 'BushingPrimC2_assessment' },
                 condition_indicator_df: { label: 'Condition indicator DF', value: 'BushingPrimC2_condition_indicator_df' },
-                condition_indicator_c: { label: 'Condition indicator C', value: 'BushingPrimC2_condition_indicator_c' }
+                condition_indicator_c: { label: 'Condition indicator C', value: 'BushingPrimC2_condition_indicator_c' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'BushingPrimC2_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'BushingPrimC2_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'BushingPrimC2_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'BushingPrimC2_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'BushingPrimC2_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'BushingPrimC2_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'BushingPrimC2_cond_weather' }
               }},
               BushingSecC1: { label: 'Bushing Sec DF & CAP C1', children: {
                 measurement: { label: 'Measurement', value: 'BushingSecC1_measurement' },
@@ -1264,7 +1320,14 @@ export default {
                 delta_c_percent: { label: '△C cal', value: 'BushingSecC1_delta_c_percent' },
                 assessment: { label: 'Assessment', value: 'BushingSecC1_assessment' },
                 condition_indicator_df: { label: 'Condition indicator DF', value: 'BushingSecC1_condition_indicator_df' },
-                condition_indicator_c: { label: 'Condition indicator C', value: 'BushingSecC1_condition_indicator_c' }
+                condition_indicator_c: { label: 'Condition indicator C', value: 'BushingSecC1_condition_indicator_c' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'BushingSecC1_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'BushingSecC1_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'BushingSecC1_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'BushingSecC1_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'BushingSecC1_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'BushingSecC1_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'BushingSecC1_cond_weather' }
               }},
               BushingSecC2: { label: 'Bushing Sec DF & CAP C2', children: {
                 measurement: { label: 'Measurement', value: 'BushingSecC2_measurement' },
@@ -1276,7 +1339,14 @@ export default {
                 c_meas: { label: 'C meas', value: 'BushingSecC2_c_meas' },
                 assessment: { label: 'Assessment', value: 'BushingSecC2_assessment' },
                 condition_indicator_df: { label: 'Condition indicator DF', value: 'BushingSecC2_condition_indicator_df' },
-                condition_indicator_c: { label: 'Condition indicator C', value: 'BushingSecC2_condition_indicator_c' }
+                condition_indicator_c: { label: 'Condition indicator C', value: 'BushingSecC2_condition_indicator_c' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'BushingSecC2_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'BushingSecC2_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'BushingSecC2_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'BushingSecC2_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'BushingSecC2_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'BushingSecC2_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'BushingSecC2_cond_weather' }
               }},
               BushingTertC1: { label: 'Bushing Tert DF & CAP C1', children: {
                 measurement: { label: 'Measurement', value: 'BushingTertC1_measurement' },
@@ -1290,7 +1360,14 @@ export default {
                 delta_c_percent: { label: '△C cal', value: 'BushingTertC1_delta_c_percent' },
                 assessment: { label: 'Assessment', value: 'BushingTertC1_assessment' },
                 condition_indicator_df: { label: 'Condition indicator DF', value: 'BushingTertC1_condition_indicator_df' },
-                condition_indicator_c: { label: 'Condition indicator C', value: 'BushingTertC1_condition_indicator_c' }
+                condition_indicator_c: { label: 'Condition indicator C', value: 'BushingTertC1_condition_indicator_c' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'BushingTertC1_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'BushingTertC1_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'BushingTertC1_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'BushingTertC1_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'BushingTertC1_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'BushingTertC1_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'BushingTertC1_cond_weather' }
               }},
               BushingTertC2: { label: 'Bushing Tert DF & CAP C2', children: {
                 measurement: { label: 'Measurement', value: 'BushingTertC2_measurement' },
@@ -1304,7 +1381,14 @@ export default {
                 delta_c_percent: { label: '△C cal', value: 'BushingTertC2_delta_c_percent' },
                 assessment: { label: 'Assessment', value: 'BushingTertC2_assessment' },
                 condition_indicator_df: { label: 'Condition indicator DF', value: 'BushingTertC2_condition_indicator_df' },
-                condition_indicator_c: { label: 'Condition indicator C', value: 'BushingTertC2_condition_indicator_c' }
+                condition_indicator_c: { label: 'Condition indicator C', value: 'BushingTertC2_condition_indicator_c' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'BushingTertC2_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'BushingTertC2_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'BushingTertC2_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'BushingTertC2_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'BushingTertC2_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'BushingTertC2_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'BushingTertC2_cond_weather' }
               }},
               DCWindingPrim: { label: 'DC Winding resistance Prim', children: {
                 tap: { label: 'Tap', value: 'DCWindingPrim_tap' },
@@ -1315,7 +1399,14 @@ export default {
                 dev_r_ref: { label: 'Dev with R ref (%)', value: 'DCWindingPrim_dev_r_ref' },
                 dev_phase: { label: 'Dev within phases (%)', value: 'DCWindingPrim_dev_phase' },
                 assessment: { label: 'Assessment', value: 'DCWindingPrim_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'DCWindingPrim_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'DCWindingPrim_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'DCWindingPrim_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'DCWindingPrim_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'DCWindingPrim_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'DCWindingPrim_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'DCWindingPrim_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'DCWindingPrim_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'DCWindingPrim_cond_weather' }
               }},
               DCWindingSec: { label: 'DC Winding resistance Sec', children: {
                 tap: { label: 'Tap', value: 'DCWindingSec_tap' },
@@ -1326,7 +1417,14 @@ export default {
                 dev_r_ref: { label: 'Dev with R ref (%)', value: 'DCWindingSec_dev_r_ref' },
                 dev_phase: { label: 'Dev within phases (%)', value: 'DCWindingSec_dev_phase' },
                 assessment: { label: 'Assessment', value: 'DCWindingSec_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'DCWindingSec_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'DCWindingSec_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'DCWindingSec_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'DCWindingSec_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'DCWindingSec_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'DCWindingSec_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'DCWindingSec_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'DCWindingSec_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'DCWindingSec_cond_weather' }
               }},
               DCWindingTert: { label: 'DC Winding resistance Tert', children: {
                 tap: { label: 'Tap', value: 'DCWindingTert_tap' },
@@ -1337,7 +1435,14 @@ export default {
                 dev_r_ref: { label: 'Dev with R ref (%)', value: 'DCWindingTert_dev_r_ref' },
                 dev_phase: { label: 'Dev within phases (%)', value: 'DCWindingTert_dev_phase' },
                 assessment: { label: 'Assessment', value: 'DCWindingTert_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'DCWindingTert_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'DCWindingTert_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'DCWindingTert_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'DCWindingTert_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'DCWindingTert_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'DCWindingTert_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'DCWindingTert_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'DCWindingTert_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'DCWindingTert_cond_weather' }
               }},
               Dga: { label: 'DGA', children: {
                 h2: { label: 'H2', value: 'Dga_h2' },
@@ -1349,7 +1454,14 @@ export default {
                 co2: { label: 'CO2', value: 'Dga_co2' },
                 tdcg: { label: 'TDCG', value: 'Dga_tdcg' },
                 status: { label: 'Status', value: 'Dga_status' },
-                condition_indicator: { label: 'Condition indicator', value: 'Dga_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'Dga_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'Dga_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'Dga_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'Dga_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'Dga_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'Dga_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'Dga_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'Dga_cond_weather' }
               }},
               DimensionWeight: { label: 'Dimension Weight', children: {
                 a: { label: 'A', value: 'DimensionWeight_a' },
@@ -1358,13 +1470,27 @@ export default {
                 n: { label: 'N', value: 'DimensionWeight_n' },
                 oil: { label: 'Oil', value: 'DimensionWeight_oil' },
                 active_part: { label: 'Active part', value: 'DimensionWeight_active_part' },
-                total: { label: 'Total', value: 'DimensionWeight_total' }
+                total: { label: 'Total', value: 'DimensionWeight_total' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'DimensionWeight_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'DimensionWeight_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'DimensionWeight_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'DimensionWeight_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'DimensionWeight_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'DimensionWeight_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'DimensionWeight_cond_weather' }
               }},
               EnergyEfficiency: { label: 'Energy Efficiency', children: {
                 name: { label: 'Name', value: 'EnergyEfficiency_name' },
                 e50: { label: 'E50', value: 'EnergyEfficiency_e50' },
                 standard: { label: 'Standard', value: 'EnergyEfficiency_standard' },
-                assessment: { label: 'Assessment', value: 'EnergyEfficiency_assessment' }
+                assessment: { label: 'Assessment', value: 'EnergyEfficiency_assessment' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'EnergyEfficiency_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'EnergyEfficiency_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'EnergyEfficiency_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'EnergyEfficiency_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'EnergyEfficiency_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'EnergyEfficiency_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'EnergyEfficiency_cond_weather' }
               }},
               ExcitingCurrent: { label: 'Exciting Current', children: {
                 tap: { label: 'Tap', value: 'ExcitingCurrent_tap' },
@@ -1374,19 +1500,40 @@ export default {
                 i_ref: { label: 'I Ref', value: 'ExcitingCurrent_i_ref' },
                 i_dev: { label: 'I Dev', value: 'ExcitingCurrent_i_dev' },
                 assessment: { label: 'Assessment', value: 'ExcitingCurrent_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'ExcitingCurrent_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'ExcitingCurrent_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'ExcitingCurrent_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'ExcitingCurrent_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'ExcitingCurrent_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'ExcitingCurrent_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'ExcitingCurrent_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'ExcitingCurrent_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'ExcitingCurrent_cond_weather' }
               }},
               GasChromatography: { label: 'Gas Chromatography', children: {
                 name: { label: 'Name', value: 'GasChromatography_name' },
                 method: { label: 'Method', value: 'GasChromatography_method' },
                 result: { label: 'Result', value: 'GasChromatography_result' },
                 assessment: { label: 'Assessment', value: 'GasChromatography_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'GasChromatography_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'GasChromatography_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'GasChromatography_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'GasChromatography_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'GasChromatography_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'GasChromatography_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'GasChromatography_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'GasChromatography_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'GasChromatography_cond_weather' }
               }},
               GeneralInspection: { label: 'General inspection', children: {
                 item: { label: 'Item', value: 'GeneralInspection_item' },
                 assessment: { label: 'Assessment', value: 'GeneralInspection_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'GeneralInspection_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'GeneralInspection_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'GeneralInspection_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'GeneralInspection_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'GeneralInspection_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'GeneralInspection_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'GeneralInspection_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'GeneralInspection_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'GeneralInspection_cond_weather' }
               }},
               InducedAcVoltageTest: { label: 'Induced AC Voltage Test', children: {
                 applied_terminal: { label: 'Applied Terminal', value: 'InducedAcVoltageTest_applied_terminal' },
@@ -1396,7 +1543,14 @@ export default {
                 hv_terminal: { label: 'HV Terminal', value: 'InducedAcVoltageTest_hv_terminal' },
                 hv_tested_voltage: { label: 'HV Tested Voltage', value: 'InducedAcVoltageTest_hv_tested_voltage' },
                 assessment: { label: 'Assessment', value: 'InducedAcVoltageTest_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'InducedAcVoltageTest_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'InducedAcVoltageTest_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'InducedAcVoltageTest_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'InducedAcVoltageTest_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'InducedAcVoltageTest_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'InducedAcVoltageTest_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'InducedAcVoltageTest_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'InducedAcVoltageTest_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'InducedAcVoltageTest_cond_weather' }
               }},
               InsulationResistance: { label: 'Insulation resistance of winding', children: {
                 measurement: { label: 'Measurement', value: 'InsulationResistance_measurement' },
@@ -1407,33 +1561,68 @@ export default {
                 dar: { label: 'DAR', value: 'InsulationResistance_dar' },
                 pi: { label: 'PI', value: 'InsulationResistance_pi' },
                 assessment: { label: 'Assessment', value: 'InsulationResistance_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistance_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistance_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'InsulationResistance_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'InsulationResistance_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'InsulationResistance_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'InsulationResistance_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'InsulationResistance_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'InsulationResistance_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'InsulationResistance_cond_weather' }
               }},
               InsulationResistanceYokeCore: { label: 'Insulation resistance of yoke and core', children: {
                 measurement: { label: 'Measurement', value: 'InsulationResistanceYokeCore_measurement' },
                 r60s: { label: 'R60s', value: 'InsulationResistanceYokeCore_r60s' },
                 r60s_ref: { label: 'R60s ref', value: 'InsulationResistanceYokeCore_r60s_ref' },
                 assessment: { label: 'Assessment', value: 'InsulationResistanceYokeCore_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistanceYokeCore_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistanceYokeCore_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'InsulationResistanceYokeCore_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'InsulationResistanceYokeCore_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'InsulationResistanceYokeCore_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'InsulationResistanceYokeCore_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'InsulationResistanceYokeCore_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'InsulationResistanceYokeCore_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'InsulationResistanceYokeCore_cond_weather' }
               }},
               MeasurementOfNoLoad: { label: 'No-load Test', children: {
                 name: { label: 'Name', value: 'MeasurementOfNoLoad_name' },
                 result: { label: 'Result', value: 'MeasurementOfNoLoad_result' },
                 standard: { label: 'Standard', value: 'MeasurementOfNoLoad_standard' },
-                assessment: { label: 'Assessment', value: 'MeasurementOfNoLoad_assessment' }
+                assessment: { label: 'Assessment', value: 'MeasurementOfNoLoad_assessment' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'MeasurementOfNoLoad_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'MeasurementOfNoLoad_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'MeasurementOfNoLoad_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'MeasurementOfNoLoad_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'MeasurementOfNoLoad_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'MeasurementOfNoLoad_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'MeasurementOfNoLoad_cond_weather' }
               }},
               MeasurementOfOil: { label: 'Oil breakdown voltage', children: {
                 type: { label: 'Type', value: 'MeasurementOfOil_type' },
                 electrode_gap_spacing: { label: 'Electrode gap spacing', value: 'MeasurementOfOil_electrode_gap_spacing' },
                 result: { label: 'Result', value: 'MeasurementOfOil_result' },
                 assessment: { label: 'Assessment', value: 'MeasurementOfOil_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'MeasurementOfOil_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'MeasurementOfOil_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'MeasurementOfOil_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'MeasurementOfOil_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'MeasurementOfOil_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'MeasurementOfOil_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'MeasurementOfOil_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'MeasurementOfOil_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'MeasurementOfOil_cond_weather' }
               }},
               MeasurementOfShortCircuit: { label: 'Short-circuit Test', children: {
                 name: { label: 'Name', value: 'MeasurementOfShortCircuit_name' },
                 result: { label: 'Result', value: 'MeasurementOfShortCircuit_result' },
                 standard: { label: 'Standard', value: 'MeasurementOfShortCircuit_standard' },
-                assessment: { label: 'Assessment', value: 'MeasurementOfShortCircuit_assessment' }
+                assessment: { label: 'Assessment', value: 'MeasurementOfShortCircuit_assessment' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'MeasurementOfShortCircuit_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'MeasurementOfShortCircuit_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'MeasurementOfShortCircuit_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'MeasurementOfShortCircuit_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'MeasurementOfShortCircuit_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'MeasurementOfShortCircuit_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'MeasurementOfShortCircuit_cond_weather' }
               }},
               RatioPrimSec: { label: 'Ratio Prim/Sec', children: {
                 tap: { label: 'Tap', value: 'RatioPrimSec_tap' },
@@ -1444,12 +1633,26 @@ export default {
                 ratio_meas: { label: 'Ratio meas', value: 'RatioPrimSec_ratio_meas' },
                 ratio_dev: { label: 'Ratio dev', value: 'RatioPrimSec_ratio_dev' },
                 assessment: { label: 'Assessment', value: 'RatioPrimSec_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'RatioPrimSec_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'RatioPrimSec_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'RatioPrimSec_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'RatioPrimSec_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'RatioPrimSec_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'RatioPrimSec_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'RatioPrimSec_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'RatioPrimSec_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'RatioPrimSec_cond_weather' }
               }},
               SeparateSourceAc: { label: 'Separate Source AC Voltage Test', children: {
                 applied_terminal: { label: 'Applied Terminal', value: 'SeparateSourceAc_applied_terminal' },
                 test_voltage: { label: 'Test voltage', value: 'SeparateSourceAc_test_voltage' },
-                assessment: { label: 'Assessment', value: 'SeparateSourceAc_assessment' }
+                assessment: { label: 'Assessment', value: 'SeparateSourceAc_assessment' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'SeparateSourceAc_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'SeparateSourceAc_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'SeparateSourceAc_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'SeparateSourceAc_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'SeparateSourceAc_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'SeparateSourceAc_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'SeparateSourceAc_cond_weather' }
               }},
               ShortCircuitImpedancePrim: { label: 'Short-circuit impedance prim', children: {
                 tap: { label: 'Tap', value: 'ShortCircuitImpedancePrim_tap' },
@@ -1460,7 +1663,14 @@ export default {
                 uk_cal: { label: 'Uk cal', value: 'ShortCircuitImpedancePrim_uk_cal' },
                 uk_dev: { label: 'Uk dev', value: 'ShortCircuitImpedancePrim_uk_dev' },
                 assessment: { label: 'Assessment', value: 'ShortCircuitImpedancePrim_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'ShortCircuitImpedancePrim_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'ShortCircuitImpedancePrim_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'ShortCircuitImpedancePrim_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'ShortCircuitImpedancePrim_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'ShortCircuitImpedancePrim_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'ShortCircuitImpedancePrim_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'ShortCircuitImpedancePrim_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'ShortCircuitImpedancePrim_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'ShortCircuitImpedancePrim_cond_weather' }
               }},
               ShortCircuitImpedanceSec: { label: 'Short-circuit impedance sec', children: {
                 tap: { label: 'Tap', value: 'ShortCircuitImpedanceSec_tap' },
@@ -1471,7 +1681,14 @@ export default {
                 uk_cal: { label: 'Uk cal', value: 'ShortCircuitImpedanceSec_uk_cal' },
                 uk_dev: { label: 'Uk dev', value: 'ShortCircuitImpedanceSec_uk_dev' },
                 assessment: { label: 'Assessment', value: 'ShortCircuitImpedanceSec_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'ShortCircuitImpedanceSec_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'ShortCircuitImpedanceSec_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'ShortCircuitImpedanceSec_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'ShortCircuitImpedanceSec_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'ShortCircuitImpedanceSec_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'ShortCircuitImpedanceSec_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'ShortCircuitImpedanceSec_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'ShortCircuitImpedanceSec_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'ShortCircuitImpedanceSec_cond_weather' }
               }},
               ShortCircuitImpedanceTert: { label: 'Short-circuit impedance tert', children: {
                 tap: { label: 'Tap', value: 'ShortCircuitImpedanceTert_tap' },
@@ -1482,11 +1699,25 @@ export default {
                 uk_cal: { label: 'Uk cal', value: 'ShortCircuitImpedanceTert_uk_cal' },
                 uk_dev: { label: 'Uk dev', value: 'ShortCircuitImpedanceTert_uk_dev' },
                 assessment: { label: 'Assessment', value: 'ShortCircuitImpedanceTert_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'ShortCircuitImpedanceTert_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'ShortCircuitImpedanceTert_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'ShortCircuitImpedanceTert_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'ShortCircuitImpedanceTert_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'ShortCircuitImpedanceTert_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'ShortCircuitImpedanceTert_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'ShortCircuitImpedanceTert_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'ShortCircuitImpedanceTert_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'ShortCircuitImpedanceTert_cond_weather' }
               }},
               TestingInstruments: { label: 'Testing Instruments', children: {
                 item: { label: 'Item', value: 'TestingInstruments_item' },
-                type: { label: 'Type', value: 'TestingInstruments_type' }
+                type: { label: 'Type', value: 'TestingInstruments_type' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'TestingInstruments_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'TestingInstruments_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'TestingInstruments_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'TestingInstruments_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'TestingInstruments_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'TestingInstruments_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'TestingInstruments_cond_weather' }
               }},
               WindingDfCap: { label: 'Winding DF & CAP', children: {
                 measurement: { label: 'Measurement', value: 'WindingDfCap_measurement' },
@@ -1499,7 +1730,14 @@ export default {
                 delta_c_percent: { label: '△C cal', value: 'WindingDfCap_delta_c_percent' },
                 assessment: { label: 'Assessment', value: 'WindingDfCap_assessment' },
                 condition_indicator_df: { label: 'Condition indicator DF', value: 'WindingDfCap_condition_indicator_df' },
-                condition_indicator_c: { label: 'Condition indicator C', value: 'WindingDfCap_condition_indicator_c' }
+                condition_indicator_c: { label: 'Condition indicator C', value: 'WindingDfCap_condition_indicator_c' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'WindingDfCap_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'WindingDfCap_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'WindingDfCap_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'WindingDfCap_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'WindingDfCap_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'WindingDfCap_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'WindingDfCap_cond_weather' }
               }}
             }}
           }},
@@ -1524,19 +1762,40 @@ export default {
                 r_corr: { label: 'R corr', value: 'DcWindingResistance_r_corr' },
                 r_dev: { label: 'R dev', value: 'DcWindingResistance_r_dev' },
                 assessment: { label: 'Assessment', value: 'DcWindingResistance_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'DcWindingResistance_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'DcWindingResistance_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'DcWindingResistance_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'DcWindingResistance_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'DcWindingResistance_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'DcWindingResistance_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'DcWindingResistance_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'DcWindingResistance_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'DcWindingResistance_cond_weather' }
               }},
               GeneralInspection: { label: 'General inspection', children: {
                 item: { label: 'Item', value: 'GeneralInspection_item' },
                 assessment: { label: 'Assessment', value: 'GeneralInspection_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'GeneralInspection_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'GeneralInspection_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'GeneralInspection_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'GeneralInspection_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'GeneralInspection_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'GeneralInspection_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'GeneralInspection_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'GeneralInspection_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'GeneralInspection_cond_weather' }
               }},
               InsulationResistance: { label: 'Insulation Resistance', children: {
                 measurement: { label: 'Measurement', value: 'InsulationResistance_measurement' },
                 test_voltage: { label: 'Test voltage', value: 'InsulationResistance_test_voltage' },
                 r60s: { label: 'R60s', value: 'InsulationResistance_r60s' },
                 assessment: { label: 'Assessment', value: 'InsulationResistance_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistance_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistance_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'InsulationResistance_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'InsulationResistance_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'InsulationResistance_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'InsulationResistance_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'InsulationResistance_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'InsulationResistance_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'InsulationResistance_cond_weather' }
               }},
               VTDfcap: { label: 'VT DF & CAP', children: {
                 measurement: { label: 'Measurement', value: 'VTDfcap_measurement' },
@@ -1548,7 +1807,14 @@ export default {
                 c_meas: { label: 'C meas', value: 'VTDfcap_c_meas' },
                 delta_c_percent: { label: '△C cal', value: 'VTDfcap_delta_c_percent' },
                 assessment: { label: 'Assessment', value: 'VTDfcap_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'VTDfcap_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'VTDfcap_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'VTDfcap_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'VTDfcap_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'VTDfcap_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'VTDfcap_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'VTDfcap_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'VTDfcap_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'VTDfcap_cond_weather' }
               }},
               VTRatio: { label: 'VT Ratio', children: {
                 name: { label: 'Name', value: 'VTRatio_name' },
@@ -1558,7 +1824,14 @@ export default {
                 ratio_dev: { label: 'Ratio dev', value: 'VTRatio_ratio_dev' },
                 polarity: { label: 'Polarity', value: 'VTRatio_polarity' },
                 assessment: { label: 'Assessment', value: 'VTRatio_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'VTRatio_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'VTRatio_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'VTRatio_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'VTRatio_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'VTRatio_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'VTRatio_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'VTRatio_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'VTRatio_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'VTRatio_cond_weather' }
               }}
             }}
           }},
@@ -1586,14 +1859,28 @@ export default {
                 c_meas: { label: 'C meas', value: 'CTDfcap_c_meas' },
                 delta_c_percent: { label: '△C cal', value: 'CTDfcap_delta_c_percent' },
                 assessment: { label: 'Assessment', value: 'CTDfcap_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'CTDfcap_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'CTDfcap_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'CTDfcap_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'CTDfcap_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'CTDfcap_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'CTDfcap_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'CTDfcap_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'CTDfcap_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'CTDfcap_cond_weather' }
               }},
               CTExcitation: { label: 'CT Excitation', children: {
                 name: { label: 'Name', value: 'CTExcitation_name' },
                 i_knee: { label: 'I knee', value: 'CTExcitation_i_knee' },
                 v_knee: { label: 'V knee', value: 'CTExcitation_v_knee' },
                 assessment: { label: 'Assessment', value: 'CTExcitation_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'CTExcitation_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'CTExcitation_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'CTExcitation_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'CTExcitation_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'CTExcitation_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'CTExcitation_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'CTExcitation_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'CTExcitation_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'CTExcitation_cond_weather' }
               }},
               CTRatio: { label: 'CT ratio', children: {
                 name: { label: 'Name', value: 'CTRatio_name' },
@@ -1603,7 +1890,14 @@ export default {
                 ratio_dev: { label: 'Ratio dev', value: 'CTRatio_ratio_dev' },
                 polarity: { label: 'Polarity', value: 'CTRatio_polarity' },
                 assessment: { label: 'Assessment', value: 'CTRatio_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'CTRatio_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'CTRatio_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'CTRatio_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'CTRatio_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'CTRatio_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'CTRatio_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'CTRatio_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'CTRatio_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'CTRatio_cond_weather' }
               }},
               CTWindingRes: { label: 'CT Winding resistance', children: {
                 name: { label: 'Name', value: 'CTWindingRes_name' },
@@ -1612,19 +1906,38 @@ export default {
                 r_corr: { label: 'R corr', value: 'CTWindingRes_r_corr' },
                 r_dev: { label: 'R dev', value: 'CTWindingRes_r_dev' },
                 assessment: { label: 'Assessment', value: 'CTWindingRes_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'CTWindingRes_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'CTWindingRes_condition_indicator' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'CTWindingRes_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'CTWindingRes_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'CTWindingRes_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'CTWindingRes_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'CTWindingRes_cond_weather' }
               }},
               GeneralInspection: { label: 'General inspection', children: {
                 item: { label: 'Item', value: 'GeneralInspection_item' },
                 assessment: { label: 'Assessment', value: 'GeneralInspection_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'GeneralInspection_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'GeneralInspection_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'GeneralInspection_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'GeneralInspection_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'GeneralInspection_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'GeneralInspection_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'GeneralInspection_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'GeneralInspection_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'GeneralInspection_cond_weather' }
               }},
               InsulationResistance: { label: 'Insulation resistance', children: {
                 measurement: { label: 'Measurement', value: 'InsulationResistance_measurement' },
                 test_voltage: { label: 'Test voltage', value: 'InsulationResistance_test_voltage' },
                 r60s: { label: 'R60s', value: 'InsulationResistance_r60s' },
                 assessment: { label: 'Assessment', value: 'InsulationResistance_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistance_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistance_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'InsulationResistance_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'InsulationResistance_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'InsulationResistance_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'InsulationResistance_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'InsulationResistance_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'InsulationResistance_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'InsulationResistance_cond_weather' }
               }}
             }}
           }},
@@ -1649,7 +1962,14 @@ export default {
                 opening_time: { label: 'Opening time', value: 'COCOTiming_opening_time' },
                 opening_sync_between_phase: { label: 'Opening sync. between phase (ms)', value: 'COCOTiming_opening_sync_between_phase' },
                 assessment: { label: 'Assessment', value: 'COCOTiming_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'COCOTiming_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'COCOTiming_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'COCOTiming_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'COCOTiming_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'COCOTiming_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'COCOTiming_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'COCOTiming_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'COCOTiming_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'COCOTiming_cond_weather' }
               }},
               COTiming: { label: 'CO Timing', children: {
                 phase: { label: 'Phase', value: 'COTiming_phase' },
@@ -1659,7 +1979,14 @@ export default {
                 closing_sync_between_interrupter: { label: 'Closing sync. between interrupter (ms)', value: 'COTiming_closing_sync_between_interrupter' },
                 close_open_time: { label: 'Close-Open time', value: 'COTiming_close_open_time' },
                 assessment: { label: 'Assessment', value: 'COTiming_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'COTiming_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'COTiming_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'COTiming_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'COTiming_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'COTiming_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'COTiming_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'COTiming_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'COTiming_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'COTiming_cond_weather' }
               }},
               CTiming: { label: 'C Timing', children: {
                 phase: { label: 'Phase', value: 'CTiming_phase' },
@@ -1668,7 +1995,14 @@ export default {
                 closing_sync_between_phase: { label: 'Closing sync. between phase (ms)', value: 'CTiming_closing_sync_between_phase' },
                 closing_sync_between_interrupter: { label: 'Closing sync. between interrupter (ms)', value: 'CTiming_closing_sync_between_interrupter' },
                 assessment: { label: 'Assessment', value: 'CTiming_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'CTiming_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'CTiming_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'CTiming_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'CTiming_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'CTiming_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'CTiming_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'CTiming_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'CTiming_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'CTiming_cond_weather' }
               }},
               ContactResistance: { label: 'Contact Resistance', children: {
                 phase: { label: 'Phase', value: 'ContactResistance_phase' },
@@ -1676,56 +2010,119 @@ export default {
                 i_test: { label: 'I test', value: 'ContactResistance_i_test' },
                 contact_resistance: { label: 'Contact resistance', value: 'ContactResistance_contact_resistance' },
                 assessment: { label: 'Assessment', value: 'ContactResistance_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'ContactResistance_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'ContactResistance_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'ContactResistance_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'ContactResistance_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'ContactResistance_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'ContactResistance_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'ContactResistance_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'ContactResistance_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'ContactResistance_cond_weather' }
               }},
               DCWindingCloseCoil: { label: 'DC winding resistance of close coil', children: {
                 close_coil_no: { label: 'Close Coil No', value: 'DCWindingCloseCoil_close_coil_no' },
                 r_meas: { label: 'R meas', value: 'DCWindingCloseCoil_r_meas' },
                 assessment: { label: 'Assessment', value: 'DCWindingCloseCoil_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'DCWindingCloseCoil_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'DCWindingCloseCoil_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'DCWindingCloseCoil_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'DCWindingCloseCoil_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'DCWindingCloseCoil_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'DCWindingCloseCoil_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'DCWindingCloseCoil_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'DCWindingCloseCoil_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'DCWindingCloseCoil_cond_weather' }
               }},
               DCWindingMotor: { label: 'DC winding resistance of motor', children: {
                 r_meas: { label: 'R meas', value: 'DCWindingMotor_r_meas' },
                 assessment: { label: 'Assessment', value: 'DCWindingMotor_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'DCWindingMotor_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'DCWindingMotor_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'DCWindingMotor_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'DCWindingMotor_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'DCWindingMotor_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'DCWindingMotor_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'DCWindingMotor_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'DCWindingMotor_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'DCWindingMotor_cond_weather' }
               }},
               DCWindingTripCoil: { label: 'DC winding resistance of trip coil', children: {
                 trip_coil_no: { label: 'Trip Coil No', value: 'DCWindingTripCoil_trip_coil_no' },
                 r_meas: { label: 'R meas', value: 'DCWindingTripCoil_r_meas' },
                 assessment: { label: 'Assessment', value: 'DCWindingTripCoil_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'DCWindingTripCoil_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'DCWindingTripCoil_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'DCWindingTripCoil_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'DCWindingTripCoil_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'DCWindingTripCoil_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'DCWindingTripCoil_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'DCWindingTripCoil_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'DCWindingTripCoil_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'DCWindingTripCoil_cond_weather' }
               }},
               GeneralInspection: { label: 'General inspection', children: {
                 item: { label: 'Item', value: 'GeneralInspection_item' },
                 assessment: { label: 'Assessment', value: 'GeneralInspection_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'GeneralInspection_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'GeneralInspection_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'GeneralInspection_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'GeneralInspection_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'GeneralInspection_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'GeneralInspection_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'GeneralInspection_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'GeneralInspection_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'GeneralInspection_cond_weather' }
               }},
               InsulationResistanceCircuit: { label: 'Insulation resistance of circuit breaker', children: {
                 measurement: { label: 'Measurement', value: 'InsulationResistanceCircuit_measurement' },
                 test_voltage: { label: 'Test voltage', value: 'InsulationResistanceCircuit_test_voltage' },
                 r60s: { label: 'R60s', value: 'InsulationResistanceCircuit_r60s' },
                 assessment: { label: 'Assessment', value: 'InsulationResistanceCircuit_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistanceCircuit_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistanceCircuit_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'InsulationResistanceCircuit_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'InsulationResistanceCircuit_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'InsulationResistanceCircuit_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'InsulationResistanceCircuit_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'InsulationResistanceCircuit_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'InsulationResistanceCircuit_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'InsulationResistanceCircuit_cond_weather' }
               }},
               InsulationResistanceCloseCoil: { label: 'Insulation resistance of close coil', children: {
                 close_coil_no: { label: 'Close Coil No', value: 'InsulationResistanceCloseCoil_close_coil_no' },
                 test_voltage: { label: 'Test voltage', value: 'InsulationResistanceCloseCoil_test_voltage' },
                 r60s: { label: 'R60s', value: 'InsulationResistanceCloseCoil_r60s' },
                 assessment: { label: 'Assessment', value: 'InsulationResistanceCloseCoil_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistanceCloseCoil_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistanceCloseCoil_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'InsulationResistanceCloseCoil_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'InsulationResistanceCloseCoil_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'InsulationResistanceCloseCoil_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'InsulationResistanceCloseCoil_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'InsulationResistanceCloseCoil_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'InsulationResistanceCloseCoil_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'InsulationResistanceCloseCoil_cond_weather' }
               }},
               InsulationResistanceMotor: { label: 'Insulation resistance of motor', children: {
                 test_voltage: { label: 'Test voltage', value: 'InsulationResistanceMotor_test_voltage' },
                 r60s: { label: 'R60s', value: 'InsulationResistanceMotor_r60s' },
                 assessment: { label: 'Assessment', value: 'InsulationResistanceMotor_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistanceMotor_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistanceMotor_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'InsulationResistanceMotor_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'InsulationResistanceMotor_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'InsulationResistanceMotor_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'InsulationResistanceMotor_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'InsulationResistanceMotor_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'InsulationResistanceMotor_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'InsulationResistanceMotor_cond_weather' }
               }},
               InsulationResistanceTripCoil: { label: 'Insulation resistance of trip coil', children: {
                 trip_coil_no: { label: 'Trip Coil No', value: 'InsulationResistanceTripCoil_trip_coil_no' },
                 test_voltage: { label: 'Test voltage', value: 'InsulationResistanceTripCoil_test_voltage' },
                 r60s: { label: 'R60s', value: 'InsulationResistanceTripCoil_r60s' },
                 assessment: { label: 'Assessment', value: 'InsulationResistanceTripCoil_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistanceTripCoil_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistanceTripCoil_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'InsulationResistanceTripCoil_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'InsulationResistanceTripCoil_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'InsulationResistanceTripCoil_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'InsulationResistanceTripCoil_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'InsulationResistanceTripCoil_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'InsulationResistanceTripCoil_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'InsulationResistanceTripCoil_cond_weather' }
               }},
               MinimumPickup: { label: 'Minimum pick up', children: {
                 operation: { label: 'Operation', value: 'MinimumPickup_operation' },
@@ -1733,7 +2130,14 @@ export default {
                 close_coil_no: { label: 'Close Coil No', value: 'MinimumPickup_close_coil_no' },
                 v_pickup: { label: 'V pickup', value: 'MinimumPickup_v_pickup' },
                 assessment: { label: 'Assessment', value: 'MinimumPickup_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'MinimumPickup_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'MinimumPickup_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'MinimumPickup_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'MinimumPickup_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'MinimumPickup_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'MinimumPickup_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'MinimumPickup_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'MinimumPickup_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'MinimumPickup_cond_weather' }
               }},
               MotorCurrent: { label: 'Motor current', children: {
                 inrush_current: { label: 'Inrush current', value: 'MotorCurrent_inrush_current' },
@@ -1741,7 +2145,14 @@ export default {
                 charging_current: { label: 'Charging current', value: 'MotorCurrent_charging_current' },
                 mini_voltage: { label: 'Minimum voltage', value: 'MotorCurrent_mini_voltage' },
                 assessment: { label: 'Assessment', value: 'MotorCurrent_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'MotorCurrent_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'MotorCurrent_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'MotorCurrent_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'MotorCurrent_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'MotorCurrent_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'MotorCurrent_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'MotorCurrent_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'MotorCurrent_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'MotorCurrent_cond_weather' }
               }},
               OCOCOTiming: { label: 'O-CO-CO Timing', children: {
                 phase: { label: 'Phase', value: 'OCOCOTiming_phase' },
@@ -1750,7 +2161,14 @@ export default {
                 opening_time: { label: 'Opening time', value: 'OCOCOTiming_opening_time' },
                 opening_sync_between_phase: { label: 'Opening sync. between phase (ms)', value: 'OCOCOTiming_opening_sync_between_phase' },
                 assessment: { label: 'Assessment', value: 'OCOCOTiming_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'OCOCOTiming_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'OCOCOTiming_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'OCOCOTiming_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'OCOCOTiming_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'OCOCOTiming_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'OCOCOTiming_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'OCOCOTiming_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'OCOCOTiming_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'OCOCOTiming_cond_weather' }
               }},
               OCOTiming: { label: 'O-CO Timing', children: {
                 phase: { label: 'Phase', value: 'OCOTiming_phase' },
@@ -1763,7 +2181,14 @@ export default {
                 closing_sync_between_interrupter: { label: 'Closing sync. between interrupter (ms)', value: 'OCOTiming_closing_sync_between_interrupter' },
                 open_close_time: { label: 'Open-Close time', value: 'OCOTiming_open_close_time' },
                 assessment: { label: 'Assessment', value: 'OCOTiming_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'OCOTiming_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'OCOTiming_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'OCOTiming_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'OCOTiming_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'OCOTiming_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'OCOTiming_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'OCOTiming_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'OCOTiming_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'OCOTiming_cond_weather' }
               }},
               OCTiming: { label: 'OC Timing', children: {
                 phase: { label: 'Phase', value: 'OCTiming_phase' },
@@ -1773,7 +2198,14 @@ export default {
                 opening_sync_between_phase: { label: 'Opening sync. between phase (ms)', value: 'OCTiming_opening_sync_between_phase' },
                 open_close_time: { label: 'Open-Close time', value: 'OCTiming_open_close_time' },
                 assessment: { label: 'Assessment', value: 'OCTiming_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'OCTiming_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'OCTiming_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'OCTiming_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'OCTiming_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'OCTiming_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'OCTiming_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'OCTiming_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'OCTiming_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'OCTiming_cond_weather' }
               }},
               OTiming: { label: 'O Timing', children: {
                 phase: { label: 'Phase', value: 'OTiming_phase' },
@@ -1782,39 +2214,81 @@ export default {
                 opening_sync_between_phase: { label: 'Opening sync. between phase (ms)', value: 'OTiming_opening_sync_between_phase' },
                 opening_sync_between_interrupter: { label: 'Opening sync. between interrupter (ms)', value: 'OTiming_opening_sync_between_interrupter' },
                 assessment: { label: 'Assessment', value: 'OTiming_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'OTiming_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'OTiming_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'OTiming_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'OTiming_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'OTiming_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'OTiming_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'OTiming_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'OTiming_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'OTiming_cond_weather' }
               }},
               OverCurrentRelease: { label: 'Overcurrent release', children: {
                 trip_coil_no: { label: 'Trip Coil No', value: 'OverCurrentRelease_trip_coil_no' },
                 trip_current: { label: 'Trip current', value: 'OverCurrentRelease_trip_current' },
                 assessment: { label: 'Assessment', value: 'OverCurrentRelease_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'OverCurrentRelease_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'OverCurrentRelease_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'OverCurrentRelease_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'OverCurrentRelease_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'OverCurrentRelease_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'OverCurrentRelease_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'OverCurrentRelease_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'OverCurrentRelease_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'OverCurrentRelease_cond_weather' }
               }},
               PressureGauge: { label: 'Pressure gauge', children: {
                 sf6_pressure: { label: 'SF6 pressure', value: 'PressureGauge_sf6_pressure' },
                 alarm: { label: 'Alarm', value: 'PressureGauge_alarm' },
                 lockout: { label: 'Lockout', value: 'PressureGauge_lockout' },
                 assessment: { label: 'Assessment', value: 'PressureGauge_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'PressureGauge_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'PressureGauge_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'PressureGauge_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'PressureGauge_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'PressureGauge_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'PressureGauge_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'PressureGauge_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'PressureGauge_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'PressureGauge_cond_weather' }
               }},
               SF6GasAnalysis: { label: 'SF6 gas analysis', children: {
                 decom_sf6: { label: 'Decomposition of SF6', value: 'SF6GasAnalysis_decom_sf6' },
                 so2_sof2: { label: 'SO2 + SOF2', value: 'SF6GasAnalysis_so2_sof2' },
                 hf: { label: 'HF', value: 'SF6GasAnalysis_hf' },
                 assessment: { label: 'Assessment', value: 'SF6GasAnalysis_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'SF6GasAnalysis_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'SF6GasAnalysis_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'SF6GasAnalysis_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'SF6GasAnalysis_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'SF6GasAnalysis_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'SF6GasAnalysis_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'SF6GasAnalysis_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'SF6GasAnalysis_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'SF6GasAnalysis_cond_weather' }
               }},
               SF6MoiturePurity: { label: 'SF6 gas moiture and purity', children: {
                 moiture: { label: 'Moiture', value: 'SF6MoiturePurity_moiture' },
                 purity: { label: 'Purity', value: 'SF6MoiturePurity_purity' },
                 assessment: { label: 'Assessment', value: 'SF6MoiturePurity_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'SF6MoiturePurity_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'SF6MoiturePurity_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'SF6MoiturePurity_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'SF6MoiturePurity_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'SF6MoiturePurity_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'SF6MoiturePurity_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'SF6MoiturePurity_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'SF6MoiturePurity_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'SF6MoiturePurity_cond_weather' }
               }},
               UnderVoltageRelease: { label: 'Under-voltage release', children: {
                 trip_coil_no: { label: 'Trip Coil No', value: 'UnderVoltageRelease_trip_coil_no' },
                 trip_voltage: { label: 'Trip voltage', value: 'UnderVoltageRelease_trip_voltage' },
                 assessment: { label: 'Assessment', value: 'UnderVoltageRelease_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'UnderVoltageRelease_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'UnderVoltageRelease_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'UnderVoltageRelease_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'UnderVoltageRelease_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'UnderVoltageRelease_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'UnderVoltageRelease_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'UnderVoltageRelease_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'UnderVoltageRelease_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'UnderVoltageRelease_cond_weather' }
               }}
             }}
           }},
@@ -1838,40 +2312,82 @@ export default {
                 frequency: { label: 'Frequency', value: 'AcVoltageInsulation_frequency' },
                 duration: { label: 'Test duration', value: 'AcVoltageInsulation_duration' },
                 assessment: { label: 'Assessment', value: 'AcVoltageInsulation_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'AcVoltageInsulation_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'AcVoltageInsulation_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'AcVoltageInsulation_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'AcVoltageInsulation_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'AcVoltageInsulation_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'AcVoltageInsulation_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'AcVoltageInsulation_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'AcVoltageInsulation_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'AcVoltageInsulation_cond_weather' }
               }},
               DcVoltageInsulation: { label: 'DC voltage test of the insulation', children: {
                 measurement: { label: 'Measurement', value: 'DcVoltageInsulation_measurement' },
                 test_voltage: { label: 'Test voltage', value: 'DcVoltageInsulation_test_voltage' },
                 leakage_current: { label: 'Leakage current', value: 'DcVoltageInsulation_leakage_current' },
                 assessment: { label: 'Assessment', value: 'DcVoltageInsulation_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'DcVoltageInsulation_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'DcVoltageInsulation_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'DcVoltageInsulation_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'DcVoltageInsulation_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'DcVoltageInsulation_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'DcVoltageInsulation_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'DcVoltageInsulation_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'DcVoltageInsulation_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'DcVoltageInsulation_cond_weather' }
               }},
               DcVoltageOverSheath: { label: 'DC voltage test of oversheath', children: {
                 measurement: { label: 'Measurement', value: 'DcVoltageOverSheath_measurement' },
                 test_voltage: { label: 'Test voltage', value: 'DcVoltageOverSheath_test_voltage' },
                 duration: { label: 'Test duration', value: 'DcVoltageOverSheath_duration' },
                 assessment: { label: 'Assessment', value: 'DcVoltageOverSheath_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'DcVoltageOverSheath_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'DcVoltageOverSheath_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'DcVoltageOverSheath_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'DcVoltageOverSheath_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'DcVoltageOverSheath_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'DcVoltageOverSheath_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'DcVoltageOverSheath_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'DcVoltageOverSheath_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'DcVoltageOverSheath_cond_weather' }
               }},
               GeneralInspection: { label: 'General inspection', children: {
                 item: { label: 'Item', value: 'GeneralInspection_item' },
                 assessment: { label: 'Assessment', value: 'GeneralInspection_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'GeneralInspection_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'GeneralInspection_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'GeneralInspection_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'GeneralInspection_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'GeneralInspection_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'GeneralInspection_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'GeneralInspection_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'GeneralInspection_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'GeneralInspection_cond_weather' }
               }},
               InsulationResistance: { label: 'Insulation Resistance', children: {
                 measurement: { label: 'Measurement', value: 'InsulationResistance_measurement' },
                 test_voltage: { label: 'Test voltage', value: 'InsulationResistance_test_voltage' },
                 r_meas: { label: 'R meas', value: 'InsulationResistance_r_meas' },
                 assessment: { label: 'Assessment', value: 'InsulationResistance_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistance_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistance_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'InsulationResistance_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'InsulationResistance_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'InsulationResistance_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'InsulationResistance_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'InsulationResistance_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'InsulationResistance_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'InsulationResistance_cond_weather' }
               }},
               ParticalDischarge: { label: 'Partial discharge measurement', children: {
                 measurement: { label: 'Measurement', value: 'ParticalDischarge_measurement' },
                 test_voltage: { label: 'Test voltage', value: 'ParticalDischarge_test_voltage' },
                 r60s: { label: 'R60s', value: 'ParticalDischarge_r60s' },
                 assessment: { label: 'Assessment', value: 'ParticalDischarge_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'ParticalDischarge_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'ParticalDischarge_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'ParticalDischarge_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'ParticalDischarge_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'ParticalDischarge_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'ParticalDischarge_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'ParticalDischarge_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'ParticalDischarge_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'ParticalDischarge_cond_weather' }
               }},
               TandeltaPowerAcSource: { label: 'Tan delta measurement with power frequency AC source', children: {
                 measurement: { label: 'Measurement', value: 'TandeltaPowerAcSource_measurement' },
@@ -1880,7 +2396,14 @@ export default {
                 duration: { label: 'Test duration', value: 'TandeltaPowerAcSource_duration' },
                 tan_delta: { label: 'Tan delta [10⁻³]', value: 'TandeltaPowerAcSource_tan_delta' },
                 assessment: { label: 'Assessment', value: 'TandeltaPowerAcSource_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'TandeltaPowerAcSource_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'TandeltaPowerAcSource_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'TandeltaPowerAcSource_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'TandeltaPowerAcSource_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'TandeltaPowerAcSource_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'TandeltaPowerAcSource_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'TandeltaPowerAcSource_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'TandeltaPowerAcSource_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'TandeltaPowerAcSource_cond_weather' }
               }},
               TandeltaVlfSource: { label: 'Tan delta measurement with VLF source', children: {
                 measurement: { label: 'Measurement', value: 'TandeltaVlfSource_measurement' },
@@ -1892,14 +2415,28 @@ export default {
                 tan_delta_dtd: { label: 'DTD [10⁻³] (0.5 U₀ & 1.5 U₀)', value: 'TandeltaVlfSource_tan_delta_dtd' },
                 tan_delta_tdts: { label: 'TDTS [10⁻³]', value: 'TandeltaVlfSource_tan_delta_tdts' },
                 assessment: { label: 'Assessment', value: 'TandeltaVlfSource_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'TandeltaVlfSource_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'TandeltaVlfSource_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'TandeltaVlfSource_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'TandeltaVlfSource_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'TandeltaVlfSource_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'TandeltaVlfSource_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'TandeltaVlfSource_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'TandeltaVlfSource_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'TandeltaVlfSource_cond_weather' }
               }},
               VlfTest: { label: 'VLF Test', children: {
                 measurement: { label: 'Measurement', value: 'VlfTest_measurement' },
                 test_voltage: { label: 'Test voltage', value: 'VlfTest_test_voltage' },
                 leakage_current: { label: 'Leakage current', value: 'VlfTest_leakage_current' },
                 assessment: { label: 'Assessment', value: 'VlfTest_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'VlfTest_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'VlfTest_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'VlfTest_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'VlfTest_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'VlfTest_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'VlfTest_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'VlfTest_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'VlfTest_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'VlfTest_cond_weather' }
               }}
             }}
           }},
@@ -1920,14 +2457,28 @@ export default {
               GeneralInspection: { label: 'General inspection', children: {
                 item: { label: 'Item', value: 'GeneralInspection_item' },
                 assessment: { label: 'Assessment', value: 'GeneralInspection_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'GeneralInspection_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'GeneralInspection_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'GeneralInspection_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'GeneralInspection_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'GeneralInspection_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'GeneralInspection_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'GeneralInspection_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'GeneralInspection_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'GeneralInspection_cond_weather' }
               }},
               InsulationResistance: { label: 'Insulation resistance', children: {
                 measurement: { label: 'Measurement', value: 'InsulationResistance_measurement' },
                 test_voltage: { label: 'Test voltage', value: 'InsulationResistance_test_voltage' },
                 r60s: { label: 'R60s', value: 'InsulationResistance_r60s' },
                 assessment: { label: 'Assessment', value: 'InsulationResistance_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistance_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistance_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'InsulationResistance_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'InsulationResistance_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'InsulationResistance_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'InsulationResistance_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'InsulationResistance_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'InsulationResistance_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'InsulationResistance_cond_weather' }
               }},
               LeakageCurrent: { label: 'Leakage current at continuous operating voltage', children: {
                 phase: { label: 'Phase', value: 'LeakageCurrent_phase' },
@@ -1935,7 +2486,14 @@ export default {
                 test_voltage: { label: 'Test voltage', value: 'LeakageCurrent_test_voltage' },
                 i_meas: { label: 'I measurement', value: 'LeakageCurrent_i_meas' },
                 assessment: { label: 'Assessment', value: 'LeakageCurrent_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'LeakageCurrent_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'LeakageCurrent_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'LeakageCurrent_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'LeakageCurrent_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'LeakageCurrent_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'LeakageCurrent_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'LeakageCurrent_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'LeakageCurrent_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'LeakageCurrent_cond_weather' }
               }},
               PowerFrequency: { label: 'Power frequency voltage at reference current', children: {
                 phase: { label: 'Phase', value: 'PowerFrequency_phase' },
@@ -1943,7 +2501,14 @@ export default {
                 ref_current: { label: 'Reference current', value: 'PowerFrequency_ref_current' },
                 v_meas: { label: 'V measurement', value: 'PowerFrequency_v_meas' },
                 assessment: { label: 'Assessment', value: 'PowerFrequency_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'PowerFrequency_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'PowerFrequency_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'PowerFrequency_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'PowerFrequency_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'PowerFrequency_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'PowerFrequency_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'PowerFrequency_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'PowerFrequency_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'PowerFrequency_cond_weather' }
               }}
             }}
           }},
@@ -1994,41 +2559,90 @@ export default {
                 i_test: { label: 'I test', value: 'ContactResistance_i_test' },
                 contact_resistance: { label: 'Contact resistance', value: 'ContactResistance_contact_resistance' },
                 assessment: { label: 'Assessment', value: 'ContactResistance_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'ContactResistance_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'ContactResistance_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'ContactResistance_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'ContactResistance_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'ContactResistance_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'ContactResistance_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'ContactResistance_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'ContactResistance_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'ContactResistance_cond_weather' }
               }},
               ControlCheck: { label: 'Control cabinet check', children: {
                 item: { label: 'Item', value: 'ControlCheck_item' },
                 assessment: { label: 'Assessment', value: 'ControlCheck_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'ControlCheck_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'ControlCheck_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'ControlCheck_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'ControlCheck_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'ControlCheck_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'ControlCheck_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'ControlCheck_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'ControlCheck_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'ControlCheck_cond_weather' }
               }},
               DcWindingMotor: { label: 'DC winding resistance of motor', children: {
                 r_meas: { label: 'R meas', value: 'DcWindingMotor_r_meas' },
                 assessment: { label: 'Assessment', value: 'DcWindingMotor_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'DcWindingMotor_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'DcWindingMotor_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'DcWindingMotor_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'DcWindingMotor_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'DcWindingMotor_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'DcWindingMotor_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'DcWindingMotor_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'DcWindingMotor_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'DcWindingMotor_cond_weather' }
               }},
               GeneralInspection: { label: 'General inspection', children: {
                 item: { label: 'Item', value: 'GeneralInspection_item' },
                 assessment: { label: 'Assessment', value: 'GeneralInspection_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'GeneralInspection_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'GeneralInspection_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'GeneralInspection_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'GeneralInspection_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'GeneralInspection_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'GeneralInspection_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'GeneralInspection_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'GeneralInspection_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'GeneralInspection_cond_weather' }
               }},
               InsulationResMotor: { label: 'Insulation resistance of motor', children: {
                 test_voltage: { label: 'Test voltage', value: 'InsulationResMotor_test_voltage' },
                 r60s: { label: 'R60s', value: 'InsulationResMotor_r60s' },
                 assessment: { label: 'Assessment', value: 'InsulationResMotor_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'InsulationResMotor_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'InsulationResMotor_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'InsulationResMotor_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'InsulationResMotor_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'InsulationResMotor_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'InsulationResMotor_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'InsulationResMotor_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'InsulationResMotor_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'InsulationResMotor_cond_weather' }
               }},
               InsulationResistance: { label: 'Insulation resistance', children: {
                 measurement: { label: 'Measurement', value: 'InsulationResistance_measurement' },
                 test_voltage: { label: 'Test voltage', value: 'InsulationResistance_test_voltage' },
                 r60s: { label: 'R60s', value: 'InsulationResistance_r60s' },
                 assessment: { label: 'Assessment', value: 'InsulationResistance_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistance_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'InsulationResistance_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'InsulationResistance_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'InsulationResistance_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'InsulationResistance_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'InsulationResistance_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'InsulationResistance_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'InsulationResistance_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'InsulationResistance_cond_weather' }
               }},
               OperatingTest: { label: 'Operating test', children: {
                 measurement: { label: 'Measurement', value: 'OperatingTest_measurement' },
                 working_time: { label: 'Working time', value: 'OperatingTest_working_time' },
                 assessment: { label: 'Assessment', value: 'OperatingTest_assessment' },
-                condition_indicator: { label: 'Condition indicator', value: 'OperatingTest_condition_indicator' }
+                condition_indicator: { label: 'Condition indicator', value: 'OperatingTest_condition_indicator' },
+                cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'OperatingTest_cond_top_oil_temp' },
+                cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'OperatingTest_cond_bottom_oil_temp' },
+                cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'OperatingTest_cond_winding_temp' },
+                cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'OperatingTest_cond_reference_temp' },
+                cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'OperatingTest_cond_ambient_temp' },
+                cond_humidity: { label: 'Humidity (cond.)', value: 'OperatingTest_cond_humidity' },
+                cond_weather: { label: 'Weather (cond.)', value: 'OperatingTest_cond_weather' }
               }}
             }}
           }},
@@ -2070,26 +2684,26 @@ export default {
       for (const row of this.tableData) {
         if (!row.category) continue
         if (row.category === 'Asset') {
-          const assetType = row.featureLevels?.[0]?.key
+          const assetType = row.featureLevels && row.featureLevels[0] ? row.featureLevels[0].key : null
           if (!assetType) continue
-          const key = `Asset_${assetType}`
+          const key = 'Asset_' + assetType
           if (seen.has(key)) continue
           seen.add(key)
-          const node = this.FEATURE_TREE.Asset?.children?.[assetType]
-          result.push({ key, label: node?.label ?? assetType, category: 'Asset', assetType })
+          const node = this.FEATURE_TREE.Asset && this.FEATURE_TREE.Asset.children ? this.FEATURE_TREE.Asset.children[assetType] : null
+          result.push({ key, label: (node && node.label) || assetType, category: 'Asset', assetType })
         } else if (row.category === 'Job') {
-          const jobType = row.featureLevels?.[0]?.key
+          const jobType = row.featureLevels && row.featureLevels[0] ? row.featureLevels[0].key : null
           if (!jobType) continue
-          const key = `Job_${jobType}`
+          const key = 'Job_' + jobType
           if (seen.has(key)) continue
           seen.add(key)
-          const node = this.FEATURE_TREE.Job?.children?.[jobType]
-          result.push({ key, label: node?.label ?? jobType, category: 'Job', assetType: jobType })
+          const node = this.FEATURE_TREE.Job && this.FEATURE_TREE.Job.children ? this.FEATURE_TREE.Job.children[jobType] : null
+          result.push({ key, label: (node && node.label) || jobType, category: 'Job', assetType: jobType })
         } else {
           if (seen.has(row.category)) continue
           seen.add(row.category)
-          const opt = this.categoryOptions.find(c => c.value === row.category)
-          result.push({ key: row.category, label: opt?.label ?? row.category, category: row.category, assetType: null })
+          const opt = this.categoryOptions.find(function(c) { return c.value === row.category })
+          result.push({ key: row.category, label: (opt && opt.label) || row.category, category: row.category, assetType: null })
         }
       }
       return result
@@ -2183,8 +2797,73 @@ export default {
       const icons = { organisation:'el-icon-office-building', substation:'el-icon-location', voltageLevel:'el-icon-connection', bay:'el-icon-set-up', asset:'el-icon-box', job:'el-icon-document' }
       return icons[data.mode] || 'el-icon-folder'
     },
-    clearSelectedNode() {
-      this.selectedNode = null; this.selectedNodeLabel = ''; this.selectedNodeContext = {}; this.pickerTempSelected = null
+    // Build context object from a picker node
+    buildContextFromNode(node) {
+      const ctx = {}
+      ;(node.parentArr || []).forEach(p => {
+        if (p.mode) ctx[p.mode] = { mrid: p.mrid, name: p.name, ...(p.assetType && { assetType: p.assetType }) }
+      })
+      ctx[node.mode] = {
+        mrid: node.mrid,
+        name: node.displayName,
+        ...(node.assetType && { assetType: node.assetType })
+      }
+      return ctx
+    },
+    // Sanitize sheet name: max 31 chars, no []:*?/\
+    sanitizeSheetName(name) {
+      return (name || 'Sheet').replace(/[\[\]\*\?:\/\\]/g, '_').substring(0, 31)
+    },
+    // Generate unique sheet name within current list
+    uniqueSheetName(base) {
+      const existing = this.selectedItems.map(i => i.sheetName)
+      let name = this.sanitizeSheetName(base)
+      let counter = 2
+      while (existing.includes(name)) { name = this.sanitizeSheetName(base + '_' + counter); counter++ }
+      return name
+    },
+    // Icon for selected item based on mode
+    itemIcon(item) {
+      const ctx = item.context
+      if (ctx.job)   return 'el-icon-document'
+      if (ctx.asset) return 'el-icon-box'
+      if (ctx.bay)   return 'el-icon-set-up'
+      return 'el-icon-office-building'
+    },
+    // Add current picker selection to the selectedItems list
+    refreshPickerTree() {
+      this.pickerTempSelected = null
+      this.pickerTreeKey++   // force el-tree to remount → lazy load from scratch
+    },
+    addPickerSelectionToList() {
+      if (!this.pickerTempSelected) return
+      const node = this.pickerTempSelected
+      // Build path label
+      const pathParts = [...(node.parentArr || []).map(p => p.name), node.displayName]
+      const label = pathParts.join(' / ')
+      // Build context
+      const ctx = this.buildContextFromNode(node)
+      // Check duplicate (same asset mrid + job mrid)
+      const isDup = this.selectedItems.some(item =>
+        item.context.asset?.mrid === ctx.asset?.mrid &&
+        item.context.job?.mrid === ctx.job?.mrid &&
+        item.context.asset?.mrid !== undefined
+      )
+      if (isDup) { this.$message.warning('This node is already in the list'); return }
+      // Default sheet name = apparatus_id or displayName (max 31 chars, no special chars)
+      const baseName = node.displayName || pathParts[pathParts.length - 1] || 'Sheet'
+      const sheetName = this.uniqueSheetName(baseName)
+      this.selectedItems.push({
+        id: Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+        label,
+        sheetName,
+        context: ctx
+      })
+      this.pickerTempSelected = null
+      this.$message.success('Added: ' + label.split(' / ').pop())
+    },
+    removeSelectedItem(id) {
+      this.selectedItems = this.selectedItems.filter(item => item.id !== id)
     },
     // ── el-tree lazy load ────────────────────────────────────────────
     async loadPickerNode(node, resolve) {
@@ -2270,40 +2949,105 @@ export default {
     onPickerNodeClick(data) {
       this.pickerTempSelected = data
     },
-    confirmPickerSelection() {
-      if (!this.pickerTempSelected) return
-      const node = this.pickerTempSelected
-      this.selectedNode = node
-      // Build full path label
-      const path = (node.parentArr || []).map(p => p.name).join(' / ')
-      this.selectedNodeLabel = path ? `${path} / ${node.displayName}` : node.displayName
-      // Build context: walk parentArr + current node
-      const ctx = {}
-      ;(node.parentArr || []).forEach(p => { if (p.mode) ctx[p.mode] = { mrid: p.mrid, name: p.name } })
-      ctx[node.mode] = { mrid: node.mrid, name: node.displayName, assetType: node.assetType }
-      this.selectedNodeContext = ctx
-      this.nodePickerVisible = false
+    // confirmPickerSelection → replaced by addPickerSelectionToList above
+
+    // Find all selectedItems that match a given category.
+    // Used to support multiple assets of same type (occurrence-based fill).
+    getMatchingItems(cat) {
+      const self = this
+      // Job key → required asset type
+      const jobToAsset = {
+        'Job_TransformerJobDto': 'Transformer', 'Job_VoltageTransformerJobDto': 'Voltage transformer',
+        'Job_CurrentTransformerJobDto': 'Current transformer', 'Job_CircuitBreakerJobDto': 'Circuit breaker',
+        'Job_PowerCableJobDto': 'Power cable', 'Job_SurgeArresterJobDto': 'Surge arrester',
+        'Job_ReactorJobDto': 'Reactor', 'Job_CapacitorJobDto': 'Capacitor',
+        'Job_DisconnectorJobDto': 'Disconnector', 'Job_RotatingMachineJobDto': 'Rotating machine',
+        'Job_BushingJobDto': 'Bushing',
+      }
+      return this.selectedItems.filter(function(item) {
+        const ctx = item.context
+        const catKey = cat.key
+        // Non-asset/job: only need the org/sub/vl/bay to exist in context
+        if (catKey === 'OrgEntityToOrgDto')  return !!ctx.organisation
+        if (catKey === 'SubstationDto')       return !!ctx.substation
+        if (catKey === 'VoltageLevelDto')     return !!ctx.voltageLevel
+        if (catKey === 'Bay')                 return !!ctx.bay
+        // Asset: match by assetType
+        if (catKey.startsWith('Asset_')) {
+          if (!ctx.asset) return false
+          const expectedKey = self.assetTypeToKey[ctx.asset.assetType]
+          return expectedKey === catKey
+        }
+        // Job: match by job's parent asset type
+        if (catKey.startsWith('Job_')) {
+          if (!ctx.job) return false
+          const normalKey = catKey.startsWith('Job_Job_') ? catKey.slice(4) : catKey
+          const requiredAsset = jobToAsset[normalKey]
+          if (!requiredAsset) return false
+          // job's assetType stored on context.job (set from asset's assetType when picking)
+          return ctx.job.assetType === requiredAsset || (ctx.asset && ctx.asset.assetType === requiredAsset)
+        }
+        return false
+      })
     },
     async doExport() {
+      if (this.selectedItems.length === 0) {
+        this.$message.warning('Please add at least one asset or job to the selection list')
+        return
+      }
       this.exportLoading = true
       try {
-        // codeMap: { code: [val0, val1, ...] } — array per code for occurrence-based Excel fill
+        const tmpl = this.templateList.find(t => t.name === this.selectedTemplateName)
+        const variables = tmpl ? (tmpl.variable || []) : []
         const codeMap = {}
-        const partials = await Promise.all(this.exportCategories.map(cat => this.buildDtoForCat(cat)))
-        for (const p of partials) {
-          if (!p) continue
-          for (const [code, vals] of Object.entries(p)) {
-            if (!codeMap[code]) codeMap[code] = []
-            // vals is already an array from extractFromMaps
-            codeMap[code].push(...(Array.isArray(vals) ? vals : [vals]))
+
+        for (const cat of this.exportCategories) {
+          const matchingItems = this.getMatchingItems(cat)
+
+          if (cat.key.startsWith('Asset_') || cat.key.startsWith('Job_')) {
+            // ── Asset/Job: process ALL matching items in order ────────────
+            // Same type + multiple items → concat values → occurrence-based fill
+            // e.g. 2 VTs: codeMap['A2'] = ['VT1-serial', 'VT2-serial']
+            //             codeMap['A3'] = ['VT1-row1', 'VT1-row2', 'VT2-row1', 'VT2-row2']
+            for (const item of matchingItems) {
+              const partial = await this.buildDtoForCat(cat, item.context)
+              for (const code in partial) {
+                if (!codeMap[code]) codeMap[code] = []
+                const vals = partial[code]
+                codeMap[code].push.apply(codeMap[code], Array.isArray(vals) ? vals : [vals])
+              }
+            }
+          } else {
+            // ── Scalar categories (Org, Sub, VL, Bay): use first matching item ──
+            // These are shared context — no point repeating
+            const firstItem = matchingItems[0]
+            if (!firstItem) continue
+            const partial = await this.buildDtoForCat(cat, firstItem.context)
+            for (const code in partial) {
+              // Scalar: only set once (don't overwrite with same value N times)
+              if (!codeMap[code]) codeMap[code] = partial[code]
+            }
           }
         }
-        const tmpl = this.templateList.find(t => t.name === this.selectedTemplateName)
-        const rs = await window.electronAPI.exportTemplateWithData({ templatePath: this.currentFilePath, variables: tmpl?.variable||[], codeMap })
+
+        const rs = await window.electronAPI.exportTemplateWithData({
+          templatePath: this.currentFilePath,
+          variables,
+          codeMap
+        })
         if (rs.canceled) return
-        if (rs.success) { this.showExportDialog = false; this.$message.success('Exported: ' + rs.filePath) }
-        else this.$message.error(rs.message || 'Export failed')
-      } catch(e) { this.$message.error('Export error: ' + e.message) } finally { this.exportLoading = false }
+        if (rs.success) {
+          this.showExportDialog = false
+          this.$message.success('Exported successfully: ' + rs.filePath)
+        } else {
+          this.$message.error(rs.message || 'Export failed')
+        }
+      } catch(e) {
+        this.$message.error('Export error: ' + e.message)
+        console.error('doExport error:', e)
+      } finally {
+        this.exportLoading = false
+      }
     },
     mapProps(p) {
       if (!p) return {}
@@ -2355,17 +3099,31 @@ export default {
                 const v = cell.value
                 return (v !== null && v !== undefined) ? String(v) : ''
               }
-              // Fallback for plain values
               return String(cell)
             })
           })
+        }
+
+        // Testing conditions — scalar per test (not per row)
+        // Stored in testCondition.condition.{colCode} as { value, type, unit, ... }
+        // Key format: '{testCode}_cond_{colCode}' e.g. 'DCWindingPrim_cond_ambient_temp'
+        const cond = test.testCondition?.condition || {}
+        for (const [condCol, condCell] of Object.entries(cond)) {
+          const key = `${tc}_cond_${condCol}`
+          let val = ''
+          if (condCell !== null && condCell !== undefined) {
+            val = typeof condCell === 'object' && 'value' in condCell
+              ? (condCell.value !== null && condCell.value !== undefined ? String(condCell.value) : '')
+              : String(condCell)
+          }
+          // Single-element array → extractFromMaps treats as scalar (all coords same value)
+          arrayMap[key] = [val]
         }
       }
       return arrayMap
     },
     // Get nodeId from selectedNodeContext based on category
-    getNodeIdForCat(catKey) {
-      const ctx = this.selectedNodeContext
+    getNodeIdForCat(catKey, ctx) {
       if (!ctx) return null
       if (catKey === 'OrgEntityToOrgDto')   return ctx.organisation?.mrid   || null
       if (catKey === 'SubstationDto')        return ctx.substation?.mrid     || null
@@ -2393,8 +3151,8 @@ export default {
       }
       return null
     },
-    async buildDtoForCat(cat) {
-      const nodeId = this.getNodeIdForCat(cat.key)
+    async buildDtoForCat(cat, ctx) {
+      const nodeId = this.getNodeIdForCat(cat.key, ctx)
       if (!nodeId) return {}
       try {
         let flatMap = {}
@@ -2841,7 +3599,7 @@ export default {
       const result = {}
       for (const row of this.tableData) {
         if (!row.code || row.category !== cat.category) continue
-        if (cat.assetType && row.featureLevels?.[0]?.key !== cat.assetType) continue
+        if (cat.assetType && (row.featureLevels && row.featureLevels[0] ? row.featureLevels[0].key : null) !== cat.assetType) continue
         const leafValue = this.getLeafValue(row.featureLevels, row.category)
         if (!leafValue) continue
 

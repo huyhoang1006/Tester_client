@@ -1,20 +1,19 @@
 'use strict'
-import {ipcMain, dialog, app} from 'electron'
-import {entityFunc} from "@/function"
+import { ipcMain, dialog, app } from 'electron'
+import { entityFunc } from "@/function"
 const path = require('path')
 const fs = require('fs')
-
 
 // ─── Template folder ────────────────────────────────────────────────────────
 // Dev  : <project_root>/template/         (app.getAppPath())
 // Prod : <AppData>/Roaming/<app>/template/ (app.getPath('userData')) ← writable
 //
-// process.resourcesPath  ← extraResources mount point, READ-ONLY in prod
-// app.getAppPath()       ← .asar root in prod, READ-ONLY
-// app.getPath('userData')← C:/Users/.../AppData/Roaming/<app>/, WRITABLE
+// process.resourcesPath  = extraResources mount point, READ-ONLY in prod
+// app.getAppPath()       = .asar root in prod, READ-ONLY
+// app.getPath('userData')= C:/Users/.../AppData/Roaming/<app>/, WRITABLE
 // ─────────────────────────────────────────────────────────────────────────────
-// Dev : project_root/template/          (dùng thẳng, không copy)
-// Prod: process.resourcesPath/template/ → userData/template/ (copy 1 lần)
+// Dev : project_root/template/  (used directly, no copy)
+// Prod: process.resourcesPath/template/ → userData/template/ (copied once)
 const isDev = process.env.NODE_ENV === 'development'
 
 const TEMPLATE_DIR = isDev
@@ -25,7 +24,7 @@ if (!fs.existsSync(TEMPLATE_DIR)) {
     fs.mkdirSync(TEMPLATE_DIR, { recursive: true })
 }
 
-// Production: copy bundled templates từ resourcesPath → userData (chỉ file chưa có)
+// Production: copy bundled templates from resourcesPath → userData (only missing files)
 if (!isDev) {
     const bundledDir = path.join(process.resourcesPath, 'template')
     if (fs.existsSync(bundledDir)) {
@@ -47,25 +46,10 @@ export const getAllTemplates = () => {
     ipcMain.handle('getAllTemplates', async function (event) {
         try {
             const rs = await entityFunc.templateFunc.getAllTemplates()
-            if (rs.success == true) {
-                return {
-                    success: true,
-                    message: "Success",
-                    data : rs.data
-                }
-            }
-            else {
-                return {
-                    success: false,
-                    message: "fail",
-                }
-            }
+            if (rs.success) return { success: true, data: rs.data }
+            return { success: false, message: 'fail' }
         } catch (error) {
-            return {
-                error: error,
-                success: false,
-                message: (error && error.message) ? error.message : "Internal error",
-            }
+            return { success: false, message: error.message }
         }
     })
 }
@@ -74,26 +58,10 @@ export const getTemplateByName = () => {
     ipcMain.handle('getTemplateByName', async function (event, name) {
         try {
             const rs = await entityFunc.templateFunc.getTemplateByName(name)
-            if (rs.success == true) {
-                return {
-                    success: true,
-                    message: "Success",
-                    data : rs.data
-                }
-            }
-            else {
-                return {
-                    success: false,
-                    message: "fail",
-                }
-            }
+            if (rs.success) return { success: true, data: rs.data }
+            return { success: false, message: 'fail' }
         } catch (error) {
-            console.error("Error retrieving template by name:", error);
-            return {
-                error: error,
-                success: false,
-                message: (error && error.message) ? error.message : "Internal error",
-            }
+            return { success: false, message: error.message }
         }
     })
 }
@@ -102,25 +70,10 @@ export const insertTemplate = () => {
     ipcMain.handle('insertTemplate', async function (event, data) {
         try {
             const rs = await entityFunc.templateFunc.insertTemplate(data)
-            if (rs.success == true) {
-                return {
-                    success: true,
-                    message: "Success",
-                    data : data
-                }
-            }
-            else {
-                return {
-                    success: false,
-                    message: "fail",
-                }
-            }
+            if (rs.success) return { success: true, data }
+            return { success: false, message: 'fail' }
         } catch (error) {
-            return {
-                error: error,
-                success: false,
-                message: (error && error.message) ? error.message : "Internal error",
-            }
+            return { success: false, message: error.message }
         }
     })
 }
@@ -129,26 +82,10 @@ export const updateTemplate = () => {
     ipcMain.handle('updateTemplate', async function (event, data) {
         try {
             const rs = await entityFunc.templateFunc.updateTemplate(data)
-            if (rs.success == true) {
-                return {
-                    success: true,
-                    message: "Success",
-                    data : rs.data
-                }
-            }
-            else {
-                return {
-                    success: false,
-                    message: "fail",
-                }
-            }
+            if (rs.success) return { success: true }
+            return { success: false, message: 'fail' }
         } catch (error) {
-            console.error("Error retrieving template by name:", error);
-            return {
-                error: error,
-                success: false,
-                message: (error && error.message) ? error.message : "Internal error",
-            }
+            return { success: false, message: error.message }
         }
     })
 }
@@ -358,78 +295,206 @@ export const saveTemplateWithScan = () => {
 export const exportTemplateWithData = () => {
     ipcMain.handle('exportTemplateWithData', async function (event, payload) {
         try {
-            const { templatePath, variables, codeMap: rawCodeMap, dto } = payload || {}
+            const { templatePath, variables, selections: rawSelections, codeMap: rawCodeMap, dto } = payload || {}
 
-            // Support both old format (dto: {code: value}) and new format (codeMap: {code: [v0,v1,...]})
-            let codeMap = rawCodeMap
-            if (!codeMap && dto) {
-                // Backward compat: wrap dto single values into arrays
-                codeMap = {}
-                for (const [k, v] of Object.entries(dto)) {
-                    codeMap[k] = [v !== null && v !== undefined ? String(v) : '']
+            // ── Normalize to selections array ─────────────────────────────
+            // Support: new multi-sheet (selections=[]), old single (codeMap/dto)
+            let selections = rawSelections
+            if (!selections) {
+                let codeMap = rawCodeMap
+                if (!codeMap && dto) {
+                    codeMap = {}
+                    for (const [k, v] of Object.entries(dto)) {
+                        codeMap[k] = [v !== null && v !== undefined ? String(v) : '']
+                    }
                 }
+                selections = [{ codeMap: codeMap || {}, sheetName: 'Sheet1' }]
             }
-            if (!codeMap) codeMap = {}
+
+            if (!selections.length) {
+                return { success: false, message: 'No selections provided' }
+            }
 
             if (!templatePath || !fs.existsSync(templatePath)) {
                 return { success: false, message: 'Template file not found: ' + templatePath }
             }
 
             const XlsxPopulate = require('xlsx-populate')
-            const workbook = await XlsxPopulate.fromFileAsync(templatePath)
+            const JSZip = require('jszip')
 
-            // codeMap[code] = [v0, v1, ...]
-            // coordinates[i] → codeMap[code][i]  (occurrence-based)
-            // values.length === 1 (scalar) → all coordinates get same value
-            // values.length > 1  (array)  → each coordinate gets its indexed value, OOB → ''
+            // ── Helper: fill one workbook's first sheet ───────────────────
+            function fillWorkbookSheet(wb, vars, codeMap) {
+                const sheet = wb.sheet(0)
+                if (!sheet) return
 
-            for (const variable of (variables || [])) {
-                const { code, coordinates } = variable
-                if (!code || !coordinates || !coordinates.length) continue
+                for (const variable of (vars || [])) {
+                    const { code, coordinates } = variable
+                    if (!code || !coordinates || !coordinates.length) continue
 
-                const rawVals = codeMap[code]
-                const values = Array.isArray(rawVals) ? rawVals
-                             : rawVals !== undefined   ? [String(rawVals)]
-                             : []
+                    const rawVals = codeMap[code]
+                    const values = Array.isArray(rawVals) ? rawVals
+                                 : rawVals !== undefined   ? [String(rawVals)]
+                                 : []
 
-                coordinates.forEach((coord, coordIdx) => {
-                    const fillValue = values.length <= 1
-                        ? (values[0] !== undefined && values[0] !== null ? values[0] : '')                                   // scalar: same for all
-                        : (coordIdx < values.length ? values[coordIdx] : '')  // array: indexed, OOB → ''
+                    coordinates.forEach((coord, coordIdx) => {
+                        const fillValue = values.length <= 1
+                            ? (values[0] !== undefined && values[0] !== null ? values[0] : '')
+                            : (coordIdx < values.length ? values[coordIdx] : '')
 
-                    const bangIdx = coord.indexOf('!')
-                    if (bangIdx === -1) return
+                        const bangIdx = coord.indexOf('!')
+                        if (bangIdx === -1) return
 
-                    const sheetName = coord.substring(0, bangIdx)
-                    const cellAddr  = coord.substring(bangIdx + 1)
+                        const sheetName = coord.substring(0, bangIdx)
+                        const cellAddr  = coord.substring(bangIdx + 1)
 
-                    const sheet = workbook.sheet(sheetName)
-                    if (!sheet) return
+                        try {
+                            const s = wb.sheet(sheetName)
+                            if (!s) { console.warn('Sheet not found:', sheetName); return }
 
-                    const cell = sheet.cell(cellAddr)
-                    const currentValue = cell.value()
-                    if (currentValue === null || currentValue === undefined) return
+                            const cell = s.cell(cellAddr)
+                            const currentValue = cell.value()
+                            if (currentValue === null || currentValue === undefined) return
 
-                    const currentStr = String(currentValue)
-                    if (currentStr.includes(code)) {
-                        // Replace code placeholder, keep surrounding text
-                        // e.g. "Unit: A1" → "Unit: EVN"
-                        cell.value(currentStr.replace(code, fillValue))
-                    }
-                })
+                            const currentStr = String(currentValue)
+                            // Exact token match: code must not be preceded/followed by alphanumeric
+                            const codeRegex = new RegExp(
+                                '(?<![A-Za-z0-9])' +
+                                code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') +
+                                '(?![A-Za-z0-9])',
+                                'g'
+                            )
+                            if (codeRegex.test(currentStr)) {
+                                codeRegex.lastIndex = 0
+                                cell.value(currentStr.replace(codeRegex, () => fillValue))
+                            }
+                        } catch (cellErr) {
+                            console.error('Fill error at coord:', coord, '| code:', code, '|', cellErr.message)
+                        }
+                    })
+                }
             }
 
-            // Hỏi user nơi lưu file output
-            const saveResult = await dialog.showSaveDialog({
-                title: 'Save exported file',
-                defaultPath: path.join(require('os').homedir(), 'export.xlsx'),
-                filters: [{ name: 'Excel Files', extensions: ['xlsx'] }]
-            })
-            if (saveResult.canceled) return { success: false, canceled: true }
+            // ── Sanitize sheet name (Excel constraint: ≤31 chars, no []:\/?*) ──
+            function sanitizeSheetName(name, index) {
+                const clean = (name || ('Sheet' + (index + 1)))
+                    .replace(/[[\]*?:/\\]/g, '_')
+                    .trim()
+                    .substring(0, 31)
+                return clean || ('Sheet' + (index + 1))
+            }
 
-            // Ghi ra file mới — template gốc không bị sửa
-            await workbook.toFileAsync(saveResult.filePath)
-            return { success: true, filePath: saveResult.filePath }
+            // ── Single selection: simple path, no JSZip manipulation ──────
+            if (selections.length === 1) {
+                const { codeMap, sheetName } = selections[0]
+                const wb = await XlsxPopulate.fromFileAsync(templatePath)
+                // Rename first sheet if needed
+                const s = wb.sheet(0)
+                if (s && sheetName && sheetName !== s.name()) {
+                    try { s.name(sanitizeSheetName(sheetName, 0)) } catch(e) { /* skip */ }
+                }
+                fillWorkbookSheet(wb, variables, codeMap)
+
+                const { canceled, filePath } = await new Promise(resolve =>
+                    require('electron').dialog.showSaveDialog({
+                        title: 'Save export file',
+                        defaultPath: sanitizeSheetName(sheetName, 0) + '.xlsx',
+                        filters: [{ name: 'Excel', extensions: ['xlsx'] }]
+                    }).then(resolve)
+                )
+                if (canceled || !filePath) return { success: false, canceled: true }
+
+                await wb.toFileAsync(filePath)
+                return { success: true, filePath }
+            }
+
+            // ── Multi-selection: build one filled buffer per selection ─────
+            // Then clone sheets into a single output workbook via JSZip
+            const templateBuffer = fs.readFileSync(templatePath)
+            const filledBuffers = []
+
+            for (let i = 0; i < selections.length; i++) {
+                const { codeMap, sheetName } = selections[i]
+                const wb = await XlsxPopulate.fromDataAsync(templateBuffer)
+                fillWorkbookSheet(wb, variables, codeMap)
+                const buf = await wb.outputAsync()
+                filledBuffers.push({ buf, sheetName: sanitizeSheetName(sheetName, i) })
+            }
+
+            // ── Combine into single XLSX using JSZip ──────────────────────
+            // Load first buffer as base workbook
+            const baseZip = await JSZip.loadAsync(filledBuffers[0].buf)
+
+            // Read & update workbook.xml and relationships to add sheets 2..N
+            let wbXml   = await baseZip.file('xl/workbook.xml').async('string')
+            let relsXml = await baseZip.file('xl/_rels/workbook.xml.rels').async('string')
+            let ctXml   = await baseZip.file('[Content_Types].xml').async('string')
+
+            // Rename first sheet — use function callback to avoid $1/$2 pattern issues
+            const firstSheetSafeName = filledBuffers[0].sheetName
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+            wbXml = wbXml.replace(
+                /(<sheet[^>]*name=")[^"]*(")/,
+                function(match, p1, p2) { return p1 + firstSheetSafeName + p2 }
+            )
+
+            for (let i = 1; i < filledBuffers.length; i++) {
+                const { buf, sheetName } = filledBuffers[i]
+                const srcZip = await JSZip.loadAsync(buf)
+
+                // Copy sheet XML
+                const sheetXml = await srcZip.file('xl/worksheets/sheet1.xml').async('string')
+                const destSheetFile = `xl/worksheets/sheet${i + 1}.xml`
+                baseZip.file(destSheetFile, sheetXml)
+
+                // Copy any drawing/chart files referenced by this sheet (optional, skip errors)
+                try {
+                    const drawingRelsFile = srcZip.file('xl/worksheets/_rels/sheet1.xml.rels')
+                    if (drawingRelsFile) {
+                        const drawingRels = await drawingRelsFile.async('string')
+                        baseZip.file('xl/worksheets/_rels/sheet' + (i + 1) + '.xml.rels',
+                            drawingRels.replace(/sheet1\./g, 'sheet' + (i + 1) + '.'))
+                    }
+                } catch(e) { /* no drawing rels, skip */ }
+
+                // Unique rId for this sheet
+                const rId = `rIdX${i}`
+                const sheetId = i + 1
+                const safeSheetName = sheetName.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+
+                // Append <sheet> entry to workbook.xml
+                wbXml = wbXml.replace(
+                    '</sheets>',
+                    `<sheet name="${safeSheetName}" sheetId="${sheetId}" r:id="${rId}"/></sheets>`
+                )
+                // Append relationship
+                relsXml = relsXml.replace(
+                    '</Relationships>',
+                    `<Relationship Id="${rId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${sheetId}.xml"/></Relationships>`
+                )
+                // Append content type
+                ctXml = ctXml.replace(
+                    '</Types>',
+                    `<Override PartName="/xl/worksheets/sheet${sheetId}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>`
+                )
+            }
+
+            baseZip.file('xl/workbook.xml', wbXml)
+            baseZip.file('xl/_rels/workbook.xml.rels', relsXml)
+            baseZip.file('[Content_Types].xml', ctXml)
+
+            const combinedBuffer = await baseZip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE', compressionOptions: { level: 6 } })
+
+            const { canceled, filePath } = await new Promise(resolve =>
+                require('electron').dialog.showSaveDialog({
+                    title: 'Save export file (' + selections.length + ' sheets)',
+                    defaultPath: 'export_report.xlsx',
+                    filters: [{ name: 'Excel', extensions: ['xlsx'] }]
+                }).then(resolve)
+            )
+            if (canceled || !filePath) return { success: false, canceled: true }
+
+            fs.writeFileSync(filePath, combinedBuffer)
+            return { success: true, filePath }
 
         } catch (error) {
             console.error('exportTemplateWithData error:', error)
@@ -438,6 +503,9 @@ export const exportTemplateWithData = () => {
     })
 }
 
+// ═════════════════════════════════════════════════════════════════════════════
+// ACTIVE
+// ═════════════════════════════════════════════════════════════════════════════
 
 export const active = () => {
     getAllTemplates()
