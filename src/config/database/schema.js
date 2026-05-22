@@ -2280,7 +2280,8 @@ CREATE TABLE IF NOT EXISTS "temperature" (
 CREATE TABLE IF NOT EXISTS "template" (
 	"name"	TEXT NOT NULL UNIQUE,
 	"path"	TEXT,
-	"variable"	TEXT
+	"variable"	TEXT,
+	"type"	TEXT
 );
 CREATE TABLE IF NOT EXISTS "terminal_cable_info" (
 	"mrid"	TEXT NOT NULL,
