@@ -54,6 +54,18 @@ export const getAllTemplates = () => {
     })
 }
 
+export const getAllTemplatesByType = () => {
+    ipcMain.handle('getAllTemplatesByType', async function (event, type) {
+        try {
+            const rs = await entityFunc.templateFunc.getAllTemplatesByType(type)
+            if (rs.success) return { success: true, data: rs.data }
+            return { success: false, message: 'fail' }
+        } catch (error) {
+            return { success: false, message: error.message }
+        }
+    })
+}
+
 export const getTemplateByName = () => {
     ipcMain.handle('getTemplateByName', async function (event, name) {
         try {
@@ -153,6 +165,34 @@ export const uploadExcelTemplate = () => {
     })
 }
 
+export const uploadWordTemplate = () => {
+    ipcMain.handle('uploadWordTemplate', async function (event, templateName) {
+        try {
+            const result = await dialog.showOpenDialog({
+                title: 'Select Excel Template',
+                filters: [{ name: 'Word', extensions: ['doc', 'docx'] }],
+                properties: ['openFile']
+            })
+            if (result.canceled || !result.filePaths.length) {
+                return { success: false, canceled: true }
+            }
+
+            const srcPath = result.filePaths[0]
+            // Đặt tên file = templateName + extension gốc
+            const ext = path.extname(srcPath)
+            const safeName = templateName.replace(/[^a-zA-Z0-9_\-\u00C0-\u024F\u1E00-\u1EFF]/g, '_')
+            const fileName = `${safeName}${ext}`
+            const destPath = path.join(TEMPLATE_DIR, fileName)
+
+            fs.copyFileSync(srcPath, destPath)
+
+            return { success: true, filePath: destPath, fileName }
+        } catch (error) {
+            return { success: false, message: error.message }
+        }
+    })
+}
+
 // ═════════════════════════════════════════════════════════════════════════════
 // SCAN COORDINATES
 // Đọc file Excel → tìm cell nào chứa code → lưu tọa độ
@@ -218,63 +258,74 @@ export const scanTemplateCoordinates = () => {
 // ═════════════════════════════════════════════════════════════════════════════
 
 export const saveTemplateWithScan = () => {
-    ipcMain.handle('saveTemplateWithScan', async function (event, { name, filePath, variables }) {
+    ipcMain.handle('saveTemplateWithScan', async function (event, { name, filePath, variables, type }) {
         try {
             if (!filePath || !fs.existsSync(filePath)) {
-                return { success: false, message: 'Excel file not found' }
+                return { success: false, message: 'Template file not found' }
             }
 
-            // Lấy danh sách codes để scan
             const codes = (variables || []).map(v => v.code).filter(Boolean)
-
-            // Scan coordinates
             let coordinatesMap = {}
+            codes.forEach(c => { coordinatesMap[c] = [] })
+
             if (codes.length > 0) {
-                const XlsxPopulate = require('xlsx-populate')
-                const workbook = await XlsxPopulate.fromFileAsync(filePath)
-
-                codes.forEach(c => { coordinatesMap[c] = [] })
-
-                workbook.sheets().forEach(sheet => {
-                    const sheetName = sheet.name()
-                    const usedRange = sheet.usedRange()
-                    if (!usedRange) return
-
-                    usedRange.cells().forEach(rowCells => {
-                        rowCells.forEach(cell => {
-                            const val = cell.value()
-                            if (val === null || val === undefined) return
-                            const strVal = String(val)
-
-                            codes.forEach(code => {
-                                if (strVal.includes(code)) {
-                                    const coord = `${sheetName}!${cell.address()}`
-                                    if (!coordinatesMap[code].includes(coord)) {
-                                        coordinatesMap[code].push(coord)
+                if (type === 'excel') {
+                    // === SCAN EXCEL ===
+                    const XlsxPopulate = require('xlsx-populate')
+                    const workbook = await XlsxPopulate.fromFileAsync(filePath)
+                    workbook.sheets().forEach(sheet => {
+                        const sheetName = sheet.name()
+                        const usedRange = sheet.usedRange()
+                        if (!usedRange) return
+                        usedRange.cells().forEach(rowCells => {
+                            rowCells.forEach(cell => {
+                                const val = cell.value()
+                                if (val === null || val === undefined) return
+                                const strVal = String(val)
+                                codes.forEach(code => {
+                                    if (strVal.includes(code)) {
+                                        const coord = `${sheetName}!${cell.address()}`
+                                        if (!coordinatesMap[code].includes(coord)) coordinatesMap[code].push(coord)
                                     }
-                                }
+                                })
                             })
                         })
                     })
-                })
+                } else if (type === 'word') {
+                    // === SCAN WORD ===
+                    const PizZip = require('pizzip')
+                    const Docxtemplater = require('docxtemplater')
+                    const content = fs.readFileSync(filePath, 'binary')
+                    const zip = new PizZip(content)
+                    const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true })
+                    
+                    // Lấy toàn bộ text thô trong Word
+                    const text = doc.getFullText()
+                    
+                    codes.forEach(code => {
+                        // Word dùng format {Code}, nên ta check chuỗi {Code}
+                        if (text.includes(`{${code}}`)) {
+                            coordinatesMap[code].push('Found in Document')
+                        }
+                    })
+                }
             }
 
-            // Merge coordinates vào variables
+            // Merge tọa độ vào variables
             const updatedVariables = (variables || []).map(v => ({
                 ...v,
                 coordinates: v.code ? (coordinatesMap[v.code] || []) : []
             }))
 
-            // Update DB
+            // Cập nhật Database
             const rs = await entityFunc.templateFunc.updateTemplate({
                 name,
-                path:     filePath,
-                variable: JSON.stringify(updatedVariables)
+                path: filePath,
+                variable: JSON.stringify(updatedVariables),
+                type : type
             })
 
-            if (rs.success) {
-                return { success: true, variables: updatedVariables }
-            }
+            if (rs.success) return { success: true, variables: updatedVariables }
             return { success: false, message: 'Update DB failed' }
         } catch (error) {
             console.error('saveTemplateWithScan error:', error)
@@ -503,19 +554,90 @@ export const exportTemplateWithData = () => {
     })
 }
 
+export const exportWordWithData = () => {
+    ipcMain.handle('exportWordWithData', async function (event, { templatePath, codeMap }) {
+        try {
+            if (!templatePath || !fs.existsSync(templatePath)) {
+                return { success: false, message: 'Template file not found' }
+            }
+
+            const PizZip = require('pizzip')
+            const Docxtemplater = require('docxtemplater')
+
+            // Chuẩn bị dữ liệu cho docxtemplater
+            // Frontend truyền lên array: { "A1": ["Value 1", "Value 2"] }
+            // Word cần Object phẳng: { "A1": "Value 1\nValue 2" }
+            const dataForWord = {}
+            for (const key in codeMap) {
+                const values = codeMap[key]
+                if (Array.isArray(values)) {
+                    // Lọc bỏ giá trị rỗng và nối bằng dấu xuống dòng (Enter)
+                    dataForWord[key] = values.filter(v => v !== '').join('\n')
+                } else {
+                    dataForWord[key] = values || ''
+                }
+            }
+
+            // Đọc và Render Word
+            const content = fs.readFileSync(templatePath, 'binary')
+            const zip = new PizZip(content)
+            
+            const doc = new Docxtemplater(zip, {
+                paragraphLoop: true,
+                linebreaks: true,
+                nullGetter() { return ""; } // Tránh in ra chữ "undefined" nếu code trống
+            })
+
+            // Thay thế {Code} bằng data
+            doc.render(dataForWord)
+
+            // Xuất ra buffer
+            const buf = doc.getZip().generate({ type: 'nodebuffer', compression: "DEFLATE" })
+
+            // Mở Dialog cho user lưu file
+            const { canceled, filePath } = await dialog.showSaveDialog({
+                title: 'Save Word Export',
+                defaultPath: 'Export_Report.docx',
+                filters: [{ name: 'Word Document', extensions: ['docx'] }]
+            })
+
+            if (canceled || !filePath) return { success: false, canceled: true }
+
+            // Ghi file
+            fs.writeFileSync(filePath, buf)
+
+            return { success: true, filePath }
+
+        } catch (error) {
+            console.error('exportWordWithData error:', error)
+            // Lấy chi tiết lỗi của docxtemplater nếu có (ví dụ quên đóng ngoặc {})
+            if (error.properties && error.properties.errors instanceof Array) {
+                const errorMessages = error.properties.errors.map(function (e) {
+                    return e.properties.explanation;
+                }).join("\n");
+                return { success: false, message: errorMessages }
+            }
+            return { success: false, message: error.message }
+        }
+    })
+}
+
 // ═════════════════════════════════════════════════════════════════════════════
 // ACTIVE
 // ═════════════════════════════════════════════════════════════════════════════
 
 export const active = () => {
     getAllTemplates()
+    getAllTemplatesByType()
     getTemplateByName()
     insertTemplate()
     updateTemplate()
     deleteTemplate()
     checkNameTemplateExist()
     uploadExcelTemplate()
+    uploadWordTemplate()
     scanTemplateCoordinates()
     saveTemplateWithScan()
+    exportWordWithData()
     exportTemplateWithData()
 }

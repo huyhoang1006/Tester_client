@@ -5,6 +5,7 @@ export const templatePreload = () => {
     return {
         // ── CRUD ────────────────────────────────────────────────────────────
         getAllTemplates:     ()       => ipcRenderer.invoke('getAllTemplates'),
+        getAllTemplatesByType:     (type)       => ipcRenderer.invoke('getAllTemplatesByType', type),
         getTemplateByName:  (name)   => ipcRenderer.invoke('getTemplateByName', name),
         insertTemplate:     (data)   => ipcRenderer.invoke('insertTemplate', data),
         updateTemplate:     (data)   => ipcRenderer.invoke('updateTemplate', data),
@@ -14,6 +15,7 @@ export const templatePreload = () => {
         // ── Upload Excel ─────────────────────────────────────────────────────
         // Mở dialog chọn file .xlsx → copy vào /template → trả { filePath, fileName }
         uploadExcelTemplate: (templateName) => ipcRenderer.invoke('uploadExcelTemplate', templateName),
+        uploadWordTemplate: (templateName) => ipcRenderer.invoke('uploadWordTemplate', templateName),
 
         // ── Scan Coordinates ─────────────────────────────────────────────────
         // Đọc file Excel, tìm cell chứa code → trả coordinates map
@@ -31,5 +33,8 @@ export const templatePreload = () => {
         // Mở Excel template → fill data → ghi ra file mới (giữ nguyên style)
         exportTemplateWithData: (data) => ipcRenderer.invoke('exportTemplateWithData', data),
         // data = { templatePath: string, variables: [], dto: {} }
+
+        exportWordWithData : (data) => ipcRenderer.invoke('exportWordWithData', data)
+    
     }
 }

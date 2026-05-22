@@ -7,6 +7,7 @@
         :show-close="showClose"
         :transition="transition"
         :custom-class="customClass"
+        :exportType="exportType"
     >
         <Export :exportType="exportType" />
         <span slot="footer" class="dialog-footer custom-footer">

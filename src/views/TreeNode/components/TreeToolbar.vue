@@ -98,13 +98,8 @@
                         <div class="export-json-submenu" v-if="showSub === 'json'" @click.stop @mouseenter.stop
                             @mouseleave.stop>
                             <div class="submenu-item" @click="handleExportCommand('exportJSON')">export JSON</div>
-                            <div class="submenu-item" @click="handleExportCommand('exportJSONCIM')">export JSON by CIM
-                            </div>
+                            
                         </div>
-                    </el-dropdown-item>
-                    <el-dropdown-item command="exportXML">
-                        <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon>
-                        export to XML
                     </el-dropdown-item>
                     <el-dropdown-item command="exportExcel">
                         <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon>
@@ -113,10 +108,6 @@
                     <el-dropdown-item command="exportWord">
                         <icon size="12px" fileTypeDetail="word" folderType="fileType" badgeColor="146EBE"></icon>
                         export to Word
-                    </el-dropdown-item>
-                    <el-dropdown-item command="exportPDF">
-                        <icon size="12px" fileTypeDetail="pdf" folderType="fileType" badgeColor="146EBE"></icon>
-                        export to PDF
                     </el-dropdown-item>
                 </el-dropdown-menu>
             </el-dropdown>
