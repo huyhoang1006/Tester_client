@@ -24,6 +24,7 @@ import uuid from '@/utils/uuid'
 import { OrgDtoToOrgEntity }  from '@/views/Mapping/Organisation/index'
 import { mapDtoToEntity as subDtoToEntity } from '@/views/Mapping/Substation/index'
 import { volDtoToVolEntity }     from '@/views/Mapping/VoltageLevel/index'
+import { TEST_DEFINITIONS } from './testDefinitionsMap'
 // Bay: không có DtoToEntity mapper riêng — gọi API với BayDto trực tiếp
 // Job mappers — tất cả đều export jobDtoToEntity
 import { jobDtoToEntity as vtJobDtoToEntity }   from '@/views/Mapping/VoltageTransformerJob/index'
@@ -112,7 +113,7 @@ export var deepImportService = {
       if (row.category === 'Asset' && row.featureLevels && row.featureLevels[0] && row.featureLevels[0].key) {
         catKey = 'Asset_' + row.featureLevels[0].key
       } else if (row.category === 'Job' && row.featureLevels && row.featureLevels[0] && row.featureLevels[0].key) {
-        catKey = 'Job_' + row.featureLevels[0].key
+        catKey = row.featureLevels[0].key  // key đã có prefix 'Job_' từ FEATURE_TREE
       }
 
       if (!levels[catKey]) levels[catKey] = {}
@@ -188,12 +189,13 @@ export var deepImportService = {
   },
 
   // ── 5. Tìm entity theo name trong parent ──────────────────────────────
-  async findExistingByName(levelId, name, ctx, assetType) {
-    var userId = (window.store && window.store.state && window.store.state.user && window.store.state.user.user_id) ? window.store.state.user.user_id : null
+  async findExistingByName(levelId, name, ctx, assetType, userId) {
+    if (!userId) userId = (window.store && window.store.state && window.store.state.user && window.store.state.user.user_id) ? window.store.state.user.user_id : null
     if (levelId === 'org') {
-      if (ctx.organisation && ctx.organisation.mrid) {
+      var _orgCtxMrid = (ctx.org && ctx.org.mrid) || (ctx.organisation && ctx.organisation.mrid)
+      if (_orgCtxMrid) {
         // ctx đã có org → tìm trong child orgs của org đó
-        var rs = await window.electronAPI.getParentOrganizationByParentMrid(ctx.organisation.mrid)
+        var rs = await window.electronAPI.getParentOrganizationByParentMrid(_orgCtxMrid)
         if (!rs || !rs.success) return null
         var list = rs.data || []
         return list.find(function(o) { return (o.name || o.aliasName) === name }) || null
@@ -211,28 +213,43 @@ export var deepImportService = {
       }
     }
     if (levelId === 'sub') {
-      var orgMrid = ctx.organisation && ctx.organisation.mrid
+      // 1. Kiểm tra ctx trực tiếp (selectedNode.context đã có sub)
+      var ctxSub = ctx.sub || ctx.substation
+      if (ctxSub && ctxSub.mrid && (ctxSub.name === name || !ctxSub.name)) {
+          return ctxSub
+      }
+      var orgMrid = (ctx.org && ctx.org.mrid) || (ctx.organisation && ctx.organisation.mrid)
       if (!orgMrid) return null
       var rs = await window.electronAPI.getSubstationsInOrganisationForUser(orgMrid, userId)
       if (!rs || !rs.success) return null
       var list = rs.data || []
-      return list.find(function(s) { return s.name === name }) || null
+      var found = list.find(function(s) { return s.name === name || s.aliasName === name })
+      return found || null
     }
     if (levelId === 'vl') {
-      var subMrid = ctx.substation && ctx.substation.mrid
+      // 1. Kiểm tra ctx trực tiếp
+      var ctxVl = ctx.vl || ctx.voltageLevel
+      if (ctxVl && ctxVl.mrid && (ctxVl.name === name || !ctxVl.name)) {
+          return ctxVl
+      }
+      var subMrid = (ctx.sub && ctx.sub.mrid) || (ctx.substation && ctx.substation.mrid)
       if (!subMrid) return null
       var rs = await window.electronAPI.getVoltageLevelBySubstationId(subMrid)
       if (!rs || !rs.success) return null
       var list = rs.data || []
-      return list.find(function(vl) { return vl.name === name }) || null
+      return list.find(function(vl) { return vl.name === name || vl.aliasName === name }) || null
     }
     if (levelId === 'bay') {
-      var vlMrid = ctx.voltageLevel && ctx.voltageLevel.mrid
-      var subMrid = ctx.substation && ctx.substation.mrid
+      // 1. Kiểm tra ctx trực tiếp
+      var ctxBay = ctx.bay
+      if (ctxBay && ctxBay.mrid && (ctxBay.name === name || !ctxBay.name)) return ctxBay
+
+      var vlMrid = (ctx.vl && ctx.vl.mrid) || (ctx.voltageLevel && ctx.voltageLevel.mrid)
+      var subMrid = (ctx.sub && ctx.sub.mrid) || (ctx.substation && ctx.substation.mrid)
       var rs = await window.electronAPI.getBayByVoltageBySubstationId(vlMrid || null, subMrid || null)
       if (!rs || !rs.success) return null
       var list = rs.data || []
-      return list.find(function(b) { return b.name === name }) || null
+      return list.find(function(b) { return b.name === name || b.aliasName === name }) || null
     }
     if (levelId === 'asset') {
       var kindStr = assetType.replace('Asset_', '')
@@ -242,7 +259,11 @@ export var deepImportService = {
       // Asset có thể cắm vào bay HOẶC substation → thử cả 2
       var psrIds = []
       if (ctx.bay && ctx.bay.mrid) psrIds.push(ctx.bay.mrid)
-      if (ctx.substation && ctx.substation.mrid && !(ctx.bay && ctx.bay.mrid === ctx.substation.mrid)) {
+      if (ctx.sub && ctx.sub.mrid && !(ctx.bay && ctx.bay.mrid === ctx.sub.mrid)) {
+        psrIds.push(ctx.sub.mrid)
+      }
+      // Also try long-key sub
+      if (ctx.substation && ctx.substation.mrid && !psrIds.includes(ctx.substation.mrid)) {
         psrIds.push(ctx.substation.mrid)
       }
       if (!psrIds.length) return null
@@ -322,19 +343,21 @@ export var deepImportService = {
     if (!rs || rs.success === false) return null
     // Thử các vị trí có thể có mrid
     if (rs.mrid)                           return rs.mrid
-    if (rs.data && rs.data.mrid)           return rs.data.mrid
-    if (rs.data && rs.data.id)             return rs.data.id
+    if (rs.data && rs.data.mrid)                        return rs.data.mrid
+    if (rs.data && rs.data.asset && rs.data.asset.mrid) return rs.data.asset.mrid  // Transformer entity
+    if (rs.data && rs.data.id)                          return rs.data.id
     if (typeof rs.data === 'string' && rs.data.length > 10) return rs.data
     if (rs.id)                             return rs.id
     return null
   },
 
   async insertEntity(lv, data, ctx, _passedUserId) {
-    var orgMrid   = ctx.organisation  && ctx.organisation.mrid
-    var subMrid   = ctx.substation    && ctx.substation.mrid
-    var vlMrid    = ctx.voltageLevel  && ctx.voltageLevel.mrid
-    var bayMrid   = ctx.bay           && ctx.bay.mrid
-    var assetMrid = ctx.asset         && ctx.asset.mrid
+    // Support cả short keys (org/sub/vl) lẫn long keys (organisation/substation/voltageLevel)
+    var orgMrid   = (ctx.org && ctx.org.mrid)  || (ctx.organisation && ctx.organisation.mrid)
+    var subMrid   = (ctx.sub && ctx.sub.mrid)  || (ctx.substation   && ctx.substation.mrid)
+    var vlMrid    = (ctx.vl  && ctx.vl.mrid)   || (ctx.voltageLevel && ctx.voltageLevel.mrid)
+    var bayMrid   = ctx.bay   && ctx.bay.mrid
+    var assetMrid = ctx.asset && ctx.asset.mrid
     var userId    = _passedUserId || this._getUserId()
     var userName  = this._getUserName()
     var rs, dto, entity
@@ -525,6 +548,7 @@ export var deepImportService = {
       dto.attachment.type = 'asset'
 
       // Assign các sub-IDs (giống checkVoltageTransformerData trong mixin)
+      if (data._overwriteMrid)    dto.properties.mrid   = data._overwriteMrid  // overwrite: giữ mrid cũ
       if (!dto.properties.mrid)   dto.properties.mrid   = uuid.newUuid()  // checkProperty
       if (!dto.lifecycleDateId)   dto.lifecycleDateId   = uuid.newUuid()  // checkLifecycleDate
       if (!dto.productAssetModelId) dto.productAssetModelId = uuid.newUuid() // checkProductAssetModel
@@ -638,20 +662,18 @@ export var deepImportService = {
     if (lv.id === 'job') {
       if (!assetMrid) return { success: false, message: 'Cannot insert Job: no Asset context' }
 
-      // Config per asset type — jobDtoToEntity + API name
-      // catKey format: 'Job_VoltageTransformerJobDto' → map sang VT job
       var jobConfig = {
-        'Job_VoltageTransformerDto':  { mapper: vtJobDtoToEntity, api: 'insertVoltageTransformerJobEntity', testTypeKey: 'voltageTransformerTestingEquipmentTestType' },
-        'Job_CurrentTransformerDto':  { mapper: ctJobDtoToEntity, api: 'insertCurrentTransformerJobEntity', testTypeKey: 'currentTransformerTestingEquipmentTestType' },
-        'Job_TransformerDataDto':     { mapper: tfJobDtoToEntity, api: 'insertTransformerJobEntity',        testTypeKey: 'transformerTestingEquipmentTestType' },
-        'Job_CircuitBreakerDto':      { mapper: brJobDtoToEntity, api: 'insertCircuitBreakerJobEntity',     testTypeKey: 'circuitBreakerTestingEquipmentTestType' },
-        'Job_PowerCableDTO':          { mapper: caJobDtoToEntity, api: 'insertPowerCableJobEntity',         testTypeKey: 'powerCableTestingEquipmentTestType' },
-        'Job_SurgeArresterDto':       { mapper: saJobDtoToEntity, api: 'insertSurgeArresterJobEntity',      testTypeKey: 'surgeArresterTestingEquipmentTestType' },
-        'Job_ReactorDto':             { mapper: reJobDtoToEntity, api: 'insertReactorJobEntity',            testTypeKey: 'reactorTestingEquipmentTestType' },
-        'Job_CapacitorsDTO':          { mapper: cpJobDtoToEntity, api: 'insertCapacitorJobEntity',          testTypeKey: 'capacitorTestingEquipmentTestType' },
-        'Job_DisconnectorDTO':        { mapper: dcJobDtoToEntity, api: 'insertDisconnectorJobEntity',       testTypeKey: 'disconnectorTestingEquipmentTestType' },
-        'Job_RotatingMachineDTO':     { mapper: rmJobDtoToEntity, api: 'insertRotatingMachineJobEntity',    testTypeKey: 'rotatingMachineTestingEquipmentTestType' },
-        'Job_BushingAssetDto':        { mapper: buJobDtoToEntity, api: 'insertBushingJobEntity',            testTypeKey: 'bushingTestingEquipmentTestType' },
+        'Job_TransformerJobDto':        { mapper: tfJobDtoToEntity, api: 'insertTransformerJob',        testTypeKey: 'transformerTestingEquipmentTestType' },
+        'Job_VoltageTransformerJobDto': { mapper: vtJobDtoToEntity, api: 'insertVoltageTransformerJob', testTypeKey: 'voltageTransformerTestingEquipmentTestType' },
+        'Job_CurrentTransformerJobDto': { mapper: ctJobDtoToEntity, api: 'insertCurrentTransformerJob', testTypeKey: 'currentTransformerTestingEquipmentTestType' },
+        'Job_CircuitBreakerJobDto':     { mapper: brJobDtoToEntity, api: 'insertCircuitBreakerJob',     testTypeKey: 'circuitBreakerTestingEquipmentTestType' },
+        'Job_PowerCableJobDto':         { mapper: caJobDtoToEntity, api: 'insertPowerCableJob',         testTypeKey: 'powerCableTestingEquipmentTestType' },
+        'Job_SurgeArresterJobDto':      { mapper: saJobDtoToEntity, api: 'insertSurgeArresterJob',      testTypeKey: 'surgeArresterTestingEquipmentTestType' },
+        'Job_ReactorJobDto':            { mapper: reJobDtoToEntity, api: 'insertReactorJob',            testTypeKey: 'reactorTestingEquipmentTestType' },
+        'Job_CapacitorJobDto':          { mapper: cpJobDtoToEntity, api: 'insertCapacitorJob',          testTypeKey: 'capacitorTestingEquipmentTestType' },
+        'Job_DisconnectorJobDto':       { mapper: dcJobDtoToEntity, api: 'insertDisconnectorJob',       testTypeKey: 'disconnectorTestingEquipmentTestType' },
+        'Job_RotatingMachineJobDto':    { mapper: rmJobDtoToEntity, api: 'insertRotatingMachineJob',    testTypeKey: 'rotatingMachineTestingEquipmentTestType' },
+        'Job_BushingJobDto':            { mapper: buJobDtoToEntity, api: 'insertBushingJob',            testTypeKey: 'bushingTestingEquipmentTestType' },
       }
 
       var jcfg = jobConfig[lv.catKey]
@@ -660,13 +682,11 @@ export var deepImportService = {
       var jobName = data[JOB_REQ_FIELD] || this._randomJobName()
       var jobMrid = uuid.newUuid()
 
-      // Build job DTO — mapper reads from dto.properties.*
-      // (VTJobMapping: entity.oldWork.mrid = dto.properties.mrid)
-      dto = {
+      var dto = {
         properties: {
-          mrid:           jobMrid,          // job mrid — dùng cho syncFilesWithDeletion
+          mrid:           data._overwriteMrid || jobMrid,
           name:           jobName,
-          asset_id:       assetMrid,         // link job → asset
+          asset_id:       assetMrid,
           job_type:       this._n(data['job_type']),
           tested_by:      this._n(data['tested_by']),
           approved_by:    this._n(data['approved_by']),
@@ -678,10 +698,8 @@ export var deepImportService = {
           creation_date:  this._n(data['creation_date']),
           type:           this._n(data['type'])
         },
-        // CRITICAL: attachment.path phải là '[]' — job CRUD gọi JSON.parse(entity.attachment.path)
         attachment:   { id: null, path: '[]', name: null, type: 'job', id_foreign: assetMrid },
         attachmentId: null,
-        // Arrays rỗng cho basic import (không có test data)
         testingEquipmentData: [],
         procedureAsset:       [],
         testList:             [],
@@ -691,22 +709,23 @@ export var deepImportService = {
         assessment_group:     [],
         attachmentTest:       []
       }
-      // testTypeKey là field chứa equipment test types per asset type
       dto[jcfg.testTypeKey] = []
 
-      // Map DTO → entity
+      // Build testList từ lvm nếu có test data
+      dto.testList = this._buildJobTestList(data, lv.catKey)
+
       entity = jcfg.mapper(dto)
 
-      // Blank oldEntity cho diff (all arrays empty)
-      var oldJobEntity = jcfg.mapper({
+      var blankJobDto = {
         properties: { mrid: null, name: null, asset_id: null },
         attachment: { id: null, path: '[]' },
         attachmentId: null,
         testingEquipmentData: [], procedureAsset: [], testList: [],
         standardCustomized: [], testStandard: [], assessment_rule: [],
         assessment_group: [], attachmentTest: []
-      })
-      oldJobEntity[jcfg.testTypeKey] = []
+      }
+      blankJobDto[jcfg.testTypeKey] = []
+      var oldJobEntity = jcfg.mapper(blankJobDto)
 
       rs = await window.electronAPI[jcfg.api](oldJobEntity, entity)
       return { success: !!(rs && rs.success === true), mrid: this._extractMrid(rs), message: rs && rs.message }
@@ -716,49 +735,45 @@ export var deepImportService = {
   },
 
     // ── 7. Overwrite entity (giữ MRID, ghi đè fields) ────────────────────
-  async overwriteEntity(lv, existing, data, ctx) {
-    // Merge: lấy existing entity đầy đủ rồi ghi đè các fields từ data
+  async overwriteEntity(lv, existing, data, ctx, userId) {
+    // Insert functions đều là upsert (ON CONFLICT mrid → update)
+    // → dùng lại đúng hàm insert, truyền existing.mrid để update đúng record
     var mrid = existing.mrid
+
     if (lv.id === 'org') {
       var rs = await window.electronAPI.getOrganisationEntityByMrid(mrid)
       if (!rs || !rs.success || !rs.data) return { success: false }
       var e = rs.data
       this._applyFlat(e, data, ['name','aliasName','tax_code','street','ward_or_commune','district_or_town','city','state_or_province','postal_code','country','phoneNumber','fax','email','comment'])
-      return await window.electronAPI.updateOrganisation(e)
+      return await window.electronAPI.insertParentOrganizationEntity(e)  // upsert
     }
     if (lv.id === 'sub') {
       var rs = await window.electronAPI.getSubstationEntityByMrid(mrid)
       if (!rs || !rs.success || !rs.data) return { success: false }
       var e = rs.data
       this._applyFlat(e, data, ['name','aliasName','type','generation','industry','locationName','street','ward_or_commune','district_or_town','state_or_province','city','country','personName','department','position','phoneNumber','fax','email','comment'])
-      return await window.electronAPI.updateSubstation(e)
+      return await window.electronAPI.insertSubstationEntity(e)  // upsert
     }
     if (lv.id === 'vl') {
       var rs = await window.electronAPI.getVoltageLevelEntityByMrid(mrid)
       if (!rs || !rs.success || !rs.data) return { success: false }
       var e = rs.data
       this._applyFlat(e, data, ['name','comment','high_voltage_limit_value','low_voltage_limit_value','base_voltage_value'])
-      return await window.electronAPI.updateVoltageLevel(e)
+      return await window.electronAPI.insertVoltageLevelEntity(e)  // upsert
     }
     if (lv.id === 'bay') {
       var rs = await window.electronAPI.getBayEntityByMrid(mrid)
       if (!rs || !rs.success || !rs.data) return { success: false }
       var e = rs.data
       this._applyFlat(e, data, ['name','aliasName','breaker_configuration','bus_bar_configuration'])
-      return await window.electronAPI.updateBay(e)
+      return await window.electronAPI.insertBayEntity(e)  // upsert
     }
     if (lv.id === 'asset') {
-      // Fetch và update entity qua API tương ứng
-      return { success: false, message: 'Asset overwrite: implement per asset type' }
+      // Upsert: truyền existing.mrid qua _overwriteMrid để insertEntity dùng mrid cũ
+      return await this.insertEntity(lv, Object.assign({}, data, { _overwriteMrid: mrid }), ctx, userId)
     }
     if (lv.id === 'job') {
-      var rs = await window.electronAPI.getJobByMrid(mrid)
-      if (!rs || !rs.success || !rs.data) return { success: false }
-      var e = rs.data
-      var jobFields = ['job_type','tested_by','approved_by','test_method','ref_standard','summary','execution_date','approval_date']
-      this._applyFlat(e, data, jobFields)
-      if (data[JOB_REQ_FIELD]) e.name = data[JOB_REQ_FIELD]
-      return await window.electronAPI.updateJob(e)
+      return await this.insertEntity(lv, Object.assign({}, data, { _overwriteMrid: mrid }), ctx, userId)
     }
     return { success: false, message: 'Unknown level' }
   },
@@ -894,7 +909,12 @@ export var deepImportService = {
     var seen = {}, result = []
     reqVals.forEach(function(v, i) {
       var t = v ? String(v).trim() : ''
-      if (t && !seen[t]) { seen[t] = true; result.push({ reqVal: t, index: i }) }
+      // Bỏ qua giá trị thuần số (như '7', '8') — đây là data bị lẫn từ template scan sai
+      // Tên hợp lệ phải có ít nhất 1 ký tự không phải số
+      if (t && !seen[t] && !/^\d+(\.\d+)?$/.test(t)) {
+        seen[t] = true
+        result.push({ reqVal: t, index: i })
+      }
     })
     return result
   },
@@ -927,9 +947,13 @@ export var deepImportService = {
   // Cần thiết vì nhiều API insert trả { success: true } mà không kèm mrid
   async _findMridAfterInsert(lv, reqVal, ctx, _passedUserId) {
     var userId = _passedUserId || this._getUserId()
+    // Support cả short và long ctx keys
+    var _org = (ctx.org && ctx.org.mrid) ? ctx.org : (ctx.organisation || null)
+    var _sub = (ctx.sub && ctx.sub.mrid) ? ctx.sub : (ctx.substation   || null)
+    var _vl  = (ctx.vl  && ctx.vl.mrid)  ? ctx.vl  : (ctx.voltageLevel || null)
     try {
       if (lv.id === 'org') {
-        var parentMrid = ctx.organisation && ctx.organisation.mrid
+        var parentMrid = _org && _org.mrid
         var list = []
         if (parentMrid) {
           // Có parent org → tìm trong children của parent đó
@@ -950,7 +974,7 @@ export var deepImportService = {
         return found ? found.mrid : null
       }
       if (lv.id === 'sub') {
-        var orgMrid = ctx.organisation && ctx.organisation.mrid
+        var orgMrid = _org && _org.mrid
         if (!orgMrid) return null
         var rs = await window.electronAPI.getSubstationsInOrganisationForUser(orgMrid, userId)
         var list = (rs && rs.success && rs.data) ? rs.data : []
@@ -958,7 +982,7 @@ export var deepImportService = {
         return found ? found.mrid : null
       }
       if (lv.id === 'vl') {
-        var subMrid = ctx.substation && ctx.substation.mrid
+        var subMrid = _sub && _sub.mrid
         if (!subMrid) return null
         var rs = await window.electronAPI.getVoltageLevelBySubstationId(subMrid)
         var list = (rs && rs.success && rs.data) ? rs.data : []
@@ -966,15 +990,15 @@ export var deepImportService = {
         return found ? found.mrid : null
       }
       if (lv.id === 'bay') {
-        var vlMrid  = ctx.voltageLevel && ctx.voltageLevel.mrid
-        var subMrid = ctx.substation   && ctx.substation.mrid
+        var vlMrid  = _vl  && _vl.mrid
+        var subMrid = _sub && _sub.mrid
         var rs = await window.electronAPI.getBayByVoltageBySubstationId(vlMrid || null, subMrid || null)
         var list = (rs && rs.success && rs.data) ? rs.data : []
         var found = list.find(function(b) { return b.name === reqVal })
         return found ? found.mrid : null
       }
       if (lv.id === 'asset') {
-        var psrId = (ctx.bay && ctx.bay.mrid) || (ctx.substation && ctx.substation.mrid)
+        var psrId = (ctx.bay && ctx.bay.mrid) || (_sub && _sub.mrid)
         if (!psrId) return null
         var rs = await window.electronAPI.getAssetByPsrIdAndKind(psrId, 'all')
         var list = (rs && rs.success && rs.data) ? (Array.isArray(rs.data) ? rs.data : [rs.data]) : []
@@ -1022,7 +1046,85 @@ export var deepImportService = {
     return result
   },
 
-  _buildTransformerArrays: function(dto, lvm) {
+  // Build testList từ lvm data cho job
+  // lvm key format: '{TestCode}_{fieldCode}' → e.g. 'WindingDfCap_df_ref'
+  _buildJobTestList: function(lvm, catKey) {
+    var self = this
+    var testDefs = TEST_DEFINITIONS[catKey]
+    if (!testDefs || Object.keys(testDefs).length === 0) return []
+
+    var testList = []
+
+    // Tìm test types có data trong lvm
+    Object.keys(testDefs).forEach(function(testCode) {
+      var def = testDefs[testCode]
+      
+      // Tìm max rows từ các fields có data
+      var maxRows = 0
+      def.columns.forEach(function(col) {
+        var lkey = testCode + '_' + col.code
+        var vals = lvm[lkey]
+        if (!vals) return
+        var len = Array.isArray(vals) ? vals.length : (vals ? 1 : 0)
+        if (len > maxRows) maxRows = len
+      })
+      if (maxRows === 0) return  // test này không có data → skip
+
+      // Build rows
+      var rows = []
+      for (var i = 0; i < maxRows; i++) {
+        var row = { mrid: uuid.newUuid() }
+        def.columns.forEach(function(col) {
+          var lkey = testCode + '_' + col.code
+          var vals = lvm[lkey]
+          var val = ''
+          if (vals) val = Array.isArray(vals) ? (vals[i] !== undefined ? vals[i] : '') : vals
+          row[col.code] = {
+            mrid: uuid.newUuid(),
+            value: String(val),
+            type: col.type,
+            unit: col.unit || '',
+            measurement_id: col.mrid
+          }
+        })
+        rows.push(row)
+      }
+
+      // Build empty condition
+      var condRow = {}
+      ;(def.conditionColumns || []).forEach(function(col) {
+        condRow[col.code] = {
+          mrid: uuid.newUuid(), value: '',
+          type: col.type, unit: col.unit || '',
+          measurement_id: col.mrid
+        }
+      })
+
+      testList.push({
+        mrid:         uuid.newUuid(),
+        name:         def.testName || testCode,
+        testTypeCode: testCode,
+        testTypeName: def.testName || testCode,
+        testTypeId:   def.testId || '',
+        testAssessment: {
+          testStandard: { mrid: null, work_task_id: null, test_standard_customize: null },
+          assessment:   []
+        },
+        testCondition: {
+          mrid:           uuid.newUuid(),
+          condition:      condRow,
+          comment:        '',
+          attachment:     { id: null, path: '[]', name: null, type: 'job', id_foreign: null },
+          attachmentData: []
+        },
+        data: { table: { table1: rows } }
+      })
+    })
+
+    return testList
+  },
+
+    _buildTransformerArrays: function(dto, lvm) {
     // prim_sec (ps_*), prim_tert (pt_*), sec_tert (st_*)
     var ps = this._buildImpedanceItems(lvm, 'ps_uk', 'ps_base_power', 'ps_base_voltage', 'ps_load_losses')
     var pt = this._buildImpedanceItems(lvm, 'pt_uk', 'pt_base_power', 'pt_base_voltage', 'pt_load_losses')
@@ -1128,6 +1230,11 @@ export var deepImportService = {
     var ctx = {}
     if (selectedNode && selectedNode.context) {
       ctx = Object.assign({}, selectedNode.context)
+      // Normalize: tree dùng key dài (organisation, substation, voltageLevel)
+      // code dùng key ngắn (org, sub, vl) → alias để tương thích
+      if (ctx.organisation && !ctx.org) ctx.org = ctx.organisation
+      if (ctx.substation   && !ctx.sub) ctx.sub = ctx.substation
+      if (ctx.voltageLevel && !ctx.vl)  ctx.vl  = ctx.voltageLevel
     }
 
     var results = []
@@ -1163,7 +1270,7 @@ export var deepImportService = {
         var occData = this._getOccurrenceData(data, occ.index, lv.reqField)  // reqField quyết định single vs multi entity mode
 
         try {
-          var existing = await this.findExistingByName(lv.id, reqVal, ctx, lv.catKey)
+          var existing = await this.findExistingByName(lv.id, reqVal, ctx, lv.catKey, _userId)
 
           if (existing) {
             if (overwrite) {

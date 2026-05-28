@@ -83,7 +83,7 @@
         </div>
         <div>
             <el-dropdown @command="handleImportCommand" trigger="click">
-                <i title="Export" style="font-size: 12px" class="fa-solid fa-file-export"></i>
+                <i title="Import" style="font-size: 12px" class="fa-solid fa-file-import"></i>
                 <el-dropdown-menu slot="dropdown">
                     <el-dropdown-item command="importJSON">
                         <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon>
