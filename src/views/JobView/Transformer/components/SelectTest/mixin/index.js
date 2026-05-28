@@ -256,6 +256,7 @@ export default {
         async initRatioPrimSec(testTypeCode, assetData) {
             const rowDataExample = common.buildEmptyTestRow(transformerTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
 
             const asset = assetData || []
             const tapChangers = asset.tap_changers || {}
@@ -263,6 +264,7 @@ export default {
             if (!(tapChangers ? tapChangers.mode : null) || !tapChangers.winding || !tapChangers.tap_scheme || !tapChangers.no_of_taps) {
                 return {
                     rowDataExampleCondition,
+                    rowDataAssessment,
                     table: {
                         table1: []
                     }
@@ -286,7 +288,6 @@ export default {
                 })
             })
 
-            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
                 rowDataExampleCondition,
                 rowDataAssessment,

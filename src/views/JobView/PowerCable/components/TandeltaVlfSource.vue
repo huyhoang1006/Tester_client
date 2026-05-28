@@ -148,9 +148,8 @@
         </table>
 
         <!-- Assessment settings -->
-                <!-- Assessment settings -->
         <el-dialog title="Assessment settings" :visible.sync="openAssessmentDialog" width="860px" append-to-body>
-            <el-form style="width: 75%;" size="small" label-position="left" label-width="140px">
+            <el-form style="width:75%;" size="small" label-position="left" label-width="140px">
                 <el-form-item label="Option">
                     <el-select size="mini" placeholder="please select" v-model="option">
                         <el-option v-for="opt in assessmentList" :key="opt.mrid" :label="opt.name" :value="opt.code"></el-option>
@@ -167,17 +166,16 @@
                         <div v-if="!node.is_default" :key="'node-' + i" class="tree-row">
                             <div class="limit-col"><GroupNode :node="node" mode="limit" /></div>
                             <div class="result-col">
-                                <span v-if="node.result === 'Pass' || node.result === 'Acceptable'" class="pass">✔ {{ node.result }}</span>
-                                <span v-else-if="node.result === 'Fail' || node.result === 'Action Required'" class="fail">✖ {{ node.result }}</span>
-                                <span v-else class="warn">⚠ {{ node.result }}</span>
+                                <span v-if="node.result === 'Pass'" class="pass">✔ Pass</span>
+                                <span v-else-if="node.result === 'Fail'" class="fail">✖ Fail</span>
+                                <span v-else>—</span>
                             </div>
                         </div>
                         <div v-else :key="'default-' + i" class="tree-row tree-row-default">
                             <div class="limit-col default-label">All other cases</div>
                             <div class="result-col">
-                                <span v-if="node.result === 'Pass' || node.result === 'Acceptable'" class="pass">✔ {{ node.result }}</span>
-                                <span v-else-if="node.result === 'Fail' || node.result === 'Action Required'" class="fail">✖ {{ node.result }}</span>
-                                <span v-else class="warn">⚠ {{ node.result }}</span>
+                                <span v-if="node.result === 'Pass'" class="pass">✔ Pass</span>
+                                <span v-else-if="node.result === 'Fail'" class="fail">✖ Fail</span>
                             </div>
                         </div>
                     </template>
@@ -213,25 +211,21 @@ export default {
         data: { type: Object, require: true },
         asset: { type: Object, require: true },
         testAssessment: { type: Object, require: true },
-        testCondition: { type: Object, default: function() { return {} } }
+        testCondition:  { type: Object, default: function() { return { condition: {} } } }
     },
     computed: {
         testData() { return this.data },
         assetData() { return this.asset },
-        rowData() { return common.buildEmptyTestRow(powerCableTestMap['TandeltaVlfSource'].columns) },
-        assessmentData() { return this.testAssessment ? this.testAssessment.assessment : [] },
+        rowData()      { return common.buildEmptyTestRow(powerCableTestMap['TandeltaVlfSource'].columns) },
+        assessmentData()        { return this.testAssessment ? this.testAssessment.assessment : [] },
         assessmentList() {
-            return (this.assessmentData || []).map(x => {
-                const code = x.code
-                const name = x.name
-                const type = x.type
-                const mrid = x.mrid
-                return { code, name, type, mrid }
+            return (this.assessmentData || []).map(function(x) {
+                return { code: x.code, name: x.name, type: x.type, mrid: x.mrid }
             })
         },
         filteredAssessmentData() {
             if (!this.option) return []
-            return (this.assessmentData || []).filter(e => e.code === this.option)
+            return (this.assessmentData || []).filter(function(e) { return e.code === this.option }.bind(this))
         },
         testStandardData() { return this.testAssessment ? this.testAssessment.testStandard : null }
     },

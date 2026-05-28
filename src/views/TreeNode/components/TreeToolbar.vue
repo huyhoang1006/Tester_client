@@ -82,10 +82,23 @@
             <i @click="handleDuplicate" title="Duplicate" style="font-size: 12px" class="fa-solid fa-clone"></i>
         </div>
         <div>
-            <div>
-                <i @click="handleImportClick" title="Import" style="font-size: 12px; cursor: pointer;"
-                    class="fa-solid fa-file-import"></i>
-            </div>
+            <el-dropdown @command="handleImportCommand" trigger="click">
+                <i title="Export" style="font-size: 12px" class="fa-solid fa-file-export"></i>
+                <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item command="importJSON">
+                        <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon>
+                        import from JSON
+                    </el-dropdown-item>
+                    <el-dropdown-item command="importExcel">
+                        <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon>
+                        import from Excel
+                    </el-dropdown-item>
+                    <el-dropdown-item command="importWord">
+                        <icon size="12px" fileTypeDetail="word" folderType="fileType" badgeColor="146EBE"></icon>
+                        import from Word
+                    </el-dropdown-item>
+                </el-dropdown-menu>
+            </el-dropdown>
         </div>
         <div>
             <el-dropdown @command="handleExportCommand" trigger="click">
@@ -181,8 +194,8 @@ export default {
         },
 
         // Import/Export methods
-        handleImportClick() {
-            this.$emit('open-import-dialog')
+        handleImportCommand(command) {
+            this.$emit('import-command', command)
         },
         handleExportCommand(command) {
             this.$emit('export-command', command)

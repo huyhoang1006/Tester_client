@@ -289,51 +289,65 @@ export const insertReactorJobEntity = async (old_entity,entity) => {
 
 
             //delete section
+            // ── 1. Leaf measurement values ───────────────────────────────────────────
             for(const analogValue of toDeleteAnalogValue) {
                 await deleteAnalogValueByIdTransaction(analogValue.mrid, db);
             }
             for(const stringMeasurementValue of toDeleteStringMeasurementValue) {
                 await deleteStringMeasurementValueByIdTransaction(stringMeasurementValue.mrid, db);
             }
-
             for(const discreteValue of toDeleteDiscreteValue) {
                 await deleteDiscreteValueByIdTransaction(discreteValue.mrid, db);
             }
 
+            // ── 2. TestDataSet ────────────────────────────────────────────────────────
             for (const testData of toDeleteTestDataSet) {
                 await deleteTestDataSetByIdTransaction(testData.mrid, db);
             }
 
+            // ── 3. Equipment (equipTestType.test_type_id có thể ref workTask → xóa trước)
             for(const equipmentTestType of toDeleteSet) {
                 await deleteReactorTestingEquipmentTestTypeByIdTransaction(equipmentTestType.mrid, db);
             }
-
             for (const equipment of toDelete) {
                 await deleteTestingEquipmentByIdTransaction(equipment.mrid, db);
             }
 
+            // ── 4. TestStandard: xóa trước workTask (FK: testStandard.work_task_id → workTask)
+            // Nếu customized → query và xóa toàn bộ chain: assessment→group→rule→standardCustomized
+            for(const testStandard of toDeleteTestStandard) {
+                if(testStandard.test_standard_customize) {
+                    const assessmentRuleData = await getAssessmentRuleByStandardId(testStandard.test_standard_customize)
+                    if(assessmentRuleData.success && assessmentRuleData.data.length > 0) {
+                        for(const rule of assessmentRuleData.data) {
+                            const assessmentGroupData = await getAssessmentGroupByRuleId(rule.mrid)
+                            if(assessmentGroupData.success && assessmentGroupData.data) {
+                                const childGroupList = [assessmentGroupData.data]
+                                await collectAssessmentGroupChildren(assessmentGroupData.data, childGroupList)
+                                const allGroupIds = childGroupList.map(g => g.mrid)
+                                const assessmentData = await getAssessmentInGroupIds(allGroupIds)
+                                if(assessmentData.success) {
+                                    for(const assessment of assessmentData.data) {
+                                        await deleteAssessmentByIdTransaction(assessment.mrid, db)
+                                    }
+                                }
+                                for(const group of [...childGroupList].reverse()) {
+                                    await deleteAssessmentGroupByIdTransaction(group.mrid, db)
+                                }
+                            }
+                            await deleteAssessmentRuleByIdTransaction(rule.mrid, db)
+                        }
+                    }
+                    await deleteTestStandardByIdTransaction(testStandard.mrid, db)
+                    await deleteCustomizedStandardByIdTransaction(testStandard.test_standard_customize, db)
+                } else {
+                    await deleteTestStandardByIdTransaction(testStandard.mrid, db)
+                }
+            }
+
+            // ── 5. WorkTask (an toàn sau khi testStandard đã xóa) ────────────────────
             for (const workTask of toDeleteWorkTask) {
                 await deleteWorkTaskByIdTransaction(workTask.mrid, db);
-            }
-
-            for (const assessment of toDeleteAssessment) {
-                await deleteAssessmentByIdTransaction(assessment.mrid, db);
-            }
-
-            for (const assessmentGroup of toDeleteAssessmentGroup) {
-                await deleteAssessmentGroupSafe(assessmentGroup);
-            }
-
-            for (const assessmentRule of toDeleteAssessmentRule) {
-                await deleteAssessmentRuleByIdTransaction(assessmentRule.mrid, db);
-            }
-
-            for (const testStandard of toDeleteTestStandard) {
-                await deleteTestStandardByIdTransaction(testStandard.mrid, db);
-            }
-
-            for (const customized of toDeleteCustomized) {
-                await deleteCustomizedStandardByIdTransaction(customized.mrid, db);
             }
 
             await runAsync('COMMIT');
@@ -593,6 +607,16 @@ export const deleteReactorJobEntity = async (entity) => {
         await runAsync('ROLLBACK');
         console.error('Delete Reactor Job Error:', error);
         return { success: false, error, message: 'Error deleting Reactor Job entity' };
+    }
+}
+
+const collectAssessmentGroupChildren = async (parentData, groupList) => {
+    const child = await getAssessmentGroupByParentId(parentData.mrid)
+    if(child.success && child.data.length > 0) {
+        for(const group of child.data) {
+            groupList.push(group)
+            await collectAssessmentGroupChildren(group, groupList)
+        }
     }
 }
 

@@ -1,23 +1,26 @@
 export default {
     methods: {
         handleCommand(cmd) {
-            console.log('Command received:', cmd)
             if (cmd === 'exportExcel') {
                 this.openExportDialog = true
                 this.exportType = 'excel'
             } else if (cmd === 'exportJSON') {
                 this.exportTreeToJSON('dto')
-            } else if (cmd === 'exportJSONCIM') {
-                this.exportTreeToJSON('cim')
-            } else if (cmd === 'exportXML') {
-                this.openExportDialog = true
-                this.exportType = 'xml'
             } else if (cmd === 'exportWord') {
                 this.openExportDialog = true
                 this.exportType = 'word'
-            } else if (cmd === 'exportPDF') {
-                this.openExportDialog = true
-                this.exportType = 'pdf'
+            }
+        },
+        handleImportCommand(cmd) {
+            this.openImportDialog = true;
+            if (cmd === 'importExcel') {
+                this.openImportDialog = true
+                this.importType = 'excel'
+            } else if (cmd === 'importJSON') {
+                this.importTreeToJSON('dto')
+            } else if (cmd === 'importWord') {
+                this.openImportDialog = true
+                this.importType = 'word'
             }
         },
         async handleAddCommand(cmd) {

@@ -5,7 +5,7 @@ export const templatePreload = () => {
     return {
         // ── CRUD ────────────────────────────────────────────────────────────
         getAllTemplates:     ()       => ipcRenderer.invoke('getAllTemplates'),
-        getAllTemplatesByType:     (type)       => ipcRenderer.invoke('getAllTemplatesByType', type),
+        getAllTemplatesByType:     (type, category)       => ipcRenderer.invoke('getAllTemplatesByType', type, category),
         getTemplateByName:  (name)   => ipcRenderer.invoke('getTemplateByName', name),
         insertTemplate:     (data)   => ipcRenderer.invoke('insertTemplate', data),
         updateTemplate:     (data)   => ipcRenderer.invoke('updateTemplate', data),
@@ -34,7 +34,13 @@ export const templatePreload = () => {
         exportTemplateWithData: (data) => ipcRenderer.invoke('exportTemplateWithData', data),
         // data = { templatePath: string, variables: [], dto: {} }
 
-        exportWordWithData : (data) => ipcRenderer.invoke('exportWordWithData', data)
+        exportWordWithData : (data) => ipcRenderer.invoke('exportWordWithData', data),
+
+        pickExcelFileForImport: () => ipcRenderer.invoke('pickExcelFileForImport'),
     
+        readExcelForImport: (data) => ipcRenderer.invoke('readExcelForImport', data),
+
+        openFileTemplate: (filePath) => ipcRenderer.invoke('openFileTemplate', filePath),
+        
     }
 }

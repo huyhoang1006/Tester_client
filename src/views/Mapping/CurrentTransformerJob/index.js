@@ -1,3 +1,4 @@
+import uuid from '@/utils/uuid'
 /* eslint-disable */
 import CurrentTransformerJobEntity from "@/views/Flatten/Job/CurrentTransformer"
 import CurrentTransformerJobDto from "@/views/Dto/Job/CurrentTransformer";
@@ -376,17 +377,59 @@ export const JobEntityToDto = (entity) => {
 
         for(const testAssessment of testAssessmentList) {
             if(testAssessment.type == 'customized') {
-                testAssessment.mrid = (standardCustomized && standardCustomized.mrid) ? standardCustomized.mrid : ''
-                testAssessment.assessment_rule = assessmentRule
-                testAssessment.assessment_group = assessmentGroup
-                for(const asm of testAssessment.assessment) {
-                    for(const ad of assessmentData) {
-                        if(asm.measurement_id === ad.measurement_id) {
-                            ad.label = asm.label
+                if (standardCustomized) {
+                    // Có customized standard từ DB → dùng data thật
+                    testAssessment.mrid = standardCustomized.mrid || ''
+                    testAssessment.assessment_rule = assessmentRule
+                    testAssessment.assessment_group = assessmentGroup
+                    for(const asm of testAssessment.assessment) {
+                        for(const ad of assessmentData) {
+                            if(asm.measurement_id === ad.measurement_id) {
+                                ad.label = asm.label
+                            }
                         }
                     }
+                    testAssessment.assessment = assessmentData
+                } else {
+                    // Không có customized standard → load từ config với cascading regen
+                    // Cross-ref chain phải giữ đúng:
+                    //   standardCustomized.mrid ← assessment_rule.standard_id
+                    //   assessment_rule.mrid    ← assessment_group.rule_id
+                    //   assessment_group.mrid   ← assessment.group_id
+                    var newStandardMrid = uuid.newUuid()
+
+                    // 1. Regen assessment_rule: mrid mới, standard_id → newStandardMrid
+                    var ruleMap = {}
+                    var newRules = (testAssessment.assessment_rule || []).map(function(r) {
+                        var newMrid = uuid.newUuid()
+                        ruleMap[r.mrid] = newMrid
+                        return Object.assign({}, r, { mrid: newMrid, standard_id: newStandardMrid })
+                    })
+
+                    // 2. Regen assessment_group: mrid mới, rule_id → ruleMap[old_rule_id]
+                    var groupMap = {}
+                    var newGroups = (testAssessment.assessment_group || []).map(function(g) {
+                        var newMrid = uuid.newUuid()
+                        groupMap[g.mrid] = newMrid
+                        return Object.assign({}, g, {
+                            mrid:    newMrid,
+                            rule_id: ruleMap[g.rule_id] || g.rule_id
+                        })
+                    })
+
+                    // 3. Regen assessment: mrid mới, group_id → groupMap[old_group_id]
+                    var newAssessments = (testAssessment.assessment || []).map(function(a) {
+                        return Object.assign({}, a, {
+                            mrid:     uuid.newUuid(),
+                            group_id: groupMap[a.group_id] || a.group_id
+                        })
+                    })
+
+                    testAssessment.mrid             = newStandardMrid
+                    testAssessment.assessment_rule  = newRules
+                    testAssessment.assessment_group = newGroups
+                    testAssessment.assessment       = newAssessments
                 }
-                testAssessment.assessment = assessmentData
             }
         }
         

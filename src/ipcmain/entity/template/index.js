@@ -55,9 +55,9 @@ export const getAllTemplates = () => {
 }
 
 export const getAllTemplatesByType = () => {
-    ipcMain.handle('getAllTemplatesByType', async function (event, type) {
+    ipcMain.handle('getAllTemplatesByType', async function (event, type, category) {
         try {
-            const rs = await entityFunc.templateFunc.getAllTemplatesByType(type)
+            const rs = await entityFunc.templateFunc.getAllTemplatesByType(type, category)
             if (rs.success) return { success: true, data: rs.data }
             return { success: false, message: 'fail' }
         } catch (error) {
@@ -258,7 +258,7 @@ export const scanTemplateCoordinates = () => {
 // ═════════════════════════════════════════════════════════════════════════════
 
 export const saveTemplateWithScan = () => {
-    ipcMain.handle('saveTemplateWithScan', async function (event, { name, filePath, variables, type }) {
+    ipcMain.handle('saveTemplateWithScan', async function (event, { name, filePath, variables, type, category }) {
         try {
             if (!filePath || !fs.existsSync(filePath)) {
                 return { success: false, message: 'Template file not found' }
@@ -267,6 +267,16 @@ export const saveTemplateWithScan = () => {
             const codes = (variables || []).map(v => v.code).filter(Boolean)
             let coordinatesMap = {}
             codes.forEach(c => { coordinatesMap[c] = [] })
+
+            // ── Helper: match code với word boundary ──────────────────────────────
+            // Fix: "A10".includes("A1") → true (sai)
+            // tokenRegex đảm bảo A1 chỉ match khi không có ký tự chữ/số liền kề
+            // → "Name : A1" ✓, "A10" ✗, "A11" ✗, "BA1" ✗
+            function codeMatchesCell(strVal, code) {
+                var escapedCode = code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+                var tokenRegex = new RegExp('(?<![A-Za-z0-9])' + escapedCode + '(?![A-Za-z0-9])')
+                return tokenRegex.test(strVal)
+            }
 
             if (codes.length > 0) {
                 if (type === 'excel') {
@@ -283,7 +293,7 @@ export const saveTemplateWithScan = () => {
                                 if (val === null || val === undefined) return
                                 const strVal = String(val)
                                 codes.forEach(code => {
-                                    if (strVal.includes(code)) {
+                                    if (codeMatchesCell(strVal, code)) {  // ← FIX
                                         const coord = `${sheetName}!${cell.address()}`
                                         if (!coordinatesMap[code].includes(coord)) coordinatesMap[code].push(coord)
                                     }
@@ -298,12 +308,8 @@ export const saveTemplateWithScan = () => {
                     const content = fs.readFileSync(filePath, 'binary')
                     const zip = new PizZip(content)
                     const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true })
-                    
-                    // Lấy toàn bộ text thô trong Word
                     const text = doc.getFullText()
-                    
                     codes.forEach(code => {
-                        // Word dùng format {Code}, nên ta check chuỗi {Code}
                         if (text.includes(`{${code}}`)) {
                             coordinatesMap[code].push('Found in Document')
                         }
@@ -322,7 +328,8 @@ export const saveTemplateWithScan = () => {
                 name,
                 path: filePath,
                 variable: JSON.stringify(updatedVariables),
-                type : type
+                type : type,
+                category : category
             })
 
             if (rs.success) return { success: true, variables: updatedVariables }
@@ -626,6 +633,194 @@ export const exportWordWithData = () => {
 // ACTIVE
 // ═════════════════════════════════════════════════════════════════════════════
 
+// ── Thêm vào ipcmain_entity_template_index.js ───────────────────────────────
+
+// 1. pickExcelFileForImport — chọn file Excel bất kỳ (không cần trong template dir)
+export const pickExcelFileForImport = () => {
+    ipcMain.handle('pickExcelFileForImport', async function (event) {
+        try {
+            const result = await dialog.showOpenDialog({
+                title: 'Select filled Excel file to import',
+                filters: [{ name: 'Excel', extensions: ['xlsx'] }],
+                properties: ['openFile']
+            })
+            if (result.canceled || !result.filePaths.length) return { canceled: true }
+            return { success: true, filePath: result.filePaths[0] }
+        } catch (e) {
+            return { success: false, message: e.message }
+        }
+    })
+}
+
+// 2. readExcelForImport — đọc values tại coordinates đã lưu trong template
+//    Ngược của fillWorkbookSheet trong exportTemplateWithData:
+//      Export: codeMap → coordinates → write cell
+//      Import: coordinates → read cell  → codeValueMap
+//
+//    Trả về: { code: [value0, value1, ...] }
+//    value0 = cell tại coordinates[0], value1 = cell tại coordinates[1], ...
+// ── readExcelForImport v2 ─────────────────────────────────────────────────
+// Đọc SONG SONG 2 file:
+//   1. templatePath  : file template gốc (chứa code placeholder: "Tên: A1")
+//   2. filePath      : file Excel đã fill (chứa giá trị: "Tên: EVN HCM")
+//
+// Với mỗi coordinate, tách giá trị thực bằng cách xác định
+// prefix/suffix xung quanh code trong template cell, rồi loại bỏ khỏi filled cell.
+//
+// Ví dụ:
+//   template cell = "Tên: A1"   code = "A1"
+//   filled   cell = "Tên: EVN HCM"
+//   → prefix = "Tên: "  suffix = ""
+//   → extracted = "EVN HCM"
+//
+//   template cell = "[A2] Ngày:"  code = "A2"  (code nằm giữa)
+//   filled   cell = "[2024-01-15] Ngày:"
+//   → prefix = "["  suffix = "] Ngày:"
+//   → extracted = "2024-01-15"
+//
+// Edge cases:
+//   - Cell chứa NHIỀU code (A1, A2 trong 1 cell) → trả chuỗi nguyên, split sau
+//   - Cell chỉ có code đơn thuần → prefix = "" suffix = "" → trả nguyên giá trị
+//   - Cell là số (numeric) → trả String trực tiếp (không qua prefix/suffix)
+
+export const readExcelForImport = () => {
+    ipcMain.handle('readExcelForImport', async function (event, { filePath, templatePath, variables }) {
+        try {
+            if (!filePath || !fs.existsSync(filePath)) {
+                return { success: false, message: 'Filled file not found: ' + filePath }
+            }
+            if (!variables || !variables.length) {
+                return { success: true, codeValueMap: {} }
+            }
+
+            const XlsxPopulate = require('xlsx-populate')
+
+            // Mở file đã fill
+            const filled = await XlsxPopulate.fromFileAsync(filePath)
+
+            // Mở template gốc nếu có (để biết prefix/suffix)
+            var tmpl = null
+            if (templatePath && fs.existsSync(templatePath)) {
+                try { tmpl = await XlsxPopulate.fromFileAsync(templatePath) }
+                catch(e) { console.warn('Cannot open template for prefix detection:', e.message) }
+            }
+
+            var codeValueMap = {}
+
+            for (var vi = 0; vi < variables.length; vi++) {
+                var variable = variables[vi]
+                var code = variable.code
+                var coordinates = variable.coordinates
+                if (!code || !coordinates || !coordinates.length) continue
+
+                codeValueMap[code] = []
+
+                for (var ci = 0; ci < coordinates.length; ci++) {
+                    var coord = coordinates[ci]
+                    var bangIdx = coord.indexOf('!')
+                    if (bangIdx === -1) { codeValueMap[code].push(''); continue }
+
+                    var sheetName = coord.substring(0, bangIdx)
+                    var cellAddr  = coord.substring(bangIdx + 1)
+
+                    try {
+                        var filledSheet = filled.sheet(sheetName)
+                        if (!filledSheet) { codeValueMap[code].push(''); continue }
+
+                        var rawFilled = filledSheet.cell(cellAddr).value()
+
+                        // Số → trả String trực tiếp, không cần tách prefix
+                        if (typeof rawFilled === 'number') {
+                            codeValueMap[code].push(String(rawFilled))
+                            continue
+                        }
+
+                        if (rawFilled === null || rawFilled === undefined) {
+                            codeValueMap[code].push('')
+                            continue
+                        }
+
+                        var filledStr = String(rawFilled)
+
+                        // ── Tách prefix/suffix từ template gốc ──────────────────
+                        var extracted = filledStr  // default: không tách được
+
+                        if (tmpl) {
+                            var tmplSheet = tmpl.sheet(sheetName)
+                            if (tmplSheet) {
+                                var rawTmpl = tmplSheet.cell(cellAddr).value()
+                                if (rawTmpl !== null && rawTmpl !== undefined) {
+                                    var tmplStr = String(rawTmpl)
+                                    extracted = extractValue(tmplStr, filledStr, code)
+                                }
+                            }
+                        }
+
+                        codeValueMap[code].push(extracted.trim())
+
+                    } catch (cellErr) {
+                        console.warn('readExcelForImport cell error:', coord, cellErr.message)
+                        codeValueMap[code].push('')
+                    }
+                }
+            }
+
+            return { success: true, codeValueMap: codeValueMap }
+        } catch (error) {
+            console.error('readExcelForImport error:', error)
+            return { success: false, message: error.message }
+        }
+    })
+}
+
+// ── Helper: tách giá trị từ filled cell dựa vào vị trí code trong template cell ──
+// templateStr: "Tên đơn vị: A1"
+// filledStr:   "Tên đơn vị: EVN HCM"
+// code:        "A1"
+// → "EVN HCM"
+function extractValue(templateStr, filledStr, code) {
+    // Tìm vị trí code trong template (exact token match)
+    var escapedCode = code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    var tokenRegex  = new RegExp('(?<![A-Za-z0-9])' + escapedCode + '(?![A-Za-z0-9])')
+    var match = tokenRegex.exec(templateStr)
+
+    if (!match) {
+        // Code không tìm thấy trong template cell → trả nguyên filledStr
+        return filledStr
+    }
+
+    var codeStart = match.index
+    var codeEnd   = codeStart + code.length
+
+    var prefix = templateStr.substring(0, codeStart)   // "Tên đơn vị: "
+    var suffix = templateStr.substring(codeEnd)         // "" hoặc " (kV)" v.v.
+
+    // Xây regex để strip prefix và suffix ra khỏi filledStr
+    var escPrefix = prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    var escSuffix = suffix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    var extractRegex = new RegExp('^' + escPrefix + '(.*)' + escSuffix + '$')
+    var extractMatch = extractRegex.exec(filledStr)
+
+    if (extractMatch) {
+        return extractMatch[1]  // chỉ lấy phần giữa prefix và suffix
+    }
+
+    // Fallback: nếu regex không match (filledStr đã bị sửa khác) → trả nguyên
+    return filledStr
+}
+
+// ── Thêm vào preload ─────────────────────────────────────────────────────
+// pickExcelFileForImport: () => ipcRenderer.invoke('pickExcelFileForImport'),
+// readExcelForImport: (data) => ipcRenderer.invoke('readExcelForImport', data),
+
+// ipcmain — 1 handler, đăng ký trong active()
+export const openFileTemplate = () => {
+    ipcMain.handle('openFileTemplate', async (event, filePath) => {
+        const { shell } = require('electron')
+        return await shell.openPath(filePath)  // '' = OK, string = lỗi
+    })
+}
+
 export const active = () => {
     getAllTemplates()
     getAllTemplatesByType()
@@ -640,4 +835,7 @@ export const active = () => {
     saveTemplateWithScan()
     exportWordWithData()
     exportTemplateWithData()
+    pickExcelFileForImport()
+    readExcelForImport()
+    openFileTemplate()
 }

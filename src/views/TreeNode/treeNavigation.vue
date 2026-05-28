@@ -11,7 +11,7 @@
         <!-- Tree Toolbar -->
         <TreeToolbar ref="treeToolBar"  :clientSlide="clientSlide" @add-command="handleAddCommand"
             @dropdown-visible-change="handleDropdownVisibleChange" @asset-command="handleAssetCommand"
-            @open-import-dialog="handleOpenImportDialog" @export-command="handleCommand" @open-node="handleOpenNode"
+            @import-command="handleImportCommand" @export-command="handleCommand" @open-node="handleOpenNode"
             @duplicate="duplicateSelectedNodes" @upload="handleUploadNode" @download="handleDownloadNode"
             @delete="handleDeleteNode" @fmeca="handleClickFmeca" @move="handleMoveNode" @openDropdown="openDropdown" />
         <!-- Thanh điều hướng có thể kéo rộng/kéo hẹp -->
@@ -29,11 +29,10 @@
                 @show-addDisconnector="showAddDisconnector" @show-addCapacitor="showAddCapacitor"
                 @show-addReactor="showAddReactor" @show-addRotatingMachine="showAddRotatingMachine"
                 @show-addBay="showAddBay" @export-json="handleExportJSONFromContext"
-                @export-json-cim="handleExportJSONCIMFromContext" @export-xml="handleExportXMLFromContext"
                 @export-excel="handleExportExcelFromContext" @export-word="handleExportWordFromContext"
-                @export-pdf="handleExportPDFFromContext" @duplicate-node="handleDuplicateFromContext"
+                @duplicate-node="handleDuplicateFromContext"
                 @move-node="handleMoveFromContext" @import-json="handleImportJSONFromContext"
-                @show-zero-diagram="handleShowZeroDiagram" @import-json-cim="handleImportJSONCIMFromContext"
+                @show-zero-diagram="handleShowZeroDiagram"
                 @show-data="showDataClient" @refresh-node="handleRefreshNode" />
 
             <ServerTreePanel ref="serverPanel" v-show="!clientSlide" :ownerServerList="ownerServerList"
@@ -41,11 +40,10 @@
                 @fetch-children-server="fetchChildrenServer" @double-click-node-server="doubleClickNodeServer"
                 @show-properties="showPropertiesData" @update-selection="updateSelection"
                 @clear-selection="clearSelection" @show-data="showData" @export-json="handleExportJSONFromContext"
-                @export-json-cim="handleExportJSONCIMFromContext" @export-xml="handleExportXMLFromContext"
                 @export-excel="handleExportExcelFromContext" @export-word="handleExportWordFromContext"
-                @export-pdf="handleExportPDFFromContext" @duplicate-node="handleDuplicateFromContext"
+                @duplicate-node="handleDuplicateFromContext"
                 @move-node="handleMoveFromContext" @import-json="handleImportJSONFromContext"
-                @show-zero-diagram="handleShowZeroDiagram" @import-json-cim="handleImportJSONCIMFromContext"
+                @show-zero-diagram="handleShowZeroDiagram"
                 @refresh-node="handleRefreshNode" />
 
             <div @mousedown="startResizeClient" v-if="clientSlide" ref="resizerClient" class="resizer"></div>
@@ -339,8 +337,8 @@
         <ExportDialog :visible="openExportDialog" @update:visible="openExportDialog = $event" :exportType="exportType"
             @cancel="handleCancelExport" @confirm="handleExportConfirm" />
 
-        <ImportDialog :visible="openImportDialog" @update:visible="openImportDialog = $event"
-            @cancel="handleCancelImport" @confirm="handleImportConfirm" />
+        <ImportDialog :visible="openImportDialog" @update:visible="openImportDialog = $event" :importType="importType"
+            @cancel="handleCancelImport" />
 
         <FmecaDialog :visible="signFmeca" @update:visible="signFmeca = $event" @close="handleFmecaCancel"
             @cancel="handleFmecaCancel" @confirm="handleFmecaConfirm" />
@@ -522,6 +520,7 @@ export default {
     data() {
         return {
             exportType: null,
+            importType: null,
             openExportDialog: false,
             openImportDialog: false,
             signFmeca: false,
@@ -1000,69 +999,8 @@ export default {
         handleZeroDiagramClose() {
             this.signZeroDiagram = false;
         },
-        handleOpenImportDialog() {
-            if (!this.selectedNodes || this.selectedNodes.length === 0) {
-                this.$message.warning('Please select a node to import into!');
-                return;
-            }
-            this.openImportDialog = true;
-        },
 
-        async handleImportConfirm(file) {
-            // Đóng dialog (hoặc giữ lại tùy UX)
-            this.openImportDialog = false;
-
-            // Validation cơ bản
-            if (!file) {
-                console.warn("Không có file nào được chọn");
-                return;
-            }
-
-            // Lấy đường dẫn file tuyệt đối (Electron hỗ trợ property .path trên File object)
-            const filePath = file.path;
-            const fileName = file.name;
-
-            if (!filePath) {
-                this.$message.error("Không tìm thấy đường dẫn file (File Path is missing)");
-                return;
-            }
-
-            console.log("📍 Bắt đầu gửi file tới Python:", filePath);
-
-            // Hiển thị Loading
-            const { close } = startLoading(this, {
-                action: 'import',
-                customText: `Đang convert file ${fileName} qua Python...`,
-                type: 'heavy'
-            });
-
-            try {
-                // --- GỌI SANG ELECTRON MAIN PROCESS ĐỂ CHẠY PYTHON ---
-                // Giả sử bạn đã expose hàm 'convertFileToJSON' trong preload.js
-                // Hàm này sẽ spawn process python, ghi filePath vào stdin và đọc JSON từ stdout
-                const jsonResult = await window.electronAPI.convertFileToJSON(filePath);
-
-                // --- KẾT QUẢ TRẢ VỀ ---
-                console.log("✅ KẾT QUẢ JSON TỪ PYTHON:", jsonResult);
-
-                if (jsonResult) {
-                    this.$message.success("Convert thành công! Kiểm tra Console.");
-
-                    // TODO: XỬ LÝ TIẾP JSON TẠI ĐÂY (Mapping, Save DB...)
-                    // Ví dụ: await this.importTreeFromJSON(jsonResult);
-                } else {
-                    this.$message.warning("Python trả về dữ liệu rỗng.");
-                }
-
-            } catch (error) {
-                console.error("Lỗi khi gọi Python Script:", error);
-                this.$message.error(`Lỗi Convert: ${error.message || 'Unknown error'}`);
-            } finally {
-                // Tắt loading
-                await close();
-            }
-        },
-               async handleDeleteNodeFromDiagram(node, callback) {
+        async handleDeleteNodeFromDiagram(node, callback) {
             try {
                 if (!this.clientSlide) {
                     this.$message.warning('Delete from server not implemented yet');

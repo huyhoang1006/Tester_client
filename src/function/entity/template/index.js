@@ -12,9 +12,9 @@ export const getAllTemplates = async () => {
 }
 
 // ─── Lấy toàn bộ template ────────────────────────────────────────────────────
-export const getAllTemplatesByType = async (type) => {
+export const getAllTemplatesByType = async (type, category) => {
     return new Promise((resolve, reject) => {
-        db.all('SELECT * FROM template where type=? ORDER BY name', [type], (err, rows) => {
+        db.all('SELECT * FROM template where type=? and category=? ORDER BY name', [type, category], (err, rows) => {
             if (err) return reject({ success: false, err, message: 'Get templates failed' })
             return resolve({ success: true, data: rows })
         })
@@ -36,8 +36,8 @@ export const getTemplateByName = async (name) => {
 export const insertTemplate = async (template) => {
     return new Promise((resolve, reject) => {
         db.run(
-            `INSERT INTO template (name, path, variable, type) VALUES (?, ?, ?, ?)`,
-            [template.name, template.path, template.variable, template.type],
+            `INSERT INTO template (name, path, variable, type, category) VALUES (?, ?, ?, ?, ?)`,
+            [template.name, template.path, template.variable, template.type, template.category],
             function (err) {
                 if (err) return reject({ success: false, err, message: 'Insert template failed' })
                 return resolve({ success: true, data: template, message: 'Insert template completed' })
@@ -50,8 +50,8 @@ export const insertTemplate = async (template) => {
 export const updateTemplate = async (template) => {
     return new Promise((resolve, reject) => {
         db.run(
-            `UPDATE template SET path = ?, variable = ?, type = ? WHERE name = ?`,
-            [template.path, template.variable, template.type, template.name],
+            `UPDATE template SET path = ?, variable = ?, type = ?, category = ? WHERE name = ?`,
+            [template.path, template.variable, template.type, template.category, template.name],
             function (err) {
                 if (err) return reject({ success: false, err, message: 'Update template failed' })
                 return resolve({ success: true, data: template, message: 'Update template completed' })

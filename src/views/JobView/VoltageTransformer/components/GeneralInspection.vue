@@ -80,7 +80,39 @@
         </table>
 
         <!-- Assessment settings -->
-        <el-dialog title="Assessment settings" :visible.sync="openAssessmentDialog" width="860px">
+        <el-dialog title="Assessment settings" :visible.sync="openAssessmentDialog" width="860px" append-to-body>
+            <el-form style="width:75%;" size="small" label-position="left" label-width="140px">
+                <el-form-item label="Option">
+                    <el-select size="mini" placeholder="please select" v-model="option">
+                        <el-option v-for="opt in assessmentList" :key="opt.mrid" :label="opt.name" :value="opt.code"></el-option>
+                    </el-select>
+                </el-form-item>
+            </el-form>
+            <div v-for="element in filteredAssessmentData" :key="element.mrid" class="assessment-container">
+                <div class="assessment-header">
+                    <div class="limit-col">Limit</div>
+                    <div class="result-col">Assessment</div>
+                </div>
+                <div class="assessment-body">
+                    <template v-for="(node, i) in element.tree">
+                        <div v-if="!node.is_default" :key="'node-' + i" class="tree-row">
+                            <div class="limit-col"><GroupNode :node="node" mode="limit" /></div>
+                            <div class="result-col">
+                                <span v-if="node.result === 'Pass'" class="pass">✔ Pass</span>
+                                <span v-else-if="node.result === 'Fail'" class="fail">✖ Fail</span>
+                                <span v-else>—</span>
+                            </div>
+                        </div>
+                        <div v-else :key="'default-' + i" class="tree-row tree-row-default">
+                            <div class="limit-col default-label">All other cases</div>
+                            <div class="result-col">
+                                <span v-if="node.result === 'Pass'" class="pass">✔ Pass</span>
+                                <span v-else-if="node.result === 'Fail'" class="fail">✖ Fail</span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
         </el-dialog>
 
         <!-- Condition indicator settings -->
@@ -92,13 +124,17 @@
 <script>
 import voltageTransformerTestMap from '@/config/test-definitions/VoltageTransformer'
 import * as common from '@/views/JobView/Common/index'
+import GroupNode from '../../Common/GroupNode.vue'
+import { changeTestStandard } from '../../Common'
 
 export default {
     name: "GeneralInspection",
+    components: { GroupNode },
     data() {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
+            option : null
         }
     },
     props: {
@@ -109,7 +145,9 @@ export default {
         asset: {
             type: Object,
             require: true
-        }
+        },
+        testAssessment: { type: Object, require: true },
+        testCondition:  { type: Object, default: function() { return { condition: {} } } }
     },
     computed: {
         testData() {
@@ -118,9 +156,21 @@ export default {
         assetData() {
             return this.asset
         },
+        conditions()   { return (this.testCondition && this.testCondition.condition) ? this.testCondition.condition : {} },
         rowData() {
             return common.buildEmptyTestRow(voltageTransformerTestMap['GeneralInspection'].columns)
-        }
+        },
+        assessmentData()        { return this.testAssessment ? this.testAssessment.assessment : [] },
+        assessmentList() {
+            return (this.assessmentData || []).map(function(x) {
+                return { code: x.code, name: x.name, type: x.type, mrid: x.mrid }
+            })
+        },
+        filteredAssessmentData() {
+            if (!this.option) return []
+            return (this.assessmentData || []).filter(function(e) { return e.code === this.option }.bind(this))
+        },
+        testStandardData() { return this.testAssessment ? this.testAssessment.testStandard : null }
     },
     mounted() {
         // Initialize table if needed
@@ -141,6 +191,25 @@ export default {
                     this.$nextTick(() => {
                         this.initializeTable()
                     })
+                }
+            }
+        },
+        'option': {
+            immediate: true,
+            handler: async function (newVal) {
+                const standard = this.filteredAssessmentData.find(x => x.code === newVal)
+                if (standard) await changeTestStandard(standard.mrid, standard.type, this.testStandardData)
+            }
+        },
+        'testStandardData': {
+            immediate: true,
+            handler: async function (newVal) {
+                const optionData = common.testStandardDataToOption(newVal)
+                if(optionData && optionData.mrid) {
+                    const standardChosen = this.assessmentData.find(x => x.mrid === optionData.mrid)
+                    if(standardChosen) {
+                        this.option = standardChosen.code
+                    }
                 }
             }
         }
@@ -237,4 +306,21 @@ tr {
 .Bad input {
     background: #ff3300;
 }
+
+td,
+th {
+    font-size: 12px;
+}
+
+.assessment-container { width: 75%; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 16px; overflow: hidden; }
+.assessment-header { display: flex; background: #f5f7fa; font-weight: bold; padding: 8px; }
+.assessment-body { display: flex; flex-direction: column; border: 1px solid #ebeef5; border-radius: 4px; }
+.tree-row { display: flex; align-items: center; border-bottom: 1px solid #ebeef5; min-height: 40px; padding: 8px 0; width: 100%; }
+.tree-row:last-child { border-bottom: none; }
+.limit-col { flex: 1; padding: 0 12px; }
+.result-col { flex-shrink: 0; width: 100px; text-align: center; border-left: 1px solid #ebeef5; padding: 0 12px; align-self: stretch; display: flex; align-items: center; justify-content: center; }
+.tree-row-default { background: #fafafa; }
+.default-label { font-style: italic; color: #909399; font-size: 13px; }
+.pass { color: #67C23A; font-weight: bold; }
+.fail { color: #F56C6C; font-weight: bold; }
 </style>

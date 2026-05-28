@@ -93,11 +93,11 @@
         </table>
 
         <!-- Assessment settings -->
-        <el-dialog :modal=true title="Assessment settings" :visible.sync="openAssessmentDialog" width="860px" append-to-body>
-            <el-form style="width: 75%;" size="small" label-position="left" label-width="140px">
+        <el-dialog title="Assessment settings" :visible.sync="openAssessmentDialog" width="860px" append-to-body>
+            <el-form style="width:75%;" size="small" label-position="left" label-width="140px">
                 <el-form-item label="Option">
                     <el-select size="mini" placeholder="please select" v-model="option">
-                        <el-option v-for="option in assessmentList" :key="option" :label="option" :value="option"></el-option>
+                        <el-option v-for="opt in assessmentList" :key="opt.mrid" :label="opt.name" :value="opt.code"></el-option>
                     </el-select>
                 </el-form-item>
             </el-form>
@@ -157,42 +157,42 @@ export default {
         data: { type: Object, require: true },
         asset: { type: Object, require: true },
         testAssessment: { type: Object, require: true },
-        testCondition: { type: Object, default: function() { return {} } }
+        testCondition:  { type: Object, default: function() { return { condition: {} } } }
     },
     computed: {
         testData() { return this.data },
         assetData() { return this.asset },
-        rowData() {
-            return common.buildEmptyTestRow(surgeArresterTestMap['LeakageCurrent'].columns)
-        },
-        assessmentData() {
-            return this.testAssessment ? this.testAssessment.assessment : []
-        },
+        rowData()      { return common.buildEmptyTestRow(surgeArresterTestMap['LeakageCurrent'].columns) },
+        assessmentData()        { return this.testAssessment ? this.testAssessment.assessment : [] },
         assessmentList() {
-            return (this.testAssessment ? this.testAssessment.assessment : []).map(x => x.type)
+            return (this.assessmentData || []).map(function(x) {
+                return { code: x.code, name: x.name, type: x.type, mrid: x.mrid }
+            })
         },
         filteredAssessmentData() {
             if (!this.option) return []
-            return (this.assessmentData || []).filter(e => e.type === this.option)
+            return (this.assessmentData || []).filter(function(e) { return e.code === this.option }.bind(this))
         },
-        testStandardData() {
-            return this.testAssessment ? this.testAssessment.testStandard : null
-        }
+        testStandardData() { return this.testAssessment ? this.testAssessment.testStandard : null }
     },
     watch: {
         'option': {
             immediate: true,
             handler: async function (newVal) {
-                const standard = this.filteredAssessmentData.find(x => x.type === newVal)
-                if (standard) {
-                    await changeTestStandard(standard.mrid, newVal, this.testStandardData)
-                }
+                const standard = this.filteredAssessmentData.find(x => x.code === newVal)
+                if (standard) await changeTestStandard(standard.mrid, standard.type, this.testStandardData)
             }
         },
         'testStandardData': {
             immediate: true,
             handler: async function (newVal) {
-                this.option = common.testStandardDataToOption(newVal)?.type || null
+                const optionData = common.testStandardDataToOption(newVal)
+                if(optionData && optionData.mrid) {
+                    const standardChosen = this.assessmentData.find(x => x.mrid === optionData.mrid)
+                    if(standardChosen) {
+                        this.option = standardChosen.code
+                    }
+                }
             }
         }
     },
@@ -223,7 +223,7 @@ export default {
             this.$message.success('Calculating successfully')
         },
         async calcAssessment() {
-            const assessmentStandard = this.filteredAssessmentData.find(x => x.type === this.option)
+            const assessmentStandard = this.filteredAssessmentData.find(x => x.code === this.option)
             if (!assessmentStandard) {
                 this.$message.error('Please select an assessment standard')
                 return

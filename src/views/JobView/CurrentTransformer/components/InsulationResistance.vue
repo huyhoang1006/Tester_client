@@ -94,37 +94,37 @@
         </table>
 
         <!-- Assessment settings -->
-        <el-dialog :modal=true title="Assessment settings" :visible.sync="openAssessmentDialog" width="860px"
-            append-to-body>
-            <el-form style="width: 75%;" size="small" label-position="left" label-width="140px">
+        <el-dialog title="Assessment settings" :visible.sync="openAssessmentDialog" width="860px" append-to-body>
+            <el-form style="width:75%;" size="small" label-position="left" label-width="140px">
                 <el-form-item label="Option">
                     <el-select size="mini" placeholder="please select" v-model="option">
-                        <el-option v-for="option in assessmentList" :key="option" :label="option"
-                            :value="option"></el-option>
+                        <el-option v-for="opt in assessmentList" :key="opt.mrid" :label="opt.name" :value="opt.code"></el-option>
                     </el-select>
                 </el-form-item>
             </el-form>
             <div v-for="element in filteredAssessmentData" :key="element.mrid" class="assessment-container">
-
-                <!-- HEADER -->
                 <div class="assessment-header">
                     <div class="limit-col">Limit</div>
                     <div class="result-col">Assessment</div>
                 </div>
-
-                <!-- BODY -->
                 <div class="assessment-body">
-
-                    <!-- LIMIT -->
-                    <div class="limit-col">
-                        <GroupNode v-for="(node, i) in element.tree || []" :key="i" :node="node" mode="limit" />
-                    </div>
-
-                    <!-- RESULT -->
-                    <div class="result-col">
-                        <GroupNode v-for="(node, i) in element.tree || []" :key="'rs' + i" :node="node" mode="result" />
-                    </div>
-
+                    <template v-for="(node, i) in element.tree">
+                        <div v-if="!node.is_default" :key="'node-' + i" class="tree-row">
+                            <div class="limit-col"><GroupNode :node="node" mode="limit" /></div>
+                            <div class="result-col">
+                                <span v-if="node.result === 'Pass'" class="pass">✔ Pass</span>
+                                <span v-else-if="node.result === 'Fail'" class="fail">✖ Fail</span>
+                                <span v-else>—</span>
+                            </div>
+                        </div>
+                        <div v-else :key="'default-' + i" class="tree-row tree-row-default">
+                            <div class="limit-col default-label">All other cases</div>
+                            <div class="result-col">
+                                <span v-if="node.result === 'Pass'" class="pass">✔ Pass</span>
+                                <span v-else-if="node.result === 'Fail'" class="fail">✖ Fail</span>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </div>
         </el-dialog>
@@ -137,7 +137,6 @@
 
 <script>
 import currentTransformerTestMap from '@/config/test-definitions/CurrentTransformer'
-import currentTransformerAssessmentMap from '@/config/testing-assessment/CurrentTransformer'
 import * as common from '../../Common/index'
 import GroupNode from '../../Common/GroupNode.vue'
 import { changeTestStandard } from '../../Common'
@@ -151,7 +150,7 @@ export default {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
-            option: '',
+            option: null,
         }
     },
     mounted() {
@@ -169,14 +168,8 @@ export default {
             type: Object,
             require: true
         },
-        testAssessment: {
-            type: Object,
-            require: true
-        },
-        testStandard: {
-            type: Object,
-            require: true
-        }
+        testAssessment: { type: Object, require: true },
+        testCondition:  { type: Object, default: function() { return { condition: {} } } }
     },
     computed: {
         testData() {
@@ -185,22 +178,18 @@ export default {
         assetData() {
             return this.asset
         },
-        rowData() {
-            return common.buildEmptyTestRow(currentTransformerTestMap['InsulationResistance'].columns)
-        },
-        assessmentData() {
-            return this.testAssessment.assessment
-        },
+        rowData()      { return common.buildEmptyTestRow(currentTransformerTestMap['InsulationResistance'].columns) },
+        assessmentData()        { return this.testAssessment ? this.testAssessment.assessment : [] },
         assessmentList() {
-            return this.testAssessment.assessment.map(x => x.type)
+            return (this.assessmentData || []).map(function(x) {
+                return { code: x.code, name: x.name, type: x.type, mrid: x.mrid }
+            })
         },
         filteredAssessmentData() {
-            if (!this.option) return [] // 👈 fix ở đây
-            return (this.assessmentData || []).filter(e => e.type === this.option)
+            if (!this.option) return []
+            return (this.assessmentData || []).filter(function(e) { return e.code === this.option }.bind(this))
         },
-        testStandardData() {
-            return this.testAssessment.testStandard
-        }
+        testStandardData() { return this.testAssessment ? this.testAssessment.testStandard : null }
     },
     watch: {
         'testData.table': {
@@ -224,26 +213,22 @@ export default {
         'option': {
             immediate: true,
             handler: async function (newVal) {
-                if (!newVal) return
-                // Lazy-init: nếu chưa có assessment data cho option này thì build mới
-                common.ensureAssessmentData(
-                    this.testAssessment,
-                    newVal,
-                    currentTransformerAssessmentMap['InsulationResistance']  // ← đổi testCode theo từng file
-                )
-                // Sau khi đảm bảo có data, tìm và ghi testStandard
-                const standard = this.filteredAssessmentData.find(x => x.type === newVal)
-                if (standard) {
-                    await changeTestStandard(standard.mrid, newVal, this.testStandardData)
-                }
+                const standard = this.filteredAssessmentData.find(x => x.code === newVal)
+                if (standard) await changeTestStandard(standard.mrid, standard.type, this.testStandardData)
             }
         },
         'testStandardData': {
             immediate: true,
             handler: async function (newVal) {
-                this.option = common.testStandardDataToOption(newVal)?.type || null
+                const optionData = common.testStandardDataToOption(newVal)
+                if(optionData && optionData.mrid) {
+                    const standardChosen = this.assessmentData.find(x => x.mrid === optionData.mrid)
+                    if(standardChosen) {
+                        this.option = standardChosen.code
+                    }
+                }
             }
-        },
+        }
     },
     methods: {
         initializeTable() {
@@ -290,7 +275,7 @@ export default {
         },
 
         async calcAsessment() {
-            const assessmentStandard = this.filteredAssessmentData.find(x => x.type === this.option)
+            const assessmentStandard = this.filteredAssessmentData.find(x => x.code === this.option)
             if (!assessmentStandard) {
                 this.$message.error('Please select an assessment standard')
                 return
@@ -461,44 +446,15 @@ tr {
     background: #ff3300;
 }
 
-.assessment-container {
-    width: 75%;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    margin-bottom: 16px;
-    overflow: hidden;
-}
-
-.assessment-header {
-    display: flex;
-    background: #f5f7fa;
-    font-weight: bold;
-    padding: 8px;
-}
-
-.assessment-body {
-    display: flex;
-    padding: 10px;
-}
-
-.limit-col {
-    flex: 2;
-    padding-right: 10px;
-    border-right: 1px solid #eee;
-}
-
-.result-col {
-    flex: 1;
-    padding-left: 10px;
-}
-
-.pass {
-    color: #67C23A;
-    font-weight: bold;
-}
-
-.fail {
-    color: #F56C6C;
-    font-weight: bold;
-}
+.assessment-container { width: 75%; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 16px; overflow: hidden; }
+.assessment-header { display: flex; background: #f5f7fa; font-weight: bold; padding: 8px; }
+.assessment-body { display: flex; flex-direction: column; border: 1px solid #ebeef5; border-radius: 4px; }
+.tree-row { display: flex; align-items: center; border-bottom: 1px solid #ebeef5; min-height: 40px; padding: 8px 0; width: 100%; }
+.tree-row:last-child { border-bottom: none; }
+.limit-col { flex: 1; padding: 0 12px; }
+.result-col { flex-shrink: 0; width: 100px; text-align: center; border-left: 1px solid #ebeef5; padding: 0 12px; align-self: stretch; display: flex; align-items: center; justify-content: center; }
+.tree-row-default { background: #fafafa; }
+.default-label { font-style: italic; color: #909399; font-size: 13px; }
+.pass { color: #67C23A; font-weight: bold; }
+.fail { color: #F56C6C; font-weight: bold; }
 </style>

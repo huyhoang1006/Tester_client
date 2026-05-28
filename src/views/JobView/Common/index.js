@@ -365,7 +365,6 @@ export const traverseAndFillMrid = async (obj) => {
 }
 
 export const changeTestStandard = async (id, type, testStandard) => {
-  console.log(id, type, testStandard)
   const typeToColumn = {
     astm: 'test_standard_astm',
     cigre: 'test_standard_cigre',
@@ -381,6 +380,11 @@ export const changeTestStandard = async (id, type, testStandard) => {
     wep: 'test_standard_wep',
     customized: 'test_standard_customize'
   }
+
+  for (const key in typeToColumn) {
+    testStandard[typeToColumn[key]] = null
+  }
+
   if (typeToColumn[type]) {
     testStandard[typeToColumn[type]] = id
   }

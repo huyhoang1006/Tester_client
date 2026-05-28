@@ -89,12 +89,8 @@ import showDataServer from '@/views/TreeNode/Server/mixin/showDataServer'
 import checkChildren from '@/views/TreeNode/Common/checkChildren'
 import showPropertiesData from '@/views/TreeNode/Common/showPropertiesData'
 import exportExcel from '@/views/TreeNode/Common/Export/exportExcel'
-import exportJSONCIM from '@/views/TreeNode/Common/Export/exportJSONCIM'
-import exportPDF from '@/views/TreeNode/Common/Export/exportPDF'
 import exportSingleNodeToJSON from '@/views/TreeNode/Common/Export/exportSingleNodeToJSON'
 import exportWord from '@/views/TreeNode/Common/Export/exportWord'
-import exportXML from '@/views/TreeNode/Common/Export/exportXML'
-import importCIM from '@/views/TreeNode/Common/Import/importCIM'
 import handleRefreshNode from '@/views/TreeNode/Common/Refresh/handleRefreshNode'
 
 
@@ -118,7 +114,7 @@ export default {
         importJSONFromContext, handleAddCommand, handleOpenNode, fetchAssetByPsr,
         fetchJobsByAssetId, exportTreeToJSON, hideProperties, removeTab,
         pathMap, fmeca, showProperties, showDataServer, checkChildren, showPropertiesData,
-        breadCum, showOwnerServerRoot, exportExcel, exportJSONCIM, exportPDF, exportSingleNodeToJSON,
-        exportWord, exportXML, importCIM, handleRefreshNode
+        breadCum, showOwnerServerRoot, exportExcel, exportSingleNodeToJSON,
+        exportWord, handleRefreshNode
         ]
 }

@@ -71,13 +71,10 @@
                             <i class="fa-solid fa-file-code"></i> Export to JSON
                             <ul class="submenu">
                                 <li @click="exportJSON"><i class="fa-solid fa-file-code"></i> Export JSON</li>
-                                <li @click="exportJSONCIM"><i class="fa-solid fa-file-code"></i> Export JSON by CIM</li>
                             </ul>
                         </li>
-                        <li @click="exportXML"><i class="fa-solid fa-file-code"></i> Export to XML</li>
                         <li @click="exportExcel"><i class="fa-solid fa-file-excel"></i> Export to Excel</li>
                         <li @click="exportWord"><i class="fa-solid fa-file-word"></i> Export to Word</li>
-                        <li @click="exportPDF"><i class="fa-solid fa-file-pdf"></i> Export to PDF</li>
                     </ul>
                 </li>
                 <li class="has-submenu">
@@ -87,13 +84,10 @@
                             <i class="fa-solid fa-file-code"></i> Import from JSON
                             <ul class="submenu">
                                 <li @click="importJSON"><i class="fa-solid fa-file-code"></i> Import JSON</li>
-                                <li @click="importJSONCIM"><i class="fa-solid fa-file-code"></i> Import JSON by CIM</li>
                             </ul>
                         </li>
-                        <li @click="importXML"><i class="fa-solid fa-file-code"></i> Import from XML</li>
                         <li @click="importExcel"><i class="fa-solid fa-file-excel"></i> Import from Excel</li>
                         <li @click="importWord"><i class="fa-solid fa-file-word"></i> Import from Word</li>
-                        <li @click="importPDF"><i class="fa-solid fa-file-pdf"></i> Import from PDF</li>
                     </ul>
                 </li>
             </ul>

@@ -24,7 +24,7 @@ import { JobEntityToDto as rotatingJobEntityToDto }       from '@/views/Mapping/
 import { JobEntityToDto as capacitorJobEntityToDto }      from '@/views/Mapping/CapacitorJob/index.js'
 import { JobEntityToDto as disconnectorJobEntityToDto }   from '@/views/Mapping/DisconnectorJob/index.js'
 import { JobEntityToDto as bushingJobEntityToDto }        from '@/views/Mapping/BushingJob/index.js'
-import * as constants from '../constants'
+import {ASSET_TYPE_TO_KEY, FEATURE_TREE } from '../../Common/constants'
 
 const v = (obj) => (obj && obj.value !== undefined) ? String(obj.value ?? '') : String(obj ?? '')
 
@@ -94,7 +94,7 @@ export const exportService = {
     if (catKey === 'Bay')                  return ctx.bay?.mrid            || null
     if (catKey.startsWith('Asset_')) {
       if (!ctx.asset) return null
-      const expectedKey = constants.ASSET_TYPE_TO_KEY[ctx.asset.assetType]
+      const expectedKey = ASSET_TYPE_TO_KEY[ctx.asset.assetType]
       return catKey === expectedKey ? ctx.asset.mrid : null
     }
     if (catKey.startsWith('Job_')) {
@@ -541,7 +541,7 @@ export const exportService = {
 
   getLeafValue(featureLevels, category) {
     if (!featureLevels?.length) return null
-    let node = constants.FEATURE_TREE[category]; if (!node) return null
+    let node = FEATURE_TREE[category]; if (!node) return null
     for (const level of featureLevels) { if (!level.key) break; node = node.children?.[level.key]; if (!node) return null }
     return node?.value ?? null
   }

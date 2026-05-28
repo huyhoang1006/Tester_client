@@ -215,6 +215,7 @@ import transformerTestMap from '@/config/test-definitions/Transformer'
 import * as common from '../../../Common/index.js'
 import GroupNode from '../../../Common/GroupNode.vue'
 import { changeTestStandard } from '../../../Common'
+import transformerAssessmentMap from '@/config/testing-assessment/Transformer/index.js'
 
 export default {
     name: "InsulationResistance",
