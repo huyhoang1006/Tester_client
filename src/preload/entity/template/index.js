@@ -41,6 +41,10 @@ export const templatePreload = () => {
         readExcelForImport: (data) => ipcRenderer.invoke('readExcelForImport', data),
 
         openFileTemplate: (filePath) => ipcRenderer.invoke('openFileTemplate', filePath),
+
+        pickWordFileForImport: () => ipcRenderer.invoke('pickWordFileForImport'),
+    
+        readWordForImport: (data) => ipcRenderer.invoke('readWordForImport', data),
         
     }
 }

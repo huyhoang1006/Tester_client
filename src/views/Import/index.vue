@@ -10,12 +10,15 @@
     <template #actions>
       <el-button type="primary"  size="mini" :disabled="!selectedTemplateName" @click="addRow()">Add Row</el-button>
       <el-button v-if="importType === 'excel'" type="success"  size="mini" :disabled="!selectedTemplateName" @click="handleUploadExcel">Excel File</el-button>
-      <el-button v-if="importType === 'word'" type="success"  size="mini" :disabled="!selectedTemplateName" @click="handleUploadWord">Word File</el-button>
+      <el-button v-if="importType === 'word'"  type="success"  size="mini" :disabled="!selectedTemplateName" @click="handleUploadWord">Word File</el-button>
       <el-button type="danger"   size="mini" :disabled="!selectedTemplateName" @click="handleDelete">Delete</el-button>
       <el-button type="warning"  size="mini" :disabled="!selectedTemplateName" @click="handleSave">Save</el-button>
       <el-button type="info"     size="mini" :disabled="!selectedTemplateName" @click="handleImportJson">Import</el-button>
       <el-button v-if="importType === 'excel'" type="warning" size="mini" :disabled="!selectedTemplateName || !currentFilePath" @click="handleImportExcel">
         <i class="fa-solid fa-file-import"></i> Import Excel
+      </el-button>
+      <el-button v-if="importType === 'word'" type="warning" size="mini" :disabled="!selectedTemplateName || !currentFilePath" @click="handleImportWord">
+        <i class="fa-solid fa-file-import"></i> Import Word
       </el-button>
     </template>
   </template-manager>
@@ -49,6 +52,7 @@
     </div>
   </div>
 
+  <!-- Add template dialog -->
   <el-dialog title="Add new template" :visible.sync="showAddDialog" width="420px" append-to-body @close="resetAddDialog">
     <el-form ref="addForm" :model="addForm" :rules="addRules" size="small" label-width="120px" label-position="left">
       <el-form-item label="Template name" prop="name"><el-input v-model="addForm.name" placeholder="e.g. EVN Report" clearable /></el-form-item>
@@ -65,6 +69,7 @@
     </div>
   </el-dialog>
 
+  <!-- Export dialog (giữ nguyên) -->
   <el-dialog title="Select data to export" :visible.sync="showExportDialog" width="520px" append-to-body>
     <div v-if="exportCategories.length === 0" style="color:#909399;padding:20px 0;">No categories in template rows.</div>
     <div v-else>
@@ -74,37 +79,23 @@
         </el-button>
         <span style="font-size:11px;color:#909399;">Each item can be used as data source for different codes in the template</span>
       </div>
-
       <div v-if="selectedItems.length > 0">
-        <div
-          v-for="(item, idx) in selectedItems"
-          :key="item.id"
-          style="display:flex;align-items:center;gap:6px;padding:5px 8px;margin-bottom:4px;background:#f5f7fa;border-radius:4px;border:1px solid #EBEEF5;"
-        >
+        <div v-for="(item, idx) in selectedItems" :key="item.id"
+          style="display:flex;align-items:center;gap:6px;padding:5px 8px;margin-bottom:4px;background:#f5f7fa;border-radius:4px;border:1px solid #EBEEF5;">
           <span style="font-size:11px;color:#fff;background:#409EFF;border-radius:3px;padding:1px 6px;min-width:54px;text-align:center;">
             Sheet {{ idx + 1 }}
           </span>
           <i :class="itemIcon(item)" style="font-size:12px;color:#606266;"></i>
-          <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="item.label">
-            {{ item.label }}
-          </span>
-          <el-input
-            v-model="item.sheetName"
-            size="mini"
-            placeholder="Sheet name"
-            style="width:120px;"
-            :maxlength="31"
-          />
+          <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="item.label">{{ item.label }}</span>
+          <el-input v-model="item.sheetName" size="mini" placeholder="Sheet name" style="width:120px;" :maxlength="31" />
           <el-button size="mini" type="danger" plain icon="el-icon-delete" circle @click="removeSelectedItem(item.id)" />
         </div>
       </div>
       <div v-else style="font-size:11px;color:#E6A23C;padding:6px 10px;background:#fdf6ec;border-radius:4px;">
         <i class="el-icon-warning-outline"></i> No selection yet — click "Add asset / job" to begin
       </div>
-
       <div v-if="selectedItems.length > 0" style="margin-top:8px;font-size:11px;color:#909399;">
         {{ selectedItems.length }} source{{ selectedItems.length > 1 ? 's' : '' }} selected.
-        Each template row can pull data from a different source.
       </div>
     </div>
     <div slot="footer">
@@ -113,29 +104,20 @@
     </div>
   </el-dialog>
 
+  <!-- Node picker (export) -->
   <el-dialog title="Select Node" :visible.sync="nodePickerVisible" width="540px" :append-to-body="true">
     <div style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-size:12px;color:#909399;">
-        Navigate the tree: Organisation → Substation → VoltageLevel → Bay → Asset → Job
-      </span>
+      <span style="font-size:12px;color:#909399;">Navigate the tree: Organisation → Substation → VoltageLevel → Bay → Asset → Job</span>
       <el-button size="mini" icon="el-icon-refresh" @click="refreshPickerTree" style="padding:4px 8px;">Refresh</el-button>
     </div>
-    <el-tree
-      :key="pickerTreeKey"
-      ref="pickerTree"
+    <el-tree :key="pickerTreeKey" ref="pickerTree"
       :props="{ label: 'displayName', children: 'children', isLeaf: 'pickerIsLeaf' }"
-      :load="loadPickerNode"
-      lazy
-      node-key="mrid"
-      highlight-current
+      :load="loadPickerNode" lazy node-key="mrid" highlight-current
       style="max-height:380px;overflow-y:auto;border:1px solid #EBEEF5;border-radius:4px;padding:4px;"
-      @node-click="onPickerNodeClick"
-    >
+      @node-click="onPickerNodeClick">
       <span slot-scope="{ data }" style="display:flex;align-items:center;gap:6px;font-size:12px;">
         <i :class="pickerNodeIcon(data)" style="font-size:11px;width:14px;text-align:center;"></i>
-        <span :style="{ fontWeight: data.mode === 'asset' || data.mode === 'job' ? '600' : 'normal' }">
-          {{ data.displayName }}
-        </span>
+        <span :style="{ fontWeight: data.mode === 'asset' || data.mode === 'job' ? '600' : 'normal' }">{{ data.displayName }}</span>
         <el-tag v-if="data.mode === 'asset'" size="mini" type="info" style="font-size:10px;">{{ data.assetType }}</el-tag>
       </span>
     </el-tree>
@@ -145,32 +127,32 @@
       <span style="color:#909399;margin-left:4px;">({{ pickerModeLabel(pickerTempSelected.mode) }})</span>
     </div>
     <span slot="footer" style="display:flex;justify-content:space-between;align-items:center;">
-      <span style="font-size:11px;color:#909399;">
-        {{ selectedItems.length }} item{{ selectedItems.length !== 1 ? 's' : '' }} in list
-      </span>
+      <span style="font-size:11px;color:#909399;">{{ selectedItems.length }} item{{ selectedItems.length !== 1 ? 's' : '' }} in list</span>
       <span>
         <el-button size="small" @click="nodePickerVisible = false">Done</el-button>
-        <el-button size="small" type="primary" icon="el-icon-plus"
-          :disabled="!pickerTempSelected"
-          @click="addPickerSelectionToList">
-          Add to list
-        </el-button>
+        <el-button size="small" type="primary" icon="el-icon-plus" :disabled="!pickerTempSelected" @click="addPickerSelectionToList">Add to list</el-button>
       </span>
     </span>
   </el-dialog>
 
-  <!-- ─────── IMPORT EXCEL DIALOG ─────────────────────────────────────── -->
-  <el-dialog title="Import from Excel" :visible.sync="showImportDialog"
+  <!-- ─────── IMPORT DIALOG (Excel + Word dùng chung) ────────────────── -->
+  <el-dialog
+    :title="importType === 'word' ? 'Import from Word' : 'Import from Excel'"
+    :visible.sync="showImportDialog"
     width="600px" append-to-body @close="resetImportDialog">
 
     <!-- Step 1: chọn file + node cha + chế độ -->
     <div v-if="importStep === 1">
       <div style="margin-bottom:14px;">
         <div style="font-size:12px;font-weight:600;color:#606266;margin-bottom:6px;">
-          <i class="fa-solid fa-file-excel" style="color:#67C23A;"></i> Filled Excel file
+          <i
+            :class="importType === 'word' ? 'fa-solid fa-file-word' : 'fa-solid fa-file-excel'"
+            :style="{ color: importType === 'word' ? '#2B579A' : '#67C23A' }">
+          </i>
+          {{ importType === 'word' ? 'Filled Word file' : 'Filled Excel file' }}
         </div>
         <div style="display:flex;gap:8px;">
-          <el-input :value="importFilePath ? importFilePath.split(/[\\/]/).pop() : ''"
+          <el-input :value="importFilePath ? importFilePath.split(/[\\\/]/).pop() : ''"
             readonly size="small" placeholder="No file selected" style="flex:1;" />
           <el-button size="small" type="primary" icon="el-icon-folder-opened" @click="pickImportFile">Browse</el-button>
         </div>
@@ -185,8 +167,7 @@
           <el-button size="small" plain icon="el-icon-location" @click="importNodePickerVisible = true">
             {{ importSelectedNode ? importSelectedNode.label.split(' / ').pop() : 'Insert from root (no parent)' }}
           </el-button>
-          <el-button v-if="importSelectedNode" size="mini" type="danger" plain circle
-            icon="el-icon-close" @click="importSelectedNode = null" />
+          <el-button v-if="importSelectedNode" size="mini" type="danger" plain circle icon="el-icon-close" @click="importSelectedNode = null" />
         </div>
         <div v-if="importSelectedNode" style="margin-top:4px;font-size:11px;color:#909399;padding-left:2px;">
           Path: {{ importSelectedNode.label }}
@@ -194,7 +175,7 @@
         <div style="margin-top:6px;padding:8px 10px;background:#f5f7fa;border-radius:4px;font-size:11px;color:#606266;line-height:1.6;">
           <i class="el-icon-info" style="color:#909399;"></i>
           <span v-if="!importSelectedNode">No node selected → import entire hierarchy from <b>Organisation</b> level</span>
-          <span v-else-if="importSelectedNode.mode === 'organisation'">Organisation selected → Org data in Excel = <b>child Organisation</b>; Substation and below inserted under that child (or directly under selected if no child org data)</span>
+          <span v-else-if="importSelectedNode.mode === 'organisation'">Organisation selected → Org data in file = <b>child Organisation</b></span>
           <span v-else-if="importSelectedNode.mode === 'substation'">Substation selected → import from <b>Voltage Level / Bay</b> downward</span>
           <span v-else-if="importSelectedNode.mode === 'voltageLevel'">Voltage Level selected → import from <b>Bay</b> downward</span>
           <span v-else-if="importSelectedNode.mode === 'bay'">Bay selected → import <b>Asset</b> only</span>
@@ -223,45 +204,34 @@
 
     <!-- Step 2: preview -->
     <div v-else-if="importStep === 2">
-
-      <!-- Decisions needed section -->
       <div v-if="importDecisions.length" style="margin-bottom:12px;">
         <div style="font-size:12px;font-weight:600;color:#E6A23C;margin-bottom:8px;">
           <i class="el-icon-question"></i> Decisions needed before import:
         </div>
         <div v-for="d in importDecisions" :key="d.key"
           style="margin-bottom:8px;padding:10px 12px;border-radius:6px;border:1px solid #faecd8;background:#fdf6ec;">
-          <!-- Missing name case -->
           <div v-if="d.type === 'missing_name'">
             <div style="font-size:12px;color:#E6A23C;margin-bottom:6px;">
               <i class="el-icon-warning-outline"></i>
-              <b>{{ d.label }}</b> has no name in Excel, but child data exists below it.
+              <b>{{ d.label }}</b> has no name in file, but child data exists below it.
             </div>
             <el-radio-group v-model="d.choice" size="small">
               <el-radio label="generate" style="margin-right:16px;">
                 <span>Auto-generate name: <code style="background:#f5f5f5;padding:2px 6px;border-radius:3px;font-size:11px;">{{ d.generatedValue }}</code></span>
               </el-radio>
-              <el-radio label="skip">
-                Skip {{ d.label }} and all child data
-              </el-radio>
+              <el-radio label="skip">Skip {{ d.label }} and all child data</el-radio>
             </el-radio-group>
           </div>
-          <!-- Shortcut org→job case -->
           <div v-else-if="d.type === 'shortcut'">
             <div style="font-size:12px;color:#E6A23C;margin-bottom:6px;">
               <i class="el-icon-warning-outline"></i>
-              <b>Job/Test data found</b> but no Substation or Asset name.
-              Need intermediate levels to hold the Job.
+              <b>Job/Test data found</b> but no Substation or Asset name. Need intermediate levels to hold the Job.
             </div>
             <el-radio-group v-model="d.choice" size="small">
               <el-radio label="generate" style="display:block;margin-bottom:6px;">
                 Auto-generate:
-                <code style="background:#f5f5f5;padding:2px 6px;border-radius:3px;font-size:11px;margin:0 4px;">
-                  Sub: {{ d.generatedValues.sub_name }}
-                </code>
-                <code style="background:#f5f5f5;padding:2px 6px;border-radius:3px;font-size:11px;">
-                  Asset serial: {{ d.generatedValues.asset_serial }}
-                </code>
+                <code style="background:#f5f5f5;padding:2px 6px;border-radius:3px;font-size:11px;margin:0 4px;">Sub: {{ d.generatedValues.sub_name }}</code>
+                <code style="background:#f5f5f5;padding:2px 6px;border-radius:3px;font-size:11px;">Asset serial: {{ d.generatedValues.asset_serial }}</code>
               </el-radio>
               <el-radio label="skip">Skip Job/Test import</el-radio>
             </el-radio-group>
@@ -273,7 +243,7 @@
       <div>
         <div style="margin-bottom:8px;font-size:12px;color:#606266;">
           <b>{{ importPreview.filter(r => r.hasData).length }}</b> levels will be imported
-          in hierarchy order. Levels with no data in Excel will be skipped automatically.
+          in hierarchy order. Levels with no data will be skipped automatically.
         </div>
         <div style="max-height:360px;overflow-y:auto;border:1px solid #EBEEF5;border-radius:4px;">
           <table width="100%" cellpadding="0" style="border-collapse:collapse;font-size:12px;">
@@ -286,8 +256,8 @@
             </thead>
             <tbody>
               <tr v-for="(row, i) in importPreview" :key="row.catKey"
-                :style="{background: !row.hasData ? '#fafafa' : (i%2===0?'#fff':'#F9FAFB'), borderBottom:'1px solid #F0F0F0',
-                         opacity: row.hasData ? 1 : 0.5}">
+                :style="{background: !row.hasData ? '#fafafa' : (i%2===0?'#fff':'#F9FAFB'),
+                         borderBottom:'1px solid #F0F0F0', opacity: row.hasData ? 1 : 0.5}">
                 <td style="padding:7px 10px;">
                   <el-tag size="mini" :type="row.hasData ? 'success' : 'info'">{{ row.label }}</el-tag>
                 </td>
@@ -297,15 +267,15 @@
                   <span v-else style="color:#C0C4CC;font-style:italic;">—</span>
                 </td>
                 <td style="padding:7px 10px;color:#606266;">
-                  <span v-if="!row.hasData" style="color:#C0C4CC;font-style:italic;">no data in Excel</span>
+                  <span v-if="!row.hasData" style="color:#C0C4CC;font-style:italic;">no data in file</span>
                   <span v-else>{{ row.otherFieldsSummary }}</span>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-      </div><!-- /preview wrapper -->
-    </div><!-- /importStep === 2 -->
+      </div>
+    </div>
 
     <!-- Step 3: kết quả -->
     <div v-else-if="importStep === 3">
@@ -343,8 +313,7 @@
     <div slot="footer" style="display:flex;justify-content:space-between;align-items:center;">
       <span style="font-size:11px;color:#909399;">
         <i :class="['el-icon-setting','el-icon-view','el-icon-check'][importStep-1]"></i>
-        Step {{ importStep }} / 3 —
-        <b>{{ ['Setup','Preview','Done'][importStep-1] }}</b>
+        Step {{ importStep }} / 3 — <b>{{ ['Setup','Preview','Done'][importStep-1] }}</b>
       </span>
       <div style="white-space:nowrap;">
         <el-button size="small" @click="showImportDialog = false">
@@ -354,8 +323,7 @@
           <i class="el-icon-arrow-left"></i> Back
         </el-button>
         <el-button v-if="importStep === 1" size="small" type="primary"
-          :disabled="!importFilePath"
-          :loading="importLoading"
+          :disabled="!importFilePath" :loading="importLoading"
           @click="runImportPreview">
           Preview <i class="el-icon-arrow-right"></i>
         </el-button>
@@ -369,11 +337,8 @@
     </div>
   </el-dialog>
 
-
-
   <!-- Import node picker -->
-  <el-dialog title="Select Parent Node" :visible.sync="importNodePickerVisible"
-    width="500px" append-to-body>
+  <el-dialog title="Select Parent Node" :visible.sync="importNodePickerVisible" width="500px" append-to-body>
     <div style="margin-bottom:6px;font-size:11px;color:#909399;">
       Select the parent node to insert into. Leave empty to import from Organisation level.
     </div>
@@ -382,8 +347,7 @@
       :props="{ label: 'displayName', children: 'children', isLeaf: 'pickerIsLeaf' }"
       :load="loadPickerNode" lazy node-key="mrid" highlight-current
       style="max-height:350px;overflow-y:auto;border:1px solid #EBEEF5;border-radius:4px;padding:4px;"
-      @node-click="data => importPickerTemp = data"
-    >
+      @node-click="data => importPickerTemp = data">
       <span slot-scope="{ data }" style="font-size:12px;display:flex;align-items:center;gap:6px;">
         <i :class="pickerNodeIcon(data)" style="font-size:11px;width:14px;text-align:center;"></i>
         {{ data.displayName }}
@@ -414,13 +378,10 @@ import DataTable from './components/DataTable.vue'
 export default {
   name: 'ExportView',
   props: {
-    importType: {
-      type: String,
-      default: 'excel'
-    },
+    importType: { type: String, default: 'excel' },
   },
   watch: {
-    'importType' : {
+    importType: {
       immediate: true,
       handler: async function (newVal) {
         this.clearAllDialog()
@@ -436,25 +397,23 @@ export default {
       addForm: { name: '', filePath: '' },
       addRules: { name: [{ required: true, message: 'Please enter template name', trigger: 'blur' }] },
       showExportDialog: false, exportLoading: false,
-      // Import Excel
+      // Import
       showImportDialog: false,
       importStep: 1,
       importFilePath: '',
-      importSelectedNode: null,   // { label, mode, context: { organisation:{mrid}, ... } }
+      importSelectedNode: null,
       importNodePickerVisible: false,
       importPickerTemp: null,
-      importPreview: [],           // [{ catKey, label, hasData, keyValue, otherFieldsSummary, isJobWithTests }]
-
-      importResults: [],           // per-level results
+      importPreview: [],
+      importResults: [],
       importLoading: false,
       importCachedCodeValueMap: null,
-      importOverwrite: false,      // true=ghi đè fields, false=dùng existing làm parent
-      importDecisions: [],         // [{ key, type, label, issue, choice, generatedValue? }]
+      importOverwrite: false,
+      importDecisions: [],
       nodePickerVisible: false,
       pickerTempSelected: null,
-      pickerTreeKey: 0,        
-      selectedItems: [],          
-      // Import trực tiếp, không dùng JSON.parse để tránh lỗi undefined và tối ưu RAM
+      pickerTreeKey: 0,
+      selectedItems: [],
       categoryOptions: CATEGORY_OPTION,
       FEATURE_TREE: FEATURE_TREE,
       assetTypeToKey: ASSET_TYPE_TO_KEY
@@ -471,7 +430,7 @@ export default {
           const key = 'Asset_' + assetType
           if (seen.has(key)) continue
           seen.add(key)
-          const node = this.FEATURE_TREE.Asset && this.FEATURE_TREE.Asset.children ? this.FEATURE_TREE.Asset.children[assetType] : null
+          const node = this.FEATURE_TREE.Asset?.children?.[assetType]
           result.push({ key, label: (node && node.label) || assetType, category: 'Asset', assetType })
         } else if (row.category === 'Job') {
           const jobType = row.featureLevels && row.featureLevels[0] ? row.featureLevels[0].key : null
@@ -479,12 +438,12 @@ export default {
           const key = 'Job_' + jobType
           if (seen.has(key)) continue
           seen.add(key)
-          const node = this.FEATURE_TREE.Job && this.FEATURE_TREE.Job.children ? this.FEATURE_TREE.Job.children[jobType] : null
+          const node = this.FEATURE_TREE.Job?.children?.[jobType]
           result.push({ key, label: (node && node.label) || jobType, category: 'Job', assetType: jobType })
         } else {
           if (seen.has(row.category)) continue
           seen.add(row.category)
-          const opt = this.categoryOptions.find(function(c) { return c.value === row.category })
+          const opt = this.categoryOptions.find(c => c.value === row.category)
           result.push({ key: row.category, label: (opt && opt.label) || row.category, category: row.category, assetType: null })
         }
       }
@@ -493,6 +452,7 @@ export default {
   },
   async mounted() { await this.loadTemplates() },
   methods: {
+    // ── Templates ─────────────────────────────────────────────────────────
     async loadTemplates() {
       try {
         const rs = await window.electronAPI.getAllTemplatesByType(this.importType, 'import')
@@ -504,22 +464,20 @@ export default {
       const tmpl = this.templateList.find(t => t.name === name)
       if (!tmpl) return
       this.currentFilePath = tmpl.path || ''
-      this.tableData = (tmpl.variable || []).map(v => ({ code: v.code||'', category: v.category||'', featureLevels: (v.featureLevels||[]).map(f => ({ key: f.key||'' })), coordinates: v.coordinates||[] }))
+      this.tableData = (tmpl.variable || []).map(v => ({
+        code: v.code||'', category: v.category||'',
+        featureLevels: (v.featureLevels||[]).map(f => ({ key: f.key||'' })),
+        coordinates: v.coordinates||[]
+      }))
     },
     openAddTemplateDialog() { this.resetAddDialog(); this.showAddDialog = true },
     resetAddDialog() { this.addForm = { name: '', filePath: '' }; this.addLoading = false },
     async uploadTemplateForNew() {
       if (!this.addForm.name) { this.$message.warning('Please enter template name first'); return }
       try {
-        let rs = {
-          success: false,
-          filePath: ''
-        }
-        if(this.importType === 'excel') {
-          rs = await window.electronAPI.uploadExcelTemplate(this.addForm.name)
-        } else if(this.importType === 'word') {
-          rs = await window.electronAPI.uploadWordTemplate(this.addForm.name)
-        }
+        let rs
+        if (this.importType === 'word') rs = await window.electronAPI.uploadWordTemplate(this.addForm.name)
+        else                            rs = await window.electronAPI.uploadExcelTemplate(this.addForm.name)
         if (rs?.success) { this.addForm.filePath = rs.filePath; this.$message.success('Uploaded') }
         else if (!rs.canceled) this.$message.error('Upload failed')
       } catch(e) { this.$message.error(e.message) }
@@ -531,14 +489,22 @@ export default {
         try {
           const exists = await window.electronAPI.checkNameTemplateExist(this.addForm.name)
           if (exists?.data === true) { this.$message.error(`Template "${this.addForm.name}" already exists`); return }
-          const rs = await window.electronAPI.insertTemplate({ name: this.addForm.name, path: this.addForm.filePath||'', variable: JSON.stringify([]), type: this.importType || '', category: 'import' })
+          const rs = await window.electronAPI.insertTemplate({
+            name: this.addForm.name, path: this.addForm.filePath||'',
+            variable: JSON.stringify([]), type: this.importType||'', category: 'import'
+          })
           if (rs?.success) {
             this.$message.success(`Created "${this.addForm.name}"`); this.showAddDialog = false
-            await this.loadTemplates(); this.selectedTemplateName = this.addForm.name; this.currentFilePath = this.addForm.filePath||''; this.tableData = []
+            await this.loadTemplates()
+            this.selectedTemplateName = this.addForm.name
+            this.currentFilePath = this.addForm.filePath||''
+            this.tableData = []
           } else this.$message.error('Create failed')
         } catch(e) { this.$message.error(e.message) } finally { this.addLoading = false }
       })
     },
+
+    // ── Upload template file ───────────────────────────────────────────────
     async handleUploadExcel() {
       if (!this.selectedTemplateName) return
       try {
@@ -557,19 +523,34 @@ export default {
     },
     async handleSave() { await this.saveWithScan() },
     async saveWithScan() {
-      if (!this.selectedTemplateName || !this.currentFilePath) { this.$message.warning('Please upload an Template file first'); return }
-      const variables = this.tableData.map(r => ({ code: r.code, category: r.category, featureLevels: r.featureLevels, coordinates: r.coordinates||[] }))
+      if (!this.selectedTemplateName || !this.currentFilePath) {
+        this.$message.warning('Please upload a Template file first'); return
+      }
+      const variables = this.tableData.map(r => ({
+        code: r.code, category: r.category,
+        featureLevels: r.featureLevels, coordinates: r.coordinates||[]
+      }))
       try {
-        const rs = await window.electronAPI.saveTemplateWithScan({ name: this.selectedTemplateName, filePath: this.currentFilePath, variables, type: this.importType, category: 'import' })
-        if (rs?.success) { this.$message.success('Saved'); await this.loadTemplates(); this.onTemplateChange(this.selectedTemplateName) }
-        else this.$message.error('Save failed')
+        const rs = await window.electronAPI.saveTemplateWithScan({
+          name: this.selectedTemplateName, filePath: this.currentFilePath,
+          variables, type: this.importType, category: 'import'
+        })
+        if (rs?.success) {
+          this.$message.success('Saved')
+          await this.loadTemplates()
+          this.onTemplateChange(this.selectedTemplateName)
+        } else this.$message.error('Save failed')
       } catch(e) { this.$message.error(e.message) }
     },
     async handleDelete() {
       try { await this.$confirm(`Delete template "${this.selectedTemplateName}"?`, 'Warning', { type: 'warning', confirmButtonText: 'Delete', cancelButtonText: 'Cancel' }) } catch { return }
       try {
         const rs = await window.electronAPI.deleteTemplate(this.selectedTemplateName)
-        if (rs?.success) { this.$message.success('Deleted'); this.selectedTemplateName=''; this.currentFilePath=''; this.tableData=[]; await this.loadTemplates() }
+        if (rs?.success) {
+          this.$message.success('Deleted')
+          this.selectedTemplateName=''; this.currentFilePath=''; this.tableData=[]
+          await this.loadTemplates()
+        }
       } catch(e) { this.$message.error(e.message) }
     },
     async handleImportJson() {
@@ -578,14 +559,205 @@ export default {
         if (!rs?.success || !rs.data) return
         const variables = Array.isArray(rs.data) ? rs.data[0] : rs.data
         if (!Array.isArray(variables)) return
-        this.tableData = variables.map(v => ({ code: v.code||'', category: v.category||'', featureLevels: (v.featureLevels||[]).map(f => ({ key: f.key||'' })), coordinates: v.coordinates||[] }))
+        this.tableData = variables.map(v => ({
+          code: v.code||'', category: v.category||'',
+          featureLevels: (v.featureLevels||[]).map(f => ({ key: f.key||'' })),
+          coordinates: v.coordinates||[]
+        }))
         this.$message.success('Imported')
       } catch(e) { this.$message.error(e.message) }
     },
+
+    // ── Import Excel / Word ────────────────────────────────────────────────
+    handleImportExcel() { this.resetImportDialog(); this.showImportDialog = true },
+    handleImportWord()  { this.resetImportDialog(); this.showImportDialog = true },
+
+    resetImportDialog() {
+      this.importStep = 1
+      this.importFilePath = ''
+      this.importSelectedNode = null
+      this.importNodePickerVisible = false
+      this.importPickerTemp = null
+      this.importPreview = []
+      this.importResults = []
+      this.importLoading = false
+      this.importCachedCodeValueMap = null
+      this.importOverwrite = false
+      this.importDecisions = []
+    },
+
+    // Browse file — dùng đúng API theo importType
+    async pickImportFile() {
+      let rs
+      if (this.importType === 'word') rs = await window.electronAPI.pickWordFileForImport()
+      else                            rs = await window.electronAPI.pickExcelFileForImport()
+      if (rs && rs.filePath) this.importFilePath = rs.filePath
+    },
+
+    confirmImportNode() {
+      if (!this.importPickerTemp) return
+      const node = this.importPickerTemp
+      const pathParts = [...(node.parentArr || []).map(p => p.name), node.displayName]
+      this.importSelectedNode = {
+        label: pathParts.join(' / '),
+        mode: node.mode,
+        context: this.buildContextFromNode(node)
+      }
+      this.importNodePickerVisible = false
+      this.importPickerTemp = null
+    },
+
+    // Step 1 → Step 2: đọc file + build preview
+    async runImportPreview() {
+      if (!this.importFilePath) return
+      this.importLoading = true
+      try {
+        const tmpl = this.templateList.find(t => t.name === this.selectedTemplateName)
+        const variables = tmpl ? (tmpl.variable || []) : []
+
+        // ── Đọc file theo type ──────────────────────────────────────────
+        let rs
+        if (this.importType === 'word') {
+          rs = await window.electronAPI.readWordForImport({
+            filePath:     this.importFilePath,
+            templatePath: this.currentFilePath,
+            variables
+          })
+        } else {
+          rs = await window.electronAPI.readExcelForImport({
+            filePath:     this.importFilePath,
+            templatePath: this.currentFilePath,
+            variables
+          })
+        }
+
+        if (!rs || !rs.success) {
+          this.$message.error(rs?.message || 'Failed to read file'); return
+        }
+        this.importCachedCodeValueMap = rs.codeValueMap
+
+        // ── Build allLevelData + preview ────────────────────────────────
+        const allLevelData = deepImportService.buildAllLevelData(rs.codeValueMap, this.tableData)
+        const selectedMode = this.importSelectedNode ? this.importSelectedNode.mode : null
+        const levelsToProcess = deepImportService.getLevelsToProcess(selectedMode, allLevelData)
+
+        const preview = []
+        for (const lv of levelsToProcess) {
+          const data = allLevelData[lv.catKey] || {}
+          const hasData = Object.keys(data).length > 0
+          const keyValue = hasData ? data[lv.reqField] : null
+          const isJobWithTests = lv.id === 'job' && !keyValue && hasData
+          const otherFields = hasData
+            ? Object.keys(data).filter(k => k !== lv.reqField).slice(0, 5).join(', ')
+            : ''
+          preview.push({
+            catKey: lv.catKey, label: lv.label, hasData,
+            keyValue, isJobWithTests,
+            otherFieldsSummary: otherFields || (hasData ? '...' : '')
+          })
+        }
+        this.importPreview = preview
+
+        // ── Phân tích decisions cần hỏi user ───────────────────────────
+        const rawDecisions = deepImportService.analyzeDecisionsNeeded(allLevelData, levelsToProcess)
+        this.importDecisions = rawDecisions.map(d => {
+          if (d.type === 'missing_name') {
+            return { ...d, generatedValue: deepImportService._randomId(d.levelId.toUpperCase() + '-') }
+          } else if (d.type === 'shortcut') {
+            return { ...d, generatedValues: {
+              sub_name:     deepImportService._randomId('SUB-'),
+              asset_serial: deepImportService._randomId('ASSET-')
+            }}
+          }
+          return d
+        })
+
+        this.importStep = 2
+      } catch(e) {
+        this.$message.error('Preview error: ' + e.message)
+        console.error('runImportPreview error:', e)
+      } finally { this.importLoading = false }
+    },
+
+    // Step 2 → Step 3: chạy import thật
+    async confirmImport() {
+      if (!this.importCachedCodeValueMap) return
+      this.importLoading = true
+      try {
+        const rs = await deepImportService.importHierarchy(
+          this.importCachedCodeValueMap,
+          this.tableData,
+          this.importSelectedNode,
+          this.importOverwrite,
+          this.importDecisions,
+          this.$store.state.user.user_id
+        )
+        this.importResults = rs.results || []
+        this.importStep = 3
+        const ok   = this.importResults.filter(r => r.success && !r.skipped).length
+        const fail = this.importResults.filter(r => !r.success && !r.skipped).length
+        if (fail === 0) this.$message.success(ok + ' level' + (ok !== 1 ? 's' : '') + ' imported successfully')
+        else            this.$message.warning(ok + ' OK, ' + fail + ' failed')
+      } catch(e) {
+        this.$message.error('Import error: ' + e.message)
+        console.error('confirmImport error:', e)
+      } finally { this.importLoading = false }
+    },
+
+    openTemplateFile() {
+      if (!this.currentFilePath) return
+      window.electronAPI.openFileTemplate(this.currentFilePath).then(err => {
+        if (err) this.$message.error('Cannot open file: ' + err)
+      })
+    },
+
+    // ── Export (giữ nguyên) ────────────────────────────────────────────────
     handleExport() {
       this.selectedNode = null; this.selectedNodeLabel = ''; this.selectedNodeContext = {}; this.pickerTempSelected = null
       this.showExportDialog = true
     },
+    async doExport() {
+      if (this.selectedItems.length === 0) { this.$message.warning('Please add at least one asset or job'); return }
+      this.exportLoading = true
+      try {
+        const tmpl = this.templateList.find(t => t.name === this.selectedTemplateName)
+        const variables = tmpl ? (tmpl.variable || []) : []
+        const codeMap = {}
+        for (const cat of this.exportCategories) {
+          const matchingItems = this.getMatchingItems(cat)
+          if (cat.key.startsWith('Asset_') || cat.key.startsWith('Job_')) {
+            for (const item of matchingItems) {
+              const { flatMap, arrayMap } = await exportService.buildDtoForCat(cat, item.context)
+              const partial = exportService.extractFromMaps(cat, flatMap, arrayMap, this.tableData)
+              for (const code in partial) {
+                if (!codeMap[code]) codeMap[code] = []
+                const vals = partial[code]
+                codeMap[code].push.apply(codeMap[code], Array.isArray(vals) ? vals : [vals])
+              }
+            }
+          } else {
+            const firstItem = matchingItems[0]; if (!firstItem) continue
+            const { flatMap, arrayMap } = await exportService.buildDtoForCat(cat, firstItem.context)
+            const partial = exportService.extractFromMaps(cat, flatMap, arrayMap, this.tableData)
+            for (const code in partial) { if (!codeMap[code]) codeMap[code] = partial[code] }
+          }
+        }
+        if (this.importType === 'word') {
+          const rs = await window.electronAPI.exportWordWithData({ templatePath: this.currentFilePath, variables, codeMap })
+          if (rs.canceled) return
+          if (rs.success) { this.showExportDialog = false; this.$message.success('Word Exported: ' + rs.filePath) }
+          else this.$message.error(rs.message || 'Word Export failed')
+        } else {
+          const rs = await window.electronAPI.exportTemplateWithData({ templatePath: this.currentFilePath, variables, codeMap })
+          if (rs.canceled) return
+          if (rs.success) { this.showExportDialog = false; this.$message.success('Exported: ' + rs.filePath) }
+          else this.$message.error(rs.message || 'Export failed')
+        }
+      } catch(e) { this.$message.error('Export error: ' + e.message) }
+      finally { this.exportLoading = false }
+    },
+
+    // ── Node picker helpers ────────────────────────────────────────────────
     pickerModeLabel(mode) {
       const m = { organisation:'Organisation', substation:'Substation', voltageLevel:'Voltage Level', bay:'Bay', asset:'Asset', job:'Job' }
       return m[mode] || mode
@@ -599,18 +771,13 @@ export default {
       ;(node.parentArr || []).forEach(p => {
         if (p.mode) ctx[p.mode] = { mrid: p.mrid, name: p.name, ...(p.assetType && { assetType: p.assetType }) }
       })
-      ctx[node.mode] = {
-        mrid: node.mrid,
-        name: node.displayName,
-        ...(node.assetType && { assetType: node.assetType })
-      }
+      ctx[node.mode] = { mrid: node.mrid, name: node.displayName, ...(node.assetType && { assetType: node.assetType }) }
       return ctx
     },
-    sanitizeSheetName(name) { return (name || 'Sheet').replace(/[\[\]\*\?:\/\\]/g, '_').substring(0, 31) },
+    sanitizeSheetName(name) { return (name || 'Sheet').replace(/[\[\]\*\?\:\/\\]/g, '_').substring(0, 31) },
     uniqueSheetName(base) {
       const existing = this.selectedItems.map(i => i.sheetName)
-      let name = this.sanitizeSheetName(base)
-      let counter = 2
+      let name = this.sanitizeSheetName(base), counter = 2
       while (existing.includes(name)) { name = this.sanitizeSheetName(base + '_' + counter); counter++ }
       return name
     },
@@ -621,10 +788,7 @@ export default {
       if (ctx.bay)   return 'el-icon-set-up'
       return 'el-icon-office-building'
     },
-    refreshPickerTree() {
-      this.pickerTempSelected = null
-      this.pickerTreeKey++   
-    },
+    refreshPickerTree() { this.pickerTempSelected = null; this.pickerTreeKey++ },
     addPickerSelectionToList() {
       if (!this.pickerTempSelected) return
       const node = this.pickerTempSelected
@@ -637,20 +801,15 @@ export default {
         item.context.asset?.mrid !== undefined
       )
       if (isDup) { this.$message.warning('This node is already in the list'); return }
-      const baseName = node.displayName || pathParts[pathParts.length - 1] || 'Sheet'
-      const sheetName = this.uniqueSheetName(baseName)
+      const sheetName = this.uniqueSheetName(node.displayName || 'Sheet')
       this.selectedItems.push({
         id: Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-        label,
-        sheetName,
-        context: ctx
+        label, sheetName, context: ctx
       })
       this.pickerTempSelected = null
       this.$message.success('Added: ' + label.split(' / ').pop())
     },
-    removeSelectedItem(id) {
-      this.selectedItems = this.selectedItems.filter(item => item.id !== id)
-    },
+    removeSelectedItem(id) { this.selectedItems = this.selectedItems.filter(item => item.id !== id) },
     async loadPickerNode(node, resolve) {
       const ROOT = '00000000-0000-0000-0000-000000000000'
       try {
@@ -719,9 +878,7 @@ export default {
       })
       return rows
     },
-    onPickerNodeClick(data) {
-      this.pickerTempSelected = data
-    },
+    onPickerNodeClick(data) { this.pickerTempSelected = data },
     getMatchingItems(cat) {
       const jobToAsset = {
         'Job_TransformerJobDto': 'Transformer', 'Job_VoltageTransformerJobDto': 'Voltage transformer',
@@ -732,16 +889,14 @@ export default {
         'Job_BushingJobDto': 'Bushing',
       }
       return this.selectedItems.filter((item) => {
-        const ctx = item.context
-        const catKey = cat.key
+        const ctx = item.context; const catKey = cat.key
         if (catKey === 'OrgEntityToOrgDto')  return !!ctx.organisation
         if (catKey === 'SubstationDto')       return !!ctx.substation
         if (catKey === 'VoltageLevelDto')     return !!ctx.voltageLevel
         if (catKey === 'Bay')                 return !!ctx.bay
         if (catKey.startsWith('Asset_')) {
           if (!ctx.asset) return false
-          const expectedKey = this.assetTypeToKey[ctx.asset.assetType]
-          return expectedKey === catKey
+          return this.assetTypeToKey[ctx.asset.assetType] === catKey
         }
         if (catKey.startsWith('Job_')) {
           if (!ctx.job) return false
@@ -753,188 +908,8 @@ export default {
         return false
       })
     },
-    async doExport() {
-      if (this.selectedItems.length === 0) {
-        this.$message.warning('Please add at least one asset or job to the selection list')
-        return
-      }
-      this.exportLoading = true
-      try {
-        const tmpl = this.templateList.find(t => t.name === this.selectedTemplateName)
-        const variables = tmpl ? (tmpl.variable || []) : []
-        const codeMap = {}
 
-        for (const cat of this.exportCategories) {
-          const matchingItems = this.getMatchingItems(cat)
-          if (cat.key.startsWith('Asset_') || cat.key.startsWith('Job_')) {
-            for (const item of matchingItems) {
-              const { flatMap, arrayMap } = await exportService.buildDtoForCat(cat, item.context)
-              const partial = exportService.extractFromMaps(cat, flatMap, arrayMap, this.tableData)
-              for (const code in partial) {
-                if (!codeMap[code]) codeMap[code] = []
-                const vals = partial[code]
-                codeMap[code].push.apply(codeMap[code], Array.isArray(vals) ? vals : [vals])
-              }
-            }
-          } else {
-            const firstItem = matchingItems[0]
-            if (!firstItem) continue
-            const { flatMap, arrayMap } = await exportService.buildDtoForCat(cat, firstItem.context)
-            const partial = exportService.extractFromMaps(cat, flatMap, arrayMap, this.tableData)
-            for (const code in partial) {
-              if (!codeMap[code]) codeMap[code] = partial[code]
-            }
-          }
-        }
-
-        if (this.importType === 'excel') {
-          const rs = await window.electronAPI.exportTemplateWithData({ templatePath: this.currentFilePath, variables, codeMap })
-          if (rs.canceled) return
-          if (rs.success) {
-            this.showExportDialog = false
-            this.$message.success('Exported successfully: ' + rs.filePath)
-          } else {
-            this.$message.error(rs.message || 'Export failed')
-          }
-        } else if (this.importType === 'word') {
-          // GỌI IPC CỦA WORD TẠI ĐÂY
-          const rs = await window.electronAPI.exportWordWithData({ templatePath: this.currentFilePath, variables, codeMap })
-          if (rs.canceled) return
-          if (rs.success) {
-            this.showExportDialog = false
-            this.$message.success('Word Exported successfully: ' + rs.filePath)
-          } else {
-            this.$message.error(rs.message || 'Word Export failed')
-          }
-        }
-      } catch(e) {
-        this.$message.error('Export error: ' + e.message)
-        console.error('doExport error:', e)
-      } finally {
-        this.exportLoading = false
-      }
-    },
-    // ──────────── IMPORT EXCEL ───────────────────────────────────────────────
-    handleImportExcel() {
-      this.resetImportDialog()
-      this.showImportDialog = true
-    },
-    resetImportDialog() {
-      this.importStep = 1
-      this.importFilePath = ''
-      this.importSelectedNode = null
-      this.importNodePickerVisible = false
-      this.importPickerTemp = null
-      this.importPreview = []
-      this.importResults = []
-      this.importLoading = false
-      this.importCachedCodeValueMap = null
-      this.importOverwrite = false
-      this.importDecisions = []
-    },
-    async pickImportFile() {
-      const rs = await window.electronAPI.pickExcelFileForImport()
-      if (rs && rs.filePath) this.importFilePath = rs.filePath
-    },
-    confirmImportNode() {
-      if (!this.importPickerTemp) return
-      const node = this.importPickerTemp
-      const pathParts = [...(node.parentArr || []).map(p => p.name), node.displayName]
-      this.importSelectedNode = {
-        label: pathParts.join(' / '),
-        mode: node.mode,
-        context: this.buildContextFromNode(node)
-      }
-      this.importNodePickerVisible = false
-      this.importPickerTemp = null
-    },
-    async runImportPreview() {
-      if (!this.importFilePath) return
-      this.importLoading = true
-      try {
-        const tmpl = this.templateList.find(t => t.name === this.selectedTemplateName)
-        const variables = tmpl ? (tmpl.variable || []) : []
-        // Read Excel → codeValueMap
-        const rs = await window.electronAPI.readExcelForImport({ filePath: this.importFilePath, templatePath: this.currentFilePath, variables })
-        if (!rs || !rs.success) { this.$message.error(rs && rs.message ? rs.message : 'Failed to read Excel'); return }
-        this.importCachedCodeValueMap = rs.codeValueMap
-
-        // Build allLevelData
-        const allLevelData = deepImportService.buildAllLevelData(rs.codeValueMap, this.tableData)
-        const selectedMode = this.importSelectedNode ? this.importSelectedNode.mode : null
-        const levelsToProcess = deepImportService.getLevelsToProcess(selectedMode, allLevelData)
-
-        // Build preview rows
-        const preview = []
-        for (const lv of levelsToProcess) {
-          const data = allLevelData[lv.catKey] || {}
-          const hasData = Object.keys(data).length > 0
-          const keyValue = hasData ? data[lv.reqField] : null
-          const isJobWithTests = lv.id === 'job' && !keyValue && hasData
-          const otherFields = hasData
-            ? Object.keys(data).filter(k => k !== lv.reqField).slice(0, 5).join(', ')
-            : ''
-          preview.push({ catKey: lv.catKey, label: lv.label, hasData, keyValue, isJobWithTests,
-                         otherFieldsSummary: otherFields || (hasData ? '...' : '') })
-        }
-        this.importPreview = preview
-
-        // Phân tích các trường hợp cần hỏi user (reuse allLevelData + levelsToProcess đã có)
-        const rawDecisions = deepImportService.analyzeDecisionsNeeded(allLevelData, levelsToProcess)
-        // Khởi tạo generated values cho mỗi decision
-        this.importDecisions = rawDecisions.map(d => {
-          if (d.type === 'missing_name') {
-            return { ...d, generatedValue: deepImportService._randomId(d.levelId.toUpperCase() + '-') }
-          } else if (d.type === 'shortcut') {
-            return { ...d, generatedValues: {
-              sub_name:     deepImportService._randomId('SUB-'),
-              asset_serial: deepImportService._randomId('ASSET-')
-            }}
-          }
-          return d
-        })
-
-        this.importStep = 2
-      } catch(e) { this.$message.error('Preview error: ' + e.message) }
-      finally { this.importLoading = false }
-    },
-    async confirmImport() {
-      if (!this.importCachedCodeValueMap) return
-      this.importLoading = true
-      try {
-        const rs = await deepImportService.importHierarchy(
-          this.importCachedCodeValueMap,
-          this.tableData,
-          this.importSelectedNode,
-          this.importOverwrite,
-          this.importDecisions,
-          this.$store.state.user.user_id   // pass userId — cần cho getSubstationsInOrganisationForUser
-        )
-        this.importResults = rs.results || []
-        this.importStep = 3
-        if (!rs.success) {
-          this.$message.error('Import failed validation')
-          return
-        }
-        const ok = this.importResults.filter(r => r.success && !r.skipped).length
-        const fail = this.importResults.filter(r => !r.success && !r.skipped).length
-        if (fail === 0) this.$message.success(ok + ' level' + (ok !== 1 ? 's' : '') + ' imported successfully')
-        else this.$message.warning(ok + ' OK, ' + fail + ' failed')
-      } catch(e) { this.$message.error('Import error: ' + e.message) }
-      finally { this.importLoading = false }
-    },
-    openTemplateFile() {
-      if (!this.currentFilePath) return
-      const ext = this.currentFilePath.split('.').pop().toLowerCase()
-      if (!['xlsx', 'xls', 'doc', 'docx'].includes(ext)) {
-        this.$message.warning('Only Excel and Word files are supported')
-        return
-      }
-      window.electronAPI.openFileTemplate(this.currentFilePath).then(err => {
-        if (err) this.$message.error('Cannot open file: ' + err)
-      })
-    },
-        // ─────────────────────────────────────────────────────────────────────────
+    // ── Table helpers ─────────────────────────────────────────────────────
     clearAll() { this.tableData = [] },
     addRow(index) {
       const r = { code: '', category: '', featureLevels: [], coordinates: [] }
@@ -958,10 +933,8 @@ export default {
       if (selected?.children) row.featureLevels.push({ key: '' })
     },
     clearAllDialog() {
-      this.resetAddDialog()
-      this.clearAll()
-      this.selectedTemplateName = "",
-      this.currentFilePath = ""
+      this.resetAddDialog(); this.clearAll()
+      this.selectedTemplateName = ''; this.currentFilePath = ''
     }
   }
 }

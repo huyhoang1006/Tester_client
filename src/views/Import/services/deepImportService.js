@@ -18,54 +18,22 @@
  */
 
 import {FEATURE_TREE} from '../../Common/constants'
+import { ASSET_REQ_FIELD, JOB_REQ_FIELD, ASSET_KIND_MAP, ASSET_CONFIG, JOB_CONFIG } from './DeepImportConfig'
 import uuid from '@/utils/uuid'
 // DTO classes — same as LocationInsert mixin pattern
 // Mappers: mapDtoToEntity (reverse of EntityToDto used in exportService)
 import { OrgDtoToOrgEntity }  from '@/views/Mapping/Organisation/index'
 import { mapDtoToEntity as subDtoToEntity } from '@/views/Mapping/Substation/index'
 import { volDtoToVolEntity }     from '@/views/Mapping/VoltageLevel/index'
-import { TEST_DEFINITIONS } from './testDefinitionsMap'
+import { TEST_DEFINITIONS } from './TestDefinitionsMap'
 // Bay: không có DtoToEntity mapper riêng — gọi API với BayDto trực tiếp
 // Job mappers — tất cả đều export jobDtoToEntity
-import { jobDtoToEntity as vtJobDtoToEntity }   from '@/views/Mapping/VoltageTransformerJob/index'
-import { jobDtoToEntity as ctJobDtoToEntity }   from '@/views/Mapping/CurrentTransformerJob/index'
-import { jobDtoToEntity as tfJobDtoToEntity }   from '@/views/Mapping/TransformerJob/index'
-import { jobDtoToEntity as brJobDtoToEntity }   from '@/views/Mapping/CircuitBreakerJob/index'
-import { jobDtoToEntity as caJobDtoToEntity }   from '@/views/Mapping/PowerCableJob/index'
-import { jobDtoToEntity as saJobDtoToEntity }   from '@/views/Mapping/SurgerArresterJob/index'
-import { jobDtoToEntity as reJobDtoToEntity }   from '@/views/Mapping/ReactorJob/index'
-import { jobDtoToEntity as cpJobDtoToEntity }   from '@/views/Mapping/CapacitorJob/index'
-import { jobDtoToEntity as dcJobDtoToEntity }   from '@/views/Mapping/DisconnectorJob/index'
-import { jobDtoToEntity as rmJobDtoToEntity }   from '@/views/Mapping/RotatingMachineJob/index'
-import { jobDtoToEntity as buJobDtoToEntity }   from '@/views/Mapping/BushingJob/index'
 // Asset DTO classes — dùng làm base object (có đủ nested structure)
 import organisationDto  from '@/views/Dto/Organisation'
 import substationDto    from '@/views/Dto/Substation'
 import voltageLevelDto  from '@/views/Dto/VoltageLevel'
 import bayDto           from '@/views/Dto/Bay'
-import VoltageTransformerDto  from '@/views/Dto/VoltageTransformer'
-import CurrentTransformerDto  from '@/views/Dto/CurrentTransformer'
-import TransformerDto         from '@/views/Dto/Transformer'
-import CircuitBreakerDto      from '@/views/Dto/CircuitBreaker'
-import PowerCableDto          from '@/views/Dto/PowerCable'
-import SurgeArresterDto       from '@/views/Dto/SurgeAsset'
-import ReactorDto             from '@/views/Dto/Reactor'
-import CapacitorDto           from '@/views/Dto/Capacitor'
-import DisconnectorDto        from '@/views/Dto/Disconnector'
-import RotatingMachineDto     from '@/views/Dto/RotatingMachine'
-import BushingDto             from '@/views/Dto/BushingAsset'
 // Asset mappers — mỗi loại có mapDtoToEntity riêng
-import { mapDtoToEntity as vtMapDtoToEntity }          from '@/views/Mapping/VoltageTransformer/index'
-import { mapDtoToEntity as ctMapDtoToEntity }          from '@/views/Mapping/CurrentTransformer/index'
-import { transformerDtoToEntity as tfMapDtoToEntity }   from '@/views/Mapping/Transformer/index'
-import { mapDtoToEntity as breakerMapDtoToEntity }     from '@/views/Mapping/Breaker/index'
-import { mapDtoToEntity as cableMapDtoToEntity }       from '@/views/Mapping/PowerCable/index'
-import { mapDtoToEntity as saMapDtoToEntity }          from '@/views/Mapping/SurgeArrester/index'
-import { mapDtoToEntity as reactorMapDtoToEntity }     from '@/views/Mapping/Reactor/index'
-import { mapDtoToEntity as capacitorMapDtoToEntity }   from '@/views/Mapping/Capacitor/index'
-import { disconnectorDtoToEntity as disconnectorMapDtoToEntity } from '@/views/Mapping/Disconnector/index'
-import { mapDtoToEntity as rotatingMapDtoToEntity }    from '@/views/Mapping/RotatingMachine/index'
-import { mapDtoToEntity as bushingMapDtoToEntity }     from '@/views/Mapping/Bushing/index'
 // Asset DTO classes
 
 // ROOT org mrid
@@ -81,8 +49,6 @@ var LEVEL_ORDER = [
 ]
 
 // leafValue trong FEATURE_TREE là serial_no cho tất cả asset
-var ASSET_REQ_FIELD = 'serial_no'
-var JOB_REQ_FIELD   = 'job_name'
 
 export var deepImportService = {
 
@@ -252,17 +218,12 @@ export var deepImportService = {
       return list.find(function(b) { return b.name === name || b.aliasName === name }) || null
     }
     if (levelId === 'asset') {
-      var kindStr = assetType.replace('Asset_', '')
-      var assetNode = FEATURE_TREE.Asset && FEATURE_TREE.Asset.children && FEATURE_TREE.Asset.children[kindStr]
-      var kind = assetNode ? assetNode.label : kindStr
+      // Map catKey → kind string đúng với API (từ constants.js)
+      var kind = ASSET_KIND_MAP[assetType] || assetType.replace('Asset_', '')
 
       // Asset có thể cắm vào bay HOẶC substation → thử cả 2
       var psrIds = []
       if (ctx.bay && ctx.bay.mrid) psrIds.push(ctx.bay.mrid)
-      if (ctx.sub && ctx.sub.mrid && !(ctx.bay && ctx.bay.mrid === ctx.sub.mrid)) {
-        psrIds.push(ctx.sub.mrid)
-      }
-      // Also try long-key sub
       if (ctx.substation && ctx.substation.mrid && !psrIds.includes(ctx.substation.mrid)) {
         psrIds.push(ctx.substation.mrid)
       }
@@ -270,7 +231,6 @@ export var deepImportService = {
 
       for (var pi = 0; pi < psrIds.length; pi++) {
         var rs
-        // Surge arrester và Bushing dùng API riêng
         if (kind === 'Surge arrester') {
           rs = await window.electronAPI.getSurgeArresterByPsrId(psrIds[pi])
         } else if (kind === 'Bushing') {
@@ -280,7 +240,10 @@ export var deepImportService = {
         }
         if (!rs || !rs.success) continue
         var list = Array.isArray(rs.data) ? rs.data : (rs.data ? [rs.data] : [])
-        var found = list.find(function(a) { return a.serial_no === name || a.serial_number === name })
+        // serial_no / serial_number / apparatus_id đều có thể là identifier
+        var found = list.find(function(a) {
+          return a.serial_no === name || a.serial_number === name || a.apparatus_id === name
+        })
         if (found) return found
       }
       return null
@@ -332,10 +295,22 @@ export var deepImportService = {
     try { return window.store && window.store.state && window.store.state.user ? window.store.state.user.name : '' } catch(e) { return '' }
   },
 
-  // Fill DTO flat fields từ lvm
+  // Generic field lookup: tìm theo suffix — không cần biết prefix
+  // data['type'] hoặc data['ct_type'] hoặc data['asset_type'] đều tìm được bằng _getField(data,'type')
+  _getField: function(data, suffix) {
+    if (data[suffix] !== undefined) return data[suffix]
+    var keys = Object.keys(data)
+    var found = keys.find(function(k) { return k === suffix || k.endsWith('_' + suffix) })
+    return found !== undefined ? data[found] : undefined
+  },
+
+  // Fill DTO flat fields từ lvm — dùng suffix matching
   _fillDtoFlat: function(dto, lvm, fields) {
     var self = this
-    fields.forEach(function(f) { if (lvm[f] !== undefined && lvm[f] !== '') dto[f] = lvm[f] })
+    fields.forEach(function(f) {
+      var val = self._getField(lvm, f)
+      if (val !== undefined && val !== '') dto[f] = val
+    })
   },
 
   // Trích mrid từ response — xử lý nhiều format trả về khác nhau
@@ -375,8 +350,8 @@ export var deepImportService = {
       dto = new organisationDto()
       dto.organisationId = uuid.newUuid()     // mapper: orgEntity.organisation.mrid
       dto.parentId       = orgParentMrid       // mapper: orgEntity.organisation.parent_organisation
-      dto.name           = data['name'] || ''
-      dto.aliasName      = data['aliasName'] || data['name'] || ''
+      dto.name           = this._getField(data,'name') || ''
+      dto.aliasName      = this._getField(data,'aliasName') || this._getField(data,'name') || ''
       dto.userId         = userId
       dto.userName       = userName
       this._fillDtoFlat(dto, data, ['tax_code','street','ward_or_commune','district_or_town',
@@ -405,8 +380,8 @@ export var deepImportService = {
       // Build DTO (chính xác như saveSubstation trong LocationInsert mixin)
       dto = new substationDto()
       dto.organisationId = orgMrid
-      dto.name           = data['name'] || ''
-      dto.aliasName      = data['aliasName'] || data['name'] || ''
+      dto.name           = this._getField(data,'name') || ''
+      dto.aliasName      = this._getField(data,'aliasName') || this._getField(data,'name') || ''
       dto.userId         = userId
       dto.userName       = userName
       this._fillDtoFlat(dto, data, ['type','generation','industry','comment',
@@ -450,26 +425,26 @@ export var deepImportService = {
       dto = new voltageLevelDto()
       dto.voltageLevelId = uuid.newUuid()   // entity.voltageLevel.mrid
       dto.substationId   = subMrid           // entity.voltageLevel.substation
-      dto.name           = data['name'] || ''
-      dto.comment        = data['comment'] || ''
+      dto.name           = this._getField(data,'name') || ''
+      dto.comment        = this._getField(data,'comment') || ''
       dto.userId         = userId
 
       // Voltage values + assign IDs (mapper tạo Voltage objects nếu có ID)
-      if (data['high_voltage_limit_value']) {
+      if (this._getField(data,'high_voltage_limit_value')) {
         dto.highVoltageLimitId        = uuid.newUuid()
-        dto.high_voltage_limit_value  = data['high_voltage_limit_value']
-        dto.high_voltage_limit_unit   = data['high_voltage_limit_unit'] || 'kV'
+        dto.high_voltage_limit_value  = this._getField(data,'high_voltage_limit_value')
+        dto.high_voltage_limit_unit   = this._getField(data,'high_voltage_limit_unit') || 'kV'
       }
-      if (data['low_voltage_limit_value']) {
+      if (this._getField(data,'low_voltage_limit_value')) {
         dto.lowVoltageLimitId        = uuid.newUuid()
-        dto.low_voltage_limit_value  = data['low_voltage_limit_value']
-        dto.low_voltage_limit_unit   = data['low_voltage_limit_unit'] || 'kV'
+        dto.low_voltage_limit_value  = this._getField(data,'low_voltage_limit_value')
+        dto.low_voltage_limit_unit   = this._getField(data,'low_voltage_limit_unit') || 'kV'
       }
-      if (data['base_voltage_value']) {
+      if (this._getField(data,'base_voltage_value')) {
         dto.baseVoltageId       = uuid.newUuid()
         dto.nominalVoltageId    = uuid.newUuid()
-        dto.base_voltage_value  = data['base_voltage_value']
-        dto.base_voltage_unit   = data['base_voltage_unit'] || 'kV'
+        dto.base_voltage_value  = this._getField(data,'base_voltage_value')
+        dto.base_voltage_unit   = this._getField(data,'base_voltage_unit') || 'kV'
       }
 
       // volDtoToVolEntity — tên đúng từ VoltageLevel/index.js
@@ -486,15 +461,15 @@ export var deepImportService = {
       var bayMridNew = uuid.newUuid()
       dto.mrid  = bayMridNew   // field đúng cho insertBayEntity
       dto.bayId = bayMridNew   // giữ lại để tương thích với BayDto class
-      dto.name                   = data['name'] || ''
-      dto.aliasName              = data['aliasName'] || data['name'] || ''
+      dto.name                   = this._getField(data,'name') || ''
+      dto.aliasName              = this._getField(data,'aliasName') || this._getField(data,'name') || ''
       // mapServerToDto: dto.voltage_level = serverData.voltageLevel?.mRID
       // Ưu tiên voltage_level; nếu không có mới dùng substation
       dto.voltage_level = vlMrid  || null
       dto.substation    = vlMrid  ? null : (subMrid || null)
       // mapServerToDto: dto.breaker_configuration (snake_case)
-      dto.breaker_configuration  = data['breaker_configuration'] || ''
-      dto.bus_bar_configuration  = data['bus_bar_configuration']  || ''
+      dto.breaker_configuration  = this._getField(data,'breaker_configuration') || ''
+      dto.bus_bar_configuration  = this._getField(data,'bus_bar_configuration') || ''
       dto.bay_energy_meas_flag   = ''
       dto.bay_power_meas_flag    = ''
       dto.userId                 = userId
@@ -510,21 +485,7 @@ export var deepImportService = {
 
       // Config: mỗi asset type có mapper + DTO class + API riêng
       // Pattern từ AssetView/mixin: mapDtoToEntity(dto) → insertXxxEntity(oldEntity, entity)
-      var assetConfig = {
-        'Asset_VoltageTransformerDto': { DtoClass: VoltageTransformerDto, mapper: vtMapDtoToEntity,          api: 'insertVoltageTransformerEntity' },
-        'Asset_CurrentTransformerDto': { DtoClass: CurrentTransformerDto, mapper: ctMapDtoToEntity,          api: 'insertCurrentTransformerEntity' },
-        'Asset_TransformerDataDto':    { DtoClass: TransformerDto,        mapper: tfMapDtoToEntity,          api: 'insertTransformerEntity' },
-        'Asset_CircuitBreakerDto':     { DtoClass: CircuitBreakerDto,     mapper: breakerMapDtoToEntity,     api: 'insertCircuitBreakerEntity' },
-        'Asset_PowerCableDTO':         { DtoClass: PowerCableDto,         mapper: cableMapDtoToEntity,       api: 'insertPowerCableEntity' },
-        'Asset_SurgeArresterDto':      { DtoClass: SurgeArresterDto,      mapper: saMapDtoToEntity,          api: 'insertSurgeArresterEntity' },
-        'Asset_ReactorDto':            { DtoClass: ReactorDto,            mapper: reactorMapDtoToEntity,     api: 'insertReactorEntity' },
-        'Asset_CapacitorsDTO':         { DtoClass: CapacitorDto,          mapper: capacitorMapDtoToEntity,   api: 'insertCapacitorEntity' },
-        'Asset_DisconnectorDTO':       { DtoClass: DisconnectorDto,       mapper: disconnectorMapDtoToEntity, api: 'insertDisconnectorEntity' },
-        'Asset_RotatingMachineDTO':    { DtoClass: RotatingMachineDto,    mapper: rotatingMapDtoToEntity,    api: 'insertRotatingMachineEntity' },
-        'Asset_BushingAssetDto':       { DtoClass: BushingDto,            mapper: bushingMapDtoToEntity,     api: 'insertBushingEntity' },
-      }
-
-      var cfg = assetConfig[lv.catKey]
+      var cfg = ASSET_CONFIG[lv.catKey]
       if (!cfg) return { success: false, message: 'Unknown asset type: ' + lv.catKey }
 
       // Build DTO — fill common properties fields
@@ -535,8 +496,8 @@ export var deepImportService = {
 
       // Fill properties (flat fields → dto.properties nếu có)
       if (dto.properties) {
-        dto.properties.serial_no    = data[ASSET_REQ_FIELD] || ''
-        dto.properties.apparatus_id = data['apparatus_id'] || ''
+        dto.properties.serial_no    = this._getField(data, ASSET_REQ_FIELD) || ''
+        dto.properties.apparatus_id = this._getField(data,'apparatus_id') || ''
         this._fillDtoFlat(dto.properties, data, ['type','manufacturer','manufacturer_type',
           'manufacturer_year','model','country_of_origin','feeder','comment'])
       }
@@ -566,12 +527,129 @@ export var deepImportService = {
         }
       }
 
-      // CT: ctConfiguration.cores phải là số nguyên hợp lệ 1-9 (CT CRUD: parseInt, must be 1-9)
+      // CT: build ctConfiguration.dataCT từ arrays trong lvm
       if (catKey === 'Asset_CurrentTransformerDto') {
-        if (dto.ctConfiguration) {
-          var cores = parseInt(dto.ctConfiguration.cores)
-          dto.ctConfiguration.cores = (cores >= 1 && cores <= 9) ? cores.toString() : '1'
+        if (!dto.ctConfiguration) dto.ctConfiguration = { cores: '1', dataCT: [] }
+
+        // Generic lookup: tìm theo suffix — không quan tâm prefix
+        // Ví dụ: suffix='cores' sẽ tìm đúng dù key là 'cores', 'ct_cores', 'ctConfiguration_cores'...
+        var findKey = function(suffix) {
+          if (data[suffix] !== undefined) return suffix
+          var keys = Object.keys(data)
+          // Tìm key kết thúc bằng '_' + suffix
+          var found = keys.find(function(k) { return k === suffix || k.endsWith('_' + suffix) })
+          return found || null
         }
+        // arrVal: lấy giá trị tại index i theo suffix
+        var arrVal = function(suffix, i) {
+          var key = findKey(suffix)
+          if (!key) return null
+          var v = data[key]
+          if (v === null || v === undefined) return null
+          if (Array.isArray(v)) return v[i] !== undefined && v[i] !== null ? String(v[i]) : null
+          return i === 0 ? String(v) : null
+        }
+        // Helper: parse số (CT CRUD requires number not string)
+        var mkNum = function(val) {
+          if (val === null || val === undefined) return null
+          var n = parseFloat(val); return isNaN(n) ? null : n
+        }
+        // Helper: object burden
+        var mkBurden = function(val) {
+          return { mrid: uuid.newUuid(), value: mkNum(val), unit: null }
+        }
+
+        // Số cores: ưu tiên từ data['cores'], fallback từ max array length của BẤT KỲ field nào
+        // Generic: không hardcode tên field — user khai báo template thế nào cũng work
+        var maxArrLen = Object.keys(data).reduce(function(m, f) {
+          var v = data[f]; return Array.isArray(v) ? Math.max(m, v.length) : m
+        }, 0)
+        var coresKey = findKey('cores')
+        var coreCount = coresKey ? (parseInt(data[coresKey]) || maxArrLen || 1) : (maxArrLen || 1)
+        coreCount = (coreCount >= 1 && coreCount <= 9) ? coreCount : 1
+        dto.ctConfiguration.cores = coreCount.toString()
+
+        // ── Init dto.ratings sub-objects (mapper dùng .mrid / .value trực tiếp) ──
+        if (!dto.ratings) dto.ratings = {}
+        var ratingObjFields = ['rated_frequency','um_rms','u_withstand_rms','u_lightning_peak',
+                               'icth','idyn_peak','ith_rms','ith_duration','system_voltage',
+                               'bil','rating_factor_temp']
+        ratingObjFields.forEach(function(f) {
+          if (!dto.ratings[f] || typeof dto.ratings[f] !== 'object') {
+            dto.ratings[f] = { mrid: uuid.newUuid(), value: null, unit: null }
+          }
+        })
+        if (!dto.ratings.standard || typeof dto.ratings.standard !== 'object') {
+          dto.ratings.standard = { value: null }
+        }
+        if (!dto.ratings.system_voltage_type || typeof dto.ratings.system_voltage_type !== 'object') {
+          dto.ratings.system_voltage_type = { value: null }
+        }
+        // Số rated_frequency từ import nếu có
+        var _ratedFreq = this._getField(data, 'rated_frequency')
+        if (_ratedFreq) dto.ratings.rated_frequency.value = _ratedFreq
+
+        // ── Build dataCT ──────────────────────────────────────────────────────
+
+        // ── Build dataCT ──────────────────────────────────────────────────────
+        dto.ctConfiguration.dataCT = []
+        for (var ci = 0; ci < coreCount; ci++) {
+          // arrVal(suffix, ci) dùng findKey → suffix matching
+          // Không hardcode key name → template dùng prefix gì cũng work
+          var inUseRaw = arrVal('fulltap_inuse', ci) || arrVal('inuse', ci)
+          dto.ctConfiguration.dataCT.push({
+            mrid:      uuid.newUuid(),
+            taps:      arrVal('taps', ci) || '2',
+            commonTap: arrVal('common_tap', ci) || arrVal('commonTap', ci) || '1',
+            fullTap: {
+              table: {
+                mrid:   uuid.newUuid(),
+                isShow: true,
+                name:   arrVal('fulltap_name', ci) || null,
+                ipn:    { mrid: uuid.newUuid(), value: mkNum(arrVal('fulltap_ipn', ci)), unit: arrVal('fulltap_ipn_unit', ci) || null },
+                isn:    { mrid: uuid.newUuid(), value: mkNum(arrVal('fulltap_isn', ci)), unit: arrVal('fulltap_isn_unit', ci) || null },
+                inUse:  inUseRaw === '1' || inUseRaw === 'true' || inUseRaw === 'True' || inUseRaw === true,
+                type:   'fulltap',
+              },
+              classRating: {
+                mrid:               uuid.newUuid(),
+                rated_burden:       mkBurden(arrVal('rated_burden', ci)),
+                extended_burden:    false,
+                burden:             mkBurden(arrVal('class_burden', ci) || arrVal('burden', ci)),
+                burdenCos:          arrVal('burden_cos', ci) || arrVal('class_burden_cos', ci),
+                operatingBurden:    mkBurden(arrVal('op_burden', ci) || arrVal('class_op_burden', ci)),
+                operatingBurdenCos: arrVal('op_burden_cos', ci) || arrVal('class_op_burden_cos', ci),
+                app:   arrVal('class_app',  ci) || null,
+                class: arrVal('class',      ci) || null,
+                kx:    arrVal('class_kx',   ci) || null,
+                k:     arrVal('class_k',    ci) || null,
+                fs:    arrVal('class_fs',   ci) || null,
+                kssc:  arrVal('class_kssc', ci) || null,
+                ktd:   arrVal('class_ktd',  ci) || null,
+                duty:  arrVal('class_duty', ci) || null,
+                alf:   arrVal('class_alf',  ci) || null,
+                ts:    arrVal('class_ts',   ci) || null,
+                ek:    arrVal('class_ek',   ci) || null,
+                e1:    arrVal('class_e1',   ci) || null,
+                le:    arrVal('class_le',   ci) || null,
+                le1:   arrVal('class_le1',  ci) || null,
+                val:   arrVal('class_val',  ci) || null,
+                lal:   arrVal('class_lal',  ci) || null,
+                tp:    arrVal('class_tp',   ci) || null,
+                vk:    arrVal('class_vk',   ci) || null,
+                lk:    arrVal('class_lk',   ci) || null,
+                vk1:   arrVal('class_vk1',  ci) || null,
+                lk1:   arrVal('class_lk1',  ci) || null,
+                wr:          mkBurden(arrVal('class_wr',          ci)),
+                vb:          mkBurden(arrVal('class_vb',          ci)),
+                ratio_error: mkBurden(arrVal('class_ratio_error', ci)),
+              }
+            },
+            mainTap:  { data: [] },
+            interTap: { data: [] },
+          })
+        }
+
       }
 
       // Transformer: oldPowerTransformerInfoId + oldTransformerEndInfo + attachment + array fields
@@ -589,15 +667,15 @@ export var deepImportService = {
           // 3. Mặc định: Two winding
           // properties.type (= entity.asset.type) quyết định số winding
           // Values: 'Two-winding' | 'Three-winding' | 'Auto w/ tert' | 'Auto w/o tert'
-          var assetType = data['type'] || (dto.properties && dto.properties.type) || ''
+          var assetType = this._getField(data, 'type') || (dto.properties && dto.properties.type) || ''
           var isThree
           if (assetType) {
             // User khai báo type trong Excel → follow theo
             isThree = (assetType === 'Three-winding' || assetType === 'Auto w/ tert')
           } else {
             // Auto-detect: có st_* (sec-tert) hoặc cr_tert → 3 winding
-            var hasSecTert = !!(data['st_uk'] || data['st_base_power'] || data['st_base_voltage'])
-            var hasTertCurrent = !!(data['cr_tert'])
+            var hasSecTert = !!(this._getField(data,'st_uk') || this._getField(data,'st_base_power') || this._getField(data,'st_base_voltage'))
+            var hasTertCurrent = !!(this._getField(data,'cr_tert'))
             isThree = hasSecTert || hasTertCurrent
             // Mặc định: Two-winding
           }
@@ -652,9 +730,21 @@ export var deepImportService = {
 
       // Map DTO → entity (đúng pattern từ mixin)
       var entity    = cfg.mapper(dto)
+
+      // CRITICAL: traverseAndFillMrid trên ENTITY sau khi map
+      // Vì nhiều field như entity.lifecycleDate.mrid được set từ dto.lifecycleDateId (null)
+      // traverseAndFillMrid trên DTO không giải quyết được → phải traverse entity
+      this.traverseAndFillMrid(entity)
+
       var oldEntity = cfg.mapper(new cfg.DtoClass())   // blank entity cho insert mới
 
-      rs = await window.electronAPI[cfg.api](oldEntity, entity)
+      // Một số asset API chỉ nhận 1 argument (entity), không có oldEntity
+      // Ví dụ: insertBushingEntity(entity), insertDisconnectorEntity(entity)
+      if (cfg.singleArg) {
+        rs = await window.electronAPI[cfg.api](entity)
+      } else {
+        rs = await window.electronAPI[cfg.api](oldEntity, entity)
+      }
       return { success: !!(rs && rs.success === true), mrid: this._extractMrid(rs), message: rs && rs.message }
     }
 
@@ -662,24 +752,10 @@ export var deepImportService = {
     if (lv.id === 'job') {
       if (!assetMrid) return { success: false, message: 'Cannot insert Job: no Asset context' }
 
-      var jobConfig = {
-        'Job_TransformerJobDto':        { mapper: tfJobDtoToEntity, api: 'insertTransformerJob',        testTypeKey: 'transformerTestingEquipmentTestType' },
-        'Job_VoltageTransformerJobDto': { mapper: vtJobDtoToEntity, api: 'insertVoltageTransformerJob', testTypeKey: 'voltageTransformerTestingEquipmentTestType' },
-        'Job_CurrentTransformerJobDto': { mapper: ctJobDtoToEntity, api: 'insertCurrentTransformerJob', testTypeKey: 'currentTransformerTestingEquipmentTestType' },
-        'Job_CircuitBreakerJobDto':     { mapper: brJobDtoToEntity, api: 'insertCircuitBreakerJob',     testTypeKey: 'circuitBreakerTestingEquipmentTestType' },
-        'Job_PowerCableJobDto':         { mapper: caJobDtoToEntity, api: 'insertPowerCableJob',         testTypeKey: 'powerCableTestingEquipmentTestType' },
-        'Job_SurgeArresterJobDto':      { mapper: saJobDtoToEntity, api: 'insertSurgeArresterJob',      testTypeKey: 'surgeArresterTestingEquipmentTestType' },
-        'Job_ReactorJobDto':            { mapper: reJobDtoToEntity, api: 'insertReactorJob',            testTypeKey: 'reactorTestingEquipmentTestType' },
-        'Job_CapacitorJobDto':          { mapper: cpJobDtoToEntity, api: 'insertCapacitorJob',          testTypeKey: 'capacitorTestingEquipmentTestType' },
-        'Job_DisconnectorJobDto':       { mapper: dcJobDtoToEntity, api: 'insertDisconnectorJob',       testTypeKey: 'disconnectorTestingEquipmentTestType' },
-        'Job_RotatingMachineJobDto':    { mapper: rmJobDtoToEntity, api: 'insertRotatingMachineJob',    testTypeKey: 'rotatingMachineTestingEquipmentTestType' },
-        'Job_BushingJobDto':            { mapper: buJobDtoToEntity, api: 'insertBushingJob',            testTypeKey: 'bushingTestingEquipmentTestType' },
-      }
-
-      var jcfg = jobConfig[lv.catKey]
+      var jcfg = JOB_CONFIG[lv.catKey]
       if (!jcfg) return { success: false, message: 'Unknown job type: ' + lv.catKey }
 
-      var jobName = data[JOB_REQ_FIELD] || this._randomJobName()
+      var jobName = this._getField(data, JOB_REQ_FIELD) || this._randomJobName()
       var jobMrid = uuid.newUuid()
 
       var dto = {
@@ -687,16 +763,16 @@ export var deepImportService = {
           mrid:           data._overwriteMrid || jobMrid,
           name:           jobName,
           asset_id:       assetMrid,
-          job_type:       this._n(data['job_type']),
-          tested_by:      this._n(data['tested_by']),
-          approved_by:    this._n(data['approved_by']),
-          test_method:    this._n(data['test_method']),
-          ref_standard:   this._n(data['ref_standard']),
-          summary:        this._n(data['summary']),
-          execution_date: this._n(data['execution_date']),
-          approval_date:  this._n(data['approval_date']),
-          creation_date:  this._n(data['creation_date']),
-          type:           this._n(data['type'])
+          job_type:       this._n(this._getField(data, 'job_type')),
+          tested_by:      this._n(this._getField(data,'tested_by')),
+          approved_by:    this._n(this._getField(data,'approved_by')),
+          test_method:    this._n(this._getField(data,'test_method')),
+          ref_standard:   this._n(this._getField(data,'ref_standard')),
+          summary:        this._n(this._getField(data,'summary')),
+          execution_date: this._n(this._getField(data,'execution_date')),
+          approval_date:  this._n(this._getField(data,'approval_date')),
+          creation_date:  this._n(this._getField(data,'creation_date')),
+          type:           this._n(this._getField(data, 'type'))
         },
         attachment:   { id: null, path: '[]', name: null, type: 'job', id_foreign: assetMrid },
         attachmentId: null,
@@ -728,6 +804,37 @@ export var deepImportService = {
       var oldJobEntity = jcfg.mapper(blankJobDto)
 
       rs = await window.electronAPI[jcfg.api](oldJobEntity, entity)
+
+
+      // Nếu fail (FK chưa seed cho device này):
+      // Retry với testTypeId=null + measurement_id=null
+      // Chỉ strip FK refs nếu cần — device đã seed (Transformer) sẽ pass lần đầu, không retry
+      if (rs && rs.success === false && dto.testList && dto.testList.length > 0) {
+        dto.testList = dto.testList.map(function(item) {
+          var newItem = Object.assign({}, item, { testTypeId: null })
+          if (item.data && item.data.table && item.data.table.table1) {
+            newItem.data = Object.assign({}, item.data, {
+              table: Object.assign({}, item.data.table, {
+                table1: item.data.table.table1.map(function(row) {
+                  var newRow = { mrid: row.mrid }
+                  Object.keys(row).forEach(function(k) {
+                    if (k === 'mrid') return
+                    newRow[k] = (row[k] && typeof row[k] === 'object')
+                      ? Object.assign({}, row[k], { measurement_id: null })
+                      : row[k]
+                  })
+                  return newRow
+                })
+              })
+            })
+          }
+          return newItem
+        })
+        entity = jcfg.mapper(dto)
+        rs = await window.electronAPI[jcfg.api](oldJobEntity, entity)
+      }
+
+
       return { success: !!(rs && rs.success === true), mrid: this._extractMrid(rs), message: rs && rs.message }
     }
 
@@ -1022,14 +1129,15 @@ export var deepImportService = {
   },
   _buildImpedanceItems: function(lvm, ukKey, bpKey, bvKey, llKey) {
     var self = this
-    // Dùng maxLen từ bất kỳ field nào có data — không cứng vào ukKey
+    // Dùng _getField → suffix matching, không cứng prefix
+    function gf(key) { return self._getField(lvm, key) }
     function arrLen(key) {
-      if (!lvm[key]) return 0
-      return Array.isArray(lvm[key]) ? lvm[key].length : 1
+      var v = gf(key); if (!v) return 0
+      return Array.isArray(v) ? v.length : 1
     }
     function getVal(key, i) {
-      if (!lvm[key]) return null
-      return Array.isArray(lvm[key]) ? (lvm[key][i] || null) : lvm[key]
+      var v = gf(key); if (v === null || v === undefined) return null
+      return Array.isArray(v) ? (v[i] !== undefined ? v[i] : null) : v
     }
     var maxLen = Math.max(arrLen(ukKey), arrLen(bpKey), arrLen(bvKey), arrLen(llKey))
     if (maxLen === 0) return []
@@ -1160,54 +1268,54 @@ export var deepImportService = {
 
     // voltage_ratings (vr_*)
     var vrLen = Math.max(
-      Array.isArray(lvm['vr_winding'])   ? lvm['vr_winding'].length   : 0,
-      Array.isArray(lvm['vr_voltage_ll']) ? lvm['vr_voltage_ll'].length : 0
+      Array.isArray(this._getField(lvm,'vr_winding'))   ? this._getField(lvm,'vr_winding').length   : 0,
+      Array.isArray(this._getField(lvm,'vr_voltage_ll')) ? this._getField(lvm,'vr_voltage_ll').length : 0
     )
     if (vrLen > 0) {
       dto.ratings.voltage_ratings = []
       for (var i = 0; i < vrLen; i++) {
         dto.ratings.voltage_ratings.push({
           mrid:               uuid.newUuid(),
-          winding:            Array.isArray(lvm['vr_winding'])   ? (lvm['vr_winding'][i]   || '') : '',
-          voltage_ll:         { mrid: uuid.newUuid(), value: Array.isArray(lvm['vr_voltage_ll']) ? (lvm['vr_voltage_ll'][i] || null) : null, unit: null, multiplier: null },
-          voltage_ln:         { mrid: uuid.newUuid(), value: Array.isArray(lvm['vr_voltage_ln']) ? (lvm['vr_voltage_ln'][i] || null) : null, unit: null, multiplier: null },
-          insul_level_ll:     { mrid: uuid.newUuid(), value: Array.isArray(lvm['vr_insul_level_ll']) ? (lvm['vr_insul_level_ll'][i] || null) : null, unit: null, multiplier: null },
-          insulation_class:   Array.isArray(lvm['vr_insulation_class'])   ? (lvm['vr_insulation_class'][i]   || '') : '',
-          voltage_regulation: Array.isArray(lvm['vr_voltage_regulation']) ? (lvm['vr_voltage_regulation'][i] || '') : ''
+          winding:            Array.isArray(this._getField(lvm,'vr_winding'))   ? (this._getField(lvm,'vr_winding')[i]   || '') : '',
+          voltage_ll:         { mrid: uuid.newUuid(), value: Array.isArray(this._getField(lvm,'vr_voltage_ll')) ? (this._getField(lvm,'vr_voltage_ll')[i] || null) : null, unit: null, multiplier: null },
+          voltage_ln:         { mrid: uuid.newUuid(), value: Array.isArray(this._getField(lvm,'vr_voltage_ln')) ? (this._getField(lvm,'vr_voltage_ln')[i] || null) : null, unit: null, multiplier: null },
+          insul_level_ll:     { mrid: uuid.newUuid(), value: Array.isArray(this._getField(lvm,'vr_insul_level_ll')) ? (this._getField(lvm,'vr_insul_level_ll')[i] || null) : null, unit: null, multiplier: null },
+          insulation_class:   Array.isArray(this._getField(lvm,'vr_insulation_class'))   ? (this._getField(lvm,'vr_insulation_class')[i]   || '') : '',
+          voltage_regulation: Array.isArray(this._getField(lvm,'vr_voltage_regulation')) ? (this._getField(lvm,'vr_voltage_regulation')[i] || '') : ''
         })
       }
     }
 
     // power_ratings (pr_*)
     var prLen = Math.max(
-      Array.isArray(lvm['pr_rated_power'])   ? lvm['pr_rated_power'].length   : 0,
-      Array.isArray(lvm['pr_cooling_class']) ? lvm['pr_cooling_class'].length : 0
+      Array.isArray(this._getField(lvm,'pr_rated_power'))   ? this._getField(lvm,'pr_rated_power').length   : 0,
+      Array.isArray(this._getField(lvm,'pr_cooling_class')) ? this._getField(lvm,'pr_cooling_class').length : 0
     )
     if (prLen > 0) {
       dto.ratings.power_ratings = []
       for (var i = 0; i < prLen; i++) {
         dto.ratings.power_ratings.push({
           mrid:          uuid.newUuid(),
-          rated_power:   { mrid: uuid.newUuid(), value: Array.isArray(lvm['pr_rated_power']) ? (lvm['pr_rated_power'][i] || null) : null, unit: null, multiplier: null },
-          cooling_class: Array.isArray(lvm['pr_cooling_class']) ? (lvm['pr_cooling_class'][i] || '') : '',
-          temp_rise_wind: { mrid: uuid.newUuid(), value: Array.isArray(lvm['pr_temp_rise_wind']) ? (lvm['pr_temp_rise_wind'][i] || null) : null, unit: null, multiplier: null }
+          rated_power:   { mrid: uuid.newUuid(), value: Array.isArray(this._getField(lvm,'pr_rated_power')) ? (this._getField(lvm,'pr_rated_power')[i] || null) : null, unit: null, multiplier: null },
+          cooling_class: Array.isArray(this._getField(lvm,'pr_cooling_class')) ? (this._getField(lvm,'pr_cooling_class')[i] || '') : '',
+          temp_rise_wind: { mrid: uuid.newUuid(), value: Array.isArray(this._getField(lvm,'pr_temp_rise_wind')) ? (this._getField(lvm,'pr_temp_rise_wind')[i] || null) : null, unit: null, multiplier: null }
         })
       }
     }
 
     // current_ratings (cr_*)
     var crLen = Math.max(
-      Array.isArray(lvm['cr_prim']) ? lvm['cr_prim'].length : 0,
-      Array.isArray(lvm['cr_sec'])  ? lvm['cr_sec'].length  : 0
+      Array.isArray(this._getField(lvm,'cr_prim')) ? this._getField(lvm,'cr_prim').length : 0,
+      Array.isArray(this._getField(lvm,'cr_sec'))  ? this._getField(lvm,'cr_sec').length  : 0
     )
     if (crLen > 0) {
       dto.ratings.current_ratings = []
       for (var i = 0; i < crLen; i++) {
         dto.ratings.current_ratings.push({
           mrid: uuid.newUuid(),
-          prim: { mrid: uuid.newUuid(), data: { mrid: uuid.newUuid(), value: Array.isArray(lvm['cr_prim']) ? (lvm['cr_prim'][i] || null) : null, unit: null, multiplier: null } },
-          sec:  { mrid: uuid.newUuid(), data: { mrid: uuid.newUuid(), value: Array.isArray(lvm['cr_sec'])  ? (lvm['cr_sec'][i]  || null) : null, unit: null, multiplier: null } },
-          tert: { mrid: uuid.newUuid(), data: { mrid: uuid.newUuid(), value: Array.isArray(lvm['cr_tert']) ? (lvm['cr_tert'][i] || null) : null, unit: null, multiplier: null } }
+          prim: { mrid: uuid.newUuid(), data: { mrid: uuid.newUuid(), value: Array.isArray(this._getField(lvm,'cr_prim')) ? (this._getField(lvm,'cr_prim')[i] || null) : null, unit: null, multiplier: null } },
+          sec:  { mrid: uuid.newUuid(), data: { mrid: uuid.newUuid(), value: Array.isArray(this._getField(lvm,'cr_sec'))  ? (this._getField(lvm,'cr_sec')[i]  || null) : null, unit: null, multiplier: null } },
+          tert: { mrid: uuid.newUuid(), data: { mrid: uuid.newUuid(), value: Array.isArray(this._getField(lvm,'cr_tert')) ? (this._getField(lvm,'cr_tert')[i] || null) : null, unit: null, multiplier: null } }
         })
       }
     }

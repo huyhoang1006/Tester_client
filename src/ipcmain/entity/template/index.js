@@ -38,6 +38,123 @@ if (!isDev) {
     }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// CSV SUPPORT — thêm vào 3 chỗ
+// ═══════════════════════════════════════════════════════════════════════════════
+ 
+// ── HELPER: parse CSV thành 2D array ─────────────────────────────────────────
+
+// ── HELPER: parse CSV thành 2D array (RFC 4180) ──────────────────────────────
+function parseCsv(text) {
+    const rows = []
+    const lines = text.split(/\r?\n/)
+    for (const line of lines) {
+        if (line.trim() === '') continue
+        const cols = []
+        let cur = '', inQuote = false
+        for (let i = 0; i < line.length; i++) {
+            const ch = line[i]
+            if (ch === '"') {
+                if (inQuote && line[i + 1] === '"') { cur += '"'; i++ }
+                else inQuote = !inQuote
+            } else if (ch === ',' && !inQuote) {
+                cols.push(cur); cur = ''
+            } else {
+                cur += ch
+            }
+        }
+        cols.push(cur)
+        rows.push(cols)
+    }
+    return rows
+}
+ 
+// ── HELPER: "A1" → { row: 0, col: 0 } ────────────────────────────────────────
+function cellAddressToIndex(addr) {
+    const m = addr.match(/^([A-Z]+)(\d+)$/i)
+    if (!m) return null
+    const colStr = m[1].toUpperCase()
+    let col = 0
+    for (let i = 0; i < colStr.length; i++) col = col * 26 + (colStr.charCodeAt(i) - 64)
+    return { row: parseInt(m[2]) - 1, col: col - 1 }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// THÊM: Helpers — đặt sau hàm extractValue (cuối file, trước active())
+// ══════════════════════════════════════════════════════════════════════════════
+ 
+// ── Parse docx XML → danh sách cells và paragraphs có vị trí ─────────────────
+// Dùng PizZip (đã có) + regex đơn giản, không cần xmldom
+// getText(): nối tất cả <w:t> trong fragment → handle split-run (A + 1 → A1)
+function parseDocxContent(buffer) {
+    const PizZip = require('pizzip')
+    const zip = new PizZip(buffer)
+    const xml = zip.file('word/document.xml').asText()
+ 
+    // Nối tất cả <w:t> text trong fragment (kể cả text bị split nhiều run)
+    function getText(fragment) {
+        const matches = []
+        const re = /<w:t(?:\s[^>]*)?>([^<]*)<\/w:t>/g
+        let m
+        while ((m = re.exec(fragment)) !== null) matches.push(m[1])
+        return matches.join('')
+    }
+ 
+    const cells = []  // [{ table, row, cell, text }]
+    const paras = []  // [{ para, text }]
+ 
+    // ── Table cells ──────────────────────────────────────────────────────────
+    let tblIdx = 0
+    const tblRe = /<w:tbl\b[^>]*>([\s\S]*?)<\/w:tbl>/g
+    let tblM
+    while ((tblM = tblRe.exec(xml)) !== null) {
+        let trIdx = 0
+        const trRe = /<w:tr\b[^>]*>([\s\S]*?)<\/w:tr>/g
+        let trM
+        while ((trM = trRe.exec(tblM[1])) !== null) {
+            let tcIdx = 0
+            const tcRe = /<w:tc\b[^>]*>([\s\S]*?)<\/w:tc>/g
+            let tcM
+            while ((tcM = tcRe.exec(trM[1])) !== null) {
+                cells.push({ table: tblIdx, row: trIdx, cell: tcIdx, text: getText(tcM[1]) })
+                tcIdx++
+            }
+            trIdx++
+        }
+        tblIdx++
+    }
+ 
+    // ── Paragraphs ngoài table ────────────────────────────────────────────────
+    const xmlNoTbl = xml.replace(/<w:tbl\b[^>]*>[\s\S]*?<\/w:tbl>/g, '')
+    const bodyM = xmlNoTbl.match(/<w:body\b[^>]*>([\s\S]*?)<\/w:body>/)
+    if (bodyM) {
+        let pIdx = 0
+        const pRe = /<w:p\b[^>]*>([\s\S]*?)<\/w:p>/g
+        let pM
+        while ((pM = pRe.exec(bodyM[1])) !== null) {
+            paras.push({ para: pIdx, text: getText(pM[1]) })
+            pIdx++
+        }
+    }
+ 
+    return { cells, paras }
+}
+
+// Encode/decode coordinate
+// Table cell : "Word!t0r1c2"  (table 0, row 1, cell 2)
+// Paragraph  : "Word!p5"
+function encodeWordCoord(pos) {
+    if (pos.table !== undefined) return `Word!t${pos.table}r${pos.row}c${pos.cell}`
+    return `Word!p${pos.para}`
+}
+function decodeWordCoord(coord) {
+    const cm = coord.match(/^Word!t(\d+)r(\d+)c(\d+)$/)
+    if (cm) return { table: +cm[1], row: +cm[2], cell: +cm[3] }
+    const pm = coord.match(/^Word!p(\d+)$/)
+    if (pm) return { para: +pm[1] }
+    return null
+}
+
 // ═════════════════════════════════════════════════════════════════════════════
 // CRUD
 // ═════════════════════════════════════════════════════════════════════════════
@@ -303,16 +420,29 @@ export const saveTemplateWithScan = () => {
                     })
                 } else if (type === 'word') {
                     // === SCAN WORD ===
-                    const PizZip = require('pizzip')
-                    const Docxtemplater = require('docxtemplater')
-                    const content = fs.readFileSync(filePath, 'binary')
-                    const zip = new PizZip(content)
-                    const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true })
-                    const text = doc.getFullText()
+                    // Parse docx XML → tìm {Code} trong từng cell/paragraph
+                    // Ghi coordinate dạng Word!t{t}r{r}c{c} hoặc Word!p{p}
+                    const buffer = fs.readFileSync(filePath)
+                    const { cells, paras } = parseDocxContent(buffer)
+ 
+                    function matchCode(text, code) {
+                        // Tìm {code} hoặc code standalone (không có { } trong trường hợp user dùng plain text)
+                        return text.includes('{' + code + '}') || text === code
+                    }
+ 
                     codes.forEach(code => {
-                        if (text.includes(`{${code}}`)) {
-                            coordinatesMap[code].push('Found in Document')
-                        }
+                        cells.forEach(pos => {
+                            if (matchCode(pos.text, code)) {
+                                const coord = encodeWordCoord(pos)
+                                if (!coordinatesMap[code].includes(coord)) coordinatesMap[code].push(coord)
+                            }
+                        })
+                        paras.forEach(pos => {
+                            if (matchCode(pos.text, code)) {
+                                const coord = encodeWordCoord(pos)
+                                if (!coordinatesMap[code].includes(coord)) coordinatesMap[code].push(coord)
+                            }
+                        })
                     })
                 }
             }
@@ -640,13 +770,38 @@ export const pickExcelFileForImport = () => {
     ipcMain.handle('pickExcelFileForImport', async function (event) {
         try {
             const result = await dialog.showOpenDialog({
-                title: 'Select filled Excel file to import',
-                filters: [{ name: 'Excel', extensions: ['xlsx'] }],
+                title: 'Select filled Excel/CSV file to import',
+                filters: [
+                    { name: 'Excel / CSV', extensions: ['xlsx', 'xls', 'csv'] },  // ← thêm csv
+                    { name: 'All Files',   extensions: ['*'] }
+                ],
                 properties: ['openFile']
             })
             if (result.canceled || !result.filePaths.length) return { canceled: true }
             return { success: true, filePath: result.filePaths[0] }
         } catch (e) {
+            return { success: false, message: e.message }
+        }
+    })
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// THÊM: pickWordFileForImport — đặt sau pickExcelFileForImport
+// ══════════════════════════════════════════════════════════════════════════════
+export const pickWordFileForImport = () => {
+    ipcMain.handle('pickWordFileForImport', async function (event) {
+        try {
+            const result = await dialog.showOpenDialog({
+                title: 'Select filled Word file to import',
+                filters: [
+                    { name: 'Word Documents', extensions: ['docx'] },
+                    { name: 'All Files',       extensions: ['*'] }
+                ],
+                properties: ['openFile']
+            })
+            if (result.canceled || !result.filePaths.length) return { canceled: true }
+            return { success: true, filePath: result.filePaths[0] }
+        } catch(e) {
             return { success: false, message: e.message }
         }
     })
@@ -692,82 +847,226 @@ export const readExcelForImport = () => {
             if (!variables || !variables.length) {
                 return { success: true, codeValueMap: {} }
             }
-
-            const XlsxPopulate = require('xlsx-populate')
-
-            // Mở file đã fill
-            const filled = await XlsxPopulate.fromFileAsync(filePath)
-
-            // Mở template gốc nếu có (để biết prefix/suffix)
-            var tmpl = null
-            if (templatePath && fs.existsSync(templatePath)) {
-                try { tmpl = await XlsxPopulate.fromFileAsync(templatePath) }
-                catch(e) { console.warn('Cannot open template for prefix detection:', e.message) }
-            }
-
+ 
+            const ext = filePath.split('.').pop().toLowerCase()
+            const isCsv = ext === 'csv'
+ 
             var codeValueMap = {}
-
-            for (var vi = 0; vi < variables.length; vi++) {
-                var variable = variables[vi]
-                var code = variable.code
-                var coordinates = variable.coordinates
-                if (!code || !coordinates || !coordinates.length) continue
-
-                codeValueMap[code] = []
-
-                for (var ci = 0; ci < coordinates.length; ci++) {
-                    var coord = coordinates[ci]
-                    var bangIdx = coord.indexOf('!')
-                    if (bangIdx === -1) { codeValueMap[code].push(''); continue }
-
-                    var sheetName = coord.substring(0, bangIdx)
-                    var cellAddr  = coord.substring(bangIdx + 1)
-
+ 
+            if (isCsv) {
+                // ── CSV path ──────────────────────────────────────────────────
+                const filledText = fs.readFileSync(filePath, 'utf-8')
+                const filledRows = parseCsv(filledText)
+ 
+                // Template CSV nếu có (để tách prefix y hệt Excel)
+                var tmplRows = null
+                if (templatePath && fs.existsSync(templatePath)) {
                     try {
-                        var filledSheet = filled.sheet(sheetName)
-                        if (!filledSheet) { codeValueMap[code].push(''); continue }
-
-                        var rawFilled = filledSheet.cell(cellAddr).value()
-
-                        // Số → trả String trực tiếp, không cần tách prefix
-                        if (typeof rawFilled === 'number') {
-                            codeValueMap[code].push(String(rawFilled))
-                            continue
+                        const tmplExt = templatePath.split('.').pop().toLowerCase()
+                        if (tmplExt === 'csv') {
+                            tmplRows = parseCsv(fs.readFileSync(templatePath, 'utf-8'))
                         }
-
-                        if (rawFilled === null || rawFilled === undefined) {
-                            codeValueMap[code].push('')
-                            continue
-                        }
-
-                        var filledStr = String(rawFilled)
-
-                        // ── Tách prefix/suffix từ template gốc ──────────────────
-                        var extracted = filledStr  // default: không tách được
-
-                        if (tmpl) {
-                            var tmplSheet = tmpl.sheet(sheetName)
-                            if (tmplSheet) {
-                                var rawTmpl = tmplSheet.cell(cellAddr).value()
-                                if (rawTmpl !== null && rawTmpl !== undefined) {
-                                    var tmplStr = String(rawTmpl)
-                                    extracted = extractValue(tmplStr, filledStr, code)
+                    } catch(e) { console.warn('Cannot open CSV template:', e.message) }
+                }
+ 
+                for (var vi = 0; vi < variables.length; vi++) {
+                    var variable    = variables[vi]
+                    var code        = variable.code
+                    var coordinates = variable.coordinates
+                    if (!code || !coordinates || !coordinates.length) continue
+ 
+                    codeValueMap[code] = []
+ 
+                    for (var ci = 0; ci < coordinates.length; ci++) {
+                        var coord    = coordinates[ci]
+                        var bangIdx  = coord.indexOf('!')
+                        // CSV chỉ có 1 sheet → bỏ "Sheet1!" lấy cell address
+                        var cellAddr = bangIdx !== -1 ? coord.substring(bangIdx + 1) : coord
+ 
+                        try {
+                            var idx = cellAddressToIndex(cellAddr)
+                            if (!idx) { codeValueMap[code].push(''); continue }
+ 
+                            var row    = filledRows[idx.row]
+                            var rawVal = row ? row[idx.col] : undefined
+ 
+                            if (rawVal === undefined || rawVal === null || rawVal === '') {
+                                codeValueMap[code].push('')
+                                continue
+                            }
+ 
+                            // Số → trả thẳng
+                            var numVal = Number(rawVal)
+                            if (!isNaN(numVal) && rawVal.trim() !== '') {
+                                codeValueMap[code].push(String(rawVal).trim())
+                                continue
+                            }
+ 
+                            var filledStr = String(rawVal)
+                            var extracted = filledStr
+ 
+                            // Tách prefix/suffix từ template CSV nếu có
+                            if (tmplRows) {
+                                var tmplRow = tmplRows[idx.row]
+                                var rawTmpl = tmplRow ? tmplRow[idx.col] : undefined
+                                if (rawTmpl !== undefined && rawTmpl !== null && rawTmpl !== '') {
+                                    extracted = extractValue(String(rawTmpl), filledStr, code)
                                 }
                             }
+ 
+                            codeValueMap[code].push(extracted.trim())
+                        } catch(e) {
+                            codeValueMap[code].push('')
                         }
-
-                        codeValueMap[code].push(extracted.trim())
-
-                    } catch (cellErr) {
-                        console.warn('readExcelForImport cell error:', coord, cellErr.message)
-                        codeValueMap[code].push('')
+                    }
+                }
+            } else {
+                // ── Excel path (giữ nguyên) ───────────────────────────────────
+                const XlsxPopulate = require('xlsx-populate')
+                const filled = await XlsxPopulate.fromFileAsync(filePath)
+ 
+                var tmpl = null
+                if (templatePath && fs.existsSync(templatePath)) {
+                    try { tmpl = await XlsxPopulate.fromFileAsync(templatePath) }
+                    catch(e) { console.warn('Cannot open template for prefix detection:', e.message) }
+                }
+ 
+                for (var vi = 0; vi < variables.length; vi++) {
+                    var variable    = variables[vi]
+                    var code        = variable.code
+                    var coordinates = variable.coordinates
+                    if (!code || !coordinates || !coordinates.length) continue
+ 
+                    codeValueMap[code] = []
+ 
+                    for (var ci = 0; ci < coordinates.length; ci++) {
+                        var coord    = coordinates[ci]
+                        var bangIdx  = coord.indexOf('!')
+                        if (bangIdx === -1) { codeValueMap[code].push(''); continue }
+ 
+                        var sheetName = coord.substring(0, bangIdx)
+                        var cellAddr  = coord.substring(bangIdx + 1)
+ 
+                        try {
+                            var filledSheet = filled.sheet(sheetName)
+                            if (!filledSheet) { codeValueMap[code].push(''); continue }
+ 
+                            var rawFilled = filledSheet.cell(cellAddr).value()
+ 
+                            if (typeof rawFilled === 'number') {
+                                codeValueMap[code].push(String(rawFilled))
+                                continue
+                            }
+                            if (rawFilled === null || rawFilled === undefined) {
+                                codeValueMap[code].push('')
+                                continue
+                            }
+ 
+                            var filledStr = String(rawFilled)
+                            var extracted = filledStr
+ 
+                            if (tmpl) {
+                                var tmplSheet = tmpl.sheet(sheetName)
+                                if (tmplSheet) {
+                                    var rawTmpl = tmplSheet.cell(cellAddr).value()
+                                    if (rawTmpl !== null && rawTmpl !== undefined) {
+                                        extracted = extractValue(String(rawTmpl), filledStr, code)
+                                    }
+                                }
+                            }
+ 
+                            codeValueMap[code].push(extracted.trim())
+                        } catch(cellErr) {
+                            console.warn('readExcelForImport cell error:', coord, cellErr.message)
+                            codeValueMap[code].push('')
+                        }
                     }
                 }
             }
-
+ 
             return { success: true, codeValueMap: codeValueMap }
         } catch (error) {
             console.error('readExcelForImport error:', error)
+            return { success: false, message: error.message }
+        }
+    })
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// THÊM: readWordForImport — đặt sau readExcelForImport
+// Giống readExcelForImport nhưng đọc docx XML theo Word!t{t}r{r}c{c} coordinate
+// ══════════════════════════════════════════════════════════════════════════════
+export const readWordForImport = () => {
+    ipcMain.handle('readWordForImport', async function (event, { filePath, templatePath, variables }) {
+        try {
+            if (!filePath || !fs.existsSync(filePath)) {
+                return { success: false, message: 'File not found: ' + filePath }
+            }
+            if (!variables || !variables.length) {
+                return { success: true, codeValueMap: {} }
+            }
+ 
+            // Parse filled docx
+            const filledBuf = fs.readFileSync(filePath)
+            const { cells: filledCells, paras: filledParas } = parseDocxContent(filledBuf)
+ 
+            // Parse template docx (để tách prefix/suffix giống Excel)
+            let tmplCells = [], tmplParas = []
+            if (templatePath && fs.existsSync(templatePath)) {
+                try {
+                    const { cells, paras } = parseDocxContent(fs.readFileSync(templatePath))
+                    tmplCells = cells; tmplParas = paras
+                } catch(e) { console.warn('Cannot parse Word template:', e.message) }
+            }
+ 
+            // Lookup helpers
+            function getCellText(cells, t, r, c) {
+                const f = cells.find(x => x.table === t && x.row === r && x.cell === c)
+                return f ? f.text : ''
+            }
+            function getParaText(paras, p) {
+                const f = paras.find(x => x.para === p)
+                return f ? f.text : ''
+            }
+ 
+            const codeValueMap = {}
+ 
+            for (const variable of variables) {
+                const { code, coordinates } = variable
+                if (!code || !coordinates || !coordinates.length) continue
+                codeValueMap[code] = []
+ 
+                for (const coord of coordinates) {
+                    // Legacy: 'Found in Document' (scan cũ) → bỏ qua
+                    if (!coord || coord === 'Found in Document') {
+                        codeValueMap[code].push('')
+                        continue
+                    }
+ 
+                    const pos = decodeWordCoord(coord)
+                    if (!pos) { codeValueMap[code].push(''); continue }
+ 
+                    let filledText = '', tmplText = ''
+                    if (pos.table !== undefined) {
+                        filledText = getCellText(filledCells, pos.table, pos.row, pos.cell)
+                        tmplText   = tmplCells.length ? getCellText(tmplCells, pos.table, pos.row, pos.cell) : ''
+                    } else {
+                        filledText = getParaText(filledParas, pos.para)
+                        tmplText   = tmplParas.length ? getParaText(tmplParas, pos.para) : ''
+                    }
+ 
+                    // Tách prefix/suffix y hệt Excel (reuse extractValue đã có)
+                    let extracted = filledText
+                    if (tmplText && tmplText !== filledText) {
+                        try { extracted = extractValue(tmplText, filledText, code) } catch(e) {}
+                    }
+                    codeValueMap[code].push(extracted.trim())
+                }
+            }
+ 
+            return { success: true, codeValueMap }
+        } catch (error) {
+            console.error('readWordForImport error:', error)
             return { success: false, message: error.message }
         }
     })
@@ -838,4 +1137,6 @@ export const active = () => {
     pickExcelFileForImport()
     readExcelForImport()
     openFileTemplate()
+    pickWordFileForImport()
+    readWordForImport()
 }
