@@ -602,5 +602,6 @@ export const JobEntityToDto = (entity) => {
 
         dto.testList.push(testTemplate);
     }
+    console.log(dto)
     return dto;
 }

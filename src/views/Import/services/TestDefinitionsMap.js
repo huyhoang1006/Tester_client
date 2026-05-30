@@ -72,6 +72,31 @@ function buildDefs(testMap, conditionMap) {
     return result
 }
 
+
+// ── Multi-table config: chỉ khai báo các test có table2/table3 ───────────────
+// Mỗi entry: { tables: ['table1', 'table2', ...], primaryField: { table1: 'field', table2: 'field', ... } }
+// primaryField: field chính phân biệt row thuộc table nào khi import
+// Nếu 1 test không có trong đây → mặc định chỉ có table1
+export const MULTI_TABLE_CONFIG = {
+    'Job_CircuitBreakerJobDto': {
+        'SF6MoiturePurity': {
+            tables: ['table1', 'table2'],
+            primaryField: {
+                table1: 'moiture',
+                table2: 'purity'
+            }
+        },
+        'SF6GasAnalysis': {
+            tables: ['table1', 'table2', 'table3'],
+            primaryField: {
+                table1: 'decom_sf6',
+                table2: 'so2_sof2',
+                table3: 'hf'
+            }
+        }
+    }
+}
+
 // ── Export TEST_DEFINITIONS ───────────────────────────────────────────────────
 export const TEST_DEFINITIONS = {
     'Job_TransformerJobDto':        buildDefs(transformerTestMap,        transformerConditionMap),

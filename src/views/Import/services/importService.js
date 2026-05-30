@@ -192,7 +192,7 @@ export const importService = {
 
   // ── Circuit Breaker ──────────────────────────────────────────────────────
   async updateBreaker(mrid, lvm) {
-    const rs = await window.electronAPI.getCircuitBreakerEntityByMrid(mrid)
+    const rs = await window.electronAPI.getBreakerEntityByMrid(mrid)
     if (!rs || !rs.success || !rs.data) return { success: false, message: 'Cannot fetch Breaker' }
     const e = rs.data
     this._applyProps(e, lvm)
@@ -299,7 +299,7 @@ export const importService = {
 
   // ── Bushing ──────────────────────────────────────────────────────────────
   async updateBushing(mrid, lvm) {
-    const rs = await window.electronAPI.getBushingAssetEntityByMrid(mrid)
+    const rs = await window.electronAPI.getBushingEntityByMrid(mrid)
     if (!rs || !rs.success || !rs.data) return { success: false, message: 'Cannot fetch Bushing' }
     const e = rs.data
     this._applyProps(e, lvm)

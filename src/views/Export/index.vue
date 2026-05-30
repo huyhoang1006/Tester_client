@@ -13,14 +13,22 @@
       <el-button v-if="exportType === 'word'" type="success"  size="mini" :disabled="!selectedTemplateName" @click="handleUploadWord">Word File</el-button>
       <el-button type="danger"   size="mini" :disabled="!selectedTemplateName" @click="handleDelete">Delete</el-button>
       <el-button type="warning"  size="mini" :disabled="!selectedTemplateName" @click="handleSave">Save</el-button>
-      <el-button type="info"     size="mini" :disabled="!selectedTemplateName" @click="handleImportJson">Import</el-button>
+      <el-button type="info"     size="mini" :disabled="!selectedTemplateName" @click="handleImportJson">Import JSON</el-button>
+      <el-button type="info"     size="mini" :disabled="!selectedTemplateName || !tableData.length" @click="handleExportJson">Export JSON</el-button>
       <el-button v-if="exportType === 'excel'" type="primary"  size="mini" :disabled="!selectedTemplateName || !currentFilePath" @click="handleExport(exportType)">Export Excel</el-button>
       <el-button v-if="exportType === 'word'" type="primary"  size="mini" :disabled="!selectedTemplateName || !currentFilePath" @click="handleExport(exportType)">Export Word</el-button>
     </template>
   </template-manager>
 
   <div v-if="currentFilePath" style="margin:4px 0 8px;font-size:12px;color:#909399;">
-    <i class="fa-solid fa-file-excel" style="color:#67C23A;"></i> {{ currentFilePath.split(/[\\\/]/).pop() }}
+    <span @click="openTemplateFile" title="Click to open file"
+      style="cursor:pointer;display:inline-flex;align-items:center;gap:5px;"
+      onmouseover="this.style.color='#409EFF'" onmouseout="this.style.color='#909399'">
+      <i :class="exportType==='word' ? 'fa-solid fa-file-word' : 'fa-solid fa-file-excel'"
+        :style="{color: exportType==='word' ? '#2B579A' : '#67C23A'}"></i>
+      {{ currentFilePath.split(/[\\\/]/).pop() }}
+      <i class="el-icon-top-right" style="font-size:10px;"></i>
+    </span>
   </div>
   
   <div>
@@ -313,10 +321,31 @@ export default {
         const rs = await window.electronAPI.importJSON()
         if (!rs?.success || !rs.data) return
         const variables = Array.isArray(rs.data) ? rs.data[0] : rs.data
-        if (!Array.isArray(variables)) return
+        if (!Array.isArray(variables)) { this.$message.error('Invalid template config file'); return }
         this.tableData = variables.map(v => ({ code: v.code||'', category: v.category||'', featureLevels: (v.featureLevels||[]).map(f => ({ key: f.key||'' })), coordinates: v.coordinates||[] }))
         this.$message.success('Imported')
       } catch(e) { this.$message.error(e.message) }
+    },
+
+    async handleExportJson() {
+      try {
+        const variables = this.tableData.map(v => ({
+          code: v.code||'', category: v.category||'',
+          featureLevels: (v.featureLevels||[]).map(f => ({ key: f.key||'' })),
+          coordinates: v.coordinates||[]
+        }))
+        const defaultFileName = (this.selectedTemplateName || 'template') + '-config.json'
+        const rs = await window.electronAPI.exportJSON([variables], { defaultFileName, title: 'Save template config as JSON' })
+        if (rs?.success) this.$message.success('Exported: ' + rs.filePath)
+        else if (rs?.message !== 'Export cancelled') this.$message.error(rs?.message || 'Export failed')
+      } catch(e) { this.$message.error(e.message) }
+    },
+
+    openTemplateFile() {
+      if (!this.currentFilePath) return
+      window.electronAPI.openFileTemplate(this.currentFilePath).then(err => {
+        if (err) this.$message.error('Cannot open file: ' + err)
+      })
     },
     handleExport() {
       this.selectedNode = null; this.selectedNodeLabel = ''; this.selectedNodeContext = {}; this.pickerTempSelected = null

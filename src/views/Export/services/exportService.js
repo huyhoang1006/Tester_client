@@ -28,6 +28,9 @@ import {ASSET_TYPE_TO_KEY, FEATURE_TREE } from '../../Common/constants'
 
 const v = (obj) => (obj && obj.value !== undefined) ? String(obj.value ?? '') : String(obj ?? '')
 
+// Empty result dùng khi không có data — nhất quán để destructure không bị undefined
+const EMPTY_RESULT = { flatMap: {}, arrayMap: null }
+
 export const exportService = {
   mapProps(p) {
     if (!p) return {}
@@ -116,32 +119,34 @@ export const exportService = {
 
   async buildDtoForCat(cat, ctx) {
     const nodeId = this.getNodeIdForCat(cat.key, ctx)
-    if (!nodeId) return {}
+    // FIX: trả về EMPTY_RESULT nhất quán thay vì {} để destructure không bị undefined
+    if (!nodeId) return EMPTY_RESULT
     try {
       let flatMap = {}
       let arrayMap = null
       if (cat.key === 'OrgEntityToOrgDto') {
-        const rs = await window.electronAPI.getOrganisationEntityByMrid(nodeId); if (!rs?.success || !rs.data) return {}
+        const rs = await window.electronAPI.getOrganisationEntityByMrid(nodeId); if (!rs?.success || !rs.data) return EMPTY_RESULT
         const dto = OrgEntityToOrgDto(rs.data)
         flatMap = { name: dto.name||'', aliasName: dto.aliasName||'', tax_code: dto.tax_code||'', street: dto.street||'', ward_or_commune: dto.ward_or_commune||'', district_or_town: dto.district_or_town||'', city: dto.city||'', state_or_province: dto.state_or_province||'', postal_code: dto.postal_code||'', country: dto.country||'', phoneNumber: dto.phoneNumber||'', fax: dto.fax||'', email: dto.email||'', comment: dto.comment||'', pos_x: (dto.positionPoints?.x||[]).map(p=>p.coor).join(', '), pos_y: (dto.positionPoints?.y||[]).map(p=>p.coor).join(', '), pos_z: (dto.positionPoints?.z||[]).map(p=>p.coor).join(', ') }
       }
       else if (cat.key === 'SubstationDto') {
-        const rs = await window.electronAPI.getSubstationEntityByMrid(nodeId); if (!rs?.success || !rs.data) return {}
+        const rs = await window.electronAPI.getSubstationEntityByMrid(nodeId); if (!rs?.success || !rs.data) return EMPTY_RESULT
         const dto = substationEntityToDto(rs.data)
         flatMap = { name: dto.name||'', aliasName: dto.aliasName||'', type: dto.type||'', generation: dto.generation||'', industry: dto.industry||'', locationName: dto.locationName||'', street: dto.street||'', ward_or_commune: dto.ward_or_commune||'', district_or_town: dto.district_or_town||'', state_or_province: dto.state_or_province||'', city: dto.city||'', country: dto.country||'', personName: dto.personName||'', department: dto.department||'', position: dto.position||'', phoneNumber: dto.phoneNumber||'', fax: dto.fax||'', email: dto.email||'', comment: dto.comment||'', pos_x: (dto.positionPoints?.x||[]).map(p=>p.coor).join(', '), pos_y: (dto.positionPoints?.y||[]).map(p=>p.coor).join(', '), pos_z: (dto.positionPoints?.z||[]).map(p=>p.coor).join(', ') }
       }
       else if (cat.key === 'VoltageLevelDto') {
-        const rs = await window.electronAPI.getVoltageLevelEntityByMrid(nodeId); if (!rs?.success || !rs.data) return {}
+        const rs = await window.electronAPI.getVoltageLevelEntityByMrid(nodeId); if (!rs?.success || !rs.data) return EMPTY_RESULT
         const dto = volEntityToVolDto(rs.data)
         flatMap = { name: dto.name||'', comment: dto.comment||'', high_voltage_limit_value: dto.high_voltage_limit_value||'', low_voltage_limit_value: dto.low_voltage_limit_value||'', base_voltage_value: dto.base_voltage_value||'' }
       }
       else if (cat.key === 'Bay') {
-        const rs = await window.electronAPI.getBayEntityByMrid(nodeId); if (!rs?.success || !rs.data) return {}
+        const rs = await window.electronAPI.getBayEntityByMrid(nodeId); if (!rs?.success || !rs.data) return EMPTY_RESULT
         const e = rs.data
-        flatMap = { name: e.name||'', aliasName: e.aliasName||'', breaker_configuration: e.breaker_configuration||e.breakerConfiguration||'', bus_bar_configuration: e.bus_bar_configuration||e.busBarConfiguration||'' }
+        // FIX: dùng snake_case nhất quán, bay entity từ DB luôn là snake_case
+        flatMap = { name: e.name||'', aliasName: e.aliasName||'', breaker_configuration: e.breaker_configuration||'', bus_bar_configuration: e.bus_bar_configuration||'' }
       }
       else if (cat.key === 'Asset_TransformerDataDto') {
-        const rs = await window.electronAPI.getTransformerEntityByMrid(nodeId); if (!rs?.success || !rs.data) return {}
+        const rs = await window.electronAPI.getTransformerEntityByMrid(nodeId); if (!rs?.success || !rs.data) return EMPTY_RESULT
         const dto = transformerEntityToDto(rs.data)
         const r = dto.ratings||{}, imp = dto.impedances||{}, oth = dto.others||{}, tc = dto.tap_changers||{}, wc = dto.winding_configuration||{}
         flatMap = { ...this.mapProps(dto.properties), phases: wc.phases||'', vector_group_custom: wc.vector_group_custom||'', unsupported_vector_group: wc.unsupported_vector_group||'', vector_group_data: wc.vector_group_data||'', rated_frequency: v(r.rated_frequency), short_circuit_ka: v(r.short_circuit?.ka), short_circuit_s: v(r.short_circuit?.s), category: oth.category||'', status: oth.status||'', tank_type: oth.tank_type||'', insulation_medium: oth.insulation_medium||'', total_weight: v(oth.total_weight), insulation_weight: v(oth.insulation?.weight), insulation_volume: v(oth.insulation?.volume), winding_prim: oth.winding?.prim||'', winding_sec: oth.winding?.sec||'', winding_tert: oth.winding?.tert||'', tap_mode: tc.mode||'', tap_serial_no: tc.serial_no||'', tap_manufacturer: tc.manufacturer||'', tap_manufacturer_type: tc.manufacturer_type||'', tap_winding: tc.winding||'', tap_scheme: tc.tap_scheme||'', no_of_taps: String(tc.no_of_taps||''), ref_temp: v(imp.ref_temp), zsi_base_power: v(imp.zero_sequence_impedance?.base_power?.data), zsi_base_voltage: v(imp.zero_sequence_impedance?.base_voltage?.data), zsi_zero: v(imp.zero_sequence_impedance?.zero_percent?.zero?.data), zsi_prim: v(imp.zero_sequence_impedance?.zero_percent?.prim?.data), zsi_sec: v(imp.zero_sequence_impedance?.zero_percent?.sec?.data) }
@@ -245,7 +250,7 @@ export const exportService = {
         }
       }
       else if (cat.key === 'Asset_VoltageTransformerDto') {
-        const rs = await window.electronAPI.getVoltageTransformerEntityByMrid(nodeId); if (!rs?.success || !rs.data) return {}
+        const rs = await window.electronAPI.getVoltageTransformerEntityByMrid(nodeId); if (!rs?.success || !rs.data) return EMPTY_RESULT
         const dto = voltageTransformerEntityToDto(rs.data); const r = dto.ratings||{}, cfg = dto.vt_Configuration||{}
         flatMap = { ...this.mapProps(dto.properties), standard: r.standard||'', rated_frequency: v(r.rated_frequency), upr: String(r.upr||''), rated_voltage: v(r.rated_voltage), c1: v(r.c1), c2: v(r.c2), windings: String(cfg.windings||'') }
         arrayMap = {
@@ -256,7 +261,7 @@ export const exportService = {
         }
       }
       else if (cat.key === 'Asset_CurrentTransformerDto') {
-        const rs = await window.electronAPI.getCurrentTransformerEntityByMrid(nodeId); if (!rs?.success || !rs.data) return {}
+        const rs = await window.electronAPI.getCurrentTransformerEntityByMrid(nodeId); if (!rs?.success || !rs.data) return EMPTY_RESULT
         const dto = currentTransformerEntityToDto(rs.data); const r = dto.ratings||{}, cfg = dto.ctConfiguration||{}
         flatMap = { ...this.mapProps(dto.properties), standard: v(r.standard), rated_frequency: v(r.rated_frequency), primary_winding_count: String(r.primary_winding_count||''), um_rms: v(r.um_rms), u_withstand_rms: v(r.u_withstand_rms), u_lightning_peak: v(r.u_lightning_peak), icth: v(r.icth), idyn_peak: v(r.idyn_peak), ith_rms: v(r.ith_rms), ith_duration: v(r.ith_duration), system_voltage: v(r.system_voltage), bil: v(r.bil), rating_factor: String(r.rating_factor||''), ct_cores: String(cfg.cores||'') }
         const d = cfg.dataCT || []
@@ -316,7 +321,8 @@ export const exportService = {
         }
       }
       else if (cat.key === 'Asset_CircuitBreakerDto') {
-        const rs = await window.electronAPI.getCircuitBreakerEntityByMrid(nodeId); if (!rs?.success || !rs.data) return {}
+        // FIX: đúng channel name là getBreakerEntityByMrid, không phải getCircuitBreakerEntityByMrid
+        const rs = await window.electronAPI.getBreakerEntityByMrid(nodeId); if (!rs?.success || !rs.data) return EMPTY_RESULT
         const dto = breakerEntityToDto(rs.data); const cb = dto.circuitBreaker||{}, r = dto.ratings||{}, cs = dto.contactSystem||{}, oth = dto.others||{}, op = dto.operating||{}
         flatMap = { ...this.mapProps(dto.properties), numberOfPhases: String(cb.numberOfPhases||''), interruptersPerPhase: String(cb.interruptersPerPhase||''), poleOperation: cb.poleOperation||'', hasPIR: String(cb.hasPIR||''), pirValue: v(cb.pirValue), hasGradingCapacitors: String(cb.hasGradingCapacitors||''), capacitorValue: v(cb.capacitorValue), interruptingMedium: cb.interruptingMedium||'', tankType: cb.tankType||'', rated_voltage_ll: v(r.rated_voltage_ll), rated_current: v(r.rated_current), rated_frequency: v(r.rated_frequency), rated_short_circuit_breaking_current: v(r.rated_short_circuit_breaking_current), short_circuit_nominal_duration: v(r.short_circuit_nominal_duration), rated_insulation_level: v(r.rated_insulation_level), rated_interrupting_time: v(r.rated_interrupting_time), interrupting_duty_cycle: String(r.interrupting_duty_cycle||''), rated_power_at_closing: v(r.rated_power_at_closing), rated_power_at_opening: v(r.rated_power_at_opening), rated_power_at_motor_charge: v(r.rated_power_at_motor_charge), nominal_total_travel: v(cs.nominal_total_travel), damping_time: v(cs.damping_time), nozzle_length: v(cs.nozzle_length), total_weight_with_gas: v(oth.total_weight_with_gas), weight_of_gas: v(oth.weight_of_gas), volume_of_gas: v(oth.volume_of_gas), rated_gas_pressure: v(oth.rated_gas_pressure), rated_gas_temperature: v(oth.rated_gas_temperature), op_type: op.type||'', op_serial_no: op.serial_no||'', op_manufacturer: op.manufacturer||'', op_manufacturer_year: op.manufacturer_year||'', op_manufacturer_type: op.manufacturer_type||'', number_of_trip_coil: String(op.number_of_trip_coil||''), number_of_close_coil: String(op.number_of_close_coil||''), op_comment: op.comment||'',
           op_pressure:      v(op.rated_operating_pressure),
@@ -378,9 +384,7 @@ export const exportService = {
           uvr_abs_v_min: v(dto.assessmentLimits?.under_voltage_release.abs.uv_coil_trip_voltage?.min), uvr_abs_v_max: v(dto.assessmentLimits?.under_voltage_release.abs.uv_coil_trip_voltage?.max),
           uvr_rel_v_ref: v(dto.assessmentLimits?.under_voltage_release.rel.uv_coil_trip_voltage?.ref), uvr_rel_v_dev: v(dto.assessmentLimits?.under_voltage_release.rel.uv_coil_trip_voltage?.dev),
           ocr_abs_min: v(dto.assessmentLimits?.overcurrent_release.abs.oc_replay_trip_current?.min), ocr_abs_max: v(dto.assessmentLimits?.overcurrent_release.abs.oc_replay_trip_current?.max),
-          ocr_rel_ref: v(dto.assessmentLimits?.overcurrent_release.rel.oc_replay_trip_current?.ref), ocr_rel_dev: v(dto.assessmentLimits?.overcurrent_release.rel.oc_replay_trip_current?.dev)
-        }
-        arrayMap = {
+          ocr_rel_ref: v(dto.assessmentLimits?.overcurrent_release.rel.oc_replay_trip_current?.ref), ocr_rel_dev: v(dto.assessmentLimits?.overcurrent_release.rel.oc_replay_trip_current?.dev),
           tc_rated_voltage: (op.trip_coil_component||[]).map(x => v(x.rated_voltage)),
           tc_rated_current: (op.trip_coil_component||[]).map(x => v(x.rated_current)),
           tc_power:         (op.trip_coil_component||[]).map(x => x.power||''),
@@ -392,12 +396,12 @@ export const exportService = {
         }
       }
       else if (cat.key === 'Asset_PowerCableDTO') {
-        const rs = await window.electronAPI.getPowerCableEntityByMrid(nodeId); if (!rs?.success || !rs.data) return {}
+        const rs = await window.electronAPI.getPowerCableEntityByMrid(nodeId); if (!rs?.success || !rs.data) return EMPTY_RESULT
         const dto = powerCableEntityToDto(rs.data); const cfg = dto.configsData||{}, rat = dto.ratingsData||{}, oth = dto.othersData||{}, dat = dto.datasData||{}
         flatMap = { ...this.mapProps(dto.properties), phases: v(cfg.phases), cores: v(cfg.cores), rated_voltage: v(rat.rated_voltage), max_voltage: v(rat.max_voltage), rated_frequency: v(rat.rated_frequency), shortcircuit: v(rat.shortcircuit), rated_duration: v(rat.rated_duration), insulation_method: v(oth.insulation_method), bonding_type: v(oth.bonding_type), install_location: v(oth.install_location), cable_length: v(oth.cable_length), conductor_size: v(dat.conductor?.conductor_size), conductor_class: v(dat.conductor?.conductor_class), conductor_material: v(dat.conductor?.conductor_material), conductor_type: v(dat.conductor?.conductor_type), conductor_diameter: v(dat.conductor?.conductor_diameter), insulation_type: v(dat.insulation?.insulation_type), ins_thickness: v(dat.insulation?.thickness), ins_diameter: v(dat.insulation?.diameter), insulation_operating: v(dat.insulation?.insulation_operating), sheath_type: v(dat.sheath?.sheath_type), sheath_construction: v(dat.sheath?.construction), sheath_thickness: v(dat.sheath?.thickness), sheath_diameter: v(dat.sheath?.diameter), armour_material: v(dat.armour?.material), armour_thickness: v(dat.armour?.thickness), armour_diameter: v(dat.armour?.diameter) }
       }
       else if (cat.key === 'Asset_SurgeArresterDto') {
-        const rs = await window.electronAPI.getSurgeArresterEntityByMrid(nodeId); if (!rs?.success || !rs.data) return {}
+        const rs = await window.electronAPI.getSurgeArresterEntityByMrid(nodeId); if (!rs?.success || !rs.data) return EMPTY_RESULT
         const dto = surgeArresterEntityToDto(rs.data)
         flatMap = { ...this.mapProps(dto.properties), unitStack: String(dto.ratings?.unitStack||'') }
         arrayMap = {
@@ -412,10 +416,11 @@ export const exportService = {
         }
       }
       else if (cat.key === 'Asset_BushingAssetDto') {
-        const rs = await window.electronAPI.getBushingAssetEntityByMrid(nodeId)
-        if (!rs?.success || !rs.data) return {}
+        // FIX: đúng channel name là getBushingEntityByMrid, không phải getBushingAssetEntityByMrid
+        const rs = await window.electronAPI.getBushingEntityByMrid(nodeId)
+        if (!rs?.success || !rs.data) return EMPTY_RESULT
         const dto = bushingEntityToDto(rs.data)
-        const b = dto.bushing || {} 
+        const b = dto.bushing || {}
         flatMap = {
           ...this.mapProps(dto.properties),
           rated_frequency:    v(b.rated_frequency),
@@ -431,13 +436,13 @@ export const exportService = {
         }
       }
       else if (cat.key === 'Asset_ReactorDto') {
-        const rs = await window.electronAPI.getReactorEntityByMrid(nodeId); if (!rs?.success || !rs.data) return {}
+        const rs = await window.electronAPI.getReactorEntityByMrid(nodeId); if (!rs?.success || !rs.data) return EMPTY_RESULT
         const dto = reactorEntityToDto(rs.data); const rat = dto.reactorRating||{}, oth = dto.reactorOther||{}
         flatMap = { ...this.mapProps(dto.properties), rated_voltage: v(rat.rated_voltage), rated_frequency: v(rat.rated_frequency), rated_current: v(rat.rated_current), rated_power: v(rat.rated_power), inductance: v(rat.inductance), insulation_type: oth.insulation_type||'', weight: v(oth.weight) }
       }
       else if (cat.key === 'Asset_CapacitorsDTO') {
         const rs = await window.electronAPI.getCapacitorEntityByMrid(nodeId)
-        if (!rs?.success || !rs.data) return {}
+        if (!rs?.success || !rs.data) return EMPTY_RESULT
         const dto = capacitorEntityToDto(rs.data)
         const r = dto.ratings||{}, cfg = dto.configsData||{}
         const cap = dto.capacitance||{}, df = dto.dissipationFactor||{}, oth = dto.othersData||{}
@@ -463,7 +468,7 @@ export const exportService = {
       }
       else if (cat.key === 'Asset_DisconnectorDTO') {
         const rs = await window.electronAPI.getDisconnectorEntityByMrid(nodeId)
-        if (!rs?.success || !rs.data) return {}
+        if (!rs?.success || !rs.data) return EMPTY_RESULT
         const dto = disconnectorEntityToDto(rs.data)
         const r = dto.ratings || {}
         flatMap = {
@@ -478,7 +483,7 @@ export const exportService = {
         }
       }
       else if (cat.key === 'Asset_RotatingMachineDTO') {
-        const rs = await window.electronAPI.getRotatingMachineEntityByMrid(nodeId); if (!rs?.success || !rs.data) return {}
+        const rs = await window.electronAPI.getRotatingMachineEntityByMrid(nodeId); if (!rs?.success || !rs.data) return EMPTY_RESULT
         const dto = rotatingEntityToDto(rs.data); const rat = dto.ratingsData||{}
         flatMap = { ...this.mapProps(dto.properties), star_point: dto.configsData?.star_point||'', rated_u: v(rat.rated_u), rated_current: v(rat.rated_current), rated_speed: String(rat.rated_speed||''), rated_frequency: v(rat.rated_frequency), rated_power: v(rat.rated_power), rated_power_factor: String(rat.rated_power_factor||''), rated_thermal_class: String(rat.rated_thermal_class||''), rated_ifd: v(rat.rated_ifd), rated_ufd: v(rat.rated_ufd) }
       }
@@ -498,9 +503,9 @@ export const exportService = {
           'Job_BushingJobDto':            { api: () => window.electronAPI.getBushingJobByMrid(nodeId),            map: bushingJobEntityToDto },
         }
         const entry = jobMap[jobKey]
-        if (!entry) return {}
+        if (!entry) return EMPTY_RESULT
         const rs = await entry.api()
-        if (!rs?.success || !rs.data) return {}
+        if (!rs?.success || !rs.data) return EMPTY_RESULT
         const dto = entry.map(rs.data)
         const p = dto.properties || {}
         flatMap = {
@@ -518,11 +523,13 @@ export const exportService = {
         arrayMap = this.buildTestArrayMap(dto.testList)
       }
       return { flatMap, arrayMap }
-    } catch(e) { console.error('buildDtoForCat error:', cat.key, e); return {} }
+    } catch(e) { console.error('buildDtoForCat error:', cat.key, e); return EMPTY_RESULT }
   },
 
   extractFromMaps(cat, flatMap, arrayMap, tableData) {
     const result = {}
+    // FIX: guard undefined flatMap/arrayMap (khi buildDtoForCat trả EMPTY_RESULT)
+    if (!flatMap) flatMap = {}
     for (const row of tableData) {
       if (!row.code || row.category !== cat.category) continue
       if (cat.assetType && (row.featureLevels && row.featureLevels[0] ? row.featureLevels[0].key : null) !== cat.assetType) continue

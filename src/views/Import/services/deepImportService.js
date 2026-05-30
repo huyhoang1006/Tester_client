@@ -25,7 +25,7 @@ import uuid from '@/utils/uuid'
 import { OrgDtoToOrgEntity }  from '@/views/Mapping/Organisation/index'
 import { mapDtoToEntity as subDtoToEntity } from '@/views/Mapping/Substation/index'
 import { volDtoToVolEntity }     from '@/views/Mapping/VoltageLevel/index'
-import { TEST_DEFINITIONS } from './TestDefinitionsMap'
+import { TEST_DEFINITIONS, MULTI_TABLE_CONFIG } from './TestDefinitionsMap'
 // Bay: không có DtoToEntity mapper riêng — gọi API với BayDto trực tiếp
 // Job mappers — tất cả đều export jobDtoToEntity
 // Asset DTO classes — dùng làm base object (có đủ nested structure)
@@ -289,7 +289,16 @@ export var deepImportService = {
 
   // Gán userId từ store (nếu có)
   _getUserId: function() {
-    try { return window.store && window.store.state && window.store.state.user ? window.store.state.user.user_id : null } catch(e) { return null }
+    // window.store không tồn tại trong Electron context
+    // userId nên được truyền từ caller (importHierarchy nhận userId param)
+    // Hàm này chỉ là fallback cuối cùng
+    try {
+      if (typeof window !== 'undefined') {
+        if (window.__vue_store__) return (window.__vue_store__.state.user || {}).user_id || null
+        if (window.store) return (((window.store.state || {}).user) || {}).user_id || null
+      }
+    } catch(e) {}
+    return null
   },
   _getUserName: function() {
     try { return window.store && window.store.state && window.store.state.user ? window.store.state.user.name : '' } catch(e) { return '' }
@@ -812,21 +821,33 @@ export var deepImportService = {
       if (rs && rs.success === false && dto.testList && dto.testList.length > 0) {
         dto.testList = dto.testList.map(function(item) {
           var newItem = Object.assign({}, item, { testTypeId: null })
-          if (item.data && item.data.table && item.data.table.table1) {
-            newItem.data = Object.assign({}, item.data, {
-              table: Object.assign({}, item.data.table, {
-                table1: item.data.table.table1.map(function(row) {
-                  var newRow = { mrid: row.mrid }
-                  Object.keys(row).forEach(function(k) {
-                    if (k === 'mrid') return
-                    newRow[k] = (row[k] && typeof row[k] === 'object')
-                      ? Object.assign({}, row[k], { measurement_id: null })
-                      : row[k]
-                  })
-                  return newRow
+          var _tableKeys = Object.keys((item.data && item.data.table) ? item.data.table : {})
+          if (_tableKeys.length > 0) {
+            var _newTable = {}
+            _tableKeys.forEach(function(_tk) {
+              _newTable[_tk] = item.data.table[_tk].map(function(row) {
+                var newRow = { mrid: row.mrid }
+                Object.keys(row).forEach(function(k) {
+                  if (k === 'mrid') return
+                  newRow[k] = (row[k] && typeof row[k] === 'object')
+                    ? Object.assign({}, row[k], { measurement_id: null })
+                    : row[k]
                 })
+                return newRow
               })
             })
+            newItem.data = Object.assign({}, item.data, { table: _newTable })
+          }
+          // Strip measurement_id trong testCondition
+          if (newItem.testCondition && newItem.testCondition.condition) {
+            var _cond = {}
+            Object.keys(newItem.testCondition.condition).forEach(function(ck) {
+              var cv = newItem.testCondition.condition[ck]
+              _cond[ck] = (cv && typeof cv === 'object')
+                ? Object.assign({}, cv, { measurement_id: null })
+                : cv
+            })
+            newItem.testCondition = Object.assign({}, newItem.testCondition, { condition: _cond })
           }
           return newItem
         })
@@ -1107,7 +1128,8 @@ export var deepImportService = {
       if (lv.id === 'asset') {
         var psrId = (ctx.bay && ctx.bay.mrid) || (_sub && _sub.mrid)
         if (!psrId) return null
-        var rs = await window.electronAPI.getAssetByPsrIdAndKind(psrId, 'all')
+        var _findKind = ASSET_KIND_MAP[lv.catKey] || lv.catKey.replace('Asset_', '')
+        var rs = await window.electronAPI.getAssetByPsrIdAndKind(psrId, _findKind)
         var list = (rs && rs.success && rs.data) ? (Array.isArray(rs.data) ? rs.data : [rs.data]) : []
         var found = list.find(function(a) { return a.serial_no === reqVal || a.serial_number === reqVal })
         return found ? found.mrid : null
@@ -1155,82 +1177,7 @@ export var deepImportService = {
   },
 
   // Build testList từ lvm data cho job
-  // lvm key format: '{TestCode}_{fieldCode}' → e.g. 'WindingDfCap_df_ref'
-  _buildJobTestList: function(lvm, catKey) {
-    var self = this
-    var testDefs = TEST_DEFINITIONS[catKey]
-    if (!testDefs || Object.keys(testDefs).length === 0) return []
 
-    var testList = []
-
-    // Tìm test types có data trong lvm
-    Object.keys(testDefs).forEach(function(testCode) {
-      var def = testDefs[testCode]
-      
-      // Tìm max rows từ các fields có data
-      var maxRows = 0
-      def.columns.forEach(function(col) {
-        var lkey = testCode + '_' + col.code
-        var vals = lvm[lkey]
-        if (!vals) return
-        var len = Array.isArray(vals) ? vals.length : (vals ? 1 : 0)
-        if (len > maxRows) maxRows = len
-      })
-      if (maxRows === 0) return  // test này không có data → skip
-
-      // Build rows
-      var rows = []
-      for (var i = 0; i < maxRows; i++) {
-        var row = { mrid: uuid.newUuid() }
-        def.columns.forEach(function(col) {
-          var lkey = testCode + '_' + col.code
-          var vals = lvm[lkey]
-          var val = ''
-          if (vals) val = Array.isArray(vals) ? (vals[i] !== undefined ? vals[i] : '') : vals
-          row[col.code] = {
-            mrid: uuid.newUuid(),
-            value: String(val),
-            type: col.type,
-            unit: col.unit || '',
-            measurement_id: col.mrid
-          }
-        })
-        rows.push(row)
-      }
-
-      // Build empty condition
-      var condRow = {}
-      ;(def.conditionColumns || []).forEach(function(col) {
-        condRow[col.code] = {
-          mrid: uuid.newUuid(), value: '',
-          type: col.type, unit: col.unit || '',
-          measurement_id: col.mrid
-        }
-      })
-
-      testList.push({
-        mrid:         uuid.newUuid(),
-        name:         def.testName || testCode,
-        testTypeCode: testCode,
-        testTypeName: def.testName || testCode,
-        testTypeId:   def.testId || '',
-        testAssessment: {
-          testStandard: { mrid: null, work_task_id: null, test_standard_customize: null },
-          assessment:   []
-        },
-        testCondition: {
-          mrid:           uuid.newUuid(),
-          condition:      condRow,
-          comment:        '',
-          attachment:     { id: null, path: '[]', name: null, type: 'job', id_foreign: null },
-          attachmentData: []
-        },
-        data: { table: { table1: rows } }
-      })
-    })
-
-    return testList
-  },
 
     _buildTransformerArrays: function(dto, lvm) {
     // prim_sec (ps_*), prim_tert (pt_*), sec_tert (st_*)
@@ -1423,5 +1370,168 @@ export var deepImportService = {
   },
   _randomJobName: function() {
     return 'JOB-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 5).toUpperCase()
+  },
+  _buildJobTestList: function(lvm, catKey) {
+    var testDefs = TEST_DEFINITIONS[catKey]
+    if (!testDefs) return []
+
+    var multiTableConfig = (MULTI_TABLE_CONFIG[catKey]) || {}
+    var testList = []
+
+    Object.keys(testDefs).forEach(function(testCode) {
+      var def = testDefs[testCode]
+      var mtConfig = multiTableConfig[testCode] || null
+
+      if (mtConfig) {
+        // ── Multi-table test (SF6MoisturePurity, SF6GasAnalysis) ──
+        var tables = mtConfig.tables  // ['table1', 'table2', ...]
+        var primaryFields = mtConfig.primaryField  // { table1: 'moiture', table2: 'purity' }
+
+        // Kiểm tra có data không (dựa vào primaryField của table1)
+        var firstTableKey = tables[0]
+        var firstPrimaryField = primaryFields[firstTableKey]
+        var firstLkey = testCode + '_' + firstPrimaryField
+        var hasData = !!(lvm[firstLkey])
+
+        // Kiểm tra tất cả tables
+        var anyData = tables.some(function(tk) {
+          var pf = primaryFields[tk]
+          return !!(lvm[testCode + '_' + pf])
+        })
+        if (!anyData) return
+
+        // Build table object: { table1: rows1, table2: rows2, ... }
+        var tableObj = {}
+        tables.forEach(function(tableKey) {
+          var primaryField = primaryFields[tableKey]
+          var primaryLkey = testCode + '_' + primaryField
+          var primaryVals = lvm[primaryLkey]
+
+          if (!primaryVals) {
+            tableObj[tableKey] = []
+            return
+          }
+
+          var vals = Array.isArray(primaryVals) ? primaryVals : [primaryVals]
+          var maxRows = vals.length
+
+          var rows = []
+          for (var i = 0; i < maxRows; i++) {
+            var row = { mrid: uuid.newUuid() }
+            def.columns.forEach(function(col) {
+              var lkey = testCode + '_' + col.code
+              var colVals = lvm[lkey]
+              var val = ''
+              if (colVals) {
+                val = Array.isArray(colVals)
+                  ? (colVals[i] !== undefined ? colVals[i] : '')
+                  : colVals
+              }
+              row[col.code] = {
+                mrid: uuid.newUuid(),
+                value: String(val),
+                type: col.type,
+                unit: col.unit || '',
+                measurement_id: col.mrid
+              }
+            })
+            rows.push(row)
+          }
+          tableObj[tableKey] = rows
+        })
+
+        // Build condition
+        var condRow = {}
+        ;(def.conditionColumns || []).forEach(function(col) {
+          condRow[col.code] = {
+            mrid: uuid.newUuid(), value: '',
+            type: col.type, unit: col.unit || '',
+            measurement_id: col.mrid
+          }
+        })
+
+        testList.push({
+          mrid:         uuid.newUuid(),
+          name:         def.testName || testCode,
+          testTypeCode: testCode,
+          testTypeName: def.testName || testCode,
+          testTypeId:   def.testId || '',
+          testAssessment: {
+            testStandard: { mrid: null, work_task_id: null, test_standard_customize: null },
+            assessment:   []
+          },
+          testCondition: {
+            mrid:           uuid.newUuid(),
+            condition:      condRow,
+            comment:        '',
+            attachment:     { id: null, path: '[]', name: null, type: 'job', id_foreign: null },
+            attachmentData: []
+          },
+          data: { table: tableObj }
+        })
+
+      } else {
+        // ── Single-table test (mặc định table1) ──
+        var maxRows = 0
+        def.columns.forEach(function(col) {
+          var lkey = testCode + '_' + col.code
+          var vals = lvm[lkey]
+          if (!vals) return
+          var len = Array.isArray(vals) ? vals.length : (vals ? 1 : 0)
+          if (len > maxRows) maxRows = len
+        })
+        if (maxRows === 0) return
+
+        var rows = []
+        for (var i = 0; i < maxRows; i++) {
+          var row = { mrid: uuid.newUuid() }
+          def.columns.forEach(function(col) {
+            var lkey = testCode + '_' + col.code
+            var vals = lvm[lkey]
+            var val = ''
+            if (vals) val = Array.isArray(vals) ? (vals[i] !== undefined ? vals[i] : '') : vals
+            row[col.code] = {
+              mrid: uuid.newUuid(),
+              value: String(val),
+              type: col.type,
+              unit: col.unit || '',
+              measurement_id: col.mrid
+            }
+          })
+          rows.push(row)
+        }
+
+        var condRow = {}
+        ;(def.conditionColumns || []).forEach(function(col) {
+          condRow[col.code] = {
+            mrid: uuid.newUuid(), value: '',
+            type: col.type, unit: col.unit || '',
+            measurement_id: col.mrid
+          }
+        })
+
+        testList.push({
+          mrid:         uuid.newUuid(),
+          name:         def.testName || testCode,
+          testTypeCode: testCode,
+          testTypeName: def.testName || testCode,
+          testTypeId:   def.testId || '',
+          testAssessment: {
+            testStandard: { mrid: null, work_task_id: null, test_standard_customize: null },
+            assessment:   []
+          },
+          testCondition: {
+            mrid:           uuid.newUuid(),
+            condition:      condRow,
+            comment:        '',
+            attachment:     { id: null, path: '[]', name: null, type: 'job', id_foreign: null },
+            attachmentData: []
+          },
+          data: { table: { table1: rows } }
+        })
+      }
+    })
+
+    return testList
   }
 }

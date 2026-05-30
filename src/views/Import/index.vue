@@ -13,7 +13,8 @@
       <el-button v-if="importType === 'word'"  type="success"  size="mini" :disabled="!selectedTemplateName" @click="handleUploadWord">Word File</el-button>
       <el-button type="danger"   size="mini" :disabled="!selectedTemplateName" @click="handleDelete">Delete</el-button>
       <el-button type="warning"  size="mini" :disabled="!selectedTemplateName" @click="handleSave">Save</el-button>
-      <el-button type="info"     size="mini" :disabled="!selectedTemplateName" @click="handleImportJson">Import</el-button>
+      <el-button type="info"     size="mini" :disabled="!selectedTemplateName" @click="handleImportJson">Import JSON</el-button>
+      <el-button type="info"     size="mini" :disabled="!selectedTemplateName || !tableData.length" @click="handleExportJson">Export JSON</el-button>
       <el-button v-if="importType === 'excel'" type="warning" size="mini" :disabled="!selectedTemplateName || !currentFilePath" @click="handleImportExcel">
         <i class="fa-solid fa-file-import"></i> Import Excel
       </el-button>
@@ -376,7 +377,7 @@ import TemplateManager from './components/TemplateManager.vue'
 import DataTable from './components/DataTable.vue'
 
 export default {
-  name: 'ExportView',
+  name: 'ImportView',
   props: {
     importType: { type: String, default: 'excel' },
   },
@@ -558,13 +559,27 @@ export default {
         const rs = await window.electronAPI.importJSON()
         if (!rs?.success || !rs.data) return
         const variables = Array.isArray(rs.data) ? rs.data[0] : rs.data
-        if (!Array.isArray(variables)) return
+        if (!Array.isArray(variables)) { this.$message.error('Invalid template config file'); return }
         this.tableData = variables.map(v => ({
           code: v.code||'', category: v.category||'',
           featureLevels: (v.featureLevels||[]).map(f => ({ key: f.key||'' })),
           coordinates: v.coordinates||[]
         }))
         this.$message.success('Imported')
+      } catch(e) { this.$message.error(e.message) }
+    },
+
+    async handleExportJson() {
+      try {
+        const variables = this.tableData.map(v => ({
+          code: v.code||'', category: v.category||'',
+          featureLevels: (v.featureLevels||[]).map(f => ({ key: f.key||'' })),
+          coordinates: v.coordinates||[]
+        }))
+        const defaultFileName = (this.selectedTemplateName || 'template') + '-config.json'
+        const rs = await window.electronAPI.exportJSON([variables], { defaultFileName, title: 'Save template config as JSON' })
+        if (rs?.success) this.$message.success('Exported: ' + rs.filePath)
+        else if (rs?.message !== 'Export cancelled') this.$message.error(rs?.message || 'Export failed')
       } catch(e) { this.$message.error(e.message) }
     },
 
