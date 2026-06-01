@@ -79,6 +79,123 @@ function cellAddressToIndex(addr) {
     return { row: parseInt(m[2]) - 1, col: col - 1 }
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+ 
+// Parse "Word!tXrYcZ" → { tableIndex, rowIndex, colIndex }
+function parseCoord(coord) {
+    const m = coord.match(/Word!t(\d+)r(\d+)c(\d+)/)
+    if (!m) return null
+    return { tableIndex: +m[1], rowIndex: +m[2], colIndex: +m[3] }
+}
+
+// Phân loại từng code:
+// VERTICAL:   nhiều coords, cùng col, khác row → duplicate rows
+// HORIZONTAL: nhiều coords, cùng row, khác col → fill sequential theo colIndex
+// SCALAR:     1 coord → Docxtemplater fill bình thường
+// MULTI_CELL: nhiều coords, khác row khác col → fill cùng 1 value vào tất cả cells
+function classifyVariables(variables) {
+    const classified = {}
+    for (const v of variables) {
+        if (!v.code || !Array.isArray(v.coordinates)) continue
+        const coords = v.coordinates.map(parseCoord).filter(Boolean)
+        if (!coords.length) continue
+        const rows = [...new Set(coords.map(c => c.rowIndex))]
+        const cols = [...new Set(coords.map(c => c.colIndex))]
+        let type
+        if (coords.length === 1)   type = 'scalar'
+        else if (rows.length === 1) type = 'horizontal'
+        else if (cols.length === 1) type = 'vertical'
+        else                        type = 'multi_cell'
+        classified[v.code] = { type, coords }
+    }
+    return classified
+}
+
+// Group vertical codes cùng table cùng rows thành 1 group để duplicate cùng lúc
+function buildVerticalGroups(classified) {
+    const vertCodes = Object.entries(classified).filter(([, v]) => v.type === 'vertical')
+    const groups = []
+    const processed = new Set()
+ 
+    for (const [code, item] of vertCodes) {
+        if (processed.has(code)) continue
+        const ti = item.coords[0].tableIndex
+        const rows = item.coords.map(c => c.rowIndex).sort((a, b) => a - b)
+ 
+        const groupCodes = [code]
+        for (const [other, otherItem] of vertCodes) {
+            if (other === code || processed.has(other)) continue
+            const otherRows = otherItem.coords.map(c => c.rowIndex)
+            if (otherItem.coords[0].tableIndex === ti && otherRows.some(r => rows.includes(r))) {
+                groupCodes.push(other)
+                processed.add(other)
+            }
+        }
+        processed.add(code)
+        groups.push({ tableIndex: ti, rows, codes: groupCodes })
+    }
+    return groups
+}
+
+// Normalize split runs: merge các <w:r> liên tiếp tạo thành {AXX} thành 1 run
+function normalizeSplitRuns(xml) {
+    // Tìm và merge split placeholders {AXX} bằng cách xử lý trực tiếp trên XML string
+    // Không parse paragraph để tránh match nhầm nested <w:r> bên trong <w:rPr>
+    const wtPattern = /<w:t(?:[^>]*)>(.*?)<\/w:t>/gs
+    const allWt = []
+    let m
+    while ((m = wtPattern.exec(xml)) !== null) {
+        allWt.push({ start: m.index, end: m.index + m[0].length, text: m[1], fullMatch: m[0] })
+    }
+ 
+    const replacements = []
+    const processed = new Set()
+ 
+    for (let i = 0; i < allWt.length; i++) {
+        if (processed.has(i)) continue
+        const text = allWt[i].text
+        if (!text.includes('{') && !(text.length > 0 && '0123456789}'.includes(text[0]))) continue
+ 
+        let combined = text
+        for (let j = i + 1; j < Math.min(i + 8, allWt.length); j++) {
+            // Check không có text content giữa 2 w:t (chỉ XML tags)
+            const between = xml.slice(allWt[j-1].end, allWt[j].start)
+            if (/>[^<\s][^<]*</.test(between)) break
+ 
+            combined += allWt[j].text
+            const trimmed = combined.trim()
+ 
+            if (/^\{A\d+\}$/.test(trimmed)) {
+                // Merge: set wt[i] = placeholder, empty wt[i+1..j]
+                const tagOpenMatch = xml.slice(allWt[i].start).match(/^<w:t[^>]*>/)
+                if (!tagOpenMatch) break
+                replacements.push({ start: allWt[i].start, end: allWt[i].end,
+                                     val: tagOpenMatch[0] + trimmed + '</w:t>' })
+                for (let k = i + 1; k <= j; k++) {
+                    const kTagMatch = xml.slice(allWt[k].start).match(/^<w:t[^>]*>/)
+                    if (kTagMatch) {
+                        replacements.push({ start: allWt[k].start, end: allWt[k].end,
+                                             val: kTagMatch[0] + '</w:t>' })
+                    }
+                    processed.add(k)
+                }
+                processed.add(i)
+                break
+            }
+            if (!/^\{A?\d*$/.test(trimmed.trim()) && !trimmed.trim().startsWith('{')) break
+        }
+    }
+ 
+    // Apply replacements từ cuối về đầu
+    for (const r of replacements.sort((a, b) => b.start - a.start)) {
+        xml = xml.slice(0, r.start) + r.val + xml.slice(r.end)
+    }
+    return xml
+}
+
+// Detect vertical groups: 1 code nhiều coords cùng col khác row
+// Detect horizontal groups: nhiều codes cùng row khá
+
 // ══════════════════════════════════════════════════════════════════════════════
 // THÊM: Helpers — đặt sau hàm extractValue (cuối file, trước active())
 // ══════════════════════════════════════════════════════════════════════════════
@@ -698,110 +815,148 @@ export const exportWordWithData = () => {
                 return { success: false, message: 'Template file not found' }
             }
  
-            const PizZip      = require('pizzip')
+            const PizZip        = require('pizzip')
             const Docxtemplater = require('docxtemplater')
  
-            // ── 1. Build coordinate map: code → [coord0, coord1, ...] ──────────
-            // variables = [{ code, coordinates: ["Word!t0r3c0", "Word!t1r1c0", ...] }]
-            const coordMap = {}  // { 'A18': ['Word!t1r1c0', 'Word!t1r2c0', ...] }
-            if (Array.isArray(variables)) {
-                for (const v of variables) {
-                    if (v.code && Array.isArray(v.coordinates) && v.coordinates.length > 0) {
-                        // Gom tất cả coordinates của cùng 1 code
-                        if (!coordMap[v.code]) coordMap[v.code] = []
-                        for (const c of v.coordinates) {
-                            if (!coordMap[v.code].includes(c)) {
-                                coordMap[v.code].push(c)
-                            }
-                        }
-                    }
-                }
-            }
+            console.log('[exportWord] codeMap received:', JSON.stringify(codeMap))
+            console.log('[exportWord] variables count:', Array.isArray(variables) ? variables.length : 0)
+            const classified = Array.isArray(variables) ? classifyVariables(variables) : {}
+            console.log('[exportWord] classified:', JSON.stringify(Object.fromEntries(Object.entries(classified).map(([k,v]) => [k, v.type]))))
+            const vertGroups = buildVerticalGroups(classified)
+            const vertCodes  = new Set(vertGroups.flatMap(g => g.codes))
  
-            // ── 2. Build dataForWord ──────────────────────────────────────────
-            // - Scalar code (1 coordinate, 1 value): { A1: "value" }
-            // - Array code với nhiều coordinates: tạo A18_0, A18_1, A18_2...
-            //   và thay placeholder {A18} bằng {A18_0}, {A18_1}... trong từng cell
+            // ── Build dataForWord (scalar + multi_cell) ───────────────────────
             const dataForWord = {}
-            const arrayCodeMap = {}  // { 'A18': ['val0', 'val1', ...] }
- 
             for (const key in codeMap) {
-                const values = codeMap[key]
-                const coords = coordMap[key] || []
-                const isArray = Array.isArray(values)
-                const hasMultipleCoords = coords.length > 1
+                const info = classified[key]
+                if (!info || info.type === 'scalar' || info.type === 'multi_cell') {
+                    const v = codeMap[key]
+                    dataForWord[key] = Array.isArray(v)
+                        ? (v.find(x => x != null && x !== '') || '')
+                        : (v || '')
+                }
+            }
  
-                if (isArray && hasMultipleCoords) {
-                    // Array code với nhiều coordinates → tách thành key_0, key_1...
-                    arrayCodeMap[key] = values
-                    for (let i = 0; i < coords.length; i++) {
-                        dataForWord[`${key}_${i}`] = (values[i] !== undefined && values[i] !== '')
-                            ? String(values[i])
-                            : ''
-                    }
-                } else if (isArray) {
-                    // Array nhưng chỉ có 1 coordinate → join bằng newline
-                    dataForWord[key] = values.filter(v => v !== '' && v != null).join('\n')
+            // ── Read & normalize XML ──────────────────────────────────────────
+            const content = fs.readFileSync(templatePath, 'binary')
+            const zip2    = new PizZip(content)
+            let xml = zip2.files['word/document.xml'].asText()
+ 
+            // FIX: normalize split runs TRƯỚC MỌI thao tác replace
+            xml = normalizeSplitRuns(xml)
+ 
+            // ── VERIFY 1: Check placeholders after normalize ──────────────────
+            const allPH = xml.match(/\{A\d+\}/g) || []
+            const phCounts = {}
+            allPH.forEach(p => { phCounts[p] = (phCounts[p] || 0) + 1 })
+            console.log('[exportWord] After normalize, placeholder counts:', JSON.stringify(phCounts))
+ 
+            // ── Step 1: Horizontal — sequential replace ───────────────────────
+            for (const [code, info] of Object.entries(classified)) {
+                if (info.type !== 'horizontal') continue
+                const values = codeMap[code]
+                if (!values) continue
+                const valArr = Array.isArray(values) ? values : [values]
+                // Sort coords by colIndex
+                const sortedCoords = [...info.coords].sort((a, b) => a.colIndex - b.colIndex)
+                let idx = 0
+                const ph = `{${code}}`
+                xml = xml.replace(new RegExp(ph.replace(/[{}]/g, '\\$&'), 'g'), () => {
+                    const val = idx < valArr.length && valArr[idx] != null ? String(valArr[idx]) : ''
+                    idx++
+                    return val
+                })
+            }
+ 
+            // ── VERIFY 2: After horizontal replace ───────────────────────────
+            for (const [code, info] of Object.entries(classified)) {
+                if (info.type !== 'horizontal') continue
+                const remaining = (xml.match(new RegExp('\\{' + code + '\\}', 'g')) || []).length
+                console.log('[exportWord] After horiz replace', code, '- remaining occurrences:', remaining)
+            }
+ 
+            // ── Step 2: Vertical — duplicate rows ─────────────────────────────
+            for (const group of vertGroups) {
+                const maxLen = Math.max(...group.codes.map(c => {
+                    const v = codeMap[c]
+                    return Array.isArray(v) ? v.length : (v ? 1 : 0)
+                }), 0)
+ 
+                // Tìm tất cả <w:tr>
+                const trRegex  = /<w:tr[ >][\s\S]*?<\/w:tr>/g
+                const trMatches = []
+                let m
+                while ((m = trRegex.exec(xml)) !== null) {
+                    trMatches.push({ start: m.index, end: m.index + m[0].length, content: m[0] })
+                }
+ 
+                const templateRows = trMatches.filter(tr =>
+                    group.codes.some(code => tr.content.includes(`{${code}}`))
+                )
+                console.log('[exportWord] Vertical group', group.codes, '- template rows found:', templateRows.length, '- maxLen:', maxLen)
+                if (!templateRows.length) continue
+ 
+                const templateTr = templateRows[0].content
+                const expandedRows = []
+ 
+                if (maxLen === 0) {
+                    // Không có data → giữ 1 row rỗng
+                    let emptyRow = templateTr
+                    group.codes.forEach(code => { emptyRow = emptyRow.split(`{${code}}`).join('') })
+                    expandedRows.push(emptyRow)
                 } else {
-                    dataForWord[key] = values || ''
-                }
-            }
- 
-            // ── 3. Đọc template và thay placeholder array code ─────────────────
-            // Nếu có array code (vd A18), cần thay {A18} bằng {A18_0}, {A18_1}...
-            // trong từng cell tương ứng của Word document
-            let content = fs.readFileSync(templatePath, 'binary')
- 
-            if (Object.keys(arrayCodeMap).length > 0) {
-                // Dùng approach: unzip → tìm trong document.xml → replace từng occurrence
-                const PizZipTemp = require('pizzip')
-                const zipTemp = new PizZipTemp(content)
-                let xmlContent = zipTemp.files['word/document.xml'].asText()
- 
-                for (const code in arrayCodeMap) {
-                    const coords = coordMap[code] || []
-                    if (coords.length <= 1) continue
- 
-                    // Tìm và replace từng occurrence của {code} trong XML
-                    // Docxtemplater dùng {code} → trong XML là <w:t>{code}</w:t> hoặc split
-                    // Approach đơn giản: replace lần lượt occurrence i → {code_i}
-                    let occurrenceIndex = 0
-                    const placeholder = `{${code}}`
-                    
-                    // Replace từng occurrence một
-                    xmlContent = xmlContent.replace(
-                        new RegExp(escapeRegex(placeholder), 'g'),
-                        () => {
-                            const replacement = `{${code}_${occurrenceIndex}}`
-                            occurrenceIndex++
-                            return replacement
+                    for (let i = 0; i < maxLen; i++) {
+                        let rowXml = templateTr
+                        for (const code of group.codes) {
+                            const v = codeMap[code]
+                            const val = Array.isArray(v)
+                                ? (v[i] != null ? String(v[i]) : '')
+                                : (i === 0 ? String(v || '') : '')
+                            rowXml = rowXml.split(`{${code}}`).join(val)
                         }
-                    )
+                        expandedRows.push(rowXml)
+                    }
                 }
  
-                zipTemp.file('word/document.xml', xmlContent)
-                content = zipTemp.generate({ type: 'string', compression: 'DEFLATE' })
+                const first = templateRows[0]
+                const last  = templateRows[templateRows.length - 1]
+                xml = xml.slice(0, first.start) + expandedRows.join('') + xml.slice(last.end)
             }
  
-            // ── 4. Render với Docxtemplater ───────────────────────────────────
-            const zip = new PizZip(content)
-            const doc = new Docxtemplater(zip, {
-                paragraphLoop: true,
-                linebreaks: true,
-                nullGetter() { return '' }
+            zip2.file('word/document.xml', xml)
+            const transformed = zip2.generate({ type: 'nodebuffer' })
+ 
+            // ── VERIFY 3: Log dataForWord ─────────────────────────────────────
+            console.log('[exportWord] dataForWord keys:', Object.keys(dataForWord))
+            console.log('[exportWord] dataForWord values:', JSON.stringify(dataForWord))
+ 
+            // ── Step 3: Strip unknown placeholders trước khi render ────────────
+            // Tránh Docxtemplater crash vì placeholder không có trong config (vd {A14})
+            const zip3_raw = new PizZip(transformed)
+            let xml3 = zip3_raw.files['word/document.xml'].asText()
+            xml3 = xml3.replace(/\{A\d+\}/g, (match) => {
+                const code = match.slice(1, -1)
+                return (code in dataForWord) ? match : ''
             })
+            zip3_raw.file('word/document.xml', xml3)
+            const transformed3 = zip3_raw.generate({ type: 'nodebuffer' })
  
+            // ── Step 4: Render scalar + multi_cell ───────────────────────────────
+            const zip3 = new PizZip(transformed3)
+            const doc  = new Docxtemplater(zip3, {
+                paragraphLoop: true,
+                linebreaks:    true,
+                nullGetter()   { return '' }
+            })
             doc.render(dataForWord)
- 
             const buf = doc.getZip().generate({ type: 'nodebuffer', compression: 'DEFLATE' })
  
-            // ── 5. Save dialog ────────────────────────────────────────────────
+            // ── Save ──────────────────────────────────────────────────────────
             const { canceled, filePath } = await dialog.showSaveDialog({
                 title: 'Save Word Export',
                 defaultPath: 'Export_Report.docx',
                 filters: [{ name: 'Word Document', extensions: ['docx'] }]
             })
- 
             if (canceled || !filePath) return { success: false, canceled: true }
  
             fs.writeFileSync(filePath, buf)
@@ -810,18 +965,12 @@ export const exportWordWithData = () => {
         } catch (error) {
             console.error('exportWordWithData error:', error)
             if (error.properties && error.properties.errors instanceof Array) {
-                const errorMessages = error.properties.errors
-                    .map(e => e.properties.explanation)
-                    .join('\n')
-                return { success: false, message: errorMessages }
+                const msgs = error.properties.errors.map(e => e.properties.explanation).join('\n')
+                return { success: false, message: msgs }
             }
             return { success: false, message: error.message }
         }
     })
-}
- 
-function escapeRegex(str) {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
