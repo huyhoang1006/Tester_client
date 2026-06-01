@@ -1012,6 +1012,11 @@ export const FEATURE_TREE = {
             ref_standard:  { label: 'Reference standard',value: 'ref_standard' },
             summary:       { label: 'Summary',           value: 'summary' }
             } },
+        TestingEquipment: { label: 'Testing equipment', children: {
+            model:            { label: 'Model',            value: 'te_model' },
+            serial_number:    { label: 'Serial number',    value: 'te_serial_number' },
+            calibration_date: { label: 'Calibration date', value: 'te_calibration_date' }
+        } },
         Tests: { label: 'Test results', children: {
             BushingPrimC1: { label: 'Bushing Prim DF & CAP C1', children: {
             measurement: { label: 'Measurement', value: 'BushingPrimC1_measurement' },
@@ -1501,6 +1506,11 @@ export const FEATURE_TREE = {
             ref_standard:  { label: 'Reference standard',value: 'ref_standard' },
             summary:       { label: 'Summary',           value: 'summary' }
             } },
+        TestingEquipment: { label: 'Testing equipment', children: {
+            model:            { label: 'Model',            value: 'te_model' },
+            serial_number:    { label: 'Serial number',    value: 'te_serial_number' },
+            calibration_date: { label: 'Calibration date', value: 'te_calibration_date' }
+        } },
         Tests: { label: 'Test results', children: {
             DcWindingResistance: { label: 'DC Winding resistance', children: {
             name: { label: 'Name', value: 'DcWindingResistance_name' },
@@ -1595,6 +1605,11 @@ export const FEATURE_TREE = {
             ref_standard:  { label: 'Reference standard',value: 'ref_standard' },
             summary:       { label: 'Summary',           value: 'summary' }
             } },
+        TestingEquipment: { label: 'Testing equipment', children: {
+            model:            { label: 'Model',            value: 'te_model' },
+            serial_number:    { label: 'Serial number',    value: 'te_serial_number' },
+            calibration_date: { label: 'Calibration date', value: 'te_calibration_date' }
+        } },
         Tests: { label: 'Test results', children: {
             CTDfcap: { label: 'CT DF & CAP', children: {
             measurement: { label: 'Measurement', value: 'CTDfcap_measurement' },
@@ -1701,6 +1716,11 @@ export const FEATURE_TREE = {
             ref_standard:  { label: 'Reference standard',value: 'ref_standard' },
             summary:       { label: 'Summary',           value: 'summary' }
             } },
+        TestingEquipment: { label: 'Testing equipment', children: {
+            model:            { label: 'Model',            value: 'te_model' },
+            serial_number:    { label: 'Serial number',    value: 'te_serial_number' },
+            calibration_date: { label: 'Calibration date', value: 'te_calibration_date' }
+        } },
         Tests: { label: 'Test results', children: {
             COCOTiming: { label: 'CO-CO Timing', children: {
             phase: { label: 'Phase', value: 'COCOTiming_phase' },
@@ -2052,6 +2072,11 @@ export const FEATURE_TREE = {
             ref_standard:  { label: 'Reference standard',value: 'ref_standard' },
             summary:       { label: 'Summary',           value: 'summary' }
             } },
+        TestingEquipment: { label: 'Testing equipment', children: {
+            model:            { label: 'Model',            value: 'te_model' },
+            serial_number:    { label: 'Serial number',    value: 'te_serial_number' },
+            calibration_date: { label: 'Calibration date', value: 'te_calibration_date' }
+        } },
         Tests: { label: 'Test results', children: {
             AcVoltageInsulation: { label: 'AC voltage test of the insulation', children: {
             measurement: { label: 'Measurement', value: 'AcVoltageInsulation_measurement' },
@@ -2200,6 +2225,11 @@ export const FEATURE_TREE = {
             ref_standard:  { label: 'Reference standard',value: 'ref_standard' },
             summary:       { label: 'Summary',           value: 'summary' }
             } },
+        TestingEquipment: { label: 'Testing equipment', children: {
+            model:            { label: 'Model',            value: 'te_model' },
+            serial_number:    { label: 'Serial number',    value: 'te_serial_number' },
+            calibration_date: { label: 'Calibration date', value: 'te_calibration_date' }
+        } },
         Tests: { label: 'Test results', children: {
             GeneralInspection: { label: 'General inspection', children: {
             item: { label: 'Item', value: 'GeneralInspection_item' },
@@ -2271,7 +2301,12 @@ export const FEATURE_TREE = {
             test_method:   { label: 'Test method',       value: 'test_method' },
             ref_standard:  { label: 'Reference standard',value: 'ref_standard' },
             summary:       { label: 'Summary',           value: 'summary' }
-            } }
+            } },
+        TestingEquipment: { label: 'Testing equipment', children: {
+            model:            { label: 'Model',            value: 'te_model' },
+            serial_number:    { label: 'Serial number',    value: 'te_serial_number' },
+            calibration_date: { label: 'Calibration date', value: 'te_calibration_date' }
+        } }
         }},
         Job_CapacitorJobDto: { label: 'Capacitor Job', children: {
         PropertiesDto: { label: 'Properties', children: {
@@ -2285,7 +2320,12 @@ export const FEATURE_TREE = {
             test_method:   { label: 'Test method',       value: 'test_method' },
             ref_standard:  { label: 'Reference standard',value: 'ref_standard' },
             summary:       { label: 'Summary',           value: 'summary' }
-            } }
+            } },
+        TestingEquipment: { label: 'Testing equipment', children: {
+            model:            { label: 'Model',            value: 'te_model' },
+            serial_number:    { label: 'Serial number',    value: 'te_serial_number' },
+            calibration_date: { label: 'Calibration date', value: 'te_calibration_date' }
+        } }
         }},
         Job_DisconnectorJobDto: { label: 'Disconnector Job', children: {
         PropertiesDto: { label: 'Properties', children: {
@@ -2300,6 +2340,11 @@ export const FEATURE_TREE = {
             ref_standard:  { label: 'Reference standard',value: 'ref_standard' },
             summary:       { label: 'Summary',           value: 'summary' }
             } },
+        TestingEquipment: { label: 'Testing equipment', children: {
+            model:            { label: 'Model',            value: 'te_model' },
+            serial_number:    { label: 'Serial number',    value: 'te_serial_number' },
+            calibration_date: { label: 'Calibration date', value: 'te_calibration_date' }
+        } },
         Tests: { label: 'Test results', children: {
             ContactResistance: { label: 'Contact resistance', children: {
             measurement: { label: 'Measurement', value: 'ContactResistance_measurement' },
@@ -2405,7 +2450,12 @@ export const FEATURE_TREE = {
             test_method:   { label: 'Test method',       value: 'test_method' },
             ref_standard:  { label: 'Reference standard',value: 'ref_standard' },
             summary:       { label: 'Summary',           value: 'summary' }
-            } }
+            } },
+        TestingEquipment: { label: 'Testing equipment', children: {
+            model:            { label: 'Model',            value: 'te_model' },
+            serial_number:    { label: 'Serial number',    value: 'te_serial_number' },
+            calibration_date: { label: 'Calibration date', value: 'te_calibration_date' }
+        } },
         }},
         Job_BushingJobDto: { label: 'Bushing Job', children: {
         PropertiesDto: { label: 'Properties', children: {
@@ -2419,7 +2469,12 @@ export const FEATURE_TREE = {
             test_method:   { label: 'Test method',       value: 'test_method' },
             ref_standard:  { label: 'Reference standard',value: 'ref_standard' },
             summary:       { label: 'Summary',           value: 'summary' }
-            } }
+            } },
+        TestingEquipment: { label: 'Testing equipment', children: {
+            model:            { label: 'Model',            value: 'te_model' },
+            serial_number:    { label: 'Serial number',    value: 'te_serial_number' },
+            calibration_date: { label: 'Calibration date', value: 'te_calibration_date' }
+        } }
         }}
     }}
 }

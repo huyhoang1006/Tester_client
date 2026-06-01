@@ -798,6 +798,7 @@ export var deepImportService = {
 
       // Build testList từ lvm nếu có test data
       dto.testList = this._buildJobTestList(data, lv.catKey)
+      dto.testingEquipmentData = this._buildTestingEquipmentData(data)
 
       entity = jcfg.mapper(dto)
 
@@ -1370,6 +1371,33 @@ export var deepImportService = {
   },
   _randomJobName: function() {
     return 'JOB-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 5).toUpperCase()
+  },
+
+  _buildTestingEquipmentData: function(lvm) {
+    // te_model, te_serial_number, te_calibration_date là array (nhiều equipment)
+    var models    = lvm['te_model']            || []
+    var serials   = lvm['te_serial_number']    || []
+    var calDates  = lvm['te_calibration_date'] || []
+
+    if (!Array.isArray(models)) models = models ? [models] : []
+    if (!Array.isArray(serials)) serials = serials ? [serials] : []
+    if (!Array.isArray(calDates)) calDates = calDates ? [calDates] : []
+
+    var maxRows = Math.max(models.length, serials.length, calDates.length)
+    if (maxRows === 0) return []
+
+    var result = []
+    for (var i = 0; i < maxRows; i++) {
+      result.push({
+        mrid:             uuid.newUuid(),
+        model:            models[i]   || '',
+        serial_number:    serials[i]  || '',
+        calibration_date: calDates[i] || '',
+        work_id:          null,
+        test_type_id:     []
+      })
+    }
+    return result
   },
   _buildJobTestList: function(lvm, catKey) {
     var testDefs = TEST_DEFINITIONS[catKey]

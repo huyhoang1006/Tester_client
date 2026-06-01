@@ -520,7 +520,13 @@ export const exportService = {
           ref_standard:  p.ref_standard   || '',
           summary:       p.summary || p.description || ''
         }
+        // TestingEquipment — lấy item đầu tiên nếu có (multi-equipment dùng arrayMap)
         arrayMap = this.buildTestArrayMap(dto.testList)
+        if (dto.testingEquipmentData && dto.testingEquipmentData.length > 0) {
+          arrayMap['te_model']            = dto.testingEquipmentData.map(x => x.model            || '')
+          arrayMap['te_serial_number']    = dto.testingEquipmentData.map(x => x.serial_number    || '')
+          arrayMap['te_calibration_date'] = dto.testingEquipmentData.map(x => x.calibration_date || '')
+        }
       }
       return { flatMap, arrayMap }
     } catch(e) { console.error('buildDtoForCat error:', cat.key, e); return EMPTY_RESULT }

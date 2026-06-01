@@ -1,6 +1,6 @@
 <template>
     <div id="toolbar-setting-id" class="toolbar-setting">
-        <div>
+        <div v-if="clientSlide">
             <el-dropdown ref="addDropdown" @command="handleAddCommand" @visible-change="handleDropdownVisibleChange"
                 trigger="click">
                 <span class="icon-wrapper">
@@ -78,10 +78,10 @@
         <div>
             <i @click="handleOpenNode" title="Open" style="font-size: 12px" class="fa-regular fa-folder-open"></i>
         </div>
-        <div>
+        <div v-if="clientSlide">
             <i @click="handleDuplicate" title="Duplicate" style="font-size: 12px" class="fa-solid fa-clone"></i>
         </div>
-        <div>
+        <div v-if="clientSlide">
             <el-dropdown @command="handleImportCommand" trigger="click">
                 <i title="Import" style="font-size: 12px" class="fa-solid fa-file-import"></i>
                 <el-dropdown-menu slot="dropdown">
@@ -100,7 +100,7 @@
                 </el-dropdown-menu>
             </el-dropdown>
         </div>
-        <div>
+        <div v-if="clientSlide">
             <el-dropdown @command="handleExportCommand" trigger="click">
                 <i title="Export" style="font-size: 12px" class="fa-solid fa-file-export"></i>
                 <el-dropdown-menu slot="dropdown">

@@ -692,71 +692,136 @@ export const exportTemplateWithData = () => {
 }
 
 export const exportWordWithData = () => {
-    ipcMain.handle('exportWordWithData', async function (event, { templatePath, codeMap }) {
+    ipcMain.handle('exportWordWithData', async function (event, { templatePath, codeMap, variables }) {
         try {
             if (!templatePath || !fs.existsSync(templatePath)) {
                 return { success: false, message: 'Template file not found' }
             }
-
-            const PizZip = require('pizzip')
+ 
+            const PizZip      = require('pizzip')
             const Docxtemplater = require('docxtemplater')
-
-            // Chuẩn bị dữ liệu cho docxtemplater
-            // Frontend truyền lên array: { "A1": ["Value 1", "Value 2"] }
-            // Word cần Object phẳng: { "A1": "Value 1\nValue 2" }
+ 
+            // ── 1. Build coordinate map: code → [coord0, coord1, ...] ──────────
+            // variables = [{ code, coordinates: ["Word!t0r3c0", "Word!t1r1c0", ...] }]
+            const coordMap = {}  // { 'A18': ['Word!t1r1c0', 'Word!t1r2c0', ...] }
+            if (Array.isArray(variables)) {
+                for (const v of variables) {
+                    if (v.code && Array.isArray(v.coordinates) && v.coordinates.length > 0) {
+                        // Gom tất cả coordinates của cùng 1 code
+                        if (!coordMap[v.code]) coordMap[v.code] = []
+                        for (const c of v.coordinates) {
+                            if (!coordMap[v.code].includes(c)) {
+                                coordMap[v.code].push(c)
+                            }
+                        }
+                    }
+                }
+            }
+ 
+            // ── 2. Build dataForWord ──────────────────────────────────────────
+            // - Scalar code (1 coordinate, 1 value): { A1: "value" }
+            // - Array code với nhiều coordinates: tạo A18_0, A18_1, A18_2...
+            //   và thay placeholder {A18} bằng {A18_0}, {A18_1}... trong từng cell
             const dataForWord = {}
+            const arrayCodeMap = {}  // { 'A18': ['val0', 'val1', ...] }
+ 
             for (const key in codeMap) {
                 const values = codeMap[key]
-                if (Array.isArray(values)) {
-                    // Lọc bỏ giá trị rỗng và nối bằng dấu xuống dòng (Enter)
-                    dataForWord[key] = values.filter(v => v !== '').join('\n')
+                const coords = coordMap[key] || []
+                const isArray = Array.isArray(values)
+                const hasMultipleCoords = coords.length > 1
+ 
+                if (isArray && hasMultipleCoords) {
+                    // Array code với nhiều coordinates → tách thành key_0, key_1...
+                    arrayCodeMap[key] = values
+                    for (let i = 0; i < coords.length; i++) {
+                        dataForWord[`${key}_${i}`] = (values[i] !== undefined && values[i] !== '')
+                            ? String(values[i])
+                            : ''
+                    }
+                } else if (isArray) {
+                    // Array nhưng chỉ có 1 coordinate → join bằng newline
+                    dataForWord[key] = values.filter(v => v !== '' && v != null).join('\n')
                 } else {
                     dataForWord[key] = values || ''
                 }
             }
-
-            // Đọc và Render Word
-            const content = fs.readFileSync(templatePath, 'binary')
+ 
+            // ── 3. Đọc template và thay placeholder array code ─────────────────
+            // Nếu có array code (vd A18), cần thay {A18} bằng {A18_0}, {A18_1}...
+            // trong từng cell tương ứng của Word document
+            let content = fs.readFileSync(templatePath, 'binary')
+ 
+            if (Object.keys(arrayCodeMap).length > 0) {
+                // Dùng approach: unzip → tìm trong document.xml → replace từng occurrence
+                const PizZipTemp = require('pizzip')
+                const zipTemp = new PizZipTemp(content)
+                let xmlContent = zipTemp.files['word/document.xml'].asText()
+ 
+                for (const code in arrayCodeMap) {
+                    const coords = coordMap[code] || []
+                    if (coords.length <= 1) continue
+ 
+                    // Tìm và replace từng occurrence của {code} trong XML
+                    // Docxtemplater dùng {code} → trong XML là <w:t>{code}</w:t> hoặc split
+                    // Approach đơn giản: replace lần lượt occurrence i → {code_i}
+                    let occurrenceIndex = 0
+                    const placeholder = `{${code}}`
+                    
+                    // Replace từng occurrence một
+                    xmlContent = xmlContent.replace(
+                        new RegExp(escapeRegex(placeholder), 'g'),
+                        () => {
+                            const replacement = `{${code}_${occurrenceIndex}}`
+                            occurrenceIndex++
+                            return replacement
+                        }
+                    )
+                }
+ 
+                zipTemp.file('word/document.xml', xmlContent)
+                content = zipTemp.generate({ type: 'string', compression: 'DEFLATE' })
+            }
+ 
+            // ── 4. Render với Docxtemplater ───────────────────────────────────
             const zip = new PizZip(content)
-            
             const doc = new Docxtemplater(zip, {
                 paragraphLoop: true,
                 linebreaks: true,
-                nullGetter() { return ""; } // Tránh in ra chữ "undefined" nếu code trống
+                nullGetter() { return '' }
             })
-
-            // Thay thế {Code} bằng data
+ 
             doc.render(dataForWord)
-
-            // Xuất ra buffer
-            const buf = doc.getZip().generate({ type: 'nodebuffer', compression: "DEFLATE" })
-
-            // Mở Dialog cho user lưu file
+ 
+            const buf = doc.getZip().generate({ type: 'nodebuffer', compression: 'DEFLATE' })
+ 
+            // ── 5. Save dialog ────────────────────────────────────────────────
             const { canceled, filePath } = await dialog.showSaveDialog({
                 title: 'Save Word Export',
                 defaultPath: 'Export_Report.docx',
                 filters: [{ name: 'Word Document', extensions: ['docx'] }]
             })
-
+ 
             if (canceled || !filePath) return { success: false, canceled: true }
-
-            // Ghi file
+ 
             fs.writeFileSync(filePath, buf)
-
             return { success: true, filePath }
-
+ 
         } catch (error) {
             console.error('exportWordWithData error:', error)
-            // Lấy chi tiết lỗi của docxtemplater nếu có (ví dụ quên đóng ngoặc {})
             if (error.properties && error.properties.errors instanceof Array) {
-                const errorMessages = error.properties.errors.map(function (e) {
-                    return e.properties.explanation;
-                }).join("\n");
+                const errorMessages = error.properties.errors
+                    .map(e => e.properties.explanation)
+                    .join('\n')
                 return { success: false, message: errorMessages }
             }
             return { success: false, message: error.message }
         }
     })
+}
+ 
+function escapeRegex(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
 // ═════════════════════════════════════════════════════════════════════════════

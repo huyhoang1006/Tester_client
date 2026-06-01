@@ -874,16 +874,13 @@ export default {
                     }
                 }
                 else if (tab.mode === 'organisation') {
-                    // 1. Gọi API lấy full data của Organisation
                     const response = await demoAPI.getOrganisationById(tab.mrid || tab.id);
                     console.log("Response from server for Organisation:", response);
                     if (response) {
                         const serverData = response.data || response;
-                        
-                        // 2. Map dữ liệu chuẩn qua DTO
                         const dto = OrganisationServerMapper.mapServerToDto(serverData);
 
-                        // 3. Đảm bảo cấu trúc positionPoints luôn tồn tại để UI không bị lỗi undefined
+                        // Đảm bảo positionPoints luôn tồn tại
                         if (!dto.positionPoints) {
                             dto.positionPoints = { x: [], y: [], z: [] };
                         } else {
@@ -892,21 +889,12 @@ export default {
                             if (!dto.positionPoints.z) dto.positionPoints.z = [];
                         }
 
-                        // 4. Đẩy data vào View (SỬA LẠI Ở ĐÂY: Truyền trực tiếp dto)
                         this.executeOrQueueLoadData(id, (comp) => {
                             comp.loadData(dto);
                         });
                     } else {
                         this.$message.error("Failed to load Organisation data");
                     }
-
-                    // this.executeOrQueueLoadData(id, (comp) => {
-                    //     comp.loadData({ dto: dto, locationList: [], personList: [] });
-                    // });
-
-                    this.executeOrQueueLoadData(id, (comp) => {
-                        comp.loadData({ dto: dto, locationList: [], personList:[] });
-                    });
                 }
                 else if (tab.mode === 'asset' && tab.asset === 'Transformer') {
                     const response = await demoAPI.getTransformerById(tab.mrid);
