@@ -243,6 +243,59 @@ export const CIRCUIT_BREAKER_FIELD_DEFS = [
             { key: 'properties.comment',           label: 'Description' },
         ],
     },
+    {
+        group: 'Ratings',
+        fields: [
+            { key: 'ratings.rated_voltage_ll.value',                     label: 'Rated Voltage' },
+            { key: 'ratings.rated_current.value',                        label: 'Rated Current' },
+            { key: 'ratings.rated_short_circuit_breaking_current.value', label: 'Rated Short Circuit Breaking Current' },
+            { key: 'ratings.short_circuit_nominal_duration.value',       label: 'Short Circuit Nominal Duration' },
+            { key: 'ratings.rated_insulation_level.value',               label: 'Rated Insulation Level' },
+            { key: 'ratings.rated_interrupting_time.value',              label: 'Rated Interrupting Time' },
+            { key: 'ratings.interrupting_duty_cycle',                    label: 'Interrupting Duty Cycle' },
+            { key: 'ratings.rated_frequency.value',                      label: 'Rated Frequency' },
+        ],
+    },
+    {
+        group: 'Circuit Breaker',
+        fields: [
+            { key: 'circuitBreaker.numberOfPhases',       label: 'Number of Phases' },
+            { key: 'circuitBreaker.interruptersPerPhase', label: 'Interrupters per Phase' },
+            { key: 'circuitBreaker.poleOperation',        label: 'Pole Operation' },
+            { key: 'circuitBreaker.interruptingMedium',   label: 'Interrupting Medium' },
+            { key: 'circuitBreaker.tankType',             label: 'Tank Type' },
+        ],
+    },
+    {
+        group: 'Contact System',
+        fields: [
+            { key: 'contactSystem.nominal_total_travel.value', label: 'Nominal Total Travel' },
+            { key: 'contactSystem.damping_time.value',         label: 'Damping Time' },
+            { key: 'contactSystem.nozzle_length.value',        label: 'Nozzle Length' },
+        ],
+    },
+    {
+        group: 'Others',
+        fields: [
+            { key: 'others.total_weight_with_gas.value', label: 'Total Weight with Gas' },
+            { key: 'others.weight_of_gas.value',         label: 'Weight of Gas' },
+            { key: 'others.volume_of_gas.value',         label: 'Volume of Gas' },
+            { key: 'others.rated_gas_pressure.value',    label: 'Rated Gas Pressure' },
+            { key: 'others.rated_gas_temperature.value', label: 'Rated Gas Temperature' },
+        ],
+    },
+    {
+        group: 'Operating Mechanism',
+        fields: [
+            { key: 'operating.type',               label: 'Operating Type' },
+            { key: 'operating.serial_no',          label: 'Serial No' },
+            { key: 'operating.manufacturer',       label: 'Manufacturer' },
+            { key: 'operating.manufacturer_type',  label: 'Manufacturer Type' },
+            { key: 'operating.manufacturer_year',  label: 'Manufacturing Year' },
+            { key: 'operating.number_of_trip_coil',  label: 'Number of Trip Coil' },
+            { key: 'operating.number_of_close_coil', label: 'Number of Close Coil' },
+        ],
+    },
 ]
 
 export const DISCONNECTOR_FIELD_DEFS = [
@@ -277,11 +330,11 @@ export const CURRENT_TRANSFORMER_FIELD_DEFS = [
     {
         group: 'Properties',
         fields: [
-            { key: 'properties.asset_type',        label: 'Asset Type' },
+            { key: 'properties.type',              label: 'Asset Type' },
             { key: 'properties.serial_no',         label: 'Serial No' },
             { key: 'properties.manufacturer',      label: 'Manufacturer' },
             { key: 'properties.manufacturer_type', label: 'Manufacturer Type' },
-            { key: 'properties.manufacturing_year',label: 'Manufacturing Year' },
+            { key: 'properties.manufacturer_year', label: 'Manufacturing Year' },
             { key: 'properties.country_of_origin', label: 'Country of Origin' },
             { key: 'properties.apparatus_id',      label: 'Apparatus ID' },
             { key: 'properties.comment',           label: 'Description' },
@@ -290,9 +343,9 @@ export const CURRENT_TRANSFORMER_FIELD_DEFS = [
     {
         group: 'Ratings',
         fields: [
-            { key: 'ratings.standard.value',       label: 'Standard' },
+            { key: 'ratings.standard.value',        label: 'Standard' },
             { key: 'ratings.primary_winding_count', label: 'Primary Winding Count' },
-            { key: 'ratings.rating_factor',        label: 'Rating Factor' },
+            { key: 'ratings.rating_factor',         label: 'Rating Factor' },
         ],
     },
 ]

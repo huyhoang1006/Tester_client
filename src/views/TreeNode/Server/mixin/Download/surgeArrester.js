@@ -4,6 +4,7 @@ import * as SurgeArresterServerMapper from '@/views/Mapping/ServerToDTO/SurgeArr
 import * as SurgeArresterMapper from '@/views/Mapping/SurgeArrester/index.js'
 import SurgeArresterEntity from '@/views/Flatten/SurgeArrester'
 import { fetchWithRetry } from './core-utils.js'
+import { traverseAndFillMrid, ensureTopLevelFK, FK_KEYS } from './fk-utils.js'
 
 // SurgeArrester không có conflict dialog vì tableRating là array phức tạp
 // Server wins nếu client rỗng, giữ client nếu đã có data
@@ -131,6 +132,10 @@ export async function downloadSurgeArresterChain(data, ctx) {
     // 4. Set context IDs
     mergedDto.properties.mrid = sa.mrid
     mergedDto.psrId           = data.parentBayId
+
+    // Đảm bảo mọi mrid + FK id được điền trước khi map sang entity (tránh lỗi foreign key)
+    traverseAndFillMrid(mergedDto)
+    ensureTopLevelFK(mergedDto, FK_KEYS.surgeArrester)
 
     // 5. Build entity từ mergedDto
     const oldEntity = clientEntity || new SurgeArresterEntity()

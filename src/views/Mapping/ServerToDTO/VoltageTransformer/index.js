@@ -11,7 +11,8 @@ const ASSET_TYPE_MAP = {
 const MULTIPLIER_MAP = {
     'ONE_TO_SQRT3': '3sqrt',
     'ONE_TO_3':     '3',
-    'ONE_TO_ONE':     '1',
+    'ONE_TO_ONE':   '1',
+    'ONE_TO_1':     '1',
 }
 
 // ─── Reverse maps (client → server) for push ────────────────────────────────
@@ -93,12 +94,15 @@ export const mapServerToDto = (serverData) => {
     }
 
     // UPR & Rated Voltage
+    // FIX: server trả uprValue/uprUnit (không phải rvValue/rvUnit)
+    // uprUnit format từ server: "k_V" → cần convert sang "k|V"
     dto.ratings.upr = MULTIPLIER_MAP[core.uprMultiplier] || core.uprMultiplier || '';
-    
-    const rvUnitStr = core.rvUnit || 'k|V';
+
+    const rawUprUnit = core.uprUnit || 'k_V';
+    const rvUnitStr  = rawUprUnit.replace('_', '|');   // "k_V" → "k|V"
     dto.ratings.rated_voltage = {
         mrid:  uuid.newUuid(),
-        value: core.rvValue !== null && core.rvValue !== undefined ? String(core.rvValue) : '',
+        value: core.uprValue !== null && core.uprValue !== undefined ? String(core.uprValue) : '',
         unit:  rvUnitStr,
     }
 

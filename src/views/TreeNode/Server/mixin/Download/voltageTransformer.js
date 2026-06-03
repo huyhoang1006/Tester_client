@@ -3,6 +3,7 @@ import * as voltageAPI from '@/api/demo/VoltageTransformer.js'
 import * as VoltageTransformerServerMapper from '@/views/Mapping/ServerToDTO/VoltageTransformer/index.js'
 import * as VoltageTransformerMapper from '@/views/Mapping/VoltageTransformer/index.js'
 import { fetchWithRetry } from './core-utils.js'
+import { traverseAndFillMrid, ensureTopLevelFK, FK_KEYS } from './fk-utils.js'
 import { detectConflicts, applyResolved, mergeWithoutSnapshot, VOLTAGE_TRANSFORMER_FIELD_DEFS } from '@/utils/conflictUtils.js'
 
 // ─── Step 1: fetch full info từ server ───────────────────────────────────────
@@ -91,6 +92,10 @@ export async function downloadVoltageTransformerChain(data, ctx) {
     mergedDto.mrid            = vt.mrid
     mergedDto.psrId           = data.parentBayId
     mergedDto.properties.mrid = vt.mrid
+
+    // Đảm bảo mọi mrid + FK id được điền trước khi map sang entity (tránh lỗi foreign key)
+    traverseAndFillMrid(mergedDto)
+    ensureTopLevelFK(mergedDto, FK_KEYS.voltageTransformer)
 
     // 5. Build entity từ mergedDto
     const oldEntity = clientEntity || new (require('@/views/Flatten/VoltageTransformer').default)()

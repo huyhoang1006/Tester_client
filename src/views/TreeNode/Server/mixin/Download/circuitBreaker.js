@@ -101,9 +101,9 @@ export async function downloadCircuitBreakerChain(data, ctx) {
     mergedDto.properties.mrid = cb.mrid
     mergedDto.psrId           = data.parentBayId
 
-    // 5. Build entity từ mergedDto — phải qua checkBreakerData để sinh UUID cho nested fields
-    // Dùng traverseAndFillMrid tương tự mixin
+    // 5. Build entity từ mergedDto — fill mọi UUID/FK còn thiếu (tương đương checkBreakerData)
     traverseAndFillMrid(mergedDto)
+    ensureTopLevelFK(mergedDto)
 
     const oldEntity = clientEntity || new CircuitBreakerEntity()
     const newEntity = CircuitBreakerMapper.mapDtoToEntity(mergedDto)
@@ -152,4 +152,28 @@ const traverseAndFillMrid = (obj) => {
         }
         Object.values(obj).forEach(val => traverseAndFillMrid(val))
     }
+}
+
+// Fill các FK top-level của Circuit Breaker (tương đương checkProperty, checkLifecycleDate,
+// checkProductAssetModel, checkAssetInfoId, checkAssessmentLimitBreakerInfoId,
+// checkBreakerRatingInfoId, checkBreakerContactSystemInfoId, checkBreakerOtherInfoId)
+const ensureTopLevelFK = (dto) => {
+    const fkKeys = [
+        'assetInfoId',
+        'productAssetModelId',
+        'lifecycleDateId',
+        'assetPsrId',
+        'operatingMechanismId',
+        'operatingMechanismInfoId',
+        'operatingMechanismLifecycleDateId',
+        'operatingMechanismProductAssetModelId',
+        'assessmentLimitBreakerInfoId',
+        'breakerRatingInfoId',
+        'breakerContactSystemInfoId',
+        'breakerOtherInfoId',
+    ]
+    for (const key of fkKeys) {
+        if (!dto[key] || dto[key] === '') dto[key] = uuid.newUuid()
+    }
+    if (!dto.properties.mrid || dto.properties.mrid === '') dto.properties.mrid = uuid.newUuid()
 }

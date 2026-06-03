@@ -601,9 +601,8 @@ export const exportTemplateWithData = () => {
     ipcMain.handle('exportTemplateWithData', async function (event, payload) {
         try {
             const { templatePath, variables, selections: rawSelections, codeMap: rawCodeMap, dto } = payload || {}
+            const fs = require('fs')
 
-            // ── Normalize to selections array ─────────────────────────────
-            // Support: new multi-sheet (selections=[]), old single (codeMap/dto)
             let selections = rawSelections
             if (!selections) {
                 let codeMap = rawCodeMap
@@ -616,86 +615,188 @@ export const exportTemplateWithData = () => {
                 selections = [{ codeMap: codeMap || {}, sheetName: 'Sheet1' }]
             }
 
-            if (!selections.length) {
-                return { success: false, message: 'No selections provided' }
-            }
-
-            if (!templatePath || !fs.existsSync(templatePath)) {
-                return { success: false, message: 'Template file not found: ' + templatePath }
-            }
+            if (!selections.length) return { success: false, message: 'No selections provided' }
+            if (!templatePath || !fs.existsSync(templatePath)) return { success: false, message: 'Template not found' }
 
             const XlsxPopulate = require('xlsx-populate')
             const JSZip = require('jszip')
 
-            // ── Helper: fill one workbook's first sheet ───────────────────
+            // ── CÁC STYLE KEY CẦN COPY (FIX LỖI Xlsx-Populate) ────────────
+            const STYLE_KEYS = [
+                'bold', 'italic', 'underline', 'strikethrough', 'fontSize', 'fontFamily', 
+                'fontColor', 'horizontalAlignment', 'verticalAlignment', 'wrapText', 
+                'border', 'fill', 'numberFormat'
+            ];
+
+            // ── HÀM DỊCH CHUYỂN & CHÈN DÒNG (AUTO INSERT) ─────────────────
+            function insertAndShiftRows(sheet, insertAfterRow, shiftCount) {
+                const usedRange = sheet.usedRange()
+                if (!usedRange) return
+                
+                const maxRow = usedRange.endCell().rowNumber()
+                const maxCol = usedRange.endCell().columnNumber()
+
+                // Bước 1: Dịch chuyển các dòng bên dưới xuống
+                for (let r = maxRow; r > insertAfterRow; r--) {
+                    for (let c = 1; c <= maxCol; c++) {
+                        const srcCell = sheet.cell(r, c)
+                        const destCell = sheet.cell(r + shiftCount, c)
+
+                        destCell.value(srcCell.value())
+                        destCell.formula(srcCell.formula())
+
+                        // Copy Style an toàn
+                        const styles = srcCell.style(STYLE_KEYS)
+                        const validStyles = {}
+                        for (const k in styles) {
+                            if (styles[k] !== undefined) validStyles[k] = styles[k]
+                        }
+                        if (Object.keys(validStyles).length > 0) destCell.style(validStyles)
+                    }
+                }
+
+                // Bước 2: Tạo dòng trống ở giữa và clone Style từ dòng gốc (Anchor Row)
+                for (let r = insertAfterRow + 1; r <= insertAfterRow + shiftCount; r++) {
+                    const anchorRowObj = sheet.row(insertAfterRow)
+                    if (anchorRowObj.height()) sheet.row(r).height(anchorRowObj.height())
+
+                    for (let c = 1; c <= maxCol; c++) {
+                        const anchorCell = sheet.cell(insertAfterRow, c)
+                        const newCell = sheet.cell(r, c)
+
+                        newCell.value(undefined)
+                        newCell.formula(undefined)
+
+                        // Clone Style an toàn
+                        const styles = anchorCell.style(STYLE_KEYS)
+                        const validStyles = {}
+                        for (const k in styles) {
+                            if (styles[k] !== undefined) validStyles[k] = styles[k]
+                        }
+                        if (Object.keys(validStyles).length > 0) newCell.style(validStyles)
+                    }
+                }
+            }
+
+            // ── HÀM GHI DỮ LIỆU AN TOÀN (BẢO TOÀN KIỂU NUMBER) ────────────
+            function setCellValueSafe(cell, val, code) {
+                const currentValue = cell.value()
+                
+                let finalVal = val
+                if (typeof val === 'string' && val.trim() !== '') {
+                    const num = Number(val)
+                    if (!isNaN(num) && !val.trim().match(/^0\d+/)) finalVal = num
+                }
+
+                if (currentValue === null || currentValue === undefined || currentValue === '') {
+                    cell.value(finalVal)
+                    return
+                }
+
+                const currentStr = String(currentValue).trim()
+                const codeTrimmed = code.trim()
+
+                if (currentStr === codeTrimmed || currentStr === `{${codeTrimmed}}`) {
+                    cell.value(finalVal)
+                    return
+                }
+
+                const codeRegex = new RegExp('(?<![A-Za-z0-9])\\{?' + codeTrimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\}?(?![A-Za-z0-9])', 'g')
+                if (codeRegex.test(currentStr)) {
+                    codeRegex.lastIndex = 0
+                    cell.value(currentStr.replace(codeRegex, () => val))
+                } else {
+                    cell.value(finalVal)
+                }
+            }
+
+            // ── THUẬT TOÁN CHÍNH: QUẢN LÝ DỊCH CHUYỂN TỌA ĐỘ ───────────────
             function fillWorkbookSheet(wb, vars, codeMap) {
-                const sheet = wb.sheet(0)
-                if (!sheet) return
+                const actionsBySheet = {}
 
                 for (const variable of (vars || [])) {
                     const { code, coordinates } = variable
                     if (!code || !coordinates || !coordinates.length) continue
 
                     const rawVals = codeMap[code]
-                    const values = Array.isArray(rawVals) ? rawVals
-                                 : rawVals !== undefined   ? [String(rawVals)]
-                                 : []
+                    const values = Array.isArray(rawVals) ? rawVals : (rawVals !== undefined ? [String(rawVals)] : [])
+                    if (!values.length) continue
 
-                    coordinates.forEach((coord, coordIdx) => {
-                        const fillValue = values.length <= 1
-                            ? (values[0] !== undefined && values[0] !== null ? values[0] : '')
-                            : (coordIdx < values.length ? values[coordIdx] : '')
+                    const isAutoInsert = (coordinates.length === 1 && values.length > 1)
 
+                    coordinates.forEach((coord, i) => {
                         const bangIdx = coord.indexOf('!')
                         if (bangIdx === -1) return
 
                         const sheetName = coord.substring(0, bangIdx)
-                        const cellAddr  = coord.substring(bangIdx + 1)
+                        const cellAddr = coord.substring(bangIdx + 1)
+                        
+                        const match = cellAddr.match(/^([A-Z]+)(\d+)$/i)
+                        if (!match) return
 
-                        try {
-                            const s = wb.sheet(sheetName)
-                            if (!s) { console.warn('Sheet not found:', sheetName); return }
+                        const colStr = match[1].toUpperCase()
+                        const rowNum = parseInt(match[2], 10)
 
-                            const cell = s.cell(cellAddr)
-                            const currentValue = cell.value()
-                            if (currentValue === null || currentValue === undefined) return
+                        if (!actionsBySheet[sheetName]) actionsBySheet[sheetName] = {}
+                        if (!actionsBySheet[sheetName][rowNum]) actionsBySheet[sheetName][rowNum] = []
 
-                            const currentStr = String(currentValue)
-                            // Exact token match: code must not be preceded/followed by alphanumeric
-                            const codeRegex = new RegExp(
-                                '(?<![A-Za-z0-9])' +
-                                code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') +
-                                '(?![A-Za-z0-9])',
-                                'g'
-                            )
-                            if (codeRegex.test(currentStr)) {
-                                codeRegex.lastIndex = 0
-                                cell.value(currentStr.replace(codeRegex, () => fillValue))
-                            }
-                        } catch (cellErr) {
-                            console.error('Fill error at coord:', coord, '| code:', code, '|', cellErr.message)
-                        }
+                        actionsBySheet[sheetName][rowNum].push({
+                            code, colStr, isAutoInsert,
+                            values: isAutoInsert ? values : [values[i] || '']
+                        })
                     })
+                }
+
+                for (const sheetName in actionsBySheet) {
+                    const sheet = wb.sheet(sheetName)
+                    if (!sheet) continue
+
+                    let currentOffset = 0 
+                    const originalRows = Object.keys(actionsBySheet[sheetName]).map(Number).sort((a, b) => a - b)
+
+                    for (const origRow of originalRows) {
+                        const rowActions = actionsBySheet[sheetName][origRow]
+                        const actualRow = origRow + currentOffset 
+
+                        let maxShiftRequired = 0
+                        rowActions.forEach(act => {
+                            if (act.isAutoInsert) {
+                                maxShiftRequired = Math.max(maxShiftRequired, act.values.length - 1)
+                            }
+                        })
+
+                        if (maxShiftRequired > 0) {
+                            insertAndShiftRows(sheet, actualRow, maxShiftRequired)
+                            currentOffset += maxShiftRequired 
+                        }
+
+                        rowActions.forEach(act => {
+                            if (act.isAutoInsert) {
+                                act.values.forEach((val, idx) => {
+                                    const cell = sheet.cell(`${act.colStr}${actualRow + idx}`)
+                                    setCellValueSafe(cell, val, act.code)
+                                })
+                            } else {
+                                const cell = sheet.cell(`${act.colStr}${actualRow}`)
+                                setCellValueSafe(cell, act.values[0], act.code)
+                            }
+                        })
+                    }
                 }
             }
 
-            // ── Sanitize sheet name (Excel constraint: ≤31 chars, no []:\/?*) ──
+            // ── Sanitize sheet name ───────────────────────────────────────
             function sanitizeSheetName(name, index) {
-                const clean = (name || ('Sheet' + (index + 1)))
-                    .replace(/[[\]*?:/\\]/g, '_')
-                    .trim()
-                    .substring(0, 31)
-                return clean || ('Sheet' + (index + 1))
+                return (name || ('Sheet' + (index + 1))).replace(/[[\]*?:/\\]/g, '_').trim().substring(0, 31) || ('Sheet' + (index + 1))
             }
 
-            // ── Single selection: simple path, no JSZip manipulation ──────
+            // ── EXPORT CHÍNH ─────────────────────────────────────────────
             if (selections.length === 1) {
                 const { codeMap, sheetName } = selections[0]
                 const wb = await XlsxPopulate.fromFileAsync(templatePath)
-                // Rename first sheet if needed
                 const s = wb.sheet(0)
                 if (s && sheetName && sheetName !== s.name()) {
-                    try { s.name(sanitizeSheetName(sheetName, 0)) } catch(e) { /* skip */ }
+                    try { s.name(sanitizeSheetName(sheetName, 0)) } catch(e) {}
                 }
                 fillWorkbookSheet(wb, variables, codeMap)
 
@@ -712,8 +813,6 @@ export const exportTemplateWithData = () => {
                 return { success: true, filePath }
             }
 
-            // ── Multi-selection: build one filled buffer per selection ─────
-            // Then clone sheets into a single output workbook via JSZip
             const templateBuffer = fs.readFileSync(templatePath)
             const filledBuffers = []
 
@@ -725,62 +824,37 @@ export const exportTemplateWithData = () => {
                 filledBuffers.push({ buf, sheetName: sanitizeSheetName(sheetName, i) })
             }
 
-            // ── Combine into single XLSX using JSZip ──────────────────────
-            // Load first buffer as base workbook
             const baseZip = await JSZip.loadAsync(filledBuffers[0].buf)
-
-            // Read & update workbook.xml and relationships to add sheets 2..N
             let wbXml   = await baseZip.file('xl/workbook.xml').async('string')
             let relsXml = await baseZip.file('xl/_rels/workbook.xml.rels').async('string')
             let ctXml   = await baseZip.file('[Content_Types].xml').async('string')
 
-            // Rename first sheet — use function callback to avoid $1/$2 pattern issues
-            const firstSheetSafeName = filledBuffers[0].sheetName
-                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-            wbXml = wbXml.replace(
-                /(<sheet[^>]*name=")[^"]*(")/,
-                function(match, p1, p2) { return p1 + firstSheetSafeName + p2 }
-            )
+            const firstSheetSafeName = filledBuffers[0].sheetName.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+            wbXml = wbXml.replace(/(<sheet[^>]*name=")[^"]*(")/, function(match, p1, p2) { return p1 + firstSheetSafeName + p2 })
 
             for (let i = 1; i < filledBuffers.length; i++) {
                 const { buf, sheetName } = filledBuffers[i]
                 const srcZip = await JSZip.loadAsync(buf)
 
-                // Copy sheet XML
                 const sheetXml = await srcZip.file('xl/worksheets/sheet1.xml').async('string')
                 const destSheetFile = `xl/worksheets/sheet${i + 1}.xml`
                 baseZip.file(destSheetFile, sheetXml)
 
-                // Copy any drawing/chart files referenced by this sheet (optional, skip errors)
                 try {
                     const drawingRelsFile = srcZip.file('xl/worksheets/_rels/sheet1.xml.rels')
                     if (drawingRelsFile) {
                         const drawingRels = await drawingRelsFile.async('string')
-                        baseZip.file('xl/worksheets/_rels/sheet' + (i + 1) + '.xml.rels',
-                            drawingRels.replace(/sheet1\./g, 'sheet' + (i + 1) + '.'))
+                        baseZip.file('xl/worksheets/_rels/sheet' + (i + 1) + '.xml.rels', drawingRels.replace(/sheet1\./g, 'sheet' + (i + 1) + '.'))
                     }
-                } catch(e) { /* no drawing rels, skip */ }
+                } catch(e) {}
 
-                // Unique rId for this sheet
                 const rId = `rIdX${i}`
                 const sheetId = i + 1
                 const safeSheetName = sheetName.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
 
-                // Append <sheet> entry to workbook.xml
-                wbXml = wbXml.replace(
-                    '</sheets>',
-                    `<sheet name="${safeSheetName}" sheetId="${sheetId}" r:id="${rId}"/></sheets>`
-                )
-                // Append relationship
-                relsXml = relsXml.replace(
-                    '</Relationships>',
-                    `<Relationship Id="${rId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${sheetId}.xml"/></Relationships>`
-                )
-                // Append content type
-                ctXml = ctXml.replace(
-                    '</Types>',
-                    `<Override PartName="/xl/worksheets/sheet${sheetId}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>`
-                )
+                wbXml = wbXml.replace('</sheets>', `<sheet name="${safeSheetName}" sheetId="${sheetId}" r:id="${rId}"/></sheets>`)
+                relsXml = relsXml.replace('</Relationships>', `<Relationship Id="${rId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${sheetId}.xml"/></Relationships>`)
+                ctXml = ctXml.replace('</Types>', `<Override PartName="/xl/worksheets/sheet${sheetId}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>`)
             }
 
             baseZip.file('xl/workbook.xml', wbXml)

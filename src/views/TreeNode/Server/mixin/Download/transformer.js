@@ -123,8 +123,9 @@ export async function downloadTransformerChain(data, ctx) {
     mergedDto.properties.mrid = tr.mrid
     mergedDto.psrId           = data.parentBayId
 
-    // 5. Build entity — phải qua checkTransformerDto để sinh UUID cho nested fields
+    // 5. Build entity — fill mọi UUID/FK còn thiếu (tương đương checkTransformerDto trong mixin)
     traverseAndFillMrid(mergedDto)
+    ensureTopLevelFK(mergedDto)
 
     const oldEntity = clientEntity || new TransformerEntity()
     const newEntity = TransformerMapper.transformerDtoToEntity(mergedDto)
@@ -163,6 +164,9 @@ export async function downloadTransformerChain(data, ctx) {
 
 import uuid from '@/utils/uuid'
 
+// Fill mrid VÀ các FK id (assetInfoId, productAssetModelId, lifecycleDateId)
+// để tránh lỗi foreign key khi insert DB — tương đương các hàm check* trong AssetView mixin
+const FK_ID_KEYS = ['assetInfoId', 'productAssetModelId', 'lifecycleDateId']
 const traverseAndFillMrid = (obj) => {
     if (Array.isArray(obj)) {
         obj.forEach(item => traverseAndFillMrid(item))
@@ -170,6 +174,49 @@ const traverseAndFillMrid = (obj) => {
         if ('mrid' in obj && (!obj.mrid || obj.mrid === '')) {
             obj.mrid = uuid.newUuid()
         }
+        // Fill các FK id rỗng (bushing/surge items, dataTable...) — checkBushing/checkSurgeArrester
+        for (const key of FK_ID_KEYS) {
+            if (key in obj && (!obj[key] || obj[key] === '')) {
+                obj[key] = uuid.newUuid()
+            }
+        }
         Object.values(obj).forEach(val => traverseAndFillMrid(val))
     }
+}
+
+// Fill các FK top-level + tap changer (tương đương checkAssetInfo, checkProductAssetModel,
+// checkLifecycleDate, checkAssetPrs, checkTapChangerId, checkBushing, checkSurgeArrester)
+const ensureTopLevelFK = (dto) => {
+    if (!dto.oldPowerTransformerInfoId) dto.oldPowerTransformerInfoId = uuid.newUuid()
+    if (!dto.productAssetModelId)       dto.productAssetModelId       = uuid.newUuid()
+    if (!dto.lifecycleDateId)           dto.lifecycleDateId           = uuid.newUuid()
+    if (!dto.assetPsrId)                dto.assetPsrId                = uuid.newUuid()
+    if (!dto.properties.mrid)           dto.properties.mrid           = uuid.newUuid()
+
+    // Tap changer FK (chỉ khi có mode)
+    if (dto.tap_changers && dto.tap_changers.mode) {
+        if (!dto.tap_changers.mrid)                dto.tap_changers.mrid                = uuid.newUuid()
+        if (!dto.tap_changers.assetInfoId)         dto.tap_changers.assetInfoId         = uuid.newUuid()
+        if (!dto.tap_changers.productAssetModelId) dto.tap_changers.productAssetModelId = uuid.newUuid()
+    }
+
+    // Bushing FK (assetInfoId/productAssetModelId/lifecycleDateId đã được traverseAndFillMrid lo,
+    // nhưng đảm bảo lại cho chắc)
+    ;['prim', 'sec', 'tert'].forEach(w => {
+        (dto.bushing_data?.[w] || []).forEach(b => {
+            if (!b.assetInfoId)         b.assetInfoId         = uuid.newUuid()
+            if (!b.productAssetModelId) b.productAssetModelId = uuid.newUuid()
+            if (!b.lifecycleDateId)     b.lifecycleDateId     = uuid.newUuid()
+        })
+        ;(dto.surge_arrester?.[w] || []).forEach(sa => {
+            if (sa.properties) {
+                if (!sa.properties.assetInfoId)         sa.properties.assetInfoId         = uuid.newUuid()
+                if (!sa.properties.productAssetModelId) sa.properties.productAssetModelId = uuid.newUuid()
+                if (!sa.properties.lifecycleDateId)     sa.properties.lifecycleDateId     = uuid.newUuid()
+            }
+            ;(sa.ratings?.table || []).forEach(row => {
+                if (!row.assetInfoId) row.assetInfoId = uuid.newUuid()
+            })
+        })
+    })
 }

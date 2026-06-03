@@ -1,4 +1,5 @@
 import CurrentTransformerDto from "@/views/Dto/CurrentTransformer";
+import FullTapDto from "@/views/Dto/CurrentTransformer/CTConfiguration/FullTapDto";
 import uuid from "@/utils/uuid";
 
 // ─── Download maps (server → client) ─────────────────────────────────────────
@@ -87,7 +88,10 @@ export const mapServerToDto = (serverData) => {
     // Tất cả IDs phải có giá trị hợp lệ — nếu server không trả về thì tạo UUID mới
     // tránh FK constraint violation khi insert vào DB
     const ctMrid            = core.id      ? String(core.id)      : uuid.newUuid()
-    dto.assetInfoId         = assetInfo.id ? String(assetInfo.id) : uuid.newUuid()
+    // FIX: assetInfo.id có thể null → fallback sang core.assetInfoId
+    dto.assetInfoId         = assetInfo.id
+        ? String(assetInfo.id)
+        : (core.assetInfoId ? String(core.assetInfoId) : uuid.newUuid())
     dto.psrId               = assetInfo.ownerId ? String(assetInfo.ownerId) : null
     dto.productAssetModelId = uuid.newUuid()
     dto.lifecycleDateId     = uuid.newUuid()
@@ -112,7 +116,8 @@ export const mapServerToDto = (serverData) => {
     // ─── Ratings ─────────────────────────────────────────────────────────────
     dto.ratings.standard = {
         mrid:  uuid.newUuid(),
-        value: core.standard || null,
+        // FIX: strip underscore để match View options: "IEC_61869" → "IEC61869"
+        value: core.standard ? core.standard.replace(/_/g, '') : null,
         unit:  null,
     }
 
@@ -124,9 +129,11 @@ export const mapServerToDto = (serverData) => {
 
     dto.ratings.primary_winding_count = str(core.primaryWinding)
 
-    dto.ratings.um_rms          = mapFlat(core.um,           core.uUnit)
-    dto.ratings.u_withstand_rms = mapFlat(core.uWithstand,   core.uWithstandUnit)
-    dto.ratings.u_lightning_peak = mapFlat(core.uLightning,  core.uLightningUnit)
+    // FIX: server dùng lowercase prefix cho unit fields (uwithstandUnit, ulightningUnit)
+    // um không có unit field riêng → default kV
+    dto.ratings.um_rms           = mapFlat(core.um,          core.umUnit || 'kV')
+    dto.ratings.u_withstand_rms  = mapFlat(core.uWithstand,  core.uwithstandUnit || core.uWithstandUnit || 'kV')
+    dto.ratings.u_lightning_peak = mapFlat(core.uLightning,  core.ulightningUnit || core.uLightningUnit || 'kV')
     dto.ratings.icth             = mapFlat(core.icth,         core.icthUnit)
     dto.ratings.idyn_peak        = mapFlat(core.idyn,         core.idynUnit)
     dto.ratings.ith_rms          = mapFlat(core.ith,          core.ithUnit)
@@ -149,9 +156,19 @@ export const mapServerToDto = (serverData) => {
     dto.ctConfiguration.dataCT = []
 
     // Group taps by core index
+    // FIX: nếu tất cả taps có core=null → phân bổ đều theo numberCore
+    // hoặc gom hết vào core 0 nếu chỉ có 1 core
+    const allTapsHaveNoCore = taps.every(t => t.core === null || t.core === undefined)
+
     for (let coreIdx = 0; coreIdx < numberCore; coreIdx++) {
         const coreNumber = coreIdx + 1
-        const coreTaps   = taps.filter(t => t.core === coreNumber)
+        let coreTaps
+        if (allTapsHaveNoCore) {
+            // Server không phân core → gom tất cả vào core đầu tiên
+            coreTaps = coreIdx === 0 ? taps : []
+        } else {
+            coreTaps = taps.filter(t => t.core === coreNumber)
+        }
 
         const fullTap  = coreTaps.find(t => t.type === 'Full tap'  || t.type === 'fulltap')
         const mainTaps = coreTaps.filter(t => t.type === 'Main tap' || t.type === 'maintap')
@@ -161,16 +178,23 @@ export const mapServerToDto = (serverData) => {
             mrid:   uuid.newUuid(),
             isShow: false,
             name:   tap.name   || null,
-            ipn: mapFlat(tap.ipn, tap.ipnUnit),
-            isn: mapFlat(tap.isn, tap.isnUnit),
+            // View dùng ipn.value và isn.value → cần object, unit default 'A'
+            ipn: { mrid: uuid.newUuid(), value: tap.ipn != null ? String(tap.ipn) : '', unit: tap.ipnUnit || 'A' },
+            isn: { mrid: uuid.newUuid(), value: tap.isn != null ? String(tap.isn) : '', unit: tap.isnUnit || 'A' },
             inUse: tap.inUse ?? false,
             type:  tap.type || null,
         })
 
         const mapFullClassRating = (tap) => ({
             mrid:               uuid.newUuid(),
-            app:                tap.application   || null,
-            class:              tap.class_        || null,
+            app:                tap.application ? tap.application.toLowerCase() : null,
+            class:              (() => {
+                // Server format: "_0_5" → "0.5", "_5P" → "5P", "_0_5S" → "0.5S"
+                const raw = tap.class_ || ''
+                if (!raw) return null
+                // Remove leading underscore, replace remaining _ with .
+                return raw.replace(/^_/, '').replace(/_/g, '.')
+            })(),
             wr:                 mapFlat(tap.windingResistance, tap.windingResistanceUnit),
             kx:                 str(tap.kx),
             k:                  str(tap.k),
@@ -178,13 +202,14 @@ export const mapServerToDto = (serverData) => {
             kssc:               str(tap.kssc),
             ktd:                str(tap.ktd),
             duty:               tap.duty          || null,
-            vb:                 mapFlat(tap.vb,   tap.vbUnit),
+            vb:                 str(tap.vb),  // View bind trực tiếp string, không phải object
             alf:                str(tap.alf),
             ts:                 str(tap.ts),
             ek:                 str(tap.ek),
             e1:                 str(tap.e1),
             le:                 str(tap.le),
             le1:                str(tap.le1),
+            re20lsn:            null,      // View field, server chưa có
             val:                null,
             lal:                null,
             t1:                 str(tap.t1),
@@ -221,8 +246,9 @@ export const mapServerToDto = (serverData) => {
             commonTap: str(fullTap?.commonTap),
 
             fullTap: {
-                table:       fullTap ? mapTableFromTap(fullTap)      : {},
-                classRating: fullTap ? mapFullClassRating(fullTap)   : {},
+                // FIX: fallback FullTapDto() thay vì {} để tránh crash View khi fullTap null
+                table:       fullTap ? mapTableFromTap(fullTap)    : new FullTapDto().table,
+                classRating: fullTap ? mapFullClassRating(fullTap) : new FullTapDto().classRating,
             },
 
             mainTap: {

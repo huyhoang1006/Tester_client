@@ -41,6 +41,40 @@ const IMPEDANCE_TYPE_MAP = {
     'SEC_TERT':  'sec_tert',
 }
 
+// Bushing asset type: server enum → View option
+const BUSHING_TYPE_MAP = {
+    'WITH_POTENTIAL_TAP': 'With potential tap',
+    'WITH_TEST_TAP':      'With test tap',
+    'WITHOUT_TAP':        'Without tap',
+}
+
+// Bushing insulation type
+const BUSHING_INSUL_MAP = {
+    'COMPOUND':                'compound',
+    'OIL_IMPREGNATED_PAPER':   'oilImpregnatedPaper',
+    'OTHER':                   'other',
+    'RESIN_BONDED_PAPER':      'resinBondedPaper',
+    'RESIN_IMPREGNATED_PAPER': 'resinImpregnatedPaper',
+    'SOLID_PORCELAIN':         'solidPorcelain',
+    'PORCELAIN_DRY_TYPE':      'porcelainDryType',
+    'COMPOSITE_DRY_TYPE':      'compositeDryType',
+}
+
+// "kV" → "k|V", "pF" → "p|F", giữ nguyên nếu không có multiplier
+const splitUnit = (raw, defaultUnit) => {
+    const u = raw || defaultUnit
+    if (!u) return defaultUnit
+    if (u.includes('|')) return u
+    const multipliers = ['k', 'M', 'G', 'm', 'µ', 'n', 'p']
+    for (const mult of multipliers) {
+        if (u.length > 1 && u.startsWith(mult)) return mult + '|' + u.slice(mult.length)
+    }
+    return u
+}
+const unitLabel = (raw, def) => raw || def
+
+const WINDING_KEY_MAP = { 'PRIM': 'prim', 'SEC': 'sec', 'TERT': 'tert' }
+
 // "mVA" → "M|VA", "kVA" → "k|VA", "VA" → "VA"
 const mapPowerUnit = (unit) => {
     if (!unit) return 'M|VA'
@@ -92,7 +126,7 @@ export const mapServerToDto = (serverData) => {
     dto.properties.type              = ASSET_TYPE_MAP[tr.assetType] || tr.assetType || ''
     dto.properties.serial_no         = assetInfo.serialNo          || ''
     dto.properties.manufacturer      = assetInfo.manufacturerName  || ''
-    dto.properties.manufacturer_type = ''
+    dto.properties.manufacturer_type = assetInfo.manufacturerType || ''
     dto.properties.manufacturer_year = assetInfo.manufacturingYear
         ? String(assetInfo.manufacturingYear)
         : ''
@@ -103,9 +137,22 @@ export const mapServerToDto = (serverData) => {
     // ─── 3. Winding configuration ─────────────────────────────────────────────
     dto.winding_configuration.phases = PHASES_MAP[tr.phases] || ''
 
-    // Server trả về vector group dạng string "Yna0d11"
-    // Không thể parse tự động → để vào unsupported_vector_group
-    if (tr.vectorGroup) {
+    // Vector group:
+    // Ưu tiên dùng các field tách sẵn server trả (vectorGroupPrim/Sec/Tert...)
+    // Nếu server chỉ trả string "Yna0d11" (không tách) → để unsupported_vector_group
+    const hasSplitVG = tr.vectorGroupPrim || tr.vectorGroupSec || tr.vectorGroupTertiary
+    if (hasSplitVG) {
+        // Server đã tách sẵn các thành phần → build vector_group object + vector_group_data
+        dto.winding_configuration.vector_group.prim        = tr.vectorGroupPrim        || ''
+        dto.winding_configuration.vector_group.sec.i       = tr.vectorGroupSec         || ''
+        dto.winding_configuration.vector_group.sec.value   = str(tr.vectorGroupSecVal)
+        dto.winding_configuration.vector_group.tert.i      = tr.vectorGroupTertiary    || ''
+        dto.winding_configuration.vector_group.tert.value  = str(tr.vectorGroupTertiaryVal)
+        dto.winding_configuration.vector_group.tert.accessible = tr.vectorGroupTertiaryAccessibility || ''
+        // vector_group_data = string đầy đủ để View biết đây là dạng parsed (type null)
+        dto.winding_configuration.vector_group_data = tr.vectorGroup || ''
+    } else if (tr.vectorGroup) {
+        // Chỉ có string, không tách được → unsupported
         dto.winding_configuration.unsupported_vector_group = tr.vectorGroup
     }
 
@@ -208,38 +255,46 @@ export const mapServerToDto = (serverData) => {
         tapPosMap[tv.id] = tv.tap
     })
 
+    // tap changer mode: 'oltc' | 'detc' → quyết định set oltc_position hay detc_position
+    const tapMode = TAP_TYPE_MAP[tapChanger.type] || (tapChanger.type ? tapChanger.type.toLowerCase() : '')
+
     // Short circuit impedances → prim_sec / prim_tert / sec_tert
-    const mapImpedance = (sci) => ({
-        mrid: uuid.newUuid(),
-        short_circuit_impedances_uk: {
-            mrid:  uuid.newUuid(),
-            value: str(sci.impedance),
-            unit:  '%',
-        },
-        base_power: {
+    const mapImpedance = (sci) => {
+        const tapPos = tapPosMap[sci.tapChangerVoltageId] ?? ''
+        return {
             mrid: uuid.newUuid(),
-            data: {
+            short_circuit_impedances_uk: {
                 mrid:  uuid.newUuid(),
-                value: str(sci.basePower),
-                unit:  mapPowerUnit(sci.basePowerUnit),
+                value: str(sci.impedance),
+                // impedanceUnit server = "PERCENT" → '%'
+                unit:  (sci.impedanceUnit === 'PERCENT' || !sci.impedanceUnit) ? '%' : sci.impedanceUnit,
             },
-        },
-        base_voltage: {
-            mrid: uuid.newUuid(),
-            data: {
+            base_power: {
+                mrid: uuid.newUuid(),
+                data: {
+                    mrid:  uuid.newUuid(),
+                    value: str(sci.basePower),
+                    unit:  mapPowerUnit(sci.basePowerUnit),
+                },
+            },
+            base_voltage: {
+                mrid: uuid.newUuid(),
+                data: {
+                    mrid:  uuid.newUuid(),
+                    value: str(sci.baseVoltage),
+                    unit:  mapVoltageUnit(sci.baseVoltageUnit),
+                },
+            },
+            load_losses_pk: {
                 mrid:  uuid.newUuid(),
-                value: str(sci.baseVoltage),
-                unit:  mapVoltageUnit(sci.baseVoltageUnit),
+                value: str(sci.loadLoss),
+                unit:  sci.loadLossUnit || 'W',
             },
-        },
-        load_losses_pk: {
-            mrid:  uuid.newUuid(),
-            value: str(sci.loadLoss),
-            unit:  'W',
-        },
-        oltc_position: tapPosMap[sci.tapChangerVoltageId] ?? '',
-        detc_position: '',
-    })
+            // set đúng field theo mode tap changer
+            oltc_position: tapMode === 'oltc' ? tapPos : '',
+            detc_position: tapMode === 'detc' ? tapPos : '',
+        }
+    }
 
     shortCircuitImpedances.forEach(sci => {
         const key = IMPEDANCE_TYPE_MAP[sci.type]
@@ -283,6 +338,8 @@ export const mapServerToDto = (serverData) => {
         dto.tap_changers.productAssetModelId = uuid.newUuid()
         dto.tap_changers.mode             = TAP_TYPE_MAP[tapChanger.type] || tapChanger.type?.toLowerCase() || ''
         dto.tap_changers.serial_no        = tapChanger.serialNo           || ''
+        dto.tap_changers.manufacturer     = tapChanger.manufacturerName   || ''
+        dto.tap_changers.manufacturer_type = tapChanger.manufacturerType  || ''
         dto.tap_changers.winding          = WINDING_MAP[tapChanger.winding] || tapChanger.winding || ''
         dto.tap_changers.tap_scheme       = TAP_SCHEME_MAP[tapChanger.tabScheme] || tapChanger.tabScheme || ''
         dto.tap_changers.no_of_taps       = String(tapChangerVoltage.length || 0)
@@ -300,6 +357,78 @@ export const mapServerToDto = (serverData) => {
 
     // ─── 7. Others — server không trả về → giữ default ───────────────────────
     dto.others.mrid = uuid.newUuid()
+
+    // ─── 8. Bushing data ──────────────────────────────────────────────────────
+    // Server trả serverData.bushings = [{ winding, position, assetType, serialNo,
+    //   manufacturerName, manufacturerType, manufacturingYear, insulLevelLL(+Unit),
+    //   voltageLGround(+Unit), maxSystemVoltage(+Unit), ratedCurrent(+Unit),
+    //   dfC1(+Unit), capC1(+Unit), dfC2(+Unit), capC2(+Unit), insulType }, ...]
+    const bushings = serverData.bushings || []
+    const mapBushingItem = (b) => ({
+        mrid:                uuid.newUuid(),
+        assetInfoId:         uuid.newUuid(),
+        productAssetModelId: uuid.newUuid(),
+        lifecycleDateId:     uuid.newUuid(),
+        pos:                 b.position || '',
+        asset_type:          BUSHING_TYPE_MAP[b.assetType] || b.assetType || '',
+        serial_no:           b.serialNo          || '',
+        manufacturer:        b.manufacturerName  || '',
+        manufacturer_type:   b.manufacturerType  || '',
+        manufacturer_year:   b.manufacturingYear ? String(b.manufacturingYear) : '',
+        insulation_level:  { mrid: '', value: str(b.insulLevelLL),    label: unitLabel(b.insulLevelLLUnit, 'kV'),    unit: splitUnit(b.insulLevelLLUnit, 'k|V') },
+        voltage_l_ground:  { mrid: '', value: str(b.voltageLGround),  label: unitLabel(b.voltageLGroundUnit, 'kV'),  unit: splitUnit(b.voltageLGroundUnit, 'k|V') },
+        max_system_voltage:{ mrid: '', value: str(b.maxSystemVoltage),label: unitLabel(b.maxSystemVoltageUnit, 'kV'),unit: splitUnit(b.maxSystemVoltageUnit, 'k|V') },
+        rate_current:      { mrid: '', value: str(b.ratedCurrent),    label: unitLabel(b.ratedCurrentUnit, 'A'),     unit: b.ratedCurrentUnit || 'A' },
+        df_c1:             { mrid: '', value: str(b.dfC1),  label: unitLabel(b.dfC1Unit, '%'),  unit: b.dfC1Unit || '%' },
+        cap_c1:            { mrid: '', value: str(b.capC1), label: unitLabel(b.capC1Unit, 'pF'), unit: splitUnit(b.capC1Unit, 'p|F') },
+        df_c2:             { mrid: '', value: str(b.dfC2),  label: unitLabel(b.dfC2Unit, '%'),  unit: b.dfC2Unit || '%' },
+        cap_c2:            { mrid: '', value: str(b.capC2), label: unitLabel(b.capC2Unit, 'pF'), unit: splitUnit(b.capC2Unit, 'p|F') },
+        insulation_type:   BUSHING_INSUL_MAP[b.insulType] || b.insulType || '',
+    })
+    bushings.forEach(b => {
+        const key = WINDING_KEY_MAP[b.winding]
+        if (key && dto.bushing_data[key]) {
+            dto.bushing_data[key].push(mapBushingItem(b))
+        }
+    })
+
+    // ─── 9. Surge arrester data ───────────────────────────────────────────────
+    // Server trả serverData.surgeArresters = [{ winding, position, serialNo,
+    //   manufacturerName, manufacturingYear, assetSystemCode, unitStack,
+    //   ratings: [{ position, serial, voltageLL(+Unit), voltageLN(+Unit), mcov(+Unit) }] }]
+    const surgeArresters = serverData.surgeArresters || []
+    const mapSurgeItem = (sa) => ({
+        sign: true,
+        properties: {
+            mrid:                uuid.newUuid(),
+            serial_no:           sa.serialNo          || '',
+            manufacturer:        sa.manufacturerName  || '',
+            manufacturer_year:   sa.manufacturingYear ? String(sa.manufacturingYear) : '',
+            asset_system_code:   sa.assetSystemCode   || '',
+            assetInfoId:         uuid.newUuid(),
+            productAssetModelId: uuid.newUuid(),
+            lifecycleDateId:     uuid.newUuid(),
+        },
+        ratings: {
+            pos:   sa.position || '',
+            unit:  sa.unitStack !== null && sa.unitStack !== undefined ? String(sa.unitStack) : '',
+            table: (sa.ratings || []).map((r, idx) => ({
+                mrid:        uuid.newUuid(),
+                assetInfoId: uuid.newUuid(),
+                position:    r.position ?? (idx + 1),
+                serial:      r.serial || '',
+                voltageLl:  { mrid: '', value: str(r.voltageLL), unit: splitUnit(r.voltageLLUnit, 'k|V') },
+                voltageLn:  { mrid: '', value: str(r.voltageLN), unit: splitUnit(r.voltageLNUnit, 'k|V') },
+                mcovRating: { mrid: '', value: str(r.mcov),      unit: splitUnit(r.mcovUnit, 'k|V') },
+            })),
+        },
+    })
+    surgeArresters.forEach(sa => {
+        const key = WINDING_KEY_MAP[sa.winding]
+        if (key && dto.surge_arrester[key]) {
+            dto.surge_arrester[key].push(mapSurgeItem(sa))
+        }
+    })
 
     return dto;
 };

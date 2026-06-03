@@ -3,6 +3,18 @@ import uuid from "@/utils/uuid";
 
 const str = (val) => (val !== null && val !== undefined) ? String(val) : ''
 
+// Tách unit từ server "kV" → "k|V", "kA" → "k|A", giữ nguyên nếu đã có pipe hoặc không có multiplier
+const splitUnit = (raw, defaultUnit) => {
+    const u = raw || defaultUnit
+    if (!u) return defaultUnit
+    if (u.includes('|')) return u
+    const multipliers = ['k', 'M', 'G', 'm', 'µ', 'n', 'p']
+    for (const mult of multipliers) {
+        if (u.length > 1 && u.startsWith(mult)) return mult + '|' + u.slice(mult.length)
+    }
+    return u
+}
+
 export const mapServerToDto = (serverData) => {
     const dto = new SurgeArresterDto();
     if (!serverData) return dto;
@@ -24,7 +36,7 @@ export const mapServerToDto = (serverData) => {
     dto.properties.type              = sa.assetType || ''
     dto.properties.serial_no         = assetInfo.serialNo         || ''
     dto.properties.manufacturer      = assetInfo.manufacturerName || ''
-    dto.properties.manufacturer_type = ''
+    dto.properties.manufacturer_type = assetInfo.manufacturerType || ''
     dto.properties.manufacturer_year = assetInfo.manufacturingYear
         ? String(assetInfo.manufacturingYear)
         : ''
@@ -43,22 +55,22 @@ export const mapServerToDto = (serverData) => {
         ratedVoltage: {
             mrid:  uuid.newUuid(),
             value: str(r.ratedVoltage),
-            unit:  'k|' + (r.voltageUnit || 'V'),
+            unit:  splitUnit(r.voltageUnit, 'k|V'),
         },
         maximumVoltage: {
             mrid:  uuid.newUuid(),
             value: str(r.maxSystemVoltage),
-            unit:  'k|' + (r.voltageUnit || 'V'),
+            unit:  splitUnit(r.voltageUnit, 'k|V'),
         },
         continousVoltage: {
             mrid:  uuid.newUuid(),
             value: str(r.continousOperatingVoltage),
-            unit:  'k|' + (r.voltageUnit || 'V'),
+            unit:  splitUnit(r.voltageUnit, 'k|V'),
         },
         shortCurrent: {
             mrid:  uuid.newUuid(),
             value: str(r.shortTimeWithstandCurrent),
-            unit:  'k|' + (r.currentUnit || 'A'),
+            unit:  splitUnit(r.currentUnit, 'k|A'),
         },
         ratedCircuit: {
             mrid:  uuid.newUuid(),
@@ -68,14 +80,14 @@ export const mapServerToDto = (serverData) => {
         polesVoltage: {
             mrid:  uuid.newUuid(),
             value: str(r.pfWithstandToEarthPoles),
-            unit:  'k|' + (r.voltageUnit || 'V'),
+            unit:  splitUnit(r.voltageUnit, 'k|V'),
         },
         isoVoltage: {
             mrid:  uuid.newUuid(),
             value: str(r.pfWithstandIsolatingDistance),
-            unit:  'k|' + (r.voltageUnit || 'V'),
+            unit:  splitUnit(r.voltageUnit, 'k|V'),
         },
     }))
 
     return dto;
-};
+};  

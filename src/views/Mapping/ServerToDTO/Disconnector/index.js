@@ -1,6 +1,24 @@
 import DisconnectorDTO from "@/views/Dto/Disconnector";
 import uuid from "@/utils/uuid";
 
+// Tách unit từ server "kV" → "k|V", "kA" → "k|A", "V" → "V", "A" → "A"
+// Server có thể trả sẵn dạng "kV" hoặc chỉ "V"
+const splitUnit = (raw, defaultUnit) => {
+    const u = raw || defaultUnit
+    if (!u) return defaultUnit
+    // Nếu đã có pipe thì giữ nguyên
+    if (u.includes('|')) return u
+    // Multiplier prefixes: k (kilo), M (mega), m (milli), G, etc
+    const multipliers = ['k', 'M', 'G', 'm', 'µ', 'n', 'p']
+    for (const mult of multipliers) {
+        if (u.length > 1 && u.startsWith(mult)) {
+            return mult + '|' + u.slice(mult.length)
+        }
+    }
+    return u   // không có multiplier
+}
+
+
 // ─── Lookup maps ─────────────────────────────────────────────────────────────
 
 const ASSET_TYPE_MAP = {
@@ -34,7 +52,7 @@ export const mapServerToDto = (serverData) => {
     dto.properties.kind              = 'Disconnector'
     dto.properties.serial_no         = assetInfo.serialNo         || ''
     dto.properties.manufacturer      = assetInfo.manufacturerName || ''
-    dto.properties.manufacturer_type = ''
+    dto.properties.manufacturer_type = assetInfo.manufacturerType || ''
     dto.properties.manufacturing_year = assetInfo.manufacturingYear
         ? String(assetInfo.manufacturingYear)
         : ''
@@ -47,7 +65,7 @@ export const mapServerToDto = (serverData) => {
         mrid:  uuid.newUuid(),
         value: core.ratedVoltage !== null && core.ratedVoltage !== undefined
             ? String(core.ratedVoltage) : '',
-        unit:  'k|' + (core.ratedVoltageUnit || 'V'),
+        unit:  splitUnit(core.ratedVoltageUnit, 'k|V'),
     }
 
     dto.ratings.rated_frequency = {
@@ -68,7 +86,7 @@ export const mapServerToDto = (serverData) => {
         mrid:  uuid.newUuid(),
         value: core.shortTimeWithstandCurrent !== null && core.shortTimeWithstandCurrent !== undefined
             ? String(core.shortTimeWithstandCurrent) : '',
-        unit:  'k|' + (core.shortTimeWithstandCurrentUnit || 'A'),
+        unit:  splitUnit(core.shortTimeWithstandCurrentUnit, 'k|A'),
     }
 
     dto.ratings.rated_duration_of_short_circuit = {
@@ -82,14 +100,14 @@ export const mapServerToDto = (serverData) => {
         mrid:  uuid.newUuid(),
         value: core.pfWithstandToEarthPoles !== null && core.pfWithstandToEarthPoles !== undefined
             ? String(core.pfWithstandToEarthPoles) : '',
-        unit:  'k|' + (core.pfWithstandToEarthPolesUnit || 'V'),
+        unit:  splitUnit(core.pfWithstandToEarthPolesUnit, 'k|V'),
     }
 
     dto.ratings.power_freq_withstand_voltage_isolating_distance = {
         mrid:  uuid.newUuid(),
         value: core.pfWithstandIsolatingDistance !== null && core.pfWithstandIsolatingDistance !== undefined
             ? String(core.pfWithstandIsolatingDistance) : '',
-        unit:  core.pfWithstandIsolatingDistanceUnit || 'Hz',
+        unit:  splitUnit(core.pfWithstandIsolatingDistanceUnit, 'k|V'),
     }
 
     return dto;

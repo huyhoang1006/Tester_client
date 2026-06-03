@@ -3,6 +3,7 @@ import * as disconnectorAPI from '@/api/demo/Disconnector.js'
 import * as DisconnectorServerMapper from '@/views/Mapping/ServerToDTO/Disconnector/index.js'
 import * as DisconnectorMapper from '@/views/Mapping/Disconnector/index.js'
 import { fetchWithRetry } from './core-utils.js'
+import { traverseAndFillMrid, ensureTopLevelFK, FK_KEYS } from './fk-utils.js'
 import { detectConflicts, applyResolved, mergeWithoutSnapshot, DISCONNECTOR_FIELD_DEFS } from '@/utils/conflictUtils.js'
 
 // ─── Step 1: fetch full info từ server ───────────────────────────────────────
@@ -91,6 +92,10 @@ export async function downloadDisconnectorChain(data, ctx) {
     mergedDto.mrid            = dc.mrid
     mergedDto.psrId           = data.parentBayId
     mergedDto.properties.mrid = dc.mrid
+
+    // Đảm bảo mọi mrid + FK id được điền trước khi map sang entity (tránh lỗi foreign key)
+    traverseAndFillMrid(mergedDto)
+    ensureTopLevelFK(mergedDto, FK_KEYS.disconnector)
 
     // 5. Build entity từ mergedDto
     const entity = DisconnectorMapper.disconnectorDtoToEntity(mergedDto)

@@ -164,6 +164,11 @@ import * as PowerCableServerMapper from '@/views/Mapping/ServerToDTO/PowerCable/
 import * as OrganisationServerMapper from '@/views/Mapping/ServerToDTO/Organisation/index.js'
 import * as SubstationServerMapper from '@/views/Mapping/ServerToDTO/Substation/index.js'
 import * as VoltageLevelServerMapper from '@/views/Mapping/ServerToDTO/VoltageLevel/index.js'
+import * as VoltageTransformerServerMapper from '@/views/Mapping/ServerToDTO/VoltageTransformer/index.js'
+import * as CurrentTransformerServerMapper from '@/views/Mapping/ServerToDTO/CurrentTransformer/index.js'
+import * as DisconnectorServerMapper from '@/views/Mapping/ServerToDTO/Disconnector/index.js'
+import * as CircuitBreakerServerMapper from '@/views/Mapping/ServerToDTO/CircuitBreaker/index.js'
+import * as BushingServerMapper from '@/views/Mapping/ServerToDTO/Bushing/index.js'
 
 import VoltageLevel from '@/views/VoltageLevel/index.vue'
 import Bay from '@/views/Bay/index.vue'
@@ -181,8 +186,6 @@ import ReactorJob from '@/views/JobView/Reactor/index.vue'
 import DisconnectorJob from '@/views/JobView/Disconnector/index.vue'
 import RotatingMachineJob from '@/views/JobView/RotatingMachine/index.vue'
 import VoltageTransformerJob from '@/views/JobView/VoltageTransformer/index.vue'
-import * as DisconnectorServerMapper from '@/views/Mapping/ServerToDTO/Disconnector/index.js'
-import * as BushingServerMapper from '@/views/Mapping/ServerToDTO/Bushing'
 
 import VoltageTransformer from '@/views/AssetView/VoltageTransformer/index.vue'
 import Disconnector from '@/views/AssetView/Disconnector/index.vue'
@@ -857,23 +860,20 @@ export default {
                             comp.loadData({ dto: dto, locationList: [], personList:[] });
                         });
                     }
-                }
-                else if (tab.mode === 'voltageLevel') {
+                } else if (tab.mode === 'voltageLevel') {
                     const response = await demoAPI.getVoltageLevelById(tab.mrid);
                     if (response) {
                         const dto = VoltageLevelServerMapper.mapServerToDto(response.data || response);
                         this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
                     }
-                }
-                else if (tab.mode === 'bay') {
+                } else if (tab.mode === 'bay') {
                     const response = await demoAPI.getBayById(tab.mrid);
                     if (response) {
                         const dto = BayServerMapper.mapServerToDto(response.data || response);
                         if (!dto.voltageLevel && !dto.substation) dto.parentId = tab.parentId;
                         this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
                     }
-                }
-                else if (tab.mode === 'organisation') {
+                } else if (tab.mode === 'organisation') {
                     const response = await demoAPI.getOrganisationById(tab.mrid || tab.id);
                     console.log("Response from server for Organisation:", response);
                     if (response) {
@@ -895,22 +895,22 @@ export default {
                     } else {
                         this.$message.error("Failed to load Organisation data");
                     }
-                }
-                else if (tab.mode === 'asset' && tab.asset === 'Transformer') {
-                    const response = await demoAPI.getTransformerById(tab.mrid);
+                } else if (tab.mode === 'asset' && tab.asset === 'Transformer') {
+                    const response = await demoAPI.getAssetById(tab.mrid, 'Transformer');
                     if (response) {
-                        const dto = TransformerServerMapper.mapServerToDto(response.data || response);
+                        const serverData = response.data || response;
+                        const dto = TransformerServerMapper.mapServerToDto(serverData);
                         this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
+                    } else {
+                        this.$message.error("Failed to load Transformer data");
                     }
-                }
-                else if (tab.mode == 'asset' && tab.asset === 'Power cable') {
+                } else if (tab.mode === 'asset' && tab.asset === 'Power cable') {
                     const response = await demoAPI.getAssetById(tab.mrid, 'PowerCable');
                     if (response) {
                         const dto = PowerCableServerMapper.mapServerToDto(response);
                         this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
                     }
-                }
-                else if (tab.mode === 'asset' && tab.asset === 'Surge arrester') {
+                } else if (tab.mode === 'asset' && tab.asset === 'Surge arrester') {
                     // API getAssetById nhận mode là "SurgeArrester"
                     const response = await demoAPI.getAssetById(tab.mrid, 'SurgeArrester');
                     console.log("Response from server for SurgeArrester:", response);
@@ -926,8 +926,7 @@ export default {
                     } else {
                         this.$message.error("Failed to load Surge Arrester data");
                     }
-                }
-                 else if (tab.mode === 'asset' && tab.asset === 'Disconnector') {
+                } else if (tab.mode === 'asset' && tab.asset === 'Disconnector') {
                     const response = await demoAPI.getAssetById(tab.mrid, 'Disconnector');
                     console.log("Response from server for Disconnector:", response);
 
@@ -938,18 +937,44 @@ export default {
                     } else {
                         this.$message.error("Failed to load Disconnector data");
                     }
+                } else if (tab.mode === 'asset' && tab.asset === 'Bushing') {
+                    const response = await demoAPI.getAssetById(tab.mrid, 'Bushing');
+                    console.log("Response from server for Bushing:", response);
+                    if (response) {
+                        const serverData = response.data || response;
+                        const dto = BushingServerMapper.mapServerToDto(serverData);
+                        this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
+                    } else {
+                        this.$message.error("Failed to load Bushing data");
+                    }
+                } else if (tab.mode === 'asset' && tab.asset === 'Voltage transformer') {
+                    const response = await demoAPI.getAssetById(tab.mrid, 'VoltageTransformer');
+                    if (response) {
+                        const serverData = response.data || response;
+                        const dto = VoltageTransformerServerMapper.mapServerToDto(serverData);
+                        this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
+                    } else {
+                        this.$message.error("Failed to load Voltage transformer data");
+                    }
+                } else if (tab.mode === 'asset' && tab.asset === 'Current transformer') {
+                    const response = await demoAPI.getAssetById(tab.mrid, 'CurrentTransformer');
+                    if (response) {
+                        const serverData = response.data || response;
+                        const dto = CurrentTransformerServerMapper.mapServerToDto(serverData);
+                        this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
+                    } else {
+                        this.$message.error("Failed to load Current transformer data");
+                    }
+                } else if (tab.mode === 'asset' && tab.asset === 'Circuit breaker') {
+                    const response = await demoAPI.getAssetById(tab.mrid, 'CircuitBreaker');
+                    if (response) {
+                        const serverData = response.data || response;
+                        const dto = CircuitBreakerServerMapper.mapServerToDto(serverData);
+                        this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
+                    } else {
+                        this.$message.error("Failed to load Circuit breaker data");
+                    }
                 }
-                else if (tab.mode === 'asset' && tab.asset === 'Bushing') {
-    const response = await demoAPI.getAssetById(tab.mrid, 'Bushing');
-    console.log("Response from server for Bushing:", response);
-    if (response) {
-        const serverData = response.data || response;
-        const dto = BushingServerMapper.mapServerToDto(serverData);
-        this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
-    } else {
-        this.$message.error("Failed to load Bushing data");
-    }
-}
             } catch (error) {
                 console.error("Error loading data from server:", error);
             }

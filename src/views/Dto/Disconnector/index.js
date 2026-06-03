@@ -28,7 +28,7 @@ class DisconnectorDTO {
 
             // Power frequency withstand voltage
             power_freq_withstand_voltage_earth_poles: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.V }, // kV
-            power_freq_withstand_voltage_isolating_distance: { mrid: '', value: '', unit: UnitSymbol.Hz } // Hz
+            power_freq_withstand_voltage_isolating_distance: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.V } // kV
         }
     }
 }

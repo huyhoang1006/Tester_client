@@ -62,6 +62,14 @@ export const getAssetById = (assetId, mode) => {
             return client.get(`/api/disconnector/${assetId}`)
         } else if (mode == 'Bushing') {
             return client.get(`/api/bushing/${assetId}`)
+        } else if (mode == 'VoltageTransformer') {
+            return client.get(`/api/voltage-transformer/${assetId}`)
+        } else if (mode == 'CurrentTransformer') {
+            return client.get(`/api/current-transformer/${assetId}`)
+        } else if (mode == 'CircuitBreaker') {
+            return client.get(`/api/circuit-breaker/cim/${assetId}`)
+        } else if (mode == 'Transformer') {
+            return client.get(`/api/transformer/${assetId}`)
         }
     }
 }

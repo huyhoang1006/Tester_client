@@ -3,6 +3,7 @@ import * as currentAPI from '@/api/demo/CurrentTransformer.js'
 import * as CurrentTransformerServerMapper from '@/views/Mapping/ServerToDTO/CurrentTransformer/index.js'
 import * as CurrentTransformerMapper from '@/views/Mapping/CurrentTransformer/index.js'
 import { fetchWithRetry } from './core-utils.js'
+import { traverseAndFillMrid, ensureTopLevelFK, FK_KEYS } from './fk-utils.js'
 import { detectConflicts, applyResolved, mergeWithoutSnapshot, CURRENT_TRANSFORMER_FIELD_DEFS } from '@/utils/conflictUtils.js'
 
 // ─── Step 1: fetch full info từ server ───────────────────────────────────────
@@ -90,6 +91,10 @@ export async function downloadCurrentTransformerChain(data, ctx) {
     // 4. Set context IDs
     mergedDto.properties.mrid = ct.mrid
     mergedDto.psrId           = data.parentBayId
+
+    // Đảm bảo mọi mrid + FK id được điền trước khi map sang entity (tránh lỗi foreign key)
+    traverseAndFillMrid(mergedDto)
+    ensureTopLevelFK(mergedDto, FK_KEYS.currentTransformer)
 
     // 5. Build entity từ mergedDto
     const oldEntity = clientEntity || new (require('@/views/Flatten/CurrentTransformer').default)()
