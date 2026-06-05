@@ -4,3 +4,7 @@ const prefix = 'api/disconnector'
 export const getDisconnectorById = (id) => {
     return client.get(`/${prefix}/${id}`)
 }
+
+export const createDisconnector = (data) => {
+    return client.post(`/${prefix}/create`, data)
+}

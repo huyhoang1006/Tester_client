@@ -90,4 +90,81 @@ export const mapServerToDto = (serverData) => {
     }))
 
     return dto;
-};  
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Mapper: DTO → server JSON (push/upload)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// số: '' / null → null, còn lại parseFloat
+const numS = (val) => (val !== null && val !== undefined && val !== '') ? parseFloat(val) : null
+
+// unit DTO 'k|V' → server 'kV' (gộp lại, bỏ pipe). 'A' giữ nguyên.
+const joinUnit = (u) => {
+    if (!u) return null
+    return u.includes('|') ? u.replace('|', '') : u
+}
+
+// Gắn FK vào payload CHỈ khi có giá trị thật (chỉ đẩy khi asset đã có sẵn)
+const attachFK = (payload, dto) => {
+    const fkKeys = {
+        mRID:                dto.mrid || dto.properties?.mrid,
+        assetInfoId:         dto.assetInfoId,
+        productAssetModelId: dto.productAssetModelId,
+        lifecycleDateId:     dto.lifecycleDateId,
+        assetPsrId:          dto.assetPsrId,
+        locationId:          dto.locationId,
+        attachmentId:        dto.attachmentId,
+    }
+    for (const [k, v] of Object.entries(fkKeys)) {
+        if (v !== null && v !== undefined && v !== '') payload[k] = v
+    }
+    return payload
+}
+
+export const mapDtoToServer = (dto, ownerType) => {
+    if (!dto) return null
+
+    const p     = dto.properties || {}
+    const table = dto.ratings?.tableRating || []
+
+    const payload = {
+        assetInfo: {
+            ownerId:           dto.psrId || null,
+            ownerType:         ownerType || null,   // BAY | SUBSTATION — server đọc từ body
+            serialNo:          p.serial_no         || null,
+            manufacturer:      p.manufacturer      || null,   // TÊN hãng
+            manufacturerType:  p.manufacturer_type || null,
+            manufacturingYear: numS(p.manufacturer_year),
+            country:           p.country_of_origin || null,   // TÊN nước
+            apparatusId:       p.apparatus_id      || null,
+            description:       p.comment           || null,
+        },
+
+        surgeArrester: {
+            assetType: p.type || null,
+        },
+
+        surgeArresterRatingList: table.map((r, idx) => ({
+            position:     r.position ?? (idx + 1),
+            serialNo:     r.serial || null,
+
+            ratedVoltage:              numS(r.ratedVoltage?.value),
+            maxSystemVoltage:          numS(r.maximumVoltage?.value),
+            continousOperatingVoltage: numS(r.continousVoltage?.value),
+            // các điện áp dùng chung 1 voltageUnit (lấy từ ratedVoltage)
+            voltageUnit:               joinUnit(r.ratedVoltage?.unit),
+
+            shortTimeWithstandCurrent: numS(r.shortCurrent?.value),
+            currentUnit:               joinUnit(r.shortCurrent?.unit),
+
+            shortCircuitRatedDuration: numS(r.ratedCircuit?.value),
+            ratedDurationUnit:         joinUnit(r.ratedCircuit?.unit),
+
+            pfWithstandToEarthPoles:      numS(r.polesVoltage?.value),
+            pfWithstandIsolatingDistance: numS(r.isoVoltage?.value),
+        })),
+    }
+
+    return attachFK(payload, dto)
+}

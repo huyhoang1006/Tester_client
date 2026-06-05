@@ -387,3 +387,282 @@ export const mapServerToDto = (serverData) => {
 
     return dto;
 };
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Mapper: DTO → server JSON (push/upload)
+// Hướng B: map phần khung CIM server có + BỔ SUNG section nghiệp vụ theo style server
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const ASSET_TYPE_TO_SERVER = {
+    'LiveSF6':     'Live tank SF6 breaker',
+    'MiniOil':     'Minimum oil breaker',
+    'AirBlast':    'Air-blast breaker',
+    'DeadTankSF6': 'Dead tank SF6 breaker',
+    'DeadTankOCB': 'Dead tank oil breaker (OCB)',
+    'Vacuum':      'Vacuum breaker',
+    'GenCirGCB':   'Generator circuit breaker (GCB)',
+    'GasInsuGIS':  'Gas insulated switchgear (GIS)',
+    'Miscell':     'Miscellaneous',
+}
+
+const OPERATING_TYPE_TO_SERVER = {
+    'Spring':    'Spring',
+    'hydraulic': 'Hydraulic',
+    'Pneumatic': 'Pneumatic',
+    'Motor':     'Motor',
+    'magnetic':  'Magnetic',
+}
+
+// số: '' / null → null, còn lại parseFloat
+const numU = (val) => (val !== null && val !== undefined && val !== '') ? parseFloat(val) : null
+// string: '' → null
+const strU = (val) => (val !== null && val !== undefined && val !== '') ? String(val) : null
+
+// Tách unit DTO dạng 'multiplier|symbol' → { multiplier, unit }
+// 'm|s' → { multiplier:'m', unit:'s' } | 'k|V' → { multiplier:'k', unit:'V' }
+// 'A' (không pipe) → { multiplier:null, unit:'A' }
+const splitUnitToServer = (raw) => {
+    if (!raw) return { multiplier: null, unit: null }
+    if (raw.includes('|')) {
+        const [mult, sym] = raw.split('|')
+        return { multiplier: mult || null, unit: sym || null }
+    }
+    return { multiplier: null, unit: raw }
+}
+
+// DTO leaf {mrid,value,unit} → server {mRID,value,multiplier,unit}
+// value là number; unit tách thành multiplier + unit riêng (server không gộp)
+const leafToServer = (obj) => {
+    const { multiplier, unit } = splitUnitToServer(obj?.unit)
+    return {
+        mRID:       obj?.mrid || null,
+        value:      numU(obj?.value),
+        multiplier: multiplier,
+        unit:       unit,
+    }
+}
+
+export const mapDtoToServer = (dto) => {
+    if (!dto) return null
+
+    const p   = dto.properties   || {}
+    const r   = dto.ratings      || {}
+    const cb  = dto.circuitBreaker || {}
+    const cs  = dto.contactSystem  || {}
+    const ot  = dto.others         || {}
+    const op  = dto.operating      || {}
+    const al  = dto.assessmentLimits || {}
+
+    // FK đảm bảo không null
+    const assetInfoId   = dto.assetInfoId   || uuid.newUuid()
+    const opMechId      = dto.operatingMechanismId || uuid.newUuid()
+
+    // ─── Coil component array → server ───────────────────────────────────────
+    const mapCoil = (c) => ({
+        component:     c?.component || null,
+        rated_current: leafToServer(c?.rated_current),
+        rated_voltage: leafToServer(c?.rated_voltage),
+        power:         strU(c?.power),
+        frequency:     leafToServer(c?.frequency),
+    })
+
+    // ─── AssessmentLimits: DTO (snake abs/rel) → server (camel abs/rel) ───────
+    // Helper: map 1 nhóm theo danh sách cặp [dtoLeafKey, serverLeafKey]
+    // assessmentLimits: leaf chỉ giữ value+multiplier+unit (BỎ mRID — là PK/FK DB nội bộ client)
+    const alLeaf = (obj) => {
+        const { multiplier, unit } = splitUnitToServer(obj?.unit)
+        return { value: numU(obj?.value), multiplier, unit }
+    }
+
+    // map 1 nhóm assessment — BỎ tất cả mrid (nhóm, nhóm con, leaf): chỉ dữ liệu nghiệp vụ
+    const mapALGroup = (group) => {
+        if (!group) return null
+        const out = {}
+        if (group.abs) {
+            out.abs = {}
+            for (const key of Object.keys(group.abs)) {
+                const leaf = group.abs[key]
+                if (leaf && 'value' in leaf) {
+                    out.abs[key] = alLeaf(leaf)
+                } else if (leaf && typeof leaf === 'object') {
+                    const sub_out = {}
+                    for (const sub of Object.keys(leaf)) {
+                        if (sub === 'mrid') continue   // bỏ mrid nhóm con
+                        sub_out[sub] = alLeaf(leaf[sub])
+                    }
+                    out.abs[key] = sub_out
+                }
+            }
+        }
+        if (group.rel) {
+            out.rel = {}
+            for (const key of Object.keys(group.rel)) {
+                const leaf = group.rel[key]
+                if (leaf && 'value' in leaf) {
+                    out.rel[key] = alLeaf(leaf)
+                } else if (leaf && typeof leaf === 'object') {
+                    const sub_out = {}
+                    for (const sub of Object.keys(leaf)) {
+                        if (sub === 'mrid') continue   // bỏ mrid nhóm con
+                        sub_out[sub] = alLeaf(leaf[sub])
+                    }
+                    out.rel[key] = sub_out
+                }
+            }
+        }
+        return out   // BỎ mrid cấp nhóm
+    }
+
+    // map toàn bộ assessmentLimits giữ nguyên cấu trúc abs/rel + leaf
+    const mapAssessment = (a) => {
+        if (!a) return null
+        const result = { limits: a.limits || 'Absolute' }
+        const groupKeys = [
+            'contact_resistance', 'operating_time', 'contact_travel',
+            'auxiliary_contacts', 'miscellaneous', 'coil_characteristics',
+            'pickup_voltage', 'motor_characteristics',
+            'under_voltage_release', 'overcurrent_release',
+        ]
+        for (const gk of groupKeys) {
+            if (!a[gk]) continue
+            // auxiliary_contacts có 2 cấp con (trip_operation / close_operation)
+            if (gk === 'auxiliary_contacts') {
+                const aux = {}
+                for (const opKey of ['trip_operation', 'close_operation']) {
+                    if (a[gk][opKey]) aux[opKey] = mapALGroup(a[gk][opKey])
+                }
+                result[gk] = aux   // BỎ mrid nhóm
+            } else {
+                result[gk] = mapALGroup(a[gk])
+            }
+        }
+        return result
+    }
+
+    return {
+        // ─── Khung CIM (server có) ───────────────────────────────────────────
+        mRID:          p.mrid || null,
+        name:          null,
+        aliasName:     null,
+        description:   p.comment || null,
+        type:          ASSET_TYPE_TO_SERVER[p.type] || p.type || null,
+        serialNumber:  p.serial_no   || null,
+        lotNumber:     p.apparatus_id || null,
+        position:      p.apparatus_id || null,
+        countryOfOrigin: p.country_of_origin || null,
+        kind:          p.kind || 'Circuit breaker',
+
+        lifecycleDate: {
+            mRID: dto.lifecycleDateId || null,
+            // năm sản xuất → manufacturedDate (server lưu DateTime, ghép -01-01)
+            manufacturedDate: p.manufacturer_year ? `${p.manufacturer_year}-01-01T00:00:00` : null,
+            installationDate: null, purchaseDate: null,
+            receivedDate: null, removalDate: null, retiredDate: null,
+        },
+
+        assetInfo: {
+            mRID:              assetInfoId,
+            manufacturerType:  p.manufacturer || null,   // tên hãng
+            productAssetModel: p.manufacturer_type || null, // model
+            name: null, aliasName: null, description: null,
+        },
+
+        operatingMechanism: {
+            // ─── CIM flat (khớp payload server OK) ───────────────────────────
+            mRID:         opMechId,
+            name:         null,
+            aliasName:    null,
+            description:  op.comment    || null,
+            type:         OPERATING_TYPE_TO_SERVER[op.type] || op.type || null,
+            kind:         null,
+            serialNumber: op.serial_no  || null,
+
+            // ─── chi tiết operating — flatten thẳng, không bọc detail{} ───────
+            operatingMechanismLifecycleDateId:     dto.operatingMechanismLifecycleDateId || null,
+            operatingMechanismInfoId:              dto.operatingMechanismInfoId || null,
+            operatingMechanismProductAssetModelId: dto.operatingMechanismProductAssetModelId || null,
+            manufacturedDate: op.manufacturer_year ? `${op.manufacturer_year}-01-01T00:00:00` : null,
+            manufacturerType: op.manufacturer || null,
+
+            numberOfTripCoil:  strU(op.number_of_trip_coil),
+            numberOfCloseCoil: strU(op.number_of_close_coil),
+            ratedOperatingPressure:            leafToServer(op.rated_operating_pressure),
+            ratedOperatingPressureTemperature: leafToServer(op.rated_operating_pressure_temperature),
+            motor: {
+                ratedCurrent: leafToServer(op.motor?.rated_current),
+                ratedVoltage: leafToServer(op.motor?.rated_voltage),
+                power:        strU(op.motor?.power),
+                frequency:    leafToServer(op.motor?.frequency),
+            },
+            auxiliaryCircuits: {
+                ratedCurrent: leafToServer(op.auxiliary_circuits?.rated_current),
+                ratedVoltage: leafToServer(op.auxiliary_circuits?.rated_voltage),
+                power:        strU(op.auxiliary_circuits?.power),
+                frequency:    leafToServer(op.auxiliary_circuits?.frequency),
+            },
+            tripCoilComponents:  (op.trip_coil_component  || []).map(mapCoil),
+            closeCoilComponents: (op.close_coil_component || []).map(mapCoil),
+        },
+
+        // ─── [SERVER THIẾU] Section nghiệp vụ — bổ sung theo style server ─────
+        ratings: {
+            ratedVoltage:                     leafToServer(r.rated_voltage_ll),
+            ratedCurrent:                     leafToServer(r.rated_current),
+            ratedShortCircuitBreakingCurrent: leafToServer(r.rated_short_circuit_breaking_current),
+            shortCircuitNominalDuration:      leafToServer(r.short_circuit_nominal_duration),
+            ratedInsulationLevel:             leafToServer(r.rated_insulation_level),
+            ratedInterruptingTime:            leafToServer(r.rated_interrupting_time),
+            interruptingDutyCycle:            strU(r.interrupting_duty_cycle),
+            ratedPowerAtClosing:              leafToServer(r.rated_power_at_closing),
+            ratedPowerAtOpening:              leafToServer(r.rated_power_at_opening),
+            ratedPowerAtMotorCharge:          leafToServer(r.rated_power_at_motor_charge),
+            ratedFrequency:                   leafToServer(r.rated_frequency),
+            ratedFrequencyCustom:             leafToServer(r.rated_frequency_custom),
+        },
+
+        circuitBreaker: {
+            numberOfPhases:       strU(cb.numberOfPhases),
+            interruptersPerPhase: strU(cb.interruptersPerPhase),
+            poleOperation:        cb.poleOperation || null,
+            hasPIR:               cb.hasPIR ?? null,
+            pirValue:             leafToServer(cb.pirValue),
+            hasGradingCapacitors: cb.hasGradingCapacitors ?? null,
+            capacitorValue:       leafToServer(cb.capacitorValue),
+            interruptingMedium:   cb.interruptingMedium || null,
+            tankType:             cb.tankType || null,
+        },
+
+        contactSystem: {
+            nominalTotalTravel: leafToServer(cs.nominal_total_travel),
+            dampingTime:        leafToServer(cs.damping_time),
+            nozzleLength:       leafToServer(cs.nozzle_length),
+        },
+
+        others: {
+            totalWeightWithGas:  leafToServer(ot.total_weight_with_gas),
+            weightOfGas:         leafToServer(ot.weight_of_gas),
+            volumeOfGas:         leafToServer(ot.volume_of_gas),
+            ratedGasPressure:    leafToServer(ot.rated_gas_pressure),
+            ratedGasTemperature: leafToServer(ot.rated_gas_temperature),
+        },
+
+        assessmentLimits: mapAssessment(al),
+
+        // ─── FK ids ──────────────────────────────────────────────────────────
+        assetInfoId,
+        productAssetModelId:                   dto.productAssetModelId                   || uuid.newUuid(),
+        lifecycleDateId:                       dto.lifecycleDateId                       || uuid.newUuid(),
+        assetPsrId:                            dto.assetPsrId                            || uuid.newUuid(),
+        psrId:                                 dto.psrId                                 || null,
+        operatingMechanismId:                  opMechId,
+        operatingMechanismInfoId:              dto.operatingMechanismInfoId              || uuid.newUuid(),
+        operatingMechanismLifecycleDateId:     dto.operatingMechanismLifecycleDateId     || uuid.newUuid(),
+        operatingMechanismProductAssetModelId: dto.operatingMechanismProductAssetModelId || uuid.newUuid(),
+        assessmentLimitBreakerInfoId:          dto.assessmentLimitBreakerInfoId          || uuid.newUuid(),
+        breakerRatingInfoId:                   dto.breakerRatingInfoId                   || uuid.newUuid(),
+        breakerContactSystemInfoId:            dto.breakerContactSystemInfoId            || uuid.newUuid(),
+        breakerOtherInfoId:                    dto.breakerOtherInfoId                    || uuid.newUuid(),
+        attachmentId:                          dto.attachmentId                          || null,
+    }
+}

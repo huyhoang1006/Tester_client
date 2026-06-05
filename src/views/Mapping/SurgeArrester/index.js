@@ -7,6 +7,14 @@ import CurrentFlow from "@/views/Cim/CurrentFlow";
 import Seconds from "@/views/Cim/Seconds";
 import { UnitMultiplier } from "@/views/Enum/UnitMultiplier";
 import { UnitSymbol } from "@/views/Enum/UnitSymbol";
+
+// Ghép multiplier + unit an toàn: tránh 'null|s' khi multiplier rỗng
+// có multiplier → 'm|s'; không có → 's' (không pipe)
+const buildUnit = (multiplier, unit) => {
+    if (!unit) return ''
+    return multiplier ? `${multiplier}|${unit}` : unit
+}
+
 export function mapDtoToEntity(dto) {
     const entity = new SurgeArresterEntity();
 
@@ -221,7 +229,7 @@ export function mapEntityToDto(entity) {
         for(let voltage of entity.voltage) {
             if(voltage.mrid === data.ratedVoltage.mrid) {
                 data.ratedVoltage.value = voltage.value || '';
-                data.ratedVoltage.unit = voltage.multiplier + '|' + voltage.unit || '';
+                data.ratedVoltage.unit = buildUnit(voltage.multiplier, voltage.unit);
             }
         }
         //maximum_system_voltage
@@ -229,7 +237,7 @@ export function mapEntityToDto(entity) {
         for(let voltage of entity.voltage) {
             if(voltage.mrid === data.maximumVoltage.mrid) {
                 data.maximumVoltage.value = voltage.value || '';
-                data.maximumVoltage.unit = voltage.multiplier + '|' + voltage.unit || '';
+                data.maximumVoltage.unit = buildUnit(voltage.multiplier, voltage.unit);
             }
         }
 
@@ -238,7 +246,7 @@ export function mapEntityToDto(entity) {
         for(let voltage of entity.voltage) {
             if(voltage.mrid === data.continousVoltage.mrid) {
                 data.continousVoltage.value = voltage.value || '';
-                data.continousVoltage.unit = voltage.multiplier + '|' + voltage.unit || '';
+                data.continousVoltage.unit = buildUnit(voltage.multiplier, voltage.unit);
             }
         }
 
@@ -247,7 +255,7 @@ export function mapEntityToDto(entity) {
         for(let currentFlow of entity.currentFlow) {
             if(currentFlow.mrid === data.shortCurrent.mrid) {
                 data.shortCurrent.value = currentFlow.value || '';
-                data.shortCurrent.unit = currentFlow.multiplier + '|' + currentFlow.unit || '';
+                data.shortCurrent.unit = buildUnit(currentFlow.multiplier, currentFlow.unit);
             }
         }
 
@@ -256,7 +264,7 @@ export function mapEntityToDto(entity) {
         for(let seconds of entity.seconds) {
             if(seconds.mrid === data.ratedCircuit.mrid) {
                 data.ratedCircuit.value = seconds.value || '';
-                data.ratedCircuit.unit = seconds.multiplier + '|' + seconds.unit || '';
+                data.ratedCircuit.unit = buildUnit(seconds.multiplier, seconds.unit);
             }
         }
 
@@ -265,7 +273,7 @@ export function mapEntityToDto(entity) {
         for(let voltage of entity.voltage) {
             if(voltage.mrid === data.polesVoltage.mrid) {
                 data.polesVoltage.value = voltage.value || '';
-                data.polesVoltage.unit = voltage.multiplier + '|' + voltage.unit || '';
+                data.polesVoltage.unit = buildUnit(voltage.multiplier, voltage.unit);
             }
         }
 
@@ -274,7 +282,7 @@ export function mapEntityToDto(entity) {
         for(let voltage of entity.voltage) {
             if(voltage.mrid === data.isoVoltage.mrid) {
                 data.isoVoltage.value = voltage.value || '';
-                data.isoVoltage.unit = voltage.multiplier + '|' + voltage.unit || '';
+                data.isoVoltage.unit = buildUnit(voltage.multiplier, voltage.unit);
             }
         }
         dto.ratings.tableRating.push(data);

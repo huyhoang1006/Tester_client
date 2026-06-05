@@ -1,266 +1,333 @@
 /* eslint-disable */
-import * as demoAPI from '@/api/demo/index.js'
-import * as voltageAPI from '@/api/demo/VoltageTransformer.js'
-import * as currentAPI from '@/api/demo/CurrentTransformer.js'
 
+// ─── API ────────────────────────────────────────────────────────────────────
+import * as demoAPI            from '@/api/demo/index.js'
+import * as voltageAPI         from '@/api/demo/VoltageTransformer.js'
+import * as currentAPI         from '@/api/demo/CurrentTransformer.js'
+import * as circuitBreakerAPI  from '@/api/demo/CircuitBreaker.js'
+import * as disconnectorAPI    from '@/api/demo/Disconnector.js'
+import * as surgeArresterAPI   from '@/api/demo/SurgeArrester.js'
+import * as transformerAPI     from '@/api/demo/Transformer.js'
+
+// ─── Entity ↔ DTO mappers ─────────────────────────────────────────────────────
 import * as voltageTransformerMapping from '@/views/Mapping/VoltageTransformer/index.js'
 import * as currentTransformerMapping from '@/views/Mapping/CurrentTransformer/index.js'
+import * as transformerMapping        from '@/views/Mapping/Transformer/index.js'
+import * as circuitBreakerMapping     from '@/views/Mapping/Breaker/index.js'
+import * as disconnectorMapping       from '@/views/Mapping/Disconnector/index.js'
+import * as surgeArresterMapping      from '@/views/Mapping/SurgeArrester/index.js'
+import * as PowerCableMapping         from '@/views/Mapping/PowerCable/index'
 
-import * as PowerCableMapping from '@/views/Mapping/PowerCable/index'
-import * as PowerCableServerMapper from '@/views/Mapping/ServerToDTO/PowerCable/index.js'
-import { mapSubstationEntityToServer } from '@/utils/MapperClient/mapSubstationToServer.js'
-import { mapVoltageLevelEntityToServer } from '@/utils/MapperClient/mapVoltageLevelToServer.js'
-import { mapBayEntityToServer } from '@/utils/MapperClient/mapBayToServer.js'
-import { mapTransformerEntityToServer } from '@/utils/MapperClient/mapTransformerToServer.js'
+// ─── DTO → Server mappers ─────────────────────────────────────────────────────
+import * as transformerMappingServer        from '@/views/Mapping/ServerToDTO/Transformer/index.js'
 import * as voltageTransformerMappingServer from '@/views/Mapping/ServerToDTO/VoltageTransformer/index.js'
 import * as currentTransformerMappingServer from '@/views/Mapping/ServerToDTO/CurrentTransformer/index.js'
+import * as circuitBreakerMappingServer     from '@/views/Mapping/ServerToDTO/CircuitBreaker/index.js'
+import * as disconnectorMappingServer       from '@/views/Mapping/ServerToDTO/Disconnector/index.js'
+import * as surgeArresterMappingServer      from '@/views/Mapping/ServerToDTO/SurgeArrester/index.js'
+import * as PowerCableServerMapper          from '@/views/Mapping/ServerToDTO/PowerCable/index.js'
+
+// ─── Entity → Server (luồng cũ: Substation/VoltageLevel/Bay) ──────────────────
+import { mapSubstationEntityToServer }   from '@/utils/MapperClient/mapSubstationToServer.js'
+import { mapVoltageLevelEntityToServer } from '@/utils/MapperClient/mapVoltageLevelToServer.js'
+import { mapBayEntityToServer }          from '@/utils/MapperClient/mapBayToServer.js'
 
 /**
- * Mixin chứa các hàm xử lý upload từng loại entity lên server
+ * Mixin chứa các hàm xử lý upload từng loại entity lên server.
+ *
+ * Quy ước chung:
+ *  - Lấy entity từ local DB qua window.electronAPI.getXxxEntityByMrid(mrid, ...)
+ *  - entity → DTO → payload server (mapEntityToDto → mapDtoToServer)
+ *  - ownerType resolve từ parentNode.mode (bay → BAY, substation → SUBSTATION, voltageLevel → VOLTAGE_LEVEL)
+ *  - Asset thiết bị (VT/CT/CB/Disconnector/SurgeArrester) gửi node.parentId trực tiếp.
+ *  - Transformer cần numericOwnerId (resolve qua findBayNumericIdGlobal / resolveSubstationNumericId).
  */
 export default {
     methods: {
+
+        // ═══════════════════════════════════════════════════════════════════════
+        //  CONTAINER: Substation / VoltageLevel / Bay
+        // ═══════════════════════════════════════════════════════════════════════
+
         async processUploadSubstation(node) {
             try {
                 const userId = this.$store.state.user.user_id
-                const entityRes = await window.electronAPI.getSubstationEntityByMrid(node.mrid, userId, node.parentId);
-                if (!entityRes.success || !entityRes.data) throw new Error('Local substation data not found.');
+                const entityRes = await window.electronAPI.getSubstationEntityByMrid(node.mrid, userId, node.parentId)
+                if (!entityRes.success || !entityRes.data) throw new Error('Local substation data not found.')
+                if (!node.parentId) throw new Error('Cannot upload substation without parent organisation.')
 
-                const entity = entityRes.data;
-                if (!node.parentId) throw new Error('Cannot upload substation without parent organisation.');
+                const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                const serverPayload = mapSubstationEntityToServer(entityRes.data, parentNode)
+                const response = await demoAPI.createSubstation(serverPayload, node.parentId)
 
-                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
-                const serverPayload = mapSubstationEntityToServer(entity, parentNode);
-                const response = await demoAPI.createSubstation(serverPayload, node.parentId);
-
-                console.log('[Upload Substation] Response:', response);
-                this.$message.success(`Upload Substation "${node.name}" successfully!`);
-                if (this.clientSlide) await this.showLocationRoot();
-
+                console.log('[Upload Substation] Response:', response)
+                this.$message.success(`Upload Substation "${node.name}" successfully!`)
+                if (this.clientSlide) await this.showLocationRoot()
             } catch (error) {
-                console.error('[Upload Substation] Error:', error);
-                this._handleUploadError(error);
+                this._handleUploadError(error, 'Substation')
             }
         },
 
         async processUploadVoltageLevel(node) {
             try {
-                const entityRes = await window.electronAPI.getVoltageLevelEntityByMrid(node.mrid);
-                if (!entityRes.success || !entityRes.data) throw new Error('Local voltage level data not found.');
+                const entityRes = await window.electronAPI.getVoltageLevelEntityByMrid(node.mrid)
+                if (!entityRes.success || !entityRes.data) throw new Error('Local voltage level data not found.')
+                if (!node.parentId) throw new Error('Cannot upload voltage level without parent substation.')
 
-                if (!node.parentId) throw new Error('Cannot upload voltage level without parent substation.');
+                const serverPayload = mapVoltageLevelEntityToServer(entityRes.data, null)
 
-                const serverPayload = mapVoltageLevelEntityToServer(entityRes.data, null);
+                const numericOwnerId = await this._resolveNumericOwnerId(node.parentId, 'SUBSTATION')
+                if (!numericOwnerId) throw new Error('Cannot find parent Substation on Server. Upload Substation first.')
 
-                let numericOwnerId = await this.resolveSubstationNumericId(node.parentId);
-                if (!numericOwnerId && /^\d+$/.test(String(node.parentId))) {
-                    numericOwnerId = parseInt(node.parentId);
-                }
-                if (!numericOwnerId) throw new Error('Cannot find parent Substation on Server. Make sure Substation is uploaded first.');
-
-                const response = await demoAPI.createVoltageLevel(serverPayload, numericOwnerId);
-                console.log('[Upload VoltageLevel] Response:', response);
-                this.$message.success(`Upload VoltageLevel "${node.name}" successfully!`);
-                if (this.clientSlide) await this.showLocationRoot();
-
+                const response = await demoAPI.createVoltageLevel(serverPayload, numericOwnerId)
+                console.log('[Upload VoltageLevel] Response:', response)
+                this.$message.success(`Upload VoltageLevel "${node.name}" successfully!`)
+                if (this.clientSlide) await this.showLocationRoot()
             } catch (error) {
-                console.error('[Upload VoltageLevel] Error:', error);
-                this._handleUploadError(error);
+                this._handleUploadError(error, 'VoltageLevel')
             }
         },
 
         async processUploadBay(node) {
             try {
-                const entityRes = await window.electronAPI.getBayEntityByMrid(node.mrid);
-                if (!entityRes.success || !entityRes.data) throw new Error('Local bay data not found.');
+                const entityRes = await window.electronAPI.getBayEntityByMrid(node.mrid)
+                if (!entityRes.success || !entityRes.data) throw new Error('Local bay data not found.')
+                if (!node.parentId) throw new Error('Cannot upload bay without parent.')
 
-                if (!node.parentId) throw new Error('Cannot upload bay without parent.');
-
-                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
-                const substationId = parentNode?.parentId;
+                const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                const substationId = parentNode?.parentId
 
                 let ownerType = ''
                 let numericOwnerId = null
 
                 if (parentNode?.mode === 'voltageLevel') {
-                    ownerType = 'VOLTAGE_LEVEL';
-                    numericOwnerId = await this.resolveVoltageLevelNumericId(node.parentId, substationId);
+                    ownerType = 'VOLTAGE_LEVEL'
+                    numericOwnerId = await this.resolveVoltageLevelNumericId(node.parentId, substationId)
                 } else if (parentNode?.mode === 'substation') {
-                    ownerType = 'SUBSTATION';
-                    numericOwnerId = await this.resolveSubstationNumericId(node.parentId);
+                    ownerType = 'SUBSTATION'
+                    numericOwnerId = await this.resolveSubstationNumericId(node.parentId)
                 }
 
                 // Fallback: parentId đã là numeric
                 if (!numericOwnerId && /^\d+$/.test(String(node.parentId))) {
-                    numericOwnerId = parseInt(node.parentId);
-                    ownerType = parentNode?.mode === 'voltageLevel' ? 'VOLTAGE_LEVEL' : 'SUBSTATION';
+                    numericOwnerId = parseInt(node.parentId)
+                    ownerType = parentNode?.mode === 'voltageLevel' ? 'VOLTAGE_LEVEL' : 'SUBSTATION'
                 }
-
                 if (!numericOwnerId || !ownerType) {
-                    throw new Error(`Cannot find Numeric ID for parent (UUID: ${node.parentId}). Make sure parent is uploaded first.`);
+                    throw new Error(`Cannot find Numeric ID for parent (UUID: ${node.parentId}). Upload parent first.`)
                 }
 
-                const serverPayload = mapBayEntityToServer(entityRes.data);
-                const response = await demoAPI.createBay(serverPayload, numericOwnerId, ownerType);
+                const serverPayload = mapBayEntityToServer(entityRes.data)
+                const response = await demoAPI.createBay(serverPayload, numericOwnerId, ownerType)
 
-                console.log('[Upload Bay] Response:', response);
-                this.$message.success(`Upload Bay "${node.name}" successfully!`);
-                if (this.clientSlide) await this.showLocationRoot();
-
+                console.log('[Upload Bay] Response:', response)
+                this.$message.success(`Upload Bay "${node.name}" successfully!`)
+                if (this.clientSlide) await this.showLocationRoot()
             } catch (error) {
-                console.error('[Upload Bay] Error:', error);
-                this._handleUploadError(error);
+                this._handleUploadError(error, 'Bay')
             }
         },
 
+        // ═══════════════════════════════════════════════════════════════════════
+        //  ASSET: PowerCable / Transformer
+        // ═══════════════════════════════════════════════════════════════════════
+
         async processUploadPowerCable(node) {
             try {
-                const entityRes = await window.electronAPI.getPowerCableEntityByMrid(node.mrid, node.parentId);
-                if (!entityRes.success || !entityRes.data) throw new Error('Local data not found.');
+                const entityRes = await window.electronAPI.getPowerCableEntityByMrid(node.mrid, node.parentId)
+                if (!entityRes.success || !entityRes.data) throw new Error('Local data not found.')
 
-                const dto = PowerCableMapping.mapEntityToDto(entityRes.data);
+                const dto = PowerCableMapping.mapEntityToDto(entityRes.data)
                 if (!dto.properties.apparatus_id && !dto.properties.serial_no) {
-                    dto.properties.apparatus_id = node.name || 'Unnamed Asset';
+                    dto.properties.apparatus_id = node.name || 'Unnamed Asset'
                 }
-                const serverPayload = PowerCableServerMapper.mapDtoToServer(dto);
+                const serverPayload = PowerCableServerMapper.mapDtoToServer(dto)
 
-                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
-                if (!parentNode) throw new Error('Parent node not found in Client Tree');
+                const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                if (!parentNode) throw new Error('Parent node not found in Client Tree')
 
-                let ownerType = 'SUBSTATION';
-                if (parentNode.mode === 'bay') ownerType = 'BAY';
-                else if (parentNode.mode === 'voltageLevel') ownerType = 'VOLTAGE_LEVEL';
+                const ownerType = this._resolveOwnerType(parentNode)
+                const numericOwnerId = await this.resolveServerParentId(node.parentId, ownerType)
+                if (!numericOwnerId) throw new Error(`Cannot find Numeric ID for parent (UUID: ${node.parentId}).`)
 
-                if (node.parentId === 'e423cbd1-470b-4b8b-b06d-74575075fe02') ownerType = 'BAY';
-
-                const numericOwnerId = await this.resolveServerParentId(node.parentId, ownerType);
-                if (!numericOwnerId) throw new Error(`Cannot find Numeric ID for parent (UUID: ${node.parentId}).`);
-
-                const response = await demoAPI.createPowerCableCim(serverPayload, numericOwnerId, ownerType);
-                if (response) this.$message.success(`Upload successfully to Bay ID: ${numericOwnerId}`);
-
+                const response = await demoAPI.createPowerCableCim(serverPayload, numericOwnerId, ownerType)
+                if (response) this.$message.success(`Upload PowerCable successfully to ${ownerType} ID: ${numericOwnerId}`)
             } catch (error) {
-                console.error('[Upload PowerCable] Error:', error);
-                this._handleUploadError(error);
+                this._handleUploadError(error, 'PowerCable')
             }
         },
 
         async processUploadTransformer(node) {
             try {
-                const userId = this.$store.state.user.user_id;
-                const entityRes = await window.electronAPI.getTransformerEntityByMrid(node.mrid, userId, node.parentId);
-                if (!entityRes.success || !entityRes.data) throw new Error('Local transformer data not found.');
+                const entityRes = await window.electronAPI.getTransformerEntityByMrid(node.mrid, node.parentId)
+                if (!entityRes.success || !entityRes.data) throw new Error('Local transformer data not found.')
+                if (!node.parentId) throw new Error('Cannot upload transformer without parent.')
 
-                if (!node.parentId) throw new Error('Cannot upload transformer without parent.');
+                const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                const ownerType = this._resolveOwnerType(parentNode)
 
-                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
+                const dto = transformerMapping.transformerEntityToDto(entityRes.data)
+                const serverPayload = transformerMappingServer.mapDtoToServer(dto, ownerType)
+                console.log(JSON.stringify(serverPayload))
+                const response = await transformerAPI.createTransformer(serverPayload)
 
-                let ownerType = ''
-                let numericOwnerId = null
-
-                if (parentNode?.mode === 'bay') {
-                    ownerType = 'BAY';
-                    numericOwnerId = await this.findBayNumericIdGlobal(node.parentId);
-                } else if (parentNode?.mode === 'substation') {
-                    ownerType = 'SUBSTATION';
-                    numericOwnerId = await this.resolveSubstationNumericId(node.parentId);
-                }
-
-                if (!numericOwnerId && /^\d+$/.test(String(node.parentId))) {
-                    numericOwnerId = parseInt(node.parentId);
-                    ownerType = parentNode?.mode === 'bay' ? 'BAY' : 'SUBSTATION';
-                }
-
-                if (!numericOwnerId || !ownerType) {
-                    throw new Error(`Cannot find Numeric ID for parent (UUID: ${node.parentId}). Make sure parent is uploaded first.`);
-                }
-
-                const serverPayload = mapTransformerEntityToServer(entityRes.data);
-                const response = await demoAPI.createTransformer(serverPayload, numericOwnerId, ownerType);
-
-                console.log('[Upload Transformer] Response:', response);
-                this.$message.success(`Upload Transformer "${node.name}" successfully!`);
-                if (this.clientSlide) await this.showLocationRoot();
-
+                console.log('[Upload Transformer] Response:', response)
+                this.$message.success(`Upload Transformer "${node.name}" successfully!`)
+                if (this.clientSlide) await this.showLocationRoot()
             } catch (error) {
-                console.error('[Upload Transformer] Error:', error);
-                this._handleUploadError(error);
+                this._handleUploadError(error, 'Transformer')
             }
         },
 
+        // ═══════════════════════════════════════════════════════════════════════
+        //  ASSET thiết bị (gửi node.parentId trực tiếp + ownerType trong body)
+        // ═══════════════════════════════════════════════════════════════════════
+
         async processUploadVoltageTransformer(node) {
             try {
-                const entityRes = await window.electronAPI.getVoltageTransformerEntityByMrid(node.mrid, node.parentId);
-                if (!entityRes.success || !entityRes.data) throw new Error('Voltage transformer data not found.');
+                const entityRes = await window.electronAPI.getVoltageTransformerEntityByMrid(node.mrid, node.parentId)
+                if (!entityRes.success || !entityRes.data) throw new Error('Voltage transformer data not found.')
+                if (!node.parentId) throw new Error('Cannot upload voltage transformer without parent.')
 
-                if (!node.parentId) throw new Error('Cannot upload voltage transformer without parent.');
+                const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                const ownerType = this._resolveOwnerType(parentNode)
 
-                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
+                const dto = voltageTransformerMapping.mapEntityToDto(entityRes.data)
+                const serverPayload = voltageTransformerMappingServer.mapDtoToServer(dto, ownerType)
+                const response = await voltageAPI.createVoltageTransformer(serverPayload, node.parentId, ownerType)
 
-                let ownerType = ''
-
-                if (parentNode?.mode === 'bay') {
-                    ownerType = 'BAY';
-                } else if (parentNode?.mode === 'substation') {
-                    ownerType = 'SUBSTATION';
-                }
-
-                const serverPayloadDto = voltageTransformerMapping.mapEntityToDto(entityRes.data);
-                const serverPayload = voltageTransformerMappingServer.mapDtoToServer(serverPayloadDto);
-                const response = await voltageAPI.createVoltageTransformer(serverPayload, node.parentId, ownerType);
-
-                console.log('[Upload Voltage Transformer] Response:', response);
-                this.$message.success(`Upload Voltage Transformer "${node.name}" successfully!`);
-
+                console.log('[Upload Voltage Transformer] Response:', response)
+                this.$message.success(`Upload Voltage Transformer "${node.name}" successfully!`)
+                if (this.clientSlide) await this.showLocationRoot()
             } catch (error) {
-                this.$message.error(`Error uploading Voltage Transformer: ${error.message}`);
-                console.error('[Upload Voltage Transformer] Error:', error);
-                this._handleUploadError(error);
+                this._handleUploadError(error, 'Voltage Transformer')
             }
         },
 
         async processUploadCurrentTransformer(node) {
             try {
-                const entityRes = await window.electronAPI.getCurrentTransformerEntityByMrid(node.mrid, node.parentId);
-                if (!entityRes.success || !entityRes.data) throw new Error('Current transformer data not found.');
+                const entityRes = await window.electronAPI.getCurrentTransformerEntityByMrid(node.mrid, node.parentId)
+                if (!entityRes.success || !entityRes.data) throw new Error('Current transformer data not found.')
+                if (!node.parentId) throw new Error('Cannot upload current transformer without parent.')
 
-                if (!node.parentId) throw new Error('Cannot upload current transformer without parent.');
+                const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                const ownerType = this._resolveOwnerType(parentNode)
 
-                const parentNode = this.findNodeById(node.parentId, this.organisationClientList);
+                const dto = currentTransformerMapping.mapEntityToDto(entityRes.data)
+                const serverPayload = currentTransformerMappingServer.mapDtoToServer(dto, ownerType)
+                const response = await currentAPI.createCurrentTransformer(serverPayload, node.parentId, ownerType)
 
-                let ownerType = ''
-
-                if (parentNode?.mode === 'bay') {
-                    ownerType = 'BAY';
-                } else if (parentNode?.mode === 'substation') {
-                    ownerType = 'SUBSTATION';
-                }
-
-                const serverPayloadDto = currentTransformerMapping.mapEntityToDto(entityRes.data);
-                const serverPayload = currentTransformerMappingServer.mapDtoToServer(serverPayloadDto);
-                console.log('Mapped Server Payload:', JSON.stringify(serverPayloadDto));
-                // const response = await currentAPI.createCurrentTransformer(serverPayload, node.parentId, ownerType);
-
-                // console.log('[Upload Current Transformer] Response:', response);
-                // this.$message.success(`Upload Current Transformer "${node.name}" successfully!`);
-                // if (this.clientSlide) await this.showLocationRoot();
-
+                console.log('[Upload Current Transformer] Response:', response)
+                this.$message.success(`Upload Current Transformer "${node.name}" successfully!`)
+                if (this.clientSlide) await this.showLocationRoot()
             } catch (error) {
-                this.$message.error(`Error uploading Current Transformer: ${error.message}`);
-                console.error('[Upload Current Transformer] Error:', error);
-                this._handleUploadError(error);
+                this._handleUploadError(error, 'Current Transformer')
             }
         },
 
-        // ─── Helper dùng chung ───────────────────────────────────────────────
-        _handleUploadError(error) {
+        async processUploadCircuitBreaker(node) {
+            try {
+                const entityRes = await window.electronAPI.getBreakerEntityByMrid(node.mrid, node.parentId)
+                if (!entityRes.success || !entityRes.data) throw new Error('Circuit breaker data not found.')
+                if (!node.parentId) throw new Error('Cannot upload circuit breaker without parent.')
+
+                const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                const ownerType = this._resolveOwnerType(parentNode)
+
+                const dto = circuitBreakerMapping.mapEntityToDto(entityRes.data)
+                const serverPayload = circuitBreakerMappingServer.mapDtoToServer(dto, ownerType)
+                const response = await circuitBreakerAPI.createCircuitBreaker(serverPayload, node.parentId, ownerType)
+
+                console.log('[Upload Circuit Breaker] Response:', response)
+                this.$message.success(`Upload Circuit Breaker "${node.name}" successfully!`)
+                if (this.clientSlide) await this.showLocationRoot()
+            } catch (error) {
+                this._handleUploadError(error, 'Circuit Breaker')
+            }
+        },
+
+        async processUploadDisconnector(node) {
+            try {
+                const entityRes = await window.electronAPI.getDisconnectorEntityByMrid(node.mrid, node.parentId)
+                if (!entityRes.success || !entityRes.data) throw new Error('Disconnector data not found.')
+                if (!node.parentId) throw new Error('Cannot upload disconnector without parent.')
+
+                const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                const ownerType = this._resolveOwnerType(parentNode)
+
+                const dto = disconnectorMapping.disconnectorEntityToDto(entityRes.data)
+                const serverPayload = disconnectorMappingServer.mapDtoToServer(dto, ownerType)
+                const response = await disconnectorAPI.createDisconnector(serverPayload, node.parentId, ownerType)
+
+                console.log('[Upload Disconnector] Response:', response)
+                this.$message.success(`Upload Disconnector "${node.name}" successfully!`)
+                if (this.clientSlide) await this.showLocationRoot()
+            } catch (error) {
+                this._handleUploadError(error, 'Disconnector')
+            }
+        },
+
+        async processUploadSurgeArrester(node) {
+            try {
+                const entityRes = await window.electronAPI.getSurgeArresterEntityByMrid(node.mrid, node.parentId)
+                if (!entityRes.success || !entityRes.data) throw new Error('Surge arrester data not found.')
+                if (!node.parentId) throw new Error('Cannot upload surge arrester without parent.')
+
+                const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                const ownerType = this._resolveOwnerType(parentNode)
+
+                const dto = surgeArresterMapping.surgeArresterEntityToDto(entityRes.data)
+                const serverPayload = surgeArresterMappingServer.mapDtoToServer(dto, ownerType)
+                const response = await surgeArresterAPI.createSurgeArrester(serverPayload, node.parentId, ownerType)
+
+                console.log('[Upload Surge Arrester] Response:', response)
+                this.$message.success(`Upload Surge Arrester "${node.name}" successfully!`)
+                if (this.clientSlide) await this.showLocationRoot()
+            } catch (error) {
+                this._handleUploadError(error, 'Surge Arrester')
+            }
+        },
+
+        // ═══════════════════════════════════════════════════════════════════════
+        //  HELPER dùng chung
+        // ═══════════════════════════════════════════════════════════════════════
+
+        /** Resolve ownerType từ parentNode.mode */
+        _resolveOwnerType(parentNode) {
+            switch (parentNode?.mode) {
+                case 'bay':          return 'BAY'
+                case 'voltageLevel': return 'VOLTAGE_LEVEL'
+                case 'substation':   return 'SUBSTATION'
+                default:             return 'SUBSTATION'
+            }
+        },
+
+        /** Resolve numericOwnerId theo ownerType (fallback nếu parentId đã là số) */
+        async _resolveNumericOwnerId(parentId, ownerType) {
+            let numericId = null
+            if (ownerType === 'SUBSTATION') {
+                numericId = await this.resolveSubstationNumericId(parentId)
+            } else if (ownerType === 'BAY') {
+                numericId = await this.findBayNumericIdGlobal(parentId)
+            }
+            if (!numericId && /^\d+$/.test(String(parentId))) {
+                numericId = parseInt(parentId)
+            }
+            return numericId
+        },
+
+        /** Xử lý lỗi upload thống nhất */
+        _handleUploadError(error, assetName = '') {
+            const prefix = assetName ? `[Upload ${assetName}]` : '[Upload]'
+            console.error(`${prefix} Error:`, error)
+
             if (error.response?.data) {
                 const msg = error.response.data.message
                     || error.response.data.error
-                    || JSON.stringify(error.response.data);
-                this.$message.error(`Server Error: ${msg}`);
+                    || JSON.stringify(error.response.data)
+                this.$message.error(`Server Error: ${msg}`)
             } else {
-                this.$message.error(error.message || 'Error during upload');
+                this.$message.error(error.message || 'Error during upload')
             }
         },
     }

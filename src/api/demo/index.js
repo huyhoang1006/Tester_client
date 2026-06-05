@@ -132,11 +132,6 @@ export const createBay = (data, ownerId, ownerType) => {
     })
 }
 
-export const createTransformer = (data, ownerId, ownerType) => {
-    return client.post(`/api/transformer/cim/create`, data, {
-        params: {
-            ownerId: ownerId,
-            ownerType: ownerType
-        }
-    })
+export const createTransformer = (data) => {
+    return client.post(`/api/transformer/cim/create`, data)
 }

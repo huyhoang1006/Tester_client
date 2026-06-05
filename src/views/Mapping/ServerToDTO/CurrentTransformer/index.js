@@ -278,6 +278,12 @@ export const mapDtoToServer = (dto) => {
     const ctConfig = dto.ctConfiguration || {}
     const ratings  = dto.ratings         || {}
 
+    // Đảm bảo FK entity phụ không null (tránh lỗi NOT NULL / FK phía server)
+    const assetInfoId         = dto.assetInfoId         || uuid.newUuid()
+    const productAssetModelId = dto.productAssetModelId || uuid.newUuid()
+    const lifecycleDateId     = dto.lifecycleDateId     || uuid.newUuid()
+    const assetPsrId          = dto.assetPsrId          || uuid.newUuid()
+
     return {
         CurrentTransformer: {
             properties: {
@@ -361,7 +367,11 @@ export const mapDtoToServer = (dto) => {
                                 kssc:               str(ftCR.kssc),
                                 ktd:                str(ftCR.ktd),
                                 duty:               ftCR.duty  || null,
-                                vb:                 mapBurden(ftCR.vb),
+                                vb: {
+                                    mrid:  null,
+                                    value: ftCR.vb ?? null,  // vb DTO là string binding trực tiếp
+                                    unit:  null,
+                                },
                                 alf:                str(ftCR.alf),
                                 ts:                 str(ftCR.ts),
                                 ek:                 str(ftCR.ek),
@@ -408,10 +418,10 @@ export const mapDtoToServer = (dto) => {
 
             locationId:          dto.locationId          || null,
             psrId:               dto.psrId               || null,
-            assetPsrId:          dto.assetPsrId          || null,
-            assetInfoId:         dto.assetInfoId         || null,
-            productAssetModelId: dto.productAssetModelId || null,
-            lifecycleDateId:     dto.lifecycleDateId     || null,
+            assetPsrId:          assetPsrId,
+            assetInfoId:         assetInfoId,
+            productAssetModelId: productAssetModelId,
+            lifecycleDateId:     lifecycleDateId,
             attachmentId:        dto.attachmentId        || null,
         },
     }

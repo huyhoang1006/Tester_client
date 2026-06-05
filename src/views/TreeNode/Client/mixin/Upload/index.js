@@ -28,7 +28,7 @@ export default {
             }
 
             const confirmAndRun = (label, handler) => {
-                this.$confirm(`Upload ${label} "${node.name}" to Server?`, 'Confirm Upload', {
+                this.$confirm(`Upload ${label} "${node.name || node.serial_number}" to Server?`, 'Confirm Upload', {
                     confirmButtonText: 'Upload',
                     cancelButtonText: 'Cancel',
                     type: 'info'
@@ -58,6 +58,12 @@ export default {
                 confirmAndRun('Voltage transformer', this.processUploadVoltageTransformer); 
             } else if (node.asset === 'Current transformer') {
                 confirmAndRun('Current transformer', this.processUploadCurrentTransformer);
+            } else if (node.asset === 'Circuit breaker') {
+                confirmAndRun('Circuit breaker', this.processUploadCircuitBreaker);
+            } else if (node.asset === 'Disconnector') {
+                confirmAndRun('Disconnector', this.processUploadDisconnector);
+            } else if (node.asset === 'Surge arrester') {
+                confirmAndRun('Surge arrester', this.processUploadSurgeArrester);
             } else {
                 this.$message.warning('TYPE NOT SUPPORTED FOR UPLOAD');
             }

@@ -432,3 +432,304 @@ export const mapServerToDto = (serverData) => {
 
     return dto;
 };
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Mapper: DTO → server JSON (push/upload)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Reverse enum maps
+const ASSET_TYPE_TO_SERVER = {
+    'Two-winding':    'TWO_WINDING',
+    'Three-winding':  'THREE_WINDING',
+    'Auto w/ tert':   'AUTO_WITH_TERT',
+    'Auto w/o tert':  'AUTO_WITHOUT_TERT',
+}
+const PHASES_TO_SERVER  = { '3': 'THREE', '1': 'ONE' }
+const WINDING_TO_SERVER = { 'Prim': 'PRIM', 'Sec': 'SEC', 'Tert': 'TERT' }
+const TAP_TYPE_TO_SERVER = { 'oltc': 'OLTC', 'detc': 'DETC' }
+const TAP_SCHEME_TO_SERVER = {
+    '1...33': 'ONE_TO_THIRTYTHREE',
+    '33...1': 'THIRTYTHREE_TO_ONE',
+    'Free':   'FREE',
+    '1...N':  'ONE_TO_N',
+    'N...1':  'N_TO_ONE',
+}
+const IMPEDANCE_TYPE_TO_SERVER = {
+    'prim_sec':  'PRIM_SEC',
+    'prim_tert': 'PRIM_TERT',
+    'sec_tert':  'SEC_TERT',
+}
+
+const numT = (val) => (val !== null && val !== undefined && val !== '') ? parseFloat(val) : null
+const intT = (val) => (val !== null && val !== undefined && val !== '') ? parseInt(val, 10) : null
+// unit DTO 'k|V'/'M|VA' → server 'kV'/'mVA' (gộp, bỏ pipe). '%' → server giữ hoặc 'PERCENT'
+const joinUnitT = (u) => {
+    if (!u) return null
+    return u.includes('|') ? u.replace('|', '') : u
+}
+
+export const mapDtoToServer = (dto, ownerType) => {
+    if (!dto) return null
+
+    const p  = dto.properties            || {}
+    const wc = dto.winding_configuration || {}
+    const rt = dto.ratings               || {}
+    const im = dto.impedances            || {}
+    const tc = dto.tap_changers          || {}
+    const ot = dto.others                || {}
+
+    // ─── assetInfo ────────────────────────────────────────────────────────────
+    const assetInfo = {
+        ownerId:           dto.psrId || null,
+        ownerType:         ownerType || null,
+        serialNo:          p.serial_no         || null,
+        manufacturer:      p.manufacturer      || null,
+        manufacturerType:  p.manufacturer_type || null,
+        manufacturingYear: numT(p.manufacturer_year),
+        country:           p.country_of_origin || null,
+        apparatusId:       p.apparatus_id      || null,
+        description:       p.comment           || null,
+    }
+
+    // ─── transformer core ──────────────────────────────────────────────────────
+    const vg = wc.vector_group || {}
+    const transformer = {
+        assetType: ASSET_TYPE_TO_SERVER[p.type] || p.type || null,
+        phases:    PHASES_TO_SERVER[wc.phases] || wc.phases || null,
+
+        // vector group: ưu tiên data parsed, fallback custom/unsupported
+        vectorGroup:                      wc.vector_group_data || wc.vector_group_custom || wc.unsupported_vector_group || null,
+        vectorGroupPrim:                  vg.prim || null,
+        vectorGroupSec:                   vg.sec?.i || null,
+        vectorGroupSecVal:                intT(vg.sec?.value),
+        vectorGroupTertiary:              vg.tert?.i || null,
+        vectorGroupTertiaryVal:           intT(vg.tert?.value),
+        vectorGroupTertiaryAccessibility: vg.tert?.accessible || null,
+
+        // tần số: nếu Custom thì dùng custom_value
+        ratedFrequency:     numT(rt.rated_frequency?.value === 'Custom'
+            ? rt.rated_frequency?.custom_value
+            : rt.rated_frequency?.value),
+        ratedFrequencyUnit: rt.rated_frequency?.unit || 'Hz',
+
+        refTemp:     numT(im.ref_temp?.value),
+        refTempUnit: im.ref_temp?.unit || '°C',
+
+        maxShortCircuitCurrent:     numT(rt.short_circuit?.ka?.value),
+        maxShortCircuitCurrentUnit: joinUnitT(rt.short_circuit?.ka?.unit),
+        duration:                   numT(rt.short_circuit?.s?.value),
+        durationUnit:               rt.short_circuit?.s?.unit || 's',
+
+        // zero sequence
+        basePower:             numT(im.zero_sequence_impedance?.base_power?.data?.value),
+        basePowerUnit:         joinUnitT(im.zero_sequence_impedance?.base_power?.data?.unit),
+        baseVoltage:           numT(im.zero_sequence_impedance?.base_voltage?.data?.value),
+        baseVoltageUnit:       joinUnitT(im.zero_sequence_impedance?.base_voltage?.data?.unit),
+        zeroSequenceUnit:      im.zero_sequence_impedance?.zero_percent?.zero?.data?.unit || '%',
+        primaryZeroSequence:   numT(im.zero_sequence_impedance?.zero_percent?.prim?.data?.value),
+        secondaryZeroSequence: numT(im.zero_sequence_impedance?.zero_percent?.sec?.data?.value),
+    }
+
+    // ─── voltageRatings ──────────────────────────────────────────────────────
+    const voltageRatings = (rt.voltage_ratings || []).map(vr => ({
+        winding:          WINDING_TO_SERVER[vr.winding] || vr.winding || null,
+        voltageLL:        numT(vr.voltage_ll?.value),
+        voltageLLUnit:    joinUnitT(vr.voltage_ll?.unit),
+        voltageLN:        numT(vr.voltage_ln?.value),
+        voltageLNUnit:    joinUnitT(vr.voltage_ln?.unit),
+        insulLevelLL:     numT(vr.insul_level_ll?.value),
+        insulLevelLLUnit: joinUnitT(vr.insul_level_ll?.unit),
+        insulationClass:  vr.insulation_class || null,
+        regulation:       vr.voltage_regulation || null,
+    }))
+
+    // ─── powerRatings (gộp current_ratings theo index) ───────────────────────
+    const currentRatings = rt.current_ratings || []
+    const powerRatings = (rt.power_ratings || []).map((pr, idx) => {
+        const cr = currentRatings[idx] || {}
+        return {
+            ratedPower:            numT(pr.rated_power?.value),
+            ratedPowerUnit:        joinUnitT(pr.rated_power?.unit),
+            coolingClass:          pr.cooling_class || null,
+            tempRiseWind:          pr.temp_rise_wind?.value || null,
+            currentRatingPrim:     numT(cr.prim?.data?.value),
+            currentRatingPrimUnit: cr.prim?.data?.unit || null,
+            currentRatingSec:      numT(cr.sec?.data?.value),
+            currentRatingSecUnit:  cr.sec?.data?.unit || null,
+            currentRatingTert:     numT(cr.tert?.data?.value),
+            currentRatingTertUnit: cr.tert?.data?.unit || null,
+        }
+    })
+
+    // ─── shortCircuitImpedances (flatten prim_sec/prim_tert/sec_tert) ─────────
+    const voltageTable = tc.voltage_table || []
+    const tapNumToId = {}
+    voltageTable.forEach((tv, idx) => { tapNumToId[tv.tap] = tv.id || (idx + 1) })
+
+    const shortCircuitImpedances = []
+    ;['prim_sec', 'prim_tert', 'sec_tert'].forEach(key => {
+        (im[key] || []).forEach(imp => {
+            const tapPos = imp.oltc_position || imp.detc_position || null
+            shortCircuitImpedances.push({
+                impedance:           numT(imp.short_circuit_impedances_uk?.value),
+                impedanceUnit:       imp.short_circuit_impedances_uk?.unit === '%' ? 'PERCENT' : joinUnitT(imp.short_circuit_impedances_uk?.unit),
+                basePower:           numT(imp.base_power?.data?.value),
+                basePowerUnit:       joinUnitT(imp.base_power?.data?.unit),
+                baseVoltage:         numT(imp.base_voltage?.data?.value),
+                baseVoltageUnit:     joinUnitT(imp.base_voltage?.data?.unit),
+                loadLoss:            numT(imp.load_losses_pk?.value),
+                loadLossUnit:        joinUnitT(imp.load_losses_pk?.unit),
+                tapChangerVoltageId: tapPos != null ? intT(tapNumToId[tapPos]) : null,
+                type:                IMPEDANCE_TYPE_TO_SERVER[key],
+            })
+        })
+    })
+
+    // ─── tapChanger + tapChangerVoltage ──────────────────────────────────────
+    let tapChanger = null
+    let tapChangerVoltage = []
+    if (tc.mode) {
+        tapChanger = {
+            type:             TAP_TYPE_TO_SERVER[tc.mode] || (tc.mode ? tc.mode.toUpperCase() : null),
+            serialNo:         tc.serial_no || null,
+            manufacturer:     tc.manufacturer || null,
+            manufacturerType: tc.manufacturer_type || null,
+            noTaps:           intT(tc.no_of_taps) || voltageTable.length || null,
+            winding:          WINDING_TO_SERVER[tc.winding] || tc.winding || null,
+            tabScheme:        TAP_SCHEME_TO_SERVER[tc.tap_scheme] || tc.tap_scheme || null,
+        }
+        tapChangerVoltage = voltageTable.map(tv => ({
+            tap:         intT(tv.tap),
+            voltage:     numT(tv.voltage?.value),
+            voltageUnit: joinUnitT(tv.voltage?.unit),
+        }))
+    }
+
+    // ─── others ──────────────────────────────────────────────────────────────
+    const ins = ot.insulation || {}
+    const wd  = ot.winding     || {}
+    const others = {
+        category:         ot.category || null,
+        status:           ot.status || null,
+        tankType:         ot.tank_type || null,
+        insulationMedium: ot.insulation_medium || null,
+        insulationKey:    ins.key || null,
+        insulationWeight:     numT(ins.weight?.value),
+        insulationWeightUnit: joinUnitT(ins.weight?.unit),
+        insulationVolume:     numT(ins.volume?.value),
+        insulationVolumeUnit: joinUnitT(ins.volume?.unit),
+        totalWeight:          numT(ot.total_weight?.value),
+        totalWeightUnit:      joinUnitT(ot.total_weight?.unit),
+        windingPrim: wd.prim || null,
+        windingSec:  wd.sec  || null,
+        windingTert: wd.tert || null,
+    }
+
+    // ─── bushing_data (prim/sec/tert) ─────────────────────────────────────────
+    const mapBushing = (b, winding) => {
+        const item = {
+            winding:           winding,
+            pos:               b.pos || null,
+            assetType:         b.asset_type || null,
+            serialNo:          b.serial_no || null,
+            manufacturer:      b.manufacturer || null,
+            manufacturerType:  b.manufacturer_type || null,
+            manufacturingYear: numT(b.manufacturer_year),
+            insulationLevel:     numT(b.insulation_level?.value),
+            insulationLevelUnit: joinUnitT(b.insulation_level?.unit),
+            voltageLGround:      numT(b.voltage_l_ground?.value),
+            voltageLGroundUnit:  joinUnitT(b.voltage_l_ground?.unit),
+            maxSystemVoltage:     numT(b.max_system_voltage?.value),
+            maxSystemVoltageUnit: joinUnitT(b.max_system_voltage?.unit),
+            ratedCurrent:         numT(b.rate_current?.value),
+            ratedCurrentUnit:     joinUnitT(b.rate_current?.unit),
+            dfC1:     numT(b.df_c1?.value),
+            dfC1Unit: joinUnitT(b.df_c1?.unit),
+            capC1:     numT(b.cap_c1?.value),
+            capC1Unit: joinUnitT(b.cap_c1?.unit),
+            dfC2:     numT(b.df_c2?.value),
+            dfC2Unit: joinUnitT(b.df_c2?.unit),
+            capC2:     numT(b.cap_c2?.value),
+            capC2Unit: joinUnitT(b.cap_c2?.unit),
+            insulationType: b.insulation_type || null,
+        }
+        // FK chỉ đẩy khi có
+        if (b.mrid)                item.mRID                = b.mrid
+        if (b.assetInfoId)         item.assetInfoId         = b.assetInfoId
+        if (b.productAssetModelId) item.productAssetModelId = b.productAssetModelId
+        if (b.lifecycleDateId)     item.lifecycleDateId     = b.lifecycleDateId
+        return item
+    }
+    const bd = dto.bushing_data || {}
+    const bushings = [
+        ...(bd.prim || []).map(b => mapBushing(b, 'PRIM')),
+        ...(bd.sec  || []).map(b => mapBushing(b, 'SEC')),
+        ...(bd.tert || []).map(b => mapBushing(b, 'TERT')),
+    ]
+
+    // ─── surge_arrester (prim/sec/tert) ───────────────────────────────────────
+    const mapSurge = (s, winding) => {
+        const sp = s.properties || {}
+        const sr = s.ratings    || {}
+        const item = {
+            winding:           winding,
+            position:          sr.pos || null,
+            unitCount:         sr.unit || null,
+            serialNo:          sp.serial_no || null,
+            manufacturer:      sp.manufacturer || null,
+            manufacturingYear: numT(sp.manufacturer_year),
+            assetSystemCode:   sp.asset_system_code || null,
+            ratingList: (sr.table || []).map(t => ({
+                serialNo:    t.serial || null,
+                voltageLL:   numT(t.voltageLl?.value),
+                voltageLLUnit: joinUnitT(t.voltageLl?.unit),
+                voltageLN:   numT(t.voltageLn?.value),
+                voltageLNUnit: joinUnitT(t.voltageLn?.unit),
+                mcovRating:  numT(t.mcovRating?.value),
+                mcovRatingUnit: joinUnitT(t.mcovRating?.unit),
+            })),
+        }
+        if (sp.mrid)                item.mRID                = sp.mrid
+        if (sp.assetInfoId)         item.assetInfoId         = sp.assetInfoId
+        if (sp.productAssetModelId) item.productAssetModelId = sp.productAssetModelId
+        if (sp.lifecycleDateId)     item.lifecycleDateId     = sp.lifecycleDateId
+        return item
+    }
+    const sa = dto.surge_arrester || {}
+    const surgeArresters = [
+        ...(sa.prim || []).map(s => mapSurge(s, 'PRIM')),
+        ...(sa.sec  || []).map(s => mapSurge(s, 'SEC')),
+        ...(sa.tert || []).map(s => mapSurge(s, 'TERT')),
+    ]
+
+    const payload = {
+        assetInfo,
+        transformer,
+        voltageRatings,
+        powerRatings,
+        shortCircuitImpedances,
+        tapChanger,
+        tapChangerVoltage,
+        others,
+        bushings,
+        surgeArresters,
+    }
+
+    // FK top-level chỉ đẩy khi DTO có
+    const fk = {
+        mRID:                      dto.mrid || p.mrid,
+        oldPowerTransformerInfoId: dto.oldPowerTransformerInfoId,
+        productAssetModelId:       dto.productAssetModelId,
+        lifecycleDateId:           dto.lifecycleDateId,
+        assetPsrId:                dto.assetPsrId,
+        locationId:                dto.locationId,
+        attachmentId:              dto.attachmentId,
+        tapChangerAssetInfoId:     tc.assetInfoId,
+        tapChangerProductAssetModelId: tc.productAssetModelId,
+    }
+    for (const [k, v] of Object.entries(fk)) {
+        if (v !== null && v !== undefined && v !== '') payload[k] = v
+    }
+
+    return payload
+}

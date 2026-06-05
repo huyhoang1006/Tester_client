@@ -746,6 +746,7 @@ export const transformerEntityToDto = (entity) => {
     dto.properties.comment = entity.asset.description || ''
     dto.locationId = entity.asset.location || ''
     dto.assetPsrId = entity.assetPsr.mrid || ''
+    dto.psrId = entity.assetPsr.psr_id || ''
     dto.attachmentId = entity.attachment.id || '';
     dto.attachment = entity.attachment;
 

@@ -32,6 +32,7 @@ const STANDARD_TO_SERVER = {
     'IEC60044':  'IEC_60044',
     'IEC61869':  'IEC_61869',
     'IEEEC5713': 'IEEE_C57_13',
+    'ANSIC931':  'ANSI_C93_1',
 }
 
 // ─── Mapper ──────────────────────────────────────────────────────────────────
@@ -199,7 +200,10 @@ export const mapDtoToServer = (dto) => {
                 uprRatio: {
                     mrid:  dto.ratings?.uprRatio?.mrid  || null,
                     value: dto.ratings?.uprRatio?.value || null,
-                    unit:  dto.ratings?.uprRatio?.unit  || null,
+                    // unit DTO default = 'string' (rác) → bỏ qua, chỉ gửi unit thật
+                    unit:  (dto.ratings?.uprRatio?.unit && dto.ratings.uprRatio.unit !== 'string')
+                        ? dto.ratings.uprRatio.unit
+                        : null,
                 },
 
                 upr: MULTIPLIER_TO_SERVER[dto.ratings?.upr] || null,

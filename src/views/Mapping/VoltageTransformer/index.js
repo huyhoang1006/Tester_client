@@ -112,7 +112,7 @@ export function mapEntityToDto(entity) {
     dto.properties.country_of_origin = entity.asset.country_of_origin;
     dto.properties.apparatus_id = entity.asset.name;
     dto.properties.comment = entity.asset.description;
-    dto.productAssetModelId = entity.assetInfo.product_asset_model;
+    dto.productAssetModelId = entity.assetInfo.product_asset_model || entity.asset.product_asset_model || entity.productAssetModel.mrid || '';
     dto.locationId = entity.asset.location;
 
     // lifecycle date

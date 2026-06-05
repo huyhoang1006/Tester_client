@@ -112,3 +112,91 @@ export const mapServerToDto = (serverData) => {
 
     return dto;
 };
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Mapper: DTO → server JSON (push/upload)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const ASSET_TYPE_TO_SERVER = {
+    'centerBreak':    'CENTER_BREAK',
+    'doubleBreak':    'DOUBLE_BREAK',
+    'horizontalKnee': 'HORIZONTAL_KNEE',
+    'pantograph':     'PANTOGRAPH',
+    'verticalBreak':  'VERTICAL_BREAK',
+}
+
+// số: '' / null → null, còn lại parseFloat
+const numD = (val) => (val !== null && val !== undefined && val !== '') ? parseFloat(val) : null
+
+// unit DTO 'k|V' → server 'kV' (gộp lại, bỏ pipe). 'A' giữ nguyên.
+const joinUnit = (u) => {
+    if (!u) return null
+    return u.includes('|') ? u.replace('|', '') : u
+}
+
+// Gắn FK vào payload CHỈ khi có giá trị thật (không sinh uuid, không gửi null rác)
+// FK là tổ chức nội bộ DB client — chỉ đẩy khi asset đã có sẵn (vd để server update)
+const attachFK = (payload, dto) => {
+    const fkKeys = {
+        mRID:                dto.mrid || dto.properties?.mrid,
+        assetInfoId:         dto.assetInfoId,
+        productAssetModelId: dto.productAssetModelId,
+        lifecycleDateId:     dto.lifecycleDateId,
+        assetPsrId:          dto.assetPsrId,
+        locationId:          dto.locationId,
+        attachmentId:        dto.attachmentId,
+    }
+    for (const [k, v] of Object.entries(fkKeys)) {
+        if (v !== null && v !== undefined && v !== '') payload[k] = v
+    }
+    return payload
+}
+
+export const mapDtoToServer = (dto, ownerType) => {
+    if (!dto) return null
+
+    const p = dto.properties || {}
+    const r = dto.ratings    || {}
+
+    const payload = {
+        assetInfo: {
+            ownerId:           dto.psrId || null,
+            ownerType:         ownerType || null,   // BAY | SUBSTATION — server đọc từ body
+            serialNo:          p.serial_no         || null,
+            manufacturer:      p.manufacturer      || null,   // TÊN hãng (không phải id)
+            manufacturerType:  p.manufacturer_type || null,
+            manufacturingYear: numD(p.manufacturing_year),
+            country:           p.country_of_origin || null,   // TÊN nước (không phải id)
+            apparatusId:       p.apparatus_id      || null,
+            feeder:            p.feeder            || null,
+            description:       p.comment           || null,
+        },
+
+        core: {
+            assetType: ASSET_TYPE_TO_SERVER[p.type] || p.type || null,
+
+            ratedVoltage:     numD(r.rated_voltage?.value),
+            ratedVoltageUnit: joinUnit(r.rated_voltage?.unit),
+
+            ratedFrequency:     numD(r.rated_frequency?.value),
+            ratedFrequencyUnit: joinUnit(r.rated_frequency?.unit),
+
+            ratedCurrent:     numD(r.rated_current?.value),
+            ratedCurrentUnit: joinUnit(r.rated_current?.unit),
+
+            shortTimeWithstandCurrent:     numD(r.short_time_withstand_current?.value),
+            shortTimeWithstandCurrentUnit: joinUnit(r.short_time_withstand_current?.unit),
+
+            shortCircuitRatedDuration:     numD(r.rated_duration_of_short_circuit?.value),
+            shortCircuitRatedDurationUnit: joinUnit(r.rated_duration_of_short_circuit?.unit),
+
+            pfWithstandToEarthPoles:     numD(r.power_freq_withstand_voltage_earth_poles?.value),
+            pfWithstandToEarthPolesUnit: joinUnit(r.power_freq_withstand_voltage_earth_poles?.unit),
+
+            pfWithstandIsolatingDistance:     numD(r.power_freq_withstand_voltage_isolating_distance?.value),
+            pfWithstandIsolatingDistanceUnit: joinUnit(r.power_freq_withstand_voltage_isolating_distance?.unit),
+        },
+    }
+
+    return attachFK(payload, dto)
+}
