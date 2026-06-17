@@ -165,7 +165,7 @@
                                         assetProperties.country }}</div>
                                 </div>
                                 <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Apparatus id</div>
+                                    <div class="content-properties-table-header">Asset ID</div>
                                     <div class="content-properties-table-content fixed-box pl10 break-word">{{
                                         assetProperties.apparatus_id }}</div>
                                 </div>

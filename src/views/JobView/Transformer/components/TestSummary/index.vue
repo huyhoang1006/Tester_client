@@ -10,7 +10,7 @@
                 <tr>
                     <td>Serial no</td>
                     <td>{{ asset.serial_no }}</td>
-                    <td>Apparatus ID</td>
+                    <td>Asset ID</td>
                     <td>{{ asset.apparatus_id }}</td>
                 </tr>
                 <tr>

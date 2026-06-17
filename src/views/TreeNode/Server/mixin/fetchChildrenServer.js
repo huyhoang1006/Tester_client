@@ -92,7 +92,7 @@ export default {
                                         mrid: node.mrid,
                                         id: node.id,
                                         parent: node.aliasName || node.name,
-                                        mode : node.mode
+                                        mode: node.mode
                                     })
                                 })
                                 newRows.push(...newRowsVoltageLevel)
@@ -108,6 +108,8 @@ export default {
                                 newRowsAsset.forEach((row) => {
                                     row.id = row.mrid || row.id || ''
                                     row.mrid = row.mrid || row.id || ''
+                                    row.apparatus_id = row.apparatus_id || row.apparatusId || ''
+                                    row.serial_number = row.serial_number || row.serialNumber || ''
                                     row.name = row.name || ''
                                     row.aliasName = row.shortName || row.name || ''
                                     row.parentId = node.mrid
@@ -161,12 +163,13 @@ export default {
                                 newRowsAsset.forEach((row) => {
                                     row.id = row.mrid || row.id || ''
                                     row.mrid = row.mrid || row.id || ''
+                                    row.apparatus_id = row.apparatus_id || row.apparatusId || ''
+                                    row.serial_number = row.serial_number || row.serialNumber || ''
                                     row.name = row.name || ''
                                     row.aliasName = row.shortName || row.name || ''
                                     row.parentId = node.mrid
                                     row.mode = 'asset'
                                     row.asset = row.asset || row.assetType || row.assetKind || ''
-                                    row.serial_number = row.serialNumber
                                     row.parentName = node.parentName + '/' + node.name
                                     row.parentArr = [...node.parentArr]
                                     row.parentArr.push({
