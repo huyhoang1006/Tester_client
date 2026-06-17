@@ -900,6 +900,8 @@ export default {
                     if (response) {
                         const serverData = response.data || response;
                         const dto = TransformerServerMapper.mapServerToDto(serverData);
+                        this.$set(tab, 'apparatus_id', dto.properties?.apparatus_id);
+                        this.$set(tab, 'serial_number', dto.properties?.serial_no || tab.serial_number);
                         this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
                     } else {
                         this.$message.error("Failed to load Transformer data");
@@ -908,6 +910,8 @@ export default {
                     const response = await demoAPI.getAssetById(tab.mrid, 'PowerCable');
                     if (response) {
                         const dto = PowerCableServerMapper.mapServerToDto(response);
+                        this.$set(tab, 'apparatus_id', dto.properties?.apparatus_id);
+                        this.$set(tab, 'serial_number', dto.properties?.serial_no || tab.serial_number);
                         this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
                     }
                 } else if (tab.mode === 'asset' && tab.asset === 'Surge arrester') {
@@ -922,6 +926,8 @@ export default {
                         // Map sang cấu trúc DTO cho UI
                         const dto = SurgeArresterServerMapper.mapServerToDto(serverData);
 
+                        this.$set(tab, 'apparatus_id', dto.properties?.apparatus_id);
+                        this.$set(tab, 'serial_number', dto.properties?.serial_no || tab.serial_number);
                         this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
                     } else {
                         this.$message.error("Failed to load Surge Arrester data");
@@ -933,6 +939,8 @@ export default {
                     if (response) {
                         const serverData = response.data || response;
                         const dto = DisconnectorServerMapper.mapServerToDto(serverData);
+                        this.$set(tab, 'apparatus_id', dto.properties?.apparatus_id);
+                        this.$set(tab, 'serial_number', dto.properties?.serial_no || tab.serial_number);
                         this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
                     } else {
                         this.$message.error("Failed to load Disconnector data");
@@ -943,6 +951,8 @@ export default {
                     if (response) {
                         const serverData = response.data || response;
                         const dto = BushingServerMapper.mapServerToDto(serverData);
+                        this.$set(tab, 'apparatus_id', dto.properties?.apparatus_id);
+                        this.$set(tab, 'serial_number', dto.properties?.serial_no || tab.serial_number);
                         this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
                     } else {
                         this.$message.error("Failed to load Bushing data");
@@ -952,6 +962,8 @@ export default {
                     if (response) {
                         const serverData = response.data || response;
                         const dto = VoltageTransformerServerMapper.mapServerToDto(serverData);
+                        this.$set(tab, 'apparatus_id', dto.properties?.apparatus_id);
+                        this.$set(tab, 'serial_number', dto.properties?.serial_no || tab.serial_number);
                         this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
                     } else {
                         this.$message.error("Failed to load Voltage transformer data");
@@ -961,6 +973,8 @@ export default {
                     if (response) {
                         const serverData = response.data || response;
                         const dto = CurrentTransformerServerMapper.mapServerToDto(serverData);
+                        this.$set(tab, 'apparatus_id', dto.properties?.apparatus_id);
+                        this.$set(tab, 'serial_number', dto.properties?.serial_no || tab.serial_number);
                         this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
                     } else {
                         this.$message.error("Failed to load Current transformer data");
@@ -970,6 +984,8 @@ export default {
                     if (response) {
                         const serverData = response.data || response;
                         const dto = CircuitBreakerServerMapper.mapServerToDto(serverData);
+                        this.$set(tab, 'apparatus_id', dto.properties?.apparatus_id);
+                        this.$set(tab, 'serial_number', dto.properties?.serial_no || tab.serial_number);
                         this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
                     } else {
                         this.$message.error("Failed to load Circuit breaker data");

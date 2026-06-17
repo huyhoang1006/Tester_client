@@ -120,7 +120,7 @@
                             </div>
                         </div>
                         <div class="content-properties-table-flex">
-                            <div class="content-properties-table-header">Apparatus id</div>
+                            <div class="content-properties-table-header">Asset ID</div>
                             <div class="content-properties-table-content fixed-box pl10 break-word">
                                 {{ assetPropertiesClient.apparatus_id || '&nbsp;' }}
                             </div>

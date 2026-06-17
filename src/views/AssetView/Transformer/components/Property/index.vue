@@ -36,7 +36,7 @@
                         <el-option v-for="item in countryData" :key="item" :label="item" :value="item"> </el-option>
                     </el-select>
                 </el-form-item>
-                <el-form-item label="Apparatus ID">
+                <el-form-item label="Asset ID">
                     <el-input v-model="propertiesData.apparatus_id"></el-input>
                 </el-form-item>
             </el-form>

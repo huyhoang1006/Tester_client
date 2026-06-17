@@ -31,7 +31,7 @@
                     <el-form-item label="Asset system code">
                         <el-input v-model="propertiesData.country_of_origin"></el-input>
                     </el-form-item>
-                    <el-form-item label="Apparatus ID">
+                    <el-form-item label="Asset ID">
                         <el-input v-model="propertiesData.apparatus_id"></el-input>
                     </el-form-item>
                     <el-form-item label="Feeder">
