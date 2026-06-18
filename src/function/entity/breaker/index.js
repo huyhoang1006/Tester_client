@@ -211,6 +211,7 @@ export const insertBreakerEntity = async (old_entity, entity) => {
             return { success: true, data: entity, message: 'Breaker entity inserted successfully' };
         }
     } catch (error) {
+        console.error('Error in insertBreakerEntity:', error);
         restoreFiles(null, null, entity.asset.mrid);
         deleteBackupFiles(null, entity.asset.mrid);
         await runAsync('ROLLBACK');

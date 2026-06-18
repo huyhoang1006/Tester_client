@@ -28,6 +28,7 @@ import * as notificationEntityFunc from "./notification/index"
 import * as updateEntityFunc from "./update/index"
 import * as entitySnapshotFunc from "./entitySnapshot/index"
 import * as templateFunc from "./template/index"
+import * as mRIDCheckFunc from "./mRIDCheck/index"
 
 
 export {
@@ -35,7 +36,7 @@ export {
     userFunc, userIdentifiedObjectFunc, substationEntityFunc, organisationPersonFunc,
     organisationPsrFunc, geoMapFunc, parentOrganizationEntityFunc, voltageLevelEntityFunc,
     bayEntityFunc, surgeArresterEntityFunc, transformerEntityFunc, jobEntityFunc, powerCableEntityFunc,
-    capacitorEntityFunc, breakerEntityFunc, updateEntityFunc, entitySnapshotFunc,
+    capacitorEntityFunc, breakerEntityFunc, updateEntityFunc, entitySnapshotFunc, mRIDCheckFunc,
     voltageTransformerEntityFunc, bushingEntityFunc, disconnectorEntityFunc, rotatingMachineEntityFunc, 
     currentTransformerEntityFunc, reactorEntityFunc, assetPsrFunc, notificationEntityFunc, templateFunc
 

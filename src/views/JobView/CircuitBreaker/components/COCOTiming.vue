@@ -348,6 +348,17 @@
 
 <script>
 import timingMixin from './timingMixin'
+import circuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
+
+// Map col.code → mrid cho COCOTiming (từ config). Dùng để gán measurement_id
+// khi tạo cell mới, tránh cell discrete bị thiếu measurementId.
+const COCO_MRID_BY_CODE = (() => {
+    const map = {}
+    const cols = (circuitBreakerTestMap['COCOTiming'] && circuitBreakerTestMap['COCOTiming'].columns) || []
+    for (const c of cols) if (c.code) map[c.code] = c.mrid || ''
+    return map
+})()
+
 export default {
     mixins: [timingMixin],
     name: "COCOTiming",
@@ -598,13 +609,13 @@ export default {
                     for (let phaseIdx = 0; phaseIdx < numPhase; phaseIdx++) {
                         for (let interruptIdx = 0; interruptIdx < numInterruptPhase; interruptIdx++) {
                             tableRow.push({
-                                phase: { mrid: '', value: phase[phaseIdx] || '', unit: '', type: 'string' },
-                                trip_coil: { mrid: '', value: '', unit: '', type: 'analog' },
-                                interrupter: { mrid: '', value: (interruptIdx + 1).toString(), unit: '', type: 'analog' },
-                                opening_time: { mrid: '', value: '', unit: 'm|s', type: 'analog' },
-                                opening_sync_between_phase: { mrid: '', value: '', unit: 'm|s', type: 'analog' },
-                                assessment: { mrid: '', value: '', unit: '', type: 'discrete' },
-                                condition_indicator: { mrid: '', value: '', unit: '', type: 'discrete' }
+                                phase: { mrid: '', value: phase[phaseIdx] || '', unit: '', type: 'string', measurement_id: COCO_MRID_BY_CODE['phase'] || '' },
+                                trip_coil: { mrid: '', value: '', unit: '', type: 'analog', measurement_id: COCO_MRID_BY_CODE['trip_coil'] || '' },
+                                interrupter: { mrid: '', value: (interruptIdx + 1).toString(), unit: '', type: 'analog', measurement_id: COCO_MRID_BY_CODE['interrupter'] || '' },
+                                opening_time: { mrid: '', value: '', unit: 'm|s', type: 'analog', measurement_id: COCO_MRID_BY_CODE['opening_time'] || '' },
+                                opening_sync_between_phase: { mrid: '', value: '', unit: 'm|s', type: 'analog', measurement_id: COCO_MRID_BY_CODE['opening_sync_between_phase'] || '' },
+                                assessment: { mrid: '', value: '', unit: '', type: 'discrete', measurement_id: COCO_MRID_BY_CODE['assessment'] || '' },
+                                condition_indicator: { mrid: '', value: '', unit: '', type: 'discrete', measurement_id: COCO_MRID_BY_CODE['condition_indicator'] || '' }
                             })
                         }
                     }

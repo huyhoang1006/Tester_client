@@ -13,9 +13,26 @@ import DiscreteValue from '@/views/Cim/DiscreteValue'
 import ProcedureAsset from '@/views/Cim/ProcedureAsset'
 import ProcedureDataSetMeasurementValue from '@/views/Cim/ProcedureDataSetMeasurementValue'
 import transformerConditionMap from '@/config/testing-condition/Transformer'
-import transformerTestMap from '@/config/testing-condition/Transformer'
+import transformerTestMap from '@/config/test-definitions/Transformer'
 import * as commonFunc from '@/views/JobView/Common/index.js'
 import transformerAssessmentMap from "@/config/testing-assessment/Transformer";
+
+// Map measurement_id -> unit (gộp test-definitions + testing-condition của Transformer)
+const TF_UNIT_BY_MEASUREMENT = (() => {
+    const map = {}
+    const collect = (cfgMap) => {
+        for (const testCode in cfgMap) {
+            const cols = (cfgMap[testCode] && cfgMap[testCode].columns) || []
+            for (const col of cols) {
+                if (col && col.mrid) map[col.mrid] = col.unit || ''
+            }
+        }
+    }
+    collect(transformerTestMap)
+    collect(transformerConditionMap)
+    return map
+})()
+const unitOf = (measurementId) => (measurementId && TF_UNIT_BY_MEASUREMENT[measurementId]) || ''
 import TestStandard from "@/views/Cim/TestStandard";
 
 export const jobDtoToEntity = (dto) => {
@@ -319,14 +336,20 @@ export const JobEntityToDto = (entity) => {
                         return Object.assign({}, r, { mrid: newMrid, standard_id: newStandardMrid })
                     })
 
-                    // 2. Regen assessment_group: mrid mới, rule_id → ruleMap[old_rule_id]
+                    // 2. Regen assessment_group: mrid mới, rule_id → ruleMap, parent_id → groupMap
                     var groupMap = {}
-                    var newGroups = (testAssessment.assessment_group || []).map(function(g) {
+                    var rawGroups = (testAssessment.assessment_group || []).map(function(g) {
                         var newMrid = uuid.newUuid()
                         groupMap[g.mrid] = newMrid
                         return Object.assign({}, g, {
                             mrid:    newMrid,
                             rule_id: ruleMap[g.rule_id] || g.rule_id
+                        })
+                    })
+                    // remap parent_id sau khi có groupMap đầy đủ (group con trỏ group cha)
+                    var newGroups = rawGroups.map(function(g) {
+                        return Object.assign({}, g, {
+                            parent_id: g.parent_id ? (groupMap[g.parent_id] || g.parent_id) : ''
                         })
                     })
 
@@ -379,7 +402,7 @@ export const JobEntityToDto = (entity) => {
             }
         }
         testTemplate.testCondition.comment = item.comment || ''
-        testTemplate.testTypeId = transformerTestMap[item.type].testId || ''
+        testTemplate.testTypeId = (transformerTestMap[item.type] || {}).testId || ''
 
         for (const attachment of entity.attachmentTest) {
             if (attachment.id_foreign === item.mrid) {
@@ -415,7 +438,7 @@ export const JobEntityToDto = (entity) => {
                     rowData[key] = {
                         mrid: smv.mrid,
                         type: 'string',
-                        unit: '',
+                        unit: unitOf(smv.string_measurement),
                         value: smv.value || '',
                         measurement_id: smv.string_measurement || ''
                     }
@@ -428,7 +451,7 @@ export const JobEntityToDto = (entity) => {
                     rowData[key] = {
                         mrid: av.mrid,
                         type: 'analog',
-                        unit: '',
+                        unit: unitOf(av.analog),
                         value: av.value || '',
                         measurement_id: av.analog || ''
                     }
@@ -456,7 +479,7 @@ export const JobEntityToDto = (entity) => {
                         rowData[key] = {
                             mrid: dv.mrid,
                             type: 'discrete',
-                            unit: '',
+                            unit: unitOf(dv.discrete),
                             value: displayValue,
                             measurement_id: dv.discrete || ''
                         }
@@ -465,7 +488,7 @@ export const JobEntityToDto = (entity) => {
                         rowData[key] = {
                             mrid: dv.mrid,
                             type: 'discrete',
-                            unit: '',
+                            unit: unitOf(dv.discrete),
                             value: displayValue || dv.value || '',
                             measurement_id: dv.discrete || ''
                         }
@@ -487,7 +510,7 @@ export const JobEntityToDto = (entity) => {
                 rowData[key] = {
                     mrid: smv.mrid,
                     type: 'string',
-                    unit: '',
+                    unit: unitOf(smv.string_measurement),
                     value: smv.value || '',
                     measurement_id: smv.string_measurement || ''
                 }
@@ -500,7 +523,7 @@ export const JobEntityToDto = (entity) => {
                 rowData[key] = {
                     mrid: av.mrid,
                     type: 'analog',
-                    unit: '',
+                    unit: unitOf(av.analog),
                     value: av.value || '',
                     measurement_id: av.analog || ''
                 }
@@ -513,7 +536,7 @@ export const JobEntityToDto = (entity) => {
                 rowData[key] = {
                     mrid: dv.mrid,
                     type: 'discrete',
-                    unit: '',
+                    unit: unitOf(dv.discrete),
                     value: dv.value || '',
                     measurement_id: dv.discrete || ''
                 }

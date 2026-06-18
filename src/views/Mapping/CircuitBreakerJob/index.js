@@ -1,4 +1,5 @@
 /* eslint-disable */
+import uuid from "@/utils/uuid";
 import CircuitBreakerJobEntity from '@/views/Flatten/Job/CircuitBreaker'
 import CircuitBreakerJobDto from '@/views/Dto/Job/CircuitBreaker'
 import WorkTask from '@/views/Cim/WorkTask'
@@ -12,9 +13,45 @@ import DiscreteValue from '@/views/Cim/DiscreteValue'
 import ProcedureAsset from '@/views/Cim/ProcedureAsset'
 import ProcedureDataSetMeasurementValue from '@/views/Cim/ProcedureDataSetMeasurementValue'
 import circuitBreakerConditionMap from '@/config/testing-condition/CircuitBreaker'
-import circuitBreakerTestMap from '@/config/testing-condition/CircuitBreaker'
+import circuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
 import * as commonFunc from '@/views/JobView/Common/index.js'
 import circuitBreakerAssessmentMap from "@/config/testing-assessment/CircuitBreaker";
+
+// Map measurement_id -> unit (gộp từ test-definitions + testing-condition của CB)
+const CB_UNIT_BY_MEASUREMENT = (() => {
+    const map = {}
+    const collect = (cfgMap) => {
+        for (const testCode in cfgMap) {
+            const cols = (cfgMap[testCode] && cfgMap[testCode].columns) || []
+            for (const col of cols) {
+                if (col && col.mrid) map[col.mrid] = col.unit || ''
+            }
+        }
+    }
+    collect(circuitBreakerTestMap)
+    collect(circuitBreakerConditionMap)
+    return map
+})()
+const unitOf = (measurementId) => (measurementId && CB_UNIT_BY_MEASUREMENT[measurementId]) || ''
+
+// Đảm bảo row có ĐỦ mọi cột theo config (cột chưa nhập trong DB sẽ thiếu).
+// Thiếu cột → template đọc item.<col>.value sẽ lỗi "Cannot read property 'value' of undefined".
+// Bổ sung cell rỗng cho cột thiếu, để UI render an toàn.
+const ensureRowColumns = (rowData, columns) => {
+    for (const col of (columns || [])) {
+        if (!col || !col.code) continue
+        if (!rowData[col.code]) {
+            rowData[col.code] = {
+                mrid: '',
+                type: col.type || 'string',
+                unit: col.unit || '',
+                value: col.type === 'discrete' ? null : '',
+                measurement_id: col.mrid || '',
+            }
+        }
+    }
+    return rowData
+}
 import TestStandard from "@/views/Cim/TestStandard";
 
 export const jobDtoToEntity = (dto) => {
@@ -289,17 +326,50 @@ export const JobEntityToDto = (entity) => {
 
         for(const testAssessment of testAssessmentList) {
             if(testAssessment.type == 'customized') {
-                testAssessment.mrid = standardCustomized?.mrid || ''
-                testAssessment.assessment_rule = assessmentRule
-                testAssessment.assessment_group = assessmentGroup
-                for(const asm of testAssessment.assessment) {
-                    for(const ad of assessmentData) {
-                        if(asm.measurement_id === ad.measurement_id) {
-                            ad.label = asm.label
+                if (standardCustomized) {
+                    // Có customized standard từ DB → dùng data thật
+                    testAssessment.mrid = standardCustomized?.mrid || ''
+                    testAssessment.assessment_rule = assessmentRule
+                    testAssessment.assessment_group = assessmentGroup
+                    for(const asm of testAssessment.assessment) {
+                        for(const ad of assessmentData) {
+                            if(asm.measurement_id === ad.measurement_id) {
+                                ad.label = asm.label
+                            }
                         }
                     }
+                    testAssessment.assessment = assessmentData
+                } else {
+                    // Chưa chọn standard → regen mrid từ config, giữ đúng quan hệ:
+                    //   standard.mrid ← rule.standard_id; rule.mrid ← group.rule_id;
+                    //   group.mrid ← assessment.group_id VÀ ← group.parent_id (cây phân cấp)
+                    var newStandardMrid = uuid.newUuid()
+                    var ruleMap = {}
+                    var newRules = (testAssessment.assessment_rule || []).map(function(r) {
+                        var m = uuid.newUuid(); ruleMap[r.mrid] = m
+                        return Object.assign({}, r, { mrid: m, standard_id: newStandardMrid })
+                    })
+                    var groupMap = {}
+                    var rawGroups = (testAssessment.assessment_group || []).map(function(g) {
+                        var m = uuid.newUuid(); groupMap[g.mrid] = m
+                        return Object.assign({}, g, { mrid: m, rule_id: ruleMap[g.rule_id] || g.rule_id })
+                    })
+                    // remap parent_id sau khi có groupMap đầy đủ (group con trỏ group cha)
+                    var newGroups = rawGroups.map(function(g) {
+                        return Object.assign({}, g, {
+                            parent_id: g.parent_id ? (groupMap[g.parent_id] || g.parent_id) : ''
+                        })
+                    })
+                    var newAssessments = (testAssessment.assessment || []).map(function(a) {
+                        return Object.assign({}, a, {
+                            mrid: uuid.newUuid(), group_id: groupMap[a.group_id] || a.group_id
+                        })
+                    })
+                    testAssessment.mrid = newStandardMrid
+                    testAssessment.assessment_rule = newRules
+                    testAssessment.assessment_group = newGroups
+                    testAssessment.assessment = newAssessments
                 }
-                testAssessment.assessment = assessmentData
             }
         }
         
@@ -336,7 +406,7 @@ export const JobEntityToDto = (entity) => {
             }
         }
         testTemplate.testCondition.comment = item.comment || ''
-        testTemplate.testTypeId = circuitBreakerTestMap[item.type].testId || ''
+        testTemplate.testTypeId = (circuitBreakerTestMap[item.type] || {}).testId || ''
 
         for (const attachment of entity.attachmentTest) {
             if (attachment.id_foreign === item.mrid) {
@@ -372,7 +442,7 @@ export const JobEntityToDto = (entity) => {
                     rowData[key] = {
                         mrid: smv.mrid,
                         type: 'string',
-                        unit: '',
+                        unit: unitOf(smv.string_measurement),
                         value: smv.value || '',
                         measurement_id: smv.string_measurement || ''
                     }
@@ -385,7 +455,7 @@ export const JobEntityToDto = (entity) => {
                     rowData[key] = {
                         mrid: av.mrid,
                         type: 'analog',
-                        unit: '',
+                        unit: unitOf(av.analog),
                         value: av.value || '',
                         measurement_id: av.analog || ''
                     }
@@ -413,7 +483,7 @@ export const JobEntityToDto = (entity) => {
                         rowData[key] = {
                             mrid: dv.mrid,
                             type: 'discrete',
-                            unit: '',
+                            unit: unitOf(dv.discrete),
                             value: displayValue,
                             measurement_id: dv.discrete || ''
                         }
@@ -422,13 +492,14 @@ export const JobEntityToDto = (entity) => {
                         rowData[key] = {
                             mrid: dv.mrid,
                             type: 'discrete',
-                            unit: '',
+                            unit: unitOf(dv.discrete),
                             value: displayValue || dv.value || '',
                             measurement_id: dv.discrete || ''
                         }
                     }
                 }
 
+                ensureRowColumns(rowData, (circuitBreakerTestMap[item.type] || {}).columns)
                 testTemplate.data.table[key].push(rowData)
             }
         }
@@ -444,7 +515,7 @@ export const JobEntityToDto = (entity) => {
                 rowData[key] = {
                     mrid: smv.mrid,
                     type: 'string',
-                    unit: '',
+                    unit: unitOf(smv.string_measurement),
                     value: smv.value || '',
                     measurement_id: smv.string_measurement || ''
                 }
@@ -457,7 +528,7 @@ export const JobEntityToDto = (entity) => {
                 rowData[key] = {
                     mrid: av.mrid,
                     type: 'analog',
-                    unit: '',
+                    unit: unitOf(av.analog),
                     value: av.value || '',
                     measurement_id: av.analog || ''
                 }
@@ -470,7 +541,7 @@ export const JobEntityToDto = (entity) => {
                 rowData[key] = {
                     mrid: dv.mrid,
                     type: 'discrete',
-                    unit: '',
+                    unit: unitOf(dv.discrete),
                     value: dv.value || '',
                     measurement_id: dv.discrete || ''
                 }

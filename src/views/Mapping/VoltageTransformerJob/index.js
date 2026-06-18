@@ -13,10 +13,30 @@ import DiscreteValue from "@/views/Cim/DiscreteValue";
 import ProcedureAsset from "@/views/Cim/ProcedureAsset";
 import ProcedureDataSetMeasurementValue from "@/views/Cim/ProcedureDataSetMeasurementValue";
 import voltageTransformerConditionMap from '@/config/testing-condition/VoltageTransformer'
-import voltageTransformerTestMap from "@/config/testing-condition/VoltageTransformer";
+import voltageTransformerTestMap from "@/config/test-definitions/VoltageTransformer";
 import voltageTransformerAssessmentMap from '@/config/testing-assessment/VoltageTransformer'
 import * as commonFunc from '@/views/JobView/Common/index.js'
 import TestStandard from "@/views/Cim/TestStandard";
+
+// Map measurement_id -> unit, gộp từ test-definitions + testing-condition của VT
+// Dùng để điền unit khi build cell (tránh unit rỗng).
+const VT_UNIT_BY_MEASUREMENT = (() => {
+    const map = {}
+    const collect = (cfgMap) => {
+        for (const testCode in cfgMap) {
+            const cols = (cfgMap[testCode] && cfgMap[testCode].columns) || []
+            for (const col of cols) {
+                if (col && col.mrid) map[col.mrid] = col.unit || ''
+            }
+        }
+    }
+    collect(voltageTransformerTestMap)       // test-definitions (cột đo)
+    collect(voltageTransformerConditionMap)  // testing-condition (điều kiện)
+    return map
+})()
+
+// Lấy unit theo measurement_id (rỗng nếu không có)
+const unitOf = (measurementId) => (measurementId && VT_UNIT_BY_MEASUREMENT[measurementId]) || ''
 
 export const jobDtoToEntity = (dto) => {
     const entity = new VoltageTransformerJobEntity();
@@ -384,7 +404,7 @@ export const JobEntityToDto = (entity) => {
             }
         }
         testTemplate.testCondition.comment = item.comment || '';
-        testTemplate.testTypeId = voltageTransformerTestMap[item.type].testId || ''
+        testTemplate.testTypeId = (voltageTransformerTestMap[item.type] || {}).testId || ''
 
         for(const attachment of entity.attachmentTest) {
             if(attachment.id_foreign === item.mrid) {
@@ -418,7 +438,7 @@ export const JobEntityToDto = (entity) => {
                     rowData[key] = {
                         mrid: smv.mrid,
                         type: "string",
-                        unit: "",
+                        unit: unitOf(smv.string_measurement),
                         value: smv.value || "",
                         measurement_id: smv.string_measurement || ''
                     };
@@ -431,7 +451,7 @@ export const JobEntityToDto = (entity) => {
                     rowData[key] = {
                         mrid: av.mrid,
                         type: "analog",
-                        unit: "",
+                        unit: unitOf(av.analog),
                         value: av.value || "",
                         measurement_id: av.analog || ''
                     };
@@ -444,7 +464,7 @@ export const JobEntityToDto = (entity) => {
                         rowData[key] = {
                             mrid: dv.mrid,
                             type: "discrete",
-                            unit: "",
+                            unit: unitOf(dv.discrete),
                             value: dv.vta_alias_name || "",
                             measurement_id: dv.discrete || ''
                         };
@@ -452,7 +472,7 @@ export const JobEntityToDto = (entity) => {
                         rowData[key] = {
                             mrid: dv.mrid,
                             type: "discrete",
-                            unit: "",
+                            unit: unitOf(dv.discrete),
                             value: dv.vta_alias_name || "",
                             measurement_id: dv.discrete || ''
                         };
@@ -473,7 +493,7 @@ export const JobEntityToDto = (entity) => {
                 rowData[key] = {
                     mrid: smv.mrid,
                     type: "string",
-                    unit: "",
+                    unit: unitOf(smv.string_measurement),
                     value: smv.value || "",
                     measurement_id: smv.string_measurement || ''
                 };
@@ -486,7 +506,7 @@ export const JobEntityToDto = (entity) => {
                 rowData[key] = {
                     mrid: av.mrid,
                     type: "analog",
-                    unit: "",
+                    unit: unitOf(av.analog),
                     value: av.value || "",
                     measurement_id: av.analog || ''
                 };
@@ -499,7 +519,7 @@ export const JobEntityToDto = (entity) => {
                 rowData[key] = {
                     mrid: dv.mrid,
                     type: "discrete",
-                    unit: "",
+                    unit: unitOf(dv.discrete),
                     value: dv.vta_alias_name || "",
                     measurement_id: dv.discrete || ''
                 };

@@ -110,8 +110,12 @@
                         export to JSON
                         <div class="export-json-submenu" v-if="showSub === 'json'" @click.stop @mouseenter.stop
                             @mouseleave.stop>
-                            <div class="submenu-item" @click="handleExportCommand('exportJSON')">export JSON</div>
-                            
+                            <div class="submenu-item" @click="handleExportCommand('exportJSONOnlyNode')">
+                                export JSON only Node
+                            </div>
+                            <div class="submenu-item" @click="handleExportCommand('exportJSONFullTree')">
+                                export JSON Full Tree
+                            </div>
                         </div>
                     </el-dropdown-item>
                     <el-dropdown-item command="exportExcel">
@@ -130,7 +134,7 @@
                 class="fa-solid fa-upload"></i>
         </div>
         <div v-if="!clientSlide">
-            <el-dropdown @command="handleDownloadCommand"  ref="downloadDropdown" trigger="manual">
+            <el-dropdown @command="handleDownloadCommand" ref="downloadDropdown" trigger="manual">
                 <i @click="openDropdown" title="Download" style="font-size: 12px" class="fa-solid fa-download"></i>
                 <el-dropdown-menu slot="dropdown">
                     <el-dropdown-item command="downloadOnlyNode">

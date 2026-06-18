@@ -36,7 +36,7 @@
                             </el-date-picker>
                         </td>
                         <td>
-                            <el-select multiple collapse-tags size="mini" v-model="item.test_type_surge_arrester_id" placeholder="Select test type">
+                            <el-select multiple collapse-tags size="mini" v-model="item.test_type_voltage_transformer_id" placeholder="Select test type">
                                 <el-option
                                     v-for="test in testTypeListData"
                                     :key="test.mrid"

@@ -64,7 +64,22 @@ export default {
                 confirmAndRun('Disconnector', this.processUploadDisconnector);
             } else if (node.asset === 'Surge arrester') {
                 confirmAndRun('Surge arrester', this.processUploadSurgeArrester);
-            } else {
+            } else if (node.mode === 'job') {
+                if(node.job === 'Voltage transformer') {
+                    confirmAndRun('Voltage transformer job', this.processUploadVoltageTransformerJob);
+                } else if(node.job === 'Current transformer') {
+                    confirmAndRun('Current transformer job', this.processUploadCurrentTransformerJob);
+                } else if(node.job === 'Circuit breaker') {
+                    confirmAndRun('Circuit breaker job', this.processUploadCircuitBreakerJob);
+                } else if(node.job === 'Surge arrester') {
+                    confirmAndRun('Surge arrester job', this.processUploadSurgeArresterJob);
+                } else if(node.job === 'Disconnector') {
+                    confirmAndRun('Disconnector job', this.processUploadDisconnectorJob);
+                } else if(node.job === 'Transformer') {
+                    confirmAndRun('Transformer job', this.processUploadTransformerJob);
+                }
+            }
+            else {
                 this.$message.warning('TYPE NOT SUPPORTED FOR UPLOAD');
             }
         },

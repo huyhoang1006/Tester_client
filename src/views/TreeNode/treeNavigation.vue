@@ -28,7 +28,7 @@
                 @show-addVt="showAddVt" @show-addCt="showAddCt" @show-addPowerCable="showAddPowerCable"
                 @show-addDisconnector="showAddDisconnector" @show-addCapacitor="showAddCapacitor"
                 @show-addReactor="showAddReactor" @show-addRotatingMachine="showAddRotatingMachine"
-                @show-addBay="showAddBay" @export-json="handleExportJSONFromContext"
+                @show-addBay="showAddBay"
                 @export-excel="handleExportExcelFromContext" @export-word="handleExportWordFromContext"
                 @duplicate-node="handleDuplicateFromContext"
                 @move-node="handleMoveFromContext" @import-json="handleImportJSONFromContext"
@@ -39,7 +39,7 @@
                 :selectedNodes.sync="selectedNodes" @showOwnerServerRoot="showOwnerServerRoot"
                 @fetch-children-server="fetchChildrenServer" @double-click-node-server="doubleClickNodeServer"
                 @show-properties="showPropertiesData" @update-selection="updateSelection"
-                @clear-selection="clearSelection" @show-data="showData" @export-json="handleExportJSONFromContext"
+                @clear-selection="clearSelection" @show-data="showData"
                 @export-excel="handleExportExcelFromContext" @export-word="handleExportWordFromContext"
                 @duplicate-node="handleDuplicateFromContext"
                 @move-node="handleMoveFromContext" @import-json="handleImportJSONFromContext"
@@ -359,6 +359,10 @@
         <ZeroDiagramDialog ref="zeroDiagramDialog" :visible="signZeroDiagram" @update:visible="signZeroDiagram = $event"
             :currentNode="nodeForZeroDiagram" :isServer="!clientSlide" @close="handleZeroDiagramClose" :checkChildrenMethod="checkChildren" @node-deleted="handleNodeDeletedFromDiagram"
             @delete-node="handleDeleteNodeFromDiagram" @edit-node="handleEditNodeFromDiagram" />
+        
+        <ImportConflictDialog :visible="conflictDialogVisible" @update:visible="conflictDialogVisible = $event" :conflicts="pendingConflicts"
+            @cancel="handleConflictCancel"
+            @confirm="handleConflictConfirm" />
     </div>
 </template>
 <script>
@@ -438,7 +442,8 @@ import {
     FmecaDialog,
     MoveDialog,
     DownloadDialog,
-    ZeroDiagramDialog
+    ZeroDiagramDialog,
+    ImportConflictDialog
 } from './dialogs'
 
 
@@ -515,10 +520,14 @@ export default {
         FmecaDialog,
         MoveDialog,
         DownloadDialog,
-        ZeroDiagramDialog
+        ZeroDiagramDialog,
+        ImportConflictDialog
     },
     data() {
         return {
+            conflictDialogVisible: false,
+            pendingConflicts: [],       // conflicts[] đang chờ user quyết
+            pendingImportContext: null, // { fileContent, targetNode } để chạy tiếp sau khi có quyết định
             exportType: null,
             importType: null,
             openExportDialog: false,

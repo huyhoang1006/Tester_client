@@ -74,12 +74,9 @@ import buildMoveTreeData from '@/views/TreeNode/Common/MoveNode/buildMoveTreeDat
 import fetchChildrenForMoveMixin from '@/views/TreeNode/Common/MoveNode/fetchChildrenForMove'
 import generateUuid from '@/views/TreeNode/Common/generateUuid.js'
 
-import _import from '@/views/TreeNode/Common/Import/import.js'
-import importJSONFromContext from '@/views/TreeNode/Common/Import/importJSONFromContext.js'
 import handleOpenNode from '@/views/TreeNode/Common/Open/handleOpenNode'
 import fetchJobsByAssetId from '@/views/TreeNode/Common/Fetch/fetchJobsByAssetId'
 import fetchAssetByPsr from '@/views/TreeNode/Common/Fetch/fetchAssetByPsr'
-import exportTreeToJSON from '@/views/TreeNode/Common/Export/exportToJSON'
 import hideProperties from '@/views/TreeNode/Common/hideProperties'
 import removeTab from '@/views/TreeNode/Common/removeTab'
 import pathMap from '@/views/TreeNode/Common/pathMap'
@@ -89,11 +86,10 @@ import showDataServer from '@/views/TreeNode/Server/mixin/showDataServer'
 import checkChildren from '@/views/TreeNode/Common/checkChildren'
 import showPropertiesData from '@/views/TreeNode/Common/showPropertiesData'
 import exportExcel from '@/views/TreeNode/Common/Export/exportExcel'
-import exportSingleNodeToJSON from '@/views/TreeNode/Common/Export/exportSingleNodeToJSON'
 import exportWord from '@/views/TreeNode/Common/Export/exportWord'
 import handleRefreshNode from '@/views/TreeNode/Common/Refresh/handleRefreshNode'
-
-
+import exportTreeJSON from '@/views/TreeNode/Common/Export/exportTreeJSON'
+import importTreeJSON from '@/views/TreeNode/Common/Import/importTreeJSON'
 
 
 export default {
@@ -110,11 +106,11 @@ export default {
         voltageLevelConfirm, resizeClient, contextDataHelpers, tabPropertiesSync,
         logClient, logServer, resizeServer, confirmDownloadNode, downloadNode,
         buildMoveTreeData, fetchChildrenForMoveMixin, generateUuid, getOwner,
-        fetchChildrenServer, fetchChildrenClient, _import,
-        importJSONFromContext, handleAddCommand, handleOpenNode, fetchAssetByPsr,
-        fetchJobsByAssetId, exportTreeToJSON, hideProperties, removeTab,
+        fetchChildrenServer, fetchChildrenClient,
+        handleAddCommand, handleOpenNode, fetchAssetByPsr,
+        fetchJobsByAssetId, hideProperties, removeTab,
         pathMap, fmeca, showProperties, showDataServer, checkChildren, showPropertiesData,
-        breadCum, showOwnerServerRoot, exportExcel, exportSingleNodeToJSON,
-        exportWord, handleRefreshNode
+        breadCum, showOwnerServerRoot, exportExcel, exportTreeJSON,
+        exportWord, handleRefreshNode, importTreeJSON
         ]
 }

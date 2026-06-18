@@ -1,28 +1,56 @@
 export default {
     methods: {
+        // ================== EXPORT COMMAND ==================
         handleCommand(cmd) {
             if (cmd === 'exportExcel') {
                 this.openExportDialog = true
                 this.exportType = 'excel'
-            } else if (cmd === 'exportJSON') {
-                this.exportTreeToJSON('dto')
             } else if (cmd === 'exportWord') {
                 this.openExportDialog = true
                 this.exportType = 'word'
+            } else if (cmd === 'exportJSONOnlyNode') {
+                // JSON: không qua dialog — chọn node → chọn chỗ lưu → export luôn
+                this.exportJsonOnlyNode()
+            } else if (cmd === 'exportJSONFullTree') {
+                this.exportJsonFullTree()
             }
         },
+
+        // ================== IMPORT COMMAND ==================
         handleImportCommand(cmd) {
-            this.openImportDialog = true;
             if (cmd === 'importExcel') {
                 this.openImportDialog = true
                 this.importType = 'excel'
-            } else if (cmd === 'importJSON') {
-                this.importTreeToJSON('dto')
             } else if (cmd === 'importWord') {
                 this.openImportDialog = true
                 this.importType = 'word'
+            } else if (cmd === 'importJSON') {
+                // JSON: không qua dialog — chọn node đích → chọn file → import luôn
+                this.handleImportJSONFromFile()
             }
         },
+
+        // ============================================================
+        // DIALOG WORD/EXCEL — đóng/xác nhận (DÙNG CHUNG, không thuộc JSON)
+        // Đặt ở đây vì handleCommand là nơi quản lý vòng đời dialog
+        // (mở dialog ở trên, đóng/confirm ở dưới).
+        // ============================================================
+        handleCancelExport() {
+            this.openExportDialog = false
+        },
+        handleExportConfirm() {
+            this.openExportDialog = false
+            this.$message.success('Export successfully')
+        },
+        handleCancelImport() {
+            this.openImportDialog = false
+        },
+        handleImportConfirm() {
+            this.openImportDialog = false
+            this.$message.success('Import successfully')
+        },
+
+        // ================== ADD COMMAND ==================
         async handleAddCommand(cmd) {
             const selectedNode = this.selectedNodes && this.selectedNodes.length > 0 ? this.selectedNodes[this.selectedNodes.length - 1] : null
 

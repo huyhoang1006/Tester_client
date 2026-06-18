@@ -19,25 +19,15 @@ export default {
                     data = await this.initRatioPrimSec(testTypeCode, assetData)
                     break
                 case 'DCWindingPrim':
-                    if (assetData.tap_changers.winding === this.$constant.PRIM) {
-                        data = await this.initDCWindingPrim(testTypeCode, assetData)
-                    } else {
-                        this.$message.error('Can not choose this one')
-                    }
+                    // DC winding resistance đo được cho mọi cuộn, không phụ thuộc cuộn nào có bộ điều áp.
+                    // initDCWindingPrim tự xử lý: cuộn có tap → tạo row theo tap; không tap → 3 phase A/B/C.
+                    data = await this.initDCWindingPrim(testTypeCode, assetData)
                     break
                 case 'DCWindingSec':
-                    if (assetData.tap_changers.winding === this.$constant.SEC) {
-                        data = await this.initDCWindingSec(testTypeCode, assetData)
-                    } else {
-                        this.$message.error('Can not choose this one')
-                    }
+                    data = await this.initDCWindingSec(testTypeCode, assetData)
                     break
                 case 'DCWindingTert':
-                    if (assetData.tap_changers.winding === this.$constant.TERT) {
-                        data = await this.initDCWindingTert(testTypeCode, assetData)
-                    } else {
-                        this.$message.error('Can not choose this one')
-                    }
+                    data = await this.initDCWindingTert(testTypeCode, assetData)
                     break
                 case 'MeasurementOfNoLoad':
                     data = await this.initMeasurementOfNoLoad(testTypeCode)
@@ -327,7 +317,7 @@ export default {
             } else {
                 phases.forEach((phase) => {
                     const row = JSON.parse(JSON.stringify(rowDataExample))
-                    if (row.phase) row.name.value = phase
+                    if (row.name) row.name.value = phase
                     table1.push(row)
                 })
             }
@@ -371,7 +361,7 @@ export default {
             } else {
                 phases.forEach((phase) => {
                     const row = JSON.parse(JSON.stringify(rowDataExample))
-                    if (row.phase) row.name.value = phase
+                    if (row.name) row.name.value = phase
                     table1.push(row)
                 })
             }
@@ -415,7 +405,7 @@ export default {
             } else {
                 phases.forEach((phase) => {
                     const row = JSON.parse(JSON.stringify(rowDataExample))
-                    if (row.phase) row.name.value = phase
+                    if (row.name) row.name.value = phase
                     table1.push(row)
                 })
             }

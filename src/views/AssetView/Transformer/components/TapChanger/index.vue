@@ -37,7 +37,7 @@
                                     <el-option label="Prim" value="Prim"> </el-option>
                                     <el-option label="Sec" value="Sec"> </el-option>
                                     <el-option label="Tert" value="Tert"
-                                        v-if="properties.asset_type === $constant.THREE_WINDING"> </el-option>
+                                        v-if="properties.type === $constant.THREE_WINDING"> </el-option>
                                 </el-select>
                             </el-form-item>
                             <el-form-item label="Tap scheme">
@@ -153,7 +153,7 @@
                                     <el-option label="Prim" value="Prim"> </el-option>
                                     <el-option label="Sec" value="Sec"> </el-option>
                                     <el-option label="Tert" value="Tert"
-                                        v-if="properties.asset_type === $constant.THREE_WINDING">
+                                        v-if="properties.type === $constant.THREE_WINDING">
                                     </el-option>
                                 </el-select>
                             </el-form-item>

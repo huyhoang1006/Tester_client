@@ -20,6 +20,7 @@ export default {
                 } else {
                     const dto = JSON.parse(JSON.stringify(this.voltageTransformerJobDto));
                     const resultDto = await this.checkJob(dto);
+                    console.log('Result DTO:', JSON.stringify(resultDto));
                     const entity = voltageTransformerJobMapping.jobDtoToEntity(resultDto);
                     const old_entity = voltageTransformerJobMapping.jobDtoToEntity(this.voltageTransformerJobDtoOld);
                     const rs = await window.electronAPI.insertVoltageTransformerJob(old_entity, entity)
@@ -126,7 +127,7 @@ export default {
                 }
             }
 
-            // Thêm các phần tử mới vào data.surgeArresterTestingEquipmentTestType nếu chưa có
+            // Thêm các phần tử mới vào data.voltageTransformerTestingEquipmentTestType nếu chưa có
             for (const current of arr) {
                 const existed = data.voltageTransformerTestingEquipmentTestType.some(
                     old =>

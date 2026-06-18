@@ -26,10 +26,10 @@
         </div>
 
         <div
-            v-if="testData && testData.table && testData.table.length > 0 && getInterruptersPerPhase() === 1">
-            <div v-for="items in testData.table.length" :key="items" style="margin-top: 2%">
-                <div v-if="testData.table.length > 1" style="font-weight: bold ;font-size: 12px;">Trip coil no. {{ items }}</div>
-                <br v-if="testData.table.length > 1" />
+            v-if="testData && testData.table && Object.keys(testData.table).length > 0 && getInterruptersPerPhase() === 1">
+            <div v-for="(tableData, tableKey) in testData.table" :key="tableKey" style="margin-top: 2%">
+                <div v-if="Object.keys(testData.table).length > 1" style="font-weight: bold ;font-size: 12px;">Trip coil no. {{ tableKey.replace('table', '') }}</div>
+                <br v-if="Object.keys(testData.table).length > 1" />
                 <table class="table-strip-input-data" style="width: 100%; font-size: 12px;">
                     <thead>
                         <th>Phase</th>
@@ -40,7 +40,7 @@
                         <th class="condition-indicator-col">Condition indicator</th>
                     </thead>
                     <tbody>
-                        <tr v-for="(item, index) in testData.table[items - 1]" :key="index">
+                        <tr v-for="(item, index) in tableData" :key="index">
                             <td>
                                 <div style="display: flex; width: 100%;">
                                     <el-input size="mini" v-model="item.phase.value"></el-input>
@@ -87,10 +87,10 @@
             </div>
         </div>
 
-        <div v-if="testData && testData.table && testData.table.length > 0 && getInterruptersPerPhase() > 1">
-            <div v-for="items in testData.table.length" :key="items" style="margin-top: 2%">
-                <div v-if="testData.table.length > 1" style="font-weight: bold ;font-size: 12px;">Trip coil no. {{ items }}</div>
-                <br v-if="testData.table.length > 1" />
+        <div v-if="testData && testData.table && Object.keys(testData.table).length > 0 && getInterruptersPerPhase() > 1">
+            <div v-for="(tableData, tableKey) in testData.table" :key="tableKey" style="margin-top: 2%">
+                <div v-if="Object.keys(testData.table).length > 1" style="font-weight: bold ;font-size: 12px;">Trip coil no. {{ tableKey.replace('table', '') }}</div>
+                <br v-if="Object.keys(testData.table).length > 1" />
                 <table class="table-strip-input-data" style="width: 100%; font-size: 12px;">
                     <thead class="test">
                         <th>Phase</th>
@@ -103,7 +103,7 @@
                         <th class="condition-indicator-col">Condition indicator</th>
                     </thead>
                     <tbody>
-                        <tr v-for="(item, index) in testData.table[items - 1]" :key="index">
+                        <tr v-for="(item, index) in tableData" :key="index">
                             <td v-if="index % getInterruptersPerPhase() === 0"
                                 :rowspan="getInterruptersPerPhase()">
                                 <div style="display: flex; width: 100%;">
@@ -360,7 +360,7 @@ export default {
     mounted() {
         // Initialize table after component is mounted
         this.$nextTick(() => {
-            if (this.testData && (!this.testData.table || this.testData.table.length === 0) && this.assetData && this.assetData.operating) {
+            if (this.testData && (!this.testData.table || Object.keys(this.testData.table).length === 0) && this.assetData && this.assetData.operating) {
                 // this.initializeTable()
             }
         })
@@ -455,7 +455,7 @@ export default {
             deep: true,
             handler: function () {
                 // Initialize table if empty when assetData is available
-                if (this.testData && (!this.testData.table || this.testData.table.length === 0) && this.assetData && this.assetData.operating) {
+                if (this.testData && (!this.testData.table || Object.keys(this.testData.table).length === 0) && this.assetData && this.assetData.operating) {
                     this.$nextTick(() => {
                         this.initializeTable()
                     })
@@ -465,14 +465,11 @@ export default {
         'testData.table': {
             immediate: true,
             handler: function (newVal) {
-                // Convert object {table1: [], table2: []} to array [[...], [...]] for backward compat (loaded from DB)
-                if (newVal && !Array.isArray(newVal) && typeof newVal === 'object' && Object.keys(newVal).length > 0) {
-                    const arr = Object.keys(newVal).sort().map(k => newVal[k])
-                    this.$set(this.testData, 'table', arr)
-                    return
-                }
-                // Initialize table if empty
-                if ((!newVal || (Array.isArray(newVal) && newVal.length === 0)) && this.assetData && this.assetData.operating) {
+                // table giữ dạng object {table1: [], table2: []} — KHÔNG convert sang array
+                // (convert sang array khiến khi lưu DB title thành '0','1' thay vì 'table1').
+                // Khởi tạo nếu rỗng.
+                if ((!newVal || (typeof newVal === 'object' && Object.keys(newVal).length === 0))
+                    && this.assetData && this.assetData.operating) {
                     this.$nextTick(() => {
                         this.initializeTable()
                     })
@@ -485,10 +482,10 @@ export default {
                 // Re-initialize table when number of trip coils changes
                 if (this.testData && this.testData.table) {
                     // Check if table needs to be resized
-                    if (this.testData.table.length !== newVal) {
-                        console.log(`Auto-resizing table from ${this.testData.table.length} to ${newVal} trip coils`)
+                    if (Object.keys(this.testData.table).length !== newVal) {
+                        console.log(`Auto-resizing table to ${newVal} trip coils`)
                         // Clear and re-initialize
-                        this.$set(this.testData, 'table', [])
+                        this.$set(this.testData, 'table', {})
                         this.$nextTick(() => {
                             this.initializeTable()
                         })
@@ -734,11 +731,11 @@ export default {
             const phase = ["A", "B", "C"]
 
             if (!this.data.table) {
-                this.$set(this.data, 'table', [])
+                this.$set(this.data, 'table', {})
             }
 
-            if (this.data.table.length === 0) {
-                const newTable = []
+            if (Object.keys(this.data.table).length === 0) {
+                const newTable = {}
                 for (let i = 0; i < numTripCoil; i++) {
                     const tableRow = []
                     for (let phaseIdx = 0; phaseIdx < numPhase; phaseIdx++) {
@@ -755,7 +752,7 @@ export default {
                             })
                         }
                     }
-                    newTable.push(tableRow)
+                    newTable['table' + (i + 1)] = tableRow
                 }
                 this.$set(this.data, 'table', newTable)
             }

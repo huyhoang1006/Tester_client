@@ -3,6 +3,14 @@ import circuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
 import circuitBreakerConditionMap from '@/config/testing-condition/CircuitBreaker/index.js'
 import * as common from '../../../../Common/index.js'
 
+// Lấy mrid (measurement_id) của 1 cột theo testCode + col.code từ config.
+// Dùng cho các init build cell thủ công, tránh cell thiếu measurement_id.
+const mridOf = (testTypeCode, colCode) => {
+    const cols = (circuitBreakerTestMap[testTypeCode] && circuitBreakerTestMap[testTypeCode].columns) || []
+    const col = cols.find(c => c.code === colCode)
+    return col ? (col.mrid || '') : ''
+}
+
 export default {
     methods: {
         async initTest(testTypeCode, assetData) {
@@ -464,13 +472,13 @@ export default {
                 for (let i = 0; i < phaseCount; i++) {
                     for (let j = 0; j < interruptCount; j++) {
                         coilTable.push({
-                            phase: { mrid: '', value: phaseNames[i] || `P${i + 1}`, unit: '', type: 'string' },
-                            trip_coil: { mrid: '', value: '', unit: '', type: 'analog' },
-                            interrupter: { mrid: '', value: (j + 1).toString(), unit: '', type: 'analog' },
-                            opening_time: { mrid: '', value: '', unit: 'm|s', type: 'analog' },
-                            opening_sync_between_phase: { mrid: '', value: '', unit: 'm|s', type: 'analog' },
-                            assessment: { mrid: '', value: '', unit: '', type: 'discrete' },
-                            condition_indicator: { mrid: '', value: '', unit: '', type: 'discrete' }
+                            phase: { mrid: '', value: phaseNames[i] || `P${i + 1}`, unit: '', type: 'string', measurement_id: mridOf(testTypeCode, 'phase') },
+                            trip_coil: { mrid: '', value: '', unit: '', type: 'analog', measurement_id: mridOf(testTypeCode, 'trip_coil') },
+                            interrupter: { mrid: '', value: (j + 1).toString(), unit: '', type: 'analog', measurement_id: mridOf(testTypeCode, 'interrupter') },
+                            opening_time: { mrid: '', value: '', unit: 'm|s', type: 'analog', measurement_id: mridOf(testTypeCode, 'opening_time') },
+                            opening_sync_between_phase: { mrid: '', value: '', unit: 'm|s', type: 'analog', measurement_id: mridOf(testTypeCode, 'opening_sync_between_phase') },
+                            assessment: { mrid: '', value: '', unit: '', type: 'discrete', measurement_id: mridOf(testTypeCode, 'assessment') },
+                            condition_indicator: { mrid: '', value: '', unit: '', type: 'discrete', measurement_id: mridOf(testTypeCode, 'condition_indicator') }
                         })
                     }
                 }
@@ -516,13 +524,13 @@ export default {
                 for (let i = 0; i < phaseCount; i++) {
                     for (let j = 0; j < interruptCount; j++) {
                         coilTable.push({
-                            phase: { mrid: '', value: phaseNames[i] || `P${i + 1}`, unit: '', type: 'string' },
-                            trip_coil: { mrid: '', value: (t + 1).toString(), unit: '', type: 'analog' },
-                            interrupter: { mrid: '', value: (j + 1).toString(), unit: '', type: 'analog' },
-                            opening_time: { mrid: '', value: '', unit: 'm|s', type: 'analog' },
-                            opening_sync_between_phase: { mrid: '', value: '', unit: 'm|s', type: 'analog' },
-                            assessment: { mrid: '', value: '', unit: '', type: 'discrete' },
-                            condition_indicator: { mrid: '', value: '', unit: '', type: 'discrete' }
+                            phase: { mrid: '', value: phaseNames[i] || `P${i + 1}`, unit: '', type: 'string', measurement_id: mridOf(testTypeCode, 'phase') },
+                            trip_coil: { mrid: '', value: (t + 1).toString(), unit: '', type: 'analog', measurement_id: mridOf(testTypeCode, 'trip_coil') },
+                            interrupter: { mrid: '', value: (j + 1).toString(), unit: '', type: 'analog', measurement_id: mridOf(testTypeCode, 'interrupter') },
+                            opening_time: { mrid: '', value: '', unit: 'm|s', type: 'analog', measurement_id: mridOf(testTypeCode, 'opening_time') },
+                            opening_sync_between_phase: { mrid: '', value: '', unit: 'm|s', type: 'analog', measurement_id: mridOf(testTypeCode, 'opening_sync_between_phase') },
+                            assessment: { mrid: '', value: '', unit: '', type: 'discrete', measurement_id: mridOf(testTypeCode, 'assessment') },
+                            condition_indicator: { mrid: '', value: '', unit: '', type: 'discrete', measurement_id: mridOf(testTypeCode, 'condition_indicator') }
                         })
                     }
                 }

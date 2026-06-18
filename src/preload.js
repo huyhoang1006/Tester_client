@@ -76,6 +76,7 @@ const licenseAPI = cimPreload.licensePreload.licensePreload()
 const notificationEntityAPI = entityPreload.notificationEntityPreload.notificationEntityPreload()
 const entitySnapshotAPI = entityPreload.entitySnapshotPreload.entitySnapshotPreload()
 const templateAPI = entityPreload.templatePreload.templatePreload()
+const mRIDCheckAPI = entityPreload.mRIDCheckPreload.mRIDCheckPreload()
 
 
 // Update API from entity preload
@@ -148,6 +149,7 @@ const ipcMain = Object.assign(
     fileConverterAPI,
     systemInfoAPI,
     entitySnapshotAPI,
-    templateAPI
+    templateAPI,
+    mRIDCheckAPI
 )
 contextBridge.exposeInMainWorld('electronAPI', ipcMain)
